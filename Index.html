@@ -1,0 +1,2295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENERGY — Asistente Administrativo | GERENCIA</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0F2B5B;
+  --blue: #1A3A8F;
+  --green: #2EAA4A;
+  --dark: #071525;
+  --gold: #E8A020;
+  --light: #F0F4FF;
+  --white: #FFFFFF;
+  --sidebar-w: 240px;
+  --red: #e53e3e;
+  --yellow: #d69e2e;
+  --text-muted: #8899bb;
+  --card-bg: #0d1f3c;
+  --border: #1e3a6e;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--light); min-height:100vh; }
+
+/* ===== LOGIN ===== */
+#login-screen {
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg, #071525 0%, #0F2B5B 60%, #071525 100%);
+}
+.login-box {
+  background: rgba(13,31,60,0.95); border:1px solid var(--border);
+  border-radius:20px; padding:48px 40px; width:420px; max-width:95vw;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+}
+.login-logo { text-align:center; margin-bottom:32px; }
+.login-logo img { width:120px; filter:brightness(1.1); display:block; margin:0 auto 12px; }
+.login-logo-divider {
+  width:60px; height:3px; margin:12px auto 14px;
+  background:linear-gradient(90deg,var(--gold),transparent);
+  border-radius:2px;
+}
+.login-logo h1 { font-family:'Montserrat',sans-serif; font-weight:900; font-size:22px; color:var(--white); letter-spacing:1px; }
+.login-logo p { color:var(--text-muted); font-size:13px; margin-top:4px; }
+.login-logo .company { color:var(--gold); font-family:'Montserrat',sans-serif; font-weight:700; font-size:14px; margin-top:8px; letter-spacing:3px; text-transform:uppercase; }
+.form-group { margin-bottom:20px; }
+.form-group label { display:block; font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px; }
+.form-group input[type=email], .form-group input[type=password], .form-group input[type=text], .form-group input[type=number], .form-group select, .form-group textarea {
+  width:100%; background:rgba(15,43,91,0.5); border:1px solid var(--border);
+  border-radius:10px; padding:12px 16px; color:var(--white); font-size:15px; font-family:'Open Sans',sans-serif;
+  transition:border-color 0.2s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline:none; border-color:var(--green); }
+.form-group select option { background:var(--card-bg); }
+.remember-row { display:flex; align-items:center; gap:8px; margin-bottom:24px; }
+.remember-row input[type=checkbox] { accent-color:var(--green); width:16px; height:16px; }
+.remember-row label { color:var(--text-muted); font-size:13px; cursor:pointer; }
+.btn { border:none; border-radius:10px; padding:12px 24px; font-family:'Open Sans',sans-serif; font-weight:600; font-size:14px; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:8px; }
+.btn-primary { background:var(--green); color:#fff; width:100%; justify-content:center; font-size:16px; padding:14px; }
+.btn-primary:hover { background:#238f3a; transform:translateY(-1px); box-shadow:0 8px 24px rgba(46,170,74,0.4); }
+.btn-secondary { background:var(--blue); color:#fff; }
+.btn-secondary:hover { background:#1e4ab0; }
+.btn-ghost { background:transparent; border:1px solid var(--border); color:var(--light); }
+.btn-ghost:hover { background:rgba(255,255,255,0.05); }
+.btn-danger { background:var(--red); color:#fff; }
+.login-hint { text-align:center; margin-top:20px; font-size:12px; color:var(--text-muted); }
+
+/* ===== APP LAYOUT ===== */
+#app { display:none; min-height:100vh; }
+.sidebar {
+  position:fixed; left:0; top:0; bottom:0; width:var(--sidebar-w);
+  background:#071525; border-right:1px solid var(--border);
+  display:flex; flex-direction:column; z-index:100;
+  transition:transform 0.3s;
+}
+.sidebar-logo {
+  padding:20px 16px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:10px;
+}
+.sidebar-logo img { width:40px; height:40px; object-fit:contain; flex-shrink:0; }
+.sidebar-logo-text { }
+.sidebar-logo span { font-family:'Montserrat',sans-serif; font-weight:900; font-size:16px; color:#fff; display:block; line-height:1.2; }
+.sidebar-logo small { font-size:10px; color:var(--text-muted); display:block; margin-top:1px; }
+.nav-section { padding:16px 12px 8px; font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; }
+.nav-item {
+  display:flex; align-items:center; gap:12px; padding:11px 16px; margin:2px 8px;
+  border-radius:10px; cursor:pointer; transition:all 0.2s; color:var(--text-muted); font-size:14px; font-weight:500;
+  border-left:3px solid transparent;
+}
+.nav-item:hover { background:rgba(46,170,74,0.08); color:var(--light); border-left-color:rgba(46,170,74,0.3); }
+.nav-item.active { background:rgba(15,43,91,0.6); color:#fff; border-left-color:var(--gold); }
+.nav-item.active .icon { filter:none; }
+.nav-item .icon { font-size:18px; width:22px; text-align:center; }
+.sidebar-footer { margin-top:auto; padding:16px; border-top:1px solid var(--border); }
+.sidebar-version { text-align:center; font-size:10px; color:var(--gold); font-family:'Montserrat',sans-serif; font-weight:700; letter-spacing:1px; margin-bottom:12px; opacity:0.7; }
+.user-pill { display:flex; align-items:center; gap:10px; }
+.avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; color:#fff; flex-shrink:0; }
+.user-pill-info { flex:1; }
+.user-pill-name { font-size:13px; font-weight:600; color:var(--white); }
+.user-pill-role { font-size:11px; color:var(--text-muted); }
+.logout-btn { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:18px; transition:color 0.2s; }
+.logout-btn:hover { color:var(--red); }
+
+/* ===== MAIN AREA ===== */
+.main-area { margin-left:var(--sidebar-w); display:flex; flex-direction:column; min-height:100vh; }
+.topbar {
+  background:var(--navy); border-bottom:2px solid var(--gold);
+  padding:0 28px; height:64px; display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:90; backdrop-filter:blur(10px);
+}
+.topbar-logo { display:flex; align-items:center; gap:10px; margin-right:16px; }
+.topbar-logo img { width:28px; height:28px; object-fit:contain; }
+.topbar-left h2 { font-family:'Montserrat',sans-serif; font-weight:700; font-size:20px; color:#fff; }
+.topbar-left p { font-size:12px; color:var(--text-muted); }
+.topbar-right { display:flex; align-items:center; gap:16px; }
+.notif-btn { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:20px; position:relative; transition:color 0.2s; }
+.notif-btn:hover { color:var(--white); }
+.notif-badge { position:absolute; top:-4px; right:-4px; width:16px; height:16px; background:var(--red); border-radius:50%; font-size:9px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; }
+.content { padding:28px; flex:1; }
+
+/* ===== CARDS ===== */
+.card { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:24px; }
+.stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+.stat-card { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:20px; position:relative; overflow:hidden; border-left:3px solid var(--border); }
+.stat-card::before { content:''; position:absolute; top:0; left:0; bottom:0; width:3px; }
+.stat-card.green { border-left-color:var(--green); }
+.stat-card.green::before { background:var(--green); }
+.stat-card.blue { border-left-color:var(--blue); }
+.stat-card.blue::before { background:var(--blue); }
+.stat-card.gold { border-left-color:var(--gold); }
+.stat-card.gold::before { background:var(--gold); }
+.stat-card.red { border-left-color:var(--red); }
+.stat-card.red::before { background:var(--red); }
+.stat-icon { font-size:28px; margin-bottom:12px; }
+.stat-num { font-family:'Montserrat',sans-serif; font-weight:900; font-size:32px; color:#fff; }
+.stat-label { font-size:12px; color:var(--text-muted); margin-top:4px; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.section-title { font-family:'Montserrat',sans-serif; font-weight:700; font-size:16px; color:#fff; }
+
+/* ===== MEETINGS ===== */
+.meeting-item { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--border); }
+.meeting-item:last-child { border-bottom:none; }
+.meeting-time { font-size:13px; font-weight:700; color:var(--green); min-width:50px; }
+.meeting-info { flex:1; }
+.meeting-title { font-size:14px; font-weight:600; color:#fff; }
+.meeting-meta { font-size:12px; color:var(--text-muted); margin-top:2px; }
+.badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.badge-teams { background:rgba(26,58,143,0.3); color:#7aa7ff; border:1px solid rgba(26,58,143,0.5); }
+.badge-presencial { background:rgba(46,170,74,0.2); color:var(--green); border:1px solid rgba(46,170,74,0.3); }
+.badge-llamada { background:rgba(232,160,32,0.2); color:var(--gold); border:1px solid rgba(232,160,32,0.3); }
+.badge-alta { background:rgba(229,62,62,0.2); color:#fc8181; border:1px solid rgba(229,62,62,0.3); }
+.badge-media { background:rgba(214,158,46,0.2); color:#f6e05e; border:1px solid rgba(214,158,46,0.3); }
+.badge-baja { background:rgba(46,170,74,0.2); color:var(--green); border:1px solid rgba(46,170,74,0.3); }
+
+/* ===== ACTIVITY ===== */
+.activity-item { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+.activity-item:last-child { border-bottom:none; }
+.activity-dot { width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0; }
+.activity-text { font-size:13px; color:var(--light); flex:1; }
+.activity-time { font-size:11px; color:var(--text-muted); white-space:nowrap; }
+
+/* ===== KANBAN ===== */
+.kanban-board { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.kanban-col { background:rgba(7,21,37,0.7); border:1px solid var(--border); border-radius:14px; padding:16px; }
+.kanban-col-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.kanban-col-title { font-weight:700; font-size:14px; color:#fff; display:flex; align-items:center; gap:8px; }
+.count-badge { background:rgba(255,255,255,0.1); border-radius:20px; padding:2px 10px; font-size:12px; color:var(--text-muted); }
+.task-card { background:var(--card-bg); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:10px; cursor:pointer; transition:all 0.2s; }
+.task-card:hover { border-color:var(--green); transform:translateY(-1px); }
+.task-title { font-size:14px; font-weight:600; color:#fff; margin-bottom:8px; }
+.task-meta { display:flex; align-items:center; justify-content:space-between; }
+.task-assignee { font-size:12px; color:var(--text-muted); }
+.task-date { font-size:11px; color:var(--text-muted); }
+
+/* ===== GANTT ===== */
+.gantt-table { width:100%; }
+.gantt-row { display:grid; grid-template-columns:220px 1fr; border-bottom:1px solid var(--border); align-items:center; }
+.gantt-row:first-child { font-size:12px; font-weight:600; color:var(--text-muted); background:rgba(0,0,0,0.2); }
+.gantt-info { padding:12px 16px; }
+.gantt-name { font-size:14px; font-weight:600; color:#fff; }
+.gantt-owner { font-size:12px; color:var(--text-muted); }
+.gantt-timeline { padding:12px 16px; position:relative; height:60px; display:flex; align-items:center; }
+.gantt-bar-bg { position:absolute; left:16px; right:16px; height:24px; background:rgba(255,255,255,0.05); border-radius:6px; overflow:hidden; }
+.gantt-bar-fill { height:100%; border-radius:6px; display:flex; align-items:center; padding:0 10px; font-size:11px; font-weight:700; color:#fff; }
+.gantt-dates { font-size:11px; color:var(--text-muted); position:absolute; bottom:4px; left:16px; }
+
+/* ===== COMUNICACIONES ===== */
+.tabs { display:flex; gap:4px; background:rgba(0,0,0,0.3); border-radius:12px; padding:4px; margin-bottom:24px; }
+.tab-btn { flex:1; padding:10px; border:none; border-radius:8px; cursor:pointer; font-family:'Open Sans',sans-serif; font-weight:600; font-size:13px; background:transparent; color:var(--text-muted); transition:all 0.2s; }
+.tab-btn.active { background:var(--card-bg); color:#fff; }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+.msg-output { background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:16px; min-height:120px; font-size:14px; line-height:1.7; color:var(--light); white-space:pre-wrap; }
+
+/* ===== MINUTAS ===== */
+.minuta-card { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:16px; }
+.minuta-header { display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; }
+.minuta-title { font-weight:700; font-size:16px; color:#fff; }
+.minuta-date { font-size:12px; color:var(--text-muted); }
+.minuta-body { font-size:13px; color:var(--light); line-height:1.7; }
+.minuta-section { margin-bottom:12px; }
+.minuta-section-title { font-weight:700; font-size:12px; color:var(--green); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+
+/* ===== EQUIPO ===== */
+.team-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+.team-card { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:24px; text-align:center; transition:all 0.2s; }
+.team-card:hover { border-color:var(--green); transform:translateY(-2px); }
+.team-avatar { width:64px; height:64px; border-radius:50%; margin:0 auto 12px; font-size:24px; font-weight:700; color:#fff; display:flex; align-items:center; justify-content:center; position:relative; }
+.online-dot { position:absolute; bottom:2px; right:2px; width:12px; height:12px; background:var(--green); border-radius:50%; border:2px solid var(--card-bg); }
+.team-name { font-weight:700; font-size:15px; color:#fff; margin-bottom:4px; }
+.team-role { font-size:12px; color:var(--text-muted); margin-bottom:4px; }
+.team-email { font-size:12px; color:var(--blue); margin-bottom:16px; }
+.team-actions { display:flex; gap:8px; justify-content:center; }
+.icon-btn { width:36px; height:36px; border-radius:8px; border:1px solid var(--border); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all 0.2s; color:var(--text-muted); }
+.icon-btn:hover { background:rgba(46,170,74,0.15); border-color:var(--green); color:var(--green); }
+
+/* ===== CALENDAR ===== */
+.calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-header { font-size:12px; font-weight:700; color:var(--text-muted); text-align:center; padding:8px 0; }
+.cal-day { min-height:70px; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:8px; padding:6px; }
+.cal-day.today { border-color:var(--green); }
+.cal-day.other-month { opacity:0.3; }
+.cal-day-num { font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:4px; }
+.cal-day.today .cal-day-num { color:var(--green); font-weight:700; }
+.cal-event { background:rgba(26,58,143,0.5); border-radius:3px; padding:2px 4px; font-size:10px; color:#fff; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cal-task { background:rgba(46,170,74,0.5); border-radius:3px; padding:2px 4px; font-size:10px; color:#fff; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cal-task.alta { background:rgba(229,62,62,0.5); }
+.cal-task.media { background:rgba(214,158,46,0.5); }
+
+/* ===== MODAL ===== */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--card-bg); border:1px solid var(--border); border-radius:20px; padding:0; width:540px; max-width:95vw; max-height:90vh; overflow-y:auto; }
+.modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0; padding:18px 24px; background:var(--navy); border-bottom:2px solid var(--gold); border-radius:20px 20px 0 0; }
+.modal-body { padding:24px; }
+.modal-title { font-family:'Montserrat',sans-serif; font-weight:700; font-size:20px; color:#fff; }
+.close-btn { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:22px; transition:color 0.2s; line-height:1; }
+.close-btn:hover { color:#fff; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.checkboxes-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.checkbox-item { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--light); }
+.checkbox-item input { accent-color:var(--green); }
+
+/* ===== ENERGY CHAT ===== */
+.max-fab {
+  position:fixed; bottom:28px; right:28px; z-index:300;
+  width:60px; height:60px; border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),#c47a10);
+  border:none; cursor:pointer; box-shadow:0 8px 32px rgba(232,160,32,0.5);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Montserrat',sans-serif; font-weight:900; font-size:13px; color:#fff;
+  animation: pulse 2s infinite;
+  transition:transform 0.2s; letter-spacing:0.5px;
+}
+.max-fab:hover { transform:scale(1.1); }
+@keyframes pulse { 0%,100%{box-shadow:0 8px 32px rgba(232,160,32,0.5)} 50%{box-shadow:0 8px 48px rgba(232,160,32,0.8)} }
+.chat-panel {
+  position:fixed; right:24px; bottom:100px; z-index:299;
+  width:360px; max-height:540px; background:var(--card-bg);
+  border:1px solid var(--border); border-radius:20px;
+  display:none; flex-direction:column; box-shadow:0 24px 80px rgba(0,0,0,0.6);
+}
+.chat-panel.open { display:flex; }
+.chat-header { padding:16px 20px; background:var(--navy); border-bottom:2px solid var(--gold); display:flex; align-items:center; gap:12px; border-radius:20px 20px 0 0; }
+.chat-header .logo-sm { width:36px; height:36px; border-radius:50%; overflow:hidden; background:transparent; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.chat-header .logo-sm img { width:36px; height:36px; object-fit:contain; }
+.chat-header-info .name { font-weight:700; color:#fff; font-size:14px; }
+.chat-header-info .status { font-size:11px; color:var(--green); }
+.chat-header-close { margin-left:auto; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:18px; }
+.chat-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+.msg { max-width:85%; padding:10px 14px; border-radius:12px; font-size:13px; line-height:1.5; }
+.msg.bot { background:rgba(26,58,143,0.3); border:1px solid rgba(26,58,143,0.4); color:var(--light); align-self:flex-start; border-bottom-left-radius:4px; }
+.msg.user { background:linear-gradient(135deg,var(--green),#1e8a3a); color:#fff; align-self:flex-end; border-bottom-right-radius:4px; }
+.quick-actions { padding:8px 16px; display:flex; flex-wrap:wrap; gap:6px; }
+.quick-btn { background:rgba(26,58,143,0.3); border:1px solid rgba(26,58,143,0.5); border-radius:20px; padding:5px 12px; font-size:11px; color:var(--light); cursor:pointer; transition:all 0.2s; font-family:'Open Sans',sans-serif; }
+.quick-btn:hover { background:rgba(46,170,74,0.2); border-color:var(--green); color:var(--green); }
+.chat-input-row { padding:12px 16px; border-top:1px solid var(--border); display:flex; gap:8px; }
+.chat-input { flex:1; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:#fff; font-size:13px; font-family:'Open Sans',sans-serif; resize:none; }
+.chat-input:focus { outline:none; border-color:var(--green); }
+.chat-send { width:38px; height:38px; border-radius:10px; background:var(--green); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; transition:all 0.2s; }
+.chat-send:hover { background:#1e8a3a; }
+
+/* ===== TOAST ===== */
+.toast-container { position:fixed; top:80px; right:24px; z-index:400; display:flex; flex-direction:column; gap:8px; }
+.toast { background:var(--card-bg); border:1px solid var(--border); border-radius:10px; padding:12px 18px; font-size:13px; color:var(--light); box-shadow:0 8px 32px rgba(0,0,0,0.4); display:flex; align-items:center; gap:10px; animation:slideIn 0.3s ease; min-width:240px; }
+.toast.success { border-left:3px solid var(--green); }
+.toast.error { border-left:3px solid var(--red); }
+.toast.info { border-left:3px solid var(--blue); }
+@keyframes slideIn { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
+
+/* ===== SPINNER ===== */
+.spinner { display:inline-block; width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* ===== CONFIG ===== */
+.config-section { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:20px; }
+.config-title { font-weight:700; font-size:16px; color:#fff; margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+.api-key-row { display:flex; gap:12px; }
+.api-key-row input { flex:1; }
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px) {
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); }
+  .main-area { margin-left:0; }
+  .stat-grid { grid-template-columns:1fr 1fr; }
+  .kanban-board { grid-template-columns:1fr; }
+  .grid-2 { grid-template-columns:1fr; }
+  .form-row { grid-template-columns:1fr; }
+  .chat-panel { right:12px; width:calc(100vw - 24px); }
+}
+
+/* templates list */
+.template-list { display:flex; flex-direction:column; gap:10px; }
+.template-item { background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:10px; padding:14px; cursor:pointer; transition:all 0.2s; }
+.template-item:hover { border-color:var(--green); background:rgba(46,170,74,0.08); }
+.template-cat { font-size:10px; font-weight:700; color:var(--green); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+.template-name { font-size:14px; font-weight:600; color:#fff; margin-bottom:4px; }
+.template-preview { font-size:12px; color:var(--text-muted); }
+
+/* progress bar */
+.progress-bar { background:rgba(255,255,255,0.1); border-radius:20px; height:6px; overflow:hidden; }
+.progress-fill { height:100%; border-radius:20px; }
+
+/* view toggle */
+.view-toggle { display:flex; gap:4px; }
+.view-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text-muted); cursor:pointer; font-size:13px; transition:all 0.2s; }
+.view-btn.active { background:var(--blue); color:#fff; border-color:var(--blue); }
+
+.meeting-list { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
+.meeting-full-card { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px; }
+.meeting-card-header { display:flex; justify-content:space-between; align-items:start; margin-bottom:10px; }
+.meeting-card-title { font-weight:700; font-size:15px; color:#fff; }
+.meeting-card-meta { font-size:12px; color:var(--text-muted); margin-top:4px; }
+.meeting-card-actions { display:flex; gap:8px; margin-top:12px; }
+
+/* hidden util */
+.hidden { display:none !important; }
+
+/* page sections */
+.page { display:none; }
+.page.active { display:block; }
+
+
+/* ===== INVENTARIO ===== */
+.inv-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+.inv-stat { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px 20px; border-left:3px solid var(--border); }
+.inv-stat.green { border-left-color:var(--green); }
+.inv-stat.red { border-left-color:var(--red); }
+.inv-stat.blue { border-left-color:var(--blue); }
+.inv-stat.gold { border-left-color:var(--gold); }
+.inv-stat-num { font-family:'Montserrat',sans-serif; font-weight:900; font-size:26px; color:#fff; }
+.inv-stat-label { font-size:11px; color:var(--text-muted); margin-top:3px; text-transform:uppercase; letter-spacing:0.5px; }
+.inv-search-box { position:relative; margin-bottom:14px; }
+.inv-search-box input {
+  width:100%; background:var(--card-bg); border:1px solid var(--border);
+  border-radius:10px; padding:13px 16px 13px 46px;
+  color:#fff; font-size:14px; font-family:'Open Sans',sans-serif;
+  transition:border-color 0.2s;
+}
+.inv-search-box input:focus { outline:none; border-color:var(--green); }
+.inv-search-box input::placeholder { color:var(--text-muted); }
+.inv-search-icon { position:absolute; left:16px; top:50%; transform:translateY(-50%); font-size:16px; pointer-events:none; }
+.inv-filters { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; align-items:center; }
+.inv-filter-label { font-size:11px; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+.inv-filter-btn {
+  padding:5px 14px; border-radius:20px; border:1px solid var(--border);
+  background:transparent; font-size:12px; cursor:pointer;
+  color:var(--text-muted); transition:all 0.15s; font-family:'Open Sans',sans-serif; font-weight:600;
+}
+.inv-filter-btn:hover { border-color:var(--green); color:var(--green); }
+.inv-filter-btn.active { background:var(--green); color:#fff; border-color:var(--green); }
+.inv-result-count { font-size:12px; color:var(--text-muted); margin-bottom:12px; }
+.inv-table-wrap { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.inv-table-scroll { overflow-x:auto; }
+.inv-table { width:100%; border-collapse:collapse; font-size:13px; }
+.inv-table thead { background:#071525; position:sticky; top:0; z-index:5; }
+.inv-table thead th { padding:12px 14px; text-align:left; font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; border-bottom:1px solid var(--border); }
+.inv-table tbody tr { border-bottom:1px solid rgba(30,58,110,0.4); transition:background 0.12s; }
+.inv-table tbody tr:hover { background:rgba(15,43,91,0.4); }
+.inv-table tbody tr:last-child { border-bottom:none; }
+.inv-table td { padding:10px 14px; color:var(--light); vertical-align:middle; }
+.inv-codigo { font-family:monospace; font-size:12px; color:var(--text-muted); white-space:nowrap; }
+.inv-desc { font-weight:600; color:#fff; }
+.inv-desc .hl { background:rgba(232,160,32,0.35); border-radius:2px; padding:0 2px; color:#fff; }
+.inv-badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
+.inv-badge.ok { background:rgba(46,170,74,0.2); color:#4ade80; border:1px solid rgba(46,170,74,0.3); }
+.inv-badge.out { background:rgba(229,62,62,0.2); color:#fc8181; border:1px solid rgba(229,62,62,0.3); }
+.inv-precio { font-weight:700; color:#fff; white-space:nowrap; font-size:12px; }
+.inv-ubi { font-size:11px; font-family:monospace; background:rgba(26,58,143,0.3); padding:2px 8px; border-radius:6px; color:#7aa7ff; display:inline-block; }
+.inv-prov { font-size:12px; color:var(--text-muted); }
+.inv-empty { text-align:center; padding:52px 20px; color:var(--text-muted); }
+.inv-empty .ie-icon { font-size:2.5rem; margin-bottom:10px; }
+.inv-empty p { font-size:14px; }
+
+/* ===== SPLASH ===== */
+@keyframes fadeIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+@keyframes loading { from{width:0} to{width:100%} }
+#splash { position:fixed;inset:0;background:#071525;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999; }
+#splash img { width:160px;margin-bottom:24px;animation:fadeIn 0.5s ease; }
+#splash-title { color:var(--gold);font-family:'Montserrat',sans-serif;font-weight:700;font-size:18px;letter-spacing:3px;text-align:center; }
+#splash-bar-wrap { margin-top:24px;width:200px;height:3px;background:#1e3a6e;border-radius:2px;overflow:hidden; }
+#splash-bar { height:100%;background:linear-gradient(90deg,#2EAA4A,#E8A020);animation:loading 1.5s ease forwards; }
+
+/* ===== SECTION ACCENT ===== */
+.section-accent { height:2px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:1px;margin-bottom:20px;opacity:0.5; }
+
+/* ===== TOPBAR BADGE ===== */
+.user-badge { background:var(--green);color:#fff;border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer; }
+</style>
+</head>
+<body>
+
+<!-- ===== SPLASH ===== -->
+<div id="splash">
+  <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" alt="E&G Energy">
+  <div id="splash-title">PLATAFORMA ADMINISTRATIVA</div>
+  <div id="splash-bar-wrap"><div id="splash-bar"></div></div>
+</div>
+
+<!-- ===== LOGIN ===== -->
+<!-- PANTALLA CÓDIGO DE ACCESO -->
+<div id="access-screen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#071525 0%,#0F2B5B 60%,#071525 100%);">
+  <div class="login-box" style="text-align:center;">
+    <div style="margin-bottom:28px;">
+      <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" alt="E&G Energy Group" style="width:110px;margin-bottom:16px;">
+      <div style="width:60px;height:3px;background:linear-gradient(90deg,#2EAA4A,#E8A020);margin:0 auto 16px;border-radius:2px;"></div>
+      <h1 style="font-family:Montserrat,sans-serif;font-weight:900;font-size:22px;color:#fff;">E&amp;G Energy Group SAS</h1>
+      <div style="color:#E8A020;font-weight:700;letter-spacing:3px;font-size:12px;margin-top:6px;">PLATAFORMA ADMINISTRATIVA</div>
+    </div>
+    <div style="background:rgba(255,255,255,0.04);border:1px solid #1e3a6e;border-radius:12px;padding:24px;margin-bottom:20px;">
+      <div style="font-size:32px;margin-bottom:12px;">🔐</div>
+      <p style="color:#8899bb;font-size:14px;margin-bottom:20px;">Ingresa el código de acceso de la empresa para continuar</p>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label style="text-align:left;display:block;">Código de acceso</label>
+        <input type="password" id="access-code" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkAccess()" style="text-align:center;font-size:18px;letter-spacing:6px;">
+      </div>
+      <button class="btn btn-primary" onclick="checkAccess()" style="width:100%;">Verificar acceso</button>
+      <div id="access-error" style="color:#e53e3e;font-size:13px;margin-top:12px;display:none;">Código incorrecto. Contacta al administrador.</div>
+    </div>
+    <p style="color:#8899bb;font-size:12px;">¿No tienes el código? Contacta a <span style="color:#E8A020;">andrea.bernal@eygenergygroup.com</span></p>
+  </div>
+</div>
+
+<!-- LOGIN NORMAL -->
+<div id="login-screen" style="display:none;">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" alt="E&G Energy Group">
+      <div class="login-logo-divider"></div>
+      <h1>E&amp;G Energy Group SAS</h1>
+      <div class="company">Plataforma Administrativa</div>
+      <p style="margin-top:6px;">Ingresa tus credenciales para continuar</p>
+    </div>
+    <div class="form-group">
+      <label>Usuario</label>
+      <input type="text" id="login-email" placeholder="ej: alberto" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <div style="position:relative;">
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="off" style="padding-right:44px;">
+        <span onclick="const i=document.getElementById('login-pass');i.type=i.type==='password'?'text':'password'" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:#8899bb;font-size:18px;">👁</span>
+      </div>
+    </div>
+    <div class="remember-row">
+      <input type="checkbox" id="remember" checked>
+      <label for="remember">Recordarme</label>
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()" style="width:100%;">Iniciar sesión</button>
+    <div style="margin-top:16px;padding:12px;background:rgba(46,170,74,0.1);border:1px solid #2EAA4A;border-radius:8px;font-size:12px;color:#8899bb;text-align:center;">
+      Usuario: <b style="color:#fff;">alberto</b> &nbsp;|&nbsp; Contraseña: <b style="color:#fff;">eyg2026</b>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app">
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" alt="E&G Energy" style="width:40px;height:40px;object-fit:contain;flex-shrink:0;">
+      <div class="sidebar-logo-text">
+        <span>E&amp;G Energy</span>
+        <small>GERENCIA</small>
+      </div>
+    </div>
+    <nav style="flex:1;overflow-y:auto;padding-bottom:16px;">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">🏠</span>Dashboard</div>
+      <div class="nav-item" onclick="navigate('reuniones')"><span class="icon">📅</span>Reuniones</div>
+      <div class="nav-item" onclick="navigate('tareas')"><span class="icon">✅</span>Tareas</div>
+      <div class="nav-item" onclick="navigate('cronograma')"><span class="icon">📊</span>Cronograma</div>
+      <div class="nav-section">Comunicación</div>
+      <div class="nav-item" onclick="navigate('comunicaciones')"><span class="icon">💬</span>Comunicaciones</div>
+      <div class="nav-item" onclick="navigate('minutas')"><span class="icon">📋</span>Minutas</div>
+      <div class="nav-section">Gestión</div>
+      <div class="nav-item" onclick="navigate('equipo')"><span class="icon">👥</span>Equipo</div>
+      <div class="nav-item" onclick="navigate('inventario')"><span class="icon">📦</span>Inventario</div>
+      <div class="nav-item" onclick="navigate('configuracion')"><span class="icon">⚙️</span>Configuración</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-version">ENERGY Bot v1.0</div>
+      <div class="user-pill">
+        <div class="avatar" id="sidebar-avatar" style="background:linear-gradient(135deg,var(--green),var(--blue))"></div>
+        <div class="user-pill-info">
+          <div class="user-pill-name" id="sidebar-name">—</div>
+          <div class="user-pill-role" id="sidebar-role">—</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()" title="Cerrar sesión">⏏</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-area">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" alt="E&G" style="width:28px;height:28px;object-fit:contain;">
+        <div class="topbar-left">
+          <h2 id="page-title" style="font-family:'Montserrat',sans-serif;">Dashboard</h2>
+          <p id="page-date"></p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="notif-btn" onclick="showToast('No hay notificaciones nuevas','info')">
+          🔔<span class="notif-badge">3</span>
+        </button>
+        <div class="user-badge" id="top-avatar" onclick="navigate('configuracion')" title="Mi perfil"></div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div style="margin-bottom:24px;">
+          <h3 style="font-family:Montserrat,sans-serif;font-weight:700;font-size:22px;color:#fff;" id="welcome-msg">Buen día</h3>
+          <p style="color:var(--text-muted);font-size:14px;margin-top:4px;" id="welcome-sub"></p>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card green"><div class="stat-icon">📅</div><div class="stat-num" id="stat-reuniones">3</div><div class="stat-label">Reuniones hoy</div></div>
+          <div class="stat-card blue"><div class="stat-icon">✅</div><div class="stat-num" id="stat-tareas">4</div><div class="stat-label">Tareas pendientes</div></div>
+          <div class="stat-card gold"><div class="stat-icon">💬</div><div class="stat-num" id="stat-mensajes">7</div><div class="stat-label">Mensajes sin leer</div></div>
+          <div class="stat-card red"><div class="stat-icon">🚀</div><div class="stat-num" id="stat-proyectos">3</div><div class="stat-label">Proyectos activos</div></div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="section-header"><span class="section-title">📅 Reuniones de hoy</span><button class="btn btn-ghost" onclick="navigate('reuniones')" style="padding:6px 14px;font-size:12px;">Ver todas</button></div>
+            <div id="dash-meetings"></div>
+          </div>
+          <div class="card">
+            <div class="section-header"><span class="section-title">✅ Mis tareas de hoy</span><button class="btn btn-ghost" onclick="navigate('tareas')" style="padding:6px 14px;font-size:12px;">Ver todas</button></div>
+            <div id="dash-tasks"></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:20px;">
+          <div class="section-header"><span class="section-title">🕐 Actividad reciente</span></div>
+          <div id="dash-activity"></div>
+        </div>
+      </div>
+
+      <!-- REUNIONES -->
+      <div class="page" id="page-reuniones">
+        <div class="section-header" style="margin-bottom:20px;">
+          <div class="view-toggle">
+            <button class="view-btn active" id="view-calendar-btn" onclick="switchMeetingView('calendar')">📆 Calendario</button>
+            <button class="view-btn" id="view-list-btn" onclick="switchMeetingView('list')">📋 Lista</button>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modal-reunion')" style="width:auto;">+ Nueva Reunión</button>
+        </div>
+        <div class="card" id="calendar-view">
+          <div id="calendar-container"></div>
+        </div>
+        <div id="list-view" class="hidden">
+          <div class="meeting-list" id="meeting-list-container"></div>
+        </div>
+      </div>
+
+      <!-- TAREAS -->
+      <div class="page" id="page-tareas">
+        <div class="section-header" style="margin-bottom:20px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="view-btn active" onclick="filterTasks('all',this)">Todas</button>
+            <button class="view-btn" onclick="filterTasks('mine',this)">Mis tareas</button>
+            <button class="view-btn" onclick="filterTasks('alta',this)">Alta prioridad</button>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modal-tarea')" style="width:auto;">+ Nueva Tarea</button>
+        </div>
+        <div class="kanban-board" id="kanban-board"></div>
+      </div>
+
+      <!-- CRONOGRAMA -->
+      <div class="page" id="page-cronograma">
+        <div class="section-header" style="margin-bottom:20px;">
+          <span class="section-title">📊 Proyectos y Cronograma</span>
+          <button class="btn btn-primary" onclick="openModal('modal-proyecto')" style="width:auto;">+ Nuevo Proyecto</button>
+        </div>
+        <div class="card">
+          <div id="gantt-container"></div>
+        </div>
+      </div>
+
+      <!-- COMUNICACIONES -->
+      <div class="page" id="page-comunicaciones">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab('tab-whatsapp',this)">📱 WhatsApp</button>
+          <button class="tab-btn" onclick="switchTab('tab-teams',this)">💻 Teams</button>
+          <button class="tab-btn" onclick="switchTab('tab-plantillas',this)">📄 Plantillas</button>
+        </div>
+        <!-- WhatsApp Tab -->
+        <div class="tab-content active" id="tab-whatsapp">
+          <div class="card">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Destinatario</label>
+                <select id="wa-recipient">
+                  <option value="equipo">Todo el equipo</option>
+                  <option value="Alberto">Alberto (Gerente)</option>
+                  <option value="Sheila Baron">Sheila Baron</option>
+                  <option value="Alexandra">Alexandra</option>
+                  <option value="Andrés Barrera">Andrés Barrera</option>
+                  <option value="Andrea">Andrea</option>
+                  <option value="Nelsy">Nelsy</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Tipo de mensaje</label>
+                <select id="wa-type">
+                  <option>Recordatorio</option>
+                  <option>Convocatoria</option>
+                  <option>Urgente</option>
+                  <option>Informativo</option>
+                  <option>Seguimiento</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Tono</label>
+                <select id="wa-tone">
+                  <option>Formal</option>
+                  <option>Semi-formal</option>
+                  <option>Directo</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Contexto / Plataforma</label>
+                <select id="wa-platform" style="display:none"><option>WhatsApp</option></select>
+                <input type="text" id="wa-platform-shown" value="WhatsApp" readonly style="background:rgba(0,0,0,0.2);cursor:default;">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>¿Qué quieres comunicar?</label>
+              <textarea id="wa-brief" rows="3" placeholder="Ej: Recordar reunión de mañana a las 9am, que traigan los reportes de ventas..."></textarea>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+              <button class="btn btn-primary" onclick="generateMessage('whatsapp')" style="width:auto;" id="wa-gen-btn">✨ Redactar con ENERGY</button>
+            </div>
+            <div id="wa-output-section" class="hidden">
+              <div class="section-header"><span class="section-title">Mensaje generado</span><div style="display:flex;gap:8px;"><button class="btn btn-ghost" onclick="copyMsg('wa-output')" style="padding:6px 14px;font-size:12px;">📋 Copiar</button><button class="btn btn-secondary" onclick="sendWhatsApp()" style="padding:6px 14px;font-size:12px;">📱 Enviar por WhatsApp</button></div></div>
+              <div class="msg-output" id="wa-output"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Teams Tab -->
+        <div class="tab-content" id="tab-teams">
+          <div class="card">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Destinatario</label>
+                <select id="teams-recipient">
+                  <option value="equipo">Canal general</option>
+                  <option value="Alberto">Alberto</option>
+                  <option value="Sheila Baron">Sheila Baron</option>
+                  <option value="Alexandra">Alexandra</option>
+                  <option value="Andrés Barrera">Andrés Barrera</option>
+                  <option value="Andrea">Andrea</option>
+                  <option value="Nelsy">Nelsy</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Tipo de mensaje</label>
+                <select id="teams-type">
+                  <option>Recordatorio</option>
+                  <option>Convocatoria</option>
+                  <option>Urgente</option>
+                  <option>Informativo</option>
+                  <option>Seguimiento</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Tono</label>
+                <select id="teams-tone">
+                  <option>Formal</option>
+                  <option>Semi-formal</option>
+                  <option>Directo</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Canal</label>
+                <select id="teams-channel">
+                  <option>General</option>
+                  <option>Comercial</option>
+                  <option>Operaciones</option>
+                  <option>Gerencia</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>¿Qué quieres comunicar?</label>
+              <textarea id="teams-brief" rows="3" placeholder="Ej: Informar sobre el nuevo proceso de aprobación de compras..."></textarea>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;">
+              <button class="btn btn-primary" onclick="generateMessage('teams')" style="width:auto;">✨ Redactar con ENERGY</button>
+            </div>
+            <div id="teams-output-section" class="hidden">
+              <div class="section-header"><span class="section-title">Mensaje generado</span><button class="btn btn-ghost" onclick="copyMsg('teams-output')" style="padding:6px 14px;font-size:12px;">📋 Copiar</button></div>
+              <div class="msg-output" id="teams-output"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Plantillas Tab -->
+        <div class="tab-content" id="tab-plantillas">
+          <div class="template-list" id="templates-list"></div>
+        </div>
+      </div>
+
+      <!-- MINUTAS -->
+      <div class="page" id="page-minutas">
+        <div class="section-header" style="margin-bottom:20px;">
+          <span class="section-title">📋 Actas de Reunión</span>
+          <button class="btn btn-primary" onclick="openModal('modal-minuta')" style="width:auto;">+ Nueva Minuta</button>
+        </div>
+        <div id="minutas-list"></div>
+      </div>
+
+      <!-- EQUIPO -->
+      <div class="page" id="page-equipo">
+        <div class="section-header" style="margin-bottom:20px;">
+          <span class="section-title">👥 Directorio del Equipo</span>
+          <button class="btn btn-primary" id="add-member-btn" onclick="openModal('modal-miembro')" style="width:auto;">+ Agregar Miembro</button>
+        </div>
+        <div class="team-grid" id="team-grid"></div>
+      </div>
+
+      <!-- CONFIGURACION -->
+      <div class="page" id="page-configuracion">
+        <div class="config-section">
+          <div class="config-title">🤖 API Key de Claude (ENERGY IA)</div>
+          <div class="api-key-row">
+            <div class="form-group" style="flex:1;margin:0;">
+              <input type="password" id="api-key-input" placeholder="sk-ant-api03-...">
+            </div>
+            <button class="btn btn-primary" onclick="saveApiKey()" style="width:auto;white-space:nowrap;">Guardar</button>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">Tu API Key se guarda localmente y nunca se envía a ningún servidor externo excepto a Anthropic.</p>
+        </div>
+        <div class="config-section">
+          <div class="config-title">👤 Mi Perfil</div>
+          <div class="form-row">
+            <div class="form-group"><label>Nombre completo</label><input type="text" id="profile-name"></div>
+            <div class="form-group"><label>Correo</label><input type="email" id="profile-email" readonly style="opacity:0.5;"></div>
+          </div>
+          <div class="form-group"><label>WhatsApp</label><input type="text" id="profile-wa" placeholder="+57 300 000 0000"></div>
+          <button class="btn btn-primary" onclick="saveProfile()" style="width:auto;">Guardar perfil</button>
+        </div>
+        <div class="config-section" id="team-mgmt-section">
+          <div class="config-title">👥 Gestión del Equipo <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(Solo Jefe)</span></div>
+          <div id="team-mgmt-list"></div>
+          <button class="btn btn-secondary" onclick="openModal('modal-miembro')" style="margin-top:16px;width:auto;">+ Agregar miembro</button>
+        </div>
+      </div>
+
+            <div class="page" id="page-inventario">
+        <div class="inv-stats" id="inv-stats-bar"></div>
+        <div class="inv-search-box">
+          <span class="inv-search-icon">&#128269;</span>
+          <input type="text" id="inv-search" placeholder="Buscar por descripcion, codigo, marca o proveedor..." autocomplete="off" oninput="invRender()">
+        </div>
+        <div class="inv-filters">
+          <span class="inv-filter-label">Filtrar:</span>
+          <button class="inv-filter-btn active" onclick="invFilter('todos',this)">Todos</button>
+          <button class="inv-filter-btn" onclick="invFilter('ok',this)">Con stock</button>
+          <button class="inv-filter-btn" onclick="invFilter('out',this)">Agotados</button>
+        </div>
+        <div class="inv-result-count" id="inv-count"></div>
+        <div class="inv-table-wrap">
+          <div class="inv-table-scroll">
+            <table class="inv-table">
+              <thead>
+                <tr>
+                  <th>Codigo</th><th>Descripcion</th><th>Marca</th>
+                  <th>Stock</th><th>Ubicacion</th><th>Proveedor</th>
+                </tr>
+              </thead>
+              <tbody id="inv-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+        <script>
+        (function(){
+          const INV = [{"CODIGO PRODUCTO": 1400001, "DESCRIPCION": "PLATINA DE ORIFICIO 3-150 ORIFICIO 1-3/4", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400002, "DESCRIPCION": "PLATINA DE ORIFICIO 3-150 ORIFICIO 2\"", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400003, "DESCRIPCION": "PLATINA DE ORIFICIO 2-300 ORIFICIO 1-1/4", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400004, "DESCRIPCION": "PLATINA DE ORIFICIO 2-300 ORIFICIO 1/4", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400005, "DESCRIPCION": "PLATINA DE ORIFICIO 2-300 ORIFICIO 1/2", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 2, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 2, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400006, "DESCRIPCION": "PLATINA DE ORIFICIO 2-300 ORIFICIO 1-1/2", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400007, "DESCRIPCION": "PLATINA DE ORIFICIO2-300 ORIFICIO 3/4", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400008, "DESCRIPCION": "PLATINA DE ORIFICIO 2-300 ORIFICIO 2", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400009, "DESCRIPCION": "PLATINA DE ORIFICIO 2-300 ORIFICIO 1-3/4", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400010, "DESCRIPCION": "PLATINA DE ORIFICIO 2-300 ORIFICIO 2-1/4", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400011, "DESCRIPCION": "PLATINA DE ORIFICIO 2-300 ORIFICIO 2-1/2", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400012, "DESCRIPCION": "PLATINA DE ORIFICIO 3-150 ORIFICIO 1", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400013, "DESCRIPCION": "PLATINA DE ORIFICIO 3-150 ORIFICIO 1/2", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400014, "DESCRIPCION": "PLATINA DE ORIFICIO 3-150 ORIFICIO 1/4", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 1, "COSTO COMPRA": 380000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400015, "DESCRIPCION": "FILTRO GORRO DE BRUJA 4X150 LONGITUD DE 4\"", "MARCA": "FABRICACION NACIONAL", "STOCK ACTUAL": 4, "COSTO COMPRA": 80000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 4, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1400016, "DESCRIPCION": "SWITCH NEUMATICO MURPHY 0-1000", "MARCA": "MURPHY", "STOCK ACTUAL": 1, "COSTO COMPRA": 700000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GERENCIA", "UBICACIÓN": "F3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1700001, "DESCRIPCION": "TUBERIA 4\" SCH 40 RANGO SENCILLO AC BINORMA", "MARCA": "BAOLAI", "STOCK ACTUAL": 76, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "BODEGA SAMARIA", "ENTRADAS": 96, "SALIDAS": 20}, {"CODIGO PRODUCTO": 1700002, "DESCRIPCION": "TUBERIA 4\" SCH 40 RANGO SENCILLO AC BINORMA", "MARCA": "BAOLAI", "STOCK ACTUAL": 237, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "BODEGA K2", "ENTRADAS": 257, "SALIDAS": 20}, {"CODIGO PRODUCTO": 1700003, "DESCRIPCION": "TUBERIA 6\" SCH 40 RANGO SENCILLO AC BINORMA", "MARCA": "BAOLAI", "STOCK ACTUAL": 130, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "BODEGA SAMARIA", "ENTRADAS": 130, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1700004, "DESCRIPCION": "TUBERIA 6\" SCH 40 RANGO SENCILLO AC BINORMA", "MARCA": "BAOLAI", "STOCK ACTUAL": 203, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "BODEGA 2K", "ENTRADAS": 203, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000001, "DESCRIPCION": "CONDULETA ROSCADA TEE 2\"", "MARCA": "N.A.", "STOCK ACTUAL": 1, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": " ", "UBICACIÓN": "F1", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000002, "DESCRIPCION": "CONDULETA ROSCADA LB 2\"", "MARCA": "-", "STOCK ACTUAL": 2, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "-", "UBICACIÓN": "F1", "ENTRADAS": 2, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000003, "DESCRIPCION": "CAJA FUNDIDA RECTANGULAR 1/2 X 3 SALIDAS ", "MARCA": "-", "STOCK ACTUAL": 3, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "-", "UBICACIÓN": "F1", "ENTRADAS": 3, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000004, "DESCRIPCION": "AISLADOR PORCELANA PERCHA", "MARCA": "-", "STOCK ACTUAL": 3, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "-", "UBICACIÓN": "F1", "ENTRADAS": 3, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000005, "DESCRIPCION": "CONDULETA ROSCADA LB 1\"", "MARCA": "-", "STOCK ACTUAL": 2, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "-", "UBICACIÓN": "F1", "ENTRADAS": 2, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000006, "DESCRIPCION": "UNION EMT 2\"", "MARCA": "-", "STOCK ACTUAL": 6, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "-", "UBICACIÓN": "F1", "ENTRADAS": 6, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000007, "DESCRIPCION": "TERMINAL EMT 2\"", "MARCA": "-", "STOCK ACTUAL": 8, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "-", "UBICACIÓN": "F1", "ENTRADAS": 8, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000008, "DESCRIPCION": "CURVAS EMT 2\"", "MARCA": "", "STOCK ACTUAL": 4, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 4, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000009, "DESCRIPCION": "CURVAS EMT 1\"", "MARCA": "", "STOCK ACTUAL": 1, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000010, "DESCRIPCION": "CONDULETA GUAL 2\"", "MARCA": "", "STOCK ACTUAL": 2, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 2, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000011, "DESCRIPCION": "CONDULETA GUAT 1-1/2\"", "MARCA": "", "STOCK ACTUAL": 1, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000012, "DESCRIPCION": "CAJA DE PASO 2\" GUAC", "MARCA": "", "STOCK ACTUAL": 1, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000013, "DESCRIPCION": "CONDULTEA GUAT 1\"", "MARCA": "", "STOCK ACTUAL": 1, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000014, "DESCRIPCION": "CONECTOR RECTO 1/2 CORAZA", "MARCA": "", "STOCK ACTUAL": 20, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000015, "DESCRIPCION": "CONECTOR CURVO 1/2\" CORAZA", "MARCA": "", "STOCK ACTUAL": 6, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 6, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000016, "DESCRIPCION": "COENCTOR CURVO 3/4 CORAZA", "MARCA": "", "STOCK ACTUAL": 4, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 4, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000017, "DESCRIPCION": "CONECTOR RECTO CORAZA 3/4", "MARCA": "", "STOCK ACTUAL": 12, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 12, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000018, "DESCRIPCION": "TOMA AEREA 32 AMP REF 15034", "MARCA": "", "STOCK ACTUAL": 3, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 3, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000019, "DESCRIPCION": "TOMA AEREA 32 AMP REF 15032", "MARCA": "", "STOCK ACTUAL": 3, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 3, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000020, "DESCRIPCION": "MOTOR 10 HP TRIFASICO ", "MARCA": "WEG", "STOCK ACTUAL": 1, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000021, "DESCRIPCION": "CORAZA LIQUID TIGHT 3/4", "MARCA": "", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000022, "DESCRIPCION": "CORAZA LIQUID TIGHT 1\"", "MARCA": "", "STOCK ACTUAL": 1, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000023, "DESCRIPCION": "CORAZA LIQUID TIGHT 1/2", "MARCA": "", "STOCK ACTUAL": 29, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 29, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000024, "DESCRIPCION": "CABLE ENCAUCHETADO 4X12 ", "MARCA": "", "STOCK ACTUAL": 19, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 19, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000025, "DESCRIPCION": "CABLE ENCAUCHETADO 3X16", "MARCA": "", "STOCK ACTUAL": 71, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 71, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000026, "DESCRIPCION": "CABLE ENCAUCHETADO 4X10", "MARCA": "", "STOCK ACTUAL": 13, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 13, "SALIDAS": 0}, {"CODIGO PRODUCTO": 3000027, "DESCRIPCION": "CABLE ENCAUCHETADO 4X12 ", "MARCA": "", "STOCK ACTUAL": 2, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F1", "ENTRADAS": 2, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000001, "DESCRIPCION": "NIPLE AC 4*1/2 SCH 80", "MARCA": 0, "STOCK ACTUAL": 0, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000002, "DESCRIPCION": "NIPLE AC 4*2 SCH 80", "MARCA": 0, "STOCK ACTUAL": 0, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000003, "DESCRIPCION": "NIPLE AC S40 1/2X 2-(5 CM)", "MARCA": "WUXI", "STOCK ACTUAL": 11, "COSTO COMPRA": 1008.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "E3-CAJA1", "ENTRADAS": 11, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000004, "DESCRIPCION": "NIPLE AC S40 1/2X 3-(7,5 CM)", "MARCA": "WUXI", "STOCK ACTUAL": 10, "COSTO COMPRA": 1429.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "E3-CAJA2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000005, "DESCRIPCION": "NIPLE AC S40 1/2X 4-(10 CM)", "MARCA": "WUXI", "STOCK ACTUAL": 20, "COSTO COMPRA": 1765.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "E3-CAJA 3", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000006, "DESCRIPCION": "NIPLE AC S80 1/2X 2-(5 CM)", "MARCA": "WUXI", "STOCK ACTUAL": 10, "COSTO COMPRA": 1513.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "E3-CAJA 1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000007, "DESCRIPCION": "NIPLE AC S80 1/2X 3-(7,5 CM)", "MARCA": "WUXI", "STOCK ACTUAL": 10, "COSTO COMPRA": 1849.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "E3-CAJA2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000008, "DESCRIPCION": "NIPLE AC S80 1/2X 4-(10 CM)", "MARCA": "WUXI", "STOCK ACTUAL": 25, "COSTO COMPRA": 2353.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "E3-CAJA3", "ENTRADAS": 25, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000009, "DESCRIPCION": "NIPLE AC S40 3/4X 2-(5 CM)", "MARCA": "WUXI", "STOCK ACTUAL": 5, "COSTO COMPRA": 1176.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "E3-CAJA4", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000010, "DESCRIPCION": "NIPLE AC S40 3/4X 4-(10 CM)", "MARCA": "WUXI", "STOCK ACTUAL": 10, "COSTO COMPRA": 2185.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "E3-CAJA 5", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000011, "DESCRIPCION": "NIPLE AC S80 3/4X 2-(5 CM)", "MARCA": "WUXI", "STOCK ACTUAL": 5, "COSTO COMPRA": 1933.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "E3-CAJA4", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000012, "DESCRIPCION": "NIPLE AC S80 3/4X 4-(10 CM)", "MARCA": "WUXI", "STOCK ACTUAL": 10, "COSTO COMPRA": 3025.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "E3-CAJA 4", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 5000013, "DESCRIPCION": "NIPLE AC S80 X 1\" X4 (10 CM(", "MARCA": "WUXI", "STOCK ACTUAL": 1, "COSTO COMPRA": 3500.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "DISEFER", "UBICACIÓN": "E3- CAJA 5", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 7000001, "DESCRIPCION": "ESPARRAGO 3/4\" X 4\"", "MARCA": "MUNDIAL", "STOCK ACTUAL": 16, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "MUNDIAL DE TORNILLOS", "UBICACIÓN": "", "ENTRADAS": 16, "SALIDAS": 0}, {"CODIGO PRODUCTO": 7000002, "DESCRIPCION": "ESPARRAGO 1X 71/2\"", "MARCA": "JDF", "STOCK ACTUAL": 8, "COSTO COMPRA": 5407.0, "PRECIO VENTA": 9486.0, "PROVEEDOR": "TORNILLOS Y PARTES", "UBICACIÓN": "F4-CAJA 10", "ENTRADAS": 32, "SALIDAS": 0}, {"CODIGO PRODUCTO": 7000003, "DESCRIPCION": "ESPARRAGO 5/8 X 4-3/4", "MARCA": "JDF", "STOCK ACTUAL": 19, "COSTO COMPRA": 1165.0, "PRECIO VENTA": 1665.0, "PROVEEDOR": "TORNILLOS Y PARTES", "UBICACIÓN": "F4- CAJA 9", "ENTRADAS": 200, "SALIDAS": 0}, {"CODIGO PRODUCTO": 7000004, "DESCRIPCION": "ESPARRAGO  3/4 X 4-1/2", "MARCA": "JDF", "STOCK ACTUAL": 392, "COSTO COMPRA": 1513.0, "PRECIO VENTA": 2161.0, "PROVEEDOR": "TORNILLOS Y PARTES", "UBICACIÓN": "F4-CAJA 3- CAJA 5", "ENTRADAS": 200, "SALIDAS": 0}, {"CODIGO PRODUCTO": 7000005, "DESCRIPCION": "ESPARRAGO 5/8 X 5", "MARCA": "JDF", "STOCK ACTUAL": 270, "COSTO COMPRA": 1041.0, "PRECIO VENTA": 1487.0, "PROVEEDOR": "TORNILLOS Y PARTES", "UBICACIÓN": "F4- CAJA 1", "ENTRADAS": 200, "SALIDAS": 0}, {"CODIGO PRODUCTO": 7000006, "DESCRIPCION": "ESPARRAGO 7/8 X 5", "MARCA": "JDF", "STOCK ACTUAL": 50, "COSTO COMPRA": 2092.0, "PRECIO VENTA": 2988.0, "PROVEEDOR": "TORNILLOS Y PARTES", "UBICACIÓN": "F4- CAJA 12", "ENTRADAS": 50, "SALIDAS": 0}, {"CODIGO PRODUCTO": 7000007, "DESCRIPCION": "ESPARRAGO 3/4 X 5-1/2 ", "MARCA": "TYP", "STOCK ACTUAL": 200, "COSTO COMPRA": 2202.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "TORNILLOS Y PARTES", "UBICACIÓN": "F4 - CAJA 6", "ENTRADAS": 200, "SALIDAS": 0}, {"CODIGO PRODUCTO": 7100001, "DESCRIPCION": "TUERCAS 3/4", "MARCA": "TORNILOS Y PARTES", "STOCK ACTUAL": 1185, "COSTO COMPRA": 728.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "TYP", "UBICACIÓN": "F4- CAJA 4- CAJA 7- CAJA 8", "ENTRADAS": 32, "SALIDAS": 0}, {"CODIGO PRODUCTO": 7100002, "DESCRIPCION": "TUERCA 1", "MARCA": "JDF", "STOCK ACTUAL": 16, "COSTO COMPRA": 1852.0, "PRECIO VENTA": 2240.0, "PROVEEDOR": "TORNILLOS Y PARTES", "UBICACIÓN": "F4- CAJA 10", "ENTRADAS": 64, "SALIDAS": 0}, {"CODIGO PRODUCTO": 7100003, "DESCRIPCION": "TUERCA HEXAGONAL 5/8", "MARCA": "JDF", "STOCK ACTUAL": 585, "COSTO COMPRA": 426.0, "PRECIO VENTA": 608.0, "PROVEEDOR": "TORNILLOS Y PARTES", "UBICACIÓN": "F4-CAJA 2", "ENTRADAS": 8000, "SALIDAS": 0}, {"CODIGO PRODUCTO": 7100004, "DESCRIPCION": "TUERCA HEXAGONAL 3/4", "MARCA": "JDF", "STOCK ACTUAL": 0, "COSTO COMPRA": 0.0, "PRECIO VENTA": 1040.0, "PROVEEDOR": "", "UBICACIÓN": "", "ENTRADAS": 400, "SALIDAS": 0}, {"CODIGO PRODUCTO": 7100005, "DESCRIPCION": "TUERCA HEXAGONAL 7/8", "MARCA": "JDF", "STOCK ACTUAL": 100, "COSTO COMPRA": 911.0, "PRECIO VENTA": 1301.0, "PROVEEDOR": "TORNILLOS Y PARTES", "UBICACIÓN": "F4- CAJA 11", "ENTRADAS": 100, "SALIDAS": 0}, {"CODIGO PRODUCTO": 8000001, "DESCRIPCION": "DISCO DE PULIDORA 4 1/2 ", "MARCA": "DEWALT", "STOCK ACTUAL": 0, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "HOMECENTER", "UBICACIÓN": "", "ENTRADAS": 4, "SALIDAS": 4}, {"CODIGO PRODUCTO": 10000001, "DESCRIPCION": "FLAME ARRESTOR 4-150", "MARCA": "ENARDO", "STOCK ACTUAL": 1, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 10000002, "DESCRIPCION": "SWITCH DE PRESION MURPHY 0-100 PSI", "MARCA": "MURPHY", "STOCK ACTUAL": 1, "COSTO COMPRA": 700000.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "FERREINDUSTRIAL", "UBICACIÓN": "", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000033, "DESCRIPCION": "CODO DE 12\" SCH 40", "MARCA": "XF", "STOCK ACTUAL": 0, "COSTO COMPRA": 0.0, "PRECIO VENTA": 377133.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "", "ENTRADAS": 15, "SALIDAS": 15}, {"CODIGO PRODUCTO": 15000101, "DESCRIPCION": "BUSHING AC NPT 3.000L 3/4\" X 1/2\" ", "MARCA": "BOTHWELL", "STOCK ACTUAL": 0, "COSTO COMPRA": 5520.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3", "ENTRADAS": 13, "SALIDAS": 13}, {"CODIGO PRODUCTO": 15000102, "DESCRIPCION": "CODO AC NPT 3.000L 1/2\" ", "MARCA": "BOTHWELL", "STOCK ACTUAL": 7, "COSTO COMPRA": 9435.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 6", "ENTRADAS": 10, "SALIDAS": 3}, {"CODIGO PRODUCTO": 15000103, "DESCRIPCION": "CODO AC NPT 3.000L 3/4\" ", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 11618.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 7", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000104, "DESCRIPCION": "TEE AC NPT 3.000L 1/2\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 10800.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 13", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000105, "DESCRIPCION": "TEE AC NPT 3.000L 3/4\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 16020.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 14", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000107, "DESCRIPCION": " TAPON MACHO AC NPT 3.000L 1/2\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 0, "COSTO COMPRA": 5310.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "", "ENTRADAS": 20, "SALIDAS": 20}, {"CODIGO PRODUCTO": 15000108, "DESCRIPCION": "UNIVERSAL AC NPT 3.000L 1/2\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 3, "COSTO COMPRA": 20950.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 8", "ENTRADAS": 10, "SALIDAS": 7}, {"CODIGO PRODUCTO": 15000109, "DESCRIPCION": "THREADOLET AC NPT 3.000L 1/2\"X3/4\" - 36\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 0, "COSTO COMPRA": 14400.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "", "ENTRADAS": 15, "SALIDAS": 15}, {"CODIGO PRODUCTO": 15000110, "DESCRIPCION": "THREADOLET AC NPT 3.000L 3/4\" X 1\" - 36\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 0, "COSTO COMPRA": 15100.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "", "ENTRADAS": 20, "SALIDAS": 20}, {"CODIGO PRODUCTO": 15000111, "DESCRIPCION": "UNIVERSAL AC 3000# A105 NPT 3/4\" ", "MARCA": "BOTHWELL", "STOCK ACTUAL": 5, "COSTO COMPRA": 24399.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "F3- CAJA 1", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000112, "DESCRIPCION": " TAPON MACHO AC NPT 3.000L 1/2\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 3, "COSTO COMPRA": 3039.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "F3-CAJA 9", "ENTRADAS": 10, "SALIDAS": 4}, {"CODIGO PRODUCTO": 15000113, "DESCRIPCION": "TAPON M HEX AC 3/6000# A105 NPT 3/4\" ", "MARCA": "BOTHWELL", "STOCK ACTUAL": 1, "COSTO COMPRA": 4399.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "F3-CAJA 9", "ENTRADAS": 5, "SALIDAS": 4}, {"CODIGO PRODUCTO": 15000114, "DESCRIPCION": "THREADOLET AC NPT 3.000L 1/2\"X3/4\" - 36\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 0, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "", "ENTRADAS": 4, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000115, "DESCRIPCION": "THREADOLET AC NPT 6000 1/2", "MARCA": "BOTHWELL", "STOCK ACTUAL": 0, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "", "ENTRADAS": 3, "SALIDAS": 3}, {"CODIGO PRODUCTO": 15000116, "DESCRIPCION": "CODO AC NPT 3.000L 1/2\" ", "MARCA": "BOTHWELL", "STOCK ACTUAL": 0, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000117, "DESCRIPCION": "CODO AC NPT 3.000L 3/4\" ", "MARCA": "BOTHWELL", "STOCK ACTUAL": 5, "COSTO COMPRA": 11618.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 7", "ENTRADAS": 10, "SALIDAS": 5}, {"CODIGO PRODUCTO": 15000118, "DESCRIPCION": "SEMICODO AC 1/2\" NPT 3000L", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 7867.5, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000119, "DESCRIPCION": "TEE AC NPT 3.000L 1/2\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 10800.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 13", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000120, "DESCRIPCION": "TEE AC NPT 3.000L 3/4\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 16020.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 14", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000121, "DESCRIPCION": "UNIVERSAL AC 3000# A105 NPT 3/4\" ", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 17625.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3- CAJA 1", "ENTRADAS": 15, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000122, "DESCRIPCION": "UNIVERSAL AC NPT 3.000L 1/2\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 15075.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 8", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000123, "DESCRIPCION": "COUPLING 3/4 X 3000", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 5865.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F2- CAJA 7", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000124, "DESCRIPCION": "COUPLING 1/2 X 3000", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 3330.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F2-CAJA 8", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000125, "DESCRIPCION": "THREADOLET AC NPT 3.000L 1\"X 1-1/2 - 36\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 10875.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 10", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000126, "DESCRIPCION": "SOCKOLET AC 3000L   3/4 X 1-36", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000127, "DESCRIPCION": "THREADOLET AC NPT 3.000L 1/2\"X3/4\" - 36\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 4, "COSTO COMPRA": 10365.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 10", "ENTRADAS": 10, "SALIDAS": 6}, {"CODIGO PRODUCTO": 15000128, "DESCRIPCION": "BUSHING AC NPT 3.000L 3/4\" X 1/2\" ", "MARCA": "BOTHWELL", "STOCK ACTUAL": 0, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3", "ENTRADAS": 10, "SALIDAS": 10}, {"CODIGO PRODUCTO": 15000129, "DESCRIPCION": "BUSHING AC NPT 3.000L 1\" X 1/2\" ", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 5677.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 9", "ENTRADAS": 15, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000130, "DESCRIPCION": "BUSHING AC NPT 3000L 1 X3/4\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 10, "COSTO COMPRA": 5677.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 9", "ENTRADAS": 15, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000131, "DESCRIPCION": "THREADOLET AC NPT 3.000L 1/2\"X3/4\" - 36\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 5, "COSTO COMPRA": 10365.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 11", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000132, "DESCRIPCION": "THREADOLET AC NPT 3.000L 3/4NPT\"X1/2\" - 36\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 3, "COSTO COMPRA": 10875.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 11", "ENTRADAS": 3, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000133, "DESCRIPCION": "UNIVERSAL AC 3000# A105 NPT 1\"", "MARCA": "BOTHWELL", "STOCK ACTUAL": 2, "COSTO COMPRA": 20385.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3- CAJA 1", "ENTRADAS": 10, "SALIDAS": 8}, {"CODIGO PRODUCTO": 15000134, "DESCRIPCION": "TAPON MACHO AC NPT 3.000L 1/2\" ", "MARCA": "BOTHWELL", "STOCK ACTUAL": 4, "COSTO COMPRA": 3712.5, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "F3-CAJA 9", "ENTRADAS": 4, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000135, "DESCRIPCION": "TAPON HEMBRA A105 1/2\" X 3000", "MARCA": "XF", "STOCK ACTUAL": 50, "COSTO COMPRA": 2784.6, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F2-CAJA 1", "ENTRADAS": 50, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000136, "DESCRIPCION": "TAPON HEMBRA A105 3/4 X 3000", "MARCA": "XF", "STOCK ACTUAL": 50, "COSTO COMPRA": 3276.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F2-CAJA 3", "ENTRADAS": 50, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000137, "DESCRIPCION": "TAPON HEMBRA A105 1\"X3000", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 4204.2, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F2-CAJA 5", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000138, "DESCRIPCION": "TAPON HEMBRA A105 1/2\" X 6000", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 3767.4, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F2-CAJA 2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000139, "DESCRIPCION": "TAPON HEMBRA A105 3/4\"  X 6000", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 4204.2, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F2-CAJA 4", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000140, "DESCRIPCION": "TAPON HEMBRA A105 1\" X 6000", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 7043.4, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F2- CAJA 6", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000141, "DESCRIPCION": "THREADOLET AC NPT 3.000L 1/2\"X3/4\" - 36\"", "MARCA": "XF", "STOCK ACTUAL": 32, "COSTO COMPRA": 3767.4, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F3-CAJA 2", "ENTRADAS": 50, "SALIDAS": 18}, {"CODIGO PRODUCTO": 15000142, "DESCRIPCION": "THREADOLET AC NPT 3.000L 3/4\" X 1\" - 36\"", "MARCA": "XF", "STOCK ACTUAL": 29, "COSTO COMPRA": 4204.2, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F3-CAJA 3", "ENTRADAS": 50, "SALIDAS": 24}, {"CODIGO PRODUCTO": 15000143, "DESCRIPCION": "THREADOLET AC NPT 3.000L 1\"-", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 7043.4, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F3-CAJA 4", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 15000144, "DESCRIPCION": "THREADOLET AC NPT 6.000L 1/2\"X3/4\" - 36\"", "MARCA": "XF", "STOCK ACTUAL": 3, "COSTO COMPRA": 5623.8, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F3-CAJA 2", "ENTRADAS": 10, "SALIDAS": 7}, {"CODIGO PRODUCTO": 15000145, "DESCRIPCION": "THREADOLET AC NPT 6.000L 3/4\" - 36\"", "MARCA": "XF", "STOCK ACTUAL": 8, "COSTO COMPRA": 7480.2, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F2-CAJA 5", "ENTRADAS": 10, "SALIDAS": 2}, {"CODIGO PRODUCTO": 15000146, "DESCRIPCION": "THREADOLET AC NPT 6.000L 1\" ", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 11247.6, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F3-CAJA 12", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000101, "DESCRIPCION": "SEMICODO AC P/S S40 2\"X45 -CH-", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 3540.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "B1", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000102, "DESCRIPCION": "CODO AC P/S S40 2\" -CH- ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 5590.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "B1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000103, "DESCRIPCION": "CODO AC P/S S40 3\" -CH- ", "MARCA": "XF", "STOCK ACTUAL": 1, "COSTO COMPRA": 16640.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "B1", "ENTRADAS": 10, "SALIDAS": 9}, {"CODIGO PRODUCTO": 19000104, "DESCRIPCION": "CODO AC P/S S40 4\" -CH-", "MARCA": "XF", "STOCK ACTUAL": 3, "COSTO COMPRA": 30770.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "B2", "ENTRADAS": 10, "SALIDAS": 7}, {"CODIGO PRODUCTO": 19000105, "DESCRIPCION": "CODO AC P/S S40 6\" -CH-", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 74140.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "B2", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000106, "DESCRIPCION": "TEE AC P/S S40 2\" -CH- ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 14560.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "B1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000107, "DESCRIPCION": "TEE AC P/S S40 3\" -CH-  ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 36780.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "B1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000108, "DESCRIPCION": "TEE AC P/S S40 4\" -CH- ", "MARCA": "XF", "STOCK ACTUAL": 8, "COSTO COMPRA": 55400.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "B2", "ENTRADAS": 10, "SALIDAS": 2}, {"CODIGO PRODUCTO": 19000109, "DESCRIPCION": "TEE AC P/S S40 6\" -CH- ", "MARCA": "XF", "STOCK ACTUAL": 4, "COSTO COMPRA": 74140.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "B2", "ENTRADAS": 5, "SALIDAS": 1}, {"CODIGO PRODUCTO": 19000110, "DESCRIPCION": "CODO AC P/S S40 2\" ", "MARCA": "SQG", "STOCK ACTUAL": 5, "COSTO COMPRA": 5060.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 10, "SALIDAS": 5}, {"CODIGO PRODUCTO": 19000111, "DESCRIPCION": "CODO AC P/S S40 3\" ", "MARCA": "SQG", "STOCK ACTUAL": 0, "COSTO COMPRA": 16130.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 10, "SALIDAS": 10}, {"CODIGO PRODUCTO": 19000112, "DESCRIPCION": "SEMICODO AC P/S S40 2\"X45 -CH-", "MARCA": "SQG", "STOCK ACTUAL": 5, "COSTO COMPRA": 3060.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000113, "DESCRIPCION": "SEMICODO BW 3\"  CODO 45” AC S40 A234", "MARCA": "SQG", "STOCK ACTUAL": 2, "COSTO COMPRA": 9600.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 5, "SALIDAS": 3}, {"CODIGO PRODUCTO": 19000114, "DESCRIPCION": "TEE AC P/S S40 3\" ", "MARCA": "SQG", "STOCK ACTUAL": 8, "COSTO COMPRA": 34530.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 10, "SALIDAS": 2}, {"CODIGO PRODUCTO": 19000115, "DESCRIPCION": "TEE AC P/S S40 4\" ", "MARCA": "SQG", "STOCK ACTUAL": 10, "COSTO COMPRA": 52800.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000116, "DESCRIPCION": "TEE AC P/S S40 6\" ", "MARCA": "SQG", "STOCK ACTUAL": 3, "COSTO COMPRA": 107200.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 5, "SALIDAS": 2}, {"CODIGO PRODUCTO": 19000116, "DESCRIPCION": "TEE REDU SCH 40 3X2 ", "MARCA": "SQG", "STOCK ACTUAL": 0, "COSTO COMPRA": 11892.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 2, "SALIDAS": 2}, {"CODIGO PRODUCTO": 19000117, "DESCRIPCION": "TEE AC P/S S40 2\" ", "MARCA": "SQG", "STOCK ACTUAL": 6, "COSTO COMPRA": 13200.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 10, "SALIDAS": 4}, {"CODIGO PRODUCTO": 19000118, "DESCRIPCION": "TEE AC P/S S40 6\" -CH- ", "MARCA": "XF", "STOCK ACTUAL": 4, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "B2", "ENTRADAS": 4, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000119, "DESCRIPCION": "TEE REDU SCH 40 6X4", "MARCA": "XF", "STOCK ACTUAL": 4, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "B2", "ENTRADAS": 4, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000120, "DESCRIPCION": "CODO AC P/S S40 1\" ", "MARCA": "XF", "STOCK ACTUAL": 30, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 30, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000121, "DESCRIPCION": "CODO AC P/S S40 1-1/2\"\" ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000122, "DESCRIPCION": "CODO AC P/S S40 2\" ", "MARCA": "XF", "STOCK ACTUAL": 50, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 50, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000123, "DESCRIPCION": "CODO AC P/S S40 2-1/2\" ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000124, "DESCRIPCION": "CODO AC P/S S40 3\" ", "MARCA": "XF", "STOCK ACTUAL": 50, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C2", "ENTRADAS": 50, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000125, "DESCRIPCION": "CODO AC P/S S40 6\" ", "MARCA": "XF", "STOCK ACTUAL": 20, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C3", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000126, "DESCRIPCION": "SEMICODO AC P/S S40 2\" ", "MARCA": "XF", "STOCK ACTUAL": 20, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000127, "DESCRIPCION": "SEMICODO AC P/S S40 2-1/2\" ", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000128, "DESCRIPCION": "SEMICODO AC P/S S40 3\" ", "MARCA": "XF", "STOCK ACTUAL": 20, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C2", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000129, "DESCRIPCION": "SEMICODO AC P/S S40 4\" ", "MARCA": "XF", "STOCK ACTUAL": 16, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C2", "ENTRADAS": 20, "SALIDAS": 4}, {"CODIGO PRODUCTO": 19000130, "DESCRIPCION": "CODO AC P/S S80 2\" ", "MARCA": "XF", "STOCK ACTUAL": 36, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 40, "SALIDAS": 4}, {"CODIGO PRODUCTO": 19000131, "DESCRIPCION": "CODO AC P/S S80 2-1/2\" ", "MARCA": "XF", "STOCK ACTUAL": 3, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 5, "SALIDAS": 2}, {"CODIGO PRODUCTO": 19000132, "DESCRIPCION": "CODO AC P/S S80 3\" ", "MARCA": "XF", "STOCK ACTUAL": 15, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000133, "DESCRIPCION": "CODO AC P/S S80 4\" ", "MARCA": "XF", "STOCK ACTUAL": 20, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C2", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000134, "DESCRIPCION": "SEMICODO AC P/S S80 2\" ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000135, "DESCRIPCION": "SEMICODO AC P/S S80 3\" ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000136, "DESCRIPCION": "SEMICODO AC P/S S80 4\" ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000137, "DESCRIPCION": "SEMICODO AC P/S S40 6\" ", "MARCA": "XF", "STOCK ACTUAL": 20, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C3", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000138, "DESCRIPCION": "TEE AC P/S S40 2\" ", "MARCA": "XF", "STOCK ACTUAL": 22, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 30, "SALIDAS": 8}, {"CODIGO PRODUCTO": 19000139, "DESCRIPCION": "TEE AC P/S S40 3\" ", "MARCA": "XF", "STOCK ACTUAL": 26, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B2", "ENTRADAS": 30, "SALIDAS": 4}, {"CODIGO PRODUCTO": 19000140, "DESCRIPCION": "TEE AC P/S S40 4\" ", "MARCA": "XF", "STOCK ACTUAL": 30, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B2", "ENTRADAS": 30, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000141, "DESCRIPCION": "TEE AC P/S S40 6\" ", "MARCA": "XF", "STOCK ACTUAL": 20, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B3", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000142, "DESCRIPCION": "TEE AC P/S S40 8\" ", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B3", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000143, "DESCRIPCION": "TEE REDU SCH 40 3X2", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000144, "DESCRIPCION": "TEE REDU SCH 40 4X2", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000145, "DESCRIPCION": "TEE REDU SCH 40 4X3", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000146, "DESCRIPCION": "TEE REDU SCH 40 6X2", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B2", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000147, "DESCRIPCION": "TEE REDU SCH 40 6X3", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B2", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000148, "DESCRIPCION": "TEE REDU SCH 40 6X4", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000149, "DESCRIPCION": "TEE REDU SCH 40 8X3", "MARCA": "XF", "STOCK ACTUAL": 3, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B3", "ENTRADAS": 3, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000150, "DESCRIPCION": "TEE REDU SCH 40 8X4", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B3", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000151, "DESCRIPCION": "TEE REDU SCH 40 8X6", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B3", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000152, "DESCRIPCION": "TEE REDU SCH 80 3X2", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B1", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000153, "DESCRIPCION": "TEE REDU SCH 80 4X3", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B1", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000154, "DESCRIPCION": "TEE REDU SCH 80 4X2", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B1", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000155, "DESCRIPCION": "TEE REDU SCH 80 6X2", "MARCA": "XF", "STOCK ACTUAL": 3, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B2", "ENTRADAS": 3, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000156, "DESCRIPCION": "TEE REDU SCH 80 6X3", "MARCA": "XF", "STOCK ACTUAL": 3, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B1", "ENTRADAS": 3, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000157, "DESCRIPCION": "TEE REDU SCH 80 6X4", "MARCA": "XF", "STOCK ACTUAL": 3, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B2", "ENTRADAS": 3, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000158, "DESCRIPCION": "TEE AC P/S S80 2\" ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000159, "DESCRIPCION": "TEE AC P/S S80 3\" ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000160, "DESCRIPCION": "TEE AC P/S S80 4\" ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "B1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000161, "DESCRIPCION": "COPA AC P/S SCH 80 3X2 ", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C3", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000162, "DESCRIPCION": "COPA AC P/S SCH 80 4X2 ", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C3", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000163, "DESCRIPCION": "COPA AC P/S SCH 80 4X3", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C3", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000164, "DESCRIPCION": "COPA AC P/S SCH 80 6X2 ", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C3", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000165, "DESCRIPCION": "COPA AC P/S SCH 80 6X4", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C3", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000166, "DESCRIPCION": "COPA AC P/S SCH 40 3X2 ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000167, "DESCRIPCION": "COPA AC P/S SCH 40 4X2 ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000168, "DESCRIPCION": "COPA AC P/S SCH 40 4X3", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000169, "DESCRIPCION": "COPA AC P/S SCH 40 6X2 ", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C2", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000170, "DESCRIPCION": "COPA AC P/S SCH 40 6X3", "MARCA": "XF", "STOCK ACTUAL": 2, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C2", "ENTRADAS": 2, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000171, "DESCRIPCION": "COPA AC P/S SCH 40 6X4", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000172, "DESCRIPCION": "CODO AC P/S S40 4\"", "MARCA": "XF", "STOCK ACTUAL": 50, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "C3", "ENTRADAS": 50, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000173, "DESCRIPCION": "CODO AC P/S S40 6\"", "MARCA": "XF", "STOCK ACTUAL": 30, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D4", "ENTRADAS": 30, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000174, "DESCRIPCION": "CODO AC P/S S40 8\"", "MARCA": "XF", "STOCK ACTUAL": 20, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "A3", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000175, "DESCRIPCION": "CODO AC P/S S80 8\"", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "A3", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000176, "DESCRIPCION": "CODO A/C S40 10\" ", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "E4", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000177, "DESCRIPCION": "CODO A/C S40 12\" ", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "E4", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000178, "DESCRIPCION": "SEMICODO A/C S40 10\" ", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F5", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000179, "DESCRIPCION": "SEMICODO A/C S80 6\" ", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "E4", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000180, "DESCRIPCION": "SEMICODO A/C S80 8\" ", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "E4", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000181, "DESCRIPCION": "SEMICODO A/C S80 6\" ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "F5", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 19000182, "DESCRIPCION": "SEMICODO A/C S40 8\" ", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "E4", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000101, "DESCRIPCION": "FLANCHE SLIPON AC 150L 3\"", "MARCA": "XF", "STOCK ACTUAL": 0, "COSTO COMPRA": 31360.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "A2", "ENTRADAS": 5, "SALIDAS": 5}, {"CODIGO PRODUCTO": 22000102, "DESCRIPCION": "FLANCHE SLIPON AC 150L 4\"", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 45370.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "A2", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000103, "DESCRIPCION": "FLANCHE SLIPON AC 150L 6\"", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 61430.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "A2", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000104, "DESCRIPCION": "FLANCHE CUELLO AC 150L S40 2\"", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 27080.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "A2", "ENTRADAS": 10, "SALIDAS": 5}, {"CODIGO PRODUCTO": 22000105, "DESCRIPCION": "FLANCHE CUELLO AC 150L S40 3\"", "MARCA": "XF", "STOCK ACTUAL": 0, "COSTO COMPRA": 47260.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "A2", "ENTRADAS": 10, "SALIDAS": 10}, {"CODIGO PRODUCTO": 22000106, "DESCRIPCION": "FLANCHE CUELLO AC 150L S40 4\"", "MARCA": "XF", "STOCK ACTUAL": 7, "COSTO COMPRA": 69220.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "A2", "ENTRADAS": 10, "SALIDAS": 1}, {"CODIGO PRODUCTO": 22000107, "DESCRIPCION": "FLANCHE CUELLO AC 150L S40 6\"", "MARCA": "XF", "STOCK ACTUAL": 0, "COSTO COMPRA": 106760.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "A2", "ENTRADAS": 6, "SALIDAS": 6}, {"CODIGO PRODUCTO": 22000108, "DESCRIPCION": "FLANCHE CIEGO AC 150L 2\"", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 20820.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "A2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000109, "DESCRIPCION": "FLANCHE CIEGO AC 150L 3\"", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 38750.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "A2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000110, "DESCRIPCION": "FLANCHE CIEGO AC 150L 4\"", "MARCA": "XF", "STOCK ACTUAL": 3, "COSTO COMPRA": 57740.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "A2", "ENTRADAS": 10, "SALIDAS": 2}, {"CODIGO PRODUCTO": 22000111, "DESCRIPCION": "FLANCHE CIEGO AC 150L6", "MARCA": "XF", "STOCK ACTUAL": 0, "COSTO COMPRA": 90840.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "A2", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000112, "DESCRIPCION": "FLANCHE SLIPON AC 150L 2\"", "MARCA": "XF", "STOCK ACTUAL": 5, "COSTO COMPRA": 20840.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "A2", "ENTRADAS": 5, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000113, "DESCRIPCION": "FLANCHE CIEGO AC 150L 2\"", "MARCA": "SQG", "STOCK ACTUAL": 3, "COSTO COMPRA": 18500.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 10, "SALIDAS": 7}, {"CODIGO PRODUCTO": 22000114, "DESCRIPCION": "FLANCHE SLIPON AC 150L 2\"", "MARCA": "SQG", "STOCK ACTUAL": 3, "COSTO COMPRA": 19600.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 5, "SALIDAS": 2}, {"CODIGO PRODUCTO": 22000115, "DESCRIPCION": "FLANCHE SLIPON AC 150L 3\"", "MARCA": "SQG", "STOCK ACTUAL": 0, "COSTO COMPRA": 29300.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 5, "SALIDAS": 5}, {"CODIGO PRODUCTO": 22000116, "DESCRIPCION": "FLANCHE SLIPON AC 150L 6\"", "MARCA": "SQG", "STOCK ACTUAL": 3, "COSTO COMPRA": 60200.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 5, "SALIDAS": 2}, {"CODIGO PRODUCTO": 22000117, "DESCRIPCION": "FLANCHE CUELLO AC 150L S40 4\"", "MARCA": "SQG", "STOCK ACTUAL": 6, "COSTO COMPRA": 61300.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 10, "SALIDAS": 4}, {"CODIGO PRODUCTO": 22000118, "DESCRIPCION": "FLANCHE CUELLO AC 150L S40 6\"", "MARCA": "SQG", "STOCK ACTUAL": 0, "COSTO COMPRA": 103900.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 5, "SALIDAS": 5}, {"CODIGO PRODUCTO": 22000119, "DESCRIPCION": "FLANCHE CIEGO AC 150L 4\"", "MARCA": "SQG", "STOCK ACTUAL": 0, "COSTO COMPRA": 43200.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 5, "SALIDAS": 5}, {"CODIGO PRODUCTO": 22000120, "DESCRIPCION": "FLANCHE CUELLO AC 300L SCH 40 3\"", "MARCA": "SQG", "STOCK ACTUAL": 4, "COSTO COMPRA": 56240.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 8, "SALIDAS": 4}, {"CODIGO PRODUCTO": 22000121, "DESCRIPCION": "FLANCHE CUELLO AC 150L S40 2\"", "MARCA": "SQG", "STOCK ACTUAL": 0, "COSTO COMPRA": 26800.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 10, "SALIDAS": 10}, {"CODIGO PRODUCTO": 22000122, "DESCRIPCION": "FLANCHE SLIPON AC 150L 4\"", "MARCA": "SQG", "STOCK ACTUAL": 0, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "GRANADA", "UBICACIÓN": "A1", "ENTRADAS": 5, "SALIDAS": 5}, {"CODIGO PRODUCTO": 22000123, "DESCRIPCION": "FLANCHE CUELLO AC 300L SCH 40 6\"", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D3", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000124, "DESCRIPCION": "FLANCHE CUELLO AC 150L S40 6\"", "MARCA": "XF", "STOCK ACTUAL": 32, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D2", "ENTRADAS": 50, "SALIDAS": 18}, {"CODIGO PRODUCTO": 22000125, "DESCRIPCION": "FLANCHE CUELLO AC 150L S40 8\"", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D2", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000126, "DESCRIPCION": "FLANCHE CUELLO AC 150L SCH 80 2\"", "MARCA": "XF", "STOCK ACTUAL": 30, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D1", "ENTRADAS": 30, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000127, "DESCRIPCION": "FLANCHE CUELLO AC 150L S80 3\"", "MARCA": "XF", "STOCK ACTUAL": 20, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D1", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000128, "DESCRIPCION": "FLANCHE CIEGO AC 150L 2\"", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000129, "DESCRIPCION": "FLANCHE CIEGO AC 150L 3\"", "MARCA": "XF", "STOCK ACTUAL": 20, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D1", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000130, "DESCRIPCION": "FLANCHE CUELLO AC 300L SCH 40 2\"", "MARCA": "XF", "STOCK ACTUAL": 30, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "E1", "ENTRADAS": 30, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000131, "DESCRIPCION": "FLANCHE CUELLO AC 300L SCH 40 3\"", "MARCA": "XF", "STOCK ACTUAL": 30, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "E1", "ENTRADAS": 30, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000132, "DESCRIPCION": "FLANCHE CUELLO AC 150L SCH 40 1\"", "MARCA": "XF", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000133, "DESCRIPCION": "FLANCHE CUELLO AC 150L SCH 40 2\"", "MARCA": "XF", "STOCK ACTUAL": 50, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "E1", "ENTRADAS": 50, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000134, "DESCRIPCION": "FLANCHE CUELLO AC 150L SCH 40 3\"", "MARCA": "XF", "STOCK ACTUAL": 50, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D1", "ENTRADAS": 50, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000135, "DESCRIPCION": "FLANCHE CIEGO AC 150L 4\"", "MARCA": "XF", "STOCK ACTUAL": 20, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D3", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000136, "DESCRIPCION": "FLANCHE CIEGO AC 150L 6\"", "MARCA": "XF", "STOCK ACTUAL": 14, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D3", "ENTRADAS": 14, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000137, "DESCRIPCION": "FLANCHE CIEGO AC 150L 8\"", "MARCA": "XF", "STOCK ACTUAL": 6, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D3", "ENTRADAS": 10, "SALIDAS": 4}, {"CODIGO PRODUCTO": 22000138, "DESCRIPCION": "FLANCHE CIEGO AC 150L 10\"", "MARCA": "XF", "STOCK ACTUAL": 3, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D3", "ENTRADAS": 3, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000139, "DESCRIPCION": "FLANCHE CUELLO AC 300L SCH40 4\"", "MARCA": "XF", "STOCK ACTUAL": 20, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "E2", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000140, "DESCRIPCION": "FLANCHE CUELLO AC 150L SCH40 4\"", "MARCA": "XF", "STOCK ACTUAL": 50, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "D2", "ENTRADAS": 50, "SALIDAS": 0}, {"CODIGO PRODUCTO": 22000141, "DESCRIPCION": "FLANCHECON CUELLO 2-300 ( NO CERTIFICADO)", "MARCA": "", "STOCK ACTUAL": 4, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "", "UBICACIÓN": "F3", "ENTRADAS": 4, "SALIDAS": 0}, {"CODIGO PRODUCTO": 48000001, "DESCRIPCION": "VALVULA DE CHEQUE 3/4 *800", "MARCA": "", "STOCK ACTUAL": 1, "COSTO COMPRA": 63700.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "TUVACOL", "UBICACIÓN": "E3", "ENTRADAS": 1, "SALIDAS": 0}, {"CODIGO PRODUCTO": 48000002, "DESCRIPCION": "VALVULA DE BOLA 4-150", "MARCA": "SIO", "STOCK ACTUAL": 2, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "", "ENTRADAS": 2, "SALIDAS": 0}, {"CODIGO PRODUCTO": 48000003, "DESCRIPCION": "VALVULA DE BOLA 1/2\" X 2500 SW", "MARCA": "KINGTRON", "STOCK ACTUAL": 4, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "CODIFER", "UBICACIÓN": "", "ENTRADAS": 4, "SALIDAS": 0}, {"CODIGO PRODUCTO": 90000001, "DESCRIPCION": "ESPIROMETALICO 1-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 0, "COSTO COMPRA": 1931.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 5, "SALIDAS": 5}, {"CODIGO PRODUCTO": 90000002, "DESCRIPCION": "ESPIROMETALICO 2-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 15, "COSTO COMPRA": 3397.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 46, "SALIDAS": 31}, {"CODIGO PRODUCTO": 90000003, "DESCRIPCION": "ESPIROMETALICO 3-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 20, "COSTO COMPRA": 4463.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 40, "SALIDAS": 20}, {"CODIGO PRODUCTO": 90000004, "DESCRIPCION": "ESPIROMETALICO 4-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 63, "COSTO COMPRA": 6727.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 80, "SALIDAS": 17}, {"CODIGO PRODUCTO": 90000005, "DESCRIPCION": "ESPIROMETALICO 6-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 12, "COSTO COMPRA": 8259.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 77, "SALIDAS": 65}, {"CODIGO PRODUCTO": 90000006, "DESCRIPCION": "ESPIROMETALICO 2-300", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 23, "COSTO COMPRA": 3672.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 23, "SALIDAS": 0}, {"CODIGO PRODUCTO": 90000007, "DESCRIPCION": "ESPIROMETALICO 6-900", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 1, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 2, "SALIDAS": 1}, {"CODIGO PRODUCTO": 90000008, "DESCRIPCION": "ESPIROMETALICO 12-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 0, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 2, "SALIDAS": 2}, {"CODIGO PRODUCTO": 90000009, "DESCRIPCION": "ESPIROMETALICO 3-300", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 15, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 15, "SALIDAS": 0}, {"CODIGO PRODUCTO": 90000010, "DESCRIPCION": "ESPIRROMETALICO 8-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 13, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 20, "SALIDAS": 7}, {"CODIGO PRODUCTO": 90000011, "DESCRIPCION": "ESPIROMETALICO 2-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 50, "COSTO COMPRA": 0.0, "PRECIO VENTA": 5310.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 50, "SALIDAS": 0}, {"CODIGO PRODUCTO": 90000012, "DESCRIPCION": "ESPIROMETALICO 2-300", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 6040.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 90000013, "DESCRIPCION": "ESPIROMETALICO 8-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 18, "COSTO COMPRA": 0.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 18, "SALIDAS": 0}, {"CODIGO PRODUCTO": 90000014, "DESCRIPCION": "ESPIROMETALICO 2-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 3530.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 90000015, "DESCRIPCION": "ESPIROMETALICO 4-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 6980.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 90000016, "DESCRIPCION": "ESPIROMETALICO 6-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 10, "COSTO COMPRA": 0.0, "PRECIO VENTA": 8570.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 10, "SALIDAS": 0}, {"CODIGO PRODUCTO": 90000017, "DESCRIPCION": "ESPIROMETALICO 12-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 2, "COSTO COMPRA": 0.0, "PRECIO VENTA": 24360.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 2, "SALIDAS": 0}, {"CODIGO PRODUCTO": 90000018, "DESCRIPCION": "ESPIROMETALICO 8-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 7, "COSTO COMPRA": 0.0, "PRECIO VENTA": 11950.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 7, "SALIDAS": 0}, {"CODIGO PRODUCTO": 90000019, "DESCRIPCION": "ESPIROMETALICO 3-150", "MARCA": "SPIRAL PACK", "STOCK ACTUAL": 7, "COSTO COMPRA": 0.0, "PRECIO VENTA": 4630.0, "PROVEEDOR": "COLIMPORTADOS", "UBICACIÓN": "B1", "ENTRADAS": 7, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1100001, "DESCRIPCION": "UNION 3/8 OD ", "MARCA": "CHILLWAVES", "STOCK ACTUAL": 20, "COSTO COMPRA": 64562.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "GERENCIA", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1100002, "DESCRIPCION": "TEE 3/8 OD ", "MARCA": "CHILLWAVES", "STOCK ACTUAL": 8, "COSTO COMPRA": 70263.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "GERENCIA", "ENTRADAS": 8, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1100003, "DESCRIPCION": "CONECTOR RECTO 1/2 OD X 1/2 NPT ", "MARCA": "CHILLWAVES", "STOCK ACTUAL": 20, "COSTO COMPRA": 70263.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "GERENCIA", "ENTRADAS": 20, "SALIDAS": 0}, {"CODIGO PRODUCTO": 1100004, "DESCRIPCION": "CONECTOR RECTO 1/4 OD X 1/4 NPT", "MARCA": "SWAGELOCK", "STOCK ACTUAL": 4, "COSTO COMPRA": 87210.0, "PRECIO VENTA": 0.0, "PROVEEDOR": "IMP", "UBICACIÓN": "GERENCIA", "ENTRADAS": 4, "SALIDAS": 0}];
+          let invCurrentFilter = 'todos';
+          function invFmt(n) {
+            if(!n || n===0 || n==='') return '-';
+            return '$ ' + Number(n).toLocaleString('es-CO',{minimumFractionDigits:0});
+          }
+          function invHL(text, term) {
+            if(!term) return text;
+            const re = new RegExp('('+term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');
+            return String(text).replace(re,'<span class="hl">$1</span>');
+          }
+          window.invFilter = function(f, btn) {
+            invCurrentFilter = f;
+            document.querySelectorAll('.inv-filter-btn').forEach(b=>b.classList.remove('active'));
+            btn.classList.add('active');
+            invRender();
+          };
+          window.invRender = function() {
+            const term = (document.getElementById('inv-search').value||'').trim().toLowerCase();
+            const filtered = INV.filter(p => {
+              const ms = !term ||
+                String(p['DESCRIPCION']).toLowerCase().includes(term) ||
+                String(p['CODIGO PRODUCTO']).toLowerCase().includes(term) ||
+                String(p['PROVEEDOR']).toLowerCase().includes(term) ||
+                String(p['MARCA']).toLowerCase().includes(term);
+              const s = Number(p['STOCK ACTUAL']);
+              const mf = invCurrentFilter==='todos' || (invCurrentFilter==='ok'&&s>0) || (invCurrentFilter==='out'&&s===0);
+              return ms && mf;
+            });
+            const tbody = document.getElementById('inv-tbody');
+            const countEl = document.getElementById('inv-count');
+            countEl.textContent = filtered.length===INV.length
+              ? 'Mostrando '+INV.length+' productos'
+              : filtered.length+' resultado'+(filtered.length!==1?'s':'')+' encontrado'+(filtered.length!==1?'s':'');
+            if(filtered.length===0) {
+              tbody.innerHTML='<tr><td colspan="6"><div class="inv-empty"><div class="ie-icon">&#128270;</div><p>No se encontraron productos</p></div></td></tr>';
+              return;
+            }
+            tbody.innerHTML = filtered.map(p => {
+              const s = Number(p['STOCK ACTUAL']);
+              const bc = s>0?'ok':'out';
+              const bt = s>0?(s+' und.'):'Agotado';
+              const ubi = p['UBICACION']||p['UBICACI\u00d3N']||p['UBICACIÓN']?'<span class="inv-ubi">'+(p['UBICACIÓN']||p['UBICACION'])+'</span>':'-';
+              return '<tr><td class="inv-codigo">'+p['CODIGO PRODUCTO']+'</td>'
+                +'<td class="inv-desc">'+invHL(p['DESCRIPCION'],term)+'</td>'
+                +'<td class="inv-prov">'+(p['MARCA']||'-')+'</td>'
+                +'<td><span class="inv-badge '+bc+'">'+bt+'</span></td>'
+                +'<td>'+ubi+'</td>'
+                +'<td class="inv-prov">'+(p['PROVEEDOR']||'-')+'</td></tr>';
+            }).join('');
+          };
+          const total = INV.length;
+          const conStock = INV.filter(p=>Number(p['STOCK ACTUAL'])>0).length;
+          const agotados = INV.filter(p=>Number(p['STOCK ACTUAL'])===0).length;
+          document.getElementById('inv-stats-bar').innerHTML =
+            '<div class="inv-stat blue"><div class="inv-stat-num">'+total+'</div><div class="inv-stat-label">Total Productos</div></div>'
+            +'<div class="inv-stat green"><div class="inv-stat-num">'+conStock+'</div><div class="inv-stat-label">Con Stock</div></div>'
+            +'<div class="inv-stat red"><div class="inv-stat-num">'+agotados+'</div><div class="inv-stat-label">Agotados</div></div>'
+            ;
+          invRender();
+        })();
+        </script>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main-area -->
+</div><!-- /app -->
+
+<!-- ===== MODALS ===== -->
+<!-- Modal Reunión -->
+<div class="modal-overlay" id="modal-reunion">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📅 Nueva Reunión</div>
+      <button class="close-btn" onclick="closeModal('modal-reunion')">✕</button>
+    </div>
+    <div class="modal-body">
+    <div class="form-group"><label>Título</label><input type="text" id="r-titulo" placeholder="Ej: Reunión de seguimiento semanal"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha</label><input type="date" id="r-fecha"></div>
+      <div class="form-group"><label>Tipo</label>
+        <select id="r-tipo">
+          <option value="Teams">Teams</option>
+          <option value="Presencial">Presencial</option>
+          <option value="Llamada">Llamada</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Hora inicio</label><input type="time" id="r-hora-inicio"></div>
+      <div class="form-group"><label>Hora fin</label><input type="time" id="r-hora-fin"></div>
+    </div>
+    <div class="form-group">
+      <label>Participantes</label>
+      <div class="checkboxes-grid" id="participantes-checkboxes"></div>
+    </div>
+    <div class="form-group"><label>Descripción / Agenda</label><textarea id="r-descripcion" rows="3" placeholder="Puntos a tratar..."></textarea></div>
+    <input type="hidden" id="modal-reunion-editmode" value="">
+    <div style="display:flex;gap:12px;margin-top:8px;">
+      <button class="btn btn-primary" onclick="saveReunion()" style="width:auto;flex:1;" id="btn-guardar-reunion">Guardar Reunión</button>
+      <button class="btn btn-secondary" onclick="generateAgenda()" style="width:auto;flex:1;" id="agenda-btn">✨ Generar agenda con ENERGY</button>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tarea -->
+<div class="modal-overlay" id="modal-tarea">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✅ Nueva Tarea</div>
+      <button class="close-btn" onclick="closeModal('modal-tarea')">✕</button>
+    </div>
+    <div class="modal-body">
+    <div class="form-group"><label>Título</label><input type="text" id="t-titulo" placeholder="Ej: Preparar informe mensual"></div>
+    <div class="form-group"><label>Descripción</label><textarea id="t-desc" rows="2" placeholder="Detalles de la tarea..."></textarea></div>
+    <div class="form-group">
+      <label>Responsables (selecciona uno o más)</label>
+      <div class="checkboxes-grid" id="responsables-checkboxes"></div>
+    </div>
+    <div class="form-group"><label>Fecha límite</label><input type="date" id="t-fecha"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Prioridad</label>
+        <select id="t-prioridad">
+          <option value="Alta">Alta</option>
+          <option value="Media" selected>Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Estado</label>
+        <select id="t-estado">
+          <option value="Pendiente">Pendiente</option>
+          <option value="En Progreso">En Progreso</option>
+          <option value="Completado">Completado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Proyecto</label><input type="text" id="t-proyecto" placeholder="Ej: Plan Comercial Q2"></div>
+    <input type="hidden" id="modal-tarea-editmode" value="">
+    <button class="btn btn-primary" onclick="saveTarea()" style="margin-top:8px;">Guardar Tarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Proyecto -->
+<div class="modal-overlay" id="modal-proyecto">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📊 Nuevo Proyecto</div>
+      <button class="close-btn" onclick="closeModal('modal-proyecto')">✕</button>
+    </div>
+    <div class="modal-body">
+    <div class="form-group"><label>Nombre del proyecto</label><input type="text" id="p-nombre" placeholder="Ej: Sistema CRM"></div>
+    <div class="form-group"><label>Responsable</label>
+      <select id="p-responsable"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha inicio</label><input type="date" id="p-inicio"></div>
+      <div class="form-group"><label>Fecha fin</label><input type="date" id="p-fin"></div>
+    </div>
+    <div class="form-group"><label>Progreso (%)</label><input type="number" id="p-progreso" min="0" max="100" value="0"></div>
+    <div class="form-group"><label>Estado</label>
+      <select id="p-estado">
+        <option value="En curso">En curso</option>
+        <option value="Atrasado">Atrasado</option>
+        <option value="Completado">Completado</option>
+        <option value="Planificado">Planificado</option>
+      </select>
+    </div>
+    <input type="hidden" id="modal-proyecto-editmode" value="">
+    <button class="btn btn-primary" onclick="saveProyecto()" style="margin-top:8px;" id="btn-guardar-proyecto">Guardar Proyecto</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Minuta -->
+<div class="modal-overlay" id="modal-minuta">
+  <div class="modal" style="width:640px;">
+    <div class="modal-header">
+      <div class="modal-title">📋 Nueva Minuta</div>
+      <button class="close-btn" onclick="closeModal('modal-minuta')">✕</button>
+    </div>
+    <div class="modal-body">
+    <div class="form-group"><label>Reunión</label>
+      <select id="m-reunion"></select>
+    </div>
+    <div class="form-group"><label>Notas / Transcripción</label><textarea id="m-notas" rows="6" placeholder="Pega aquí la transcripción o notas de la reunión..."></textarea></div>
+    <div style="display:flex;gap:12px;margin-bottom:20px;">
+      <button class="btn btn-primary" onclick="generateMinuta()" style="width:auto;flex:1;">✨ Generar Minuta con ENERGY</button>
+      <button class="btn btn-ghost" onclick="saveMinutaManual()" style="width:auto;flex:1;">Guardar manual</button>
+    </div>
+    <div id="minuta-preview" class="hidden">
+      <div class="section-header"><span class="section-title">Minuta generada</span><button class="btn btn-ghost" onclick="copyMsg('minuta-output')" style="padding:6px 14px;font-size:12px;">📋 Copiar</button></div>
+      <div class="msg-output" id="minuta-output" style="min-height:160px;"></div>
+      <button class="btn btn-primary" onclick="saveMinutaFromPreview()" style="margin-top:12px;width:auto;">Guardar Minuta</button>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Miembro -->
+<div class="modal-overlay" id="modal-miembro">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">👤 Nuevo Miembro</div>
+      <button class="close-btn" onclick="closeModal('modal-miembro')">✕</button>
+    </div>
+    <div class="modal-body">
+    <div class="form-group"><label>Nombre completo</label><input type="text" id="mb-nombre" placeholder="Nombre Apellido"></div>
+    <div class="form-group"><label>Cargo / Rol</label><input type="text" id="mb-rol" placeholder="Ej: Coordinador Comercial"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Correo</label><input type="email" id="mb-email" placeholder="nombre@gerencia.com"></div>
+      <div class="form-group"><label>WhatsApp</label><input type="text" id="mb-wa" placeholder="+57 300 000 0000"></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveMiembro()" style="margin-top:8px;">Agregar al equipo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ENERGY Chat -->
+<button class="max-fab" onclick="toggleChat()" id="max-fab">⚡</button>
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-header">
+    <div class="logo-sm">
+      <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" alt="ENERGY">
+    </div>
+    <div class="chat-header-info">
+      <div class="name" style="font-family:'Montserrat',sans-serif;font-weight:700;color:#fff;">ENERGY</div>
+      <div class="status" style="color:var(--green);">● Asistente activo</div>
+    </div>
+    <button class="chat-header-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="quick-actions" id="quick-actions">
+    <button class="quick-btn" onclick="quickChat('¿Qué tengo hoy?')">¿Qué tengo hoy?</button>
+    <button class="quick-btn" onclick="quickChat('Redacta un mensaje al equipo')">Redacta un mensaje</button>
+    <button class="quick-btn" onclick="quickChat('¿Cuáles tareas vencen esta semana?')">Tareas urgentes</button>
+    <button class="quick-btn" onclick="quickChat('Dame un resumen del equipo')">Resumen del equipo</button>
+  </div>
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chat-input" rows="1" placeholder="Pregunta algo a ENERGY..." onkeydown="chatKeydown(event)"></textarea>
+    <button class="chat-send" onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ===== DATA =====
+const USERS = [
+  { email:'alberto', password:'eyg2026', name:'Alberto', role:'JEFE', wa:'+573113134451' },
+  { email:'andrea', password:'eyg2026', name:'Andrea', role:'ADMIN', wa:'+573107574110' },
+  { email:'sheila', password:'eyg2026', name:'Sheila Baron', role:'COLABORADOR', wa:'+573204947227' },
+  { email:'alexandra', password:'eyg2026', name:'Alexandra', role:'COLABORADOR', wa:'+573144858382' },
+  { email:'andres', password:'eyg2026', name:'Andrés Barrera', role:'COLABORADOR', wa:'+573108893898' },
+  { email:'nelsy', password:'eyg2026', name:'Nelsy', role:'COLABORADOR', wa:'+573125099056' }
+];
+
+const TEAM_DEFAULT = [
+  { id:1, name:'Alberto', role:'Gerente', email:'gerenciageneral@eygenergygroup.com', wa:'+573113134451', color:'#1A3A8F' },
+  { id:2, name:'Sheila Baron', role:'Comercial', email:'comercial1@eygenergygroup.com', wa:'+573204947227', color:'#2EAA4A' },
+  { id:3, name:'Alexandra', role:'Área Administrativa', email:'asistente.administrativo@eygenergygroup.com', wa:'+573144858382', color:'#E8A020' },
+  { id:4, name:'Andrés Barrera', role:'Bodega y Mensajería', email:'bodega@eygenergygroup.com', wa:'+573108893898', color:'#9333ea' },
+  { id:5, name:'Andrea', role:'Administrativa y Compras', email:'andrea.bernal@eygenergygroup.com', wa:'+573107574110', color:'#0891b2' },
+  { id:6, name:'Nelsy', role:'Contabilidad', email:'contabilidad@eygenergygroup.com', wa:'+573125099056', color:'#dc2626' }
+];
+
+const today = new Date();
+const todayStr = today.toISOString().split('T')[0];
+const tomorrowStr = new Date(today.getTime()+86400000).toISOString().split('T')[0];
+const dayAfterStr = new Date(today.getTime()+172800000).toISOString().split('T')[0];
+
+const MEETINGS_DEFAULT = [
+  { id:1, titulo:'Entrega Oferta Mansarovar', fecha:'2026-03-24', horaInicio:'09:00', horaFin:'10:00', tipo:'Presencial', participantes:[1,2,5], descripcion:'Entrega y presentación de oferta comercial para Mansarovar.' },
+  { id:2, titulo:'Grado Alberto', fecha:'2026-03-26', horaInicio:'10:00', horaFin:'13:00', tipo:'Presencial', participantes:[1], descripcion:'Ceremonia de grado — Alberto.' },
+  { id:3, titulo:'Cuadro de Gastos Semanal', fecha:todayStr, horaInicio:'16:00', horaFin:'16:30', tipo:'Teams', participantes:[1,6], descripcion:'Revisión semanal del cuadro de gastos con Nelsy.' },
+  { id:4, titulo:'Reunión de seguimiento semanal', fecha:todayStr, horaInicio:'09:00', horaFin:'10:00', tipo:'Teams', participantes:[1,2,3,4,5,6,7], descripcion:'Revisión de avances y pendientes de la semana.' }
+];
+
+const TASKS_DEFAULT = [
+  { id:1, titulo:'Oferta Mansarovar', desc:'Preparar y entregar oferta comercial completa para Mansarovar', responsable:'Sheila Baron', fecha:'2026-03-24', prioridad:'Alta', estado:'En Progreso', proyecto:'Plan Comercial 2026' },
+  { id:2, titulo:'Plan Comercial 2026', desc:'Estructurar y desarrollar el plan comercial del año 2026', responsable:'Sheila Baron', fecha:'2026-04-30', prioridad:'Alta', estado:'En Progreso', proyecto:'Plan Comercial 2026' },
+  { id:3, titulo:'Cuadro de gastos semanal', desc:'Actualizar y enviar cuadro de gastos todos los viernes', responsable:'Nelsy', fecha:'2026-03-28', prioridad:'Media', estado:'Pendiente', proyecto:'Contabilidad' },
+  { id:4, titulo:'Actualizar cuadro de ofertas', desc:'Revisar y actualizar el cuadro de ofertas vigentes', responsable:'Alexandra', fecha:'2026-03-27', prioridad:'Alta', estado:'Pendiente', proyecto:'Administración' },
+  { id:5, titulo:'Finalizar inventario bodega', desc:'Completar conteo y registro del inventario de bodega', responsable:'Andrés Barrera', fecha:'2026-03-28', prioridad:'Alta', estado:'En Progreso', proyecto:'Operaciones Bodega' },
+  { id:6, titulo:'Finalizar bot página web', desc:'Terminar desarrollo e implementación del bot técnico en la página web de la empresa', responsable:'Andrea', fecha:'2026-03-28', prioridad:'Alta', estado:'En Progreso', proyecto:'Tecnología' },
+  { id:7, titulo:'Documentación Mansarovar para oferta', desc:'Reunir y preparar toda la documentación técnica requerida para la oferta de Mansarovar', responsable:'Andrea', fecha:'2026-03-24', prioridad:'Alta', estado:'En Progreso', proyecto:'Plan Comercial 2026' }
+];
+
+const PROJECTS_DEFAULT = [
+  { id:1, nombre:'Plan Comercial 2026', responsable:'Sheila Baron', inicio:'2026-01-01', fin:'2026-12-31', progreso:20, estado:'En curso', color:'#2EAA4A' },
+  { id:2, nombre:'Inventario y Organización Bodega', responsable:'Andrés Barrera', inicio:'2026-03-01', fin:'2026-03-31', progreso:60, estado:'En curso', color:'#E8A020' },
+  { id:3, nombre:'Cierre Contable Q1', responsable:'Nelsy', inicio:'2026-03-01', fin:'2026-03-31', progreso:70, estado:'En curso', color:'#1A3A8F' },
+  { id:4, nombre:'Cuadro de Ofertas', responsable:'Alexandra', inicio:'2026-03-01', fin:'2026-03-31', progreso:40, estado:'En curso', color:'#9333ea' }
+];
+
+const MINUTAS_DEFAULT = [
+  {
+    id:1, reunionId:1, fecha:todayStr,
+    contenido:`ACTA DE REUNIÓN — Seguimiento Semanal
+Fecha: ${today.toLocaleDateString('es-CO')}
+Asistentes: Alberto, Sheila Baron, Alexandra, Andrés Barrera, Andrea, Nelsy
+
+AGENDA
+1. Revisión de avances de la semana
+2. Pendientes y bloqueos
+3. Compromisos para próxima semana
+
+PUNTOS TRATADOS
+• Se revisó el avance del Plan Comercial Q2, actualmente al 40%.
+• Andrés Barrera informó el estado del inventario de bodega pendiente de revisión.
+• Sheila confirmó envío de cotización a cliente para el jueves.
+• Nelsy reportó avance del 70% en el cierre contable de Q1.
+
+DECISIONES
+• Priorizar cierre contable Q1 antes del 31 de marzo.
+• Andrea gestiona compras y órdenes pendientes antes del 26 de marzo.
+
+COMPROMISOS
+• Sheila Baron — Entregar oferta Mansarovar — 24/03/2026
+• Andrés Barrera — Finalizar inventario bodega — 28/03/2026
+• Nelsy — Cuadro de gastos semanal — todos los viernes
+• Alexandra — Actualizar cuadro de ofertas — 27/03/2026
+• Andrea — Gestión compras proveedores — 26/03/2026
+
+PRÓXIMA REUNIÓN: Lunes ${new Date(today.getTime()+7*86400000).toLocaleDateString('es-CO')} — 9:00 AM — Teams`
+  }
+];
+
+const TEMPLATES_DEFAULT = [
+  { cat:'Convocatorias', name:'Convocatoria reunión Teams', text:'Hola equipo 👋\n\nLos convocamos a una reunión el [FECHA] a las [HORA] por Microsoft Teams.\n\n📌 Agenda:\n• [PUNTO 1]\n• [PUNTO 2]\n\nPor favor confirmar asistencia.\n\nSaludos,' },
+  { cat:'Recordatorios', name:'Recordatorio reunión mañana', text:'Buenos días 🌅\n\nLes recuerdo que mañana [FECHA] tenemos reunión a las [HORA].\n\nPor favor revisar los temas pendientes antes de la sesión.\n\nGracias,' },
+  { cat:'Seguimiento', name:'Seguimiento de compromisos', text:'Hola [NOMBRE],\n\nTe escribo para hacer seguimiento al compromiso adquirido en nuestra última reunión:\n\n📋 Tarea: [TAREA]\n📅 Fecha límite: [FECHA]\n\n¿Cómo vas con el avance? ¿Necesitas apoyo?\n\nQuedo atento,' },
+  { cat:'Reportes', name:'Reporte de avance semanal', text:'📊 *REPORTE SEMANAL — Semana [N]*\n\n✅ Logros:\n• [LOGRO 1]\n• [LOGRO 2]\n\n⏳ En progreso:\n• [TAREA 1]\n\n⚠️ Bloqueos:\n• [BLOQUEO]\n\n📅 Próxima semana:\n• [PLAN]\n\nSaludos,' },
+  { cat:'Convocatorias', name:'Invitación evento/capacitación', text:'Hola equipo,\n\nTenemos el gusto de invitarlos a [EVENTO] el día [FECHA] a las [HORA] en [LUGAR].\n\n🎯 Objetivo: [OBJETIVO]\n⏱ Duración: [DURACIÓN]\n\nSu participación es [obligatoria/opcional].\n\nConfirmar asistencia antes del [FECHA LÍMITE].\n\nGracias,' },
+  { cat:'Urgente', name:'Mensaje urgente al equipo', text:'🚨 *URGENTE — Atención requerida*\n\n[MENSAJE PRINCIPAL]\n\nPor favor responder o actuar antes de las [HORA].\n\nCualquier duda comunicarse directamente.\n\nGracias por su atención,' }
+];
+
+// ===== STATE =====
+let currentUser = null;
+let currentPage = 'dashboard';
+let chatOpen = false;
+let currentView = 'calendar';
+
+function getData(key, def) {
+  try { const d = localStorage.getItem('max_'+key); return d ? JSON.parse(d) : def; } catch(e) { return def; }
+}
+function setData(key, val) {
+  localStorage.setItem('max_'+key, JSON.stringify(val));
+  // Sincronizar tareas con la API cuando cambian
+  if (key === 'tasks') {
+    fetch('/.netlify/functions/tasks-api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(val)
+    }).catch(e => console.warn('API sync tasks:', e));
+  }
+  // Sincronizar reuniones con la API cuando cambian
+  if (key === 'meetings') {
+    fetch('/.netlify/functions/meetings-api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(val)
+    }).catch(e => console.warn('API sync meetings:', e));
+  }
+}
+
+// Sincroniza tareas desde la API (para ver cambios del bot de WhatsApp)
+async function syncTasksFromAPI() {
+  try {
+    const res = await fetch('/.netlify/functions/tasks-api');
+    if (!res.ok) return;
+    const tasks = await res.json();
+    if (Array.isArray(tasks) && tasks.length > 0) {
+      localStorage.setItem('max_tasks', JSON.stringify(tasks));
+      renderKanban('all');
+      renderDashboard();
+    }
+  } catch(e) { console.warn('Sync tasks:', e); }
+}
+
+// Envía notificación al canal de Teams directamente (sin pasar por Netlify Functions)
+const TEAMS_WEBHOOK_URL = 'https://default9876dbde5a7f41398c2d60a4395fd7.d6.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/2a6d677e9e684daf8bc3172c09ff8a85/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=rKy1aHkjePMeWIP6CcnRrsXoHXB-ucPs-rrD32_ANYo';
+
+function notifyTeamsApp(title, text, color) {
+  const mensaje = `${title || 'Energy Bot'}\n\n${text || ''}`;
+  fetch(TEAMS_WEBHOOK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: mensaje })
+  }).catch(e => console.warn('Teams notify:', e));
+}
+
+// Sincroniza reuniones desde la API (para ver cambios del bot de WhatsApp)
+async function syncMeetingsFromAPI() {
+  try {
+    const res = await fetch('/.netlify/functions/meetings-api');
+    if (!res.ok) return;
+    const meetings = await res.json();
+    if (Array.isArray(meetings) && meetings.length > 0) {
+      localStorage.setItem('max_meetings', JSON.stringify(meetings));
+      renderCalendar();
+      renderMeetingList();
+      renderDashboard();
+    }
+  } catch(e) { console.warn('Sync meetings:', e); }
+}
+
+// ===== LOGIN =====
+// ===== CÓDIGO DE ACCESO =====
+const ACCESS_CODE = 'EYG2026';
+function checkAccess() {
+  const code = document.getElementById('access-code').value.trim();
+  if (code === ACCESS_CODE) {
+    sessionStorage.setItem('eyg_access', '1');
+    document.getElementById('access-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    setTimeout(() => document.getElementById('login-email').focus(), 100);
+  } else {
+    document.getElementById('access-error').style.display = 'block';
+    document.getElementById('access-code').value = '';
+    document.getElementById('access-code').focus();
+  }
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase().replace(/\s+/g,'');
+  const pass = document.getElementById('login-pass').value.trim().toLowerCase().replace(/\s+/g,'');
+  const u = USERS.find(u => u.email.toLowerCase()===email && u.password.toLowerCase()===pass);
+  if (!u) {
+    showToast('Error — Usuario: "'+email+'" Clave: "'+pass+'"','error');
+    return;
+  }
+  currentUser = u;
+  if (document.getElementById('remember').checked) localStorage.setItem('max_session', JSON.stringify(u));
+  initApp();
+}
+function doLogout() {
+  localStorage.removeItem('max_session');
+  sessionStorage.removeItem('eyg_access');
+  currentUser = null;
+  document.getElementById('access-screen').style.display='flex';
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='none';
+}
+function checkSession() {
+  // Limpiar sesiones viejas de versiones anteriores
+  const s = localStorage.getItem('max_session');
+  if (s) {
+    try {
+      const saved = JSON.parse(s);
+      // Verificar que el usuario guardado existe en USERS actual
+      const valid = USERS.find(u => u.email === saved.email && u.password === saved.password);
+      if (valid) {
+        currentUser = valid;
+        document.getElementById('access-screen').style.display = 'none';
+        document.getElementById('login-screen').style.display = 'none';
+        initApp();
+        return;
+      } else {
+        // Sesión vieja inválida — limpiar
+        localStorage.removeItem('max_session');
+      }
+    } catch(e) {
+      localStorage.removeItem('max_session');
+    }
+  }
+  // Sin sesión válida — mostrar pantalla de acceso
+  document.getElementById('access-screen').style.display = 'flex';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+}
+
+// ===== INIT =====
+function initApp() {
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  // Versión de datos — cambia este número cada vez que actualices datos por defecto
+  const DATA_VERSION = '2026.03.23.v5';
+  if (localStorage.getItem('energy_data_version') !== DATA_VERSION) {
+    setData('team', TEAM_DEFAULT);
+    setData('meetings', MEETINGS_DEFAULT);
+    setData('tasks', TASKS_DEFAULT);
+    setData('projects', PROJECTS_DEFAULT);
+    setData('minutas', MINUTAS_DEFAULT);
+    localStorage.setItem('energy_data_version', DATA_VERSION);
+  }
+  if (!localStorage.getItem('max_tasks')) setData('tasks', TASKS_DEFAULT);
+  if (!localStorage.getItem('max_projects')) setData('projects', PROJECTS_DEFAULT);
+  if (!localStorage.getItem('max_minutas')) setData('minutas', MINUTAS_DEFAULT);
+
+  // Header user info
+  const initials = currentUser.name.split(' ').map(n=>n[0]).join('').substring(0,2);
+  document.getElementById('sidebar-avatar').textContent = initials;
+  document.getElementById('top-avatar').textContent = initials;
+  document.getElementById('sidebar-name').textContent = currentUser.name;
+  document.getElementById('sidebar-role').textContent = currentUser.role;
+
+  // Date
+  const dateStr = today.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('page-date').textContent = dateStr.charAt(0).toUpperCase()+dateStr.slice(1);
+
+  // Welcome
+  const hr = today.getHours();
+  // greeting computed below
+  // fix syntax - direct
+  let greetTxt = 'Buen día';
+  if(hr>=12&&hr<18) greetTxt='Buenas tardes';
+  else if(hr>=18) greetTxt='Buenas noches';
+  else greetTxt='Buenos días';
+  document.getElementById('welcome-msg').textContent = greetTxt+', '+currentUser.name.split(' ')[0]+' 👋';
+  document.getElementById('welcome-sub').textContent = 'Hoy es '+dateStr+'. Aquí está tu resumen del día.';
+
+  // JEFE features
+  if(currentUser.role!=='JEFE') {
+    document.getElementById('add-member-btn').style.display='none';
+    document.getElementById('team-mgmt-section').style.display='none';
+  }
+
+  // API key
+  const savedKey = localStorage.getItem('claude_api_key');
+  if(savedKey) document.getElementById('api-key-input').value=savedKey;
+
+  // Profile
+  document.getElementById('profile-name').value = currentUser.name;
+  document.getElementById('profile-email').value = currentUser.email;
+  document.getElementById('profile-wa').value = currentUser.wa||'';
+
+  initChat();
+  renderDashboard();
+  renderCalendar();
+  renderMeetingList();
+  renderKanban('all');
+  renderGantt();
+  renderTemplates();
+  renderMinutas();
+  renderTeam();
+  renderTeamMgmt();
+  populateSelects();
+  navigate('dashboard');
+  // Cargar tareas actualizadas desde la API (incluye cambios del bot de WhatsApp)
+  syncTasksFromAPI();
+  // Cargar reuniones actualizadas desde la API (incluye cambios del bot de WhatsApp)
+  syncMeetingsFromAPI();
+  // Auto-actualizar cada 30 segundos para ver cambios del bot en tiempo real
+  setInterval(syncTasksFromAPI, 30000);
+  setInterval(syncMeetingsFromAPI, 30000);
+}
+
+// ===== NAVIGATION =====
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pageEl = document.getElementById('page-'+page);
+  if(pageEl) pageEl.classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
+  currentPage = page;
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',configuracion:'Configuración'};
+  document.getElementById('page-title').textContent = titles[page]||page;
+}
+function getNavLabel(page) {
+  const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'cronograma',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',configuracion:'configuraci'};
+  return map[page]||page;
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  const meetings = getData('meetings', MEETINGS_DEFAULT);
+  const tasks = getData('tasks', TASKS_DEFAULT);
+  const projects = getData('projects', PROJECTS_DEFAULT);
+  const todayMeetings = meetings.filter(m=>m.fecha===todayStr);
+  const pendingTasks = tasks.filter(t=>t.estado!=='Completado');
+  document.getElementById('stat-reuniones').textContent = todayMeetings.length;
+  document.getElementById('stat-tareas').textContent = pendingTasks.length;
+  document.getElementById('stat-proyectos').textContent = projects.length;
+
+  // Today's meetings
+  const dmEl = document.getElementById('dash-meetings');
+  if(todayMeetings.length===0) { dmEl.innerHTML='<p style="color:var(--text-muted);font-size:13px;">No hay reuniones programadas para hoy.</p>'; }
+  else {
+    dmEl.innerHTML = todayMeetings.map(m=>`
+      <div class="meeting-item">
+        <div class="meeting-time">${m.horaInicio}</div>
+        <div class="meeting-info">
+          <div class="meeting-title">${m.titulo}</div>
+          <div class="meeting-meta">${m.participantes.length} participantes</div>
+        </div>
+        <span class="badge badge-${m.tipo.toLowerCase()}">${m.tipo}</span>
+      </div>`).join('');
+  }
+
+  // Tasks
+  const dtEl = document.getElementById('dash-tasks');
+  const myTasks = tasks.filter(t=>t.estado!=='Completado').slice(0,4);
+  if(myTasks.length===0) { dtEl.innerHTML='<p style="color:var(--text-muted);font-size:13px;">No hay tareas pendientes.</p>'; }
+  else {
+    dtEl.innerHTML = myTasks.map(t=>`
+      <div class="meeting-item">
+        <div style="flex:1;">
+          <div class="meeting-title">${t.titulo}</div>
+          <div class="meeting-meta">${t.responsable} · ${t.fecha}</div>
+        </div>
+        <span class="badge badge-${t.prioridad.toLowerCase()}">${t.prioridad}</span>
+      </div>`).join('');
+  }
+
+  // Activity
+  const acts = [
+    {icon:'📅',text:'Reunión "Seguimiento semanal" programada para hoy 9:00 AM',time:'Hace 2h'},
+    {icon:'✅',text:'Tarea "Actualizar base de datos clientes" marcada como completada',time:'Hace 3h'},
+    {icon:'💬',text:'Mensaje de seguimiento enviado a Sheila Baron',time:'Hace 4h'},
+    {icon:'📊',text:'Proyecto "Plan Comercial Q2" actualizado al 40%',time:'Ayer'},
+    {icon:'👤',text:'Tarea asignada a Andrés Barrera: Inventario bodega',time:'Hace 2 días'}
+  ];
+  document.getElementById('dash-activity').innerHTML = acts.map(a=>`
+    <div class="activity-item">
+      <div class="activity-dot" style="background:var(--green)"></div>
+      <div class="activity-text">${a.icon} ${a.text}</div>
+      <div class="activity-time">${a.time}</div>
+    </div>`).join('');
+}
+
+// ===== CALENDAR =====
+function renderCalendar() {
+  const meetings = getData('meetings', MEETINGS_DEFAULT);
+  const tasks = getData('tasks', TASKS_DEFAULT);
+  const year = today.getFullYear(), month = today.getMonth();
+  const firstDay = new Date(year,month,1).getDay();
+  const daysInMonth = new Date(year,month+1,0).getDate();
+  const monthName = today.toLocaleDateString('es-CO',{month:'long',year:'numeric'});
+  const days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <button class="btn btn-ghost" style="padding:6px 12px;" onclick="prevMonth()">‹</button>
+    <span style="font-weight:700;color:#fff;font-size:16px;text-transform:capitalize;">${monthName}</span>
+    <button class="btn btn-ghost" style="padding:6px 12px;" onclick="nextMonth()">›</button>
+  </div>
+  <div class="calendar-grid">`;
+  days.forEach(d=>html+=`<div class="cal-header">${d}</div>`);
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-day other-month"></div>`;
+  for(let d=1;d<=daysInMonth;d++) {
+    const dateStr2 = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dateStr2===todayStr;
+    const dayMeetings = meetings.filter(m=>m.fecha===dateStr2);
+    const dayTasks = tasks.filter(t=>t.fecha===dateStr2);
+    html+=`<div class="cal-day${isToday?' today':''}">
+      <div class="cal-day-num">${d}</div>
+      ${dayMeetings.map(m=>`<div class="cal-event" title="${m.titulo}">${m.horaInicio} 📅 ${m.titulo}</div>`).join('')}
+      ${dayTasks.map(t=>`<div class="cal-task ${t.prioridad.toLowerCase()}" title="${t.titulo}">📋 ${t.titulo}</div>`).join('')}
+    </div>`;
+  }
+  html+='</div>';
+  document.getElementById('calendar-container').innerHTML=html;
+}
+
+function renderMeetingList() {
+  const meetings = getData('meetings', MEETINGS_DEFAULT);
+  const team = getData('team', TEAM_DEFAULT);
+  const sorted = [...meetings].sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.horaInicio.localeCompare(b.horaInicio));
+  document.getElementById('meeting-list-container').innerHTML = sorted.map(m=>{
+    const pNames = m.participantes.map(id=>{ const t=team.find(x=>x.id===id); return t?t.name.split(' ')[0]:'?'; }).join(', ');
+    const isPast = m.fecha < todayStr;
+    return `<div class="meeting-full-card">
+      <div class="meeting-card-header">
+        <div>
+          <div class="meeting-card-title">${m.titulo}</div>
+          <div class="meeting-card-meta">📅 ${formatDate(m.fecha)} · ⏰ ${m.horaInicio}–${m.horaFin} · 👥 ${pNames}</div>
+        </div>
+        <span class="badge badge-${m.tipo.toLowerCase()}">${m.tipo}</span>
+      </div>
+      ${m.descripcion?`<p style="font-size:13px;color:var(--text-muted);">${m.descripcion}</p>`:''}
+      <div class="meeting-card-actions">
+        ${isPast?`<button class="btn btn-ghost" onclick="navigate('minutas')" style="padding:6px 14px;font-size:12px;">📋 Ver Minuta</button>`:''}
+        <button class="btn btn-ghost" onclick="editMeetingQuick(${m.id})" style="padding:6px 14px;font-size:12px;">✏️ Editar</button>
+        <button class="btn btn-ghost" onclick="deleteMeeting(${m.id})" style="padding:6px 14px;font-size:12px;color:var(--red);">🗑 Eliminar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchMeetingView(v) {
+  currentView=v;
+  document.getElementById('calendar-view').classList.toggle('hidden',v!=='calendar');
+  document.getElementById('list-view').classList.toggle('hidden',v!=='list');
+  document.getElementById('view-calendar-btn').classList.toggle('active',v==='calendar');
+  document.getElementById('view-list-btn').classList.toggle('active',v==='list');
+}
+function prevMonth(){} function nextMonth(){}
+
+function deleteMeeting(id) {
+  let meetings = getData('meetings', MEETINGS_DEFAULT);
+  meetings = meetings.filter(m=>m.id!==id);
+  setData('meetings', meetings);
+  renderMeetingList(); renderCalendar(); renderDashboard();
+  showToast('Reunión eliminada','info');
+}
+
+function editMeetingQuick(id) {
+  const meetings = getData('meetings', MEETINGS_DEFAULT);
+  const meeting = meetings.find(m => m.id === id);
+  if (!meeting) return;
+
+  // Llenar modal con datos de la reunión
+  document.getElementById('r-titulo').value = meeting.titulo;
+  document.getElementById('r-fecha').value = meeting.fecha;
+  document.getElementById('r-tipo').value = meeting.tipo;
+  document.getElementById('r-hora-inicio').value = meeting.horaInicio;
+  document.getElementById('r-hora-fin').value = meeting.horaFin;
+  document.getElementById('r-descripcion').value = meeting.descripcion || '';
+
+  // Seleccionar participantes
+  document.querySelectorAll('#participantes-checkboxes input').forEach(cb => {
+    cb.checked = meeting.participantes.includes(parseInt(cb.value));
+  });
+
+  // Marcar como edición
+  document.getElementById('modal-reunion-editmode').value = id;
+  document.querySelector('#modal-reunion .modal-title').innerText = '✏️ Editar Reunión';
+
+  openModal('modal-reunion');
+}
+
+// ===== KANBAN =====
+function renderKanban(filter) {
+  let tasks = getData('tasks', TASKS_DEFAULT);
+  if(filter==='mine') tasks=tasks.filter(t=>t.responsable===currentUser.name);
+  else if(filter==='alta') tasks=tasks.filter(t=>t.prioridad==='Alta');
+  const cols = ['Pendiente','En Progreso','Completado'];
+  const colColors = {Pendiente:'var(--gold)',['En Progreso']:'var(--blue)',Completado:'var(--green)'};
+  const colIcons = {Pendiente:'⏳',['En Progreso']:'🔄',Completado:'✅'};
+  document.getElementById('kanban-board').innerHTML = cols.map(col=>{
+    const colTasks = tasks.filter(t=>t.estado===col);
+    return `<div class="kanban-col" ondragover="event.preventDefault()" ondrop="moveTask(event,'${col}')">
+      <div class="kanban-col-header">
+        <div class="kanban-col-title" style="color:${colColors[col]}">${colIcons[col]} ${col}</div>
+        <span class="count-badge">${colTasks.length}</span>
+      </div>
+      ${colTasks.map(t=>`<div class="task-card" draggable="true" ondragstart="event.dataTransfer.setData('taskId',${t.id})" style="cursor:grab;">
+        <div class="task-title">${t.titulo}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">${t.desc||''}</div>
+        <div class="task-meta">
+          <span class="task-assignee" title="Responsables">👥 ${t.responsable}</span>
+          <span class="badge badge-${t.prioridad.toLowerCase()}">${t.prioridad}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:12px;">
+          <span class="task-date">📅 ${t.fecha}</span>
+          <div style="display:flex;gap:4px;">
+            <button onclick="editTask(${t.id})" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:13px;" title="Editar">✏️</button>
+            <button onclick="quickCompleteTask(${t.id})" style="background:none;border:none;color:var(--green);cursor:pointer;font-size:13px;" title="Completar">✅</button>
+            <button onclick="deleteTask(${t.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;" title="Eliminar">🗑</button>
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function moveTask(event, newState) {
+  event.preventDefault();
+  const taskId = parseInt(event.dataTransfer.getData('taskId'));
+  let tasks = getData('tasks', TASKS_DEFAULT);
+  const task = tasks.find(t => t.id === taskId);
+  if (task) {
+    const oldState = task.estado;
+    task.estado = newState;
+    setData('tasks', tasks);
+    renderKanban('all');
+    renderDashboard();
+    showToast(`Tarea movida de ${oldState} a ${newState}`, 'success');
+  }
+}
+
+function filterTasks(f, btn) {
+  document.querySelectorAll('#page-tareas .view-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderKanban(f);
+}
+
+function deleteTask(id) {
+  let tasks = getData('tasks', TASKS_DEFAULT);
+  tasks = tasks.filter(t=>t.id!==id);
+  setData('tasks', tasks);
+  renderKanban('all'); renderDashboard();
+  showToast('Tarea eliminada','info');
+}
+
+function editTask(id) {
+  const tasks = getData('tasks', TASKS_DEFAULT);
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+
+  // Llenar modal con datos de la tarea
+  document.getElementById('t-titulo').value = task.titulo;
+  document.getElementById('t-desc').value = task.desc || '';
+  document.getElementById('t-fecha').value = task.fecha;
+  document.getElementById('t-prioridad').value = task.prioridad;
+  document.getElementById('t-estado').value = task.estado;
+  document.getElementById('t-proyecto').value = task.proyecto || '';
+
+  // Seleccionar responsables (puede haber múltiples)
+  const responsables = task.responsable.split(', ').map(r => r.trim());
+  document.querySelectorAll('#responsables-checkboxes input').forEach(cb => {
+    cb.checked = responsables.includes(cb.value);
+  });
+
+  // Marcar como edición
+  document.getElementById('modal-tarea-editmode').value = id;
+  document.querySelector('#modal-tarea .modal-title').innerText = '✏️ Editar Tarea';
+
+  openModal('modal-tarea');
+}
+
+function quickCompleteTask(id) {
+  let tasks = getData('tasks', TASKS_DEFAULT);
+  const task = tasks.find(t => t.id === id);
+  if (task) {
+    task.estado = 'Completado';
+    setData('tasks', tasks);
+    renderKanban('all');
+    renderDashboard();
+    showToast('✅ Tarea marcada como completada', 'success');
+  }
+}
+
+// ===== GANTT =====
+function renderGantt() {
+  const projects = getData('projects', PROJECTS_DEFAULT);
+  const stateColors = {'En curso':'var(--green)',Atrasado:'var(--red)',Completado:'#6b7280',Planificado:'var(--blue)'};
+  let html = `<div class="gantt-row" style="font-weight:700;font-size:12px;color:var(--text-muted);">
+    <div style="padding:10px 16px;">Proyecto</div>
+    <div style="padding:10px 16px;">Progreso y Timeline</div>
+  </div>`;
+  html += projects.map(p=>`
+    <div class="gantt-row">
+      <div class="gantt-info">
+        <div class="gantt-name">${p.nombre}</div>
+        <div class="gantt-owner">👤 ${p.responsable}</div>
+        <div style="font-size:11px;margin-top:4px;"><span style="color:${stateColors[p.estado]||'var(--blue)'}">● ${p.estado}</span></div>
+      </div>
+      <div class="gantt-timeline">
+        <div class="gantt-bar-bg">
+          <div class="gantt-bar-fill" style="width:${p.progreso}%;background:${stateColors[p.estado]||'var(--blue)'};">${p.progreso}%</div>
+        </div>
+        <div class="gantt-dates" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>${formatDate(p.inicio)} → ${formatDate(p.fin)}</span>
+          <button class="btn btn-ghost" onclick="editProject(${p.id})" style="padding:4px 8px;font-size:11px;">✏️ Editar</button>
+        </div>
+      </div>
+    </div>`).join('');
+  document.getElementById('gantt-container').innerHTML=html;
+}
+
+// ===== TEMPLATES =====
+function renderTemplates() {
+  document.getElementById('templates-list').innerHTML = TEMPLATES_DEFAULT.map((t,i)=>`
+    <div class="template-item" onclick="useTemplate(${i})">
+      <div class="template-cat">${t.cat}</div>
+      <div class="template-name">${t.name}</div>
+      <div class="template-preview">${t.text.substring(0,80)}...</div>
+    </div>`).join('');
+}
+
+function useTemplate(i) {
+  const t = TEMPLATES_DEFAULT[i];
+  document.getElementById('wa-brief').value = t.text;
+  switchTab('tab-whatsapp', document.querySelector('.tab-btn'));
+  showToast('Plantilla cargada en el redactor','success');
+}
+
+// ===== MINUTAS =====
+function renderMinutas() {
+  const minutas = getData('minutas', MINUTAS_DEFAULT);
+  const meetings = getData('meetings', MEETINGS_DEFAULT);
+  document.getElementById('minutas-list').innerHTML = minutas.map(m=>{
+    const meeting = meetings.find(r=>r.id===m.reunionId);
+    return `<div class="minuta-card">
+      <div class="minuta-header">
+        <div>
+          <div class="minuta-title">${meeting?meeting.titulo:'Reunión'}</div>
+          <div class="minuta-date">📅 ${formatDate(m.fecha)}</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="copyMinuta(${m.id})" style="padding:6px 12px;font-size:12px;">📋 Copiar</button>
+          <button class="btn btn-ghost" onclick="deleteMinuta(${m.id})" style="padding:6px 12px;font-size:12px;color:var(--red);">🗑</button>
+        </div>
+      </div>
+      <div class="minuta-body">${m.contenido.replace(/\n/g,'<br>')}</div>
+    </div>`;
+  }).join('');
+}
+
+function copyMinuta(id) {
+  const minutas = getData('minutas', MINUTAS_DEFAULT);
+  const m = minutas.find(x=>x.id===id);
+  if(m) { navigator.clipboard.writeText(m.contenido); showToast('Minuta copiada al portapapeles','success'); }
+}
+function deleteMinuta(id) {
+  let minutas = getData('minutas', MINUTAS_DEFAULT);
+  minutas = minutas.filter(m=>m.id!==id);
+  setData('minutas', minutas);
+  renderMinutas();
+  showToast('Minuta eliminada','info');
+}
+
+// ===== TEAM =====
+function renderTeam() {
+  const team = getData('team', TEAM_DEFAULT);
+  document.getElementById('team-grid').innerHTML = team.map(m=>`
+    <div class="team-card">
+      <div class="team-avatar" style="background:${m.color||'var(--blue)'};">
+        ${initials(m.name)}
+        <div class="online-dot"></div>
+      </div>
+      <div class="team-name">${m.name}</div>
+      <div class="team-role">${m.role}</div>
+      <div class="team-email">${m.email}</div>
+      <div class="team-actions">
+        <button class="icon-btn" onclick="openWA('${m.wa}')" title="WhatsApp">📱</button>
+        <button class="icon-btn" onclick="showToast('Abriendo Teams...','info')" title="Teams">💻</button>
+        <button class="icon-btn" onclick="copyEmail('${m.email}')" title="Copiar email">📧</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderTeamMgmt() {
+  const team = getData('team', TEAM_DEFAULT);
+  document.getElementById('team-mgmt-list').innerHTML = team.map(m=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div class="avatar" style="background:${m.color||'var(--blue)'};">${initials(m.name)}</div>
+      <div style="flex:1;"><div style="font-weight:600;color:#fff;font-size:14px;">${m.name}</div><div style="font-size:12px;color:var(--text-muted);">${m.role} · ${m.email}</div></div>
+      <button class="btn btn-danger" onclick="deleteMember(${m.id})" style="padding:6px 12px;font-size:12px;">Eliminar</button>
+    </div>`).join('');
+}
+
+function openWA(wa) {
+  const num = wa.replace(/\D/g,'');
+  window.open('https://wa.me/'+num,'_blank');
+}
+function copyEmail(email) {
+  navigator.clipboard.writeText(email);
+  showToast('Email copiado: '+email,'success');
+}
+function deleteMember(id) {
+  if(!confirm('¿Eliminar este miembro del equipo?')) return;
+  let team = getData('team', TEAM_DEFAULT);
+  team = team.filter(m=>m.id!==id);
+  setData('team', team);
+  renderTeam(); renderTeamMgmt();
+  showToast('Miembro eliminado','info');
+}
+
+// ===== POPULATE SELECTS =====
+function populateSelects() {
+  const team = getData('team', TEAM_DEFAULT);
+  const meetings = getData('meetings', MEETINGS_DEFAULT);
+  // Task responsables (checkboxes múltiples)
+  document.getElementById('responsables-checkboxes').innerHTML = team.map(m=>`
+    <label class="checkbox-item"><input type="checkbox" value="${m.name}"> ${m.name}</label>`).join('');
+  // Project responsable
+  const pr = document.getElementById('p-responsable');
+  pr.innerHTML = team.map(m=>`<option value="${m.name}">${m.name}</option>`).join('');
+  // Participantes checkboxes (reuniones)
+  document.getElementById('participantes-checkboxes').innerHTML = team.map(m=>`
+    <label class="checkbox-item"><input type="checkbox" value="${m.id}" checked> ${m.name}</label>`).join('');
+  // Minuta meeting select
+  document.getElementById('m-reunion').innerHTML = meetings.map(m=>`<option value="${m.id}">${m.titulo} (${formatDate(m.fecha)})</option>`).join('');
+}
+
+// ===== MODALS =====
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if(id==='modal-reunion') {
+    // Si no es modo edición, limpiar y resetear valores por defecto
+    if (!document.getElementById('modal-reunion-editmode').value) {
+      document.getElementById('r-titulo').value = '';
+      document.getElementById('r-descripcion').value = '';
+      document.getElementById('r-fecha').value = todayStr;
+      document.getElementById('r-hora-inicio').value = '09:00';
+      document.getElementById('r-hora-fin').value = '10:00';
+      document.getElementById('r-tipo').value = 'Teams';
+      document.querySelectorAll('#participantes-checkboxes input').forEach(cb => cb.checked = false);
+      document.querySelector('#modal-reunion .modal-title').innerText = '📅 Nueva Reunión';
+    }
+  }
+  if(id==='modal-tarea') {
+    if (!document.getElementById('modal-tarea-editmode').value) {
+      document.getElementById('t-titulo').value = '';
+      document.getElementById('t-desc').value = '';
+      document.getElementById('t-proyecto').value = '';
+      document.getElementById('t-prioridad').value = 'Media';
+      document.getElementById('t-estado').value = 'Pendiente';
+      document.getElementById('t-fecha').value = todayStr;
+      document.querySelectorAll('#responsables-checkboxes input').forEach(cb => cb.checked = false);
+      document.querySelector('#modal-tarea .modal-title').innerText = '✅ Nueva Tarea';
+    }
+  }
+  if(id==='modal-proyecto') { document.getElementById('p-inicio').value = todayStr; document.getElementById('p-fin').value = tomorrowStr; }
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',function(e){ if(e.target===this) this.classList.remove('open'); });
+});
+
+// ===== SAVE FUNCTIONS =====
+function saveReunion() {
+  const titulo = document.getElementById('r-titulo').value.trim();
+  if(!titulo) { showToast('Ingresa el título de la reunión','error'); return; }
+
+  const editMode = document.getElementById('modal-reunion-editmode').value;
+  const meetings = getData('meetings', MEETINGS_DEFAULT);
+  const participantes = [...document.querySelectorAll('#participantes-checkboxes input:checked')].map(i=>parseInt(i.value));
+  const savedFecha = document.getElementById('r-fecha').value;
+  const savedHoraIn = document.getElementById('r-hora-inicio').value;
+  const savedTipo = document.getElementById('r-tipo').value;
+
+  if (editMode) {
+    // MODO EDICIÓN
+    const meetingId = parseInt(editMode);
+    const idx = meetings.findIndex(m => m.id === meetingId);
+    if (idx !== -1) {
+      meetings[idx] = {
+        id: meetingId,
+        titulo,
+        fecha: savedFecha,
+        horaInicio: savedHoraIn,
+        horaFin: document.getElementById('r-hora-fin').value,
+        tipo: savedTipo,
+        participantes,
+        descripcion: document.getElementById('r-descripcion').value
+      };
+      setData('meetings', meetings);
+      showToast('Reunión actualizada correctamente','success');
+      notifyTeamsApp(
+        '📅 Reunión actualizada',
+        `**${titulo}**\n📅 ${savedFecha} · 🕐 ${savedHoraIn}\n📍 ${savedTipo}\n_Actualizada por ${currentUser ? currentUser.name : 'usuario'}_`,
+        '3B82F6'
+      );
+    }
+  } else {
+    // MODO CREACIÓN
+    const newId = Math.max(0,...meetings.map(m=>m.id))+1;
+    meetings.push({
+      id:newId, titulo,
+      fecha: savedFecha,
+      horaInicio: savedHoraIn,
+      horaFin: document.getElementById('r-hora-fin').value,
+      tipo: savedTipo,
+      participantes,
+      descripcion: document.getElementById('r-descripcion').value
+    });
+    setData('meetings', meetings);
+    notifyTeamsApp(
+      '📅 Nueva reunión agendada',
+      `**${titulo}**\n📅 ${savedFecha} · 🕐 ${savedHoraIn}\n📍 ${savedTipo}\n_Creada desde la app por ${currentUser ? currentUser.name : 'usuario'}_`,
+      '2EAA4A'
+    );
+  }
+
+  closeModal('modal-reunion');
+  // Limpiar campos y modo edición
+  document.getElementById('r-titulo').value = '';
+  document.getElementById('r-descripcion').value = '';
+  document.getElementById('modal-reunion-editmode').value = '';
+  document.querySelector('#modal-reunion .modal-title').innerText = '📅 Nueva Reunión';
+
+  renderCalendar(); renderMeetingList(); renderDashboard(); populateSelects();
+}
+
+function saveTarea() {
+  const titulo = document.getElementById('t-titulo').value.trim();
+  if(!titulo) { showToast('Ingresa el título de la tarea','error'); return; }
+
+  // Obtener múltiples responsables seleccionados
+  const responsablesSeleccionados = [...document.querySelectorAll('#responsables-checkboxes input:checked')]
+    .map(cb => cb.value)
+    .join(', ');
+
+  if (!responsablesSeleccionados) {
+    showToast('Selecciona al menos un responsable','error');
+    return;
+  }
+
+  const editMode = document.getElementById('modal-tarea-editmode').value;
+  const tasks = getData('tasks', TASKS_DEFAULT);
+
+  if (editMode) {
+    // MODO EDICIÓN
+    const taskId = parseInt(editMode);
+    const idx = tasks.findIndex(t => t.id === taskId);
+    if (idx !== -1) {
+      tasks[idx] = {
+        id: taskId,
+        titulo,
+        desc: document.getElementById('t-desc').value,
+        responsable: responsablesSeleccionados,
+        fecha: document.getElementById('t-fecha').value,
+        prioridad: document.getElementById('t-prioridad').value,
+        estado: document.getElementById('t-estado').value,
+        proyecto: document.getElementById('t-proyecto').value
+      };
+      showToast('Tarea actualizada correctamente','success');
+    }
+  } else {
+    // MODO CREACIÓN
+    const newId = Math.max(0,...tasks.map(t=>t.id))+1;
+    tasks.push({
+      id:newId,
+      titulo,
+      desc:document.getElementById('t-desc').value,
+      responsable:responsablesSeleccionados,
+      fecha:document.getElementById('t-fecha').value,
+      prioridad:document.getElementById('t-prioridad').value,
+      estado:document.getElementById('t-estado').value,
+      proyecto:document.getElementById('t-proyecto').value
+    });
+    showToast('Tarea guardada correctamente','success');
+  }
+
+  setData('tasks', tasks);
+  closeModal('modal-tarea');
+
+  // Limpiar campos
+  document.getElementById('t-titulo').value = '';
+  document.getElementById('t-desc').value = '';
+  document.getElementById('t-proyecto').value = '';
+  document.getElementById('modal-tarea-editmode').value = '';
+  document.querySelectorAll('#responsables-checkboxes input').forEach(cb => cb.checked = false);
+
+  renderKanban('all');
+  renderDashboard();
+}
+
+function editProject(id) {
+  const projects = getData('projects', PROJECTS_DEFAULT);
+  const project = projects.find(p => p.id === id);
+  if (!project) return;
+
+  // Llenar modal con datos del proyecto
+  document.getElementById('p-nombre').value = project.nombre;
+  document.getElementById('p-responsable').value = project.responsable;
+  document.getElementById('p-inicio').value = project.inicio;
+  document.getElementById('p-fin').value = project.fin;
+  document.getElementById('p-progreso').value = project.progreso;
+  document.getElementById('p-estado').value = project.estado;
+
+  // Marcar como edición
+  document.getElementById('modal-proyecto-editmode').value = id;
+  document.querySelector('#modal-proyecto .modal-title').innerText = '✏️ Editar Proyecto';
+
+  openModal('modal-proyecto');
+}
+
+function saveProyecto() {
+  const nombre = document.getElementById('p-nombre').value.trim();
+  if(!nombre) { showToast('Ingresa el nombre del proyecto','error'); return; }
+
+  const editMode = document.getElementById('modal-proyecto-editmode').value;
+  const projects = getData('projects', PROJECTS_DEFAULT);
+  const colors = ['#2EAA4A','#1A3A8F','#E8A020','#9333ea','#dc2626'];
+
+  if (editMode) {
+    // MODO EDICIÓN
+    const projectId = parseInt(editMode);
+    const idx = projects.findIndex(p => p.id === projectId);
+    if (idx !== -1) {
+      projects[idx] = {
+        id: projectId,
+        nombre,
+        responsable: document.getElementById('p-responsable').value,
+        inicio: document.getElementById('p-inicio').value,
+        fin: document.getElementById('p-fin').value,
+        progreso: parseInt(document.getElementById('p-progreso').value) || 0,
+        estado: document.getElementById('p-estado').value,
+        color: projects[idx].color
+      };
+      setData('projects', projects);
+      showToast('Proyecto actualizado correctamente','success');
+    }
+  } else {
+    // MODO CREACIÓN
+    const newId = Math.max(0,...projects.map(p=>p.id))+1;
+    projects.push({
+      id: newId,
+      nombre,
+      responsable: document.getElementById('p-responsable').value,
+      inicio: document.getElementById('p-inicio').value,
+      fin: document.getElementById('p-fin').value,
+      progreso: parseInt(document.getElementById('p-progreso').value) || 0,
+      estado: document.getElementById('p-estado').value,
+      color: colors[newId % colors.length]
+    });
+    setData('projects', projects);
+    showToast('Proyecto guardado correctamente','success');
+  }
+
+  closeModal('modal-proyecto');
+  // Limpiar modal
+  document.getElementById('p-nombre').value = '';
+  document.getElementById('p-progreso').value = '0';
+  document.getElementById('modal-proyecto-editmode').value = '';
+  document.querySelector('#modal-proyecto .modal-title').innerText = '📊 Nuevo Proyecto';
+
+  renderGantt(); renderDashboard();
+}
+
+function saveMiembro() {
+  const nombre = document.getElementById('mb-nombre').value.trim();
+  if(!nombre) { showToast('Ingresa el nombre','error'); return; }
+  const team = getData('team', TEAM_DEFAULT);
+  const colors = ['#1A3A8F','#2EAA4A','#E8A020','#9333ea','#dc2626','#0891b2'];
+  const newId = Math.max(0,...team.map(m=>m.id))+1;
+  team.push({
+    id:newId, name:nombre,
+    role:document.getElementById('mb-rol').value,
+    email:document.getElementById('mb-email').value,
+    wa:document.getElementById('mb-wa').value,
+    color:colors[newId%colors.length]
+  });
+  setData('team', team);
+  closeModal('modal-miembro');
+  renderTeam(); renderTeamMgmt(); populateSelects();
+  showToast('Miembro agregado al equipo','success');
+  document.getElementById('mb-nombre').value=''; document.getElementById('mb-rol').value='';
+  document.getElementById('mb-email').value=''; document.getElementById('mb-wa').value='';
+}
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if(!key) { showToast('Ingresa una API Key válida','error'); return; }
+  localStorage.setItem('claude_api_key', key);
+  showToast('API Key guardada. ¡ENERGY IA está activo!','success');
+}
+
+function saveProfile() {
+  const name = document.getElementById('profile-name').value.trim();
+  if(!name) { showToast('Ingresa tu nombre','error'); return; }
+  currentUser.name = name;
+  currentUser.wa = document.getElementById('profile-wa').value;
+  localStorage.setItem('max_session', JSON.stringify(currentUser));
+  document.getElementById('sidebar-name').textContent = name;
+  const initials2 = name.split(' ').map(n=>n[0]).join('').substring(0,2);
+  document.getElementById('sidebar-avatar').textContent=initials2;
+  document.getElementById('top-avatar').textContent=initials2;
+  showToast('Perfil actualizado','success');
+}
+
+// ===== CLAUDE API =====
+async function callEnergyAI(prompt, systemContext) {
+  const apiKey = localStorage.getItem('claude_api_key');
+  if(!apiKey) return '⚙️ Configura tu API Key de Claude en Configuración para activar ENERGY con IA. Ve a ⚙️ Configuración > API Key de Claude.';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:1024,
+        system:`Eres ENERGY, un asistente administrativo profesional para la empresa GERENCIA. Eres eficiente, conciso y profesional. Ayudas con reuniones, tareas, comunicaciones y gestión del equipo. Hoy es ${today.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}. Usuario actual: ${currentUser.name} (${currentUser.role}). ${systemContext||''}`,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data = await resp.json();
+    if(data.error) return '❌ Error: '+data.error.message;
+    return data.content[0].text;
+  } catch(e) {
+    return '❌ Error de conexión. Verifica tu API Key y conexión a internet.';
+  }
+}
+
+// ===== MESSAGE GENERATOR =====
+async function generateMessage(platform) {
+  const isWA = platform==='whatsapp';
+  const brief = document.getElementById(isWA?'wa-brief':'teams-brief').value.trim();
+  if(!brief) { showToast('Describe qué quieres comunicar','error'); return; }
+  const recipient = document.getElementById(isWA?'wa-recipient':'teams-recipient').value;
+  const type = document.getElementById(isWA?'wa-type':'teams-type').value;
+  const tone = document.getElementById(isWA?'wa-tone':'teams-tone').value;
+  const btnId = isWA?'wa-gen-btn':null;
+  const outId = isWA?'wa-output':'teams-output';
+  const secId = isWA?'wa-output-section':'teams-output-section';
+  if(btnId) { const btn=document.getElementById(btnId); btn.innerHTML='<span class="spinner"></span> Generando...'; btn.disabled=true; }
+  const prompt = `Redacta un mensaje de ${type.toLowerCase()} para ${recipient==='equipo'?'todo el equipo':'la persona '+recipient} vía ${isWA?'WhatsApp':'Microsoft Teams'}. Tono: ${tone}. Lo que se quiere comunicar: ${brief}. ${isWA?'Usa formato WhatsApp con emojis apropiados.':'Usa formato profesional para Teams, puede incluir negritas con **texto**.'}`;
+  const result = await callEnergyAI(prompt, `Empresa: GERENCIA. Plataforma: ${isWA?'WhatsApp':'Teams'}.`);
+  document.getElementById(outId).textContent = result;
+  document.getElementById(secId).classList.remove('hidden');
+  if(btnId) { const btn=document.getElementById(btnId); btn.innerHTML='✨ Redactar con ENERGY'; btn.disabled=false; }
+}
+
+function sendWhatsApp() {
+  const msg = document.getElementById('wa-output').textContent;
+  const recipient = document.getElementById('wa-recipient').value;
+  const team = getData('team', TEAM_DEFAULT);
+  let wa = '';
+  if(recipient!=='equipo') {
+    const m = team.find(t=>t.name===recipient);
+    if(m) wa = m.wa.replace(/\D/g,'');
+  }
+  const url = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
+  window.open(url,'_blank');
+}
+
+function copyMsg(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text);
+  showToast('Mensaje copiado al portapapeles','success');
+}
+
+// ===== AGENDA GENERATOR =====
+async function generateAgenda() {
+  const titulo = document.getElementById('r-titulo').value.trim();
+  const btn = document.getElementById('agenda-btn');
+  btn.innerHTML='<span class="spinner"></span>';
+  btn.disabled=true;
+  const prompt = `Genera una agenda profesional para una reunión titulada "${titulo||'Reunión de equipo'}". Incluye 4-5 puntos con tiempo estimado para cada uno. Formato limpio y directo.`;
+  const result = await callEnergyAI(prompt);
+  document.getElementById('r-descripcion').value = result;
+  btn.innerHTML='✨ Generar agenda con ENERGY'; btn.disabled=false;
+  showToast('Agenda generada por ENERGY','success');
+}
+
+// ===== MINUTA GENERATOR =====
+async function generateMinuta() {
+  const notas = document.getElementById('m-notas').value.trim();
+  const reunionId = parseInt(document.getElementById('m-reunion').value);
+  const meetings = getData('meetings', MEETINGS_DEFAULT);
+  const meeting = meetings.find(m=>m.id===reunionId);
+  const prompt = `Genera una minuta formal de reunión con la siguiente información:
+Reunión: ${meeting?meeting.titulo:'Reunión'}
+Fecha: ${meeting?formatDate(meeting.fecha):formatDate(todayStr)}
+Notas/Transcripción: ${notas||'Sin notas adicionales'}
+
+Formato de la minuta:
+- Encabezado con fecha, asistentes y lugar
+- Agenda tratada
+- Puntos tratados (resumen ejecutivo)
+- Decisiones tomadas
+- Compromisos (quién, qué, para cuándo)
+- Próxima reunión
+Sé conciso y profesional.`;
+  const preview = document.getElementById('minuta-preview');
+  const out = document.getElementById('minuta-output');
+  out.textContent = 'Generando minuta...';
+  preview.classList.remove('hidden');
+  const result = await callEnergyAI(prompt, `Empresa: GERENCIA. Genera minutas formales en español.`);
+  out.textContent = result;
+  showToast('Minuta generada por ENERGY','success');
+}
+
+function saveMinutaManual() {
+  const notas = document.getElementById('m-notas').value.trim();
+  if(!notas) { showToast('Escribe las notas de la reunión','error'); return; }
+  const reunionId = parseInt(document.getElementById('m-reunion').value);
+  saveMinutaData(notas, reunionId);
+}
+
+function saveMinutaFromPreview() {
+  const contenido = document.getElementById('minuta-output').textContent;
+  const reunionId = parseInt(document.getElementById('m-reunion').value);
+  saveMinutaData(contenido, reunionId);
+}
+
+function saveMinutaData(contenido, reunionId) {
+  const minutas = getData('minutas', MINUTAS_DEFAULT);
+  const newId = Math.max(0,...minutas.map(m=>m.id))+1;
+  minutas.unshift({ id:newId, reunionId, fecha:todayStr, contenido });
+  setData('minutas', minutas);
+  closeModal('modal-minuta');
+  renderMinutas();
+  showToast('Minuta guardada correctamente','success');
+  document.getElementById('m-notas').value='';
+  document.getElementById('minuta-preview').classList.add('hidden');
+}
+
+// ===== TABS =====
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  if(btn) btn.classList.add('active');
+  else {
+    const btns = document.querySelectorAll('.tab-btn');
+    const idx = ['tab-whatsapp','tab-teams','tab-plantillas'].indexOf(tabId);
+    if(btns[idx]) btns[idx].classList.add('active');
+  }
+}
+
+// ===== ENERGY CHAT =====
+function initChat() {
+  addBotMsg(`¡Hola, ${currentUser.name.split(' ')[0]}! 👋 Soy ENERGY, tu asistente administrativo.\n\nHoy tienes reuniones y tareas pendientes. ¿En qué te puedo ayudar?`);
+}
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chat-panel').classList.toggle('open', chatOpen);
+}
+
+function addBotMsg(text) {
+  const msgs = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.className='msg bot'; d.textContent=text;
+  msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
+}
+function addUserMsg(text) {
+  const msgs = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.className='msg user'; d.textContent=text;
+  msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value='';
+  addUserMsg(text);
+  document.getElementById('quick-actions').style.display='none';
+  const loadingEl = document.createElement('div');
+  loadingEl.className='msg bot';
+  loadingEl.innerHTML='<span class="spinner"></span> ENERGY está pensando...';
+  document.getElementById('chat-messages').appendChild(loadingEl);
+  document.getElementById('chat-messages').scrollTop=999999;
+
+  const tasks = getData('tasks', TASKS_DEFAULT);
+  const meetings = getData('meetings', MEETINGS_DEFAULT);
+  const todayMeetings = meetings.filter(m=>m.fecha===todayStr);
+  const pendingTasks = tasks.filter(t=>t.estado!=='Completado');
+  const context = `Reuniones de hoy: ${todayMeetings.map(m=>m.titulo+' a las '+m.horaInicio).join(', ')||'ninguna'}. Tareas pendientes: ${pendingTasks.map(t=>t.titulo+' ('+t.responsable+')').join(', ')||'ninguna'}.`;
+
+  const result = await callEnergyAI(text, context);
+  loadingEl.remove();
+  addBotMsg(result);
+}
+
+function quickChat(text) {
+  document.getElementById('chat-input').value=text;
+  sendChat();
+}
+
+function chatKeydown(e) {
+  if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+}
+
+// ===== UTILS =====
+function showToast(msg, type='info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className=`toast ${type}`;
+  const icons = {success:'✅',error:'❌',info:'ℹ️'};
+  toast.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(()=>toast.remove(), 3500);
+}
+
+function initials(name) {
+  return (name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+}
+
+function formatDate(str) {
+  if(!str) return '';
+  const [y,m,d] = str.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ===== KEYBOARD SHORTCUT =====
+document.addEventListener('keydown', function(e) {
+  if(e.key==='Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+    if(chatOpen) toggleChat();
+  }
+});
+
+// ===== START =====
+// Splash screen — show 1.5s then check session
+const splashEl = document.getElementById('splash');
+setTimeout(function() {
+  splashEl.style.transition = 'opacity 0.4s ease';
+  splashEl.style.opacity = '0';
+  setTimeout(function() { splashEl.style.display = 'none'; checkSession(); }, 400);
+}, 1500);
+</script>
+</body>
+</html>
