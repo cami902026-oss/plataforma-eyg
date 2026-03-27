@@ -1190,9 +1190,10 @@ const TEAMS_WEBHOOK_URL = 'https://default9876dbde5a7f41398c2d60a4395fd7.d6.envi
 
 function notifyTeamsApp(title, text, color) {
   const mensaje = `${title || 'Energy Bot'}\n\n${text || ''}`;
+  // mode: 'no-cors' evita el bloqueo CORS del navegador al llamar Power Automate
   fetch(TEAMS_WEBHOOK_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    mode: 'no-cors',
     body: JSON.stringify({ text: mensaje })
   }).catch(e => console.warn('Teams notify:', e));
 }
