@@ -1,0 +1,23 @@
+name: Teams Notify
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'Titulo'
+        required: true
+        default: 'Energy Bot'
+      text:
+        description: 'Mensaje'
+        required: true
+        default: ''
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar notificacion a Teams
+        run: |
+          curl -s -X POST "${{ secrets.TEAMS_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"text\": \"${{ inputs.title }}\n\n${{ inputs.text }}\"}"
