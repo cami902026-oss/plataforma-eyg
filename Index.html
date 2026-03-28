@@ -412,35 +412,121 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 
 /* ===== COTIZACIONES IA ===== */
 .cotiz-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;}
-.cotiz-tab{padding:10px 22px;cursor:pointer;border-bottom:3px solid transparent;color:var(--text-muted);font-weight:600;font-size:13px;transition:.2s;margin-bottom:-2px;}
+.cotiz-tab{padding:10px 22px;cursor:pointer;border-bottom:3px solid transparent;font-weight:600;font-size:14px;color:var(--text-muted);transition:all .2s;}
+.cotiz-tab:hover{color:var(--gold);}
 .cotiz-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
-.cotiz-tab:hover:not(.active){color:var(--light);}
 .cotiz-tab-content{display:none;}
 .cotiz-tab-content.active{display:block;}
-.cotiz-card{background:var(--card);border-radius:14px;padding:20px;margin-bottom:14px;}
-.cotiz-card h3{color:var(--gold);margin:0 0 14px;font-size:14px;display:flex;align-items:center;gap:8px;font-weight:700;}
-.cotiz-no-val{color:var(--gold);font-weight:800;font-size:18px;letter-spacing:1px;}
-.cotiz-estado-badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+
+/* ---- LETTERHEAD ---- */
+.cotiz-letterhead{background:linear-gradient(135deg,#081428 0%,#0d2255 60%,#1a3a8f 100%);border:2px solid var(--gold);border-radius:10px;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.cotiz-lh-left{display:flex;align-items:center;gap:14px;}
+.cotiz-eg-badge{background:var(--gold);color:#000;font-size:22px;font-weight:900;width:52px;height:52px;min-width:52px;display:flex;align-items:center;justify-content:center;border-radius:8px;letter-spacing:-2px;box-shadow:0 0 14px rgba(214,158,46,.5);}
+.cotiz-company-name{font-size:14px;font-weight:800;color:var(--gold);letter-spacing:.5px;}
+.cotiz-company-sub{font-size:11px;color:rgba(255,255,255,.7);line-height:1.7;margin-top:2px;}
+.cotiz-lh-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;}
+.cotiz-num-tag{font-size:10px;font-weight:700;color:rgba(255,255,255,.55);letter-spacing:1.5px;text-transform:uppercase;}
+.cotiz-num-val{font-size:30px;font-weight:900;color:var(--gold);line-height:1;}
+.cotiz-estado-sel{background:rgba(0,0,0,.35);border:1px solid rgba(214,158,46,.6);color:var(--gold);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;margin-top:2px;}
+.cotiz-estado-sel option{background:#0d2255;color:#fff;}
+
+/* ---- GRIDS DE DATOS ---- */
+.cotiz-client-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.cotiz-dates-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.cotiz-field-box{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:7px;padding:10px 12px;transition:border .2s;}
+.cotiz-field-box:focus-within{border-color:var(--gold);}
+.cotiz-field-box label{display:block;font-size:10px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.cotiz-field-box input,.cotiz-field-box select{background:none;border:none;color:var(--text);font-size:13px;width:100%;outline:none;}
+.cotiz-field-box input[type=date]{color-scheme:dark;}
+
+/* ---- SECCION IA ---- */
+.cotiz-ai-card{background:rgba(214,158,46,.05);border:1px dashed rgba(214,158,46,.35);border-radius:9px;padding:14px;margin-bottom:14px;}
+.cotiz-ai-card h4{color:var(--gold);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin:0 0 10px 0;}
+.cotiz-dropzone{border:2px dashed rgba(214,158,46,.3);border-radius:8px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02);}
+.cotiz-dropzone:hover{border-color:var(--gold);background:rgba(214,158,46,.06);}
+.cotiz-dropzone-icon{font-size:32px;display:block;margin-bottom:8px;}
+.cotiz-dropzone p{color:var(--text-muted);font-size:13px;margin:0;}
+.cotiz-dropzone p span{color:var(--gold);font-weight:600;}
+.cotiz-preview-img{max-width:180px;max-height:140px;border-radius:6px;border:1px solid var(--gold);margin-top:8px;display:none;}
+.cotiz-ai-sep{display:flex;align-items:center;gap:10px;margin:10px 0;color:var(--text-muted);font-size:12px;}
+.cotiz-ai-sep::before,.cotiz-ai-sep::after{content:'';flex:1;height:1px;background:var(--border);}
+.cotiz-text-area{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:10px;font-size:12px;resize:vertical;min-height:60px;box-sizing:border-box;outline:none;font-family:inherit;}
+.cotiz-text-area:focus{border-color:var(--gold);}
+.cotiz-ai-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.btn-ia{background:linear-gradient(135deg,#1a3a8f,#2a5acf);color:#fff;font-weight:700;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:6px;}
+.btn-ia:hover{opacity:.85;}
+.btn-add-row{background:rgba(255,255,255,.07);color:var(--text);border:1px solid var(--border);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:12px;}
+.btn-add-row:hover{border-color:var(--gold);color:var(--gold);}
+.btn-clear{background:rgba(229,62,62,.12);color:#f87171;border:1px solid rgba(229,62,62,.3);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:12px;}
+.cotiz-ai-status{display:none;align-items:center;gap:8px;color:var(--gold);font-size:13px;margin-top:8px;}
+.cotiz-spinner{width:16px;height:16px;border:2px solid rgba(214,158,46,.3);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ---- TABLA ITEMS ---- */
+.cotiz-items-card{background:var(--card);border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:14px;}
+.cotiz-items-header{background:linear-gradient(90deg,rgba(214,158,46,.15),rgba(214,158,46,.05));padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.cotiz-items-header h4{color:var(--gold);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin:0;}
+.cotiz-tbl-wrap{overflow-x:auto;}
+.cotiz-table{width:100%;border-collapse:collapse;font-size:12px;min-width:800px;}
+.cotiz-table thead th{background:var(--gold);color:#000;font-weight:800;text-transform:uppercase;font-size:9.5px;letter-spacing:.3px;padding:8px 6px;border-right:1px solid rgba(0,0,0,.15);text-align:center;white-space:nowrap;}
+.cotiz-table thead th:last-child{border-right:none;}
+.cotiz-table tbody tr:nth-child(even){background:rgba(255,255,255,.025);}
+.cotiz-table tbody tr:hover{background:rgba(214,158,46,.07);}
+.cotiz-table tbody td{padding:4px 4px;border-bottom:1px solid rgba(255,255,255,.06);}
+.cotiz-table input{background:rgba(255,255,255,.06);border:1px solid transparent;color:var(--text);padding:4px 6px;border-radius:4px;font-size:12px;width:100%;box-sizing:border-box;}
+.cotiz-table input:focus{border-color:var(--gold);outline:none;background:rgba(214,158,46,.1);}
+.cotiz-vtotal{color:var(--gold);font-weight:700;text-align:right;white-space:nowrap;padding-right:8px !important;}
+.cotiz-del-btn{background:none;border:none;color:#f87171;cursor:pointer;font-size:15px;padding:0 4px;line-height:1;}
+
+/* ---- TOTALES ---- */
+.cotiz-bottom-row{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px;}
+.cotiz-obs-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:14px;flex:1;min-width:300px;}
+.cotiz-obs-card h4{color:var(--gold);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin:0 0 10px 0;}
+.cotiz-obs-card textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:10px;font-size:12px;resize:vertical;min-height:80px;box-sizing:border-box;outline:none;font-family:inherit;}
+.cotiz-obs-card textarea:focus{border-color:var(--gold);}
+.cotiz-cond-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px;}
+.cotiz-totals-card{background:linear-gradient(135deg,#081428,#0d2255);border:2px solid rgba(214,158,46,.4);border-radius:9px;padding:0;overflow:hidden;min-width:230px;}
+.cotiz-tot-row{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;}
+.cotiz-tot-row span:first-child{color:rgba(255,255,255,.6);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.cotiz-tot-row span:last-child{font-weight:700;color:var(--text);}
+.cotiz-tot-row.grand{background:rgba(214,158,46,.15);border-bottom:none;padding:14px 16px;}
+.cotiz-tot-row.grand span:first-child{color:var(--gold);font-size:13px;}
+.cotiz-tot-row.grand span:last-child{color:var(--gold);font-size:20px;font-weight:900;}
+
+/* ---- BOTONES ---- */
+.cotiz-actions{display:flex;gap:10px;flex-wrap:wrap;padding:14px;background:rgba(214,158,46,.05);border:1px solid rgba(214,158,46,.2);border-radius:9px;}
+.btn-save-bd{background:linear-gradient(135deg,#15572a,#22a855);color:#fff;font-weight:700;border:none;padding:11px 22px;border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;box-shadow:0 2px 10px rgba(34,168,85,.3);}
+.btn-save-bd:hover{opacity:.88;}
+.btn-dl-excel{background:linear-gradient(135deg,#1a6a2a,#2eb84a);color:#fff;font-weight:700;border:none;padding:11px 22px;border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;}
+.btn-dl-excel:hover{opacity:.88;}
+.btn-new-cotiz{background:linear-gradient(135deg,#1a3a8f,#2a5acf);color:#fff;font-weight:700;border:none;padding:11px 22px;border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;}
+.btn-new-cotiz:hover{opacity:.88;}
+
+/* ---- BASE DE DATOS ---- */
+.cotiz-estado-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
 .cotiz-estado-enviada{background:rgba(26,58,143,.35);color:#7eb3ff;}
 .cotiz-estado-adjudicada{background:rgba(46,170,74,.25);color:#4ade80;}
 .cotiz-estado-rechazada{background:rgba(229,62,62,.25);color:#f87171;}
 .cotiz-estado-pendiente{background:rgba(214,158,46,.25);color:var(--gold);}
-.cotiz-upload-zone{border:2px dashed var(--blue);border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:.2s;background:rgba(26,58,143,.07);}
-.cotiz-upload-zone:hover{border-color:var(--gold);background:rgba(232,160,32,.07);}
-.cotiz-upload-zone input[type=file]{display:none;}
-.cotiz-upload-icon{font-size:30px;margin-bottom:6px;}
-.cotiz-upload-text{color:var(--text-muted);font-size:12px;}
-.cotiz-preview-img{max-width:100%;max-height:180px;border-radius:8px;margin-top:8px;display:none;}
-.cotiz-table{width:100%;border-collapse:collapse;font-size:11px;}
-.cotiz-table th{background:rgba(15,43,91,.9);padding:7px 5px;color:var(--text-muted);text-align:left;font-weight:700;font-size:10px;white-space:nowrap;}
-.cotiz-table td{padding:4px 5px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;}
-.cotiz-table td input,.cotiz-table td select{background:transparent;border:1px solid transparent;border-radius:3px;padding:3px 4px;color:#fff;width:100%;font-size:11px;min-width:40px;}
-.cotiz-table td input:focus,.cotiz-table td select:focus{border-color:var(--blue);outline:none;background:rgba(26,58,143,.2);}
-.cotiz-totals-box{display:flex;flex-direction:column;align-items:flex-end;gap:3px;margin-top:10px;}
-.cotiz-tot-row{display:flex;gap:16px;min-width:240px;justify-content:space-between;font-size:13px;padding:2px 0;}
-.cotiz-tot-row.grand{font-size:15px;font-weight:700;color:var(--gold);border-top:1px solid rgba(255,255,255,.15);padding-top:8px;margin-top:4px;}
-.cotiz-ai-status{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(26,58,143,.15);border-radius:8px;margin:8px 0;font-size:13px;color:var(--text-muted);}
-.cotiz-ai-spinner{width:16px;height:16px;border:2px solid var(--blue);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+.bd-stats-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+.bd-stat{background:linear-gradient(135deg,var(--card),rgba(255,255,255,.03));border:1px solid var(--border);border-radius:9px;padding:14px 18px;text-align:center;flex:1;min-width:110px;}
+.bd-stat-num{font-size:30px;font-weight:900;line-height:1;}
+.bd-stat-label{font-size:11px;color:var(--text-muted);margin-top:5px;font-weight:600;}
+.bd-filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.bd-filter-btn{background:var(--card);border:1px solid var(--border);color:var(--text-muted);padding:6px 16px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;}
+.bd-filter-btn.active,.bd-filter-btn:hover{background:var(--gold);color:#000;border-color:var(--gold);}
+.bd-table-wrap{overflow-x:auto;}
+.bd-table{width:100%;border-collapse:collapse;font-size:13px;}
+.bd-table thead th{background:rgba(214,158,46,.12);color:var(--gold);font-size:11px;font-weight:700;text-transform:uppercase;padding:10px 12px;border-bottom:2px solid rgba(214,158,46,.4);text-align:left;letter-spacing:.5px;white-space:nowrap;}
+.bd-table tbody td{padding:10px 12px;border-bottom:1px solid var(--border);}
+.bd-table tbody tr{cursor:pointer;transition:background .15s;}
+.bd-table tbody tr:hover td{background:rgba(214,158,46,.06);}
+.btn-sm{font-size:11px;padding:4px 10px;border-radius:5px;border:none;cursor:pointer;font-weight:700;}
+.bd-btn-edit{background:rgba(74,110,223,.2);color:#7eb3ff;}
+.bd-btn-xl{background:rgba(46,170,74,.2);color:#4ade80;}
+.bd-btn-del{background:rgba(229,62,62,.15);color:#f87171;}
+.bd-empty{text-align:center;padding:50px 20px;color:var(--text-muted);}
+.bd-empty-icon{font-size:48px;display:block;margin-bottom:12px;}
 
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -784,155 +870,191 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 
       <!-- COTIZACIONES IA -->
             <div class="page" id="page-cotizaciones">
-        <!-- TABS -->
-        <div class="cotiz-tabs">
-          <div class="cotiz-tab active" id="ctab-nueva" onclick="cotizShowTab('nueva')">📝 Nueva Cotización</div>
-          <div class="cotiz-tab" id="ctab-bd" onclick="cotizShowTab('bd')">📊 Base de Datos</div>
-        </div>
+      <!-- TABS -->
+      <div class="cotiz-tabs">
+        <div class="cotiz-tab active" id="ctab-nueva" onclick="cotizShowTab('nueva')">📝 Nueva Cotización</div>
+        <div class="cotiz-tab" id="ctab-bd" onclick="cotizShowTab('bd')">📊 Base de Datos</div>
+      </div>
 
-        <!-- ═══ TAB NUEVA COTIZACIÓN ═══ -->
-        <div class="cotiz-tab-content active" id="cotiz-tab-nueva">
-          <!-- Encabezado -->
-          <div class="cotiz-card">
-            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-              <div style="flex:1;min-width:260px;">
-                <div style="font-size:11px;color:var(--text-muted);font-weight:700;margin-bottom:2px;">E&G ENERGY GROUP SAS — CARRERA 7 #12-61 CHÍA — TEL 3204947227</div>
-                <div style="font-size:10px;color:var(--text-muted);margin-bottom:14px;">CORREO: COMERCIAL1@EYGENERGYGROUP.COM</div>
-                <div class="form-row">
-                  <div class="form-group"><label>CLIENTE</label><input type="text" id="cotiz-cliente" placeholder="Empresa cliente"></div>
-                  <div class="form-group"><label>CONTACTO</label><input type="text" id="cotiz-contacto" placeholder="Nombre contacto"></div>
-                </div>
-                <div class="form-group"><label>CORREO</label><input type="email" id="cotiz-correo" placeholder="correo@empresa.com"></div>
-              </div>
-              <div style="min-width:210px;">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                  <span style="color:var(--text-muted);font-size:11px;font-weight:700;">COTIZACIÓN No.</span>
-                  <span class="cotiz-no-val" id="cotiz-numero">LM----</span>
-                </div>
-                <div class="form-group" style="margin-bottom:8px;">
-                  <label>ESTADO</label>
-                  <select id="cotiz-estado" style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
-                    <option value="Enviada">Enviada</option>
-                    <option value="Adjudicada">Adjudicada</option>
-                    <option value="Rechazada">Rechazada</option>
-                    <option value="Pendiente">Pendiente</option>
-                  </select>
-                </div>
-                <div class="form-group" style="margin-bottom:8px;">
-                  <label>FECHA DE GENERACIÓN</label>
-                  <input type="date" id="cotiz-fecha-gen">
-                </div>
-                <div class="form-group" style="margin-bottom:8px;">
-                  <label>FECHA DE VENCIMIENTO</label>
-                  <input type="date" id="cotiz-fecha-venc">
-                </div>
-                <div class="form-group">
-                  <label>IVA %</label>
-                  <input type="number" id="cotiz-iva" value="19" min="0" max="100" oninput="cotizUpdateTotals()" style="width:80px;">
-                </div>
+      <!-- TAB: NUEVA COTIZACION -->
+      <div class="cotiz-tab-content active" id="cotiz-tab-nueva">
+
+        <!-- LETTERHEAD CORPORATIVO -->
+        <div class="cotiz-letterhead">
+          <div class="cotiz-lh-left">
+            <div class="cotiz-eg-badge">E&amp;G</div>
+            <div>
+              <div class="cotiz-company-name">E&amp;G ENERGY GROUP SAS</div>
+              <div class="cotiz-company-sub">
+                CARRERA 7 # 12-61 CHÍA, CUNDINAMARCA<br>
+                TEL: 3204947227 &nbsp;|&nbsp; COMERCIAL1@EYGENERGYGROUP.COM
               </div>
             </div>
           </div>
-
-          <!-- IA Extract -->
-          <div class="cotiz-card">
-            <h3>📸 Cargar imagen o escribir ítems</h3>
-            <div class="cotiz-upload-zone" onclick="document.getElementById('cotiz-file').click()" id="cotiz-drop-zone">
-              <input type="file" id="cotiz-file" accept="image/*" onchange="cotizLoadFile(this)">
-              <div class="cotiz-upload-icon">📷</div>
-              <div style="font-weight:600;margin-bottom:4px;font-size:13px;">Haz clic para subir una imagen</div>
-              <div class="cotiz-upload-text">Foto de lista de materiales, pedido en papel, WhatsApp, etc.</div>
-              <img id="cotiz-img-preview" class="cotiz-preview-img">
-            </div>
-            <div style="text-align:center;color:var(--text-muted);margin:10px 0;font-size:12px;">— o escribe / pega el texto —</div>
-            <textarea id="cotiz-text-input" rows="3" placeholder="Ej: 3000 espárragos 5/8&quot; x 3½&quot; doble tuerca, 100 bridas de 2&quot; SCH40..." style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px;color:#fff;resize:vertical;font-size:12px;"></textarea>
-            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-              <button class="btn btn-primary" onclick="cotizExtract()" style="width:auto;font-size:13px;">🤖 Extraer ítems con IA</button>
-              <button class="btn btn-secondary" onclick="cotizAddRow()" style="width:auto;font-size:13px;">+ Fila manual</button>
-              <button class="btn btn-secondary" onclick="cotizClear()" style="width:auto;font-size:13px;">🗑 Limpiar ítems</button>
-            </div>
-            <div id="cotiz-ai-status" style="display:none;" class="cotiz-ai-status">
-              <div class="cotiz-ai-spinner"></div>
-              <span id="cotiz-ai-msg">Analizando con IA...</span>
-            </div>
-          </div>
-
-          <!-- Tabla de ítems (formato COTIZADOR) -->
-          <div class="cotiz-card">
-            <h3>📋 Ítems de la cotización</h3>
-            <div style="overflow-x:auto;">
-              <table class="cotiz-table" id="cotiz-table">
-                <thead>
-                  <tr>
-                    <th style="width:28px">ITEM</th>
-                    <th style="width:50px">UDM</th>
-                    <th style="width:55px">CANTIDAD</th>
-                    <th style="min-width:180px">DESCRIPCIÓN</th>
-                    <th style="width:90px">T. ENTREGA</th>
-                    <th style="width:130px">DESV. TÉCNICA</th>
-                    <th style="width:70px">MARCA</th>
-                    <th style="width:90px">V. UNITARIO</th>
-                    <th style="width:90px">V. TOTAL</th>
-                    <th style="width:80px">PROVEEDOR</th>
-                    <th style="width:22px"></th>
-                  </tr>
-                </thead>
-                <tbody id="cotiz-tbody"></tbody>
-              </table>
-            </div>
-            <div class="cotiz-totals-box" id="cotiz-totals"></div>
-          </div>
-
-          <!-- Observaciones + Condiciones -->
-          <div class="cotiz-card">
-            <h3>📄 Observaciones y condiciones comerciales</h3>
-            <div class="form-group">
-              <label>OBSERVACIONES</label>
-              <textarea id="cotiz-observaciones" rows="3" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:8px;color:#fff;font-size:12px;resize:vertical;">LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&amp;G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.</textarea>
-            </div>
-            <div class="form-row">
-              <div class="form-group"><label>FORMA DE PAGO</label><input type="text" id="cotiz-pago" placeholder="Ej: 30 días" value="30 DÍAS"></div>
-              <div class="form-group"><label>SITIO DE ENTREGA</label><input type="text" id="cotiz-sitio" placeholder="Ej: Bogotá"></div>
-              <div class="form-group"><label>VALIDEZ DE LA OFERTA</label><input type="text" id="cotiz-validez" placeholder="Ej: 8 días" value="8 DÍAS"></div>
-            </div>
-          </div>
-
-          <!-- Botones -->
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
-            <button class="btn btn-primary" onclick="cotizGuardarBD()" style="width:auto;font-size:13px;">💾 Guardar en base de datos</button>
-            <button class="btn btn-primary" onclick="cotizDownloadExcel()" style="width:auto;font-size:13px;background:rgba(46,170,74,.3);border-color:#2eaa4a;">⬇️ Descargar Excel</button>
-            <button class="btn btn-secondary" onclick="cotizNueva()" style="width:auto;font-size:13px;">+ Nueva cotización</button>
+          <div class="cotiz-lh-right">
+            <div class="cotiz-num-tag">Cotización No.</div>
+            <div id="cotiz-numero" class="cotiz-num-val">LM1001</div>
+            <select id="cotiz-estado" class="cotiz-estado-sel">
+              <option>Enviada</option>
+              <option>Adjudicada</option>
+              <option>Rechazada</option>
+              <option>Pendiente</option>
+            </select>
           </div>
         </div>
 
-        <!-- ═══ TAB BASE DE DATOS ═══ -->
-        <div class="cotiz-tab-content" id="cotiz-tab-bd">
-          <div class="bd-stats" id="bd-stats-bar"></div>
-          <div class="bd-filters">
-            <button class="bd-filter-btn active" onclick="bdFilter('todas',this)">Todas</button>
-            <button class="bd-filter-btn" onclick="bdFilter('Enviada',this)">📤 Enviadas</button>
-            <button class="bd-filter-btn" onclick="bdFilter('Adjudicada',this)">✅ Adjudicadas</button>
-            <button class="bd-filter-btn" onclick="bdFilter('Rechazada',this)">❌ Rechazadas</button>
-            <button class="bd-filter-btn" onclick="bdFilter('Pendiente',this)">⏳ Pendientes</button>
+        <!-- DATOS DEL CLIENTE -->
+        <div class="cotiz-client-grid">
+          <div class="cotiz-field-box">
+            <label>Cliente / Empresa</label>
+            <input type="text" id="cotiz-cliente" placeholder="Nombre del cliente o empresa">
           </div>
-          <div style="overflow-x:auto;">
-            <table class="bd-table">
+          <div class="cotiz-field-box">
+            <label>Contacto</label>
+            <input type="text" id="cotiz-contacto" placeholder="Nombre del contacto">
+          </div>
+          <div class="cotiz-field-box" style="grid-column:span 2">
+            <label>Correo electrónico</label>
+            <input type="email" id="cotiz-correo" placeholder="correo@empresa.com">
+          </div>
+        </div>
+
+        <!-- FECHAS E IVA -->
+        <div class="cotiz-dates-grid">
+          <div class="cotiz-field-box">
+            <label>Fecha de Generación</label>
+            <input type="date" id="cotiz-fecha-gen">
+          </div>
+          <div class="cotiz-field-box">
+            <label>Fecha de Vencimiento</label>
+            <input type="date" id="cotiz-fecha-venc">
+          </div>
+          <div class="cotiz-field-box">
+            <label>IVA %</label>
+            <input type="number" id="cotiz-iva" value="19" min="0" max="100" onchange="cotizUpdateTotals()">
+          </div>
+          <div class="cotiz-field-box">
+            <label>Forma de Pago</label>
+            <input type="text" id="cotiz-pago" value="30 DÍAS">
+          </div>
+        </div>
+
+        <!-- EXTRACCION IA -->
+        <div class="cotiz-ai-card">
+          <h4>🤖 Extraer Ítems con Inteligencia Artificial</h4>
+          <label class="cotiz-dropzone" onclick="document.getElementById('cotiz-file').click()">
+            <input type="file" id="cotiz-file" accept="image/*" style="display:none" onchange="cotizLoadFile(this)">
+            <span class="cotiz-dropzone-icon">📷</span>
+            <p><span>Haz clic para subir una imagen</span><br>Foto de lista de materiales, pedido en papel, WhatsApp, etc.</p>
+            <img id="cotiz-img-preview" class="cotiz-preview-img" src="" alt="preview">
+          </label>
+          <div class="cotiz-ai-sep">— o escribe / pega el texto —</div>
+          <textarea id="cotiz-text-input" class="cotiz-text-area" placeholder="Ej: 3000 espárragos 5/8&quot; x 3½&quot; doble tuerca, 100 bridas de 2&quot; SCH40..."></textarea>
+          <div class="cotiz-ai-btns">
+            <button class="btn-ia" onclick="cotizExtract()">⚡ Extraer ítems con IA</button>
+            <button class="btn-add-row" onclick="cotizAddRow()">+ Fila manual</button>
+            <button class="btn-clear" onclick="cotizClear()">🗑 Limpiar ítems</button>
+          </div>
+          <div class="cotiz-ai-status" id="cotiz-ai-status">
+            <div class="cotiz-spinner"></div>
+            <span id="cotiz-ai-msg">Analizando con IA...</span>
+          </div>
+        </div>
+
+        <!-- TABLA DE ITEMS -->
+        <div class="cotiz-items-card">
+          <div class="cotiz-items-header">
+            <h4>📋 Ítems de la cotización</h4>
+            <span style="font-size:11px;color:var(--text-muted)">Edita directamente en la tabla</span>
+          </div>
+          <div class="cotiz-tbl-wrap">
+            <table class="cotiz-table">
               <thead>
                 <tr>
-                  <th>COT. No.</th><th>FECHA</th><th>CLIENTE</th><th>CONTACTO</th>
-                  <th>TOTAL</th><th>VENCE</th><th>ESTADO</th><th>ACCIONES</th>
+                  <th style="width:36px">#</th>
+                  <th style="width:48px">UDM</th>
+                  <th style="width:60px">Cantidad</th>
+                  <th>Descripción</th>
+                  <th style="width:90px">T. Entrega</th>
+                  <th style="width:130px">Desv. Técnica</th>
+                  <th style="width:70px">Marca</th>
+                  <th style="width:90px">V. Unitario</th>
+                  <th style="width:90px">V. Total</th>
+                  <th style="width:80px">Proveedor</th>
+                  <th style="width:28px"></th>
                 </tr>
               </thead>
-              <tbody id="bd-tbody"></tbody>
+              <tbody id="cotiz-tbody"></tbody>
             </table>
           </div>
-          <div id="bd-empty" style="display:none;text-align:center;padding:40px;color:var(--text-muted);">
-            <div style="font-size:36px;margin-bottom:8px;">📋</div>
-            <div>No hay cotizaciones guardadas aún.</div>
-            <div style="font-size:12px;margin-top:4px;">Crea una cotización y guárdala para verla aquí.</div>
+          <div id="cotiz-totals" style="display:flex;justify-content:flex-end;padding:10px 14px;"></div>
+        </div>
+
+        <!-- OBSERVACIONES + CONDICIONES -->
+        <div class="cotiz-bottom-row">
+          <div class="cotiz-obs-card">
+            <h4>📄 Observaciones y condiciones comerciales</h4>
+            <textarea id="cotiz-observaciones" rows="4" placeholder="Observaciones..."></textarea>
+            <div class="cotiz-cond-grid">
+              <div class="cotiz-field-box">
+                <label>Sitio de Entrega</label>
+                <input type="text" id="cotiz-sitio" placeholder="Dirección...">
+              </div>
+              <div class="cotiz-field-box">
+                <label>Validez de la Oferta</label>
+                <input type="text" id="cotiz-validez" value="8 DÍAS">
+              </div>
+            </div>
+          </div>
+          <div class="cotiz-totals-card" id="cotiz-totals-card">
+            <div class="cotiz-tot-row"><span>SUBTOTAL</span><span id="tot-sub">$0</span></div>
+            <div class="cotiz-tot-row"><span id="tot-iva-lbl">IVA 19%</span><span id="tot-iva">$0</span></div>
+            <div class="cotiz-tot-row grand"><span>TOTAL</span><span id="tot-total">$0</span></div>
           </div>
         </div>
-      </div>
+
+        <!-- BOTONES DE ACCION -->
+        <div class="cotiz-actions">
+          <button class="btn-save-bd" onclick="cotizGuardarBD()">💾 Guardar en base de datos</button>
+          <button class="btn-dl-excel" onclick="cotizDownloadExcel()">📥 Descargar Excel</button>
+          <button class="btn-new-cotiz" onclick="cotizNueva()">+ Nueva cotización</button>
+        </div>
+
+      </div><!-- /tab-nueva -->
+
+      <!-- TAB: BASE DE DATOS -->
+      <div class="cotiz-tab-content" id="cotiz-tab-bd">
+        <div id="bd-stats-bar" class="bd-stats-bar"></div>
+        <div class="bd-filter-bar">
+          <button class="bd-filter-btn active" onclick="bdFilter('todas',this)">Todas</button>
+          <button class="bd-filter-btn" onclick="bdFilter('Enviada',this)">📤 Enviadas</button>
+          <button class="bd-filter-btn" onclick="bdFilter('Adjudicada',this)">✅ Adjudicadas</button>
+          <button class="bd-filter-btn" onclick="bdFilter('Rechazada',this)">❌ Rechazadas</button>
+          <button class="bd-filter-btn" onclick="bdFilter('Pendiente',this)">⏳ Pendientes</button>
+        </div>
+        <div class="bd-table-wrap">
+          <table class="bd-table">
+            <thead>
+              <tr>
+                <th>COT. No.</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Contacto</th>
+                <th>Total</th>
+                <th>Vence</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="bd-tbody"></tbody>
+          </table>
+        </div>
+        <div id="bd-empty" class="bd-empty" style="display:none">
+          <span class="bd-empty-icon">📂</span>
+          <p>No hay cotizaciones guardadas aún.<br>Crea tu primera cotización en la pestaña Nueva Cotización.</p>
+        </div>
+      </div><!-- /tab-bd -->
+
 
       <!-- CONFIGURACION -->
       <div class="page" id="page-configuracion">
@@ -2368,12 +2490,19 @@ function cotizUpdateTotals() {
   const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
   const ivaVal = subtotal * iva / 100;
   const total = subtotal + ivaVal;
+  const fmt = v => '$' + v.toLocaleString('es-CO',{minimumFractionDigits:0});
+  // New individual elements
+  const subEl = document.getElementById('tot-sub');
+  const ivaEl = document.getElementById('tot-iva');
+  const ivaLbl = document.getElementById('tot-iva-lbl');
+  const totEl = document.getElementById('tot-total');
+  if (subEl) subEl.textContent = fmt(subtotal);
+  if (ivaEl) ivaEl.textContent = fmt(ivaVal);
+  if (ivaLbl) ivaLbl.textContent = 'IVA ' + iva + '%';
+  if (totEl) totEl.textContent = fmt(total);
+  // Legacy fallback for old HTML
   const el = document.getElementById('cotiz-totals');
-  if (!el) return;
-  el.innerHTML = `
-    <div class="cotiz-tot-row"><span>SUBTOTAL</span><span>$${subtotal.toLocaleString('es-CO',{minimumFractionDigits:0})}</span></div>
-    <div class="cotiz-tot-row"><span>IVA ${iva}%</span><span>$${ivaVal.toLocaleString('es-CO',{minimumFractionDigits:0})}</span></div>
-    <div class="cotiz-tot-row grand"><span>TOTAL</span><span>$${total.toLocaleString('es-CO',{minimumFractionDigits:0})}</span></div>`;
+  if (el) el.innerHTML = `<div class="cotiz-tot-row"><span>SUBTOTAL</span><span>${fmt(subtotal)}</span></div><div class="cotiz-tot-row"><span>IVA ${iva}%</span><span>${fmt(ivaVal)}</span></div><div class="cotiz-tot-row grand"><span>TOTAL</span><span>${fmt(total)}</span></div>`;
 }
 
 function cotizAddRow() {
