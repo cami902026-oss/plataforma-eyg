@@ -411,22 +411,37 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .user-badge { background:var(--green);color:#fff;border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer; }
 
 /* ===== COTIZACIONES IA ===== */
-.cotiz-card{background:var(--card);border-radius:14px;padding:24px;margin-bottom:18px}
-.cotiz-card h3{color:var(--gold);margin:0 0 16px;font-size:15px;display:flex;align-items:center;gap:8px}
-.cotiz-upload-zone{border:2px dashed var(--blue);border-radius:12px;padding:30px;text-align:center;cursor:pointer;transition:.2s;background:rgba(26,58,143,.07)}
-.cotiz-upload-zone:hover{border-color:var(--gold)}
-.cotiz-upload-zone input[type=file]{display:none}
-.cotiz-preview-img{max-width:100%;max-height:220px;border-radius:8px;margin-top:10px;display:none}
-.cotiz-items-table{width:100%;border-collapse:collapse;margin-top:12px}
-.cotiz-items-table th{background:var(--navy);padding:8px 10px;font-size:12px;color:var(--text-muted);text-align:left}
-.cotiz-items-table td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px}
-.cotiz-items-table td input{background:transparent;border:none;border-radius:4px;padding:3px 6px;color:#fff;width:100%;font-size:13px}
-.cotiz-items-table td input:focus{border:1px solid var(--blue);outline:none;background:rgba(26,58,143,.2)}
-.cotiz-totals{margin-top:16px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;font-size:14px}
-.cotiz-total-row{display:flex;gap:20px;min-width:280px;justify-content:space-between}
-.cotiz-total-row.grand{font-size:16px;font-weight:700;color:var(--gold);border-top:1px solid rgba(255,255,255,.15);padding-top:8px;margin-top:4px}
-.cotiz-ai-status{display:flex;align-items:center;gap:10px;padding:12px;background:rgba(26,58,143,.15);border-radius:8px;margin:12px 0;font-size:13px;color:var(--text-muted)}
-.cotiz-ai-spinner{width:16px;height:16px;border:2px solid var(--blue);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.cotiz-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;}
+.cotiz-tab{padding:10px 22px;cursor:pointer;border-bottom:3px solid transparent;color:var(--text-muted);font-weight:600;font-size:13px;transition:.2s;margin-bottom:-2px;}
+.cotiz-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.cotiz-tab:hover:not(.active){color:var(--light);}
+.cotiz-tab-content{display:none;}
+.cotiz-tab-content.active{display:block;}
+.cotiz-card{background:var(--card);border-radius:14px;padding:20px;margin-bottom:14px;}
+.cotiz-card h3{color:var(--gold);margin:0 0 14px;font-size:14px;display:flex;align-items:center;gap:8px;font-weight:700;}
+.cotiz-no-val{color:var(--gold);font-weight:800;font-size:18px;letter-spacing:1px;}
+.cotiz-estado-badge{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;}
+.cotiz-estado-enviada{background:rgba(26,58,143,.35);color:#7eb3ff;}
+.cotiz-estado-adjudicada{background:rgba(46,170,74,.25);color:#4ade80;}
+.cotiz-estado-rechazada{background:rgba(229,62,62,.25);color:#f87171;}
+.cotiz-estado-pendiente{background:rgba(214,158,46,.25);color:var(--gold);}
+.cotiz-upload-zone{border:2px dashed var(--blue);border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:.2s;background:rgba(26,58,143,.07);}
+.cotiz-upload-zone:hover{border-color:var(--gold);background:rgba(232,160,32,.07);}
+.cotiz-upload-zone input[type=file]{display:none;}
+.cotiz-upload-icon{font-size:30px;margin-bottom:6px;}
+.cotiz-upload-text{color:var(--text-muted);font-size:12px;}
+.cotiz-preview-img{max-width:100%;max-height:180px;border-radius:8px;margin-top:8px;display:none;}
+.cotiz-table{width:100%;border-collapse:collapse;font-size:11px;}
+.cotiz-table th{background:rgba(15,43,91,.9);padding:7px 5px;color:var(--text-muted);text-align:left;font-weight:700;font-size:10px;white-space:nowrap;}
+.cotiz-table td{padding:4px 5px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;}
+.cotiz-table td input,.cotiz-table td select{background:transparent;border:1px solid transparent;border-radius:3px;padding:3px 4px;color:#fff;width:100%;font-size:11px;min-width:40px;}
+.cotiz-table td input:focus,.cotiz-table td select:focus{border-color:var(--blue);outline:none;background:rgba(26,58,143,.2);}
+.cotiz-totals-box{display:flex;flex-direction:column;align-items:flex-end;gap:3px;margin-top:10px;}
+.cotiz-tot-row{display:flex;gap:16px;min-width:240px;justify-content:space-between;font-size:13px;padding:2px 0;}
+.cotiz-tot-row.grand{font-size:15px;font-weight:700;color:var(--gold);border-top:1px solid rgba(255,255,255,.15);padding-top:8px;margin-top:4px;}
+.cotiz-ai-status{display:flex;align-items:center;gap:10px;padding:10px;background:rgba(26,58,143,.15);border-radius:8px;margin:8px 0;font-size:13px;color:var(--text-muted);}
+.cotiz-ai-spinner{width:16px;height:16px;border:2px solid var(--blue);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -768,52 +783,154 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       </div>
 
       <!-- COTIZACIONES IA -->
-      <div class="page" id="page-cotizaciones">
-        <div class="cotiz-card">
-          <h3>&#x1F3E2; Datos del cliente</h3>
-          <div class="form-row">
-            <div class="form-group"><label>Cliente / Empresa</label><input type="text" id="cotiz-cliente" placeholder="Nombre del cliente"></div>
-            <div class="form-group"><label>Proyecto / Referencia</label><input type="text" id="cotiz-proyecto" placeholder="Nombre del proyecto"></div>
+            <div class="page" id="page-cotizaciones">
+        <!-- TABS -->
+        <div class="cotiz-tabs">
+          <div class="cotiz-tab active" id="ctab-nueva" onclick="cotizShowTab('nueva')">📝 Nueva Cotización</div>
+          <div class="cotiz-tab" id="ctab-bd" onclick="cotizShowTab('bd')">📊 Base de Datos</div>
+        </div>
+
+        <!-- ═══ TAB NUEVA COTIZACIÓN ═══ -->
+        <div class="cotiz-tab-content active" id="cotiz-tab-nueva">
+          <!-- Encabezado -->
+          <div class="cotiz-card">
+            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+              <div style="flex:1;min-width:260px;">
+                <div style="font-size:11px;color:var(--text-muted);font-weight:700;margin-bottom:2px;">E&G ENERGY GROUP SAS — CARRERA 7 #12-61 CHÍA — TEL 3204947227</div>
+                <div style="font-size:10px;color:var(--text-muted);margin-bottom:14px;">CORREO: COMERCIAL1@EYGENERGYGROUP.COM</div>
+                <div class="form-row">
+                  <div class="form-group"><label>CLIENTE</label><input type="text" id="cotiz-cliente" placeholder="Empresa cliente"></div>
+                  <div class="form-group"><label>CONTACTO</label><input type="text" id="cotiz-contacto" placeholder="Nombre contacto"></div>
+                </div>
+                <div class="form-group"><label>CORREO</label><input type="email" id="cotiz-correo" placeholder="correo@empresa.com"></div>
+              </div>
+              <div style="min-width:210px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                  <span style="color:var(--text-muted);font-size:11px;font-weight:700;">COTIZACIÓN No.</span>
+                  <span class="cotiz-no-val" id="cotiz-numero">LM----</span>
+                </div>
+                <div class="form-group" style="margin-bottom:8px;">
+                  <label>ESTADO</label>
+                  <select id="cotiz-estado" style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
+                    <option value="Enviada">Enviada</option>
+                    <option value="Adjudicada">Adjudicada</option>
+                    <option value="Rechazada">Rechazada</option>
+                    <option value="Pendiente">Pendiente</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:8px;">
+                  <label>FECHA DE GENERACIÓN</label>
+                  <input type="date" id="cotiz-fecha-gen">
+                </div>
+                <div class="form-group" style="margin-bottom:8px;">
+                  <label>FECHA DE VENCIMIENTO</label>
+                  <input type="date" id="cotiz-fecha-venc">
+                </div>
+                <div class="form-group">
+                  <label>IVA %</label>
+                  <input type="number" id="cotiz-iva" value="19" min="0" max="100" oninput="cotizUpdateTotals()" style="width:80px;">
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="form-row">
-            <div class="form-group"><label>NIT / C&eacute;dula</label><input type="text" id="cotiz-nit" placeholder="NIT o c&eacute;dula"></div>
-            <div class="form-group"><label>Fecha</label><input type="date" id="cotiz-fecha"></div>
-            <div class="form-group"><label>IVA %</label><input type="number" id="cotiz-iva" value="19" min="0" max="100" style="width:80px;"></div>
+
+          <!-- IA Extract -->
+          <div class="cotiz-card">
+            <h3>📸 Cargar imagen o escribir ítems</h3>
+            <div class="cotiz-upload-zone" onclick="document.getElementById('cotiz-file').click()" id="cotiz-drop-zone">
+              <input type="file" id="cotiz-file" accept="image/*" onchange="cotizLoadFile(this)">
+              <div class="cotiz-upload-icon">📷</div>
+              <div style="font-weight:600;margin-bottom:4px;font-size:13px;">Haz clic para subir una imagen</div>
+              <div class="cotiz-upload-text">Foto de lista de materiales, pedido en papel, WhatsApp, etc.</div>
+              <img id="cotiz-img-preview" class="cotiz-preview-img">
+            </div>
+            <div style="text-align:center;color:var(--text-muted);margin:10px 0;font-size:12px;">— o escribe / pega el texto —</div>
+            <textarea id="cotiz-text-input" rows="3" placeholder="Ej: 3000 espárragos 5/8&quot; x 3½&quot; doble tuerca, 100 bridas de 2&quot; SCH40..." style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px;color:#fff;resize:vertical;font-size:12px;"></textarea>
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="cotizExtract()" style="width:auto;font-size:13px;">🤖 Extraer ítems con IA</button>
+              <button class="btn btn-secondary" onclick="cotizAddRow()" style="width:auto;font-size:13px;">+ Fila manual</button>
+              <button class="btn btn-secondary" onclick="cotizClear()" style="width:auto;font-size:13px;">🗑 Limpiar ítems</button>
+            </div>
+            <div id="cotiz-ai-status" style="display:none;" class="cotiz-ai-status">
+              <div class="cotiz-ai-spinner"></div>
+              <span id="cotiz-ai-msg">Analizando con IA...</span>
+            </div>
+          </div>
+
+          <!-- Tabla de ítems (formato COTIZADOR) -->
+          <div class="cotiz-card">
+            <h3>📋 Ítems de la cotización</h3>
+            <div style="overflow-x:auto;">
+              <table class="cotiz-table" id="cotiz-table">
+                <thead>
+                  <tr>
+                    <th style="width:28px">ITEM</th>
+                    <th style="width:50px">UDM</th>
+                    <th style="width:55px">CANTIDAD</th>
+                    <th style="min-width:180px">DESCRIPCIÓN</th>
+                    <th style="width:90px">T. ENTREGA</th>
+                    <th style="width:130px">DESV. TÉCNICA</th>
+                    <th style="width:70px">MARCA</th>
+                    <th style="width:90px">V. UNITARIO</th>
+                    <th style="width:90px">V. TOTAL</th>
+                    <th style="width:80px">PROVEEDOR</th>
+                    <th style="width:22px"></th>
+                  </tr>
+                </thead>
+                <tbody id="cotiz-tbody"></tbody>
+              </table>
+            </div>
+            <div class="cotiz-totals-box" id="cotiz-totals"></div>
+          </div>
+
+          <!-- Observaciones + Condiciones -->
+          <div class="cotiz-card">
+            <h3>📄 Observaciones y condiciones comerciales</h3>
+            <div class="form-group">
+              <label>OBSERVACIONES</label>
+              <textarea id="cotiz-observaciones" rows="3" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:8px;color:#fff;font-size:12px;resize:vertical;">LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&amp;G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.</textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>FORMA DE PAGO</label><input type="text" id="cotiz-pago" placeholder="Ej: 30 días" value="30 DÍAS"></div>
+              <div class="form-group"><label>SITIO DE ENTREGA</label><input type="text" id="cotiz-sitio" placeholder="Ej: Bogotá"></div>
+              <div class="form-group"><label>VALIDEZ DE LA OFERTA</label><input type="text" id="cotiz-validez" placeholder="Ej: 8 días" value="8 DÍAS"></div>
+            </div>
+          </div>
+
+          <!-- Botones -->
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
+            <button class="btn btn-primary" onclick="cotizGuardarBD()" style="width:auto;font-size:13px;">💾 Guardar en base de datos</button>
+            <button class="btn btn-primary" onclick="cotizDownloadExcel()" style="width:auto;font-size:13px;background:rgba(46,170,74,.3);border-color:#2eaa4a;">⬇️ Descargar Excel</button>
+            <button class="btn btn-secondary" onclick="cotizNueva()" style="width:auto;font-size:13px;">+ Nueva cotización</button>
           </div>
         </div>
-        <div class="cotiz-card">
-          <h3>&#x1F4F8; Cargar imagen o escribir &iacute;tems</h3>
-          <div class="cotiz-upload-zone" onclick="document.getElementById('cotiz-file').click()" id="cotiz-drop-zone">
-            <input type="file" id="cotiz-file" accept="image/*" onchange="cotizLoadFile(this)">
-            <div style="font-size:36px;margin-bottom:8px;">&#x1F4F7;</div>
-            <div style="font-weight:600;margin-bottom:4px;">Haz clic para subir una imagen</div>
-            <div class="cotiz-upload-text">Foto de lista de materiales, pedido en papel, WhatsApp, etc.</div>
-            <img id="cotiz-img-preview" class="cotiz-preview-img">
+
+        <!-- ═══ TAB BASE DE DATOS ═══ -->
+        <div class="cotiz-tab-content" id="cotiz-tab-bd">
+          <div class="bd-stats" id="bd-stats-bar"></div>
+          <div class="bd-filters">
+            <button class="bd-filter-btn active" onclick="bdFilter('todas',this)">Todas</button>
+            <button class="bd-filter-btn" onclick="bdFilter('Enviada',this)">📤 Enviadas</button>
+            <button class="bd-filter-btn" onclick="bdFilter('Adjudicada',this)">✅ Adjudicadas</button>
+            <button class="bd-filter-btn" onclick="bdFilter('Rechazada',this)">❌ Rechazadas</button>
+            <button class="bd-filter-btn" onclick="bdFilter('Pendiente',this)">⏳ Pendientes</button>
           </div>
-          <div style="text-align:center;color:var(--text-muted);margin:12px 0;font-size:13px;">&mdash; o escribe / pega el texto &mdash;</div>
-          <textarea id="cotiz-text-input" rows="4" placeholder="Ejemplo:&#10;2 cables THHN 12 AWG 100m&#10;5 breakers 20A" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:12px;color:#fff;resize:vertical;font-size:13px;box-sizing:border-box;"></textarea>
-          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="btn btn-primary" onclick="cotizExtract()" style="width:auto;">&#x1F916; Extraer &iacute;tems con IA</button>
-            <button class="btn btn-secondary" onclick="cotizAddRow()" style="width:auto;">+ Agregar fila manual</button>
-            <button class="btn btn-secondary" onclick="cotizClear()" style="width:auto;">&#x1F5D1; Limpiar</button>
-          </div>
-          <div id="cotiz-ai-status" style="display:none;" class="cotiz-ai-status">
-            <div class="cotiz-ai-spinner"></div>
-            <span id="cotiz-ai-msg">Analizando con IA...</span>
-          </div>
-        </div>
-        <div class="cotiz-card">
-          <h3>&#x1F4CB; &Iacute;tems de la cotizaci&oacute;n</h3>
           <div style="overflow-x:auto;">
-            <table class="cotiz-items-table" id="cotiz-table">
-              <thead><tr><th>#</th><th style="width:38%">Descripci&oacute;n</th><th>Unidad</th><th>Cant.</th><th>Precio Unit.</th><th>Total</th><th></th></tr></thead>
-              <tbody id="cotiz-tbody"></tbody>
+            <table class="bd-table">
+              <thead>
+                <tr>
+                  <th>COT. No.</th><th>FECHA</th><th>CLIENTE</th><th>CONTACTO</th>
+                  <th>TOTAL</th><th>VENCE</th><th>ESTADO</th><th>ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody id="bd-tbody"></tbody>
             </table>
           </div>
-          <div class="cotiz-totals" id="cotiz-totals"></div>
-        </div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
-          <button class="btn btn-primary" onclick="cotizDownloadExcel()" style="width:auto;">&#x2B07;&#xFE0F; Descargar Excel</button>
+          <div id="bd-empty" style="display:none;text-align:center;padding:40px;color:var(--text-muted);">
+            <div style="font-size:36px;margin-bottom:8px;">📋</div>
+            <div>No hay cotizaciones guardadas aún.</div>
+            <div style="font-size:12px;margin-top:4px;">Crea una cotización y guárdala para verla aquí.</div>
+          </div>
         </div>
       </div>
 
@@ -2138,6 +2255,29 @@ function saveApiKey() {
 // ===== COTIZACIONES IA =====
 let cotizItems = [];
 let cotizImgBase64 = null;
+let cotizEditId = null;
+
+const COTIZ_ESTADOS_COLOR = {
+  'Enviada':'cotiz-estado-enviada',
+  'Adjudicada':'cotiz-estado-adjudicada',
+  'Rechazada':'cotiz-estado-rechazada',
+  'Pendiente':'cotiz-estado-pendiente'
+};
+
+function cotizGetNextNum() {
+  const bd = getData('bd_cotizaciones', []);
+  if (!bd.length) return 'LM1001';
+  const nums = bd.map(c => parseInt(c.id.replace('LM',''))||0);
+  return 'LM' + (Math.max(...nums) + 1);
+}
+
+function cotizShowTab(tab) {
+  document.querySelectorAll('.cotiz-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.cotiz-tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('ctab-' + tab).classList.add('active');
+  document.getElementById('cotiz-tab-' + tab).classList.add('active');
+  if (tab === 'bd') bdRender();
+}
 
 function cotizLoadFile(input) {
   const file = input.files[0];
@@ -2156,108 +2296,356 @@ async function cotizExtract() {
   const apiKey = localStorage.getItem('claude_api_key');
   if (!apiKey) { showToast('Configura tu API Key de Claude en Configuración primero','error'); return; }
   const textInput = document.getElementById('cotiz-text-input').value.trim();
-  if (!cotizImgBase64 && !textInput) { showToast('Sube una imagen o escribe los ítems','error'); return; }
+  if (!cotizImgBase64 && !textInput) { showToast('Sube una imagen o escribe el texto','error'); return; }
   const status = document.getElementById('cotiz-ai-status');
   const msg = document.getElementById('cotiz-ai-msg');
   status.style.display = 'flex';
   msg.textContent = cotizImgBase64 ? 'Analizando imagen con IA...' : 'Extrayendo ítems con IA...';
   try {
     const messages = [];
+    const prompt = 'Extrae todos los ítems de esta solicitud de cotización. Devuelve SOLO un JSON array exactamente así (sin markdown):\n[{"desc":"descripción completa","udm":"EA","qty":1,"precio":0,"tiempoEntrega":"1-2 DIAS","desvTec":"","marca":"","proveedor":""}]\nUDM puede ser EA,MTR,KG,LT,ML,GL,UN,etc. Si no sabes el precio deja 0.';
     if (cotizImgBase64) {
       const b64 = cotizImgBase64.split(',')[1];
       const mime = cotizImgBase64.split(';')[0].split(':')[1];
       messages.push({ role:'user', content:[
         { type:'image', source:{ type:'base64', media_type:mime, data:b64 } },
-        { type:'text', text:(textInput?'Texto adicional: '+textInput+'\n\n':'')+'Extrae todos los ítems de esta lista. Devuelve SOLO un JSON array sin markdown:\n[{\"desc\":\"descripción\",\"unit\":\"und\",\"qty\":1,\"price\":0}]\nSi no sabes el precio deja 0.' }
+        { type:'text', text: (textInput ? 'Texto adicional: ' + textInput + '\n\n' : '') + prompt }
       ]});
     } else {
-      messages.push({ role:'user', content:'Extrae los ítems de esta lista:\n\n'+textInput+'\n\nDevuelve SOLO JSON array sin markdown:\n[{\"desc\":\"descripción\",\"unit\":\"und\",\"qty\":1,\"price\":0}]' });
+      messages.push({ role:'user', content: 'Lista para cotizar:\n\n' + textInput + '\n\n' + prompt });
     }
-    const resp = await fetch('https://api.anthropic.com/v1/messages',{
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
-      headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json'},
-      body:JSON.stringify({model:'claude-opus-4-5',max_tokens:2000,messages})
+      headers:{ 'x-api-key':apiKey, 'anthropic-version':'2023-06-01', 'content-type':'application/json', 'anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:2000, messages })
     });
     const data = await resp.json();
-    const raw = data.content?.[0]?.text||'[]';
-    const items = JSON.parse(raw.replace(/```json|```/g,'').trim());
-    cotizItems = items.map((it,i)=>({id:i+1,desc:it.desc||'',unit:it.unit||'und',qty:Number(it.qty)||1,price:Number(it.price)||0}));
+    const raw = data.content?.[0]?.text || '[]';
+    const cleaned = raw.replace(/```json|```/g,'').trim();
+    const items = JSON.parse(cleaned);
+    cotizItems = items.map((it,i) => ({
+      id: i+1,
+      desc: it.desc || '',
+      udm: it.udm || 'EA',
+      qty: Number(it.qty) || 1,
+      precio: Number(it.precio) || 0,
+      tiempoEntrega: it.tiempoEntrega || '1-2 DIAS',
+      desvTec: it.desvTec || '',
+      marca: it.marca || '',
+      proveedor: it.proveedor || ''
+    }));
     cotizRender();
-    showToast('¡'+cotizItems.length+' ítems extraidos!','success');
-  } catch(e) { showToast('Error IA: '+e.message,'error'); }
-  finally { status.style.display='none'; }
+    showToast('¡' + cotizItems.length + ' ítems extraídos!','success');
+  } catch(e) {
+    showToast('Error al procesar con IA: ' + e.message,'error');
+  } finally {
+    status.style.display = 'none';
+  }
 }
 
 function cotizRender() {
   const tbody = document.getElementById('cotiz-tbody');
-  if(!tbody) return;
-  tbody.innerHTML = cotizItems.map((it,i)=>`
+  if (!tbody) return;
+  tbody.innerHTML = cotizItems.map((it,i) => `
     <tr>
-      <td style="color:var(--text-muted)">${i+1}</td>
-      <td><input value="${it.desc.replace(/"/g,'&quot;')}" oninput="cotizItems[${i}].desc=this.value"></td>
-      <td><input value="${it.unit}" oninput="cotizItems[${i}].unit=this.value" style="width:60px"></td>
-      <td><input type="number" value="${it.qty}" min="0" oninput="cotizItems[${i}].qty=parseFloat(this.value)||0;cotizUpdateTotals()" style="width:65px"></td>
-      <td><input type="number" value="${it.price}" min="0" oninput="cotizItems[${i}].price=parseFloat(this.value)||0;cotizUpdateTotals()" style="width:95px" placeholder="0"></td>
-      <td style="color:var(--gold);font-weight:600">${(it.qty*it.price).toLocaleString('es-CO')}</td>
-      <td><button onclick="cotizItems.splice(${i},1);cotizRender()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;line-height:1">&times;</button></td>
+      <td style="color:var(--text-muted);text-align:center">${i+1}</td>
+      <td><input value="${it.udm||'EA'}" oninput="cotizItems[${i}].udm=this.value" style="width:44px"></td>
+      <td><input type="number" value="${it.qty}" min="0" oninput="cotizItems[${i}].qty=parseFloat(this.value)||0;cotizUpdateTotals()" style="width:50px"></td>
+      <td><input value="${it.desc.replace(/"/g,'&quot;')}" oninput="cotizItems[${i}].desc=this.value" style="width:100%;min-width:160px"></td>
+      <td><input value="${it.tiempoEntrega||''}" oninput="cotizItems[${i}].tiempoEntrega=this.value" style="width:80px"></td>
+      <td><input value="${it.desvTec||''}" oninput="cotizItems[${i}].desvTec=this.value" style="width:120px"></td>
+      <td><input value="${it.marca||''}" oninput="cotizItems[${i}].marca=this.value" style="width:62px"></td>
+      <td><input type="number" value="${it.precio}" min="0" oninput="cotizItems[${i}].precio=parseFloat(this.value)||0;cotizUpdateTotals()" style="width:82px"></td>
+      <td style="color:var(--gold);font-weight:600;text-align:right;white-space:nowrap">$${(it.qty*(it.precio||0)).toLocaleString('es-CO')}</td>
+      <td><input value="${it.proveedor||''}" oninput="cotizItems[${i}].proveedor=this.value" style="width:72px"></td>
+      <td><button onclick="cotizItems.splice(${i},1);cotizRender()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">×</button></td>
     </tr>`).join('');
   cotizUpdateTotals();
 }
 
 function cotizUpdateTotals() {
-  const iva = parseFloat(document.getElementById('cotiz-iva')?.value)||0;
-  const sub = cotizItems.reduce((s,it)=>s+it.qty*it.price,0);
-  const ivaV = sub*iva/100;
-  const tot = sub+ivaV;
+  const iva = parseFloat(document.getElementById('cotiz-iva').value) || 0;
+  const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
+  const ivaVal = subtotal * iva / 100;
+  const total = subtotal + ivaVal;
   const el = document.getElementById('cotiz-totals');
-  if(el) el.innerHTML=`
-    <div class="cotiz-total-row"><span>Subtotal</span><span>${sub.toLocaleString('es-CO')}</span></div>
-    <div class="cotiz-total-row"><span>IVA ${iva}%</span><span>${ivaV.toLocaleString('es-CO')}</span></div>
-    <div class="cotiz-total-row grand"><span>TOTAL</span><span>${tot.toLocaleString('es-CO')}</span></div>`;
+  if (!el) return;
+  el.innerHTML = `
+    <div class="cotiz-tot-row"><span>SUBTOTAL</span><span>$${subtotal.toLocaleString('es-CO',{minimumFractionDigits:0})}</span></div>
+    <div class="cotiz-tot-row"><span>IVA ${iva}%</span><span>$${ivaVal.toLocaleString('es-CO',{minimumFractionDigits:0})}</span></div>
+    <div class="cotiz-tot-row grand"><span>TOTAL</span><span>$${total.toLocaleString('es-CO',{minimumFractionDigits:0})}</span></div>`;
 }
 
-function cotizAddRow() { cotizItems.push({id:cotizItems.length+1,desc:'',unit:'und',qty:1,price:0}); cotizRender(); }
+function cotizAddRow() {
+  cotizItems.push({ id:cotizItems.length+1, desc:'', udm:'EA', qty:1, precio:0, tiempoEntrega:'1-2 DIAS', desvTec:'', marca:'', proveedor:'' });
+  cotizRender();
+}
 
 function cotizClear() {
-  cotizItems=[];cotizImgBase64=null;
-  const p=document.getElementById('cotiz-img-preview'); if(p){p.style.display='none';p.src='';}
-  const t=document.getElementById('cotiz-text-input'); if(t) t.value='';
-  const f=document.getElementById('cotiz-file'); if(f) f.value='';
+  cotizItems = [];
+  cotizImgBase64 = null;
+  const prev = document.getElementById('cotiz-img-preview');
+  if (prev) { prev.style.display='none'; prev.src=''; }
+  const ti = document.getElementById('cotiz-text-input');
+  if (ti) ti.value = '';
+  const fi = document.getElementById('cotiz-file');
+  if (fi) fi.value = '';
   cotizRender();
+}
+
+function cotizNueva() {
+  cotizEditId = null;
+  cotizItems = [];
+  cotizImgBase64 = null;
+  document.getElementById('cotiz-cliente').value = '';
+  document.getElementById('cotiz-contacto').value = '';
+  document.getElementById('cotiz-correo').value = '';
+  document.getElementById('cotiz-estado').value = 'Enviada';
+  document.getElementById('cotiz-iva').value = '19';
+  document.getElementById('cotiz-pago').value = '30 DÍAS';
+  document.getElementById('cotiz-sitio').value = '';
+  document.getElementById('cotiz-validez').value = '8 DÍAS';
+  document.getElementById('cotiz-observaciones').value = 'LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.';
+  const today2 = new Date().toISOString().split('T')[0];
+  document.getElementById('cotiz-fecha-gen').value = today2;
+  const venc = new Date(); venc.setDate(venc.getDate()+8);
+  document.getElementById('cotiz-fecha-venc').value = venc.toISOString().split('T')[0];
+  document.getElementById('cotiz-numero').textContent = cotizGetNextNum();
+  cotizRender();
+  cotizShowTab('nueva');
+  showToast('Nueva cotización lista','success');
+}
+
+function cotizGuardarBD() {
+  const cliente = document.getElementById('cotiz-cliente').value.trim();
+  if (!cliente) { showToast('Ingresa el nombre del cliente','error'); return; }
+  if (!cotizItems.length) { showToast('Agrega al menos un ítem','error'); return; }
+  const iva = parseFloat(document.getElementById('cotiz-iva').value) || 0;
+  const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
+  const ivaVal = subtotal * iva / 100;
+  const total = subtotal + ivaVal;
+  const id = cotizEditId || document.getElementById('cotiz-numero').textContent;
+  const bd = getData('bd_cotizaciones', []);
+  const idx = bd.findIndex(c => c.id === id);
+  const record = {
+    id,
+    fecha: document.getElementById('cotiz-fecha-gen').value,
+    fechaVenc: document.getElementById('cotiz-fecha-venc').value,
+    cliente,
+    contacto: document.getElementById('cotiz-contacto').value,
+    correo: document.getElementById('cotiz-correo').value,
+    estado: document.getElementById('cotiz-estado').value,
+    iva,
+    subtotal,
+    ivaVal,
+    total,
+    formaPago: document.getElementById('cotiz-pago').value,
+    sitioEntrega: document.getElementById('cotiz-sitio').value,
+    validez: document.getElementById('cotiz-validez').value,
+    observaciones: document.getElementById('cotiz-observaciones').value,
+    items: JSON.parse(JSON.stringify(cotizItems)),
+    fechaGuardado: new Date().toISOString()
+  };
+  if (idx >= 0) {
+    bd[idx] = record;
+    showToast('Cotización ' + id + ' actualizada','success');
+  } else {
+    bd.push(record);
+    showToast('Cotización ' + id + ' guardada en base de datos','success');
+  }
+  saveData('bd_cotizaciones', bd);
+  cotizEditId = id;
 }
 
 function cotizDownloadExcel() {
-  if(!cotizItems.length){showToast('Agrega ítems primero','error');return;}
-  if(typeof XLSX==='undefined'){showToast('Cargando librería...','info');return;}
-  const cliente=document.getElementById('cotiz-cliente').value||'Cliente';
-  const proyecto=document.getElementById('cotiz-proyecto').value||'';
-  const nit=document.getElementById('cotiz-nit').value||'';
-  const fecha=document.getElementById('cotiz-fecha').value||new Date().toISOString().split('T')[0];
-  const iva=parseFloat(document.getElementById('cotiz-iva').value)||0;
-  const sub=cotizItems.reduce((s,it)=>s+it.qty*it.price,0);
-  const ivaV=sub*iva/100; const tot=sub+ivaV;
-  const rows=[
-    ['E&G ENERGY GROUP SAS'],['COTIZACIÓN'],[],
-    ['Cliente:',cliente,'','Fecha:',fecha],
-    ['NIT/CC:',nit,'','Proyecto:',proyecto],[],
-    ['#','Descripción','Unidad','Cantidad','Precio Unitario','Total'],
-    ...cotizItems.map((it,i)=>[i+1,it.desc,it.unit,it.qty,it.price,it.qty*it.price]),
-    [],[' ',' ',' ',' ','Subtotal',sub],[' ',' ',' ',' ','IVA '+iva+'%',ivaV],[' ',' ',' ',' ','TOTAL',tot]
+  if (!cotizItems.length) { showToast('Agrega ítems primero','error'); return; }
+  const cliente = document.getElementById('cotiz-cliente').value || 'Cliente';
+  const contacto = document.getElementById('cotiz-contacto').value || '';
+  const correo = document.getElementById('cotiz-correo').value || '';
+  const numCot = document.getElementById('cotiz-numero').textContent;
+  const estado = document.getElementById('cotiz-estado').value;
+  const fechaGen = document.getElementById('cotiz-fecha-gen').value;
+  const fechaVenc = document.getElementById('cotiz-fecha-venc').value;
+  const iva = parseFloat(document.getElementById('cotiz-iva').value) || 0;
+  const observaciones = document.getElementById('cotiz-observaciones').value;
+  const formaPago = document.getElementById('cotiz-pago').value;
+  const sitio = document.getElementById('cotiz-sitio').value;
+  const validez = document.getElementById('cotiz-validez').value;
+  const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
+  const ivaVal = subtotal * iva / 100;
+  const total = subtotal + ivaVal;
+
+  const ws_data = [
+    // Row 1: Header
+    ['E&G ENERGY GROUP SAS  CARRERA 7 # 12-61 CHIA  TELEFONO 3204947227                    CORREO ELECTRONICO COMERCIAL1@EYGENERGYGROUP.COM', '', '', '', '', '', 'COTIZACION No.', numCot, '', 'ESTADO', estado, '', '', ''],
+    ['','','','','','','','','','','','','',''],
+    // Row 3: Cliente + Fecha
+    ['CLIENTE', '', '', cliente, '', '', 'FECHA', '', '', '', '', '', '', ''],
+    ['CONTACTO', '', '', contacto, '', '', 'FECHA DE GENERACION', '', fechaGen, '', '', '', '', ''],
+    ['CORREO', '', '', correo, '', '', 'FECHA DE VENCIMIENTO', '', fechaVenc, '', '', '', '', ''],
+    ['','','','','','','','','','','','','',''],
+    // Row 7: Headers
+    ['ITEM','UNIDAD DE MEDIDA','CANTIDAD','DESCRIPCION','TIEMPO DE ENTREGA','DESVIACION TECNICA','MARCA','VALOR UNITARIO','VALOR TOTAL','PROVEEDOR','PRECIO','APROBADO','',''],
   ];
-  const wb=XLSX.utils.book_new();
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols']=[{wch:5},{wch:40},{wch:10},{wch:10},{wch:15},{wch:15}];
-  ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:5}},{s:{r:1,c:0},e:{r:1,c:5}}];
-  XLSX.utils.book_append_sheet(wb,ws,'Cotización');
-  XLSX.writeFile(wb,'Cotizacion_'+cliente.replace(/\s/g,'_')+'_'+fecha+'.xlsx');
-  showToast('Excel descargado','success');
+
+  // Items rows
+  cotizItems.forEach((it, i) => {
+    ws_data.push([
+      i+1,
+      it.udm || 'EA',
+      it.qty || 0,
+      it.desc || '',
+      it.tiempoEntrega || '',
+      it.desvTec || '',
+      it.marca || '',
+      it.precio || 0,
+      (it.qty||0) * (it.precio||0),
+      it.proveedor || '',
+      '',
+      '',
+      '',
+      ''
+    ]);
+  });
+
+  // Totals + observaciones
+  ws_data.push(['','','','','','','','','','','','','','']);
+  ws_data.push(['OBSERVACIONES','','',observaciones,'','','','SUB TOTAL',subtotal,'','','','','']);
+  ws_data.push(['','','','','','','','IVA',ivaVal,'','','','','']);
+  ws_data.push(['','','','','','','','TOTAL',total,'','','','','']);
+  ws_data.push(['CONDICIONES COMERCIALES','','','FORMA DE PAGO','SITIO DE ENTREGA','','','VALIDEZ DE ESTA OFERTA','','','','','','']);
+  ws_data.push(['','','',formaPago,sitio,'','',validez,'','','','','','']);
+
+  const wb2 = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+  // Column widths (matching COTIZADOR cols A-N)
+  ws['!cols'] = [
+    {wch:6},{wch:12},{wch:8},{wch:40},{wch:14},{wch:30},{wch:10},{wch:14},{wch:14},{wch:12},{wch:12},{wch:10},{wch:6},{wch:6}
+  ];
+
+  // Merges for header
+  ws['!merges'] = [
+    {s:{r:0,c:0},e:{r:0,c:5}},   // company name
+    {s:{r:2,c:0},e:{r:2,c:2}},   // CLIENTE label
+    {s:{r:2,c:3},e:{r:2,c:5}},   // cliente value
+    {s:{r:3,c:0},e:{r:3,c:2}},   // CONTACTO label
+    {s:{r:3,c:3},e:{r:3,c:5}},   // contacto value
+    {s:{r:4,c:0},e:{r:4,c:2}},   // CORREO label
+    {s:{r:4,c:3},e:{r:4,c:5}},   // correo value
+  ];
+
+  XLSX.utils.book_append_sheet(wb2, ws, 'COTIZADOR');
+  XLSX.writeFile(wb2, 'Cotizacion_' + numCot + '_' + cliente.replace(/[\s\/\\]/g,'_') + '.xlsx');
+  showToast('Excel descargado: Cotizacion_' + numCot + '.xlsx','success');
+}
+
+function bdFilter(estado, btn) {
+  document.querySelectorAll('.bd-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  bdRender(estado);
+}
+
+function bdRender(filtro) {
+  const bd = getData('bd_cotizaciones', []);
+  const tbody = document.getElementById('bd-tbody');
+  const empty = document.getElementById('bd-empty');
+  if (!tbody) return;
+
+  // Stats
+  const stats = {todas:bd.length, Enviada:0, Adjudicada:0, Rechazada:0, Pendiente:0};
+  const totales = {Adjudicada:0, Enviada:0};
+  bd.forEach(c => { if(stats[c.estado]!==undefined) stats[c.estado]++; if(totales[c.estado]!==undefined) totales[c.estado]+=c.total||0; });
+  const sb = document.getElementById('bd-stats-bar');
+  if (sb) sb.innerHTML = `
+    <div class="bd-stat"><div class="bd-stat-num" style="color:var(--light)">${stats.todas}</div><div class="bd-stat-label">Total</div></div>
+    <div class="bd-stat"><div class="bd-stat-num" style="color:#7eb3ff">${stats.Enviada}</div><div class="bd-stat-label">Enviadas</div></div>
+    <div class="bd-stat"><div class="bd-stat-num" style="color:#4ade80">${stats.Adjudicada}</div><div class="bd-stat-label">Adjudicadas</div></div>
+    <div class="bd-stat"><div class="bd-stat-num" style="color:#f87171">${stats.Rechazada}</div><div class="bd-stat-label">Rechazadas</div></div>
+    <div class="bd-stat"><div class="bd-stat-num" style="color:var(--gold);font-size:13px">$${(totales.Adjudicada/1000000).toFixed(1)}M</div><div class="bd-stat-label">Valor Ganado</div></div>`;
+
+  const lista = filtro && filtro !== 'todas' ? bd.filter(c => c.estado === filtro) : [...bd];
+  lista.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
+
+  if (!lista.length) {
+    tbody.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  tbody.innerHTML = lista.map(c => {
+    const cls = COTIZ_ESTADOS_COLOR[c.estado] || 'cotiz-estado-pendiente';
+    return `<tr onclick="bdCargar('${c.id}')">
+      <td style="color:var(--gold);font-weight:700">${c.id}</td>
+      <td>${c.fecha||''}</td>
+      <td style="font-weight:600">${c.cliente||''}</td>
+      <td style="color:var(--text-muted)">${c.contacto||''}</td>
+      <td style="color:var(--gold);font-weight:600">$${(c.total||0).toLocaleString('es-CO',{minimumFractionDigits:0})}</td>
+      <td style="color:var(--text-muted)">${c.fechaVenc||''}</td>
+      <td><span class="cotiz-estado-badge ${cls}">${c.estado}</span></td>
+      <td onclick="event.stopPropagation()">
+        <div style="display:flex;gap:4px;">
+          <button class="btn-sm bd-btn-edit" onclick="bdCargar('${c.id}')">✏️ Editar</button>
+          <button class="btn-sm bd-btn-xl" onclick="bdDescargar('${c.id}')">⬇️ XLS</button>
+          <button class="btn-sm bd-btn-del" onclick="bdEliminar('${c.id}',event)">🗑</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function bdCargar(id) {
+  const bd = getData('bd_cotizaciones', []);
+  const c = bd.find(x => x.id === id);
+  if (!c) return;
+  cotizEditId = c.id;
+  cotizItems = JSON.parse(JSON.stringify(c.items || []));
+  document.getElementById('cotiz-numero').textContent = c.id;
+  document.getElementById('cotiz-cliente').value = c.cliente || '';
+  document.getElementById('cotiz-contacto').value = c.contacto || '';
+  document.getElementById('cotiz-correo').value = c.correo || '';
+  document.getElementById('cotiz-estado').value = c.estado || 'Enviada';
+  document.getElementById('cotiz-fecha-gen').value = c.fecha || '';
+  document.getElementById('cotiz-fecha-venc').value = c.fechaVenc || '';
+  document.getElementById('cotiz-iva').value = c.iva || 19;
+  document.getElementById('cotiz-pago').value = c.formaPago || '30 DÍAS';
+  document.getElementById('cotiz-sitio').value = c.sitioEntrega || '';
+  document.getElementById('cotiz-validez').value = c.validez || '8 DÍAS';
+  document.getElementById('cotiz-observaciones').value = c.observaciones || '';
+  cotizRender();
+  cotizShowTab('nueva');
+  showToast('Cotización ' + id + ' cargada para editar','success');
+}
+
+function bdDescargar(id) {
+  const bd = getData('bd_cotizaciones', []);
+  const c = bd.find(x => x.id === id);
+  if (!c) return;
+  bdCargar(id);
+  setTimeout(() => cotizDownloadExcel(), 300);
+}
+
+function bdEliminar(id, e) {
+  if (e) e.stopPropagation();
+  if (!confirm('¿Eliminar cotización ' + id + '?')) return;
+  const bd = getData('bd_cotizaciones', []).filter(c => c.id !== id);
+  saveData('bd_cotizaciones', bd);
+  bdRender();
+  showToast('Cotización eliminada','success');
 }
 
 function initCotizaciones() {
-  const f=document.getElementById('cotiz-fecha');
-  if(f&&!f.value) f.value=new Date().toISOString().split('T')[0];
-  cotizRender();
+  const today2 = new Date().toISOString().split('T')[0];
+  const venc = new Date(); venc.setDate(venc.getDate()+8);
+  document.getElementById('cotiz-fecha-gen').value = today2;
+  document.getElementById('cotiz-fecha-venc').value = venc.toISOString().split('T')[0];
+  if (!cotizEditId) {
+    document.getElementById('cotiz-numero').textContent = cotizGetNextNum();
+  }
+  if (!cotizItems.length) cotizRender();
 }
+
 
 function saveGhToken() {
   const token = document.getElementById('gh-token-input').value.trim();
