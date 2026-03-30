@@ -3231,4 +3231,21 @@ document.addEventListener('DOMContentLoaded', () => { setTimeout(initMsal, 1500)
 document.addEventListener('keydown', function(e) {
   if(e.key==='Escape') {
     document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
-    if(chatOpen
+    if(chatOpen) toggleChat();
+  }
+});
+
+// ===== OCULTAR SPLASH AL CARGAR =====
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    const splash = document.getElementById('splash');
+    if (splash) {
+      splash.style.transition = 'opacity 0.5s ease';
+      splash.style.opacity = '0';
+      setTimeout(function() { splash.style.display = 'none'; }, 500);
+    }
+  }, 2000);
+});
+</script>
+</body>
+</html>
