@@ -2081,7 +2081,7 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 });
 
 // ===== SAVE FUNCTIONS =====
-function saveReunion() {
+async function saveReunion(skipAutoTeams = false) {
   const titulo = document.getElementById('r-titulo').value.trim();
   if(!titulo) { showToast('Ingresa el título de la reunión','error'); return; }
 
@@ -2090,6 +2090,8 @@ function saveReunion() {
   const participantes = [...document.querySelectorAll('#participantes-checkboxes input:checked')].map(i=>parseInt(i.value));
   const savedFecha = document.getElementById('r-fecha').value;
   const savedHoraIn = document.getElementById('r-hora-inicio').value;
+  const savedHoraFin = document.getElementById('r-hora-fin').value;
+  const savedDesc = document.getElementById('r-descripcion').value;
   const savedTipo = document.getElementById('r-tipo').value;
 
   if (editMode) {
@@ -2102,10 +2104,10 @@ function saveReunion() {
         titulo,
         fecha: savedFecha,
         horaInicio: savedHoraIn,
-        horaFin: document.getElementById('r-hora-fin').value,
+        horaFin: savedHoraFin,
         tipo: savedTipo,
         participantes,
-        descripcion: document.getElementById('r-descripcion').value
+        descripcion: savedDesc
       };
       setData('meetings', meetings);
       showToast('Reunión actualizada correctamente','success');
@@ -2122,10 +2124,10 @@ function saveReunion() {
       id:newId, titulo,
       fecha: savedFecha,
       horaInicio: savedHoraIn,
-      horaFin: document.getElementById('r-hora-fin').value,
+      horaFin: savedHoraFin,
       tipo: savedTipo,
       participantes,
-      descripcion: document.getElementById('r-descripcion').value
+      descripcion: savedDesc
     });
     setData('meetings', meetings);
     notifyTeamsApp(
@@ -2133,6 +2135,34 @@ function saveReunion() {
       `**${titulo}**\n📅 ${savedFecha} · 🕐 ${savedHoraIn}\n📍 ${savedTipo}\n_Creada desde la app por ${currentUser ? currentUser.name : 'usuario'}_`,
       '2EAA4A'
     );
+  }
+
+  // ── Auto-crear reunión en Microsoft Teams si el usuario está conectado ──
+  if (!skipAutoTeams && !editMode && savedFecha && savedHoraIn && savedHoraFin) {
+    const teamsToken = await getToken();
+    if (teamsToken) {
+      try {
+        showToast('⏳ Creando reunión en Microsoft Teams...', 'info');
+        const startDT = new Date(savedFecha + 'T' + savedHoraIn + ':00');
+        const endDT   = new Date(savedFecha + 'T' + savedHoraFin + ':00');
+        const resp = await fetch('https://graph.microsoft.com/v1.0/me/onlineMeetings', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + teamsToken, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subject: titulo, startDateTime: startDT.toISOString(), endDateTime: endDT.toISOString() })
+        });
+        const data = await resp.json();
+        if (resp.ok && data.joinWebUrl) {
+          localStorage.setItem('last_teams_meeting_url', data.joinWebUrl);
+          showToast('✅ Reunión guardada y creada en Microsoft Teams', 'success');
+        } else {
+          showToast('Reunión guardada. Error Teams: ' + (data.error?.message || resp.status), 'error');
+        }
+      } catch(e) {
+        showToast('Reunión guardada. Error Teams: ' + e.message, 'error');
+      }
+    } else if (savedTipo === 'Teams') {
+      showToast('Reunión guardada. Para crearla en Teams inicia sesión en Configuración 🟣', 'info');
+    }
   }
 
   closeModal('modal-reunion');
@@ -3162,8 +3192,8 @@ async function saveReunionAndCreateTeams() {
     });
     const data = await resp.json();
     if (resp.ok && data.joinWebUrl) {
-      // Guardar reunión localmente también
-      saveReunion();
+      // Guardar reunión localmente (skipAutoTeams=true porque ya se creó arriba)
+      await saveReunion(true);
       // Mostrar link
       const linkDiv = document.getElementById('teams-meeting-link');
       const linkA = document.getElementById('teams-join-url');
