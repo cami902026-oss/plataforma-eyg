@@ -1041,6 +1041,33 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div id="team-mgmt-list"></div>
           <button class="btn btn-secondary" onclick="openModal('modal-miembro')" style="margin-top:16px;width:auto;">+ Agregar miembro</button>
         </div>
+
+        <!-- ===== CAMBIAR CLAVES — Solo Gerencia/Andrea ===== -->
+        <div id="claves-section" style="display:none;">
+          <div class="config-title">🔐 Cambiar Claves de Acceso <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(Solo Gerencia)</span></div>
+
+          <!-- Código de empresa -->
+          <div style="background:rgba(232,160,32,0.08);border:1px solid rgba(232,160,32,0.3);border-radius:12px;padding:16px;margin-bottom:16px;">
+            <div style="font-size:13px;color:var(--gold);font-weight:700;margin-bottom:12px;">🏢 Código de acceso de la empresa</div>
+            <div class="form-group" style="margin-bottom:8px;">
+              <label>Nuevo código de acceso</label>
+              <input type="text" id="new-access-code" placeholder="Ej: EYG2027" style="width:100%;letter-spacing:3px;text-transform:uppercase;">
+            </div>
+            <div class="form-group" style="margin-bottom:12px;">
+              <label>Confirmar código</label>
+              <input type="text" id="confirm-access-code" placeholder="Repetir código" style="width:100%;letter-spacing:3px;text-transform:uppercase;">
+            </div>
+            <button class="btn btn-primary" onclick="saveAccessCode()" style="width:auto;padding:8px 20px;background:var(--gold);color:#071525;">💾 Guardar código de empresa</button>
+          </div>
+
+          <!-- Contraseñas de usuarios -->
+          <div style="background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:13px;color:#fff;font-weight:700;margin-bottom:14px;">👥 Contraseñas individuales de usuarios</div>
+            <div id="user-passwords-list"></div>
+          </div>
+        </div>
+
+      </div>
       </div>
 
             <div class="page" id="page-inventario">
@@ -1498,9 +1525,48 @@ async function syncMeetingsFromAPI() {
 // ===== LOGIN =====
 // ===== CÓDIGO DE ACCESO =====
 const ACCESS_CODE = 'EYG2026';
+function getAccessCode() {
+  return localStorage.getItem('eyg_access_code') || ACCESS_CODE;
+}
+function getUserPassword(email) {
+  return localStorage.getItem('eyg_pass_' + email.toLowerCase()) || 'eyg2026';
+}
+function saveAccessCode() {
+  const newCode = document.getElementById('new-access-code').value.trim().toUpperCase();
+  const confirm = document.getElementById('confirm-access-code').value.trim().toUpperCase();
+  if (!newCode || newCode.length < 4) { showToast('El código debe tener al menos 4 caracteres', 'error'); return; }
+  if (newCode !== confirm) { showToast('Los códigos no coinciden', 'error'); return; }
+  localStorage.setItem('eyg_access_code', newCode);
+  document.getElementById('new-access-code').value = '';
+  document.getElementById('confirm-access-code').value = '';
+  showToast('✅ Código de acceso de la empresa actualizado', 'success');
+}
+function saveUserPassword(email) {
+  const newPass = document.getElementById('pass-' + email).value.trim().toLowerCase();
+  const confirm = document.getElementById('pass-confirm-' + email).value.trim().toLowerCase();
+  if (!newPass || newPass.length < 4) { showToast('La contraseña debe tener al menos 4 caracteres', 'error'); return; }
+  if (newPass !== confirm) { showToast('Las contraseñas no coinciden', 'error'); return; }
+  localStorage.setItem('eyg_pass_' + email, newPass);
+  document.getElementById('pass-' + email).value = '';
+  document.getElementById('pass-confirm-' + email).value = '';
+  showToast('✅ Contraseña de ' + email + ' actualizada', 'success');
+}
+function renderUserPasswords() {
+  const list = document.getElementById('user-passwords-list');
+  if (!list) return;
+  list.innerHTML = USERS.map(u => `
+    <div style="border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;background:rgba(255,255,255,0.02);">
+      <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:8px;">${u.name} <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(${u.email})</span></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input type="password" id="pass-${u.email}" placeholder="Nueva contraseña" style="flex:1;min-width:140px;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;">
+        <input type="password" id="pass-confirm-${u.email}" placeholder="Confirmar" style="flex:1;min-width:140px;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;">
+        <button onclick="saveUserPassword('${u.email}')" style="background:var(--green);border:none;color:#fff;border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;white-space:nowrap;">💾 Guardar</button>
+      </div>
+    </div>`).join('');
+}
 function checkAccess() {
-  const code = document.getElementById('access-code').value.trim();
-  if (code === ACCESS_CODE) {
+  const code = document.getElementById('access-code').value.trim().toUpperCase();
+  if (code === getAccessCode()) {
     sessionStorage.setItem('eyg_access', '1');
     document.getElementById('access-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
@@ -1515,7 +1581,7 @@ function checkAccess() {
 function doLogin() {
   const email = document.getElementById('login-email').value.trim().toLowerCase().replace(/\s+/g,'');
   const pass = document.getElementById('login-pass').value.trim().toLowerCase().replace(/\s+/g,'');
-  const u = USERS.find(u => u.email.toLowerCase()===email && u.password.toLowerCase()===pass);
+  const u = USERS.find(u => u.email.toLowerCase()===email && getUserPassword(u.email)===pass);
   if (!u) {
     showToast('Error — Usuario: "'+email+'" Clave: "'+pass+'"','error');
     return;
@@ -1577,6 +1643,14 @@ function initApp() {
   if (!localStorage.getItem('max_tasks')) setData('tasks', TASKS_DEFAULT);
   if (!localStorage.getItem('max_projects')) setData('projects', PROJECTS_DEFAULT);
   if (!localStorage.getItem('max_minutas')) setData('minutas', MINUTAS_DEFAULT);
+
+  // Mostrar sección de claves solo para alberto y andrea
+  const clavesSection = document.getElementById('claves-section');
+  if (clavesSection) {
+    const canManage = currentUser.email === 'alberto' || currentUser.email === 'andrea';
+    clavesSection.style.display = canManage ? 'block' : 'none';
+    if (canManage) renderUserPasswords();
+  }
 
   // Header user info
   const initials = currentUser.name.split(' ').map(n=>n[0]).join('').substring(0,2);
@@ -3047,8 +3121,22 @@ async function silentToken() {
 }
 
 async function msLogin() {
-  if (!msalInstance) initMsal();
+  // Verificar que la librería MSAL esté cargada
+  if (typeof msal === 'undefined') {
+    showToast('❌ Error: La librería de Microsoft no cargó. Recarga la página e intenta de nuevo.', 'error');
+    return;
+  }
+  // Inicializar si no está listo
+  if (!msalInstance) {
+    initMsal();
+    await new Promise(r => setTimeout(r, 800)); // esperar inicialización
+  }
+  if (!msalInstance) {
+    showToast('❌ No se pudo inicializar Microsoft Auth. Verifica el Client ID y Tenant ID en los campos de abajo y haz clic en "Guardar configuración" primero.', 'error');
+    return;
+  }
   try {
+    showToast('⏳ Abriendo ventana de Microsoft...', 'info');
     const resp = await msalInstance.loginPopup({
       scopes: ['User.Read','Chat.ReadWrite','OnlineMeetings.ReadWrite','Calendars.ReadWrite','Channel.ReadBasic.All','ChannelMessage.Send']
     });
@@ -3058,7 +3146,11 @@ async function msLogin() {
     showToast('✅ Sesión Microsoft iniciada: ' + msAccountInfo.username, 'success');
     msLoadChannels();
   } catch(e) {
-    showToast('Error al iniciar sesión: ' + (e.message||e), 'error');
+    if (e.errorCode === 'popup_window_error' || (e.message && e.message.includes('popup'))) {
+      showToast('❌ El popup fue bloqueado. Permite popups para este sitio en tu navegador y vuelve a intentar.', 'error');
+    } else {
+      showToast('Error al iniciar sesión: ' + (e.message||e), 'error');
+    }
   }
 }
 
