@@ -403,6 +403,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #splash-title { color:var(--gold);font-family:'Montserrat',sans-serif;font-weight:700;font-size:18px;letter-spacing:3px;text-align:center; }
 #splash-bar-wrap { margin-top:24px;width:200px;height:3px;background:#1e3a6e;border-radius:2px;overflow:hidden; }
 #splash-bar { height:100%;background:linear-gradient(90deg,#2EAA4A,#E8A020);animation:loading 1.5s ease forwards; }
+#splash { animation:fadeIn 0.3s ease, splashOut 0.5s ease 2.2s forwards; }
+@keyframes splashOut { to { opacity:0; visibility:hidden; pointer-events:none; } }
 
 /* ===== SECTION ACCENT ===== */
 .section-accent { height:2px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:1px;margin-bottom:20px;opacity:0.5; }
