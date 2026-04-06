@@ -63,7 +63,6 @@ def calculate_stats(inv: list) -> dict:
 def _stock(p): return int(p.get('STOCK ACTUAL') or 0)
 def _num(p, k): return int(p.get(k) or 0)
 
-
 # ─── 3. GENERA EL EMAIL HTML ──────────────────────────────────────────────────
 
 def generate_html(inv: list, stats: dict, date_str: str) -> str:
@@ -164,27 +163,42 @@ def generate_html(inv: list, stats: dict, date_str: str) -> str:
 </body>
 </html>"""
 
-
 # ─── 4. AUTENTICACIÓN MICROSOFT GRAPH ─────────────────────────────────────────
 
 def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
-    """Obtiene token de acceso usando Client Credentials Flow"""
-    url  = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
-    data = urllib.parse.urlencode({
-        'grant_type':    'client_credentials',
-        'client_id':     client_id,
-        'client_secret': client_secret,
-        'scope':         'https://graph.microsoft.com/.default'
-    }).encode()
+    """Obtiene token de acceso usando Client Credentials Flow (intenta v2.0 y v1.0)"""
+    endpoints = [
+        f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token',
+        f'https://login.microsoftonline.com/{tenant_id}/oauth2/token',
+    ]
+    scopes = [
+        'https://graph.microsoft.com/.default',
+        'https://graph.microsoft.com/',
+    ]
 
-    req = urllib.request.Request(url, data=data, method='POST')
-    try:
-        with urllib.request.urlopen(req) as resp:
-            return json.loads(resp.read())['access_token']
-    except urllib.error.HTTPError as e:
-        body = e.read().decode()
-        print(f"ERROR obteniendo token: {e.code} — {body}")
-        sys.exit(1)
+    for i, url in enumerate(endpoints):
+        data = urllib.parse.urlencode({
+            'grant_type':    'client_credentials',
+            'client_id':     client_id,
+            'client_secret': client_secret,
+            'scope' if i == 0 else 'resource':
+                scopes[i]
+        }).encode()
+
+        req = urllib.request.Request(url, data=data, method='POST')
+        print(f"🔑 Intentando endpoint {i+1}: {url}")
+        try:
+            with urllib.request.urlopen(req) as resp:
+                token = json.loads(resp.read())['access_token']
+                print(f"✅ Token obtenido con endpoint {i+1}")
+                return token
+        except urllib.error.HTTPError as e:
+            body = e.read().decode()
+            print(f"⚠️  Endpoint {i+1} falló: {e.code} — {body}")
+            if i == len(endpoints) - 1:
+                print("ERROR: Todos los endpoints fallaron.")
+                sys.exit(1)
+            print("↪️  Intentando siguiente endpoint...")
 
 
 # ─── 5. ENVÍA EL CORREO VIA GRAPH ─────────────────────────────────────────────
@@ -219,11 +233,18 @@ def send_email(token: str, sender: str, recipients: list, subject: str, html_bod
 if __name__ == '__main__':
 
     # Leer variables de entorno (definidas como GitHub Secrets)
-    tenant_id     = os.environ.get('MS_TENANT_ID',     '9876dbde-5a7f-4139-8c2d-60a4395fd7d6')
-    client_id     = os.environ.get('MS_CLIENT_ID',     '0c8bd7f5-a027-4da9-9d11-ccc27682b0ec')
-    client_secret = os.environ['MS_CLIENT_SECRET']        # OBLIGATORIO — definir en GitHub Secrets
-    sender_email  = os.environ['SENDER_EMAIL']            # ej: andrea.bernal@eygener.com
-    recipients    = os.environ['RECIPIENT_EMAILS'].split(',')  # ej: alberto@eyg.com,andrea@eyg.com
+    # .strip() elimina espacios, saltos de línea u otros caracteres invisibles
+    tenant_id     = os.environ.get('MS_TENANT_ID',     '9876dbde-5a7f-4139-8c2d-60a4395fd7d6').strip()
+    client_id     = os.environ.get('MS_CLIENT_ID',     '0c8bd7f5-a027-4da9-9d11-ccc27682b0ec').strip()
+    client_secret = os.environ['MS_CLIENT_SECRET'].strip()     # OBLIGATORIO — definir en GitHub Secrets
+    sender_email  = os.environ['SENDER_EMAIL'].strip()         # ej: andrea.bernal@eygener.com
+    recipients    = [r.strip() for r in os.environ['RECIPIENT_EMAILS'].split(',')]
+
+    # Debug: mostrar valores usados (sin exponer el secreto)
+    print(f"🔍 Tenant ID  : '{tenant_id}' (len={len(tenant_id)})")
+    print(f"🔍 Client ID  : '{client_id}' (len={len(client_id)})")
+    print(f"🔍 Secret len : {len(client_secret)} chars")
+    print(f"🔍 Sender     : '{sender_email}'")
 
     # Ruta al Index.html (raíz del repo)
     html_path = os.path.join(os.path.dirname(__file__), '..', 'Index.html')
