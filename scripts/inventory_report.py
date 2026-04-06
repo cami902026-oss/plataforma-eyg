@@ -33,7 +33,6 @@ def extract_inv_from_html(html_path: str) -> list:
     """Extrae el array INV_RAW del archivo Index.html"""
     with open(html_path, 'r', encoding='utf-8') as f:
         content = f.read()
-
     match = re.search(r'const INV_RAW\s*=\s*(\[[\s\S]*?\]);', content)
     if not match:
         print("ERROR: No se encontró 'const INV_RAW' en Index.html")
@@ -48,13 +47,13 @@ def extract_inv_from_html(html_path: str) -> list:
 # ─── 2. CALCULA ESTADÍSTICAS ──────────────────────────────────────────────────
 
 def calculate_stats(inv: list) -> dict:
-    total        = len(inv)
-    con_stock    = sum(1 for p in inv if _stock(p) > 0)
-    agotados     = sum(1 for p in inv if _stock(p) == 0)
-    entradas     = sum(_num(p, 'ENTRADAS') for p in inv)
-    salidas      = sum(_num(p, 'SALIDAS')  for p in inv)
-    rotacion     = round(salidas / total, 2) if total else 0
-    disponib     = round((con_stock / total) * 100, 1) if total else 0
+    total     = len(inv)
+    con_stock = sum(1 for p in inv if _stock(p) > 0)
+    agotados  = sum(1 for p in inv if _stock(p) == 0)
+    entradas  = sum(_num(p, 'ENTRADAS') for p in inv)
+    salidas   = sum(_num(p, 'SALIDAS')  for p in inv)
+    rotacion  = round(salidas / total, 2) if total else 0
+    disponib  = round((con_stock / total) * 100, 1) if total else 0
     return dict(total=total, con_stock=con_stock, agotados=agotados,
                 entradas=entradas, salidas=salidas, rotacion=rotacion,
                 disponib=disponib)
@@ -62,45 +61,66 @@ def calculate_stats(inv: list) -> dict:
 def _stock(p): return int(p.get('STOCK ACTUAL') or 0)
 def _num(p, k): return int(p.get(k) or 0)
 
+
 # ─── 3. GENERA EL EMAIL HTML ──────────────────────────────────────────────────
 
-def _stock_badge(stock: int) -> str:
+def _stock_badge(stock):
     if stock == 0:
         return "<span style='background:#fce8e6;color:#c0392b;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;'>Agotado</span>"
     elif stock <= 3:
-        return f"<span style='background:#fff8e1;color:#b7770d;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;'>⚠ {stock}</span>"
+        return "<span style='background:#fff8e1;color:#b7770d;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;'>&#9888; " + str(stock) + "</span>"
     else:
-        return f"<span style='background:#e6f4ea;color:#1e7e34;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;'>✓ {stock}</span>"
+        return "<span style='background:#e6f4ea;color:#1e7e34;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;'>&#10003; " + str(stock) + "</span>"
 
 
 def generate_html(inv: list, stats: dict, date_str: str) -> str:
-    # Ordenar: primero con stock (desc), luego agotados
     inv_sorted = sorted(inv, key=lambda p: (_stock(p) == 0, -_stock(p)))
 
-    # Tabla completa de inventario
     all_rows = ''.join(
-        f"<tr>"
-        f"<td style='font-family:monospace;font-size:11px;color:#555;'>{p.get('CODIGO PRODUCTO','')}</td>"
-        f"<td><b style='font-size:12px;'>{p.get('DESCRIPCION','')}</b></td>"
-        f"<td style='color:#666;'>{p.get('MARCA','-')}</td>"
-        f"<td style='color:#666;'>{p.get('UBICACIÓN') or p.get('UBICACION','-')}</td>"
-        f"<td style='text-align:center;'>{_stock_badge(_stock(p))}</td>"
-        f"<td style='text-align:center;color:#555;font-size:11px;'>+{_num(p,'ENTRADAS')} / -{_num(p,'SALIDAS')}</td>"
-        f"</tr>"
+        "<tr>"
+        "<td style='font-family:monospace;font-size:11px;color:#555;'>" + str(p.get('CODIGO PRODUCTO','')) + "</td>"
+        "<td><b style='font-size:12px;'>" + str(p.get('DESCRIPCION','')) + "</b></td>"
+        "<td style='color:#666;'>" + str(p.get('MARCA','-')) + "</td>"
+        "<td style='color:#666;'>" + str(p.get('UBICACIÓN') or p.get('UBICACION','-')) + "</td>"
+        "<td style='text-align:center;'>" + _stock_badge(_stock(p)) + "</td>"
+        "<td style='text-align:center;color:#555;font-size:11px;'>+" + str(_num(p,'ENTRADAS')) + " / -" + str(_num(p,'SALIDAS')) + "</td>"
+        "</tr>"
         for p in inv_sorted
     )
 
-    # Solo agotados para la sección de alerta
     agotados_rows = ''.join(
-        f"<tr>"
-        f"<td style='font-family:monospace;font-size:11px;'>{p.get('CODIGO PRODUCTO','')}</td>"
-        f"<td>{p.get('DESCRIPCION','')}</td>"
-        f"<td>{p.get('MARCA','-')}</td>"
-        f"<td>{p.get('UBICACIÓN') or p.get('UBICACION','-')}</td>"
-        f"</tr>"
+        "<tr>"
+        "<td style='font-family:monospace;font-size:11px;'>" + str(p.get('CODIGO PRODUCTO','')) + "</td>"
+        "<td>" + str(p.get('DESCRIPCION','')) + "</td>"
+        "<td>" + str(p.get('MARCA','-')) + "</td>"
+        "<td>" + str(p.get('UBICACIÓN') or p.get('UBICACION','-')) + "</td>"
+        "</tr>"
         for p in inv if _stock(p) == 0
     )
     agotados_count = stats['agotados']
+
+    pct_agot   = stats['agotados'] / max(stats['total'], 1)
+    health_msg = '&#9989; Inventario saludable' if pct_agot < 0.1 else '&#9888; +10% agotado &mdash; revisar reabastecimiento'
+
+    alert_box = ''
+    if agotados_count > 0:
+        alert_box = ('<div class="alert-box">&#9888;&#65039; <strong>' + str(agotados_count) +
+                     ' productos agotados</strong> &mdash; ver secci&oacute;n al final.</div>')
+
+    if agotados_count > 0:
+        agotados_section = (
+            '<div class="sec-title" style="color:#c0392b;">&#128308; Productos Agotados (' + str(agotados_count) + ')</div>'
+            '<table><thead><tr><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>Marca</th><th>Ubicaci&oacute;n</th></tr></thead>'
+            '<tbody>' + agotados_rows + '</tbody></table>'
+        )
+    else:
+        agotados_section = '<div class="meta">&#9989; No hay productos agotados.</div>'
+
+thead><tr><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>Marca</th><th>Ubicaci&oacute;n</th></tr></thead>'
+            '<tbody>' + agotados_rows + '</tbody></table>'
+        )
+    else:
+        agotados_section = '<div class="meta">&#9989; No hay productos agotados en este momento.</div>'
 
     return f"""<!DOCTYPE html>
 <html lang="es">
@@ -134,103 +154,132 @@ def generate_html(inv: list, stats: dict, date_str: str) -> str:
   .kd-box .klbl{{font-size:10px;color:#666;margin-top:4px;}}
   .meta{{background:#f8f9ff;border-radius:8px;padding:10px 14px;font-size:12px;color:#555;margin:10px 0;}}
   .meta span{{color:#0F2B5B;font-weight:700;}}
-  .search-bar{{width:100%;box-sizing:border-box;padding:9px 14px;font-size:13px;border:2px solid #c5d0e8;
-              border-radius:8px;margin-bottom:10px;outline:none;}}
+  .alert-box{{background:#fff3cd;border-left:4px solid #e8a020;border-radius:6px;
+              padding:10px 14px;font-size:12px;color:#7d5a00;margin:10px 0;}}
+  .search-wrap{{margin-bottom:10px;}}
+  .search-bar{{width:100%;box-sizing:border-box;padding:9px 14px;font-size:13px;
+               border:2px solid #c5d0e8;border-radius:8px;outline:none;}}
   .search-bar:focus{{border-color:#0F2B5B;}}
-  .search-tip{{font-size:11px;color:#888;margin-bottom:8px;}}
+  .search-tip{{font-size:11px;color:#888;margin:0 0 8px;}}
   table{{width:100%;border-collapse:collapse;font-size:12px;}}
   th{{background:#0F2B5B;color:#fff;padding:8px 10px;text-align:left;font-size:10px;
       text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}}
   td{{padding:7px 10px;border-bottom:1px solid #eef1f8;vertical-align:middle;}}
   tr:nth-child(even) td{{background:#f8f9ff;}}
   tr.hidden{{display:none;}}
+  #sinResultados{{display:none;text-align:center;color:#999;padding:20px;font-size:13px;}}
   .footer{{background:#071525;padding:16px;text-align:center;}}
   .footer p{{margin:3px 0;font-size:11px;color:#8899bb;}}
   .footer strong{{color:#E8A020;}}
-  .alert-box{{background:#fff3cd;border-left:4px solid #e8a020;border-radius:6px;
-              padding:10px 14px;font-size:12px;color:#7d5a00;margin:10px 0;}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="hdr">
-    <h1>⚡ ENERGY</h1>
-    <p>Reporte Diario de Inventario — {date_str}</p>
+    <h1>&#9889; ENERGY</h1>
+    <p>Reporte Diario de Inventario &mdash; {date_str}</p>
   </div>
   <div class="gold"></div>
   <div class="body">
-    <div class="sec-title">📦 Resumen General</div>
+
+    <div class="sec-title">&#128230; Resumen General</div>
     <div class="stats">
       <div class="st blue"><div class="num">{stats['total']}</div><div class="lbl">Total Productos</div></div>
       <div class="st green"><div class="num">{stats['con_stock']}</div><div class="lbl">Con Stock</div></div>
       <div class="st red"><div class="num">{stats['agotados']}</div><div class="lbl">Agotados</div></div>
     </div>
-    <div class="sec-title">📊 Movimientos Acumulados</div>
+
+    <div class="sec-title">&#128202; Movimientos Acumulados</div>
     <div class="kd">
       <div class="kd-box ent"><div class="knum">+{stats['entradas']}</div><div class="klbl">Total Entradas</div></div>
       <div class="kd-box sal"><div class="knum">-{stats['salidas']}</div><div class="klbl">Total Salidas</div></div>
     </div>
     <div class="meta">
-      🔄 Rotación: <span>{stats['rotacion']}</span> sal/prod &nbsp;| 
-      🎯 Disponibilidad: <span>{stats['disponib']}%</span> &nbsp;| 
-      {'\u2705 Inventario saludable' if stats['agotados']/max(stats['total'],1) < 0.1 else '⚠️ +10% agotado — revisar reabastecimiento'}
+      &#128260; Rotaci&oacute;n: <span>{stats['rotacion']}</span> sal/prod &nbsp;|&nbsp;
+      &#127919; Disponibilidad: <span>{stats['disponib']}%</span> &nbsp;|&nbsp;
+      {health_msg}
     </div>
-    {('<div class="alert-box">⚠️ <strong>' + str(agotados_count) + ' productos agotados</strong> — ver sección al final.</div>') if agotados_count > 0 else ''}
-    <div class="sec-title">🔍 Inventario Completo — {stats['total']} productos</div>
-    <p class="search-tip">💡 Escribe abajo para filtrar por código, nombre, marca o ubicación. También puedes usar <strong>Ctrl+F</strong>.</p>
-    <input class="search-bar" type="text" id="buscar" placeholder="🔍  Buscar producto, código, marca, ubicación..." oninput="filtrar()" />
+
+    {alert_box}
+
+    <div class="sec-title">&#128269; Inventario Completo &mdash; {stats['total']} productos</div>
+    <p class="search-tip">&#128161; Escribe para filtrar por c&oacute;digo, nombre, marca o ubicaci&oacute;n. Tambi&eacute;n puedes usar <strong>Ctrl+F</strong> en tu cliente de correo.</p>
+    <div class="search-wrap">
+      <input class="search-bar" type="text" id="buscar"
+             placeholder="&#128269;  Buscar producto, c&oacute;digo, marca, ubicaci&oacute;n..."
+             oninput="filtrar()" />
+    </div>
     <table id="tablaInv">
-      <thead><tr><th>Código</th><th>Descripción</th><th>Marca</th><th>Ubicación</th><th style="text-align:center;">Stock</th><th style="text-align:center;">Ent/Sal</th></tr></thead>
-      <tbody id="tbodyInv">{all_rows}</tbody>
+      <thead>
+        <tr>
+          <th>C&oacute;digo</th>
+          <th>Descripci&oacute;n</th>
+          <th>Marca</th>
+          <th>Ubicaci&oacute;n</th>
+          <th style="text-align:center;">Stock</th>
+          <th style="text-align:center;">Ent / Sal</th>
+        </tr>
+      </thead>
+      <tbody id="tbodyInv">
+        {all_rows}
+      </tbody>
     </table>
-    <p id="sinResultados" style="display:none;text-align:center;color:#999;padding:20px;">Sin resultados.</p>
-    {('<div class="sec-title" style="color:#c0392b;">🔴 Productos Agotados (' + str(agotados_count) + ')</div><table><thead><tr><th>Código</th><th>Descripción</th><th>Marca</th><th>Ubicación</th></tr></thead><tbody>' + agotados_rows + '</tbody></table>') if agotados_count > 0 else '<div class="meta">✅ Sin agotados.</div>'}
+    <p id="sinResultados">Sin resultados para esa b&uacute;squeda.</p>
+
+    {agotados_section}
+
   </div>
   <div class="footer">
-    <p>⚡ Generado por <strong>ENERGY — Asistente Administrativo</strong></p>
-    <p>E&amp;G Energy Group · Reporte automático L-V 5:00 PM Colombia</p>
+    <p>&#9889; Generado por <strong>ENERGY &mdash; Asistente Administrativo</strong></p>
+    <p>E&amp;G Energy Group &middot; Reporte autom&aacute;tico L&ndash;V 5:00 PM Colombia</p>
   </div>
 </div>
 <script>
 function filtrar() {{
-  const q = document.getElementById('buscar').value.toLowerCase().trim();
-  const filas = document.querySelectorAll('#tbodyInv tr');
-  let v = 0;
-  filas.forEach(function(f) {{
-    if (!q || f.textContent.toLowerCase().includes(q)) {{ f.classList.remove('hidden'); v++; }}
-    else {{ f.classList.add('hidden'); }}
-  }});
-  document.getElementById('sinResultados').style.display = (v===0 && q) ? 'block' : 'none';
+  var q = document.getElementById('buscar').value.toLowerCase().trim();
+  var filas = document.querySelectorAll('#tbodyInv tr');
+  var v = 0;
+  for (var i = 0; i < filas.length; i++) {{
+    if (!q || filas[i].textContent.toLowerCase().indexOf(q) !== -1) {{
+      filas[i].classList.remove('hidden'); v++;
+    }} else {{
+      filas[i].classList.add('hidden');
+    }}
+  }}
+  document.getElementById('sinResultados').style.display = (v === 0 && q) ? 'block' : 'none';
 }}
 </script>
 </body>
 </html>"""
 
+
 # ─── 4. AUTENTICACIÓN MICROSOFT GRAPH ─────────────────────────────────────────
 
 def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
     endpoints = [
-        f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token',
-        f'https://login.microsoftonline.com/{tenant_id}/oauth2/token',
+        'https://login.microsoftonline.com/' + tenant_id + '/oauth2/v2.0/token',
+        'https://login.microsoftonline.com/' + tenant_id + '/oauth2/token',
     ]
     scopes = ['https://graph.microsoft.com/.default', 'https://graph.microsoft.com/']
     for i, url in enumerate(endpoints):
         data = urllib.parse.urlencode({
-            'grant_type': 'client_credentials', 'client_id': client_id,
+            'grant_type':    'client_credentials',
+            'client_id':     client_id,
             'client_secret': client_secret,
             'scope' if i == 0 else 'resource': scopes[i]
         }).encode()
         req = urllib.request.Request(url, data=data, method='POST')
-        print(f"🔑 Intentando endpoint {i+1}: {url}")
+        print("🔑 Intentando endpoint " + str(i+1) + ": " + url)
         try:
             with urllib.request.urlopen(req) as resp:
-                print(f"✅ Token obtenido con endpoint {i+1}")
+                print("✅ Token obtenido con endpoint " + str(i+1))
                 return json.loads(resp.read())['access_token']
         except urllib.error.HTTPError as e:
             body = e.read().decode()
-            print(f"⚠️  Endpoint {i+1} falló: {e.code} — {body}")
+            print("⚠️  Endpoint " + str(i+1) + " falló: " + str(e.code) + " — " + body)
             if i == len(endpoints) - 1:
-                print("ERROR: Todos los endpoints fallaron."); sys.exit(1)
+                print("ERROR: Todos los endpoints fallaron.")
+                sys.exit(1)
             print("↪️  Intentando siguiente...")
 
 
@@ -242,16 +291,17 @@ def send_email(token: str, sender: str, recipients: list, subject: str, html_bod
             'subject': subject,
             'body': {'contentType': 'HTML', 'content': html_body},
             'toRecipients': [{'emailAddress': {'address': r.strip()}} for r in recipients]
-        }, 'saveToSentItems': True
+        },
+        'saveToSentItems': True
     }).encode('utf-8')
-    url = f'https://graph.microsoft.com/v1.0/users/{sender}/sendMail'
+    url = 'https://graph.microsoft.com/v1.0/users/' + sender + '/sendMail'
     req = urllib.request.Request(url, data=payload, method='POST',
-        headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'})
+        headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'})
     try:
         with urllib.request.urlopen(req) as resp:
-            print(f"✅ Correo enviado (HTTP {resp.status})")
+            print("✅ Correo enviado (HTTP " + str(resp.status) + ")")
     except urllib.error.HTTPError as e:
-        print(f"ERROR enviando correo: {e.code} — {e.read().decode()}")
+        print("ERROR enviando correo: " + str(e.code) + " — " + e.read().decode())
         sys.exit(1)
 
 
@@ -264,31 +314,33 @@ if __name__ == '__main__':
     sender_email  = os.environ['SENDER_EMAIL'].strip()
     recipients    = [r.strip() for r in os.environ['RECIPIENT_EMAILS'].split(',')]
 
-    print(f"🔍 Tenant ID  : '{tenant_id}' (len={len(tenant_id)})")
-    print(f"🔍 Client ID  : '{client_id}' (len={len(client_id)})")
-    print(f"🔍 Secret len : {len(client_secret)} chars")
-    print(f"🔍 Sender     : '{sender_email}'")
+    print("🔍 Tenant ID  : '" + tenant_id + "' (len=" + str(len(tenant_id)) + ")")
+    print("🔍 Client ID  : '" + client_id + "' (len=" + str(len(client_id)) + ")")
+    print("🔍 Secret len : " + str(len(client_secret)) + " chars")
+    print("🔍 Sender     : '" + sender_email + "'")
 
     html_path = os.path.join(os.path.dirname(__file__), '..', 'Index.html')
-    print(f"📂 Leyendo inventario desde: {html_path}")
+    print("📂 Leyendo inventario desde: " + html_path)
     inv = extract_inv_from_html(html_path)
-    if not inv: print("ERROR: Inventario vacío."); sys.exit(1)
-    print(f"✅ {len(inv)} productos cargados")
+    if not inv:
+        print("ERROR: Inventario vacío.")
+        sys.exit(1)
+    print("✅ " + str(len(inv)) + " productos cargados")
 
     stats = calculate_stats(inv)
-    print(f"📊 Stats: Total={stats['total']} | Con stock={stats['con_stock']} | Agotados={stats['agotados']}")
+    print("📊 Stats: Total=" + str(stats['total']) + " | Con stock=" + str(stats['con_stock']) + " | Agotados=" + str(stats['agotados']))
 
     now = datetime.now()
-    day   = DAYS_ES.get(now.strftime('%A'), now.strftime('%A'))
-    month = MONTHS_ES.get(now.strftime('%B'), now.strftime('%B'))
-    date_str = f"{day} {now.day} de {month} de {now.year}"
+    day      = DAYS_ES.get(now.strftime('%A'), now.strftime('%A'))
+    month    = MONTHS_ES.get(now.strftime('%B'), now.strftime('%B'))
+    date_str = day + " " + str(now.day) + " de " + month + " de " + str(now.year)
 
     html_body = generate_html(inv, stats, date_str)
-    subject   = f"📦 Reporte Inventario E&G — {date_str}"
+    subject   = "📦 Reporte Inventario E&G — " + date_str
 
-    print(f"🔑 Obteniendo token Microsoft...")
+    print("🔑 Obteniendo token Microsoft...")
     token = get_access_token(tenant_id, client_id, client_secret)
 
-    print(f"📧 Enviando correo a: {', '.join(recipients)}")
+    print("📧 Enviando correo a: " + ', '.join(recipients))
     send_email(token, sender_email, recipients, subject, html_body)
     print("🎉 Reporte enviado exitosamente.")
