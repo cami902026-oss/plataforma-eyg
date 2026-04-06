@@ -23,6 +23,9 @@ import openpyxl
 # Ruta del archivo Excel en OneDrive (relativa a la raíz del drive)
 ONEDRIVE_FILE_PATH = 'LOGISTICA/Inventario definitivo_2026.xlsx'
 
+# Email del usuario cuyo OneDrive contiene el archivo
+ONEDRIVE_USER_EMAIL = 'andrea.bernal@eygenergygroup.com'
+
 # Mapeo de nombres de columna Excel → nombres internos INV_RAW
 # (normalizado a minúsculas para comparación flexible)
 COLUMN_MAP = {
@@ -167,13 +170,13 @@ if __name__ == '__main__':
     client_secret = os.environ['MS_CLIENT_SECRET'].strip()
     sender_email  = os.environ['SENDER_EMAIL'].strip()
 
-    print('🔍 Usuario OneDrive: ' + sender_email)
+    print('🔍 Usuario OneDrive: ' + ONEDRIVE_USER_EMAIL)
     print('📂 Archivo:          ' + ONEDRIVE_FILE_PATH)
 
     print('🔑 Obteniendo token Microsoft...')
     token = get_access_token(tenant_id, client_id, client_secret)
 
-    excel_bytes = download_excel(token, sender_email, ONEDRIVE_FILE_PATH)
+    excel_bytes = download_excel(token, ONEDRIVE_USER_EMAIL, ONEDRIVE_FILE_PATH)
 
     records = parse_excel(excel_bytes)
     if not records:
