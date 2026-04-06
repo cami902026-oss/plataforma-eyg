@@ -118,8 +118,21 @@ def parse_excel(excel_bytes):
     ws = wb.active
     print('📋 Hoja activa: ' + str(ws.title))
 
-    # Leer encabezados de la primera fila
-    raw_headers = [str(c.value or '').strip() for c in ws[1]]
+    # Buscar la fila de encabezados (puede no estar en la fila 1)
+    # Buscamos en las primeras 15 filas la que tenga más columnas reconocibles
+    header_row_idx = 1
+    best_score = 0
+    for row_idx in range(1, 16):
+        row_vals = [str(c.value or '').strip().lower() for c in ws[row_idx]]
+        score = sum(1 for v in row_vals if v in COLUMN_MAP)
+        non_empty = sum(1 for v in row_vals if v)
+        print('   Fila ' + str(row_idx) + ': ' + str([str(c.value or '').strip() for c in ws[row_idx]][:8]) + ' (score=' + str(score) + ')')
+        if score > best_score or (score == best_score and non_empty > 2 and score > 0):
+            best_score = score
+            header_row_idx = row_idx
+
+    print('📌 Fila de encabezados detectada: ' + str(header_row_idx))
+    raw_headers = [str(c.value or '').strip() for c in ws[header_row_idx]]
     headers = []
     for h in raw_headers:
         mapped = COLUMN_MAP.get(h.lower(), h.upper() if h else '')
@@ -135,9 +148,9 @@ def parse_excel(excel_bytes):
         print('⚠️  Columnas no encontradas: ' + str(missing))
         print('   Columnas disponibles: ' + str(headers))
 
-    # Parsear filas
+    # Parsear filas (empezar después de la fila de encabezados)
     records = []
-    for row in ws.iter_rows(min_row=2, values_only=True):
+    for row in ws.iter_rows(min_row=header_row_idx + 1, values_only=True):
         if all(v is None or str(v).strip() == '' for v in row):
             continue  # saltar filas vacías
         record = {}
