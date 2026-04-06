@@ -3380,35 +3380,73 @@ async function msLoadInventoryFromOneDrive() {
     const file = excelFiles[0];
     showToast('📊 Archivo encontrado: "' + file.name + '". Leyendo datos...', 'info');
 
-    // 2. Leer la hoja de inventario via workbook API
-    const sheetName = localStorage.getItem('inv_onedrive_sheet') || '';
-    const sheetPath = sheetName ? "worksheets('" + sheetName + "')" : 'worksheets/0';
-    const rangeResp = await fetch(
-      'https://graph.microsoft.com/v1.0/me/drive/items/' + file.id + '/workbook/' + sheetPath + '/usedRange',
+    // 2. Descargar el archivo binario (compatible con .xlsx Y .xlsm)
+    const contentResp = await fetch(
+      'https://graph.microsoft.com/v1.0/me/drive/items/' + file.id + '/content',
       { headers: { Authorization: 'Bearer ' + token } }
     );
-    if (!rangeResp.ok) {
-      const errData = await rangeResp.json().catch(()=>({}));
-      showToast('❌ Error al leer Excel: ' + (errData.error?.message || rangeResp.status) + '. Verifica que el archivo sea .xlsx y el nombre de hoja en Configuración.', 'error');
+    if (!contentResp.ok) {
+      const errText = await contentResp.text().catch(() => String(contentResp.status));
+      showToast('❌ Error al descargar Excel: ' + errText, 'error');
       return;
     }
-    const rangeData = await rangeResp.json();
-    const values = rangeData.values;
-    if (!values || values.length < 2) {
+    const arrayBuffer = await contentResp.arrayBuffer();
+
+    // 3. Parsear con SheetJS (soporta .xlsm nativamente)
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+    const sheetName = localStorage.getItem('inv_onedrive_sheet') || '';
+    const wsName = (sheetName && workbook.SheetNames.includes(sheetName))
+      ? sheetName
+      : workbook.SheetNames[0];
+    const ws = workbook.Sheets[wsName];
+    if (!ws) {
+      showToast('❌ No se encontró la hoja "' + (sheetName || wsName) + '" en el archivo.', 'error');
+      return;
+    }
+
+    // 4. Convertir a array de filas
+    const rawValues = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    if (!rawValues || rawValues.length < 2) {
       showToast('❌ El archivo no tiene datos suficientes o la hoja está vacía.', 'error');
       return;
     }
 
-    // 3. Convertir filas a objetos usando primera fila como cabeceras
-    const headers = values[0].map(h => String(h).trim());
-    const newINV = values.slice(1)
+    // 5. Auto-detectar fila de encabezados (igual que sync_inventory.py)
+    const COL_MAP = {
+      'codigo producto':'CODIGO PRODUCTO','código producto':'CODIGO PRODUCTO','codigo':'CODIGO PRODUCTO',
+      'descripcion':'DESCRIPCION','descripción':'DESCRIPCION',
+      'marca':'MARCA',
+      'ubicacion':'UBICACIÓN','ubicación':'UBICACIÓN',
+      'stock actual':'STOCK ACTUAL','stock':'STOCK ACTUAL',
+      'entradas':'ENTRADAS','salidas':'SALIDAS'
+    };
+    let headerRowIdx = 0;
+    let bestScore = 0;
+    for (let i = 0; i < Math.min(15, rawValues.length); i++) {
+      const score = rawValues[i].filter(v => COL_MAP[String(v).trim().toLowerCase()]).length;
+      if (score > bestScore) { bestScore = score; headerRowIdx = i; }
+    }
+    const headers = rawValues[headerRowIdx].map(h => {
+      const key = String(h).trim().toLowerCase();
+      return COL_MAP[key] || String(h).trim().toUpperCase();
+    });
+
+    // 6. Convertir filas a objetos
+    const newINV = rawValues.slice(headerRowIdx + 1)
       .filter(row => row.some(cell => cell !== '' && cell !== null && cell !== undefined))
       .map(row => {
         const obj = {};
-        headers.forEach((h, i) => { obj[h] = row[i] !== null && row[i] !== undefined ? row[i] : ''; });
+        headers.forEach((h, i) => {
+          if (!h) return;
+          const val = (row[i] !== null && row[i] !== undefined) ? row[i] : '';
+          if (h === 'STOCK ACTUAL' || h === 'ENTRADAS' || h === 'SALIDAS') {
+            obj[h] = isNaN(Number(val)) ? 0 : Math.round(Number(val));
+          } else {
+            obj[h] = String(val);
+          }
+        });
         return obj;
       });
-
     if (newINV.length === 0) {
       showToast('❌ No se encontraron filas de datos en la hoja.', 'error');
       return;
