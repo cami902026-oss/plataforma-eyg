@@ -1,0 +1,39 @@
+name: Sincronizar Inventario desde OneDrive
+
+on:
+  schedule:
+    - cron: '0 20 * * 1-5'   # 3:00 PM Colombia (UTC-5 = 20:00 UTC), Lunes a Viernes
+  workflow_dispatch:           # También se puede ejecutar manualmente
+
+jobs:
+  sync-inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install openpyxl
+
+      - name: Sincronizar inventario desde OneDrive
+        env:
+          MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          SENDER_EMAIL:     ${{ secrets.SENDER_EMAIL }}
+        run: python scripts/sync_inventory.py
+
+      - name: Commit y push si hubo cambios
+        run: |
+          git config user.name  "ENERGY Bot"
+          git config user.email "bot@eygenergygroup.com"
+          git add Index.html
+          git diff --staged --quiet && echo "Sin cambios en el inventario." || (
+            git commit -m "🔄 Inventario actualizado desde OneDrive - $(TZ='America/Bogota' date +'%Y-%m-%d %H:%M')" &&
+            git push
+          )
