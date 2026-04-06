@@ -21,7 +21,7 @@ import openpyxl
 # ─── CONFIGURACIÓN ─────────────────────────────────────────────────────────────
 
 # Ruta del archivo Excel en OneDrive (relativa a la raíz del drive)
-ONEDRIVE_FILE_PATH = 'LOGISTICA/Inventario definitivo_2026.xlsx'
+ONEDRIVE_FILE_PATH = 'LOGISTICA/Inventario definitivo_2026.xlsm'
 
 # Email del usuario cuyo OneDrive contiene el archivo
 ONEDRIVE_USER_EMAIL = 'andrea.bernal@eygenergygroup.com'
