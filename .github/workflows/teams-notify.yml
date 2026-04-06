@@ -18,6 +18,14 @@ jobs:
     steps:
       - name: Enviar notificacion a Teams
         run: |
-          curl -s -X POST "${{ secrets.TEAMS_WEBHOOK_URL }}" \
+          RESPONSE=$(curl -s -w "\n---HTTP_STATUS:%{http_code}" -X POST "${{ secrets.TEAMS_WEBHOOK_URL }}" \
             -H "Content-Type: application/json" \
-            -d "{\"text\": \"${{ inputs.title }}\n\n${{ inputs.text }}\"}"
+            -d "{\"text\": \"${{ inputs.title }}\n\n${{ inputs.text }}\"}") 
+          echo "Respuesta de Teams: $RESPONSE"
+          HTTP_CODE=$(echo "$RESPONSE" | grep -o 'HTTP_STATUS:[0-9]*' | cut -d: -f2)
+          echo "HTTP Status: $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "202" ]; then
+            echo "Teams rechazó el mensaje (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+          echo "Mensaje enviado a Teams correctamente"
