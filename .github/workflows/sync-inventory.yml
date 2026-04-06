@@ -5,6 +5,9 @@ on:
     - cron: '0 20 * * 1-5'   # 3:00 PM Colombia (UTC-5 = 20:00 UTC), Lunes a Viernes
   workflow_dispatch:           # También se puede ejecutar manualmente
 
+permissions:
+  contents: write
+
 jobs:
   sync-inventory:
     runs-on: ubuntu-latest
