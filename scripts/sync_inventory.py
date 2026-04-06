@@ -65,7 +65,27 @@ def get_access_token(tenant_id, client_id, client_secret):
         sys.exit(1)
 
 
-# ─── 2. DESCARGA EXCEL DESDE ONEDRIVE ─────────────────────────────────────────
+# ─── 2. DIAGNÓSTICO: LISTA CONTENIDO DEL DRIVE ────────────────────────────────
+
+def list_drive_folder(token, user_email, folder_path='root/children'):
+    """Lista los archivos/carpetas en el OneDrive del usuario para diagnóstico."""
+    url = 'https://graph.microsoft.com/v1.0/users/' + user_email + '/drive/' + folder_path
+    req = urllib.request.Request(url, headers={'Authorization': 'Bearer ' + token})
+    try:
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read())
+            items = data.get('value', [])
+            print('📁 Contenido de /' + folder_path + ':')
+            for item in items:
+                tipo = '📁' if 'folder' in item else '📄'
+                print('   ' + tipo + ' ' + item.get('name', '?'))
+            return items
+    except urllib.error.HTTPError as e:
+        print('⚠️  No se pudo listar ' + folder_path + ': ' + str(e.code) + ' ' + e.read().decode())
+        return []
+
+
+# ─── 3. DESCARGA EXCEL DESDE ONEDRIVE ─────────────────────────────────────────
 
 def download_excel(token, user_email, file_path):
     """Descarga el archivo Excel del OneDrive del usuario vía Graph API."""
@@ -175,6 +195,18 @@ if __name__ == '__main__':
 
     print('🔑 Obteniendo token Microsoft...')
     token = get_access_token(tenant_id, client_id, client_secret)
+
+    # Diagnóstico: listar raíz y carpeta LOGISTICA
+    root_items = list_drive_folder(token, ONEDRIVE_USER_EMAIL)
+    logistica_items = [i for i in root_items if i.get('name','').upper() == 'LOGISTICA']
+    if logistica_items:
+        folder_id = logistica_items[0]['id']
+        list_drive_folder(token, ONEDRIVE_USER_EMAIL, 'items/' + folder_id + '/children')
+    else:
+        print('⚠️  Carpeta LOGISTICA no encontrada en la raíz. Buscando variantes...')
+        for item in root_items:
+            if 'logis' in item.get('name','').lower():
+                print('   Encontrado: ' + item.get('name',''))
 
     excel_bytes = download_excel(token, ONEDRIVE_USER_EMAIL, ONEDRIVE_FILE_PATH)
 
