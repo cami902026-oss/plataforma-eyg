@@ -74,8 +74,10 @@ def _stock_badge(stock):
 
 
 def generate_html(inv: list, stats: dict, date_str: str) -> str:
+    # Ordenar: primero con más stock, luego agotados al final
     inv_sorted = sorted(inv, key=lambda p: (_stock(p) == 0, -_stock(p)))
 
+    # Fila por cada producto (sin f-string para evitar restricciones de backslash)
     all_rows = ''.join(
         "<tr>"
         "<td style='font-family:monospace;font-size:11px;color:#555;'>" + str(p.get('CODIGO PRODUCTO','')) + "</td>"
@@ -88,6 +90,7 @@ def generate_html(inv: list, stats: dict, date_str: str) -> str:
         for p in inv_sorted
     )
 
+    # Filas de productos agotados
     agotados_rows = ''.join(
         "<tr>"
         "<td style='font-family:monospace;font-size:11px;'>" + str(p.get('CODIGO PRODUCTO','')) + "</td>"
@@ -99,24 +102,19 @@ def generate_html(inv: list, stats: dict, date_str: str) -> str:
     )
     agotados_count = stats['agotados']
 
+    # Pre-calcular condicionales (no pueden ir dentro de {} en f-strings — Python < 3.12)
     pct_agot   = stats['agotados'] / max(stats['total'], 1)
     health_msg = '&#9989; Inventario saludable' if pct_agot < 0.1 else '&#9888; +10% agotado &mdash; revisar reabastecimiento'
 
     alert_box = ''
     if agotados_count > 0:
         alert_box = ('<div class="alert-box">&#9888;&#65039; <strong>' + str(agotados_count) +
-                     ' productos agotados</strong> &mdash; ver secci&oacute;n al final.</div>')
+                     ' productos agotados</strong> &mdash; ver secci&oacute;n al final del reporte.</div>')
 
     if agotados_count > 0:
         agotados_section = (
             '<div class="sec-title" style="color:#c0392b;">&#128308; Productos Agotados (' + str(agotados_count) + ')</div>'
             '<table><thead><tr><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>Marca</th><th>Ubicaci&oacute;n</th></tr></thead>'
-            '<tbody>' + agotados_rows + '</tbody></table>'
-        )
-    else:
-        agotados_section = '<div class="meta">&#9989; No hay productos agotados.</div>'
-
-thead><tr><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>Marca</th><th>Ubicaci&oacute;n</th></tr></thead>'
             '<tbody>' + agotados_rows + '</tbody></table>'
         )
     else:
