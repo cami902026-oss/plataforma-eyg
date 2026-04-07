@@ -101,7 +101,12 @@ def _cat_color(cat: str) -> tuple:
     return m.get(str(cat).lower().strip(), ('#37474F', '#546E7A'))
 
 def _build_familia_block(familia: str, productos: list, accent: str) -> str:
-    inv_sorted = sorted(productos, key=lambda p: (_stock(p) == 0, -_stock(p)))
+    # Ordenar: primero alfabético por descripción (agrupa tees, codos, etc.)
+    # Los agotados van al final dentro de cada grupo
+    inv_sorted = sorted(productos, key=lambda p: (
+        _stock(p) == 0,
+        str(p.get('DESCRIPCION', '')).upper()
+    ))
     con_stock = sum(1 for p in productos if _stock(p) > 0)
     agotados  = sum(1 for p in productos if _stock(p) == 0)
 
