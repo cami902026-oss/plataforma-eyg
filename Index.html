@@ -2286,9 +2286,16 @@ async function saveReunion(skipAutoTeams = false) {
         if (resp.ok && data.id) {
           const joinUrl = data.onlineMeeting?.joinUrl || '';
           if (joinUrl) localStorage.setItem('last_teams_meeting_url', joinUrl);
-          showToast('✅ Reunión creada en el calendario de Teams', 'success');
+          showToast('✅ Reunión guardada y visible en tu calendario de Teams', 'success');
         } else {
-          showToast('Reunión guardada. Error Teams: ' + (data.error?.message || resp.status), 'error');
+          const errCode = data.error?.code || '';
+          const errMsg  = data.error?.message || '';
+          if (resp.status === 401 || resp.status === 403 || errCode === 'InvalidAuthenticationToken') {
+            showToast('Reunión guardada localmente. Para que aparezca en Teams ve a Configuración → cierra sesión de Microsoft → vuelve a iniciar sesión.', 'error');
+          } else {
+            showToast('Reunión guardada. Error al crear en Teams (' + resp.status + '): ' + (errMsg || errCode), 'error');
+            console.error('Teams calendar error:', data);
+          }
         }
       } catch(e) {
         showToast('Reunión guardada. Error Teams: ' + e.message, 'error');
@@ -3147,19 +3154,30 @@ function initMsal() {
   } catch(e) { console.warn('MSAL init error:', e); }
 }
 
+const MS_SCOPES = ['User.Read','Chat.ReadWrite','OnlineMeetings.ReadWrite','Calendars.ReadWrite','Channel.ReadBasic.All','ChannelMessage.Send','Files.Read','Files.ReadWrite'];
+
 async function silentToken() {
   if (!msalInstance || !msAccountInfo) return null;
   try {
     const resp = await msalInstance.acquireTokenSilent({
-      scopes: ['User.Read','Chat.ReadWrite','OnlineMeetings.ReadWrite','Calendars.ReadWrite','Channel.ReadBasic.All','ChannelMessage.Send','Files.Read','Files.ReadWrite'],
+      scopes: MS_SCOPES,
       account: msAccountInfo
     });
     msAccessToken = resp.accessToken;
     updateMsUI(true);
     return msAccessToken;
   } catch(e) {
-    updateMsUI(false);
-    return null;
+    // Token expirado o falta consentimiento → pedir login interactivo
+    try {
+      const resp2 = await msalInstance.acquireTokenPopup({ scopes: MS_SCOPES, account: msAccountInfo });
+      msAccessToken = resp2.accessToken;
+      msAccountInfo = resp2.account;
+      updateMsUI(true);
+      return msAccessToken;
+    } catch(e2) {
+      updateMsUI(false);
+      return null;
+    }
   }
 }
 
@@ -3434,7 +3452,17 @@ async function saveReunionAndCreateTeams() {
       }
       showToast('✅ Reunión creada en el calendario de Teams — aparecerá en tu app de Teams', 'success');
     } else {
-      showToast('Error: ' + (data.error?.message||resp.status), 'error');
+      const errMsg = data.error?.message || '';
+      const errCode = data.error?.code || '';
+      if (resp.status === 401 || resp.status === 403 || errCode === 'InvalidAuthenticationToken' || errCode === 'Forbidden') {
+        showToast('❌ Sin permisos de calendario. Cierra sesión de Microsoft en Configuración, vuelve a iniciar sesión y reintenta.', 'error');
+      } else if (errCode === 'RequestBrokerInvalidRequest' || errMsg.includes('onlineMeetingProvider')) {
+        showToast('❌ Tu cuenta no tiene licencia de Teams para crear reuniones online. La reunión se guardará sin link de Teams.', 'error');
+        await saveReunion(true);
+      } else {
+        showToast('❌ Error Teams (' + resp.status + '): ' + (errMsg || 'Error desconocido'), 'error');
+        console.error('Teams API error:', data);
+      }
     }
   } catch(e) { showToast('Error creando reunión: ' + e.message, 'error'); }
 }
