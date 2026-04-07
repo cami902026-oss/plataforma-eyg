@@ -632,6 +632,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <button class="view-btn" id="view-list-btn" onclick="switchMeetingView('list')">📋 Lista</button>
           </div>
           <button class="btn btn-primary" onclick="openModal('modal-reunion')" style="width:auto;">+ Nueva Reunión</button>
+          <button class="btn" id="btn-sync-teams" onclick="syncTeamsCalendar()" style="width:auto;background:#6264A7;color:#fff;padding:8px 16px;font-size:13px;" title="Importar reuniones de Teams/Outlook">🔄 Sincronizar Teams</button>
         </div>
         <div class="card" id="calendar-view">
           <div id="calendar-container"></div>
@@ -2266,18 +2267,26 @@ async function saveReunion(skipAutoTeams = false) {
     const teamsToken = await getToken();
     if (teamsToken) {
       try {
-        showToast('⏳ Creando reunión en Microsoft Teams...', 'info');
+        showToast('⏳ Creando reunión en el calendario de Teams...', 'info');
         const startDT = new Date(savedFecha + 'T' + savedHoraIn + ':00');
         const endDT   = new Date(savedFecha + 'T' + savedHoraFin + ':00');
-        const resp = await fetch('https://graph.microsoft.com/v1.0/me/onlineMeetings', {
+        const resp = await fetch('https://graph.microsoft.com/v1.0/me/events', {
           method: 'POST',
           headers: { Authorization: 'Bearer ' + teamsToken, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subject: titulo, startDateTime: startDT.toISOString(), endDateTime: endDT.toISOString() })
+          body: JSON.stringify({
+            subject: titulo,
+            start: { dateTime: startDT.toISOString(), timeZone: 'America/Bogota' },
+            end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Bogota' },
+            isOnlineMeeting: true,
+            onlineMeetingProvider: 'teamsForBusiness',
+            body: { contentType: 'text', content: savedDesc || '' }
+          })
         });
         const data = await resp.json();
-        if (resp.ok && data.joinWebUrl) {
-          localStorage.setItem('last_teams_meeting_url', data.joinWebUrl);
-          showToast('✅ Reunión guardada y creada en Microsoft Teams', 'success');
+        if (resp.ok && data.id) {
+          const joinUrl = data.onlineMeeting?.joinUrl || '';
+          if (joinUrl) localStorage.setItem('last_teams_meeting_url', joinUrl);
+          showToast('✅ Reunión creada en el calendario de Teams', 'success');
         } else {
           showToast('Reunión guardada. Error Teams: ' + (data.error?.message || resp.status), 'error');
         }
@@ -3310,6 +3319,80 @@ async function msSendTeamsMessage() {
   } catch(e) { showToast('Error enviando mensaje: ' + e.message, 'error'); }
 }
 
+// ═══════ SINCRONIZAR REUNIONES DESDE TEAMS / OUTLOOK CALENDAR ═══════
+async function syncTeamsCalendar() {
+  const token = await getToken();
+  if (!token) { showToast('Primero inicia sesión con Microsoft en Configuración 🟣', 'error'); navigate('configuracion'); return; }
+
+  const btn = document.getElementById('btn-sync-teams');
+  if (btn) { btn.textContent = '⏳ Sincronizando...'; btn.disabled = true; }
+
+  try {
+    // Traer eventos de los próximos 90 días y los últimos 30
+    const now   = new Date();
+    const start = new Date(now); start.setDate(start.getDate() - 30);
+    const end   = new Date(now); end.setDate(end.getDate() + 90);
+    const startISO = start.toISOString();
+    const endISO   = end.toISOString();
+
+    const resp = await fetch(
+      `https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=${startISO}&endDateTime=${endISO}&$select=subject,start,end,isOnlineMeeting,onlineMeeting,bodyPreview&$top=100&$orderby=start/dateTime`,
+      { headers: { Authorization: 'Bearer ' + token, Prefer: 'outlook.timezone="America/Bogota"' } }
+    );
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      showToast('Error al leer calendario: ' + (err.error?.message || resp.status), 'error');
+      return;
+    }
+
+    const data = await resp.json();
+    const events = data.value || [];
+    if (!events.length) { showToast('No se encontraron eventos en el calendario de Microsoft.', 'info'); return; }
+
+    let meetings = getData('meetings', MEETINGS_DEFAULT);
+    let added = 0, skipped = 0;
+
+    events.forEach(ev => {
+      // Convertir fecha/hora
+      const startDT  = new Date(ev.start.dateTime + (ev.start.dateTime.endsWith('Z') ? '' : 'Z'));
+      const endDT    = new Date(ev.end.dateTime   + (ev.end.dateTime.endsWith('Z')   ? '' : 'Z'));
+      const fecha    = startDT.toISOString().slice(0, 10);
+      const hInicio  = startDT.toTimeString().slice(0, 5);
+      const hFin     = endDT.toTimeString().slice(0, 5);
+      const titulo   = (ev.subject || 'Sin título').trim();
+
+      // Evitar duplicados (mismo título + misma fecha)
+      const existe = meetings.some(m => m.titulo === titulo && m.fecha === fecha);
+      if (existe) { skipped++; return; }
+
+      const newId = Math.max(0, ...meetings.map(m => m.id)) + 1;
+      meetings.push({
+        id: newId,
+        titulo,
+        fecha,
+        horaInicio: hInicio,
+        horaFin: hFin,
+        tipo: ev.isOnlineMeeting ? 'Teams' : 'Presencial',
+        participantes: [],
+        descripcion: ev.bodyPreview ? ev.bodyPreview.slice(0, 200) : '',
+        teamsUrl: ev.onlineMeeting?.joinUrl || ''
+      });
+      added++;
+    });
+
+    setData('meetings', meetings);
+    renderMeetingList();
+    renderCalendar();
+    renderDashboard();
+    showToast(`✅ Sincronización completa: ${added} reuniones importadas, ${skipped} ya existían.`, 'success');
+  } catch(e) {
+    showToast('Error sincronizando: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.textContent = '🔄 Sincronizar Teams'; btn.disabled = false; }
+  }
+}
+
 async function saveReunionAndCreateTeams() {
   const token = await getToken();
   if (!token) { showToast('Primero inicia sesión con Microsoft en Configuración', 'error'); navigate('configuracion'); return; }
@@ -3320,30 +3403,36 @@ async function saveReunionAndCreateTeams() {
   if (!titulo || !fecha || !horaInicio || !horaFin) { showToast('Completa título, fecha y horas primero', 'error'); return; }
   const startDT = new Date(fecha + 'T' + horaInicio + ':00');
   const endDT = new Date(fecha + 'T' + horaFin + ':00');
-  const body = {
-    subject: titulo,
-    startDateTime: startDT.toISOString(),
-    endDateTime: endDT.toISOString()
-  };
   try {
-    showToast('⏳ Creando reunión en Teams...', 'info');
-    const resp = await fetch('https://graph.microsoft.com/v1.0/me/onlineMeetings', {
+    showToast('⏳ Creando reunión en el calendario de Teams...', 'info');
+    const desc = document.getElementById('r-descripcion')?.value || '';
+    const resp = await fetch('https://graph.microsoft.com/v1.0/me/events', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify({
+        subject: titulo,
+        start: { dateTime: startDT.toISOString(), timeZone: 'America/Bogota' },
+        end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Bogota' },
+        isOnlineMeeting: true,
+        onlineMeetingProvider: 'teamsForBusiness',
+        body: { contentType: 'text', content: desc }
+      })
     });
     const data = await resp.json();
-    if (resp.ok && data.joinWebUrl) {
-      // Guardar reunión localmente (skipAutoTeams=true porque ya se creó arriba)
+    if (resp.ok && data.id) {
+      const joinUrl = data.onlineMeeting?.joinUrl || '';
+      // Guardar reunión localmente
       await saveReunion(true);
       // Mostrar link
       const linkDiv = document.getElementById('teams-meeting-link');
-      const linkA = document.getElementById('teams-join-url');
-      linkDiv.style.display = 'block';
-      linkA.href = data.joinWebUrl;
-      linkA.textContent = data.joinWebUrl;
-      localStorage.setItem('last_teams_meeting_url', data.joinWebUrl);
-      showToast('✅ Reunión creada en Teams', 'success');
+      const linkA   = document.getElementById('teams-join-url');
+      if (joinUrl) {
+        linkDiv.style.display = 'block';
+        linkA.href = joinUrl;
+        linkA.textContent = joinUrl;
+        localStorage.setItem('last_teams_meeting_url', joinUrl);
+      }
+      showToast('✅ Reunión creada en el calendario de Teams — aparecerá en tu app de Teams', 'success');
     } else {
       showToast('Error: ' + (data.error?.message||resp.status), 'error');
     }
