@@ -29,6 +29,18 @@ MONTHS_ES  = {'January':'enero','February':'febrero','March':'marzo','April':'ab
 
 # ─── 1. EXTRAE INVENTARIO DESDE Buscador_Inventario_2026.html ────────────────
 
+def extract_rot_from_html(html_path: str) -> list:
+    """Extrae el array ROT_DATA del archivo Buscador_Inventario_2026.html"""
+    with open(html_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    match = re.search(r'const ROT_DATA\s*=\s*(\[[\s\S]*?\]);', content)
+    if not match:
+        return []
+    try:
+        return json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return []
+
 def extract_inv_from_html(html_path: str) -> list:
     """Extrae el array STOCK_DATA del archivo Buscador_Inventario_2026.html"""
     with open(html_path, 'r', encoding='utf-8') as f:
@@ -159,7 +171,81 @@ def _build_category_section(cat: str, productos: list) -> str:
         "</table></div>"
     )
 
-def generate_html(inv: list, stats: dict, date_str: str) -> str:
+def _build_rotation_section(rot: list) -> str:
+    if not rot:
+        return ''
+    from collections import Counter
+    cats = Counter(r['CATEGORIA'] for r in rot)
+
+    CAT_CONFIG = {
+        'ESTRELLA':      ('#1B5E20', '#2E7D32', '⭐', 'Alta rotación — productos clave'),
+        'NORMAL':        ('#0F2B5B', '#1A3A8F', '✅', 'Rotación normal'),
+        'LENTO':         ('#7B3F00', '#C0641E', '🐢', 'Rotación lenta — monitorear'),
+        'INACTIVO':      ('#7B0000', '#c0392b', '⚠️', 'Sin movimiento >60 días — evaluar descuento'),
+        'NUNCA VENDIDO': ('#37474F', '#546E7A', '📦', 'Sin historial de ventas — revisar relevancia'),
+        'SIN STOCK':     ('#4A148C', '#7B1FA2', '🔴', 'Sin stock disponible'),
+    }
+
+    # Resumen por categoría
+    summary_cells = ''
+    for cat, (hdr, acc, icon, desc) in CAT_CONFIG.items():
+        count = cats.get(cat, 0)
+        if count == 0:
+            continue
+        summary_cells += (
+            "<td style='padding:8px;text-align:center;background:" + hdr + "18;"
+            "border-left:3px solid " + acc + ";border-radius:6px;'>"
+            "<div style='font-size:22px;font-weight:900;color:" + acc + ";'>" + str(count) + "</div>"
+            "<div style='font-size:9px;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;'>" + cat + "</div>"
+            "</td>"
+        )
+
+    # Detalle por categoría (solo ESTRELLA, INACTIVO, LENTO)
+    detail_html = ''
+    for cat in ['ESTRELLA', 'INACTIVO', 'LENTO']:
+        items = [r for r in rot if r['CATEGORIA'] == cat]
+        if not items:
+            continue
+        hdr, acc, icon, desc = CAT_CONFIG[cat]
+        rows = ''.join(
+            "<tr>"
+            "<td style='font-family:monospace;font-size:11px;color:#555;padding:6px 10px;border-bottom:1px solid #eef1f8;'>" + str(r.get('CODIGO','')) + "</td>"
+            "<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;font-size:12px;'>" + str(r.get('DESCRIPCION','')) + "</td>"
+            "<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:center;font-size:12px;'>" + str(r.get('STOCK',0)) + "</td>"
+            "<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:center;font-size:12px;'>" + str(r.get('VENDIDO',0)) + "</td>"
+            "<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:center;font-size:11px;color:#888;'>" + str(r.get('ULT_VENTA','—')) + "</td>"
+            "<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;font-size:10px;color:#666;'>" + str(r.get('DIAGNOSTICO','')) + "</td>"
+            "</tr>"
+            for r in items
+        )
+        detail_html += (
+            "<div style='margin:10px 0 4px;padding:7px 12px;background:" + hdr + ";color:#fff;"
+            "border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.5px;'>"
+            + icon + " " + cat + " — " + desc + " (" + str(len(items)) + " productos)</div>"
+            "<table width='100%' cellpadding='0' cellspacing='0' style='border-collapse:collapse;font-size:12px;margin-bottom:8px;'>"
+            "<thead><tr>"
+            "<th style='background:" + acc + ";color:#fff;padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Código</th>"
+            "<th style='background:" + acc + ";color:#fff;padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Descripción</th>"
+            "<th style='background:" + acc + ";color:#fff;padding:6px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Stock</th>"
+            "<th style='background:" + acc + ";color:#fff;padding:6px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Vendido</th>"
+            "<th style='background:" + acc + ";color:#fff;padding:6px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Últ. Venta</th>"
+            "<th style='background:" + acc + ";color:#fff;padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Diagnóstico</th>"
+            "</tr></thead>"
+            "<tbody>" + rows + "</tbody></table>"
+        )
+
+    return (
+        "<div style='margin-top:24px;'>"
+        "<div style='font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;"
+        "color:#0F2B5B;border-bottom:2px solid #E8A020;padding-bottom:6px;margin-bottom:14px;'>"
+        "&#128200; An&aacute;lisis de Rotaci&oacute;n</div>"
+        "<table width='100%' cellpadding='6' cellspacing='6' style='margin-bottom:16px;'>"
+        "<tr>" + summary_cells + "</tr></table>"
+        + detail_html +
+        "</div>"
+    )
+
+def generate_html(inv: list, stats: dict, date_str: str, rot: list = None) -> str:
     # Agrupar por categoría
     CAT_ORDER = ['mecanico', 'electrico', 'instrumentacion', 'otros']
     grupos = {}
@@ -205,6 +291,8 @@ def generate_html(inv: list, stats: dict, date_str: str) -> str:
         )
     else:
         agotados_section = '<div class="meta">&#9989; No hay productos agotados en este momento.</div>'
+
+    rotation_section = _build_rotation_section(rot) if rot else ''
 
     return f"""<!DOCTYPE html>
 <html lang="es">
@@ -267,17 +355,36 @@ def generate_html(inv: list, stats: dict, date_str: str) -> str:
   <div class="body">
 
     <div class="sec-title">&#128230; Resumen General</div>
-    <div class="stats">
-      <div class="st blue"><div class="num">{stats['total']}</div><div class="lbl">Total Productos</div></div>
-      <div class="st green"><div class="num">{stats['con_stock']}</div><div class="lbl">Con Stock</div></div>
-      <div class="st red"><div class="num">{stats['agotados']}</div><div class="lbl">Agotados</div></div>
-    </div>
+    <table width="100%" cellpadding="0" cellspacing="8" style="margin:10px 0;">
+      <tr>
+        <td width="33%" style="background:#e8f0fe;border-left:4px solid #1A3A8F;border-radius:10px;padding:16px 8px;text-align:center;">
+          <div style="font-size:32px;font-weight:900;color:#0F2B5B;line-height:1;">{stats['total']}</div>
+          <div style="font-size:10px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;">Total Productos</div>
+        </td>
+        <td width="33%" style="background:#e6f4ea;border-left:4px solid #2EAA4A;border-radius:10px;padding:16px 8px;text-align:center;">
+          <div style="font-size:32px;font-weight:900;color:#1B5E20;line-height:1;">{stats['con_stock']}</div>
+          <div style="font-size:10px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;">Con Stock</div>
+        </td>
+        <td width="33%" style="background:#fce8e6;border-left:4px solid #e53e3e;border-radius:10px;padding:16px 8px;text-align:center;">
+          <div style="font-size:32px;font-weight:900;color:#c0392b;line-height:1;">{stats['agotados']}</div>
+          <div style="font-size:10px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;">Agotados</div>
+        </td>
+      </tr>
+    </table>
 
     <div class="sec-title">&#128202; Movimientos Acumulados</div>
-    <div class="kd">
-      <div class="kd-box ent"><div class="knum">+{stats['entradas']}</div><div class="klbl">Total Entradas</div></div>
-      <div class="kd-box sal"><div class="knum">-{stats['salidas']}</div><div class="klbl">Total Salidas</div></div>
-    </div>
+    <table width="100%" cellpadding="0" cellspacing="8" style="margin:10px 0;">
+      <tr>
+        <td width="50%" style="background:#e6f4ea;border:1px solid #2EAA4A;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:26px;font-weight:900;color:#2EAA4A;">+{stats['entradas']}</div>
+          <div style="font-size:10px;color:#666;margin-top:4px;">Total Entradas</div>
+        </td>
+        <td width="50%" style="background:#fff8e1;border:1px solid #E8A020;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:26px;font-weight:900;color:#E8A020;">-{stats['salidas']}</div>
+          <div style="font-size:10px;color:#666;margin-top:4px;">Total Salidas</div>
+        </td>
+      </tr>
+    </table>
     <div class="meta">
       &#128260; Rotaci&oacute;n: <span>{stats['rotacion']}</span> sal/prod &nbsp;|&nbsp;
       &#127919; Disponibilidad: <span>{stats['disponib']}%</span> &nbsp;|&nbsp;
@@ -290,6 +397,8 @@ def generate_html(inv: list, stats: dict, date_str: str) -> str:
     {cat_sections}
 
     {agotados_section}
+
+    {rotation_section}
 
   </div>
   <div class="footer">
@@ -375,6 +484,9 @@ if __name__ == '__main__':
         sys.exit(1)
     print("✅ " + str(len(inv)) + " productos cargados")
 
+    rot = extract_rot_from_html(html_path)
+    print("📈 " + str(len(rot)) + " registros de rotación cargados")
+
     stats = calculate_stats(inv)
     print("📊 Stats: Total=" + str(stats['total']) + " | Con stock=" + str(stats['con_stock']) + " | Agotados=" + str(stats['agotados']))
 
@@ -383,7 +495,7 @@ if __name__ == '__main__':
     month    = MONTHS_ES.get(now.strftime('%B'), now.strftime('%B'))
     date_str = day + " " + str(now.day) + " de " + month + " de " + str(now.year)
 
-    html_body = generate_html(inv, stats, date_str)
+    html_body = generate_html(inv, stats, date_str, rot)
     subject   = "📦 Reporte Inventario E&G — " + date_str
 
     print("🔑 Obteniendo token Microsoft...")
