@@ -41,6 +41,10 @@ COLUMN_MAP = {
     'stock':             'STOCK ACTUAL',
     'entradas':          'ENTRADAS',
     'salidas':           'SALIDAS',
+    'familia':           'FAMILIA',
+    'categoria':         'CATEGORIA',
+    'categoría':         'CATEGORIA',
+    'lote':              'LOTE',
 }
 
 
@@ -170,29 +174,35 @@ def parse_excel(excel_bytes):
     return records
 
 
-# ─── 4. ACTUALIZA Index.html ──────────────────────────────────────────────────
+# ─── 4. ACTUALIZA ARCHIVOS HTML ──────────────────────────────────────────────
 
-def update_index_html(records, html_path):
-    """Reemplaza el array INV_RAW en Index.html con los datos frescos."""
+def update_html_array(records, html_path, array_name):
+    """Reemplaza un array JS en un archivo HTML con los datos frescos."""
     with open(html_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
     new_json = json.dumps(records, ensure_ascii=False, separators=(',', ':'))
-    pattern = r'const INV_RAW\s*=\s*\[[\s\S]*?\];'
-    replacement = 'const INV_RAW = ' + new_json + ';'
+    pattern = r'const ' + array_name + r'\s*=\s*\[[\s\S]*?\];'
+    replacement = 'const ' + array_name + ' = ' + new_json + ';'
 
     if not re.search(pattern, content):
-        print('ERROR: No se encontró "const INV_RAW" en Index.html')
-        sys.exit(1)
+        print('⚠️  No se encontró "const ' + array_name + '" en ' + html_path)
+        return False
 
     new_content = re.sub(pattern, replacement, content)
-
     if new_content == content:
-        print('ℹ️  Sin cambios en el inventario.')
+        print('ℹ️  Sin cambios en ' + array_name)
     else:
         with open(html_path, 'w', encoding='utf-8') as f:
             f.write(new_content)
-        print('✅ Index.html actualizado con ' + str(len(records)) + ' productos')
+        print('✅ ' + html_path + ' → ' + array_name + ' actualizado con ' + str(len(records)) + ' productos')
+    return True
+
+def update_index_html(records, html_path):
+    update_html_array(records, html_path, 'INV_RAW')
+
+def update_buscador_html(records, html_path):
+    update_html_array(records, html_path, 'STOCK_DATA')
 
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
@@ -228,7 +238,8 @@ if __name__ == '__main__':
         print('ERROR: El Excel está vacío o no tiene datos.')
         sys.exit(1)
 
-    html_path = os.path.join(os.path.dirname(__file__), '..', 'Index.html')
-    update_index_html(records, html_path)
+    base = os.path.dirname(__file__) + '/..'
+    update_index_html(records, os.path.join(base, 'Index.html'))
+    update_buscador_html(records, os.path.join(base, 'Buscador_Inventario_2026.html'))
 
     print('🎉 Sincronización completada exitosamente.')
