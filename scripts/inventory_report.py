@@ -88,19 +88,15 @@ def _cat_color(cat: str) -> tuple:
     }
     return m.get(str(cat).lower().strip(), ('#37474F', '#546E7A'))
 
-def _build_category_section(cat: str, productos: list) -> str:
-    label = _cat_label(cat)
-    hdr_color, accent = _cat_color(cat)
+def _build_familia_block(familia: str, productos: list, accent: str) -> str:
+    inv_sorted = sorted(productos, key=lambda p: (_stock(p) == 0, -_stock(p)))
     con_stock = sum(1 for p in productos if _stock(p) > 0)
     agotados  = sum(1 for p in productos if _stock(p) == 0)
-    inv_sorted = sorted(productos, key=lambda p: (_stock(p) == 0, -_stock(p)))
 
     rows = ''.join(
         "<tr>"
         "<td style='font-family:monospace;font-size:11px;color:#555;'>" + str(p.get('CODIGO PRODUCTO','')) + "</td>"
-        "<td><b style='font-size:12px;'>" + str(p.get('DESCRIPCION','')) + "</b>"
-        + ("<br><span style='font-size:10px;color:#888;'>" + str(p.get('FAMILIA','')) + "</span>" if p.get('FAMILIA') else '') +
-        "</td>"
+        "<td><b style='font-size:12px;'>" + str(p.get('DESCRIPCION','')) + "</b></td>"
         "<td style='color:#666;'>" + str(p.get('MARCA','-')) + "</td>"
         "<td style='color:#666;'>" + str(p.get('UBICACIÓN') or p.get('UBICACION','-')) + "</td>"
         "<td style='text-align:center;'>" + _stock_badge(_stock(p)) + "</td>"
@@ -108,6 +104,37 @@ def _build_category_section(cat: str, productos: list) -> str:
         "</tr>"
         for p in inv_sorted
     )
+
+    badge_parts = str(len(productos)) + " items"
+    if agotados:
+        badge_parts += " &nbsp;&#9888; " + str(agotados) + " agotados"
+
+    return (
+        "<tr style='background:" + accent + "18;'>"
+        "<td colspan='6' style='padding:6px 12px;font-size:11px;font-weight:700;"
+        "color:" + accent + ";border-left:3px solid " + accent + ";letter-spacing:.5px;'>"
+        "&#128281; " + familia +
+        " <span style='font-weight:400;color:#888;font-size:10px;'>— " + badge_parts + "</span>"
+        "</td></tr>"
+        + rows
+    )
+
+def _build_category_section(cat: str, productos: list) -> str:
+    label = _cat_label(cat)
+    hdr_color, accent = _cat_color(cat)
+    con_stock = sum(1 for p in productos if _stock(p) > 0)
+    agotados  = sum(1 for p in productos if _stock(p) == 0)
+
+    # Agrupar por FAMILIA dentro de la categoría
+    familias = {}
+    for p in productos:
+        fam = str(p.get('FAMILIA','') or 'Sin familia').strip()
+        familias.setdefault(fam, []).append(p)
+
+    # Bloques por familia ordenados por nombre
+    familia_blocks = ''
+    for fam in sorted(familias.keys()):
+        familia_blocks += _build_familia_block(fam, familias[fam], accent)
 
     return (
         "<div style='margin:18px 0 8px;'>"
@@ -128,7 +155,7 @@ def _build_category_section(cat: str, productos: list) -> str:
         "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Stock</th>"
         "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Ent/Sal</th>"
         "</tr></thead>"
-        "<tbody>" + rows + "</tbody>"
+        "<tbody>" + familia_blocks + "</tbody>"
         "</table></div>"
     )
 
