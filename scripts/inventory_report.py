@@ -155,22 +155,25 @@ def _build_category_section(cat: str, productos: list) -> str:
 
     return (
         "<div style='margin:18px 0 8px;'>"
-        "<div style='background:" + hdr_color + ";color:#fff;padding:10px 14px;border-radius:8px 8px 0 0;"
-        "display:flex;justify-content:space-between;align-items:center;'>"
-        "<span style='font-size:13px;font-weight:700;letter-spacing:1px;'>" + label + "</span>"
-        "<span style='font-size:11px;background:rgba(255,255,255,.15);padding:3px 10px;border-radius:10px;'>"
+        "<table width='100%' cellpadding='0' cellspacing='0' style='border-collapse:collapse;'><tr>"
+        "<td bgcolor='" + hdr_color + "' style='background:" + hdr_color + ";padding:10px 14px;'>"
+        "<span style='font-size:13px;font-weight:700;letter-spacing:1px;color:#ffffff;'>" + label + "</span>"
+        "</td>"
+        "<td bgcolor='" + hdr_color + "' style='background:" + hdr_color + ";padding:10px 14px;text-align:right;'>"
+        "<span style='font-size:11px;color:#ffffff;'>"
         + str(len(productos)) + " productos &nbsp;|&nbsp; "
         + str(con_stock) + " con stock &nbsp;|&nbsp; "
         + str(agotados) + " agotados</span>"
-        "</div>"
-        "<table style='width:100%;border-collapse:collapse;font-size:12px;'>"
+        "</td>"
+        "</tr></table>"
+        "<table width='100%' cellpadding='0' cellspacing='0' style='border-collapse:collapse;font-size:12px;'>"
         "<thead><tr>"
-        "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Código</th>"
-        "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Descripción</th>"
-        "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Marca</th>"
-        "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Ubic.</th>"
-        "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Stock</th>"
-        "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Ent/Sal</th>"
+        "<th bgcolor='" + accent + "' style='background:" + accent + ";color:#ffffff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>C&oacute;digo</th>"
+        "<th bgcolor='" + accent + "' style='background:" + accent + ";color:#ffffff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Descripci&oacute;n</th>"
+        "<th bgcolor='" + accent + "' style='background:" + accent + ";color:#ffffff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Marca</th>"
+        "<th bgcolor='" + accent + "' style='background:" + accent + ";color:#ffffff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Ubic.</th>"
+        "<th bgcolor='" + accent + "' style='background:" + accent + ";color:#ffffff;padding:7px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Stock</th>"
+        "<th bgcolor='" + accent + "' style='background:" + accent + ";color:#ffffff;padding:7px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Ent/Sal</th>"
         "</tr></thead>"
         "<tbody>" + familia_blocks + "</tbody>"
         "</table></div>"
@@ -307,7 +310,7 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None) -> st
 <style>
   body{{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4ff;margin:0;padding:16px;}}
   .wrap{{max-width:900px;margin:0 auto;box-shadow:0 8px 32px rgba(0,0,0,.15);border-radius:14px;overflow:hidden;}}
-  .hdr{{background:linear-gradient(135deg,#071525 0%,#0F2B5B 60%,#071525 100%);padding:28px;text-align:center;}}
+  .hdr{{background:#0F2B5B;padding:28px;text-align:center;}}
   .hdr h1{{margin:0;font-size:24px;color:#fff;letter-spacing:3px;font-weight:900;}}
   .hdr p{{margin:6px 0 0;color:#8899bb;font-size:13px;}}
   .gold{{height:3px;background:linear-gradient(90deg,#E8A020,transparent);}}
@@ -360,17 +363,17 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None) -> st
   <div class="body">
 
     <div class="sec-title">&#128230; Resumen General</div>
-    <table width="100%" cellpadding="0" cellspacing="8" style="margin:10px 0;">
+    <table width="100%" cellpadding="8" cellspacing="6" style="margin:10px 0;">
       <tr>
-        <td width="33%" style="background:#e8f0fe;border-left:4px solid #1A3A8F;border-radius:10px;padding:16px 8px;text-align:center;">
+        <td width="33%" bgcolor="#e8f0fe" style="background:#e8f0fe;border-left:4px solid #1A3A8F;padding:16px 8px;text-align:center;">
           <div style="font-size:32px;font-weight:900;color:#0F2B5B;line-height:1;">{stats['total']}</div>
           <div style="font-size:10px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;">Total Productos</div>
         </td>
-        <td width="33%" style="background:#e6f4ea;border-left:4px solid #2EAA4A;border-radius:10px;padding:16px 8px;text-align:center;">
+        <td width="33%" bgcolor="#e6f4ea" style="background:#e6f4ea;border-left:4px solid #2EAA4A;padding:16px 8px;text-align:center;">
           <div style="font-size:32px;font-weight:900;color:#1B5E20;line-height:1;">{stats['con_stock']}</div>
           <div style="font-size:10px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;">Con Stock</div>
         </td>
-        <td width="33%" style="background:#fce8e6;border-left:4px solid #e53e3e;border-radius:10px;padding:16px 8px;text-align:center;">
+        <td width="33%" bgcolor="#fce8e6" style="background:#fce8e6;border-left:4px solid #e53e3e;padding:16px 8px;text-align:center;">
           <div style="font-size:32px;font-weight:900;color:#c0392b;line-height:1;">{stats['agotados']}</div>
           <div style="font-size:10px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;">Agotados</div>
         </td>
@@ -378,13 +381,13 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None) -> st
     </table>
 
     <div class="sec-title">&#128202; Movimientos Acumulados</div>
-    <table width="100%" cellpadding="0" cellspacing="8" style="margin:10px 0;">
+    <table width="100%" cellpadding="8" cellspacing="6" style="margin:10px 0;">
       <tr>
-        <td width="50%" style="background:#e6f4ea;border:1px solid #2EAA4A;border-radius:10px;padding:14px;text-align:center;">
+        <td width="50%" bgcolor="#e6f4ea" style="background:#e6f4ea;border-left:4px solid #2EAA4A;padding:14px;text-align:center;">
           <div style="font-size:26px;font-weight:900;color:#2EAA4A;">+{stats['entradas']}</div>
           <div style="font-size:10px;color:#666;margin-top:4px;">Total Entradas</div>
         </td>
-        <td width="50%" style="background:#fff8e1;border:1px solid #E8A020;border-radius:10px;padding:14px;text-align:center;">
+        <td width="50%" bgcolor="#fff8e1" style="background:#fff8e1;border-left:4px solid #E8A020;padding:14px;text-align:center;">
           <div style="font-size:26px;font-weight:900;color:#E8A020;">-{stats['salidas']}</div>
           <div style="font-size:10px;color:#666;margin-top:4px;">Total Salidas</div>
         </td>
