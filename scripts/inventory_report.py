@@ -27,15 +27,15 @@ MONTHS_ES  = {'January':'enero','February':'febrero','March':'marzo','April':'ab
                'September':'septiembre','October':'octubre','November':'noviembre','December':'diciembre'}
 
 
-# ─── 1. EXTRAE INVENTARIO DESDE Index.html ────────────────────────────────────
+# ─── 1. EXTRAE INVENTARIO DESDE Buscador_Inventario_2026.html ────────────────
 
 def extract_inv_from_html(html_path: str) -> list:
-    """Extrae el array INV_RAW del archivo Index.html"""
+    """Extrae el array STOCK_DATA del archivo Buscador_Inventario_2026.html"""
     with open(html_path, 'r', encoding='utf-8') as f:
         content = f.read()
-    match = re.search(r'const INV_RAW\s*=\s*(\[[\s\S]*?\]);', content)
+    match = re.search(r'const STOCK_DATA\s*=\s*(\[[\s\S]*?\]);', content)
     if not match:
-        print("ERROR: No se encontró 'const INV_RAW' en Index.html")
+        print("ERROR: No se encontró 'const STOCK_DATA' en el HTML")
         return []
     try:
         return json.loads(match.group(1))
@@ -73,15 +73,34 @@ def _stock_badge(stock):
         return "<span style='background:#e6f4ea;color:#1e7e34;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;'>&#10003; " + str(stock) + "</span>"
 
 
-def generate_html(inv: list, stats: dict, date_str: str) -> str:
-    # Ordenar: primero con más stock, luego agotados al final
-    inv_sorted = sorted(inv, key=lambda p: (_stock(p) == 0, -_stock(p)))
+def _cat_label(cat: str) -> str:
+    m = {'mecanico': 'Material Mecánico', 'electrico': 'Material Eléctrico',
+         'instrumentacion': 'Instrumentación', 'instrumentación': 'Instrumentación'}
+    return m.get(str(cat).lower().strip(), 'Otros')
 
-    # Fila por cada producto (sin f-string para evitar restricciones de backslash)
-    all_rows = ''.join(
+def _cat_color(cat: str) -> tuple:
+    """Retorna (fondo_header, color_acento) según categoría."""
+    m = {
+        'mecanico':       ('#0F2B5B', '#1A3A8F'),
+        'electrico':      ('#7B3F00', '#C0641E'),
+        'instrumentacion':('#1B5E20', '#2E7D32'),
+        'instrumentación':('#1B5E20', '#2E7D32'),
+    }
+    return m.get(str(cat).lower().strip(), ('#37474F', '#546E7A'))
+
+def _build_category_section(cat: str, productos: list) -> str:
+    label = _cat_label(cat)
+    hdr_color, accent = _cat_color(cat)
+    con_stock = sum(1 for p in productos if _stock(p) > 0)
+    agotados  = sum(1 for p in productos if _stock(p) == 0)
+    inv_sorted = sorted(productos, key=lambda p: (_stock(p) == 0, -_stock(p)))
+
+    rows = ''.join(
         "<tr>"
         "<td style='font-family:monospace;font-size:11px;color:#555;'>" + str(p.get('CODIGO PRODUCTO','')) + "</td>"
-        "<td><b style='font-size:12px;'>" + str(p.get('DESCRIPCION','')) + "</b></td>"
+        "<td><b style='font-size:12px;'>" + str(p.get('DESCRIPCION','')) + "</b>"
+        + ("<br><span style='font-size:10px;color:#888;'>" + str(p.get('FAMILIA','')) + "</span>" if p.get('FAMILIA') else '') +
+        "</td>"
         "<td style='color:#666;'>" + str(p.get('MARCA','-')) + "</td>"
         "<td style='color:#666;'>" + str(p.get('UBICACIÓN') or p.get('UBICACION','-')) + "</td>"
         "<td style='text-align:center;'>" + _stock_badge(_stock(p)) + "</td>"
@@ -90,13 +109,53 @@ def generate_html(inv: list, stats: dict, date_str: str) -> str:
         for p in inv_sorted
     )
 
-    # Filas de productos agotados
+    return (
+        "<div style='margin:18px 0 8px;'>"
+        "<div style='background:" + hdr_color + ";color:#fff;padding:10px 14px;border-radius:8px 8px 0 0;"
+        "display:flex;justify-content:space-between;align-items:center;'>"
+        "<span style='font-size:13px;font-weight:700;letter-spacing:1px;'>" + label + "</span>"
+        "<span style='font-size:11px;background:rgba(255,255,255,.15);padding:3px 10px;border-radius:10px;'>"
+        + str(len(productos)) + " productos &nbsp;|&nbsp; "
+        + str(con_stock) + " con stock &nbsp;|&nbsp; "
+        + str(agotados) + " agotados</span>"
+        "</div>"
+        "<table style='width:100%;border-collapse:collapse;font-size:12px;'>"
+        "<thead><tr>"
+        "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Código</th>"
+        "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Descripción</th>"
+        "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Marca</th>"
+        "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Ubic.</th>"
+        "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Stock</th>"
+        "<th style='background:" + accent + ";color:#fff;padding:7px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Ent/Sal</th>"
+        "</tr></thead>"
+        "<tbody>" + rows + "</tbody>"
+        "</table></div>"
+    )
+
+def generate_html(inv: list, stats: dict, date_str: str) -> str:
+    # Agrupar por categoría
+    CAT_ORDER = ['mecanico', 'electrico', 'instrumentacion', 'otros']
+    grupos = {}
+    for p in inv:
+        cat = str(p.get('CATEGORIA', '') or '').lower().strip()
+        if cat not in ('mecanico','electrico','instrumentacion','instrumentación'):
+            cat = 'otros'
+        grupos.setdefault(cat, []).append(p)
+
+    # Secciones por categoría
+    cat_sections = ''
+    for cat in CAT_ORDER:
+        if cat in grupos and grupos[cat]:
+            cat_sections += _build_category_section(cat, grupos[cat])
+
+    # Filas de productos agotados (todas las categorías)
     agotados_rows = ''.join(
         "<tr>"
         "<td style='font-family:monospace;font-size:11px;'>" + str(p.get('CODIGO PRODUCTO','')) + "</td>"
         "<td>" + str(p.get('DESCRIPCION','')) + "</td>"
         "<td>" + str(p.get('MARCA','-')) + "</td>"
         "<td>" + str(p.get('UBICACIÓN') or p.get('UBICACION','-')) + "</td>"
+        "<td style='color:#888;font-size:11px;'>" + _cat_label(p.get('CATEGORIA','')) + "</td>"
         "</tr>"
         for p in inv if _stock(p) == 0
     )
@@ -114,7 +173,7 @@ def generate_html(inv: list, stats: dict, date_str: str) -> str:
     if agotados_count > 0:
         agotados_section = (
             '<div class="sec-title" style="color:#c0392b;">&#128308; Productos Agotados (' + str(agotados_count) + ')</div>'
-            '<table><thead><tr><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>Marca</th><th>Ubicaci&oacute;n</th></tr></thead>'
+            '<table><thead><tr><th>C&oacute;digo</th><th>Descripci&oacute;n</th><th>Marca</th><th>Ubicaci&oacute;n</th><th>Categor&iacute;a</th></tr></thead>'
             '<tbody>' + agotados_rows + '</tbody></table>'
         )
     else:
@@ -200,29 +259,8 @@ def generate_html(inv: list, stats: dict, date_str: str) -> str:
 
     {alert_box}
 
-    <div class="sec-title">&#128269; Inventario Completo &mdash; {stats['total']} productos</div>
-    <p class="search-tip">&#128161; Escribe para filtrar por c&oacute;digo, nombre, marca o ubicaci&oacute;n. Tambi&eacute;n puedes usar <strong>Ctrl+F</strong> en tu cliente de correo.</p>
-    <div class="search-wrap">
-      <input class="search-bar" type="text" id="buscar"
-             placeholder="&#128269;  Buscar producto, c&oacute;digo, marca, ubicaci&oacute;n..."
-             oninput="filtrar()" />
-    </div>
-    <table id="tablaInv">
-      <thead>
-        <tr>
-          <th>C&oacute;digo</th>
-          <th>Descripci&oacute;n</th>
-          <th>Marca</th>
-          <th>Ubicaci&oacute;n</th>
-          <th style="text-align:center;">Stock</th>
-          <th style="text-align:center;">Ent / Sal</th>
-        </tr>
-      </thead>
-      <tbody id="tbodyInv">
-        {all_rows}
-      </tbody>
-    </table>
-    <p id="sinResultados">Sin resultados para esa b&uacute;squeda.</p>
+    <div class="sec-title">&#128230; Inventario por Categor&iacute;a &mdash; {stats['total']} productos</div>
+    {cat_sections}
 
     {agotados_section}
 
@@ -232,21 +270,6 @@ def generate_html(inv: list, stats: dict, date_str: str) -> str:
     <p>E&amp;G Energy Group &middot; Reporte autom&aacute;tico L&ndash;V 5:00 PM Colombia</p>
   </div>
 </div>
-<script>
-function filtrar() {{
-  var q = document.getElementById('buscar').value.toLowerCase().trim();
-  var filas = document.querySelectorAll('#tbodyInv tr');
-  var v = 0;
-  for (var i = 0; i < filas.length; i++) {{
-    if (!q || filas[i].textContent.toLowerCase().indexOf(q) !== -1) {{
-      filas[i].classList.remove('hidden'); v++;
-    }} else {{
-      filas[i].classList.add('hidden');
-    }}
-  }}
-  document.getElementById('sinResultados').style.display = (v === 0 && q) ? 'block' : 'none';
-}}
-</script>
 </body>
 </html>"""
 
@@ -317,7 +340,7 @@ if __name__ == '__main__':
     print("🔍 Secret len : " + str(len(client_secret)) + " chars")
     print("🔍 Sender     : '" + sender_email + "'")
 
-    html_path = os.path.join(os.path.dirname(__file__), '..', 'Index.html')
+    html_path = os.path.join(os.path.dirname(__file__), '..', 'Buscador_Inventario_2026.html')
     print("📂 Leyendo inventario desde: " + html_path)
     inv = extract_inv_from_html(html_path)
     if not inv:
