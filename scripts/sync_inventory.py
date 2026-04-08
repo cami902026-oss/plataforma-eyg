@@ -92,7 +92,7 @@ def list_drive_folder(token, user_email, folder_path='root/children'):
 # ─── 3. DESCARGA EXCEL DESDE ONEDRIVE ─────────────────────────────────────────
 
 def download_excel(token, user_email, file_path):
-    """Descarga el archivo Excel del OneDrive del usuario vi�a Graph API."""
+    """Descarga el archivo Excel del OneDrive del usua2io vía Graph API."""
     encoded = urllib.parse.quote(file_path, safe='/')
     url = ('https://graph.microsoft.com/v1.0/users/' + user_email +
            '/drive/root:/' + encoded + ':/content')
@@ -119,13 +119,32 @@ def download_excel(token, user_email, file_path):
 def parse_excel(excel_bytes):
     """Lee el Excel y retorna lista de dicts con los productos."""
     wb = openpyxl.load_workbook(io.BytesIO(excel_bytes), data_only=True)
-    ws = wb.active
-    print('📋 Hoja activa: ' + str(ws.title))
+    print('📌 Hojas disponibles: ' + str(wb.sheetnames))
 
-    # Buscar la fila de encabezados (puede no estar en la fila 1)
-    # Buscamos en las primeras 15 filas la que tenga más columnas reconocibles
-    header_row_idx = 1
-    best_score = 0
+    # ── Elegir la hoja con más columnas reconocibles ───────────────────────────
+    # Busca en TODAS las hojas la que tenga mayor puntaje de coincidencia con
+    # COLUMN_MAP, descartando la hoja KARDEX (registro de movimientos).
+    best_ws         = wb.active
+    best_ws_score   = 0
+    best_ws_row     = 1
+
+    for sheet_name in wb.sheetnames:
+        ws_cand = wb[sheet_name]
+        for row_idx in range(1, 16):
+            row_vals = [str(c.value or '').strip().lower() for c in ws_cand[row_idx]]
+            score = sum(1 for v in row_vals if v in COLUMN_MAP)
+            if score > best_ws_score:
+                best_ws_score = score
+                best_ws       = ws_cand
+                best_ws_row   = row_idx
+
+    ws = best_ws
+    print('📋 Hoja seleccionada: "' + ws.title + '" (score=' + str(best_ws_score) + ')')
+
+    # Buscar la fila de encabezados dentro de la hoja seleccionada
+    header_row_idx = best_ws_row
+    best_score = best_ws_score
+    # Re-scan solo para confirmar (ya tenemos los valores)
     for row_idx in range(1, 16):
         row_vals = [str(c.value or '').strip().lower() for c in ws[row_idx]]
         score = sum(1 for v in row_vals if v in COLUMN_MAP)
@@ -136,7 +155,6 @@ def parse_excel(excel_bytes):
             header_row_idx = row_idx
 
     print('📌 Fila de encabezados detectada: ' + str(header_row_idx) + ' (score=' + str(best_score) + ')')
-    print('📌 Hojas disponibles: ' + str(wb.sheetnames) + ' | Hoja activa: ' + str(ws.title))
     raw_headers = [str(c.value or '').strip() for c in ws[header_row_idx]]
     print('📌 Encabezados RAW del Excel: ' + str(raw_headers))
     headers = []
@@ -221,7 +239,7 @@ if __name__ == '__main__':
     print('🔍 Usuario OneDrive: ' + ONEDRIVE_USER_EMAIL)
     print('📂 Archivo:          ' + ONEDRIVE_FILE_PATH)
 
-    print('🔑 Obteniendo token Microsoft...')
+    print('🔑 bteniendo token Microsoft...')
     token = get_access_token(tenant_id, client_id, client_secret)
 
     # Diagnóstico: listar raíz y carpeta LOGISTICA
