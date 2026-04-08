@@ -872,6 +872,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn btn-primary" onclick="openPocModal(null)">+ Nueva O.C.</button>
               <button class="btn" style="background:#1d7a3a;color:#fff;border:none" onclick="exportPocExcel()">📊 Exportar Excel</button>
+              <button class="btn" style="background:#1A3A8F;color:#fff;border:none" onclick="generateGeneralOCReport()">📄 Informe General</button>
             </div>
           </div>
           <div id="poc-list"></div>
@@ -2803,6 +2804,102 @@ function exportPocExcel() {
   } catch(err) { showToast('Error al exportar', 'error'); }
 }
 
+// ===== INFORME GENERAL TODAS LAS OC =====
+function generateGeneralOCReport() {
+  const list = getPOC();
+  if (!list || list.length === 0) { showToast('No hay órdenes para el informe', 'info'); return; }
+  const ENVIO_LABELS={moto:'🛵 Moto mensajería',camion_energy:'🚛 Camión E&G Energy',camion_externo:'🚚 Camión externo',transportadora:'📦 Transportadora',vehiculo_personal:'🚗 Vehículo personal',recoge_bodega:'🏭 Recoge en bodega',entrega_mano:'🤝 Entrega en mano'};
+  const stageIcon=['🛒','🚛','📄','💰'];
+  const stageLabel=['Compra','Entrega','Certificado','Facturación'];
+  const today = new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const todayStr = new Date().toLocaleDateString('es-CO');
+  const activas = list.filter(o=>o.estado==='activo').length;
+  const completadas = list.filter(o=>o.estado==='completado').length;
+  const canceladas = list.filter(o=>o.estado==='cancelado').length;
+  const ESTADO_COLOR={activo:'#2EAA4A',completado:'#3b82f6',cancelado:'#e53e3e'};
+  const ESTADO_LABEL={activo:'ACTIVO',completado:'COMPLETADO',cancelado:'CANCELADO'};
+  const cardsHtml = list.map(o => {
+    const s = o.stages||[];
+    const progPct = [s[0]?.f, s[1]?.f, s[2]?.f, s[3]?.f].filter(Boolean).length * 25;
+    const etapas = stageLabel.map((lbl,i)=>{
+      const et = s[i]||{};
+      const done = et.s==='done'||et.f;
+      const active = !done && i===s.findIndex((x,j)=>!(x?.s==='done'||x?.f));
+      const cls = done?'done':active?'active':'pending';
+      const statusTxt = done?'✅ Completado':active?'⏳ En proceso':'⏸ Pendiente';
+      const fecha = et.f ? et.f.split('-').reverse().join('/') : 'sin fecha';
+      const extra = i===1 && (et.envio||et.guia||et.dest||et.resp) ? `<div style="font-size:10px;color:#6b7280;margin-top:4px;">${et.envio?ENVIO_LABELS[et.envio]||et.envio:''} ${et.guia?'| Guía: '+et.guia:''} ${et.dest?'| '+et.dest:''}</div>` : '';
+      return `<div style="flex:1;text-align:center;padding:12px 6px;background:${done?'#f0fdf4':active?'#fffbeb':'#f9fafb'};border-radius:8px;border:1px solid ${done?'#bbf7d0':active?'#fde68a':'#e5e7eb'};">
+        <div style="font-size:20px;">${stageIcon[i]}</div>
+        <div style="font-size:12px;font-weight:700;color:#1f2937;margin:4px 0;">${lbl}</div>
+        <div style="font-size:11px;font-weight:600;color:${done?'#2EAA4A':active?'#d97706':'#9ca3af'};">${statusTxt}</div>
+        <div style="font-size:10px;color:#6b7280;margin-top:2px;">📅 ${fecha}</div>
+        ${extra}
+      </div>`;
+    }).join('');
+    return `<div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:22px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);">
+      <div style="background:#0F2B5B;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:17px;font-weight:900;color:#fff;letter-spacing:.5px;">${o.num||'Sin número'}</div>
+          <div style="font-size:13px;color:#93c5fd;margin-top:3px;">👤 ${o.cliente||'—'}</div>
+        </div>
+        <span style="background:${ESTADO_COLOR[o.estado]||'#9ca3af'};color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;">${ESTADO_LABEL[o.estado]||o.estado||''}</span>
+      </div>
+      <div style="padding:16px 20px;">
+        <div style="font-size:14px;font-weight:600;color:#374151;margin-bottom:12px;">📋 ${o.desc||'Sin descripción'}</div>
+        <div style="background:#f1f5f9;border-radius:6px;padding:8px 12px;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px;"><span>Progreso de la orden</span><span style="font-weight:700;color:#0F2B5B;">${progPct}% — ${progPct===100?'Completado':progPct===0?'Sin iniciar':'En proceso'}</span></div>
+          <div style="background:#e2e8f0;border-radius:4px;height:8px;"><div style="background:${progPct===100?'#2EAA4A':'#E8A020'};height:8px;border-radius:4px;width:${progPct}%;"></div></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">${etapas}</div>
+        ${o.obs?`<div style="margin-top:14px;padding:10px 14px;background:#f8fafc;border-left:3px solid #E8A020;border-radius:0 6px 6px 0;font-size:12px;color:#374151;"><span style="font-weight:700;">Observaciones:</span> ${o.obs}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe General OC — E&G Energy</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6fb;color:#1a1a2e;padding:32px;}
+  .page-wrap{max-width:840px;margin:0 auto;}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:18px;border-bottom:3px solid #E8A020;margin-bottom:28px;}
+  .summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
+  .sc{background:#fff;border-radius:10px;padding:14px 16px;text-align:center;border:1px solid #e5e7eb;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+  .sc .n{font-size:28px;font-weight:900;} .sc .l{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+  .search-wrap{margin-bottom:24px;}
+  .search-box-g{display:flex;align-items:center;background:#fff;border:2px solid #cbd5e1;border-radius:10px;padding:9px 14px;transition:border-color .2s;}
+  .search-box-g:focus-within{border-color:#0F2B5B;}
+  .search-box-g input{border:none;outline:none;font-size:14px;width:100%;color:#1e293b;background:transparent;}
+  .oc-card.hidden{display:none;}
+  .footer{margin-top:36px;padding-top:14px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;}
+  @media print{.no-print{display:none!important}}</style></head><body>
+  <div class="page-wrap">
+  <button class="no-print" onclick="window.print()" style="display:block;margin:0 auto 24px;padding:10px 30px;background:#0F2B5B;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">🖨️ Imprimir / Guardar como PDF</button>
+  <div class="header">
+    <div><div style="font-size:22px;font-weight:900;color:#0F2B5B;letter-spacing:1px;">E&G ENERGY GROUP</div><div style="font-size:11px;color:#6b7280;margin-top:3px;text-transform:uppercase;letter-spacing:1px;">Gestión de Procesos — Órdenes de Compra</div></div>
+    <div style="text-align:right;"><div style="font-size:17px;font-weight:700;color:#0F2B5B;">📋 Informe General OC</div><div style="font-size:12px;color:#6b7280;margin-top:4px;">Generado: ${today}</div></div>
+  </div>
+  <div class="summary-bar">
+    <div class="sc"><div class="n" style="color:#0F2B5B;">${list.length}</div><div class="l">Total O.C.</div></div>
+    <div class="sc"><div class="n" style="color:#2EAA4A;">${activas}</div><div class="l">Activas</div></div>
+    <div class="sc"><div class="n" style="color:#3b82f6;">${completadas}</div><div class="l">Completadas</div></div>
+    <div class="sc"><div class="n" style="color:#e53e3e;">${canceladas}</div><div class="l">Canceladas</div></div>
+  </div>
+  <div class="search-wrap no-print">
+    <div class="search-box-g">
+      <span style="font-size:18px;margin-right:10px;color:#94a3b8;">🔍</span>
+      <input id="oc-gen-search" type="text" placeholder="Buscar por N° OC, cliente, descripción..." autocomplete="off" oninput="filtrarOCG(this.value)">
+      <button onclick="document.getElementById('oc-gen-search').value='';filtrarOCG('');" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:20px;line-height:1;">✕</button>
+    </div>
+    <p id="oc-gen-tip" style="font-size:11px;color:#9ca3af;margin-top:5px;padding-left:4px;">Busca entre todas las órdenes de compra.</p>
+  </div>
+  ${cardsHtml}
+  <div class="footer"><span>ENERGY Bot v1.0 — E&G Energy Group</span><span>Informe generado el ${todayStr}</span></div>
+  </div>
+  <script>function filtrarOCG(t){const q=(t||'').trim().toLowerCase();const tip=document.getElementById('oc-gen-tip');const cards=document.querySelectorAll('.oc-card');if(!q){cards.forEach(c=>c.classList.remove('hidden'));tip.textContent='Busca entre todas las órdenes de compra.';tip.style.color='#9ca3af';return;}let v=0;cards.forEach(c=>{if(c.textContent.toLowerCase().includes(q)){c.classList.remove('hidden');v++;}else{c.classList.add('hidden');}});tip.textContent=v===0?'⚠️ No se encontraron órdenes para "'+t+'"':v+' orden'+(v!==1?'es':'')+' encontrada'+(v!==1?'s':'')+' para "'+t+'"';tip.style.color=v===0?'#c0392b':'#15803d';}<\/script>
+  </body></html>`;
+  const w = window.open('','_blank');
+  if(w) { w.document.write(html); w.document.close(); }
+  else { showToast('Activa las ventanas emergentes para ver el informe', 'info'); }
+}
+
 // ===== INFORME POR OC =====
 function viewPocReport(id) {
   const o = getPOC().find(x=>x.id===id);
@@ -3505,585 +3602,4 @@ function saveMinutaData(contenido, reunionId) {
   renderMinutas();
   showToast('Minuta guardada correctamente','success');
   document.getElementById('m-notas').value='';
-  document.getElementById('minuta-preview').classList.add('hidden');
-}
-// ===== TABS =====
-function switchTab(tabId, btn) {
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
-  if(btn) btn.classList.add('active');
-  else {
-    const btns = document.querySelectorAll('.tab-btn');
-    const idx = ['tab-whatsapp','tab-teams','tab-plantillas'].indexOf(tabId);
-    if(btns[idx]) btns[idx].classList.add('active');
-  }
-}
-// ===== ENERGY CHAT =====
-function initChat() {
-  addBotMsg(`¡Hola, ${currentUser.name.split(' ')[0]}! 👋 Soy ENERGY, tu asistente administrativo.\n\nHoy tienes reuniones y tareas pendientes. ¿En qué te puedo ayudar?`);
-}
-function toggleChat() {
-  chatOpen = !chatOpen;
-  document.getElementById('chat-panel').classList.toggle('open', chatOpen);
-}
-function addBotMsg(text) {
-  const msgs = document.getElementById('chat-messages');
-  const d = document.createElement('div');
-  d.className='msg bot'; d.textContent=text;
-  msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
-}
-function addUserMsg(text) {
-  const msgs = document.getElementById('chat-messages');
-  const d = document.createElement('div');
-  d.className='msg user'; d.textContent=text;
-  msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
-}
-async function sendChat() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if(!text) return;
-  input.value='';
-  addUserMsg(text);
-  document.getElementById('quick-actions').style.display='none';
-  const loadingEl = document.createElement('div');
-  loadingEl.className='msg bot';
-  loadingEl.innerHTML='<span class="spinner"></span> ENERGY está pensando...';
-  document.getElementById('chat-messages').appendChild(loadingEl);
-  document.getElementById('chat-messages').scrollTop=999999;
-  const tasks = getData('tasks', TASKS_DEFAULT);
-  const meetings = getData('meetings', MEETINGS_DEFAULT);
-  const todayMeetings = meetings.filter(m=>m.fecha===todayStr);
-  const pendingTasks = tasks.filter(t=>t.estado!=='Completado');
-  const context = `Reuniones de hoy: ${todayMeetings.map(m=>m.titulo+' a las '+m.horaInicio).join(', ')||'ninguna'}. Tareas pendientes: ${pendingTasks.map(t=>t.titulo+' ('+t.responsable+')').join(', ')||'ninguna'}.`;
-  const result = await callEnergyAI(text, context);
-  loadingEl.remove();
-  addBotMsg(result);
-}
-function quickChat(text) {
-  document.getElementById('chat-input').value=text;
-  sendChat();
-}
-function chatKeydown(e) {
-  if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
-}
-// ===== UTILS =====
-function showToast(msg, type='info') {
-  const container = document.getElementById('toast-container');
-  const toast = document.createElement('div');
-  toast.className=`toast ${type}`;
-  const icons = {success:'✅',error:'❌',info:'ℹ️'};
-  toast.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
-  container.appendChild(toast);
-  setTimeout(()=>toast.remove(), 3500);
-}
-function initials(name) {
-  return (name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
-}
-function formatDate(str) {
-  if(!str) return '';
-  const [y,m,d] = str.split('-');
-  return `${d}/${m}/${y}`;
-}
-// ===== MICROSOFT TEAMS INTEGRATION =====
-const MS_CLIENT_ID_DEFAULT = '0c8bd7f5-a027-4da9-9d11-ccc27682b0ec';
-const MS_TENANT_ID_DEFAULT = '9876dbde-5a7f-4139-8c2d-60a4395fd7d6';
-let msalInstance = null;
-let msAccountInfo = null;
-let msAccessToken = null;
-function getMsConfig() {
-  return {
-    clientId: localStorage.getItem('ms_client_id') || MS_CLIENT_ID_DEFAULT,
-    tenantId: localStorage.getItem('ms_tenant_id') || MS_TENANT_ID_DEFAULT,
-    teamId: localStorage.getItem('ms_team_id') || ''
-  };
-}
-function initMsal() {
-  const cfg = getMsConfig();
-  const msalConfig = {
-    auth: {
-      clientId: cfg.clientId,
-      authority: `https://login.microsoftonline.com/${cfg.tenantId}`,
-      redirectUri: window.location.href.split('?')[0].split('#')[0]
-    },
-    cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: false }
-  };
-  try {
-    msalInstance = new msal.PublicClientApplication(msalConfig);
-    msalInstance.handleRedirectPromise().then(resp => {
-      if (resp) { msAccountInfo = resp.account; msAccessToken = resp.accessToken; updateMsUI(true); }
-      else {
-        const accounts = msalInstance.getAllAccounts();
-        if (accounts.length > 0) { msAccountInfo = accounts[0]; silentToken(); }
-      }
-    }).catch(e => console.warn('MSAL redirect:', e));
-  } catch(e) { console.warn('MSAL init error:', e); }
-}
-const MS_SCOPES = ['User.Read','Chat.ReadWrite','OnlineMeetings.ReadWrite','Calendars.ReadWrite','Channel.ReadBasic.All','ChannelMessage.Send','Files.Read','Files.ReadWrite'];
-async function silentToken() {
-  if (!msalInstance || !msAccountInfo) return null;
-  try {
-    const resp = await msalInstance.acquireTokenSilent({
-      scopes: MS_SCOPES,
-      account: msAccountInfo
-    });
-    msAccessToken = resp.accessToken;
-    updateMsUI(true);
-    return msAccessToken;
-  } catch(e) {
-    // Token expirado o falta consentimiento → pedir login interactivo
-    try {
-      const resp2 = await msalInstance.acquireTokenPopup({ scopes: MS_SCOPES, account: msAccountInfo });
-      msAccessToken = resp2.accessToken;
-      msAccountInfo = resp2.account;
-      updateMsUI(true);
-      return msAccessToken;
-    } catch(e2) {
-      updateMsUI(false);
-      return null;
-    }
-  }
-}
-async function msLogin() {
-  // Verificar que la librería MSAL esté cargada
-  if (typeof msal === 'undefined') {
-    showToast('❌ Error: La librería de Microsoft no cargó. Recarga la página e intenta de nuevo.', 'error');
-    return;
-  }
-  // Inicializar si no está listo
-  if (!msalInstance) {
-    initMsal();
-    await new Promise(r => setTimeout(r, 800)); // esperar inicialización
-  }
-  if (!msalInstance) {
-    showToast('❌ No se pudo inicializar Microsoft Auth. Verifica el Client ID y Tenant ID en los campos de abajo y haz clic en "Guardar configuración" primero.', 'error');
-    return;
-  }
-  try {
-    showToast('⏳ Abriendo ventana de Microsoft...', 'info');
-    const resp = await msalInstance.loginPopup({
-      scopes: ['User.Read','Chat.ReadWrite','OnlineMeetings.ReadWrite','Calendars.ReadWrite','Channel.ReadBasic.All','ChannelMessage.Send','Files.Read','Files.ReadWrite']
-    });
-    msAccountInfo = resp.account;
-    msAccessToken = resp.accessToken;
-    updateMsUI(true);
-    showToast('✅ Sesión Microsoft iniciada: ' + msAccountInfo.username, 'success');
-    msLoadChannels();
-  } catch(e) {
-    if (e.errorCode === 'popup_window_error' || (e.message && e.message.includes('popup'))) {
-      showToast('❌ El popup fue bloqueado. Permite popups para este sitio en tu navegador y vuelve a intentar.', 'error');
-    } else {
-      showToast('Error al iniciar sesión: ' + (e.message||e), 'error');
-    }
-  }
-}
-function msLogout() {
-  if (msalInstance) msalInstance.logoutPopup();
-  msAccountInfo = null; msAccessToken = null;
-  updateMsUI(false);
-  showToast('Sesión Microsoft cerrada', 'info');
-}
-function updateMsUI(connected) {
-  const dot = document.getElementById('ms-status-dot');
-  const text = document.getElementById('ms-status-text');
-  const sub = document.getElementById('ms-status-sub');
-  const loginBtn = document.getElementById('ms-login-btn');
-  const logoutBtn = document.getElementById('ms-logout-btn');
-  const connDot = document.getElementById('teams-conn-dot');
-  const connText = document.getElementById('teams-conn-text');
-  if (connected && msAccountInfo) {
-    if(dot) { dot.style.background='#2EAA4A'; }
-    if(text) text.textContent = '✅ Conectado: ' + msAccountInfo.username;
-    if(sub) sub.textContent = 'Teams activo — puedes crear reuniones y enviar mensajes';
-    if(loginBtn) loginBtn.style.display='none';
-    if(logoutBtn) logoutBtn.style.display='';
-    if(connDot) { connDot.style.background='#2EAA4A'; }
-    if(connText) connText.textContent = '✅ Conectado como ' + msAccountInfo.username;
-  } else {
-    if(dot) { dot.style.background='#e53e3e'; }
-    if(text) text.textContent = 'No conectado a Microsoft';
-    if(sub) sub.textContent = 'Inicia sesión con tu cuenta E&G para activar Teams';
-    if(loginBtn) loginBtn.style.display='';
-    if(logoutBtn) logoutBtn.style.display='none';
-    if(connDot) { connDot.style.background='#e53e3e'; }
-    if(connText) connText.textContent = 'No conectado a Microsoft Teams';
-  }
-}
-async function getToken() {
-  if (msAccessToken) return msAccessToken;
-  return await silentToken();
-}
-async function msTestConnection() {
-  const token = await getToken();
-  if (!token) { showToast('Primero inicia sesión con Microsoft', 'error'); return; }
-  try {
-    const resp = await fetch('https://graph.microsoft.com/v1.0/me', {
-      headers: { Authorization: 'Bearer ' + token }
-    });
-    const data = await resp.json();
-    const infoEl = document.getElementById('ms-teams-info');
-    infoEl.style.display='block';
-    infoEl.innerHTML = `✅ <b>Conexión exitosa</b><br>Usuario: ${data.displayName}<br>Email: ${data.mail||data.userPrincipalName}<br>ID: ${data.id}`;
-    showToast('Conexión con Microsoft Graph OK', 'success');
-  } catch(e) {
-    showToast('Error de conexión: ' + e.message, 'error');
-  }
-}
-async function msLoadChannels() {
-  const token = await getToken();
-  if (!token) return;
-  const cfg = getMsConfig();
-  const sel = document.getElementById('teams-channel-sel');
-  if (!sel) return;
-  if (!cfg.teamId) {
-    // Cargar lista de equipos
-    try {
-      const resp = await fetch('https://graph.microsoft.com/v1.0/me/joinedTeams', {
-        headers: { Authorization: 'Bearer ' + token }
-      });
-      const data = await resp.json();
-      sel.innerHTML = '<option value="">-- Selecciona equipo/canal --</option>';
-      if (data.value) {
-        data.value.forEach(team => {
-          const opt = document.createElement('option');
-          opt.value = team.id + '|General';
-          opt.textContent = '📁 ' + team.displayName;
-          sel.appendChild(opt);
-        });
-      }
-      showToast('Equipos cargados desde Teams', 'success');
-    } catch(e) { showToast('Error cargando equipos: ' + e.message, 'error'); }
-    return;
-  }
-  // Cargar canales del equipo configurado
-  try {
-    const resp = await fetch(`https://graph.microsoft.com/v1.0/teams/${cfg.teamId}/channels`, {
-      headers: { Authorization: 'Bearer ' + token }
-    });
-    const data = await resp.json();
-    sel.innerHTML = '<option value="">-- Selecciona canal --</option>';
-    if (data.value) {
-      data.value.forEach(ch => {
-        const opt = document.createElement('option');
-        opt.value = cfg.teamId + '|' + ch.id;
-        opt.textContent = '# ' + ch.displayName;
-        sel.appendChild(opt);
-      });
-    }
-    showToast('Canales cargados desde Teams', 'success');
-  } catch(e) { showToast('Error cargando canales: ' + e.message, 'error'); }
-}
-async function msSendTeamsMessage() {
-  const token = await getToken();
-  if (!token) { showToast('Primero inicia sesión con Microsoft en Configuración', 'error'); navigate('configuracion'); return; }
-  const msg = document.getElementById('teams-output').textContent.trim();
-  if (!msg) { showToast('Primero redacta el mensaje con ENERGY', 'error'); return; }
-  const chanSel = document.getElementById('teams-channel-sel');
-  const chanVal = chanSel ? chanSel.value : '';
-  if (!chanVal) { showToast('Selecciona un canal de Teams primero', 'error'); return; }
-  const [teamId, channelId] = chanVal.split('|');
-  try {
-    const resp = await fetch(`https://graph.microsoft.com/v1.0/teams/${teamId}/channels/${channelId}/messages`, {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ body: { contentType: 'text', content: msg } })
-    });
-    if (resp.ok) { showToast('✅ Mensaje enviado a Teams exitosamente', 'success'); }
-    else { const err = await resp.json(); showToast('Error: ' + (err.error?.message||resp.status), 'error'); }
-  } catch(e) { showToast('Error enviando mensaje: ' + e.message, 'error'); }
-}
-// ═══════ SINCRONIZAR REUNIONES DESDE TEAMS / OUTLOOK CALENDAR ═══════
-async function syncTeamsCalendar() {
-  const token = await getToken();
-  if (!token) { showToast('Primero inicia sesión con Microsoft en Configuración 🟣', 'error'); navigate('configuracion'); return; }
-  const btn = document.getElementById('btn-sync-teams');
-  if (btn) { btn.textContent = '⏳ Sincronizando...'; btn.disabled = true; }
-  try {
-    // Traer eventos de los próximos 90 días y los últimos 30
-    const now   = new Date();
-    const start = new Date(now); start.setDate(start.getDate() - 30);
-    const end   = new Date(now); end.setDate(end.getDate() + 90);
-    const startISO = start.toISOString();
-    const endISO   = end.toISOString();
-    const resp = await fetch(
-      `https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=${startISO}&endDateTime=${endISO}&$select=subject,start,end,isOnlineMeeting,onlineMeeting,bodyPreview&$top=100&$orderby=start/dateTime`,
-      { headers: { Authorization: 'Bearer ' + token, Prefer: 'outlook.timezone="America/Bogota"' } }
-    );
-    if (!resp.ok) {
-      const err = await resp.json();
-      showToast('Error al leer calendario: ' + (err.error?.message || resp.status), 'error');
-      return;
-    }
-    const data = await resp.json();
-    const events = data.value || [];
-    if (!events.length) { showToast('No se encontraron eventos en el calendario de Microsoft.', 'info'); return; }
-    let meetings = getData('meetings', MEETINGS_DEFAULT);
-    let added = 0, skipped = 0;
-    events.forEach(ev => {
-      // Convertir fecha/hora
-      const startDT  = new Date(ev.start.dateTime + (ev.start.dateTime.endsWith('Z') ? '' : 'Z'));
-      const endDT    = new Date(ev.end.dateTime   + (ev.end.dateTime.endsWith('Z')   ? '' : 'Z'));
-      const fecha    = startDT.toISOString().slice(0, 10);
-      const hInicio  = startDT.toTimeString().slice(0, 5);
-      const hFin     = endDT.toTimeString().slice(0, 5);
-      const titulo   = (ev.subject || 'Sin título').trim();
-      // Evitar duplicados (mismo título + misma fecha)
-      const existe = meetings.some(m => m.titulo === titulo && m.fecha === fecha);
-      if (existe) { skipped++; return; }
-      const newId = Math.max(0, ...meetings.map(m => m.id)) + 1;
-      meetings.push({
-        id: newId,
-        titulo,
-        fecha,
-        horaInicio: hInicio,
-        horaFin: hFin,
-        tipo: ev.isOnlineMeeting ? 'Teams' : 'Presencial',
-        participantes: [],
-        descripcion: ev.bodyPreview ? ev.bodyPreview.slice(0, 200) : '',
-        teamsUrl: ev.onlineMeeting?.joinUrl || ''
-      });
-      added++;
-    });
-    setData('meetings', meetings);
-    renderMeetingList();
-    renderCalendar();
-    renderDashboard();
-    showToast(`✅ Sincronización completa: ${added} reuniones importadas, ${skipped} ya existían.`, 'success');
-  } catch(e) {
-    showToast('Error sincronizando: ' + e.message, 'error');
-  } finally {
-    if (btn) { btn.textContent = '🔄 Sincronizar Teams'; btn.disabled = false; }
-  }
-}
-async function saveReunionAndCreateTeams() {
-  const token = await getToken();
-  if (!token) { showToast('Primero inicia sesión con Microsoft en Configuración', 'error'); navigate('configuracion'); return; }
-  const titulo = document.getElementById('r-titulo').value.trim();
-  const fecha = document.getElementById('r-fecha').value;
-  const horaInicio = document.getElementById('r-hora-inicio').value;
-  const horaFin = document.getElementById('r-hora-fin').value;
-  if (!titulo || !fecha || !horaInicio || !horaFin) { showToast('Completa título, fecha y horas primero', 'error'); return; }
-  const startDT = new Date(fecha + 'T' + horaInicio + ':00');
-  const endDT = new Date(fecha + 'T' + horaFin + ':00');
-  try {
-    showToast('⏳ Creando reunión en el calendario de Teams...', 'info');
-    const desc = document.getElementById('r-descripcion')?.value || '';
-    const resp = await fetch('https://graph.microsoft.com/v1.0/me/events', {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        subject: titulo,
-        start: { dateTime: startDT.toISOString(), timeZone: 'America/Bogota' },
-        end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Bogota' },
-        isOnlineMeeting: true,
-        onlineMeetingProvider: 'teamsForBusiness',
-        body: { contentType: 'text', content: desc }
-      })
-    });
-    const data = await resp.json();
-    if (resp.ok && data.id) {
-      const joinUrl = data.onlineMeeting?.joinUrl || '';
-      // Guardar reunión localmente
-      await saveReunion(true);
-      // Mostrar link
-      const linkDiv = document.getElementById('teams-meeting-link');
-      const linkA   = document.getElementById('teams-join-url');
-      if (joinUrl) {
-        linkDiv.style.display = 'block';
-        linkA.href = joinUrl;
-        linkA.textContent = joinUrl;
-        localStorage.setItem('last_teams_meeting_url', joinUrl);
-      }
-      showToast('✅ Reunión creada en el calendario de Teams — aparecerá en tu app de Teams', 'success');
-    } else {
-      const errMsg = data.error?.message || '';
-      const errCode = data.error?.code || '';
-      if (resp.status === 401 || resp.status === 403 || errCode === 'InvalidAuthenticationToken' || errCode === 'Forbidden') {
-        showToast('❌ Sin permisos de calendario. Cierra sesión de Microsoft en Configuración, vuelve a iniciar sesión y reintenta.', 'error');
-      } else if (errCode === 'RequestBrokerInvalidRequest' || errMsg.includes('onlineMeetingProvider')) {
-        showToast('❌ Tu cuenta no tiene licencia de Teams para crear reuniones online. La reunión se guardará sin link de Teams.', 'error');
-        await saveReunion(true);
-      } else {
-        showToast('❌ Error Teams (' + resp.status + '): ' + (errMsg || 'Error desconocido'), 'error');
-        console.error('Teams API error:', data);
-      }
-    }
-  } catch(e) { showToast('Error creando reunión: ' + e.message, 'error'); }
-}
-function copyTeamsLink() {
-  const url = document.getElementById('teams-join-url').href;
-  navigator.clipboard.writeText(url).then(() => showToast('Link copiado al portapapeles', 'success'));
-}
-// ===== ONEDRIVE INVENTARIO =====
-async function msLoadInventoryFromOneDrive() {
-  const token = await getToken();
-  if (!token) {
-    showToast('Primero inicia sesión con Microsoft en Configuración 🟣', 'error');
-    navigate('configuracion');
-    return;
-  }
-  const fileName = localStorage.getItem('inv_onedrive_filename') || 'Inventario definitivo_2026';
-  showToast('⏳ Buscando "' + fileName + '" en OneDrive...', 'info');
-  try {
-    // 1. Buscar el archivo por nombre
-    const searchResp = await fetch(
-      "https://graph.microsoft.com/v1.0/me/drive/root/search(q='" + encodeURIComponent(fileName) + "')?$select=id,name,file",
-      { headers: { Authorization: 'Bearer ' + token } }
-    );
-    if (!searchResp.ok) throw new Error('Error buscando archivo: ' + searchResp.status);
-    const searchData = await searchResp.json();
-    const excelFiles = (searchData.value || []).filter(f => f.file && (f.name.endsWith('.xlsx') || f.name.endsWith('.xlsm') || f.name.endsWith('.xls')));
-    if (excelFiles.length === 0) {
-      showToast('❌ No se encontró "' + fileName + '" en OneDrive. Verifica el nombre en Configuración.', 'error');
-      return;
-    }
-    const file = excelFiles[0];
-    showToast('📊 Archivo encontrado: "' + file.name + '". Leyendo datos...', 'info');
-    // 2. Descargar el archivo binario (compatible con .xlsx Y .xlsm)
-    const contentResp = await fetch(
-      'https://graph.microsoft.com/v1.0/me/drive/items/' + file.id + '/content',
-      { headers: { Authorization: 'Bearer ' + token } }
-    );
-    if (!contentResp.ok) {
-      const errText = await contentResp.text().catch(() => String(contentResp.status));
-      showToast('❌ Error al descargar Excel: ' + errText, 'error');
-      return;
-    }
-    const arrayBuffer = await contentResp.arrayBuffer();
-    // 3. Parsear con SheetJS (soporta .xlsm nativamente)
-    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-    const sheetName = localStorage.getItem('inv_onedrive_sheet') || '';
-    const wsName = (sheetName && workbook.SheetNames.includes(sheetName))
-      ? sheetName
-      : workbook.SheetNames[0];
-    const ws = workbook.Sheets[wsName];
-    if (!ws) {
-      showToast('❌ No se encontró la hoja "' + (sheetName || wsName) + '" en el archivo.', 'error');
-      return;
-    }
-    // 4. Convertir a array de filas
-    const rawValues = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-    if (!rawValues || rawValues.length < 2) {
-      showToast('❌ El archivo no tiene datos suficientes o la hoja está vacía.', 'error');
-      return;
-    }
-    // 5. Auto-detectar fila de encabezados (igual que sync_inventory.py)
-    const COL_MAP = {
-      'codigo producto':'CODIGO PRODUCTO','código producto':'CODIGO PRODUCTO','codigo':'CODIGO PRODUCTO',
-      'descripcion':'DESCRIPCION','descripción':'DESCRIPCION',
-      'marca':'MARCA',
-      'ubicacion':'UBICACIÓN','ubicación':'UBICACIÓN',
-      'stock actual':'STOCK ACTUAL','stock':'STOCK ACTUAL',
-      'entradas':'ENTRADAS','salidas':'SALIDAS'
-    };
-    let headerRowIdx = 0;
-    let bestScore = 0;
-    for (let i = 0; i < Math.min(15, rawValues.length); i++) {
-      const score = rawValues[i].filter(v => COL_MAP[String(v).trim().toLowerCase()]).length;
-      if (score > bestScore) { bestScore = score; headerRowIdx = i; }
-    }
-    const headers = rawValues[headerRowIdx].map(h => {
-      const key = String(h).trim().toLowerCase();
-      return COL_MAP[key] || String(h).trim().toUpperCase();
-    });
-    // 6. Convertir filas a objetos
-    const newINV = rawValues.slice(headerRowIdx + 1)
-      .filter(row => row.some(cell => cell !== '' && cell !== null && cell !== undefined))
-      .map(row => {
-        const obj = {};
-        headers.forEach((h, i) => {
-          if (!h) return;
-          const val = (row[i] !== null && row[i] !== undefined) ? row[i] : '';
-          if (h === 'STOCK ACTUAL' || h === 'ENTRADAS' || h === 'SALIDAS') {
-            obj[h] = isNaN(Number(val)) ? 0 : Math.round(Number(val));
-          } else {
-            obj[h] = String(val);
-          }
-        });
-        return obj;
-      });
-    if (newINV.length === 0) {
-      showToast('❌ No se encontraron filas de datos en la hoja.', 'error');
-      return;
-    }
-    // 4. Guardar en localStorage y actualizar la UI
-    localStorage.setItem('inv_data_onedrive', JSON.stringify(newINV));
-    localStorage.setItem('inv_last_sync', new Date().toISOString());
-    window.INV = newINV;
-    // Refrescar el inventario si está visible
-    if (typeof window.invUpdateStats === 'function') window.invUpdateStats();
-    if (typeof window.invRender === 'function') window.invRender();
-    showToast('✅ Inventario sincronizado: ' + newINV.length + ' productos desde OneDrive.', 'success');
-    // Actualizar badge de sync en el botón
-    const syncBtn = document.getElementById('inv-sync-btn');
-    if (syncBtn) syncBtn.textContent = '☁️ Sincronizado ✓';
-    setTimeout(() => { if(syncBtn) syncBtn.textContent = '☁️ Sincronizar OneDrive'; }, 3000);
-  } catch(e) {
-    showToast('Error sincronizando inventario: ' + e.message, 'error');
-    console.error('OneDrive sync error:', e);
-  }
-}
-function invClearOneDriveCache() {
-  localStorage.removeItem('inv_data_onedrive');
-  localStorage.removeItem('inv_last_sync');
-  window.INV = window._INV_BASE || window.INV;
-  if (typeof window.invUpdateStats === 'function') window.invUpdateStats();
-  if (typeof window.invRender === 'function') window.invRender();
-  showToast('Cache de OneDrive limpiado. Mostrando inventario base.', 'info');
-}
-function saveMsConfig() {
-  const clientId = document.getElementById('ms-client-id').value.trim();
-  const tenantId = document.getElementById('ms-tenant-id').value.trim();
-  const teamId = document.getElementById('ms-team-id').value.trim();
-  if (clientId) localStorage.setItem('ms_client_id', clientId);
-  if (tenantId) localStorage.setItem('ms_tenant_id', tenantId);
-  if (teamId) localStorage.setItem('ms_team_id', teamId);
-  msalInstance = null; // reiniciar con nuevos valores
-  initMsal();
-  showToast('Configuración Microsoft guardada', 'success');
-}
-function saveOneDriveConfig() {
-  const fname = document.getElementById('inv-filename-input').value.trim();
-  const sheet = document.getElementById('inv-sheet-input').value.trim();
-  if (fname) localStorage.setItem('inv_onedrive_filename', fname);
-  if (sheet !== undefined) localStorage.setItem('inv_onedrive_sheet', sheet);
-  const statusEl = document.getElementById('inv-sync-status');
-  if (statusEl) {
-    const ls = localStorage.getItem('inv_last_sync');
-    statusEl.innerHTML = '✅ Configuración guardada.' + (ls ? ' Última sincronización: ' + new Date(ls).toLocaleString('es-CO') : ' Aún no se ha sincronizado.');
-  }
-  showToast('Configuración OneDrive guardada', 'success');
-}
-function loadOneDriveConfigUI() {
-  const fnInput = document.getElementById('inv-filename-input');
-  const shInput = document.getElementById('inv-sheet-input');
-  const statusEl = document.getElementById('inv-sync-status');
-  if (fnInput) fnInput.value = localStorage.getItem('inv_onedrive_filename') || 'Inventario definitivo_2026';
-  if (shInput) shInput.value = localStorage.getItem('inv_onedrive_sheet') || '';
-  if (statusEl) {
-    const ls = localStorage.getItem('inv_last_sync');
-    statusEl.innerHTML = ls ? '🕐 Última sincronización: <strong>' + new Date(ls).toLocaleString('es-CO') + '</strong>' : 'Aún no sincronizado desde OneDrive.';
-  }
-}
-// Inicializar MSAL al cargar
-document.addEventListener('DOMContentLoaded', () => { setTimeout(initMsal, 1500); });
-document.addEventListener('keydown', function(e) {
-  if(e.key==='Escape') {
-    document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
-    if(chatOpen) toggleChat();
-  }
-});
-// ===== OCULTAR SPLASH AL CARGAR =====
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(function() {
-    const splash = document.getElementById('splash');
-    if (splash) {
-      splash.style.transition = 'opacity 0.5s ease';
-      splash.style.opacity = '0';
-      setTimeout(function() { splash.style.display = 'none'; }, 500);
-    }
-  }, 2000);
-});
-</script>
-</body>
-</html>
+  document.getElemen
