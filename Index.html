@@ -868,7 +868,6 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="poc-filter-btn" onclick="pocFilterFn('activo',this)">Activos</button>
               <button class="poc-filter-btn" onclick="pocFilterFn('completado',this)">Completados</button>
               <button class="poc-filter-btn" onclick="pocFilterFn('cancelado',this)">Cancelados</button>
-              <button class="poc-filter-btn" onclick="pocFilterFn('borrador',this)">Borradores</button>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn btn-primary" onclick="openPocModal(null)">+ Nueva O.C.</button>
@@ -1425,14 +1424,6 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <label>Cliente / Proyecto</label>
           <input type="text" id="poc-cliente" placeholder="Nombre del cliente">
         </div>
-        <div class="form-group">
-          <label>Proveedor</label>
-          <input type="text" id="poc-proveedor" placeholder="Nombre del proveedor">
-        </div>
-        <div class="form-group">
-          <label>Valor Total</label>
-          <input type="number" id="poc-valor" placeholder="0" min="0">
-        </div>
       </div>
       <div class="form-group" style="margin-top:10px">
         <label>Descripción / Objeto</label>
@@ -1441,7 +1432,6 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="form-group" style="margin-top:10px">
         <label>Estado General</label>
         <select id="poc-estado">
-          <option value="borrador">Borrador</option>
           <option value="activo">Activo</option>
           <option value="completado">Completado</option>
           <option value="cancelado">Cancelado</option>
@@ -1498,26 +1488,14 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         </div>
         <div class="poc-stage-box">
           <h4>📄 Certificado</h4>
-          <label>Estado</label>
-          <select id="poc-s2-est">
-            <option value="pending">Pendiente</option>
-            <option value="active">En proceso</option>
-            <option value="done">Completado</option>
-          </select>
-          <label>Fecha</label>
+          <label>Fecha de certificado</label>
           <input type="date" id="poc-s2-fecha">
           <label>Notas</label>
           <textarea id="poc-s2-nota" rows="2" placeholder="Notas de certificado..."></textarea>
         </div>
         <div class="poc-stage-box">
           <h4>💰 Facturación</h4>
-          <label>Estado</label>
-          <select id="poc-s3-est">
-            <option value="pending">Pendiente</option>
-            <option value="active">En proceso</option>
-            <option value="done">Completado</option>
-          </select>
-          <label>Fecha</label>
+          <label>Fecha de facturación</label>
           <input type="date" id="poc-s3-fecha">
           <label>Notas</label>
           <textarea id="poc-s3-nota" rows="2" placeholder="Notas de facturación..."></textarea>
@@ -2592,12 +2570,12 @@ function renderProcesos() {
   const total = list.length;
   const activos = list.filter(o=>o.estado==='activo').length;
   const completados = list.filter(o=>o.estado==='completado').length;
-  const borradores = list.filter(o=>o.estado==='borrador').length;
+  const cancelados = list.filter(o=>o.estado==='cancelado').length;
   document.getElementById('poc-stats-bar').innerHTML =
     `<div class="poc-stat blue"><div class="poc-stat-num">${total}</div><div class="poc-stat-label">Total O.C.</div></div>`
    +`<div class="poc-stat green"><div class="poc-stat-num">${activos}</div><div class="poc-stat-label">Activas</div></div>`
    +`<div class="poc-stat gold"><div class="poc-stat-num">${completados}</div><div class="poc-stat-label">Completadas</div></div>`
-   +`<div class="poc-stat" style="border-left:3px solid var(--text-muted)"><div class="poc-stat-num">${borradores}</div><div class="poc-stat-label">Borradores</div></div>`;
+   +`<div class="poc-stat" style="border-left:3px solid var(--red)"><div class="poc-stat-num">${cancelados}</div><div class="poc-stat-label">Canceladas</div></div>`;
 
   const filtered = pocCurrentFilter==='todos' ? list : list.filter(o=>o.estado===pocCurrentFilter);
   const el = document.getElementById('poc-list');
@@ -2623,13 +2601,13 @@ function renderProcesos() {
       return `<div class="poc-step ${cls}"><div class="poc-step-circ" title="${st.label}">${st.icon}</div><div class="poc-step-lbl">${st.label}</div>${dateTxt}${envioTxt}${guiaTxt}${destTxt}${respTxt}${noteTxt}</div>`
             + (i<3?`<div class="poc-line ${lineClass}"></div>`:'');
     }).join('');
-    const badgeClass = {activo:'activo',completado:'completado',cancelado:'cancelado',borrador:'borrador'}[o.estado]||'borrador';
-    const badgeTxt = {activo:'Activo',completado:'Completado',cancelado:'Cancelado',borrador:'Borrador'}[o.estado]||o.estado;
+    const badgeClass = {activo:'activo',completado:'completado',cancelado:'cancelado'}[o.estado]||'activo';
+    const badgeTxt = {activo:'Activo',completado:'Completado',cancelado:'Cancelado'}[o.estado]||o.estado;
     return `<div class="poc-card">
       <div class="poc-ch">
         <div>
           <div class="poc-title">${o.num||'Sin número'} — ${o.cliente||'Sin cliente'}</div>
-          <div class="poc-sub">${o.proveedor||''} ${o.valor?'· '+pocFmt(o.valor):''} ${o.desc?'· '+o.desc.substring(0,60)+(o.desc.length>60?'…':''):''}</div>
+          <div class="poc-sub">${o.desc?o.desc.substring(0,80)+(o.desc.length>80?'…':''):'Sin descripción'}</div>
         </div>
         <span class="poc-badge ${badgeClass}">${badgeTxt}</span>
       </div>
@@ -2655,13 +2633,17 @@ function openPocModal(id) {
   document.getElementById('poc-del-btn').style.display = order ? 'inline-flex' : 'none';
   document.getElementById('poc-num').value = order?.num||'';
   document.getElementById('poc-cliente').value = order?.cliente||'';
-  document.getElementById('poc-proveedor').value = order?.proveedor||'';
-  document.getElementById('poc-valor').value = order?.valor||'';
   document.getElementById('poc-desc').value = order?.desc||'';
-  document.getElementById('poc-estado').value = order?.estado||'borrador';
+  document.getElementById('poc-estado').value = order?.estado||'activo';
   const stages = order?.stages || Array(4).fill({s:'pending',f:'',n:''});
-  [0,1,2,3].forEach(i=>{
+  // Compra y Entrega tienen select de estado
+  [0,1].forEach(i=>{
     document.getElementById('poc-s'+i+'-est').value = stages[i]?.s||'pending';
+    document.getElementById('poc-s'+i+'-fecha').value = stages[i]?.f||'';
+    document.getElementById('poc-s'+i+'-nota').value = stages[i]?.n||'';
+  });
+  // Certificado y Facturación: solo fecha y nota (estado se calcula por fecha)
+  [2,3].forEach(i=>{
     document.getElementById('poc-s'+i+'-fecha').value = stages[i]?.f||'';
     document.getElementById('poc-s'+i+'-nota').value = stages[i]?.n||'';
   });
@@ -2685,18 +2667,27 @@ function savePoc() {
   const envioVal = document.getElementById('poc-envio')?.value||'';
   const transpNombre = document.getElementById('poc-transp-nombre')?.value?.trim()||'';
   const guia = document.getElementById('poc-guia')?.value?.trim()||'';
-  const stages = [0,1,2,3].map(i=>({
-    s: document.getElementById('poc-s'+i+'-est').value,
-    f: document.getElementById('poc-s'+i+'-fecha').value,
-    n: document.getElementById('poc-s'+i+'-nota').value,
-    ...(i===1 ? {envio:envioVal, transp:transpNombre, guia:guia, dest:document.getElementById('poc-destinatario')?.value?.trim()||'', resp:document.getElementById('poc-responsable-envio')?.value?.trim()||''} : {})
-  }));
+  // Compra y Entrega: estado manual. Certificado y Facturación: si tiene fecha → done, si no → pending
+  const stages = [0,1,2,3].map(i=>{
+    const fecha = document.getElementById('poc-s'+i+'-fecha').value;
+    const nota = document.getElementById('poc-s'+i+'-nota').value;
+    let estado;
+    if(i<=1) {
+      estado = document.getElementById('poc-s'+i+'-est').value;
+    } else {
+      estado = fecha ? 'done' : 'pending';
+    }
+    return {
+      s: estado,
+      f: fecha,
+      n: nota,
+      ...(i===1 ? {envio:envioVal, transp:transpNombre, guia:guia, dest:document.getElementById('poc-destinatario')?.value?.trim()||'', resp:document.getElementById('poc-responsable-envio')?.value?.trim()||''} : {})
+    };
+  });
   const order = {
     id: pocEditId || 'poc_'+Date.now(),
     num: document.getElementById('poc-num').value.trim(),
     cliente: document.getElementById('poc-cliente').value.trim(),
-    proveedor: document.getElementById('poc-proveedor').value.trim(),
-    valor: parseFloat(document.getElementById('poc-valor').value)||0,
     desc: document.getElementById('poc-desc').value.trim(),
     estado: document.getElementById('poc-estado').value,
     stages,
