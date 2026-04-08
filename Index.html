@@ -2557,7 +2557,9 @@ const POC_STAGES = [
 let pocCurrentFilter = 'todos';
 let pocEditId = null;
 
-function getPOC() { return getData('procesos_oc', []); }
+function getPOC() {
+  try { return JSON.parse(localStorage.getItem('procesos_oc')) || []; } catch(e) { return []; }
+}
 function savePOCData(arr) { localStorage.setItem('procesos_oc', JSON.stringify(arr)); }
 
 function pocFmt(v) {
