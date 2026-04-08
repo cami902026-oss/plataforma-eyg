@@ -515,6 +515,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js" onerror="document.head.insertAdjacentHTML('beforeend','<script src=\'https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js\'><\/script>')"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 <!-- ===== SPLASH ===== -->
@@ -872,6 +873,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn btn-primary" onclick="openPocModal(null)">+ Nueva O.C.</button>
               <button class="btn" style="background:#1d7a3a;color:#fff;border:none" onclick="exportPocExcel()">📊 Exportar Excel</button>
+              <button class="btn" style="background:#1a3a8f;color:#fff;border:none" onclick="sendOCReport(false)">📧 Enviar Informe</button>
             </div>
           </div>
           <div id="poc-list"></div>
@@ -1024,6 +1026,37 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       </div>
       <!-- CONFIGURACION -->
       <div class="page" id="page-configuracion">
+        <div class="config-section">
+          <div class="config-title">📧 Informe OC por Email</div>
+          <div class="form-group" style="margin-bottom:10px">
+            <label>Email destinatario (quien recibe el informe)</label>
+            <input type="email" id="email-to-input" placeholder="ejemplo@empresa.com">
+          </div>
+          <div class="form-group" style="margin-bottom:10px">
+            <label>EmailJS — Public Key</label>
+            <input type="text" id="emailjs-pubkey" placeholder="tu_public_key_de_emailjs">
+          </div>
+          <div class="form-group" style="margin-bottom:10px">
+            <label>EmailJS — Service ID</label>
+            <input type="text" id="emailjs-service" placeholder="service_xxxxxxx">
+          </div>
+          <div class="form-group" style="margin-bottom:10px">
+            <label>EmailJS — Template ID</label>
+            <input type="text" id="emailjs-template" placeholder="template_xxxxxxx">
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <input type="checkbox" id="email-auto-daily" style="accent-color:var(--green);width:18px;height:18px;">
+            <label for="email-auto-daily" style="cursor:pointer;font-size:14px;">Enviar informe automáticamente cada día</label>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="saveEmailConfig()" style="width:auto;">💾 Guardar config</button>
+            <button class="btn btn-secondary" onclick="sendOCReport(true)" style="width:auto;">📧 Enviar informe ahora</button>
+          </div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:10px;">
+            Necesitas una cuenta gratis en <b>emailjs.com</b> → conecta tu Gmail → crea una plantilla con variables: <code>to_email</code>, <code>subject</code>, <code>message</code>
+            <span id="email-config-status" style="font-weight:600;display:block;margin-top:6px;"></span>
+          </p>
+        </div>
         <div class="config-section">
           <div class="config-title">📊 Base de Datos OC (Google Sheets)</div>
           <div class="api-key-row">
@@ -1844,6 +1877,7 @@ function initApp() {
   const savedSheetUrl = localStorage.getItem('eyg_oc_sheet_url');
   if(savedSheetUrl && document.getElementById('sheets-url-input')) document.getElementById('sheets-url-input').value = savedSheetUrl;
   updateSheetsStatus();
+  checkAutoEmailSend();
   // GitHub token
   const savedGhToken = localStorage.getItem('gh_pat_token');
   if(savedGhToken) document.getElementById('gh-token-input').value=savedGhToken;
@@ -1885,7 +1919,7 @@ function navigate(page) {
   const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',procesos:'Procesos O.C.',configuracion:'Configuración'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
-  if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(updateSheetsStatus, 150); }
+  if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(updateSheetsStatus, 150); setTimeout(loadEmailConfig, 200); }
   if(page==='procesos') renderProcesos();
 }
 function getNavLabel(page) {
@@ -2752,47 +2786,26 @@ function updateSheetsStatus() {
 // ===== EXPORT PROCESOS O.C. TO EXCEL =====
 function exportPocExcel() {
   const list = getPOC();
-  if (!list || list.length === 0) {
-    showToast('No hay órdenes de compra para exportar', 'info');
-    return;
-  }
-  const ENVIO_LABELS = {
-    moto: 'Moto mensajería',
-    camion_energy: 'Camión E&G Energy (propio)',
-    camion_externo: 'Camión externo',
-    transportadora: 'Transportadora',
-    vehiculo_personal: 'Vehículo personal',
-    recoge_bodega: 'Recoge en bodega',
-    entrega_mano: 'Entrega en mano'
-  };
+  if (!list || list.length === 0) { showToast('No hay órdenes para exportar', 'info'); return; }
+  const ENVIO_LABELS = {moto:'Moto mensajería',camion_energy:'Camión E&G Energy',camion_externo:'Camión externo',transportadora:'Transportadora',vehiculo_personal:'Vehículo personal',recoge_bodega:'Recoge en bodega',entrega_mano:'Entrega en mano'};
   const rows = list.map(o => {
     const s = o.stages || [];
-    const compra   = s[0] || {};
-    const entrega  = s[1] || {};
-    const cert     = s[2] || {};
-    const factura  = s[3] || {};
+    const compra = s[0]||{}; const entrega = s[1]||{}; const cert = s[2]||{}; const factura = s[3]||{};
     return {
       'Número OC': o.num||'',
       'Cliente / Proyecto': o.cliente||'',
-      'Proveedor': o.proveedor||'',
-      'Valor Total': o.valor||0,
       'Descripción': o.desc||'',
-      'Estado General': o.estado||'',
-      'Compra – Estado': compra.s||'',
+      'Estado': {activo:'Activo',completado:'Completado',cancelado:'Cancelado'}[o.estado]||o.estado||'',
       'Compra – Fecha': compra.f||'',
       'Compra – Notas': compra.n||'',
-      'Entrega – Estado': entrega.s||'',
       'Entrega – Fecha': entrega.f||'',
-      'Entrega – Medio envío': ENVIO_LABELS[entrega.envio]||entrega.envio||'',
-      'Entrega – Transportadora': entrega.transp||'',
+      'Entrega – Medio': ENVIO_LABELS[entrega.envio]||entrega.envio||'',
       'Entrega – Guía': entrega.guia||'',
       'Entrega – Destinatario': entrega.dest||'',
       'Entrega – Responsable': entrega.resp||'',
       'Entrega – Notas': entrega.n||'',
-      'Certificado – Estado': cert.s||'',
       'Certificado – Fecha': cert.f||'',
       'Certificado – Notas': cert.n||'',
-      'Facturación – Estado': factura.s||'',
       'Facturación – Fecha': factura.f||'',
       'Facturación – Notas': factura.n||''
     };
@@ -2800,13 +2813,119 @@ function exportPocExcel() {
   try {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(rows);
+    // Ancho de columnas automático
+    const colWidths = Object.keys(rows[0]||{}).map(k=>({wch:Math.max(k.length,12)}));
+    ws['!cols'] = colWidths;
     XLSX.utils.book_append_sheet(wb, ws, 'Procesos O.C.');
-    const today = new Date().toISOString().substring(0,10);
-    XLSX.writeFile(wb, `Procesos_OC_${today}.xlsx`);
+    XLSX.writeFile(wb, `Procesos_OC_${new Date().toISOString().substring(0,10)}.xlsx`);
     showToast('✅ Excel exportado correctamente', 'success');
-  } catch(err) {
-    console.error('Export error:', err);
-    showToast('Error al exportar. Intenta de nuevo.', 'error');
+  } catch(err) { showToast('Error al exportar', 'error'); }
+}
+
+// ===== EMAIL INFORME OC =====
+function saveEmailConfig() {
+  localStorage.setItem('eyg_email_to', document.getElementById('email-to-input')?.value?.trim()||'');
+  localStorage.setItem('eyg_emailjs_pubkey', document.getElementById('emailjs-pubkey')?.value?.trim()||'');
+  localStorage.setItem('eyg_emailjs_service', document.getElementById('emailjs-service')?.value?.trim()||'');
+  localStorage.setItem('eyg_emailjs_template', document.getElementById('emailjs-template')?.value?.trim()||'');
+  localStorage.setItem('eyg_email_auto', document.getElementById('email-auto-daily')?.checked?'1':'0');
+  updateEmailStatus();
+  showToast('Configuración de email guardada','success');
+}
+
+function loadEmailConfig() {
+  const to = localStorage.getItem('eyg_email_to')||'';
+  const pk = localStorage.getItem('eyg_emailjs_pubkey')||'';
+  const svc = localStorage.getItem('eyg_emailjs_service')||'';
+  const tpl = localStorage.getItem('eyg_emailjs_template')||'';
+  const auto = localStorage.getItem('eyg_email_auto')==='1';
+  if(document.getElementById('email-to-input')) document.getElementById('email-to-input').value = to;
+  if(document.getElementById('emailjs-pubkey')) document.getElementById('emailjs-pubkey').value = pk;
+  if(document.getElementById('emailjs-service')) document.getElementById('emailjs-service').value = svc;
+  if(document.getElementById('emailjs-template')) document.getElementById('emailjs-template').value = tpl;
+  if(document.getElementById('email-auto-daily')) document.getElementById('email-auto-daily').checked = auto;
+  updateEmailStatus();
+}
+
+function updateEmailStatus() {
+  const el = document.getElementById('email-config-status');
+  if(!el) return;
+  const ok = localStorage.getItem('eyg_email_to') && localStorage.getItem('eyg_emailjs_pubkey') && localStorage.getItem('eyg_emailjs_service') && localStorage.getItem('eyg_emailjs_template');
+  const auto = localStorage.getItem('eyg_email_auto')==='1';
+  el.textContent = ok ? (auto?'✅ Configurado — envío automático activo':'✅ Configurado — envío manual') : '⚠️ Faltan datos de configuración';
+  el.style.color = ok ? '#2EAA4A' : '#E8A020';
+}
+
+function generateOCReportText() {
+  const list = getPOC();
+  const fecha = new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const total = list.length;
+  const activos = list.filter(o=>o.estado==='activo').length;
+  const completados = list.filter(o=>o.estado==='completado').length;
+  const cancelados = list.filter(o=>o.estado==='cancelado').length;
+  const ESTADO = {activo:'ACTIVO',completado:'COMPLETADO',cancelado:'CANCELADO'};
+  const ETAPA = {pending:'Pendiente',active:'En proceso',done:'✅ Completado'};
+  let lines = [
+    '════════════════════════════════════',
+    '   INFORME DIARIO — PROCESOS O.C.',
+    '   E&G Energy Group',
+    `   ${fecha}`,
+    '════════════════════════════════════',
+    `   Total: ${total}  |  Activas: ${activos}  |  Completadas: ${completados}  |  Canceladas: ${cancelados}`,
+    '────────────────────────────────────',
+    ''
+  ];
+  list.slice().reverse().forEach((o,i) => {
+    const s = o.stages||[];
+    const compra=s[0]||{}, entrega=s[1]||{}, cert=s[2]||{}, fact=s[3]||{};
+    lines.push(`${i+1}. ${o.num||'Sin número'} — ${o.cliente||'Sin cliente'} [${ESTADO[o.estado]||o.estado}]`);
+    if(o.desc) lines.push(`   📋 ${o.desc}`);
+    lines.push(`   🛒 Compra: ${compra.f?'📅 '+compra.f.split('-').reverse().join('/'):'sin fecha'}${compra.n?' | '+compra.n:''}`);
+    lines.push(`   🚛 Entrega: ${entrega.f?'📅 '+entrega.f.split('-').reverse().join('/'):'sin fecha'}${entrega.guia?' | Guía: '+entrega.guia:''}${entrega.dest?' | '+entrega.dest:''}`);
+    lines.push(`   📄 Certificado: ${cert.f?'📅 '+cert.f.split('-').reverse().join('/'):'sin fecha'}`);
+    lines.push(`   💰 Facturación: ${fact.f?'📅 '+fact.f.split('-').reverse().join('/'):'sin fecha'}`);
+    lines.push('');
+  });
+  lines.push('────────────────────────────────────');
+  lines.push('ENERGY Bot v1.0 — E&G Energy Group');
+  return lines.join('\n');
+}
+
+function sendOCReport(fromConfig) {
+  const pubkey = localStorage.getItem('eyg_emailjs_pubkey');
+  const service = localStorage.getItem('eyg_emailjs_service');
+  const template = localStorage.getItem('eyg_emailjs_template');
+  const toEmail = localStorage.getItem('eyg_email_to');
+  if(!pubkey||!service||!template||!toEmail) {
+    showToast('Configura el email en ⚙️ Configuración primero','error');
+    if(!fromConfig) navigate('configuracion');
+    return;
+  }
+  const list = getPOC();
+  if(!list.length) { showToast('No hay órdenes para incluir en el informe','info'); return; }
+  showToast('Enviando informe...','info');
+  try { emailjs.init(pubkey); } catch(e){}
+  const reportText = generateOCReportText();
+  const fecha = new Date().toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'});
+  emailjs.send(service, template, {
+    to_email: toEmail,
+    subject: `Informe OC E&G Energy — ${fecha}`,
+    message: reportText
+  }).then(()=>{
+    localStorage.setItem('eyg_email_last_sent', new Date().toDateString());
+    showToast('✅ Informe enviado correctamente por email','success');
+  }).catch(err=>{
+    console.error('EmailJS error:', err);
+    showToast('Error al enviar email. Verifica la configuración en EmailJS.','error');
+  });
+}
+
+function checkAutoEmailSend() {
+  if(localStorage.getItem('eyg_email_auto')!=='1') return;
+  const lastSent = localStorage.getItem('eyg_email_last_sent');
+  const today = new Date().toDateString();
+  if(lastSent !== today) {
+    setTimeout(()=>sendOCReport(true), 5000); // espera 5s después de cargar
   }
 }
 
@@ -3894,5 +4013,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
-a estea rchivo solo falta agregarle tema de las oc ayudame que a parte de oc si sirve como lo tienes en el nuevo
