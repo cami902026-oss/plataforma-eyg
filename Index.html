@@ -515,7 +515,6 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js" onerror="document.head.insertAdjacentHTML('beforeend','<script src=\'https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js\'><\/script>')"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 <!-- ===== SPLASH ===== -->
@@ -873,7 +872,6 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn btn-primary" onclick="openPocModal(null)">+ Nueva O.C.</button>
               <button class="btn" style="background:#1d7a3a;color:#fff;border:none" onclick="exportPocExcel()">📊 Exportar Excel</button>
-              <button class="btn" style="background:#1a3a8f;color:#fff;border:none" onclick="sendOCReport(false)">📧 Enviar Informe</button>
             </div>
           </div>
           <div id="poc-list"></div>
@@ -1026,37 +1024,6 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       </div>
       <!-- CONFIGURACION -->
       <div class="page" id="page-configuracion">
-        <div class="config-section">
-          <div class="config-title">📧 Informe OC por Email</div>
-          <div class="form-group" style="margin-bottom:10px">
-            <label>Email destinatario (quien recibe el informe)</label>
-            <input type="email" id="email-to-input" placeholder="ejemplo@empresa.com">
-          </div>
-          <div class="form-group" style="margin-bottom:10px">
-            <label>EmailJS — Public Key</label>
-            <input type="text" id="emailjs-pubkey" placeholder="tu_public_key_de_emailjs">
-          </div>
-          <div class="form-group" style="margin-bottom:10px">
-            <label>EmailJS — Service ID</label>
-            <input type="text" id="emailjs-service" placeholder="service_xxxxxxx">
-          </div>
-          <div class="form-group" style="margin-bottom:10px">
-            <label>EmailJS — Template ID</label>
-            <input type="text" id="emailjs-template" placeholder="template_xxxxxxx">
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-            <input type="checkbox" id="email-auto-daily" style="accent-color:var(--green);width:18px;height:18px;">
-            <label for="email-auto-daily" style="cursor:pointer;font-size:14px;">Enviar informe automáticamente cada día</label>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-primary" onclick="saveEmailConfig()" style="width:auto;">💾 Guardar config</button>
-            <button class="btn btn-secondary" onclick="sendOCReport(true)" style="width:auto;">📧 Enviar informe ahora</button>
-          </div>
-          <p style="font-size:11px;color:var(--text-muted);margin-top:10px;">
-            Necesitas una cuenta gratis en <b>emailjs.com</b> → conecta tu Gmail → crea una plantilla con variables: <code>to_email</code>, <code>subject</code>, <code>message</code>
-            <span id="email-config-status" style="font-weight:600;display:block;margin-top:6px;"></span>
-          </p>
-        </div>
         <div class="config-section">
           <div class="config-title">📊 Base de Datos OC (Google Sheets)</div>
           <div class="api-key-row">
@@ -1540,6 +1507,19 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <button class="btn btn-ghost" onclick="closePocModal()" style="flex:1;">Cancelar</button>
       </div>
     </div>
+  </div>
+</div>
+<!-- MODAL INFORME OC -->
+<div class="modal-overlay" id="modal-poc-report">
+  <div class="modal" style="max-width:700px;width:95vw;max-height:92vh;overflow-y:auto;padding:0;">
+    <div style="background:var(--navy);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;">
+      <h3 style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:17px;color:#fff;">📄 Informe de Orden de Compra</h3>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="printPocReport()" style="padding:8px 16px;font-size:13px;">🖨️ Imprimir / PDF</button>
+        <button class="close-btn" onclick="document.getElementById('modal-poc-report').classList.remove('open')">✕</button>
+      </div>
+    </div>
+    <div id="poc-report-body" style="padding:24px;"></div>
   </div>
 </div>
 <!-- ENERGY Chat -->
@@ -2650,6 +2630,7 @@ function renderProcesos() {
       <div class="poc-tl">${tl}</div>
       <div class="poc-actions">
         <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="openPocModal('${o.id}')">✏️ Editar</button>
+        <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;color:#93c5fd;" onclick="viewPocReport('${o.id}')">📄 Ver Informe</button>
       </div>
     </div>`;
   }).join('');
@@ -2822,7 +2803,100 @@ function exportPocExcel() {
   } catch(err) { showToast('Error al exportar', 'error'); }
 }
 
-// ===== EMAIL INFORME OC =====
+// ===== INFORME POR OC =====
+function viewPocReport(id) {
+  const o = getPOC().find(x=>x.id===id);
+  if(!o) return;
+  const s = o.stages||[];
+  const compra=s[0]||{}, entrega=s[1]||{}, cert=s[2]||{}, factura=s[3]||{};
+  const ENVIO_LABELS={moto:'🛵 Moto mensajería',camion_energy:'🚛 Camión E&G Energy (propio)',camion_externo:'🚚 Camión externo',transportadora:'📦 Transportadora',vehiculo_personal:'🚗 Vehículo personal',recoge_bodega:'🏭 Recoge en bodega',entrega_mano:'🤝 Entrega en mano'};
+  const ESTADO_COLOR={activo:'#2EAA4A',completado:'#3b82f6',cancelado:'#e53e3e'};
+  const ESTADO_TXT={activo:'ACTIVO',completado:'COMPLETADO',cancelado:'CANCELADO'};
+  const stageRow=(icon,label,etapa,extra='')=>{
+    const fecha=etapa.f?etapa.f.split('-').reverse().join('/'):'—';
+    const done=etapa.s==='done'||etapa.f;
+    const color=done?'#2EAA4A':'#8899bb';
+    const nota=etapa.n?`<div style="margin-top:6px;font-size:12px;color:#94a3b8;border-left:3px solid #1e3a6e;padding-left:10px;">${etapa.n}</div>`:'';
+    return `<div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid #1e3a6e;">
+      <div style="font-size:24px;width:36px;text-align:center;flex-shrink:0;">${icon}</div>
+      <div style="flex:1;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <span style="font-weight:700;font-size:14px;color:#e2e8f0;">${label}</span>
+          <span style="font-size:13px;color:${color};font-weight:600;">📅 ${fecha}</span>
+        </div>
+        ${extra}${nota}
+      </div>
+    </div>`;
+  };
+  const entregaExtra = entrega.envio||entrega.guia||entrega.dest||entrega.resp ? `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+      ${entrega.envio?`<div style="font-size:12px;color:#cbd5e1;"><span style="color:#8899bb;">Medio:</span> ${ENVIO_LABELS[entrega.envio]||entrega.envio}</div>`:''}
+      ${entrega.guia?`<div style="font-size:12px;color:#cbd5e1;"><span style="color:#8899bb;">Guía:</span> <b>${entrega.guia}</b></div>`:''}
+      ${entrega.dest?`<div style="font-size:12px;color:#cbd5e1;"><span style="color:#8899bb;">Destinatario:</span> ${entrega.dest}</div>`:''}
+      ${entrega.resp?`<div style="font-size:12px;color:#cbd5e1;"><span style="color:#8899bb;">Responsable:</span> ${entrega.resp}</div>`:''}
+      ${entrega.transp?`<div style="font-size:12px;color:#cbd5e1;"><span style="color:#8899bb;">Transportadora:</span> ${entrega.transp}</div>`:''}
+    </div>` : '';
+  const fechaGen = new Date().toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'});
+  const updStr = o.updatedAt ? new Date(o.updatedAt).toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+  const html = `
+    <div id="poc-report-print">
+      <!-- Encabezado -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--gold);">
+        <div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:#E8A020;letter-spacing:1px;">E&G ENERGY GROUP</div>
+          <div style="font-size:12px;color:#8899bb;margin-top:2px;">GESTIÓN DE PROCESOS — ORDEN DE COMPRA</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:#8899bb;">Generado: ${fechaGen}</div>
+          <div style="font-size:11px;color:#8899bb;margin-top:2px;">Última actualización: ${updStr}</div>
+        </div>
+      </div>
+      <!-- Info principal -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div style="background:#0d1f3c;border:1px solid #1e3a6e;border-radius:10px;padding:16px;">
+          <div style="font-size:11px;color:#8899bb;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Número O.C.</div>
+          <div style="font-size:20px;font-weight:800;color:#fff;font-family:'Montserrat',sans-serif;">${o.num||'—'}</div>
+        </div>
+        <div style="background:#0d1f3c;border:1px solid #1e3a6e;border-radius:10px;padding:16px;">
+          <div style="font-size:11px;color:#8899bb;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Cliente / Proyecto</div>
+          <div style="font-size:16px;font-weight:700;color:#fff;">${o.cliente||'—'}</div>
+        </div>
+      </div>
+      ${o.desc?`<div style="background:#0d1f3c;border:1px solid #1e3a6e;border-radius:10px;padding:14px;margin-bottom:20px;">
+        <div style="font-size:11px;color:#8899bb;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Descripción / Objeto</div>
+        <div style="font-size:14px;color:#e2e8f0;">${o.desc}</div>
+      </div>`:''}
+      <!-- Estado -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <span style="font-size:11px;color:#8899bb;font-weight:700;text-transform:uppercase;">Estado general:</span>
+        <span style="background:${ESTADO_COLOR[o.estado]||'#2EAA4A'}22;color:${ESTADO_COLOR[o.estado]||'#2EAA4A'};border:1px solid ${ESTADO_COLOR[o.estado]||'#2EAA4A'};border-radius:20px;padding:4px 14px;font-size:13px;font-weight:700;">${ESTADO_TXT[o.estado]||o.estado}</span>
+      </div>
+      <!-- Etapas -->
+      <div style="font-size:12px;color:#8899bb;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Seguimiento de Etapas</div>
+      <div style="background:#0d1f3c;border:1px solid #1e3a6e;border-radius:10px;padding:0 16px;">
+        ${stageRow('🛒','Compra',compra)}
+        ${stageRow('🚛','Entrega',entrega,entregaExtra)}
+        ${stageRow('📄','Certificado',cert)}
+        ${stageRow('💰','Facturación',factura)}
+      </div>
+    </div>`;
+  document.getElementById('poc-report-body').innerHTML = html;
+  document.getElementById('modal-poc-report').classList.add('open');
+}
+
+function printPocReport() {
+  const content = document.getElementById('poc-report-print')?.innerHTML||'';
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Informe OC — E&G Energy</title>
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a1a2e;margin:0;padding:24px;}
+    *{box-sizing:border-box;}
+    @media print{body{padding:0;} button{display:none!important;}}
+  </style></head><body>${content}</body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(),400);
+}
+
 function saveEmailConfig() {
   localStorage.setItem('eyg_email_to', document.getElementById('email-to-input')?.value?.trim()||'');
   localStorage.setItem('eyg_emailjs_pubkey', document.getElementById('emailjs-pubkey')?.value?.trim()||'');
