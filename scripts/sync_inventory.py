@@ -92,7 +92,7 @@ def list_drive_folder(token, user_email, folder_path='root/children'):
 # ─── 3. DESCARGA EXCEL DESDE ONEDRIVE ─────────────────────────────────────────
 
 def download_excel(token, user_email, file_path):
-    """Descarga el archivo Excel del OneDrive del usuario vía Graph API."""
+    """Descarga el archivo Excel del OneDrive del usuario vi�a Graph API."""
     encoded = urllib.parse.quote(file_path, safe='/')
     url = ('https://graph.microsoft.com/v1.0/users/' + user_email +
            '/drive/root:/' + encoded + ':/content')
@@ -135,22 +135,27 @@ def parse_excel(excel_bytes):
             best_score = score
             header_row_idx = row_idx
 
-    print('📌 Fila de encabezados detectada: ' + str(header_row_idx))
+    print('📌 Fila de encabezados detectada: ' + str(header_row_idx) + ' (score=' + str(best_score) + ')')
+    print('📌 Hojas disponibles: ' + str(wb.sheetnames) + ' | Hoja activa: ' + str(ws.title))
     raw_headers = [str(c.value or '').strip() for c in ws[header_row_idx]]
+    print('📌 Encabezados RAW del Excel: ' + str(raw_headers))
     headers = []
     for h in raw_headers:
         mapped = COLUMN_MAP.get(h.lower(), h.upper() if h else '')
         headers.append(mapped)
 
-    print('📌 Columnas detectadas: ' + str(headers))
+    print('📌 Columnas mapeadas: ' + str(headers))
 
     # Verificar columnas mínimas requeridas
     required = {'CODIGO PRODUCTO', 'DESCRIPCION', 'STOCK ACTUAL'}
     found = set(headers)
     missing = required - found
     if missing:
-        print('⚠️  Columnas no encontradas: ' + str(missing))
-        print('   Columnas disponibles: ' + str(headers))
+        print('⚠️  ALERTA — Columnas no encontradas: ' + str(missing))
+        print('   Encabezados del Excel que no coincidieron: ' +
+              str([h for h in raw_headers if COLUMN_MAP.get(h.lower()) is None and h]))
+    else:
+        print('✅ Todas las columnas requeridas encontradas')
 
     # Parsear filas (empezar después de la fila de encabezados)
     records = []
