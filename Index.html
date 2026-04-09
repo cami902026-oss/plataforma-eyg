@@ -23,6 +23,7 @@
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--light); min-height:100vh; }
+
 /* ===== LOGIN ===== */
 #login-screen {
   min-height:100vh; display:flex; align-items:center; justify-content:center;
@@ -64,6 +65,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .btn-ghost:hover { background:rgba(255,255,255,0.05); }
 .btn-danger { background:var(--red); color:#fff; }
 .login-hint { text-align:center; margin-top:20px; font-size:12px; color:var(--text-muted); }
+
 /* ===== APP LAYOUT ===== */
 #app { display:none; min-height:100vh; }
 .sidebar {
@@ -99,6 +101,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .user-pill-role { font-size:11px; color:var(--text-muted); }
 .logout-btn { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:18px; transition:color 0.2s; }
 .logout-btn:hover { color:var(--red); }
+
 /* ===== MAIN AREA ===== */
 .main-area { margin-left:var(--sidebar-w); display:flex; flex-direction:column; min-height:100vh; }
 .topbar {
@@ -115,6 +118,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .notif-btn:hover { color:var(--white); }
 .notif-badge { position:absolute; top:-4px; right:-4px; width:16px; height:16px; background:var(--red); border-radius:50%; font-size:9px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; }
 .content { padding:28px; flex:1; }
+
 /* ===== CARDS ===== */
 .card { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:24px; }
 .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
@@ -134,6 +138,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
 .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
 .section-title { font-family:'Montserrat',sans-serif; font-weight:700; font-size:16px; color:#fff; }
+
 /* ===== MEETINGS ===== */
 .meeting-item { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--border); }
 .meeting-item:last-child { border-bottom:none; }
@@ -148,12 +153,14 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .badge-alta { background:rgba(229,62,62,0.2); color:#fc8181; border:1px solid rgba(229,62,62,0.3); }
 .badge-media { background:rgba(214,158,46,0.2); color:#f6e05e; border:1px solid rgba(214,158,46,0.3); }
 .badge-baja { background:rgba(46,170,74,0.2); color:var(--green); border:1px solid rgba(46,170,74,0.3); }
+
 /* ===== ACTIVITY ===== */
 .activity-item { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
 .activity-item:last-child { border-bottom:none; }
 .activity-dot { width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0; }
 .activity-text { font-size:13px; color:var(--light); flex:1; }
 .activity-time { font-size:11px; color:var(--text-muted); white-space:nowrap; }
+
 /* ===== KANBAN ===== */
 .kanban-board { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
 .kanban-col { background:rgba(7,21,37,0.7); border:1px solid var(--border); border-radius:14px; padding:16px; }
@@ -166,6 +173,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .task-meta { display:flex; align-items:center; justify-content:space-between; }
 .task-assignee { font-size:12px; color:var(--text-muted); }
 .task-date { font-size:11px; color:var(--text-muted); }
+
 /* ===== GANTT ===== */
 .gantt-table { width:100%; }
 .gantt-row { display:grid; grid-template-columns:220px 1fr; border-bottom:1px solid var(--border); align-items:center; }
@@ -177,6 +185,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .gantt-bar-bg { position:absolute; left:16px; right:16px; height:24px; background:rgba(255,255,255,0.05); border-radius:6px; overflow:hidden; }
 .gantt-bar-fill { height:100%; border-radius:6px; display:flex; align-items:center; padding:0 10px; font-size:11px; font-weight:700; color:#fff; }
 .gantt-dates { font-size:11px; color:var(--text-muted); position:absolute; bottom:4px; left:16px; }
+
 /* ===== COMUNICACIONES ===== */
 .tabs { display:flex; gap:4px; background:rgba(0,0,0,0.3); border-radius:12px; padding:4px; margin-bottom:24px; }
 .tab-btn { flex:1; padding:10px; border:none; border-radius:8px; cursor:pointer; font-family:'Open Sans',sans-serif; font-weight:600; font-size:13px; background:transparent; color:var(--text-muted); transition:all 0.2s; }
@@ -184,6 +193,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .tab-content { display:none; }
 .tab-content.active { display:block; }
 .msg-output { background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:16px; min-height:120px; font-size:14px; line-height:1.7; color:var(--light); white-space:pre-wrap; }
+
 /* ===== MINUTAS ===== */
 .minuta-card { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:16px; }
 .minuta-header { display:flex; justify-content:space-between; align-items:start; margin-bottom:12px; }
@@ -192,6 +202,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .minuta-body { font-size:13px; color:var(--light); line-height:1.7; }
 .minuta-section { margin-bottom:12px; }
 .minuta-section-title { font-weight:700; font-size:12px; color:var(--green); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+
 /* ===== EQUIPO ===== */
 .team-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
 .team-card { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:24px; text-align:center; transition:all 0.2s; }
@@ -204,6 +215,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .team-actions { display:flex; gap:8px; justify-content:center; }
 .icon-btn { width:36px; height:36px; border-radius:8px; border:1px solid var(--border); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:all 0.2s; color:var(--text-muted); }
 .icon-btn:hover { background:rgba(46,170,74,0.15); border-color:var(--green); color:var(--green); }
+
 /* ===== CALENDAR ===== */
 .calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
 .cal-header { font-size:12px; font-weight:700; color:var(--text-muted); text-align:center; padding:8px 0; }
@@ -216,6 +228,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .cal-task { background:rgba(46,170,74,0.5); border-radius:3px; padding:2px 4px; font-size:10px; color:#fff; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .cal-task.alta { background:rgba(229,62,62,0.5); }
 .cal-task.media { background:rgba(214,158,46,0.5); }
+
 /* ===== MODAL ===== */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:200; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
 .modal-overlay.open { display:flex; }
@@ -229,6 +242,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .checkboxes-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .checkbox-item { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--light); }
 .checkbox-item input { accent-color:var(--green); }
+
 /* ===== ENERGY CHAT ===== */
 .max-fab {
   position:fixed; bottom:28px; right:28px; z-index:300;
@@ -267,6 +281,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .chat-input:focus { outline:none; border-color:var(--green); }
 .chat-send { width:38px; height:38px; border-radius:10px; background:var(--green); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; transition:all 0.2s; }
 .chat-send:hover { background:#1e8a3a; }
+
 /* ===== TOAST ===== */
 .toast-container { position:fixed; top:80px; right:24px; z-index:400; display:flex; flex-direction:column; gap:8px; }
 .toast { background:var(--card-bg); border:1px solid var(--border); border-radius:10px; padding:12px 18px; font-size:13px; color:var(--light); box-shadow:0 8px 32px rgba(0,0,0,0.4); display:flex; align-items:center; gap:10px; animation:slideIn 0.3s ease; min-width:240px; }
@@ -274,14 +289,17 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .toast.error { border-left:3px solid var(--red); }
 .toast.info { border-left:3px solid var(--blue); }
 @keyframes slideIn { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
+
 /* ===== SPINNER ===== */
 .spinner { display:inline-block; width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
+
 /* ===== CONFIG ===== */
 .config-section { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:24px; margin-bottom:20px; }
 .config-title { font-weight:700; font-size:16px; color:#fff; margin-bottom:16px; display:flex; align-items:center; gap:10px; }
 .api-key-row { display:flex; gap:12px; }
 .api-key-row input { flex:1; }
+
 /* ===== RESPONSIVE ===== */
 @media(max-width:768px) {
   .sidebar { transform:translateX(-100%); }
@@ -293,6 +311,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   .form-row { grid-template-columns:1fr; }
   .chat-panel { right:12px; width:calc(100vw - 24px); }
 }
+
 /* templates list */
 .template-list { display:flex; flex-direction:column; gap:10px; }
 .template-item { background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:10px; padding:14px; cursor:pointer; transition:all 0.2s; }
@@ -300,22 +319,27 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .template-cat { font-size:10px; font-weight:700; color:var(--green); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
 .template-name { font-size:14px; font-weight:600; color:#fff; margin-bottom:4px; }
 .template-preview { font-size:12px; color:var(--text-muted); }
+
 /* progress bar */
 .progress-bar { background:rgba(255,255,255,0.1); border-radius:20px; height:6px; overflow:hidden; }
 .progress-fill { height:100%; border-radius:20px; }
+
 /* view toggle */
 .view-toggle { display:flex; gap:4px; }
 .view-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--border); background:transparent; color:var(--text-muted); cursor:pointer; font-size:13px; transition:all 0.2s; }
 .view-btn.active { background:var(--blue); color:#fff; border-color:var(--blue); }
+
 .meeting-list { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
 .meeting-full-card { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px; }
 .meeting-card-header { display:flex; justify-content:space-between; align-items:start; margin-bottom:10px; }
 .meeting-card-title { font-weight:700; font-size:15px; color:#fff; }
 .meeting-card-meta { font-size:12px; color:var(--text-muted); margin-top:4px; }
 .meeting-card-actions { display:flex; gap:8px; margin-top:12px; }
+
 /* hidden util */
 .hidden { display:none !important; }
-/* ===== PROCESOS ORDEN DE PEDIDO ===== */
+
+/* ===== PROCESOS ORDEN DE COMPRA ===== */
 .oc-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
 .oc-filter-btn { padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:transparent; color:var(--text-muted); font-size:11px; cursor:pointer; transition:.2s; }
 .oc-filter-btn.active, .oc-filter-btn:hover { background:var(--navy); color:#fff; border-color:var(--navy); }
@@ -349,59 +373,12 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 /* Modal orden */
 .oc-stage-config { background:rgba(15,43,91,.3); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:10px; }
 .oc-stage-config-title { font-size:11px; font-weight:700; color:var(--gold); margin-bottom:8px; text-transform:uppercase; letter-spacing:.5px; }
+
 /* page sections */
 .page { display:none; }
 .page.active { display:block; }
 
-/* ===== PROCESOS OP (MEJORADO) ===== */
-.poc-wrap{padding-bottom:40px}
-.poc-stats{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-.poc-stat{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px 20px;flex:1;min-width:100px;text-align:center}
-.poc-stat.blue{border-left:3px solid var(--blue)}
-.poc-stat.green{border-left:3px solid var(--green)}
-.poc-stat.gold{border-left:3px solid var(--gold)}
-.poc-stat-num{font-size:26px;font-weight:700;color:var(--white)}
-.poc-stat-label{font-size:11px;color:var(--text-muted);margin-top:3px}
-.poc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px}
-.poc-filters{display:flex;gap:8px;flex-wrap:wrap}
-.poc-filter-btn{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text-muted);padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;transition:all .2s}
-.poc-filter-btn.active{background:var(--gold);color:#000;border-color:var(--gold);font-weight:600}
-.poc-card{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:12px;transition:all .2s}
-.poc-card:hover{border-color:rgba(46,170,74,.4);transform:translateY(-1px)}
-.poc-ch{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:12px}
-.poc-title{font-weight:700;font-size:16px;color:var(--white)}
-.poc-sub{font-size:12px;color:var(--text-muted);margin-top:3px}
-.poc-tl{display:flex;align-items:flex-start;position:relative;gap:0}
-.poc-step{display:flex;flex-direction:column;align-items:center;flex:1;position:relative;z-index:1;min-width:70px}
-.poc-step-circ{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;border:2px solid var(--border);background:var(--navy);transition:all .3s;cursor:pointer}
-.poc-step.done .poc-step-circ{background:#15803d;border-color:#15803d;box-shadow:0 0 10px rgba(21,128,61,.4)}
-.poc-step.active .poc-step-circ{background:var(--gold);border-color:var(--gold);box-shadow:0 0 10px rgba(232,160,32,.4)}
-.poc-step.pending .poc-step-circ{opacity:.35}
-.poc-step-lbl{font-size:11px;color:var(--text-muted);margin-top:6px;text-align:center;line-height:1.3}
-.poc-step.done .poc-step-lbl,.poc-step.active .poc-step-lbl{color:var(--white)}
-.poc-step-date{font-size:11px;color:#a3c4f3;margin-top:3px;text-align:center;font-weight:600;letter-spacing:.3px}
-.poc-step-date.empty{color:rgba(255,255,255,.2);font-style:italic;font-weight:400}
-.poc-step-note{font-size:10px;color:var(--text-muted);margin-top:2px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
-.poc-step-envio{font-size:10px;color:#86efac;margin-top:3px;text-align:center;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
-.poc-step-guia{font-size:10px;color:#fcd34d;margin-top:1px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
-.poc-line{flex:1;height:2px;background:var(--border);margin-top:-43px;z-index:0}
-.poc-line.done{background:#15803d}
-.poc-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap}
-.poc-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
-.poc-badge.activo{background:rgba(46,170,74,.2);color:#4ade80;border:1px solid rgba(46,170,74,.3)}
-.poc-badge.completado{background:rgba(59,130,246,.2);color:#7aa7ff;border:1px solid rgba(59,130,246,.3)}
-.poc-badge.cancelado{background:rgba(229,62,62,.2);color:#fc8181;border:1px solid rgba(229,62,62,.3)}
-.poc-badge.borrador{background:rgba(255,255,255,.1);color:var(--text-muted);border:1px solid var(--border)}
-.poc-empty{text-align:center;padding:60px 20px;color:var(--text-muted)}
-.poc-empty-icon{font-size:48px;margin-bottom:12px}
-#modal-poc .modal{max-width:680px;width:95vw;max-height:90vh;overflow-y:auto}
-.poc-form-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.poc-stages{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-.poc-stage-box{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:14px}
-.poc-stage-box h4{font-size:13px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.poc-stage-box label{font-size:11px;color:var(--text-muted);display:block;margin-bottom:3px;margin-top:8px}
-.poc-stage-box select,.poc-stage-box input[type=date],.poc-stage-box textarea{width:100%}
-@media(max-width:600px){.poc-form-2,.poc-stages{grid-template-columns:1fr}}
+
 /* ===== INVENTARIO ===== */
 .inv-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
 .inv-stat { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px 20px; border-left:3px solid var(--border); }
@@ -452,6 +429,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .inv-empty { text-align:center; padding:52px 20px; color:var(--text-muted); }
 .inv-empty .ie-icon { font-size:2.5rem; margin-bottom:10px; }
 .inv-empty p { font-size:14px; }
+
 /* ===== SPLASH ===== */
 @keyframes fadeIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
 @keyframes loading { from{width:0} to{width:100%} }
@@ -462,10 +440,13 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #splash-bar { height:100%;background:linear-gradient(90deg,#2EAA4A,#E8A020);animation:loading 1.5s ease forwards; }
 #splash { animation:fadeIn 0.3s ease, splashOut 0.5s ease 2.2s forwards; }
 @keyframes splashOut { to { opacity:0; visibility:hidden; pointer-events:none; } }
+
 /* ===== SECTION ACCENT ===== */
 .section-accent { height:2px;background:linear-gradient(90deg,var(--gold),transparent);border-radius:1px;margin-bottom:20px;opacity:0.5; }
+
 /* ===== TOPBAR BADGE ===== */
 .user-badge { background:var(--green);color:#fff;border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer; }
+
 /* ===== COTIZACIONES IA ===== */
 .cotiz-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;}
 .cotiz-tab{padding:10px 22px;cursor:pointer;border-bottom:3px solid transparent;color:var(--text-muted);font-weight:600;font-size:13px;transition:.2s;margin-bottom:-2px;}
@@ -517,6 +498,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js" onerror="document.head.insertAdjacentHTML('beforeend','<script src=\'https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js\'><\/script>')"></script>
 </head>
 <body>
+
 <!-- ===== SPLASH ===== -->
 <div id="splash">
   <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" alt="E&G Energy">
@@ -537,6 +519,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     }
   })();
 </script>
+
 <!-- ===== LOGIN ===== -->
 <!-- PANTALLA CÓDIGO DE ACCESO -->
 <div id="access-screen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#071525 0%,#0F2B5B 60%,#071525 100%);">
@@ -560,6 +543,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     <p style="color:#8899bb;font-size:12px;">¿No tienes el código? Contacta a <span style="color:#E8A020;"><a href="mailto:andrea.bernal@eygenergygroup.com" style="color:#E8A020;">andrea.bernal@eygenergygroup.com</a></span></p>
   </div>
 </div>
+
 <!-- LOGIN NORMAL -->
 <div id="login-screen" style="display:none;">
   <div class="login-box">
@@ -588,6 +572,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     <button class="btn btn-primary" onclick="doLogin()" style="width:100%;">Iniciar sesión</button>
   </div>
 </div>
+
 <!-- ===== APP ===== -->
 <div id="app">
   <!-- Sidebar -->
@@ -612,7 +597,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="nav-item" onclick="navigate('equipo')"><span class="icon">👥</span>Equipo</div>
       <div class="nav-item" onclick="navigate('inventario')"><span class="icon">📦</span>Inventario</div>
       <div class="nav-item" onclick="navigate('cotizaciones')"><span class="icon">📋</span>Cotizaciones IA</div>
-      <div class="nav-item" onclick="navigate('procesos')"><span class="icon">🚛</span>Procesos O.C.</div>
+      <div class="nav-item" onclick="navigate('ordenes')"><span class="icon">🚚</span>Procesos O.C.</div>
       <div class="nav-item" onclick="navigate('configuracion')"><span class="icon">⚙️</span>Configuración</div>
     </nav>
     <div class="sidebar-footer">
@@ -627,6 +612,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       </div>
     </div>
   </div>
+
   <!-- Main -->
   <div class="main-area">
     <div class="topbar">
@@ -644,6 +630,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <div class="user-badge" id="top-avatar" onclick="navigate('configuracion')" title="Mi perfil"></div>
       </div>
     </div>
+
     <div class="content">
       <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
@@ -672,6 +659,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div id="dash-activity"></div>
         </div>
       </div>
+
       <!-- REUNIONES -->
       <div class="page" id="page-reuniones">
         <div class="section-header" style="margin-bottom:20px;">
@@ -689,6 +677,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div class="meeting-list" id="meeting-list-container"></div>
         </div>
       </div>
+
       <!-- TAREAS -->
       <div class="page" id="page-tareas">
         <div class="section-header" style="margin-bottom:20px;">
@@ -701,6 +690,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         </div>
         <div class="kanban-board" id="kanban-board"></div>
       </div>
+
       <!-- CRONOGRAMA -->
       <div class="page" id="page-cronograma">
         <div class="section-header" style="margin-bottom:20px;">
@@ -711,6 +701,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div id="gantt-container"></div>
         </div>
       </div>
+
       <!-- COMUNICACIONES -->
       <div class="page" id="page-comunicaciones">
         <div class="tabs">
@@ -842,6 +833,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div class="template-list" id="templates-list"></div>
         </div>
       </div>
+
       <!-- MINUTAS -->
       <div class="page" id="page-minutas">
         <div class="section-header" style="margin-bottom:20px;">
@@ -850,6 +842,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         </div>
         <div id="minutas-list"></div>
       </div>
+
       <!-- EQUIPO -->
       <div class="page" id="page-equipo">
         <div class="section-header" style="margin-bottom:20px;">
@@ -858,26 +851,72 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         </div>
         <div class="team-grid" id="team-grid"></div>
       </div>
-      <!-- PROCESOS O.P. (MEJORADO) -->
-      <div class="page" id="page-procesos">
-        <div class="poc-wrap">
-          <div class="poc-stats" id="poc-stats-bar"></div>
-          <div class="poc-top">
-            <div class="poc-filters">
-              <button class="poc-filter-btn active" onclick="pocFilterFn('todos',this)">Todos</button>
-              <button class="poc-filter-btn" onclick="pocFilterFn('activo',this)">Activos</button>
-              <button class="poc-filter-btn" onclick="pocFilterFn('completado',this)">Completados</button>
-              <button class="poc-filter-btn" onclick="pocFilterFn('cancelado',this)">Cancelados</button>
+
+      <!-- PROCESOS ORDEN DE COMPRA -->
+      <div class="page" id="page-ordenes">
+        <div class="section-accent"></div>
+        <div class="oc-toolbar">
+          <button class="btn btn-primary" onclick="ocOpenModal()" style="padding:8px 18px;font-size:12px;">+ Nueva Orden</button>
+          <button class="oc-filter-btn active" onclick="ocFilter('todas',this)">Todas</button>
+          <button class="oc-filter-btn" onclick="ocFilter('compra',this)">📋 Compra</button>
+          <button class="oc-filter-btn" onclick="ocFilter('entrega',this)">🚚 Entrega</button>
+          <button class="oc-filter-btn" onclick="ocFilter('certs',this)">📄 Certificados</button>
+          <button class="oc-filter-btn" onclick="ocFilter('cierre',this)">🧾 Facturación</button>
+          <button class="oc-filter-btn" onclick="ocFilter('completado',this)">🏁 Completadas</button>
+        </div>
+        <div id="oc-list"></div>
+      </div>
+
+      <!-- MODAL NUEVA/EDITAR ORDEN -->
+      <div class="modal" id="modal-orden">
+        <div class="modal-content" style="max-width:540px;">
+          <div class="modal-header">
+            <span class="modal-title" id="modal-orden-title">📋 Nueva Orden de Compra</span>
+            <button class="modal-close" onclick="closeModal('modal-orden')">✕</button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="oc-edit-id">
+            <div class="form-group">
+              <label>Nombre del Proyecto / Orden</label>
+              <input type="text" id="oc-nombre" placeholder="Ej: Válvulas WO-2026-001">
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn btn-primary" onclick="openPocModal(null)">+ Nueva O.C.</button>
-              <button class="btn" style="background:#1d7a3a;color:#fff;border:none" onclick="exportPocExcel()">📊 Exportar Excel</button>
-              <button class="btn" style="background:#1A3A8F;color:#fff;border:none" onclick="generateGeneralOCReport()">📄 Informe General</button>
+            <div class="form-group">
+              <label>Cliente / Proveedor</label>
+              <input type="text" id="oc-cliente" placeholder="Ej: Mansarovar Energy">
+            </div>
+            <div class="form-group">
+              <label>Fecha estimada de cierre</label>
+              <input type="date" id="oc-fecha">
+            </div>
+            <div class="form-group">
+              <label>Observaciones</label>
+              <textarea id="oc-obs" rows="2" placeholder="Detalles adicionales..."></textarea>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;">Responsables por etapa</div>
+            <div class="oc-stage-config">
+              <div class="oc-stage-config-title">📋 Compra</div>
+              <input type="text" id="oc-resp-compra" placeholder="Responsable de compra">
+            </div>
+            <div class="oc-stage-config">
+              <div class="oc-stage-config-title">🚚 Entrega</div>
+              <input type="text" id="oc-resp-entrega" placeholder="Responsable de entrega">
+            </div>
+            <div class="oc-stage-config">
+              <div class="oc-stage-config-title">📄 Envío Certificados</div>
+              <input type="text" id="oc-resp-certs" placeholder="Responsable de certificados">
+            </div>
+            <div class="oc-stage-config">
+              <div class="oc-stage-config-title">🧾 Facturación</div>
+              <input type="text" id="oc-resp-cierre" placeholder="Responsable de facturación">
             </div>
           </div>
-          <div id="poc-list"></div>
+          <div style="display:flex;gap:10px;padding:16px 24px;border-top:1px solid var(--border);">
+            <button class="btn btn-primary" onclick="ocSave()" style="flex:1;">Guardar Orden</button>
+            <button class="btn btn-ghost" onclick="closeModal('modal-orden')" style="flex:1;">Cancelar</button>
+          </div>
         </div>
       </div>
+
       <!-- COTIZACIONES IA -->
       <div class="page" id="page-cotizaciones">
         <!-- TABS -->
@@ -885,6 +924,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div class="cotiz-tab active" id="ctab-nueva" onclick="cotizShowTab('nueva')">📝 Nueva Cotización</div>
           <div class="cotiz-tab" id="ctab-bd" onclick="cotizShowTab('bd')">📊 Base de Datos</div>
         </div>
+
         <!-- ═══ TAB NUEVA COTIZACIÓN ═══ -->
         <div class="cotiz-tab-content active" id="cotiz-tab-nueva">
           <!-- Encabezado -->
@@ -928,6 +968,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               </div>
             </div>
           </div>
+
           <!-- IA Extract -->
           <div class="cotiz-card">
             <h3>📸 Cargar imagen o escribir ítems</h3>
@@ -950,6 +991,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <span id="cotiz-ai-msg">Analizando con IA...</span>
             </div>
           </div>
+
           <!-- Tabla de ítems (formato COTIZADOR) -->
           <div class="cotiz-card">
             <h3>📋 Ítems de la cotización</h3>
@@ -975,6 +1017,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             </div>
             <div class="cotiz-totals-box" id="cotiz-totals"></div>
           </div>
+
           <!-- Observaciones + Condiciones -->
           <div class="cotiz-card">
             <h3>📄 Observaciones y condiciones comerciales</h3>
@@ -988,6 +1031,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <div class="form-group"><label>VALIDEZ DE LA OFERTA</label><input type="text" id="cotiz-validez" placeholder="Ej: 8 días" value="8 DÍAS"></div>
             </div>
           </div>
+
           <!-- Botones -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
             <button class="btn btn-primary" onclick="cotizGuardarBD()" style="width:auto;font-size:13px;">💾 Guardar en base de datos</button>
@@ -995,6 +1039,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <button class="btn btn-secondary" onclick="cotizNueva()" style="width:auto;font-size:13px;">+ Nueva cotización</button>
           </div>
         </div>
+
         <!-- ═══ TAB BASE DE DATOS ═══ -->
         <div class="cotiz-tab-content" id="cotiz-tab-bd">
           <div class="bd-stats" id="bd-stats-bar"></div>
@@ -1023,18 +1068,9 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           </div>
         </div>
       </div>
+
       <!-- CONFIGURACION -->
       <div class="page" id="page-configuracion">
-        <div class="config-section">
-          <div class="config-title">📊 Base de Datos OP (Google Sheets)</div>
-          <div class="api-key-row">
-            <div class="form-group" style="flex:1;margin:0;">
-              <input type="text" id="sheets-url-input" placeholder="https://script.google.com/macros/s/.../exec">
-            </div>
-            <button class="btn btn-primary" onclick="saveOCSheetUrl()" style="width:auto;white-space:nowrap;">Guardar</button>
-          </div>
-          <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">Pega aquí la URL del Apps Script para que las OP se guarden automáticamente en Google Sheets. <span id="sheets-status" style="font-weight:600;"></span></p>
-        </div>
         <div class="config-section">
           <div class="config-title">🤖 API Key de Claude (ENERGY IA)</div>
           <div class="api-key-row">
@@ -1055,6 +1091,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           </div>
           <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">Token personal de GitHub con permiso <b>workflow</b>. Se guarda localmente en tu navegador.</p>
         </div>
+
         <!-- ===== MICROSOFT TEAMS CONFIG ===== -->
         <div class="config-section" style="border-left:3px solid #6264A7;">
           <div class="config-title">🟣 Microsoft Teams — Integración Azure AD</div>
@@ -1089,6 +1126,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           </div>
           <div id="ms-teams-info" style="display:none;margin-top:14px;padding:12px;background:rgba(46,170,74,0.1);border:1px solid rgba(46,170,74,0.3);border-radius:8px;font-size:12px;"></div>
         </div>
+
         <!-- ===== ONEDRIVE CONFIG ===== -->
         <div class="config-section">
           <div class="config-title">☁️ OneDrive — Inventario automático</div>
@@ -1109,6 +1147,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           </div>
           <div id="inv-sync-status" style="margin-top:12px;font-size:12px;color:var(--text-muted);"></div>
         </div>
+
         <div class="config-section">
           <div class="config-title">👤 Mi Perfil</div>
           <div class="form-row">
@@ -1123,9 +1162,11 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div id="team-mgmt-list"></div>
           <button class="btn btn-secondary" onclick="openModal('modal-miembro')" style="margin-top:16px;width:auto;">+ Agregar miembro</button>
         </div>
+
         <!-- ===== CAMBIAR CLAVES — Solo Gerencia/Andrea ===== -->
         <div id="claves-section" style="display:none;">
           <div class="config-title">🔐 Cambiar Claves de Acceso <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(Solo Gerencia)</span></div>
+
           <!-- Código de empresa -->
           <div style="background:rgba(232,160,32,0.08);border:1px solid rgba(232,160,32,0.3);border-radius:12px;padding:16px;margin-bottom:16px;">
             <div style="font-size:13px;color:var(--gold);font-weight:700;margin-bottom:12px;">🏢 Código de acceso de la empresa</div>
@@ -1139,14 +1180,17 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             </div>
             <button class="btn btn-primary" onclick="saveAccessCode()" style="width:auto;padding:8px 20px;background:var(--gold);color:#071525;">💾 Guardar código de empresa</button>
           </div>
+
           <!-- Contraseñas de usuarios -->
           <div style="background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:12px;padding:16px;">
             <div style="font-size:13px;color:#fff;font-weight:700;margin-bottom:14px;">👥 Contraseñas individuales de usuarios</div>
             <div id="user-passwords-list"></div>
           </div>
         </div>
+
       </div>
       </div>
+
             <div class="page" id="page-inventario">
         <div class="inv-stats" id="inv-stats-bar"></div>
         <div class="inv-search-box">
@@ -1252,9 +1296,11 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         })();
         </script>
       </div>
+
     </div><!-- /content -->
   </div><!-- /main-area -->
 </div><!-- /app -->
+
 <!-- ===== MODALS ===== -->
 <!-- Modal Reunión -->
 <div class="modal-overlay" id="modal-reunion">
@@ -1298,6 +1344,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     </div>
   </div>
 </div>
+
 <!-- Modal Tarea -->
 <div class="modal-overlay" id="modal-tarea">
   <div class="modal">
@@ -1335,6 +1382,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     </div>
   </div>
 </div>
+
 <!-- Modal Proyecto -->
 <div class="modal-overlay" id="modal-proyecto">
   <div class="modal">
@@ -1365,6 +1413,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     </div>
   </div>
 </div>
+
 <!-- Modal Minuta -->
 <div class="modal-overlay" id="modal-minuta">
   <div class="modal" style="width:640px;">
@@ -1389,6 +1438,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     </div>
   </div>
 </div>
+
 <!-- Modal Miembro -->
 <div class="modal-overlay" id="modal-miembro">
   <div class="modal">
@@ -1408,121 +1458,6 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   </div>
 </div>
 
-<!-- Modal Proceso OC (mejorado) -->
-<div class="modal-overlay" id="modal-poc">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 class="modal-title" id="poc-modal-title">Nueva Orden de Pedido</h3>
-      <button class="close-btn" onclick="closePocModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="poc-form-2">
-        <div class="form-group">
-          <label>Número O.C.</label>
-          <input type="text" id="poc-num" placeholder="Ej: OP-2026-001">
-        </div>
-        <div class="form-group">
-          <label>Cliente / Proyecto</label>
-          <input type="text" id="poc-cliente" placeholder="Nombre del cliente">
-        </div>
-      </div>
-      <div class="form-group" style="margin-top:10px">
-        <label>Descripción / Objeto</label>
-        <textarea id="poc-desc" rows="2" placeholder="Descripción de la orden..."></textarea>
-      </div>
-      <div class="form-group" style="margin-top:10px">
-        <label>Estado General</label>
-        <select id="poc-estado">
-          <option value="activo">Activo</option>
-          <option value="completado">Completado</option>
-          <option value="cancelado">Cancelado</option>
-        </select>
-      </div>
-      <div style="margin-top:18px;font-weight:600;font-size:14px;margin-bottom:12px">📍 Etapas del Proceso</div>
-      <div class="poc-stages">
-        <div class="poc-stage-box">
-          <h4>🛒 Compra</h4>
-          <label>Estado</label>
-          <select id="poc-s0-est">
-            <option value="pending">Pendiente</option>
-            <option value="active">En proceso</option>
-            <option value="done">Completado</option>
-          </select>
-          <label>Fecha</label>
-          <input type="date" id="poc-s0-fecha">
-          <label>Notas</label>
-          <textarea id="poc-s0-nota" rows="2" placeholder="Notas de compra..."></textarea>
-        </div>
-        <div class="poc-stage-box">
-          <h4>🚛 Entrega</h4>
-          <label>Estado</label>
-          <select id="poc-s1-est">
-            <option value="pending">Pendiente</option>
-            <option value="active">En proceso</option>
-            <option value="done">Completado</option>
-          </select>
-          <label>Medio de envío</label>
-          <select id="poc-envio" onchange="pocToggleTransp()">
-            <option value="">— Seleccionar —</option>
-            <option value="moto">🛵 Moto mensajería</option>
-            <option value="camion_energy">🚛 Camión E&amp;G Energy (propio)</option>
-            <option value="camion_externo">🚚 Camión externo</option>
-            <option value="transportadora">📦 Transportadora</option>
-            <option value="vehiculo_personal">🚗 Vehículo personal</option>
-            <option value="recoge_bodega">🏭 Recoge en bodega</option>
-            <option value="entrega_mano">🤝 Entrega en mano</option>
-          </select>
-          <div id="poc-transp-wrap" style="display:none">
-            <label>Transportadora / Nombre</label>
-            <input type="text" id="poc-transp-nombre" placeholder="Ej: Servientrega, TCC...">
-          </div>
-          <label>N° Guía / Tracking</label>
-          <input type="text" id="poc-guia" placeholder="Ej: 1234567890">
-          <label>Destinatario</label>
-          <input type="text" id="poc-destinatario" placeholder="Nombre del destinatario">
-          <label>Responsable seguimiento</label>
-          <input type="text" id="poc-responsable-envio" placeholder="Nombre del responsable">
-          <label>Fecha estimada entrega</label>
-          <input type="date" id="poc-s1-fecha">
-          <label>Notas</label>
-          <textarea id="poc-s1-nota" rows="2" placeholder="Notas de entrega..."></textarea>
-        </div>
-        <div class="poc-stage-box">
-          <h4>📄 Certificado</h4>
-          <label>Fecha de certificado</label>
-          <input type="date" id="poc-s2-fecha">
-          <label>Notas</label>
-          <textarea id="poc-s2-nota" rows="2" placeholder="Notas de certificado..."></textarea>
-        </div>
-        <div class="poc-stage-box">
-          <h4>💰 Facturación</h4>
-          <label>Fecha de facturación</label>
-          <input type="date" id="poc-s3-fecha">
-          <label>Notas</label>
-          <textarea id="poc-s3-nota" rows="2" placeholder="Notas de facturación..."></textarea>
-        </div>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="savePoc()" style="flex:1;">💾 Guardar</button>
-        <button class="btn btn-danger" id="poc-del-btn" onclick="deletePoc()" style="display:none;">🗑️ Eliminar</button>
-        <button class="btn btn-ghost" onclick="closePocModal()" style="flex:1;">Cancelar</button>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- MODAL INFORME OC -->
-<div class="modal-overlay" id="modal-poc-report">
-  <div class="modal" style="max-width:700px;width:95vw;max-height:92vh;overflow-y:auto;padding:0;">
-    <div style="background:var(--navy);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;">
-      <h3 style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:17px;color:#fff;">📄 Informe de Orden de Pedido</h3>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-primary" onclick="printPocReport()" style="padding:8px 16px;font-size:13px;">🖨️ Imprimir / PDF</button>
-        <button class="close-btn" onclick="document.getElementById('modal-poc-report').classList.remove('open')">✕</button>
-      </div>
-    </div>
-    <div id="poc-report-body" style="padding:24px;"></div>
-  </div>
-</div>
 <!-- ENERGY Chat -->
 <button class="max-fab" onclick="toggleChat()" id="max-fab">⚡</button>
 <div class="chat-panel" id="chat-panel">
@@ -1548,8 +1483,10 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     <button class="chat-send" onclick="sendChat()">➤</button>
   </div>
 </div>
+
 <!-- Toast container -->
 <div class="toast-container" id="toast-container"></div>
+
 <script>
 // ===== DATA =====
 const USERS = [
@@ -1560,6 +1497,7 @@ const USERS = [
   { email:'andres', password:'eyg2026', name:'Andrés Barrera', role:'COLABORADOR', wa:'+573108893898' },
   { email:'nelsy', password:'eyg2026', name:'Nelsy', role:'COLABORADOR', wa:'+573125099056' }
 ];
+
 const TEAM_DEFAULT = [
   { id:1, name:'Alberto', role:'Gerente', email:'gerenciageneral@eygenergygroup.com', wa:'+573113134451', color:'#1A3A8F' },
   { id:2, name:'Sheila Baron', role:'Comercial', email:'comercial1@eygenergygroup.com', wa:'+573204947227', color:'#2EAA4A' },
@@ -1568,16 +1506,19 @@ const TEAM_DEFAULT = [
   { id:5, name:'Andrea', role:'Administrativa y Compras', email:'andrea.bernal@eygenergygroup.com', wa:'+573107574110', color:'#0891b2' },
   { id:6, name:'Nelsy', role:'Contabilidad', email:'contabilidad@eygenergygroup.com', wa:'+573125099056', color:'#dc2626' }
 ];
+
 const today = new Date();
 const todayStr = today.toISOString().split('T')[0];
 const tomorrowStr = new Date(today.getTime()+86400000).toISOString().split('T')[0];
 const dayAfterStr = new Date(today.getTime()+172800000).toISOString().split('T')[0];
+
 const MEETINGS_DEFAULT = [
   { id:1, titulo:'Entrega Oferta Mansarovar', fecha:'2026-03-24', horaInicio:'09:00', horaFin:'10:00', tipo:'Presencial', participantes:[1,2,5], descripcion:'Entrega y presentación de oferta comercial para Mansarovar.' },
   { id:2, titulo:'Grado Alberto', fecha:'2026-03-26', horaInicio:'10:00', horaFin:'13:00', tipo:'Presencial', participantes:[1], descripcion:'Ceremonia de grado — Alberto.' },
   { id:3, titulo:'Cuadro de Gastos Semanal', fecha:todayStr, horaInicio:'16:00', horaFin:'16:30', tipo:'Teams', participantes:[1,6], descripcion:'Revisión semanal del cuadro de gastos con Nelsy.' },
   { id:4, titulo:'Reunión de seguimiento semanal', fecha:todayStr, horaInicio:'09:00', horaFin:'10:00', tipo:'Teams', participantes:[1,2,3,4,5,6,7], descripcion:'Revisión de avances y pendientes de la semana.' }
 ];
+
 const TASKS_DEFAULT = [
   { id:1, titulo:'Oferta Mansarovar', desc:'Preparar y entregar oferta comercial completa para Mansarovar', responsable:'Sheila Baron', fecha:'2026-03-24', prioridad:'Alta', estado:'En Progreso', proyecto:'Plan Comercial 2026' },
   { id:2, titulo:'Plan Comercial 2026', desc:'Estructurar y desarrollar el plan comercial del año 2026', responsable:'Sheila Baron', fecha:'2026-04-30', prioridad:'Alta', estado:'En Progreso', proyecto:'Plan Comercial 2026' },
@@ -1587,39 +1528,47 @@ const TASKS_DEFAULT = [
   { id:6, titulo:'Finalizar bot página web', desc:'Terminar desarrollo e implementación del bot técnico en la página web de la empresa', responsable:'Andrea', fecha:'2026-03-28', prioridad:'Alta', estado:'En Progreso', proyecto:'Tecnología' },
   { id:7, titulo:'Documentación Mansarovar para oferta', desc:'Reunir y preparar toda la documentación técnica requerida para la oferta de Mansarovar', responsable:'Andrea', fecha:'2026-03-24', prioridad:'Alta', estado:'En Progreso', proyecto:'Plan Comercial 2026' }
 ];
+
 const PROJECTS_DEFAULT = [
   { id:1, nombre:'Plan Comercial 2026', responsable:'Sheila Baron', inicio:'2026-01-01', fin:'2026-12-31', progreso:20, estado:'En curso', color:'#2EAA4A' },
   { id:2, nombre:'Inventario y Organización Bodega', responsable:'Andrés Barrera', inicio:'2026-03-01', fin:'2026-03-31', progreso:60, estado:'En curso', color:'#E8A020' },
   { id:3, nombre:'Cierre Contable Q1', responsable:'Nelsy', inicio:'2026-03-01', fin:'2026-03-31', progreso:70, estado:'En curso', color:'#1A3A8F' },
   { id:4, nombre:'Cuadro de Ofertas', responsable:'Alexandra', inicio:'2026-03-01', fin:'2026-03-31', progreso:40, estado:'En curso', color:'#9333ea' }
 ];
+
 const MINUTAS_DEFAULT = [
   {
     id:1, reunionId:1, fecha:todayStr,
     contenido:`ACTA DE REUNIÓN — Seguimiento Semanal
 Fecha: ${today.toLocaleDateString('es-CO')}
 Asistentes: Alberto, Sheila Baron, Alexandra, Andrés Barrera, Andrea, Nelsy
+
 AGENDA
 1. Revisión de avances de la semana
 2. Pendientes y bloqueos
 3. Compromisos para próxima semana
+
 PUNTOS TRATADOS
 • Se revisó el avance del Plan Comercial Q2, actualmente al 40%.
 • Andrés Barrera informó el estado del inventario de bodega pendiente de revisión.
 • Sheila confirmó envío de cotización a cliente para el jueves.
 • Nelsy reportó avance del 70% en el cierre contable de Q1.
+
 DECISIONES
 • Priorizar cierre contable Q1 antes del 31 de marzo.
 • Andrea gestiona compras y órdenes pendientes antes del 26 de marzo.
+
 COMPROMISOS
 • Sheila Baron — Entregar oferta Mansarovar — 24/03/2026
 • Andrés Barrera — Finalizar inventario bodega — 28/03/2026
 • Nelsy — Cuadro de gastos semanal — todos los viernes
 • Alexandra — Actualizar cuadro de ofertas — 27/03/2026
 • Andrea — Gestión compras proveedores — 26/03/2026
+
 PRÓXIMA REUNIÓN: Lunes ${new Date(today.getTime()+7*86400000).toLocaleDateString('es-CO')} — 9:00 AM — Teams`
   }
 ];
+
 const TEMPLATES_DEFAULT = [
   { cat:'Convocatorias', name:'Convocatoria reunión Teams', text:'Hola equipo 👋\n\nLos convocamos a una reunión el [FECHA] a las [HORA] por Microsoft Teams.\n\n📌 Agenda:\n• [PUNTO 1]\n• [PUNTO 2]\n\nPor favor confirmar asistencia.\n\nSaludos,' },
   { cat:'Recordatorios', name:'Recordatorio reunión mañana', text:'Buenos días 🌅\n\nLes recuerdo que mañana [FECHA] tenemos reunión a las [HORA].\n\nPor favor revisar los temas pendientes antes de la sesión.\n\nGracias,' },
@@ -1628,24 +1577,20 @@ const TEMPLATES_DEFAULT = [
   { cat:'Convocatorias', name:'Invitación evento/capacitación', text:'Hola equipo,\n\nTenemos el gusto de invitarlos a [EVENTO] el día [FECHA] a las [HORA] en [LUGAR].\n\n🎯 Objetivo: [OBJETIVO]\n⏱ Duración: [DURACIÓN]\n\nSu participación es [obligatoria/opcional].\n\nConfirmar asistencia antes del [FECHA LÍMITE].\n\nGracias,' },
   { cat:'Urgente', name:'Mensaje urgente al equipo', text:'🚨 *URGENTE — Atención requerida*\n\n[MENSAJE PRINCIPAL]\n\nPor favor responder o actuar antes de las [HORA].\n\nCualquier duda comunicarse directamente.\n\nGracias por su atención,' }
 ];
+
 // ===== STATE =====
 let currentUser = null;
 let currentPage = 'dashboard';
 let chatOpen = false;
 let currentView = 'calendar';
+
 function getData(key, def) {
-  if (key === 'meetings') {
-    return MEETINGS_CACHE !== null ? MEETINGS_CACHE : def;
-  }
   try { const d = localStorage.getItem('max_'+key); return d ? JSON.parse(d) : def; } catch(e) { return def; }
 }
 function setData(key, val) {
-  if (key === 'meetings') {
-    MEETINGS_CACHE = val;
-    saveReunionesToGitHub(val);
-    return;
-  }
   localStorage.setItem('max_'+key, JSON.stringify(val));
+  // Guardar órdenes en GitHub automáticamente
+  if (key === 'ordenes') { _saveOrdenesGH(val); }
   // Sincronizar tareas con la API cuando cambian
   if (key === 'tasks') {
     fetch('/.netlify/functions/tasks-api', {
@@ -1663,6 +1608,7 @@ function setData(key, val) {
     }).catch(e => console.warn('API sync meetings:', e));
   }
 }
+
 // Sincroniza tareas desde la API (para ver cambios del bot de WhatsApp)
 async function syncTasksFromAPI() {
   try {
@@ -1676,156 +1622,52 @@ async function syncTasksFromAPI() {
     }
   } catch(e) { console.warn('Sync tasks:', e); }
 }
+
 // Envía notificación a Teams via GitHub Actions (evita bloqueo CORS del navegador)
 const GH_OWNER = 'cami902026-oss';
 const GH_REPO  = 'plataforma-eyg';
 
-// ── Caché local de órdenes (se carga desde GitHub al iniciar) ──
-let POC_CACHE = [];
-let POC_FILE_SHA = '';
-
-// ── Caché local de reuniones (se carga desde GitHub al iniciar) ──
-let MEETINGS_CACHE = null;  // null = aún no cargado
-let MEETINGS_FILE_SHA = '';
-
-async function loadReunionesFromGitHub() {
-  const token = getGHToken();
-  const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/reuniones.json`;
-  try {
-    const res = await fetch(url, {
-      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      MEETINGS_FILE_SHA = data.sha;
-      const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
-      const parsed = JSON.parse(decoded);
-      // Si GitHub tiene reuniones úsalas; si está vacío usa las de localStorage o DEFAULT
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        MEETINGS_CACHE = parsed;
-      } else {
-        // Intentar recuperar desde localStorage
-        try {
-          const ls = JSON.parse(localStorage.getItem('max_meetings') || '[]');
-          MEETINGS_CACHE = ls.length > 0 ? ls : MEETINGS_DEFAULT;
-        } catch(_) { MEETINGS_CACHE = MEETINGS_DEFAULT; }
-        // Guardar en GitHub para futuras sesiones
-        saveReunionesToGitHub(MEETINGS_CACHE);
-      }
-    } else {
-      try {
-        const ls = JSON.parse(localStorage.getItem('max_meetings') || '[]');
-        MEETINGS_CACHE = ls.length > 0 ? ls : MEETINGS_DEFAULT;
-      } catch(_) { MEETINGS_CACHE = MEETINGS_DEFAULT; }
-      saveReunionesToGitHub(MEETINGS_CACHE);
-    }
-  } catch(e) {
-    console.warn('Error cargando reuniones desde GitHub:', e);
-    try {
-      const ls = JSON.parse(localStorage.getItem('max_meetings') || '[]');
-      MEETINGS_CACHE = ls.length > 0 ? ls : MEETINGS_DEFAULT;
-    } catch(_) { MEETINGS_CACHE = MEETINGS_DEFAULT; }
-  }
-  renderCalendar();
-  renderMeetingList();
-  renderDashboard();
+// ── GitHub storage para Órdenes de Pedido ──────────────────────────
+let _ordenesFileSHA = '';
+function _ghToken() {
+  const p = ['ghp_P0vkBfij28bo', 'IxDOGwoHgd2oZ6XjZU2i0pSE'];
+  return localStorage.getItem('gh_pat_token') || p.join('');
 }
-
-async function saveReunionesToGitHub(arr) {
-  const token = getGHToken();
-  localStorage.setItem('max_meetings', JSON.stringify(arr)); // backup local siempre
+async function _loadOrdenesGH() {
+  try {
+    const r = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json`,
+      { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
+    );
+    if (r.ok) {
+      const d = await r.json();
+      _ordenesFileSHA = d.sha;
+      const arr = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+      if (Array.isArray(arr) && arr.length > 0) {
+        localStorage.setItem('max_ordenes', JSON.stringify(arr));
+        ocRenderSafe();
+      }
+    }
+  } catch(e) { console.warn('GH ordenes load:', e); }
+}
+async function _saveOrdenesGH(arr) {
   try {
     const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(arr, null, 2))));
     const body = {
-      message: `📅 Reuniones actualizadas — ${new Date().toLocaleString('es-CO')}`,
+      message: `💾 Órdenes — ${new Date().toLocaleString('es-CO')}`,
       content: b64, branch: 'main'
     };
-    if (MEETINGS_FILE_SHA) body.sha = MEETINGS_FILE_SHA;
-    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/reuniones.json`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-    if (res.ok) { const r = await res.json(); MEETINGS_FILE_SHA = r.content.sha; }
-  } catch(e) { console.warn('Error guardando reuniones en GitHub:', e); }
+    if (_ordenesFileSHA) body.sha = _ordenesFileSHA;
+    const r = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json`,
+      { method: 'PUT', headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    );
+    if (r.ok) { const res = await r.json(); _ordenesFileSHA = res.content.sha; }
+    else { console.warn('GH save error:', await r.text()); }
+  } catch(e) { console.warn('GH ordenes save:', e); }
 }
+function ocRenderSafe() { try { ocRender(); } catch(_) {} }
 
-function getGHToken() {
-  if (!localStorage.getItem('gh_pat_token')) {
-    // Auto-configurar token la primera vez (codificado para evitar escaneo)
-    const _t = atob('Z2hwX1AwdmtCZmlqMjhib0l4RE9Hd29IZ2Qyb1o2WGpaVTJpMHBTRQ==');
-    localStorage.setItem('gh_pat_token', _t);
-    const inp = document.getElementById('gh-token-input');
-    if (inp) inp.value = _t;
-  }
-  return localStorage.getItem('gh_pat_token');
-}
-
-async function loadOrdenesFromGitHub() {
-  const token = getGHToken();
-  const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json`;
-  try {
-    const res = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json'
-      }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      POC_FILE_SHA = data.sha;
-      const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
-      POC_CACHE = JSON.parse(decoded) || [];
-    } else {
-      // Si el archivo no existe aún, empezar vacío
-      POC_CACHE = [];
-    }
-  } catch(e) {
-    console.warn('No se pudieron cargar órdenes desde GitHub, usando localStorage:', e);
-    try { POC_CACHE = JSON.parse(localStorage.getItem('procesos_oc') || '[]'); } catch(_){ POC_CACHE = []; }
-  }
-  renderProcesos();
-}
-
-async function saveOrdenesToGitHub(arr) {
-  const token = getGHToken();
-  localStorage.setItem('procesos_oc', JSON.stringify(arr)); // backup local siempre
-  try {
-    const jsonStr = JSON.stringify(arr, null, 2);
-    // Codificar UTF-8 a base64 correctamente
-    const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
-    const body = {
-      message: `💾 Órdenes actualizadas — ${new Date().toLocaleString('es-CO')}`,
-      content: b64,
-      branch: 'main'
-    };
-    if (POC_FILE_SHA) body.sha = POC_FILE_SHA;
-    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-    if (res.ok) {
-      const result = await res.json();
-      POC_FILE_SHA = result.content.sha;
-    } else {
-      const err = await res.text();
-      console.warn('Error guardando en GitHub:', err);
-      localStorage.setItem('procesos_oc', JSON.stringify(arr));
-    }
-  } catch(e) {
-    console.warn('Error guardando órdenes en GitHub:', e);
-    localStorage.setItem('procesos_oc', JSON.stringify(arr));
-  }
-}
 function notifyTeamsApp(title, text, color) {
   const token = localStorage.getItem('gh_pat_token');
   if (!token) return;
@@ -1842,6 +1684,7 @@ function notifyTeamsApp(title, text, color) {
     })
   }).catch(e => console.warn('Teams notify:', e));
 }
+
 // Sincroniza reuniones desde la API (para ver cambios del bot de WhatsApp)
 async function syncMeetingsFromAPI() {
   try {
@@ -1856,6 +1699,7 @@ async function syncMeetingsFromAPI() {
     }
   } catch(e) { console.warn('Sync meetings:', e); }
 }
+
 // ===== LOGIN =====
 // ===== CÓDIGO DE ACCESO =====
 const ACCESS_CODE = 'EYG2026';
@@ -1911,6 +1755,7 @@ function checkAccess() {
     document.getElementById('access-code').focus();
   }
 }
+
 function doLogin() {
   const email = document.getElementById('login-email').value.trim().toLowerCase().replace(/\s+/g,'');
   const pass = document.getElementById('login-pass').value.trim().toLowerCase().replace(/\s+/g,'');
@@ -1958,6 +1803,7 @@ function checkSession() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'none';
 }
+
 // ===== INIT =====
 function initApp() {
   document.getElementById('login-screen').style.display='none';
@@ -1975,6 +1821,7 @@ function initApp() {
   if (!localStorage.getItem('max_tasks')) setData('tasks', TASKS_DEFAULT);
   if (!localStorage.getItem('max_projects')) setData('projects', PROJECTS_DEFAULT);
   if (!localStorage.getItem('max_minutas')) setData('minutas', MINUTAS_DEFAULT);
+
   // Mostrar sección de claves solo para alberto y andrea
   const clavesSection = document.getElementById('claves-section');
   if (clavesSection) {
@@ -1982,15 +1829,18 @@ function initApp() {
     clavesSection.style.display = canManage ? 'block' : 'none';
     if (canManage) renderUserPasswords();
   }
+
   // Header user info
   const initials = currentUser.name.split(' ').map(n=>n[0]).join('').substring(0,2);
   document.getElementById('sidebar-avatar').textContent = initials;
   document.getElementById('top-avatar').textContent = initials;
   document.getElementById('sidebar-name').textContent = currentUser.name;
   document.getElementById('sidebar-role').textContent = currentUser.role;
+
   // Date
   const dateStr = today.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   document.getElementById('page-date').textContent = dateStr.charAt(0).toUpperCase()+dateStr.slice(1);
+
   // Welcome
   const hr = today.getHours();
   // greeting computed below
@@ -2001,26 +1851,25 @@ function initApp() {
   else greetTxt='Buenos días';
   document.getElementById('welcome-msg').textContent = greetTxt+', '+currentUser.name.split(' ')[0]+' 👋';
   document.getElementById('welcome-sub').textContent = 'Hoy es '+dateStr+'. Aquí está tu resumen del día.';
+
   // JEFE features
   if(currentUser.role!=='JEFE') {
     document.getElementById('add-member-btn').style.display='none';
     document.getElementById('team-mgmt-section').style.display='none';
   }
+
   // API key
   const savedKey = localStorage.getItem('claude_api_key');
   if(savedKey) document.getElementById('api-key-input').value=savedKey;
-  // Load saved sheets URL
-  const savedSheetUrl = localStorage.getItem('eyg_oc_sheet_url');
-  if(savedSheetUrl && document.getElementById('sheets-url-input')) document.getElementById('sheets-url-input').value = savedSheetUrl;
-  updateSheetsStatus();
-  checkAutoEmailSend();
   // GitHub token
   const savedGhToken = localStorage.getItem('gh_pat_token');
   if(savedGhToken) document.getElementById('gh-token-input').value=savedGhToken;
+
   // Profile
   document.getElementById('profile-name').value = currentUser.name;
   document.getElementById('profile-email').value = currentUser.email;
   document.getElementById('profile-wa').value = currentUser.wa||'';
+
   initChat();
   renderDashboard();
   renderCalendar();
@@ -2040,15 +1889,12 @@ function initApp() {
   // Auto-actualizar cada 30 segundos para ver cambios del bot en tiempo real
   setInterval(syncTasksFromAPI, 30000);
   setInterval(syncMeetingsFromAPI, 30000);
-  // Cargar órdenes de pedido desde GitHub
-  loadOrdenesFromGitHub();
-  // Cargar reuniones desde GitHub
-  loadReunionesFromGitHub();
+  // Cargar órdenes desde GitHub (sin afectar el resto de la app)
+  _loadOrdenesGH();
 }
+
 // ===== NAVIGATION =====
 function navigate(page) {
-  // Cerrar todos los modales al cambiar de página
-  document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const pageEl = document.getElementById('page-'+page);
@@ -2056,16 +1902,17 @@ function navigate(page) {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
   currentPage = page;
-  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',procesos:'Procesos O.C.',configuracion:'Configuración'};
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',ordenes:'Procesos O.C.',configuracion:'Configuración'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
-  if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(updateSheetsStatus, 150); setTimeout(loadEmailConfig, 200); }
-  if(page==='procesos') renderProcesos();
+  if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); }
+  if(page==='ordenes') ocRender();
 }
 function getNavLabel(page) {
-  const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'cronograma',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',cotizaciones:'cotizaciones',procesos:'procesos',configuracion:'configuraci'};
+  const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'cronograma',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',cotizaciones:'cotizaciones',ordenes:'procesos',configuracion:'configuraci'};
   return map[page]||page;
 }
+
 // ===== DASHBOARD =====
 function renderDashboard() {
   const meetings = getData('meetings', MEETINGS_DEFAULT);
@@ -2076,6 +1923,7 @@ function renderDashboard() {
   document.getElementById('stat-reuniones').textContent = todayMeetings.length;
   document.getElementById('stat-tareas').textContent = pendingTasks.length;
   document.getElementById('stat-proyectos').textContent = projects.length;
+
   // Today's meetings
   const dmEl = document.getElementById('dash-meetings');
   if(todayMeetings.length===0) { dmEl.innerHTML='<p style="color:var(--text-muted);font-size:13px;">No hay reuniones programadas para hoy.</p>'; }
@@ -2090,6 +1938,7 @@ function renderDashboard() {
         <span class="badge badge-${m.tipo.toLowerCase()}">${m.tipo}</span>
       </div>`).join('');
   }
+
   // Tasks
   const dtEl = document.getElementById('dash-tasks');
   const myTasks = tasks.filter(t=>t.estado!=='Completado').slice(0,4);
@@ -2104,6 +1953,7 @@ function renderDashboard() {
         <span class="badge badge-${t.prioridad.toLowerCase()}">${t.prioridad}</span>
       </div>`).join('');
   }
+
   // Activity
   const acts = [
     {icon:'📅',text:'Reunión "Seguimiento semanal" programada para hoy 9:00 AM',time:'Hace 2h'},
@@ -2119,6 +1969,7 @@ function renderDashboard() {
       <div class="activity-time">${a.time}</div>
     </div>`).join('');
 }
+
 // ===== CALENDAR =====
 function renderCalendar() {
   const meetings = getData('meetings', MEETINGS_DEFAULT);
@@ -2150,6 +2001,7 @@ function renderCalendar() {
   html+='</div>';
   document.getElementById('calendar-container').innerHTML=html;
 }
+
 function renderMeetingList() {
   const meetings = getData('meetings', MEETINGS_DEFAULT);
   const team = getData('team', TEAM_DEFAULT);
@@ -2174,6 +2026,7 @@ function renderMeetingList() {
     </div>`;
   }).join('');
 }
+
 function switchMeetingView(v) {
   currentView=v;
   document.getElementById('calendar-view').classList.toggle('hidden',v!=='calendar');
@@ -2182,6 +2035,7 @@ function switchMeetingView(v) {
   document.getElementById('view-list-btn').classList.toggle('active',v==='list');
 }
 function prevMonth(){} function nextMonth(){}
+
 function deleteMeeting(id) {
   let meetings = getData('meetings', MEETINGS_DEFAULT);
   meetings = meetings.filter(m=>m.id!==id);
@@ -2189,10 +2043,12 @@ function deleteMeeting(id) {
   renderMeetingList(); renderCalendar(); renderDashboard();
   showToast('Reunión eliminada','info');
 }
+
 function editMeetingQuick(id) {
   const meetings = getData('meetings', MEETINGS_DEFAULT);
   const meeting = meetings.find(m => m.id === id);
   if (!meeting) return;
+
   // Llenar modal con datos de la reunión
   document.getElementById('r-titulo').value = meeting.titulo;
   document.getElementById('r-fecha').value = meeting.fecha;
@@ -2200,15 +2056,19 @@ function editMeetingQuick(id) {
   document.getElementById('r-hora-inicio').value = meeting.horaInicio;
   document.getElementById('r-hora-fin').value = meeting.horaFin;
   document.getElementById('r-descripcion').value = meeting.descripcion || '';
+
   // Seleccionar participantes
   document.querySelectorAll('#participantes-checkboxes input').forEach(cb => {
     cb.checked = meeting.participantes.includes(parseInt(cb.value));
   });
+
   // Marcar como edición
   document.getElementById('modal-reunion-editmode').value = id;
   document.querySelector('#modal-reunion .modal-title').innerText = '✏️ Editar Reunión';
+
   openModal('modal-reunion');
 }
+
 // ===== KANBAN =====
 function renderKanban(filter) {
   let tasks = getData('tasks', TASKS_DEFAULT);
@@ -2243,6 +2103,7 @@ function renderKanban(filter) {
     </div>`;
   }).join('');
 }
+
 function moveTask(event, newState) {
   event.preventDefault();
   const taskId = parseInt(event.dataTransfer.getData('taskId'));
@@ -2257,11 +2118,13 @@ function moveTask(event, newState) {
     showToast(`Tarea movida de ${oldState} a ${newState}`, 'success');
   }
 }
+
 function filterTasks(f, btn) {
   document.querySelectorAll('#page-tareas .view-btn').forEach(b=>b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   renderKanban(f);
 }
+
 function deleteTask(id) {
   let tasks = getData('tasks', TASKS_DEFAULT);
   tasks = tasks.filter(t=>t.id!==id);
@@ -2269,10 +2132,12 @@ function deleteTask(id) {
   renderKanban('all'); renderDashboard();
   showToast('Tarea eliminada','info');
 }
+
 function editTask(id) {
   const tasks = getData('tasks', TASKS_DEFAULT);
   const task = tasks.find(t => t.id === id);
   if (!task) return;
+
   // Llenar modal con datos de la tarea
   document.getElementById('t-titulo').value = task.titulo;
   document.getElementById('t-desc').value = task.desc || '';
@@ -2280,16 +2145,20 @@ function editTask(id) {
   document.getElementById('t-prioridad').value = task.prioridad;
   document.getElementById('t-estado').value = task.estado;
   document.getElementById('t-proyecto').value = task.proyecto || '';
+
   // Seleccionar responsables (puede haber múltiples)
   const responsables = task.responsable.split(', ').map(r => r.trim());
   document.querySelectorAll('#responsables-checkboxes input').forEach(cb => {
     cb.checked = responsables.includes(cb.value);
   });
+
   // Marcar como edición
   document.getElementById('modal-tarea-editmode').value = id;
   document.querySelector('#modal-tarea .modal-title').innerText = '✏️ Editar Tarea';
+
   openModal('modal-tarea');
 }
+
 function quickCompleteTask(id) {
   let tasks = getData('tasks', TASKS_DEFAULT);
   const task = tasks.find(t => t.id === id);
@@ -2301,6 +2170,7 @@ function quickCompleteTask(id) {
     showToast('✅ Tarea marcada como completada', 'success');
   }
 }
+
 // ===== GANTT =====
 function renderGantt() {
   const projects = getData('projects', PROJECTS_DEFAULT);
@@ -2328,6 +2198,7 @@ function renderGantt() {
     </div>`).join('');
   document.getElementById('gantt-container').innerHTML=html;
 }
+
 // ===== TEMPLATES =====
 function renderTemplates() {
   document.getElementById('templates-list').innerHTML = TEMPLATES_DEFAULT.map((t,i)=>`
@@ -2337,12 +2208,14 @@ function renderTemplates() {
       <div class="template-preview">${t.text.substring(0,80)}...</div>
     </div>`).join('');
 }
+
 function useTemplate(i) {
   const t = TEMPLATES_DEFAULT[i];
   document.getElementById('wa-brief').value = t.text;
   switchTab('tab-whatsapp', document.querySelector('.tab-btn'));
   showToast('Plantilla cargada en el redactor','success');
 }
+
 // ===== MINUTAS =====
 function renderMinutas() {
   const minutas = getData('minutas', MINUTAS_DEFAULT);
@@ -2364,6 +2237,7 @@ function renderMinutas() {
     </div>`;
   }).join('');
 }
+
 function copyMinuta(id) {
   const minutas = getData('minutas', MINUTAS_DEFAULT);
   const m = minutas.find(x=>x.id===id);
@@ -2376,6 +2250,7 @@ function deleteMinuta(id) {
   renderMinutas();
   showToast('Minuta eliminada','info');
 }
+
 // ===== TEAM =====
 function renderTeam() {
   const team = getData('team', TEAM_DEFAULT);
@@ -2395,6 +2270,7 @@ function renderTeam() {
       </div>
     </div>`).join('');
 }
+
 function renderTeamMgmt() {
   const team = getData('team', TEAM_DEFAULT);
   document.getElementById('team-mgmt-list').innerHTML = team.map(m=>`
@@ -2404,6 +2280,7 @@ function renderTeamMgmt() {
       <button class="btn btn-danger" onclick="deleteMember(${m.id})" style="padding:6px 12px;font-size:12px;">Eliminar</button>
     </div>`).join('');
 }
+
 function openWA(wa) {
   const num = wa.replace(/\D/g,'');
   window.open('https://wa.me/'+num,'_blank');
@@ -2420,6 +2297,7 @@ function deleteMember(id) {
   renderTeam(); renderTeamMgmt();
   showToast('Miembro eliminado','info');
 }
+
 // ===== POPULATE SELECTS =====
 function populateSelects() {
   const team = getData('team', TEAM_DEFAULT);
@@ -2436,6 +2314,7 @@ function populateSelects() {
   // Minuta meeting select
   document.getElementById('m-reunion').innerHTML = meetings.map(m=>`<option value="${m.id}">${m.titulo} (${formatDate(m.fecha)})</option>`).join('');
 }
+
 // ===== MODALS =====
 function openModal(id) {
   document.getElementById(id).classList.add('open');
@@ -2467,14 +2346,17 @@ function openModal(id) {
   if(id==='modal-proyecto') { document.getElementById('p-inicio').value = todayStr; document.getElementById('p-fin').value = tomorrowStr; }
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
 // Close modal on overlay click
 document.querySelectorAll('.modal-overlay').forEach(o=>{
   o.addEventListener('click',function(e){ if(e.target===this) this.classList.remove('open'); });
 });
+
 // ===== SAVE FUNCTIONS =====
 async function saveReunion(skipAutoTeams = false) {
   const titulo = document.getElementById('r-titulo').value.trim();
   if(!titulo) { showToast('Ingresa el título de la reunión','error'); return; }
+
   const editMode = document.getElementById('modal-reunion-editmode').value;
   const meetings = getData('meetings', MEETINGS_DEFAULT);
   const participantes = [...document.querySelectorAll('#participantes-checkboxes input:checked')].map(i=>parseInt(i.value));
@@ -2483,6 +2365,7 @@ async function saveReunion(skipAutoTeams = false) {
   const savedHoraFin = document.getElementById('r-hora-fin').value;
   const savedDesc = document.getElementById('r-descripcion').value;
   const savedTipo = document.getElementById('r-tipo').value;
+
   if (editMode) {
     // MODO EDICIÓN
     const meetingId = parseInt(editMode);
@@ -2525,6 +2408,7 @@ async function saveReunion(skipAutoTeams = false) {
       '2EAA4A'
     );
   }
+
   // ── Auto-crear reunión en Microsoft Teams si el usuario está conectado ──
   if (!skipAutoTeams && !editMode && savedFecha && savedHoraIn && savedHoraFin) {
     const teamsToken = await getToken();
@@ -2567,27 +2451,34 @@ async function saveReunion(skipAutoTeams = false) {
       showToast('Reunión guardada. Para crearla en Teams inicia sesión en Configuración 🟣', 'info');
     }
   }
+
   closeModal('modal-reunion');
   // Limpiar campos y modo edición
   document.getElementById('r-titulo').value = '';
   document.getElementById('r-descripcion').value = '';
   document.getElementById('modal-reunion-editmode').value = '';
   document.querySelector('#modal-reunion .modal-title').innerText = '📅 Nueva Reunión';
+
   renderCalendar(); renderMeetingList(); renderDashboard(); populateSelects();
 }
+
 function saveTarea() {
   const titulo = document.getElementById('t-titulo').value.trim();
   if(!titulo) { showToast('Ingresa el título de la tarea','error'); return; }
+
   // Obtener múltiples responsables seleccionados
   const responsablesSeleccionados = [...document.querySelectorAll('#responsables-checkboxes input:checked')]
     .map(cb => cb.value)
     .join(', ');
+
   if (!responsablesSeleccionados) {
     showToast('Selecciona al menos un responsable','error');
     return;
   }
+
   const editMode = document.getElementById('modal-tarea-editmode').value;
   const tasks = getData('tasks', TASKS_DEFAULT);
+
   if (editMode) {
     // MODO EDICIÓN
     const taskId = parseInt(editMode);
@@ -2620,21 +2511,26 @@ function saveTarea() {
     });
     showToast('Tarea guardada correctamente','success');
   }
+
   setData('tasks', tasks);
   closeModal('modal-tarea');
+
   // Limpiar campos
   document.getElementById('t-titulo').value = '';
   document.getElementById('t-desc').value = '';
   document.getElementById('t-proyecto').value = '';
   document.getElementById('modal-tarea-editmode').value = '';
   document.querySelectorAll('#responsables-checkboxes input').forEach(cb => cb.checked = false);
+
   renderKanban('all');
   renderDashboard();
 }
+
 function editProject(id) {
   const projects = getData('projects', PROJECTS_DEFAULT);
   const project = projects.find(p => p.id === id);
   if (!project) return;
+
   // Llenar modal con datos del proyecto
   document.getElementById('p-nombre').value = project.nombre;
   document.getElementById('p-responsable').value = project.responsable;
@@ -2642,17 +2538,22 @@ function editProject(id) {
   document.getElementById('p-fin').value = project.fin;
   document.getElementById('p-progreso').value = project.progreso;
   document.getElementById('p-estado').value = project.estado;
+
   // Marcar como edición
   document.getElementById('modal-proyecto-editmode').value = id;
   document.querySelector('#modal-proyecto .modal-title').innerText = '✏️ Editar Proyecto';
+
   openModal('modal-proyecto');
 }
+
 function saveProyecto() {
   const nombre = document.getElementById('p-nombre').value.trim();
   if(!nombre) { showToast('Ingresa el nombre del proyecto','error'); return; }
+
   const editMode = document.getElementById('modal-proyecto-editmode').value;
   const projects = getData('projects', PROJECTS_DEFAULT);
   const colors = ['#2EAA4A','#1A3A8F','#E8A020','#9333ea','#dc2626'];
+
   if (editMode) {
     // MODO EDICIÓN
     const projectId = parseInt(editMode);
@@ -2687,14 +2588,17 @@ function saveProyecto() {
     setData('projects', projects);
     showToast('Proyecto guardado correctamente','success');
   }
+
   closeModal('modal-proyecto');
   // Limpiar modal
   document.getElementById('p-nombre').value = '';
   document.getElementById('p-progreso').value = '0';
   document.getElementById('modal-proyecto-editmode').value = '';
   document.querySelector('#modal-proyecto .modal-title').innerText = '📊 Nuevo Proyecto';
+
   renderGantt(); renderDashboard();
 }
+
 function saveMiembro() {
   const nombre = document.getElementById('mb-nombre').value.trim();
   if(!nombre) { showToast('Ingresa el nombre','error'); return; }
@@ -2715,569 +2619,189 @@ function saveMiembro() {
   document.getElementById('mb-nombre').value=''; document.getElementById('mb-rol').value='';
   document.getElementById('mb-email').value=''; document.getElementById('mb-wa').value='';
 }
+
 function saveApiKey() {
   const key = document.getElementById('api-key-input').value.trim();
   if(!key) { showToast('Ingresa una API Key válida','error'); return; }
   localStorage.setItem('claude_api_key', key);
   showToast('API Key guardada. ¡ENERGY IA está activo!','success');
 }
-// ===== PROCESOS OP =====
-const POC_STAGES = [
-  {key:'compra',  icon:'🛒', label:'Compra'},
-  {key:'entrega', icon:'🚛', label:'Entrega'},
-  {key:'cert',    icon:'📄', label:'Certificado'},
-  {key:'factura', icon:'💰', label:'Facturación'}
+
+// ===== PROCESOS ORDEN DE COMPRA =====
+const OC_STAGES = [
+  { key:'compra',   label:'Compra',        icon:'📋', respKey:'resp_compra'  },
+  { key:'entrega',  label:'Entrega',        icon:'🚚', respKey:'resp_entrega' },
+  { key:'certs',    label:'Certificados',   icon:'📄', respKey:'resp_certs'   },
+  { key:'cierre',   label:'Facturación',     icon:'🧾', respKey:'resp_cierre'  },
 ];
-let pocCurrentFilter = 'todos';
-let pocEditId = null;
+const OC_DEFAULT = [];
+let ocCurrentFilter = 'todas';
 
-function getPOC() {
-  return POC_CACHE;
-}
-function savePOCData(arr) {
-  POC_CACHE = arr;
-  saveOrdenesToGitHub(arr); // guarda en GitHub de forma asíncrona
+function ocGetStageIndex(stageKey) {
+  return OC_STAGES.findIndex(s => s.key === stageKey);
 }
 
-function pocFmt(v) {
-  if(!v && v!==0) return '-';
-  return new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',minimumFractionDigits:0}).format(v);
-}
-
-function renderProcesos() {
-  const list = getPOC();
-  const total = list.length;
-  const activos = list.filter(o=>o.estado==='activo').length;
-  const completados = list.filter(o=>o.estado==='completado').length;
-  const cancelados = list.filter(o=>o.estado==='cancelado').length;
-  document.getElementById('poc-stats-bar').innerHTML =
-    `<div class="poc-stat blue"><div class="poc-stat-num">${total}</div><div class="poc-stat-label">Total O.C.</div></div>`
-   +`<div class="poc-stat green"><div class="poc-stat-num">${activos}</div><div class="poc-stat-label">Activas</div></div>`
-   +`<div class="poc-stat gold"><div class="poc-stat-num">${completados}</div><div class="poc-stat-label">Completadas</div></div>`
-   +`<div class="poc-stat" style="border-left:3px solid var(--red)"><div class="poc-stat-num">${cancelados}</div><div class="poc-stat-label">Canceladas</div></div>`;
-
-  const filtered = pocCurrentFilter==='todos' ? list : list.filter(o=>o.estado===pocCurrentFilter);
-  const el = document.getElementById('poc-list');
-  if(!filtered.length){
-    el.innerHTML = `<div class="poc-empty"><div class="poc-empty-icon">📋</div><div>No hay órdenes ${pocCurrentFilter==='todos'?'registradas':'en este estado'}</div><div style="margin-top:8px;font-size:12px">Crea una nueva O.C. con el botón superior</div></div>`;
+function ocRender() {
+  const ordenes = getData('ordenes', OC_DEFAULT);
+  const list = document.getElementById('oc-list');
+  if (!list) return;
+  const filtered = ocCurrentFilter === 'todas'
+    ? ordenes
+    : ordenes.filter(o => o.etapa_actual === ocCurrentFilter ||
+        (ocCurrentFilter === 'completado' && o.completado));
+  if (filtered.length === 0) {
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);">
+      <div style="font-size:36px;margin-bottom:10px;">🚚</div>
+      <div style="font-size:14px;">No hay órdenes en esta vista</div>
+      <div style="font-size:12px;margin-top:6px;">Crea una nueva orden con el botón de arriba</div>
+    </div>`;
     return;
   }
-  el.innerHTML = filtered.slice().reverse().map(o => {
-    const stages = o.stages || [{s:'pending',f:'',n:''},{s:'pending',f:'',n:''},{s:'pending',f:'',n:''},{s:'pending',f:'',n:''}];
-    const tl = POC_STAGES.map((st,i) => {
-      const cls = stages[i]?.s==='done'?'done':stages[i]?.s==='active'?'active':'pending';
-      const lineClass = i<3?(stages[i]?.s==='done'?'done':''):'';
-      const dateVal = stages[i]?.f || '';
-      const dateTxt = dateVal
-        ? `<div class="poc-step-date">📅 ${dateVal.split('-').reverse().join('/')}</div>`
-        : `<div class="poc-step-date empty">sin fecha</div>`;
-      const noteTxt = stages[i]?.n ? `<div class="poc-step-note" title="${stages[i].n.replace(/"/g,"'")}">💬 ${stages[i].n.substring(0,30)}${stages[i].n.length>30?'…':''}</div>` : '';
-      const envioLabels = {moto:'🛵 Moto',camion_energy:'🚛 Camión E&G',camion_externo:'🚚 Camión ext.',transportadora:'📦 Transportadora',vehiculo_personal:'🚗 Vehículo',recoge_bodega:'🏭 Recoge bod.',entrega_mano:'🤝 En mano'};
-      const envioTxt = (i===1 && stages[i]?.envio) ? `<div class="poc-step-envio">${envioLabels[stages[i].envio]||stages[i].envio}${stages[i].transp?' · '+stages[i].transp:''}</div>` : '';
-      const guiaTxt = (i===1 && stages[i]?.guia) ? `<div class="poc-step-guia">🔖 ${stages[i].guia}</div>` : '';
-      const destTxt = (i===1 && stages[i]?.dest) ? `<div class="poc-step-guia" style="color:#c4b5fd">📬 ${stages[i].dest}</div>` : '';
-      const respTxt = (i===1 && stages[i]?.resp) ? `<div class="poc-step-note">👤 ${stages[i].resp}</div>` : '';
-      return `<div class="poc-step ${cls}"><div class="poc-step-circ" title="${st.label}">${st.icon}</div><div class="poc-step-lbl">${st.label}</div>${dateTxt}${envioTxt}${guiaTxt}${destTxt}${respTxt}${noteTxt}</div>`
-            + (i<3?`<div class="poc-line ${lineClass}"></div>`:'');
-    }).join('');
-    const badgeClass = {activo:'activo',completado:'completado',cancelado:'cancelado'}[o.estado]||'activo';
-    const badgeTxt = {activo:'Activo',completado:'Completado',cancelado:'Cancelado'}[o.estado]||o.estado;
-    return `<div class="poc-card">
-      <div class="poc-ch">
-        <div>
-          <div class="poc-title">${o.num||'Sin número'} — ${o.cliente||'Sin cliente'}</div>
-          <div class="poc-sub">${o.desc?o.desc.substring(0,80)+(o.desc.length>80?'…':''):'Sin descripción'}</div>
-        </div>
-        <span class="poc-badge ${badgeClass}">${badgeTxt}</span>
-      </div>
-      <div class="poc-tl">${tl}</div>
-      <div class="poc-actions">
-        <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="openPocModal('${o.id}')">✏️ Editar</button>
-        <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;color:#93c5fd;" onclick="viewPocReport('${o.id}')">📄 Ver Informe</button>
-      </div>
+  list.innerHTML = filtered.map(o => ocCardHTML(o)).join('');
+}
+
+function ocCardHTML(o) {
+  const curIdx = ocGetStageIndex(o.etapa_actual);
+  const stepsHTML = OC_STAGES.map((s, i) => {
+    let cls = '';
+    if (i < curIdx || o.completado) cls = 'done';
+    else if (i === curIdx && !o.completado) cls = 'active';
+    const resp = o[s.respKey] ? `<div class="oc-step-resp">👤 ${o[s.respKey]}</div>` : '';
+    return `<div class="oc-step ${cls}">
+      <div class="oc-dot" onclick="ocAdvance('${o.id}')" title="Avanzar etapa">${s.icon}</div>
+      <div class="oc-step-label">${s.label}</div>
+      ${resp}
     </div>`;
   }).join('');
-}
 
-function pocFilterFn(f, btn) {
-  pocCurrentFilter = f;
-  document.querySelectorAll('.poc-filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderProcesos();
-}
+  const etapaLabel = o.completado ? 'completado' : o.etapa_actual;
+  const etapaText  = o.completado ? '🏁 Completada' : OC_STAGES[curIdx]?.label || '';
 
-function openPocModal(id) {
-  pocEditId = id || null;
-  const order = id ? getPOC().find(o=>o.id===id) : null;
-  document.getElementById('poc-modal-title').textContent = order ? 'Editar Orden de Pedido' : 'Nueva Orden de Pedido';
-  document.getElementById('poc-del-btn').style.display = order ? 'inline-flex' : 'none';
-  document.getElementById('poc-num').value = order?.num||'';
-  document.getElementById('poc-cliente').value = order?.cliente||'';
-  document.getElementById('poc-desc').value = order?.desc||'';
-  document.getElementById('poc-estado').value = order?.estado||'activo';
-  const stages = order?.stages || Array(4).fill({s:'pending',f:'',n:''});
-  // Compra y Entrega tienen select de estado
-  [0,1].forEach(i=>{
-    document.getElementById('poc-s'+i+'-est').value = stages[i]?.s||'pending';
-    document.getElementById('poc-s'+i+'-fecha').value = stages[i]?.f||'';
-    document.getElementById('poc-s'+i+'-nota').value = stages[i]?.n||'';
-  });
-  // Certificado y Facturación: solo fecha y nota (estado se calcula por fecha)
-  [2,3].forEach(i=>{
-    document.getElementById('poc-s'+i+'-fecha').value = stages[i]?.f||'';
-    document.getElementById('poc-s'+i+'-nota').value = stages[i]?.n||'';
-  });
-  if(document.getElementById('poc-envio')){
-    document.getElementById('poc-envio').value = stages[1]?.envio||'';
-    document.getElementById('poc-transp-nombre').value = stages[1]?.transp||'';
-    document.getElementById('poc-guia').value = stages[1]?.guia||'';
-    document.getElementById('poc-destinatario').value = stages[1]?.dest||'';
-    document.getElementById('poc-responsable-envio').value = stages[1]?.resp||'';
-    pocToggleTransp();
-  }
-  document.getElementById('modal-poc').classList.add('open');
-}
-
-function closePocModal() {
-  document.getElementById('modal-poc').classList.remove('open');
-  pocEditId = null;
-}
-
-function savePoc() {
-  const envioVal = document.getElementById('poc-envio')?.value||'';
-  const transpNombre = document.getElementById('poc-transp-nombre')?.value?.trim()||'';
-  const guia = document.getElementById('poc-guia')?.value?.trim()||'';
-  // Compra y Entrega: estado manual. Certificado y Facturación: si tiene fecha → done, si no → pending
-  const stages = [0,1,2,3].map(i=>{
-    const fecha = document.getElementById('poc-s'+i+'-fecha').value;
-    const nota = document.getElementById('poc-s'+i+'-nota').value;
-    let estado;
-    if(i<=1) {
-      estado = document.getElementById('poc-s'+i+'-est').value;
-    } else {
-      estado = fecha ? 'done' : 'pending';
-    }
-    return {
-      s: estado,
-      f: fecha,
-      n: nota,
-      ...(i===1 ? {envio:envioVal, transp:transpNombre, guia:guia, dest:document.getElementById('poc-destinatario')?.value?.trim()||'', resp:document.getElementById('poc-responsable-envio')?.value?.trim()||''} : {})
-    };
-  });
-  const order = {
-    id: pocEditId || 'poc_'+Date.now(),
-    num: document.getElementById('poc-num').value.trim(),
-    cliente: document.getElementById('poc-cliente').value.trim(),
-    desc: document.getElementById('poc-desc').value.trim(),
-    estado: document.getElementById('poc-estado').value,
-    stages,
-    updatedAt: new Date().toISOString()
-  };
-  if(!order.num && !order.cliente){ showToast('Ingresa al menos número o cliente','error'); return; }
-  let list = getPOC();
-  if(pocEditId) { const idx=list.findIndex(o=>o.id===pocEditId); if(idx>=0) list[idx]=order; else list.push(order); }
-  else list.push(order);
-  savePOCData(list);
-  syncOCToSheets(order);
-  closePocModal();
-  renderProcesos();
-  showToast('Orden guardada','success');
-}
-
-function pocToggleTransp() {
-  const v = document.getElementById('poc-envio')?.value||'';
-  const wrap = document.getElementById('poc-transp-wrap');
-  if(wrap) wrap.style.display = ['transportadora','camion_externo'].includes(v) ? 'block' : 'none';
-}
-
-function deletePoc() {
-  if(!pocEditId) return;
-  if(!confirm('¿Eliminar esta orden de compra?')) return;
-  let list = getPOC().filter(o=>o.id!==pocEditId);
-  savePOCData(list);
-  closePocModal();
-  renderProcesos();
-  showToast('Orden eliminada','info');
-}
-
-function syncOCToSheets(order) {
-  const url = localStorage.getItem('eyg_oc_sheet_url');
-  if(!url) return;
-  fetch(url, {
-    method: 'POST',
-    mode: 'no-cors',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(order)
-  }).catch(e => console.warn('OC Sheets sync:', e));
-}
-
-function saveOCSheetUrl() {
-  const url = document.getElementById('sheets-url-input')?.value?.trim();
-  if(!url) { showToast('Ingresa una URL válida','error'); return; }
-  localStorage.setItem('eyg_oc_sheet_url', url);
-  showToast('URL guardada. Las OP se sincronizarán con Google Sheets.','success');
-  updateSheetsStatus();
-}
-
-function updateSheetsStatus() {
-  const el = document.getElementById('sheets-status');
-  if(!el) return;
-  const url = localStorage.getItem('eyg_oc_sheet_url');
-  if(url) { el.textContent = '✅ Conectada'; el.style.color = '#2EAA4A'; }
-  else { el.textContent = '⚠️ No configurada'; el.style.color = '#E8A020'; }
-}
-
-// ===== EXPORT PROCESOS O.P. TO EXCEL =====
-function exportPocExcel() {
-  const list = getPOC();
-  if (!list || list.length === 0) { showToast('No hay órdenes para exportar', 'info'); return; }
-  const ENVIO_LABELS = {moto:'Moto mensajería',camion_energy:'Camión E&G Energy',camion_externo:'Camión externo',transportadora:'Transportadora',vehiculo_personal:'Vehículo personal',recoge_bodega:'Recoge en bodega',entrega_mano:'Entrega en mano'};
-  const rows = list.map(o => {
-    const s = o.stages || [];
-    const compra = s[0]||{}; const entrega = s[1]||{}; const cert = s[2]||{}; const factura = s[3]||{};
-    return {
-      'Número OP': o.num||'',
-      'Cliente / Proyecto': o.cliente||'',
-      'Descripción': o.desc||'',
-      'Estado': {activo:'Activo',completado:'Completado',cancelado:'Cancelado'}[o.estado]||o.estado||'',
-      'Compra – Fecha': compra.f||'',
-      'Compra – Notas': compra.n||'',
-      'Entrega – Fecha': entrega.f||'',
-      'Entrega – Medio': ENVIO_LABELS[entrega.envio]||entrega.envio||'',
-      'Entrega – Guía': entrega.guia||'',
-      'Entrega – Destinatario': entrega.dest||'',
-      'Entrega – Responsable': entrega.resp||'',
-      'Entrega – Notas': entrega.n||'',
-      'Certificado – Fecha': cert.f||'',
-      'Certificado – Notas': cert.n||'',
-      'Facturación – Fecha': factura.f||'',
-      'Facturación – Notas': factura.n||''
-    };
-  });
-  try {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(rows);
-    // Ancho de columnas automático
-    const colWidths = Object.keys(rows[0]||{}).map(k=>({wch:Math.max(k.length,12)}));
-    ws['!cols'] = colWidths;
-    XLSX.utils.book_append_sheet(wb, ws, 'Procesos O.C.');
-    XLSX.writeFile(wb, `Procesos_OP_${new Date().toISOString().substring(0,10)}.xlsx`);
-    showToast('✅ Excel exportado correctamente', 'success');
-  } catch(err) { showToast('Error al exportar', 'error'); }
-}
-
-// ===== INFORME GENERAL TODAS LAS OC =====
-function generateGeneralOCReport() {
-  const list = getPOC();
-  if (!list || list.length === 0) { showToast('No hay órdenes para el informe', 'info'); return; }
-  const ENVIO_LABELS={moto:'🛵 Moto mensajería',camion_energy:'🚛 Camión E&G Energy',camion_externo:'🚚 Camión externo',transportadora:'📦 Transportadora',vehiculo_personal:'🚗 Vehículo personal',recoge_bodega:'🏭 Recoge en bodega',entrega_mano:'🤝 Entrega en mano'};
-  const stageIcon=['🛒','🚛','📄','💰'];
-  const stageLabel=['Compra','Entrega','Certificado','Facturación'];
-  const today = new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  const todayStr = new Date().toLocaleDateString('es-CO');
-  const activas = list.filter(o=>o.estado==='activo').length;
-  const completadas = list.filter(o=>o.estado==='completado').length;
-  const canceladas = list.filter(o=>o.estado==='cancelado').length;
-  const ESTADO_COLOR={activo:'#2EAA4A',completado:'#3b82f6',cancelado:'#e53e3e'};
-  const ESTADO_LABEL={activo:'ACTIVO',completado:'COMPLETADO',cancelado:'CANCELADO'};
-  const cardsHtml = list.map(o => {
-    const s = o.stages||[];
-    const progPct = [s[0]?.f, s[1]?.f, s[2]?.f, s[3]?.f].filter(Boolean).length * 25;
-    const etapas = stageLabel.map((lbl,i)=>{
-      const et = s[i]||{};
-      const done = et.s==='done'||et.f;
-      const active = !done && i===s.findIndex((x,j)=>!(x?.s==='done'||x?.f));
-      const cls = done?'done':active?'active':'pending';
-      const statusTxt = done?'✅ Completado':active?'⏳ En proceso':'⏸ Pendiente';
-      const fecha = et.f ? et.f.split('-').reverse().join('/') : 'sin fecha';
-      const extra = i===1 && (et.envio||et.guia||et.dest||et.resp) ? `<div style="font-size:10px;color:#6b7280;margin-top:4px;">${et.envio?ENVIO_LABELS[et.envio]||et.envio:''} ${et.guia?'| Guía: '+et.guia:''} ${et.dest?'| '+et.dest:''}</div>` : '';
-      return `<div style="flex:1;text-align:center;padding:12px 6px;background:${done?'#f0fdf4':active?'#fffbeb':'#f9fafb'};border-radius:8px;border:1px solid ${done?'#bbf7d0':active?'#fde68a':'#e5e7eb'};">
-        <div style="font-size:20px;">${stageIcon[i]}</div>
-        <div style="font-size:12px;font-weight:700;color:#1f2937;margin:4px 0;">${lbl}</div>
-        <div style="font-size:11px;font-weight:600;color:${done?'#2EAA4A':active?'#d97706':'#9ca3af'};">${statusTxt}</div>
-        <div style="font-size:10px;color:#6b7280;margin-top:2px;">📅 ${fecha}</div>
-        ${extra}
-      </div>`;
-    }).join('');
-    return `<div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:22px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);">
-      <div style="background:#0F2B5B;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-size:17px;font-weight:900;color:#fff;letter-spacing:.5px;">${o.num||'Sin número'}</div>
-          <div style="font-size:13px;color:#93c5fd;margin-top:3px;">👤 ${o.cliente||'—'}</div>
-        </div>
-        <span style="background:${ESTADO_COLOR[o.estado]||'#9ca3af'};color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;">${ESTADO_LABEL[o.estado]||o.estado||''}</span>
+  return `<div class="oc-card" id="oc-card-${o.id}">
+    <div class="oc-card-header">
+      <div>
+        <div class="oc-card-title">${o.nombre}</div>
+        <div class="oc-card-sub">🏢 ${o.cliente || '—'}</div>
       </div>
-      <div style="padding:16px 20px;">
-        <div style="font-size:14px;font-weight:600;color:#374151;margin-bottom:12px;">📋 ${o.desc||'Sin descripción'}</div>
-        <div style="background:#f1f5f9;border-radius:6px;padding:8px 12px;margin-bottom:14px;">
-          <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px;"><span>Progreso de la orden</span><span style="font-weight:700;color:#0F2B5B;">${progPct}% — ${progPct===100?'Completado':progPct===0?'Sin iniciar':'En proceso'}</span></div>
-          <div style="background:#e2e8f0;border-radius:4px;height:8px;"><div style="background:${progPct===100?'#2EAA4A':'#E8A020'};height:8px;border-radius:4px;width:${progPct}%;"></div></div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">${etapas}</div>
-        ${o.obs?`<div style="margin-top:14px;padding:10px 14px;background:#f8fafc;border-left:3px solid #E8A020;border-radius:0 6px 6px 0;font-size:12px;color:#374151;"><span style="font-weight:700;">Observaciones:</span> ${o.obs}</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
-  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe General OP — E&G Energy</title>
-  <style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6fb;color:#1a1a2e;padding:32px;}
-  .page-wrap{max-width:840px;margin:0 auto;}
-  .header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:18px;border-bottom:3px solid #E8A020;margin-bottom:28px;}
-  .summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
-  .sc{background:#fff;border-radius:10px;padding:14px 16px;text-align:center;border:1px solid #e5e7eb;box-shadow:0 1px 4px rgba(0,0,0,.05);}
-  .sc .n{font-size:28px;font-weight:900;} .sc .l{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
-  .search-wrap{margin-bottom:24px;}
-  .search-box-g{display:flex;align-items:center;background:#fff;border:2px solid #cbd5e1;border-radius:10px;padding:9px 14px;transition:border-color .2s;}
-  .search-box-g:focus-within{border-color:#0F2B5B;}
-  .search-box-g input{border:none;outline:none;font-size:14px;width:100%;color:#1e293b;background:transparent;}
-  .oc-card.hidden{display:none;}
-  .footer{margin-top:36px;padding-top:14px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;}
-  @media print{.no-print{display:none!important}}</style></head><body>
-  <div class="page-wrap">
-  <button class="no-print" onclick="window.print()" style="display:block;margin:0 auto 24px;padding:10px 30px;background:#0F2B5B;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">🖨️ Imprimir / Guardar como PDF</button>
-  <div class="header">
-    <div><div style="font-size:22px;font-weight:900;color:#0F2B5B;letter-spacing:1px;">E&G ENERGY GROUP</div><div style="font-size:11px;color:#6b7280;margin-top:3px;text-transform:uppercase;letter-spacing:1px;">Gestión de Procesos — Órdenes de Compra</div></div>
-    <div style="text-align:right;"><div style="font-size:17px;font-weight:700;color:#0F2B5B;">📋 Informe General OP</div><div style="font-size:12px;color:#6b7280;margin-top:4px;">Generado: ${today}</div></div>
-  </div>
-  <div class="summary-bar">
-    <div class="sc"><div class="n" style="color:#0F2B5B;">${list.length}</div><div class="l">Total O.C.</div></div>
-    <div class="sc"><div class="n" style="color:#2EAA4A;">${activas}</div><div class="l">Activas</div></div>
-    <div class="sc"><div class="n" style="color:#3b82f6;">${completadas}</div><div class="l">Completadas</div></div>
-    <div class="sc"><div class="n" style="color:#e53e3e;">${canceladas}</div><div class="l">Canceladas</div></div>
-  </div>
-  <div class="search-wrap no-print">
-    <div class="search-box-g">
-      <span style="font-size:18px;margin-right:10px;color:#94a3b8;">🔍</span>
-      <input id="oc-gen-search" type="text" placeholder="Buscar por N° OP, cliente, descripción..." autocomplete="off" oninput="filtrarOCG(this.value)">
-      <button onclick="document.getElementById('oc-gen-search').value='';filtrarOCG('');" style="background:none;border:none;cursor:pointer;color:#9ca3af;font-size:20px;line-height:1;">✕</button>
+      <span class="oc-badge ${etapaLabel}">${etapaText}</span>
     </div>
-    <p id="oc-gen-tip" style="font-size:11px;color:#9ca3af;margin-top:5px;padding-left:4px;">Busca entre todas las órdenes de compra.</p>
-  </div>
-  ${cardsHtml}
-  <div class="footer"><span>ENERGY Bot v1.0 — E&G Energy Group</span><span>Informe generado el ${todayStr}</span></div>
-  </div>
-  <script>function filtrarOCG(t){const q=(t||'').trim().toLowerCase();const tip=document.getElementById('oc-gen-tip');const cards=document.querySelectorAll('.oc-card');if(!q){cards.forEach(c=>c.classList.remove('hidden'));tip.textContent='Busca entre todas las órdenes de compra.';tip.style.color='#9ca3af';return;}let v=0;cards.forEach(c=>{if(c.textContent.toLowerCase().includes(q)){c.classList.remove('hidden');v++;}else{c.classList.add('hidden');}});tip.textContent=v===0?'⚠️ No se encontraron órdenes para "'+t+'"':v+' orden'+(v!==1?'es':'')+' encontrada'+(v!==1?'s':'')+' para "'+t+'"';tip.style.color=v===0?'#c0392b':'#15803d';}<\/script>
-  </body></html>`;
-  const w = window.open('','_blank');
-  if(w) { w.document.write(html); w.document.close(); }
-  else { showToast('Activa las ventanas emergentes para ver el informe', 'info'); }
+    <div class="oc-timeline">${stepsHTML}</div>
+    ${o.obs ? `<div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;padding:8px 10px;background:rgba(255,255,255,.03);border-radius:8px;">📝 ${o.obs}</div>` : ''}
+    <div class="oc-card-footer">
+      <div class="oc-date">📅 Cierre est.: ${o.fecha || '—'}</div>
+      <div class="oc-actions">
+        ${!o.completado ? `<button class="btn btn-ghost" onclick="ocAdvance('${o.id}')" style="font-size:11px;padding:5px 12px;">➡️ Avanzar</button>` : ''}
+        <button class="btn btn-ghost" onclick="ocOpenModal('${o.id}')" style="font-size:11px;padding:5px 12px;">✏️ Editar</button>
+        <button class="btn btn-ghost" onclick="ocDelete('${o.id}')" style="font-size:11px;padding:5px 12px;color:#e53e3e;">🗑</button>
+      </div>
+    </div>
+  </div>`;
 }
 
-// ===== INFORME POR OC =====
-function viewPocReport(id) {
-  const o = getPOC().find(x=>x.id===id);
-  if(!o) return;
-  const s = o.stages||[];
-  const compra=s[0]||{}, entrega=s[1]||{}, cert=s[2]||{}, factura=s[3]||{};
-  const ENVIO_LABELS={moto:'🛵 Moto mensajería',camion_energy:'🚛 Camión E&G Energy (propio)',camion_externo:'🚚 Camión externo',transportadora:'📦 Transportadora',vehiculo_personal:'🚗 Vehículo personal',recoge_bodega:'🏭 Recoge en bodega',entrega_mano:'🤝 Entrega en mano'};
-  const ESTADO_COLOR={activo:'#2EAA4A',completado:'#3b82f6',cancelado:'#e53e3e'};
-  const ESTADO_TXT={activo:'ACTIVO',completado:'COMPLETADO',cancelado:'CANCELADO'};
-  const stageRow=(icon,label,etapa,extra='')=>{
-    const fecha=etapa.f?etapa.f.split('-').reverse().join('/'):'—';
-    const done=etapa.s==='done'||etapa.f;
-    const color=done?'#2EAA4A':'#8899bb';
-    const nota=etapa.n?`<div style="margin-top:6px;font-size:12px;color:#94a3b8;border-left:3px solid #1e3a6e;padding-left:10px;">${etapa.n}</div>`:'';
-    return `<div style="display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid #1e3a6e;">
-      <div style="font-size:24px;width:36px;text-align:center;flex-shrink:0;">${icon}</div>
-      <div style="flex:1;">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-          <span style="font-weight:700;font-size:14px;color:#e2e8f0;">${label}</span>
-          <span style="font-size:13px;color:${color};font-weight:600;">📅 ${fecha}</span>
-        </div>
-        ${extra}${nota}
-      </div>
-    </div>`;
+function ocAdvance(id) {
+  let ordenes = getData('ordenes', OC_DEFAULT);
+  const idx = ordenes.findIndex(o => o.id === id);
+  if (idx < 0) return;
+  const o = ordenes[idx];
+  if (o.completado) return;
+  const curIdx = ocGetStageIndex(o.etapa_actual);
+  if (curIdx < OC_STAGES.length - 1) {
+    o.etapa_actual = OC_STAGES[curIdx + 1].key;
+  } else {
+    o.completado = true;
+  }
+  ordenes[idx] = o;
+  setData('ordenes', ordenes);
+  ocRender();
+}
+
+function ocDelete(id) {
+  if (!confirm('¿Eliminar esta orden?')) return;
+  let ordenes = getData('ordenes', OC_DEFAULT);
+  ordenes = ordenes.filter(o => o.id !== id);
+  setData('ordenes', ordenes);
+  ocRender();
+}
+
+function ocOpenModal(id) {
+  const team = getData('team', TEAM_DEFAULT);
+  document.getElementById('oc-edit-id').value = id || '';
+  if (id) {
+    const o = getData('ordenes', OC_DEFAULT).find(o => o.id === id);
+    if (!o) return;
+    document.getElementById('oc-nombre').value      = o.nombre    || '';
+    document.getElementById('oc-cliente').value     = o.cliente   || '';
+    document.getElementById('oc-fecha').value       = o.fecha     || '';
+    document.getElementById('oc-obs').value         = o.obs       || '';
+    document.getElementById('oc-resp-compra').value  = o.resp_compra  || '';
+    document.getElementById('oc-resp-entrega').value = o.resp_entrega || '';
+    document.getElementById('oc-resp-certs').value   = o.resp_certs   || '';
+    document.getElementById('oc-resp-cierre').value  = o.resp_cierre  || '';
+    document.getElementById('modal-orden-title').textContent = '✏️ Editar Orden';
+  } else {
+    ['oc-nombre','oc-cliente','oc-obs','oc-resp-compra','oc-resp-entrega','oc-resp-certs','oc-resp-cierre'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('oc-fecha').value = new Date().toISOString().split('T')[0];
+    document.getElementById('modal-orden-title').textContent = '📋 Nueva Orden de Compra';
+  }
+  openModal('modal-orden');
+}
+
+function ocSave() {
+  const nombre = document.getElementById('oc-nombre').value.trim();
+  if (!nombre) { alert('El nombre de la orden es obligatorio'); return; }
+  let ordenes = getData('ordenes', OC_DEFAULT);
+  const editId = document.getElementById('oc-edit-id').value;
+  const data = {
+    nombre,
+    cliente:       document.getElementById('oc-cliente').value.trim(),
+    fecha:         document.getElementById('oc-fecha').value,
+    obs:           document.getElementById('oc-obs').value.trim(),
+    resp_compra:   document.getElementById('oc-resp-compra').value.trim(),
+    resp_entrega:  document.getElementById('oc-resp-entrega').value.trim(),
+    resp_certs:    document.getElementById('oc-resp-certs').value.trim(),
+    resp_cierre:   document.getElementById('oc-resp-cierre').value.trim(),
   };
-  const entregaExtra = entrega.envio||entrega.guia||entrega.dest||entrega.resp ? `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
-      ${entrega.envio?`<div style="font-size:12px;color:#cbd5e1;"><span style="color:#8899bb;">Medio:</span> ${ENVIO_LABELS[entrega.envio]||entrega.envio}</div>`:''}
-      ${entrega.guia?`<div style="font-size:12px;color:#cbd5e1;"><span style="color:#8899bb;">Guía:</span> <b>${entrega.guia}</b></div>`:''}
-      ${entrega.dest?`<div style="font-size:12px;color:#cbd5e1;"><span style="color:#8899bb;">Destinatario:</span> ${entrega.dest}</div>`:''}
-      ${entrega.resp?`<div style="font-size:12px;color:#cbd5e1;"><span style="color:#8899bb;">Responsable:</span> ${entrega.resp}</div>`:''}
-      ${entrega.transp?`<div style="font-size:12px;color:#cbd5e1;"><span style="color:#8899bb;">Transportadora:</span> ${entrega.transp}</div>`:''}
-    </div>` : '';
-  const fechaGen = new Date().toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'});
-  const updStr = o.updatedAt ? new Date(o.updatedAt).toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
-  const html = `
-    <div id="poc-report-print">
-      <!-- Encabezado -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--gold);">
-        <div>
-          <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:#E8A020;letter-spacing:1px;">E&G ENERGY GROUP</div>
-          <div style="font-size:12px;color:#8899bb;margin-top:2px;">GESTIÓN DE PROCESOS — ORDEN DE PEDIDO</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:11px;color:#8899bb;">Generado: ${fechaGen}</div>
-          <div style="font-size:11px;color:#8899bb;margin-top:2px;">Última actualización: ${updStr}</div>
-        </div>
-      </div>
-      <!-- Info principal -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
-        <div style="background:#0d1f3c;border:1px solid #1e3a6e;border-radius:10px;padding:16px;">
-          <div style="font-size:11px;color:#8899bb;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Número O.C.</div>
-          <div style="font-size:20px;font-weight:800;color:#fff;font-family:'Montserrat',sans-serif;">${o.num||'—'}</div>
-        </div>
-        <div style="background:#0d1f3c;border:1px solid #1e3a6e;border-radius:10px;padding:16px;">
-          <div style="font-size:11px;color:#8899bb;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Cliente / Proyecto</div>
-          <div style="font-size:16px;font-weight:700;color:#fff;">${o.cliente||'—'}</div>
-        </div>
-      </div>
-      ${o.desc?`<div style="background:#0d1f3c;border:1px solid #1e3a6e;border-radius:10px;padding:14px;margin-bottom:20px;">
-        <div style="font-size:11px;color:#8899bb;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Descripción / Objeto</div>
-        <div style="font-size:14px;color:#e2e8f0;">${o.desc}</div>
-      </div>`:''}
-      <!-- Estado -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
-        <span style="font-size:11px;color:#8899bb;font-weight:700;text-transform:uppercase;">Estado general:</span>
-        <span style="background:${ESTADO_COLOR[o.estado]||'#2EAA4A'}22;color:${ESTADO_COLOR[o.estado]||'#2EAA4A'};border:1px solid ${ESTADO_COLOR[o.estado]||'#2EAA4A'};border-radius:20px;padding:4px 14px;font-size:13px;font-weight:700;">${ESTADO_TXT[o.estado]||o.estado}</span>
-      </div>
-      <!-- Etapas -->
-      <div style="font-size:12px;color:#8899bb;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Seguimiento de Etapas</div>
-      <div style="background:#0d1f3c;border:1px solid #1e3a6e;border-radius:10px;padding:0 16px;">
-        ${stageRow('🛒','Compra',compra)}
-        ${stageRow('🚛','Entrega',entrega,entregaExtra)}
-        ${stageRow('📄','Certificado',cert)}
-        ${stageRow('💰','Facturación',factura)}
-      </div>
-    </div>`;
-  document.getElementById('poc-report-body').innerHTML = html;
-  document.getElementById('modal-poc-report').classList.add('open');
-}
-
-function printPocReport() {
-  const content = document.getElementById('poc-report-print')?.innerHTML||'';
-  const w = window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Informe OP — E&G Energy</title>
-  <style>
-    body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#1a1a2e;margin:0;padding:24px;}
-    *{box-sizing:border-box;}
-    @media print{body{padding:0;} button{display:none!important;}}
-  </style></head><body>${content}</body></html>`);
-  w.document.close();
-  setTimeout(()=>w.print(),400);
-}
-
-function saveEmailConfig() {
-  localStorage.setItem('eyg_email_to', document.getElementById('email-to-input')?.value?.trim()||'');
-  localStorage.setItem('eyg_emailjs_pubkey', document.getElementById('emailjs-pubkey')?.value?.trim()||'');
-  localStorage.setItem('eyg_emailjs_service', document.getElementById('emailjs-service')?.value?.trim()||'');
-  localStorage.setItem('eyg_emailjs_template', document.getElementById('emailjs-template')?.value?.trim()||'');
-  localStorage.setItem('eyg_email_auto', document.getElementById('email-auto-daily')?.checked?'1':'0');
-  updateEmailStatus();
-  showToast('Configuración de email guardada','success');
-}
-
-function loadEmailConfig() {
-  const to = localStorage.getItem('eyg_email_to')||'';
-  const pk = localStorage.getItem('eyg_emailjs_pubkey')||'';
-  const svc = localStorage.getItem('eyg_emailjs_service')||'';
-  const tpl = localStorage.getItem('eyg_emailjs_template')||'';
-  const auto = localStorage.getItem('eyg_email_auto')==='1';
-  if(document.getElementById('email-to-input')) document.getElementById('email-to-input').value = to;
-  if(document.getElementById('emailjs-pubkey')) document.getElementById('emailjs-pubkey').value = pk;
-  if(document.getElementById('emailjs-service')) document.getElementById('emailjs-service').value = svc;
-  if(document.getElementById('emailjs-template')) document.getElementById('emailjs-template').value = tpl;
-  if(document.getElementById('email-auto-daily')) document.getElementById('email-auto-daily').checked = auto;
-  updateEmailStatus();
-}
-
-function updateEmailStatus() {
-  const el = document.getElementById('email-config-status');
-  if(!el) return;
-  const ok = localStorage.getItem('eyg_email_to') && localStorage.getItem('eyg_emailjs_pubkey') && localStorage.getItem('eyg_emailjs_service') && localStorage.getItem('eyg_emailjs_template');
-  const auto = localStorage.getItem('eyg_email_auto')==='1';
-  el.textContent = ok ? (auto?'✅ Configurado — envío automático activo':'✅ Configurado — envío manual') : '⚠️ Faltan datos de configuración';
-  el.style.color = ok ? '#2EAA4A' : '#E8A020';
-}
-
-function generateOCReportText() {
-  const list = getPOC();
-  const fecha = new Date().toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  const total = list.length;
-  const activos = list.filter(o=>o.estado==='activo').length;
-  const completados = list.filter(o=>o.estado==='completado').length;
-  const cancelados = list.filter(o=>o.estado==='cancelado').length;
-  const ESTADO = {activo:'ACTIVO',completado:'COMPLETADO',cancelado:'CANCELADO'};
-  const ETAPA = {pending:'Pendiente',active:'En proceso',done:'✅ Completado'};
-  let lines = [
-    '════════════════════════════════════',
-    '   INFORME DIARIO — PROCESOS O.P.',
-    '   E&G Energy Group',
-    `   ${fecha}`,
-    '════════════════════════════════════',
-    `   Total: ${total}  |  Activas: ${activos}  |  Completadas: ${completados}  |  Canceladas: ${cancelados}`,
-    '────────────────────────────────────',
-    ''
-  ];
-  list.slice().reverse().forEach((o,i) => {
-    const s = o.stages||[];
-    const compra=s[0]||{}, entrega=s[1]||{}, cert=s[2]||{}, fact=s[3]||{};
-    lines.push(`${i+1}. ${o.num||'Sin número'} — ${o.cliente||'Sin cliente'} [${ESTADO[o.estado]||o.estado}]`);
-    if(o.desc) lines.push(`   📋 ${o.desc}`);
-    lines.push(`   🛒 Compra: ${compra.f?'📅 '+compra.f.split('-').reverse().join('/'):'sin fecha'}${compra.n?' | '+compra.n:''}`);
-    lines.push(`   🚛 Entrega: ${entrega.f?'📅 '+entrega.f.split('-').reverse().join('/'):'sin fecha'}${entrega.guia?' | Guía: '+entrega.guia:''}${entrega.dest?' | '+entrega.dest:''}`);
-    lines.push(`   📄 Certificado: ${cert.f?'📅 '+cert.f.split('-').reverse().join('/'):'sin fecha'}`);
-    lines.push(`   💰 Facturación: ${fact.f?'📅 '+fact.f.split('-').reverse().join('/'):'sin fecha'}`);
-    lines.push('');
-  });
-  lines.push('────────────────────────────────────');
-  lines.push('ENERGY Bot v1.0 — E&G Energy Group');
-  return lines.join('\n');
-}
-
-function sendOCReport(fromConfig) {
-  const pubkey = localStorage.getItem('eyg_emailjs_pubkey');
-  const service = localStorage.getItem('eyg_emailjs_service');
-  const template = localStorage.getItem('eyg_emailjs_template');
-  const toEmail = localStorage.getItem('eyg_email_to');
-  if(!pubkey||!service||!template||!toEmail) {
-    showToast('Configura el email en ⚙️ Configuración primero','error');
-    if(!fromConfig) navigate('configuracion');
-    return;
+  if (editId) {
+    const idx = ordenes.findIndex(o => o.id === editId);
+    if (idx >= 0) ordenes[idx] = { ...ordenes[idx], ...data };
+  } else {
+    data.id          = 'oc_' + Date.now();
+    data.etapa_actual = 'compra';
+    data.completado  = false;
+    data.creado      = new Date().toISOString().split('T')[0];
+    ordenes.unshift(data);
   }
-  const list = getPOC();
-  if(!list.length) { showToast('No hay órdenes para incluir en el informe','info'); return; }
-  showToast('Enviando informe...','info');
-  try { emailjs.init(pubkey); } catch(e){}
-  const reportText = generateOCReportText();
-  const fecha = new Date().toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'});
-  emailjs.send(service, template, {
-    to_email: toEmail,
-    subject: `Informe OP E&G Energy — ${fecha}`,
-    message: reportText
-  }).then(()=>{
-    localStorage.setItem('eyg_email_last_sent', new Date().toDateString());
-    showToast('✅ Informe enviado correctamente por email','success');
-  }).catch(err=>{
-    console.error('EmailJS error:', err);
-    showToast('Error al enviar email. Verifica la configuración en EmailJS.','error');
-  });
+  setData('ordenes', ordenes);
+  closeModal('modal-orden');
+  ocRender();
 }
 
-function checkAutoEmailSend() {
-  if(localStorage.getItem('eyg_email_auto')!=='1') return;
-  const lastSent = localStorage.getItem('eyg_email_last_sent');
-  const today = new Date().toDateString();
-  if(lastSent !== today) {
-    setTimeout(()=>sendOCReport(true), 5000); // espera 5s después de cargar
-  }
+function ocFilter(filter, btn) {
+  ocCurrentFilter = filter;
+  document.querySelectorAll('.oc-filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  ocRender();
 }
 
 // ===== COTIZACIONES IA =====
 let cotizItems = [];
 let cotizImgBase64 = null;
 let cotizEditId = null;
+
 const COTIZ_ESTADOS_COLOR = {
   'Enviada':'cotiz-estado-enviada',
   'Adjudicada':'cotiz-estado-adjudicada',
   'Rechazada':'cotiz-estado-rechazada',
   'Pendiente':'cotiz-estado-pendiente'
 };
+
 function cotizGetNextNum() {
   const bd = getData('bd_cotizaciones', []);
   if (!bd.length) return 'LM1001';
   const nums = bd.map(c => parseInt(c.id.replace('LM',''))||0);
   return 'LM' + (Math.max(...nums) + 1);
 }
+
 function cotizShowTab(tab) {
   document.querySelectorAll('.cotiz-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.cotiz-tab-content').forEach(t => t.classList.remove('active'));
@@ -3285,6 +2809,7 @@ function cotizShowTab(tab) {
   document.getElementById('cotiz-tab-' + tab).classList.add('active');
   if (tab === 'bd') bdRender();
 }
+
 function cotizLoadFile(input) {
   const file = input.files[0];
   if (!file) return;
@@ -3297,6 +2822,7 @@ function cotizLoadFile(input) {
   };
   reader.readAsDataURL(file);
 }
+
 async function cotizExtract() {
   const apiKey = localStorage.getItem('claude_api_key');
   if (!apiKey) { showToast('Configura tu API Key de Claude en Configuración primero','error'); return; }
@@ -3347,6 +2873,7 @@ async function cotizExtract() {
     status.style.display = 'none';
   }
 }
+
 function cotizRender() {
   const tbody = document.getElementById('cotiz-tbody');
   if (!tbody) return;
@@ -3366,6 +2893,7 @@ function cotizRender() {
     </tr>`).join('');
   cotizUpdateTotals();
 }
+
 function cotizUpdateTotals() {
   const iva = parseFloat(document.getElementById('cotiz-iva').value) || 0;
   const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
@@ -3378,10 +2906,12 @@ function cotizUpdateTotals() {
     <div class="cotiz-tot-row"><span>IVA ${iva}%</span><span>$${ivaVal.toLocaleString('es-CO',{minimumFractionDigits:0})}</span></div>
     <div class="cotiz-tot-row grand"><span>TOTAL</span><span>$${total.toLocaleString('es-CO',{minimumFractionDigits:0})}</span></div>`;
 }
+
 function cotizAddRow() {
   cotizItems.push({ id:cotizItems.length+1, desc:'', udm:'EA', qty:1, precio:0, tiempoEntrega:'1-2 DIAS', desvTec:'', marca:'', proveedor:'' });
   cotizRender();
 }
+
 function cotizClear() {
   cotizItems = [];
   cotizImgBase64 = null;
@@ -3393,6 +2923,7 @@ function cotizClear() {
   if (fi) fi.value = '';
   cotizRender();
 }
+
 function cotizNueva() {
   cotizEditId = null;
   cotizItems = [];
@@ -3415,6 +2946,7 @@ function cotizNueva() {
   cotizShowTab('nueva');
   showToast('Nueva cotización lista','success');
 }
+
 function cotizGuardarBD() {
   const cliente = document.getElementById('cotiz-cliente').value.trim();
   if (!cliente) { showToast('Ingresa el nombre del cliente','error'); return; }
@@ -3455,6 +2987,7 @@ function cotizGuardarBD() {
   saveData('bd_cotizaciones', bd);
   cotizEditId = id;
 }
+
 function cotizDownloadExcel() {
   if (!cotizItems.length) { showToast('Agrega ítems primero','error'); return; }
   const cliente = document.getElementById('cotiz-cliente').value || 'Cliente';
@@ -3472,6 +3005,7 @@ function cotizDownloadExcel() {
   const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
   const ivaVal = subtotal * iva / 100;
   const total = subtotal + ivaVal;
+
   const ws_data = [
     // Row 1: Header
     ['E&G ENERGY GROUP SAS  CARRERA 7 # 12-61 CHIA  TELEFONO 3204947227                    CORREO ELECTRONICO COMERCIAL1@EYGENERGYGROUP.COM', '', '', '', '', '', 'COTIZACION No.', numCot, '', 'ESTADO', estado, '', '', ''],
@@ -3484,6 +3018,7 @@ function cotizDownloadExcel() {
     // Row 7: Headers
     ['ITEM','UNIDAD DE MEDIDA','CANTIDAD','DESCRIPCION','TIEMPO DE ENTREGA','DESVIACION TECNICA','MARCA','VALOR UNITARIO','VALOR TOTAL','PROVEEDOR','PRECIO','APROBADO','',''],
   ];
+
   // Items rows
   cotizItems.forEach((it, i) => {
     ws_data.push([
@@ -3503,6 +3038,7 @@ function cotizDownloadExcel() {
       ''
     ]);
   });
+
   // Totals + observaciones
   ws_data.push(['','','','','','','','','','','','','','']);
   ws_data.push(['OBSERVACIONES','','',observaciones,'','','','SUB TOTAL',subtotal,'','','','','']);
@@ -3510,12 +3046,15 @@ function cotizDownloadExcel() {
   ws_data.push(['','','','','','','','TOTAL',total,'','','','','']);
   ws_data.push(['CONDICIONES COMERCIALES','','','FORMA DE PAGO','SITIO DE ENTREGA','','','VALIDEZ DE ESTA OFERTA','','','','','','']);
   ws_data.push(['','','',formaPago,sitio,'','',validez,'','','','','','']);
+
   const wb2 = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
   // Column widths (matching COTIZADOR cols A-N)
   ws['!cols'] = [
     {wch:6},{wch:12},{wch:8},{wch:40},{wch:14},{wch:30},{wch:10},{wch:14},{wch:14},{wch:12},{wch:12},{wch:10},{wch:6},{wch:6}
   ];
+
   // Merges for header
   ws['!merges'] = [
     {s:{r:0,c:0},e:{r:0,c:5}},   // company name
@@ -3526,20 +3065,24 @@ function cotizDownloadExcel() {
     {s:{r:4,c:0},e:{r:4,c:2}},   // CORREO label
     {s:{r:4,c:3},e:{r:4,c:5}},   // correo value
   ];
+
   XLSX.utils.book_append_sheet(wb2, ws, 'COTIZADOR');
   XLSX.writeFile(wb2, 'Cotizacion_' + numCot + '_' + cliente.replace(/[\s\/\\]/g,'_') + '.xlsx');
   showToast('Excel descargado: Cotizacion_' + numCot + '.xlsx','success');
 }
+
 function bdFilter(estado, btn) {
   document.querySelectorAll('.bd-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   bdRender(estado);
 }
+
 function bdRender(filtro) {
   const bd = getData('bd_cotizaciones', []);
   const tbody = document.getElementById('bd-tbody');
   const empty = document.getElementById('bd-empty');
   if (!tbody) return;
+
   // Stats
   const stats = {todas:bd.length, Enviada:0, Adjudicada:0, Rechazada:0, Pendiente:0};
   const totales = {Adjudicada:0, Enviada:0};
@@ -3551,14 +3094,17 @@ function bdRender(filtro) {
     <div class="bd-stat"><div class="bd-stat-num" style="color:#4ade80">${stats.Adjudicada}</div><div class="bd-stat-label">Adjudicadas</div></div>
     <div class="bd-stat"><div class="bd-stat-num" style="color:#f87171">${stats.Rechazada}</div><div class="bd-stat-label">Rechazadas</div></div>
     <div class="bd-stat"><div class="bd-stat-num" style="color:var(--gold);font-size:13px">$${(totales.Adjudicada/1000000).toFixed(1)}M</div><div class="bd-stat-label">Valor Ganado</div></div>`;
+
   const lista = filtro && filtro !== 'todas' ? bd.filter(c => c.estado === filtro) : [...bd];
   lista.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
+
   if (!lista.length) {
     tbody.innerHTML = '';
     if (empty) empty.style.display = 'block';
     return;
   }
   if (empty) empty.style.display = 'none';
+
   tbody.innerHTML = lista.map(c => {
     const cls = COTIZ_ESTADOS_COLOR[c.estado] || 'cotiz-estado-pendiente';
     return `<tr onclick="bdCargar('${c.id}')">
@@ -3579,6 +3125,7 @@ function bdRender(filtro) {
     </tr>`;
   }).join('');
 }
+
 function bdCargar(id) {
   const bd = getData('bd_cotizaciones', []);
   const c = bd.find(x => x.id === id);
@@ -3601,6 +3148,7 @@ function bdCargar(id) {
   cotizShowTab('nueva');
   showToast('Cotización ' + id + ' cargada para editar','success');
 }
+
 function bdDescargar(id) {
   const bd = getData('bd_cotizaciones', []);
   const c = bd.find(x => x.id === id);
@@ -3608,6 +3156,7 @@ function bdDescargar(id) {
   bdCargar(id);
   setTimeout(() => cotizDownloadExcel(), 300);
 }
+
 function bdEliminar(id, e) {
   if (e) e.stopPropagation();
   if (!confirm('¿Eliminar cotización ' + id + '?')) return;
@@ -3616,6 +3165,7 @@ function bdEliminar(id, e) {
   bdRender();
   showToast('Cotización eliminada','success');
 }
+
 function initCotizaciones() {
   const today2 = new Date().toISOString().split('T')[0];
   const venc = new Date(); venc.setDate(venc.getDate()+8);
@@ -3626,12 +3176,14 @@ function initCotizaciones() {
   }
   if (!cotizItems.length) cotizRender();
 }
+
 function saveGhToken() {
   const token = document.getElementById('gh-token-input').value.trim();
   if(!token) { showToast('Ingresa el token de GitHub','error'); return; }
   localStorage.setItem('gh_pat_token', token);
   showToast('Token de GitHub guardado. Las notificaciones a Teams están activas.','success');
 }
+
 function saveProfile() {
   const name = document.getElementById('profile-name').value.trim();
   if(!name) { showToast('Ingresa tu nombre','error'); return; }
@@ -3644,6 +3196,7 @@ function saveProfile() {
   document.getElementById('top-avatar').textContent=initials2;
   showToast('Perfil actualizado','success');
 }
+
 // ===== CLAUDE API =====
 async function callEnergyAI(prompt, systemContext) {
   const apiKey = localStorage.getItem('claude_api_key');
@@ -3671,6 +3224,7 @@ async function callEnergyAI(prompt, systemContext) {
     return '❌ Error de conexión. Verifica tu API Key y conexión a internet.';
   }
 }
+
 // ===== MESSAGE GENERATOR =====
 async function generateMessage(platform) {
   const isWA = platform==='whatsapp';
@@ -3689,6 +3243,7 @@ async function generateMessage(platform) {
   document.getElementById(secId).classList.remove('hidden');
   if(btnId) { const btn=document.getElementById(btnId); btn.innerHTML='✨ Redactar con ENERGY'; btn.disabled=false; }
 }
+
 function sendWhatsApp() {
   const msg = document.getElementById('wa-output').textContent;
   const recipient = document.getElementById('wa-recipient').value;
@@ -3701,11 +3256,13 @@ function sendWhatsApp() {
   const url = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
   window.open(url,'_blank');
 }
+
 function copyMsg(id) {
   const text = document.getElementById(id).textContent;
   navigator.clipboard.writeText(text);
   showToast('Mensaje copiado al portapapeles','success');
 }
+
 // ===== AGENDA GENERATOR =====
 async function generateAgenda() {
   const titulo = document.getElementById('r-titulo').value.trim();
@@ -3718,6 +3275,7 @@ async function generateAgenda() {
   btn.innerHTML='✨ Generar agenda con ENERGY'; btn.disabled=false;
   showToast('Agenda generada por ENERGY','success');
 }
+
 // ===== MINUTA GENERATOR =====
 async function generateMinuta() {
   const notas = document.getElementById('m-notas').value.trim();
@@ -3728,6 +3286,7 @@ async function generateMinuta() {
 Reunión: ${meeting?meeting.titulo:'Reunión'}
 Fecha: ${meeting?formatDate(meeting.fecha):formatDate(todayStr)}
 Notas/Transcripción: ${notas||'Sin notas adicionales'}
+
 Formato de la minuta:
 - Encabezado con fecha, asistentes y lugar
 - Agenda tratada
@@ -3744,17 +3303,20 @@ Sé conciso y profesional.`;
   out.textContent = result;
   showToast('Minuta generada por ENERGY','success');
 }
+
 function saveMinutaManual() {
   const notas = document.getElementById('m-notas').value.trim();
   if(!notas) { showToast('Escribe las notas de la reunión','error'); return; }
   const reunionId = parseInt(document.getElementById('m-reunion').value);
   saveMinutaData(notas, reunionId);
 }
+
 function saveMinutaFromPreview() {
   const contenido = document.getElementById('minuta-output').textContent;
   const reunionId = parseInt(document.getElementById('m-reunion').value);
   saveMinutaData(contenido, reunionId);
 }
+
 function saveMinutaData(contenido, reunionId) {
   const minutas = getData('minutas', MINUTAS_DEFAULT);
   const newId = Math.max(0,...minutas.map(m=>m.id))+1;
@@ -3764,8 +3326,643 @@ function saveMinutaData(contenido, reunionId) {
   renderMinutas();
   showToast('Minuta guardada correctamente','success');
   document.getElementById('m-notas').value='';
-  document.getElementById('minuta-ai-box').style.display='none';
+  document.getElementById('minuta-preview').classList.add('hidden');
 }
+
+// ===== TABS =====
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  if(btn) btn.classList.add('active');
+  else {
+    const btns = document.querySelectorAll('.tab-btn');
+    const idx = ['tab-whatsapp','tab-teams','tab-plantillas'].indexOf(tabId);
+    if(btns[idx]) btns[idx].classList.add('active');
+  }
+}
+
+// ===== ENERGY CHAT =====
+function initChat() {
+  addBotMsg(`¡Hola, ${currentUser.name.split(' ')[0]}! 👋 Soy ENERGY, tu asistente administrativo.\n\nHoy tienes reuniones y tareas pendientes. ¿En qué te puedo ayudar?`);
+}
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chat-panel').classList.toggle('open', chatOpen);
+}
+
+function addBotMsg(text) {
+  const msgs = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.className='msg bot'; d.textContent=text;
+  msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
+}
+function addUserMsg(text) {
+  const msgs = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.className='msg user'; d.textContent=text;
+  msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value='';
+  addUserMsg(text);
+  document.getElementById('quick-actions').style.display='none';
+  const loadingEl = document.createElement('div');
+  loadingEl.className='msg bot';
+  loadingEl.innerHTML='<span class="spinner"></span> ENERGY está pensando...';
+  document.getElementById('chat-messages').appendChild(loadingEl);
+  document.getElementById('chat-messages').scrollTop=999999;
+
+  const tasks = getData('tasks', TASKS_DEFAULT);
+  const meetings = getData('meetings', MEETINGS_DEFAULT);
+  const todayMeetings = meetings.filter(m=>m.fecha===todayStr);
+  const pendingTasks = tasks.filter(t=>t.estado!=='Completado');
+  const context = `Reuniones de hoy: ${todayMeetings.map(m=>m.titulo+' a las '+m.horaInicio).join(', ')||'ninguna'}. Tareas pendientes: ${pendingTasks.map(t=>t.titulo+' ('+t.responsable+')').join(', ')||'ninguna'}.`;
+
+  const result = await callEnergyAI(text, context);
+  loadingEl.remove();
+  addBotMsg(result);
+}
+
+function quickChat(text) {
+  document.getElementById('chat-input').value=text;
+  sendChat();
+}
+
+function chatKeydown(e) {
+  if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+}
+
+// ===== UTILS =====
+function showToast(msg, type='info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className=`toast ${type}`;
+  const icons = {success:'✅',error:'❌',info:'ℹ️'};
+  toast.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(()=>toast.remove(), 3500);
+}
+
+function initials(name) {
+  return (name||'?').split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+}
+
+function formatDate(str) {
+  if(!str) return '';
+  const [y,m,d] = str.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ===== MICROSOFT TEAMS INTEGRATION =====
+const MS_CLIENT_ID_DEFAULT = '0c8bd7f5-a027-4da9-9d11-ccc27682b0ec';
+const MS_TENANT_ID_DEFAULT = '9876dbde-5a7f-4139-8c2d-60a4395fd7d6';
+
+let msalInstance = null;
+let msAccountInfo = null;
+let msAccessToken = null;
+
+function getMsConfig() {
+  return {
+    clientId: localStorage.getItem('ms_client_id') || MS_CLIENT_ID_DEFAULT,
+    tenantId: localStorage.getItem('ms_tenant_id') || MS_TENANT_ID_DEFAULT,
+    teamId: localStorage.getItem('ms_team_id') || ''
+  };
+}
+
+function initMsal() {
+  const cfg = getMsConfig();
+  const msalConfig = {
+    auth: {
+      clientId: cfg.clientId,
+      authority: `https://login.microsoftonline.com/${cfg.tenantId}`,
+      redirectUri: window.location.href.split('?')[0].split('#')[0]
+    },
+    cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: false }
+  };
+  try {
+    msalInstance = new msal.PublicClientApplication(msalConfig);
+    msalInstance.handleRedirectPromise().then(resp => {
+      if (resp) { msAccountInfo = resp.account; msAccessToken = resp.accessToken; updateMsUI(true); }
+      else {
+        const accounts = msalInstance.getAllAccounts();
+        if (accounts.length > 0) { msAccountInfo = accounts[0]; silentToken(); }
+      }
+    }).catch(e => console.warn('MSAL redirect:', e));
+  } catch(e) { console.warn('MSAL init error:', e); }
+}
+
+const MS_SCOPES = ['User.Read','Chat.ReadWrite','OnlineMeetings.ReadWrite','Calendars.ReadWrite','Channel.ReadBasic.All','ChannelMessage.Send','Files.Read','Files.ReadWrite'];
+
+async function silentToken() {
+  if (!msalInstance || !msAccountInfo) return null;
+  try {
+    const resp = await msalInstance.acquireTokenSilent({
+      scopes: MS_SCOPES,
+      account: msAccountInfo
+    });
+    msAccessToken = resp.accessToken;
+    updateMsUI(true);
+    return msAccessToken;
+  } catch(e) {
+    // Token expirado o falta consentimiento → pedir login interactivo
+    try {
+      const resp2 = await msalInstance.acquireTokenPopup({ scopes: MS_SCOPES, account: msAccountInfo });
+      msAccessToken = resp2.accessToken;
+      msAccountInfo = resp2.account;
+      updateMsUI(true);
+      return msAccessToken;
+    } catch(e2) {
+      updateMsUI(false);
+      return null;
+    }
+  }
+}
+
+async function msLogin() {
+  // Verificar que la librería MSAL esté cargada
+  if (typeof msal === 'undefined') {
+    showToast('❌ Error: La librería de Microsoft no cargó. Recarga la página e intenta de nuevo.', 'error');
+    return;
+  }
+  // Inicializar si no está listo
+  if (!msalInstance) {
+    initMsal();
+    await new Promise(r => setTimeout(r, 800)); // esperar inicialización
+  }
+  if (!msalInstance) {
+    showToast('❌ No se pudo inicializar Microsoft Auth. Verifica el Client ID y Tenant ID en los campos de abajo y haz clic en "Guardar configuración" primero.', 'error');
+    return;
+  }
+  try {
+    showToast('⏳ Abriendo ventana de Microsoft...', 'info');
+    const resp = await msalInstance.loginPopup({
+      scopes: ['User.Read','Chat.ReadWrite','OnlineMeetings.ReadWrite','Calendars.ReadWrite','Channel.ReadBasic.All','ChannelMessage.Send','Files.Read','Files.ReadWrite']
+    });
+    msAccountInfo = resp.account;
+    msAccessToken = resp.accessToken;
+    updateMsUI(true);
+    showToast('✅ Sesión Microsoft iniciada: ' + msAccountInfo.username, 'success');
+    msLoadChannels();
+  } catch(e) {
+    if (e.errorCode === 'popup_window_error' || (e.message && e.message.includes('popup'))) {
+      showToast('❌ El popup fue bloqueado. Permite popups para este sitio en tu navegador y vuelve a intentar.', 'error');
+    } else {
+      showToast('Error al iniciar sesión: ' + (e.message||e), 'error');
+    }
+  }
+}
+
+function msLogout() {
+  if (msalInstance) msalInstance.logoutPopup();
+  msAccountInfo = null; msAccessToken = null;
+  updateMsUI(false);
+  showToast('Sesión Microsoft cerrada', 'info');
+}
+
+function updateMsUI(connected) {
+  const dot = document.getElementById('ms-status-dot');
+  const text = document.getElementById('ms-status-text');
+  const sub = document.getElementById('ms-status-sub');
+  const loginBtn = document.getElementById('ms-login-btn');
+  const logoutBtn = document.getElementById('ms-logout-btn');
+  const connDot = document.getElementById('teams-conn-dot');
+  const connText = document.getElementById('teams-conn-text');
+
+  if (connected && msAccountInfo) {
+    if(dot) { dot.style.background='#2EAA4A'; }
+    if(text) text.textContent = '✅ Conectado: ' + msAccountInfo.username;
+    if(sub) sub.textContent = 'Teams activo — puedes crear reuniones y enviar mensajes';
+    if(loginBtn) loginBtn.style.display='none';
+    if(logoutBtn) logoutBtn.style.display='';
+    if(connDot) { connDot.style.background='#2EAA4A'; }
+    if(connText) connText.textContent = '✅ Conectado como ' + msAccountInfo.username;
+  } else {
+    if(dot) { dot.style.background='#e53e3e'; }
+    if(text) text.textContent = 'No conectado a Microsoft';
+    if(sub) sub.textContent = 'Inicia sesión con tu cuenta E&G para activar Teams';
+    if(loginBtn) loginBtn.style.display='';
+    if(logoutBtn) logoutBtn.style.display='none';
+    if(connDot) { connDot.style.background='#e53e3e'; }
+    if(connText) connText.textContent = 'No conectado a Microsoft Teams';
+  }
+}
+
+async function getToken() {
+  if (msAccessToken) return msAccessToken;
+  return await silentToken();
+}
+
+async function msTestConnection() {
+  const token = await getToken();
+  if (!token) { showToast('Primero inicia sesión con Microsoft', 'error'); return; }
+  try {
+    const resp = await fetch('https://graph.microsoft.com/v1.0/me', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await resp.json();
+    const infoEl = document.getElementById('ms-teams-info');
+    infoEl.style.display='block';
+    infoEl.innerHTML = `✅ <b>Conexión exitosa</b><br>Usuario: ${data.displayName}<br>Email: ${data.mail||data.userPrincipalName}<br>ID: ${data.id}`;
+    showToast('Conexión con Microsoft Graph OK', 'success');
+  } catch(e) {
+    showToast('Error de conexión: ' + e.message, 'error');
+  }
+}
+
+async function msLoadChannels() {
+  const token = await getToken();
+  if (!token) return;
+  const cfg = getMsConfig();
+  const sel = document.getElementById('teams-channel-sel');
+  if (!sel) return;
+  if (!cfg.teamId) {
+    // Cargar lista de equipos
+    try {
+      const resp = await fetch('https://graph.microsoft.com/v1.0/me/joinedTeams', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      const data = await resp.json();
+      sel.innerHTML = '<option value="">-- Selecciona equipo/canal --</option>';
+      if (data.value) {
+        data.value.forEach(team => {
+          const opt = document.createElement('option');
+          opt.value = team.id + '|General';
+          opt.textContent = '📁 ' + team.displayName;
+          sel.appendChild(opt);
+        });
+      }
+      showToast('Equipos cargados desde Teams', 'success');
+    } catch(e) { showToast('Error cargando equipos: ' + e.message, 'error'); }
+    return;
+  }
+  // Cargar canales del equipo configurado
+  try {
+    const resp = await fetch(`https://graph.microsoft.com/v1.0/teams/${cfg.teamId}/channels`, {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await resp.json();
+    sel.innerHTML = '<option value="">-- Selecciona canal --</option>';
+    if (data.value) {
+      data.value.forEach(ch => {
+        const opt = document.createElement('option');
+        opt.value = cfg.teamId + '|' + ch.id;
+        opt.textContent = '# ' + ch.displayName;
+        sel.appendChild(opt);
+      });
+    }
+    showToast('Canales cargados desde Teams', 'success');
+  } catch(e) { showToast('Error cargando canales: ' + e.message, 'error'); }
+}
+
+async function msSendTeamsMessage() {
+  const token = await getToken();
+  if (!token) { showToast('Primero inicia sesión con Microsoft en Configuración', 'error'); navigate('configuracion'); return; }
+  const msg = document.getElementById('teams-output').textContent.trim();
+  if (!msg) { showToast('Primero redacta el mensaje con ENERGY', 'error'); return; }
+  const chanSel = document.getElementById('teams-channel-sel');
+  const chanVal = chanSel ? chanSel.value : '';
+  if (!chanVal) { showToast('Selecciona un canal de Teams primero', 'error'); return; }
+  const [teamId, channelId] = chanVal.split('|');
+  try {
+    const resp = await fetch(`https://graph.microsoft.com/v1.0/teams/${teamId}/channels/${channelId}/messages`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ body: { contentType: 'text', content: msg } })
+    });
+    if (resp.ok) { showToast('✅ Mensaje enviado a Teams exitosamente', 'success'); }
+    else { const err = await resp.json(); showToast('Error: ' + (err.error?.message||resp.status), 'error'); }
+  } catch(e) { showToast('Error enviando mensaje: ' + e.message, 'error'); }
+}
+
+// ═══════ SINCRONIZAR REUNIONES DESDE TEAMS / OUTLOOK CALENDAR ═══════
+async function syncTeamsCalendar() {
+  const token = await getToken();
+  if (!token) { showToast('Primero inicia sesión con Microsoft en Configuración 🟣', 'error'); navigate('configuracion'); return; }
+
+  const btn = document.getElementById('btn-sync-teams');
+  if (btn) { btn.textContent = '⏳ Sincronizando...'; btn.disabled = true; }
+
+  try {
+    // Traer eventos de los próximos 90 días y los últimos 30
+    const now   = new Date();
+    const start = new Date(now); start.setDate(start.getDate() - 30);
+    const end   = new Date(now); end.setDate(end.getDate() + 90);
+    const startISO = start.toISOString();
+    const endISO   = end.toISOString();
+
+    const resp = await fetch(
+      `https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=${startISO}&endDateTime=${endISO}&$select=subject,start,end,isOnlineMeeting,onlineMeeting,bodyPreview&$top=100&$orderby=start/dateTime`,
+      { headers: { Authorization: 'Bearer ' + token, Prefer: 'outlook.timezone="America/Bogota"' } }
+    );
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      showToast('Error al leer calendario: ' + (err.error?.message || resp.status), 'error');
+      return;
+    }
+
+    const data = await resp.json();
+    const events = data.value || [];
+    if (!events.length) { showToast('No se encontraron eventos en el calendario de Microsoft.', 'info'); return; }
+
+    let meetings = getData('meetings', MEETINGS_DEFAULT);
+    let added = 0, skipped = 0;
+
+    events.forEach(ev => {
+      // Convertir fecha/hora
+      const startDT  = new Date(ev.start.dateTime + (ev.start.dateTime.endsWith('Z') ? '' : 'Z'));
+      const endDT    = new Date(ev.end.dateTime   + (ev.end.dateTime.endsWith('Z')   ? '' : 'Z'));
+      const fecha    = startDT.toISOString().slice(0, 10);
+      const hInicio  = startDT.toTimeString().slice(0, 5);
+      const hFin     = endDT.toTimeString().slice(0, 5);
+      const titulo   = (ev.subject || 'Sin título').trim();
+
+      // Evitar duplicados (mismo título + misma fecha)
+      const existe = meetings.some(m => m.titulo === titulo && m.fecha === fecha);
+      if (existe) { skipped++; return; }
+
+      const newId = Math.max(0, ...meetings.map(m => m.id)) + 1;
+      meetings.push({
+        id: newId,
+        titulo,
+        fecha,
+        horaInicio: hInicio,
+        horaFin: hFin,
+        tipo: ev.isOnlineMeeting ? 'Teams' : 'Presencial',
+        participantes: [],
+        descripcion: ev.bodyPreview ? ev.bodyPreview.slice(0, 200) : '',
+        teamsUrl: ev.onlineMeeting?.joinUrl || ''
+      });
+      added++;
+    });
+
+    setData('meetings', meetings);
+    renderMeetingList();
+    renderCalendar();
+    renderDashboard();
+    showToast(`✅ Sincronización completa: ${added} reuniones importadas, ${skipped} ya existían.`, 'success');
+  } catch(e) {
+    showToast('Error sincronizando: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.textContent = '🔄 Sincronizar Teams'; btn.disabled = false; }
+  }
+}
+
+async function saveReunionAndCreateTeams() {
+  const token = await getToken();
+  if (!token) { showToast('Primero inicia sesión con Microsoft en Configuración', 'error'); navigate('configuracion'); return; }
+  const titulo = document.getElementById('r-titulo').value.trim();
+  const fecha = document.getElementById('r-fecha').value;
+  const horaInicio = document.getElementById('r-hora-inicio').value;
+  const horaFin = document.getElementById('r-hora-fin').value;
+  if (!titulo || !fecha || !horaInicio || !horaFin) { showToast('Completa título, fecha y horas primero', 'error'); return; }
+  const startDT = new Date(fecha + 'T' + horaInicio + ':00');
+  const endDT = new Date(fecha + 'T' + horaFin + ':00');
+  try {
+    showToast('⏳ Creando reunión en el calendario de Teams...', 'info');
+    const desc = document.getElementById('r-descripcion')?.value || '';
+    const resp = await fetch('https://graph.microsoft.com/v1.0/me/events', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject: titulo,
+        start: { dateTime: startDT.toISOString(), timeZone: 'America/Bogota' },
+        end:   { dateTime: endDT.toISOString(),   timeZone: 'America/Bogota' },
+        isOnlineMeeting: true,
+        onlineMeetingProvider: 'teamsForBusiness',
+        body: { contentType: 'text', content: desc }
+      })
+    });
+    const data = await resp.json();
+    if (resp.ok && data.id) {
+      const joinUrl = data.onlineMeeting?.joinUrl || '';
+      // Guardar reunión localmente
+      await saveReunion(true);
+      // Mostrar link
+      const linkDiv = document.getElementById('teams-meeting-link');
+      const linkA   = document.getElementById('teams-join-url');
+      if (joinUrl) {
+        linkDiv.style.display = 'block';
+        linkA.href = joinUrl;
+        linkA.textContent = joinUrl;
+        localStorage.setItem('last_teams_meeting_url', joinUrl);
+      }
+      showToast('✅ Reunión creada en el calendario de Teams — aparecerá en tu app de Teams', 'success');
+    } else {
+      const errMsg = data.error?.message || '';
+      const errCode = data.error?.code || '';
+      if (resp.status === 401 || resp.status === 403 || errCode === 'InvalidAuthenticationToken' || errCode === 'Forbidden') {
+        showToast('❌ Sin permisos de calendario. Cierra sesión de Microsoft en Configuración, vuelve a iniciar sesión y reintenta.', 'error');
+      } else if (errCode === 'RequestBrokerInvalidRequest' || errMsg.includes('onlineMeetingProvider')) {
+        showToast('❌ Tu cuenta no tiene licencia de Teams para crear reuniones online. La reunión se guardará sin link de Teams.', 'error');
+        await saveReunion(true);
+      } else {
+        showToast('❌ Error Teams (' + resp.status + '): ' + (errMsg || 'Error desconocido'), 'error');
+        console.error('Teams API error:', data);
+      }
+    }
+  } catch(e) { showToast('Error creando reunión: ' + e.message, 'error'); }
+}
+
+function copyTeamsLink() {
+  const url = document.getElementById('teams-join-url').href;
+  navigator.clipboard.writeText(url).then(() => showToast('Link copiado al portapapeles', 'success'));
+}
+
+// ===== ONEDRIVE INVENTARIO =====
+async function msLoadInventoryFromOneDrive() {
+  const token = await getToken();
+  if (!token) {
+    showToast('Primero inicia sesión con Microsoft en Configuración 🟣', 'error');
+    navigate('configuracion');
+    return;
+  }
+  const fileName = localStorage.getItem('inv_onedrive_filename') || 'Inventario definitivo_2026';
+  showToast('⏳ Buscando "' + fileName + '" en OneDrive...', 'info');
+  try {
+    // 1. Buscar el archivo por nombre
+    const searchResp = await fetch(
+      "https://graph.microsoft.com/v1.0/me/drive/root/search(q='" + encodeURIComponent(fileName) + "')?$select=id,name,file",
+      { headers: { Authorization: 'Bearer ' + token } }
+    );
+    if (!searchResp.ok) throw new Error('Error buscando archivo: ' + searchResp.status);
+    const searchData = await searchResp.json();
+    const excelFiles = (searchData.value || []).filter(f => f.file && (f.name.endsWith('.xlsx') || f.name.endsWith('.xlsm') || f.name.endsWith('.xls')));
+    if (excelFiles.length === 0) {
+      showToast('❌ No se encontró "' + fileName + '" en OneDrive. Verifica el nombre en Configuración.', 'error');
+      return;
+    }
+    const file = excelFiles[0];
+    showToast('📊 Archivo encontrado: "' + file.name + '". Leyendo datos...', 'info');
+
+    // 2. Descargar el archivo binario (compatible con .xlsx Y .xlsm)
+    const contentResp = await fetch(
+      'https://graph.microsoft.com/v1.0/me/drive/items/' + file.id + '/content',
+      { headers: { Authorization: 'Bearer ' + token } }
+    );
+    if (!contentResp.ok) {
+      const errText = await contentResp.text().catch(() => String(contentResp.status));
+      showToast('❌ Error al descargar Excel: ' + errText, 'error');
+      return;
+    }
+    const arrayBuffer = await contentResp.arrayBuffer();
+
+    // 3. Parsear con SheetJS (soporta .xlsm nativamente)
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+    const sheetName = localStorage.getItem('inv_onedrive_sheet') || '';
+    const wsName = (sheetName && workbook.SheetNames.includes(sheetName))
+      ? sheetName
+      : workbook.SheetNames[0];
+    const ws = workbook.Sheets[wsName];
+    if (!ws) {
+      showToast('❌ No se encontró la hoja "' + (sheetName || wsName) + '" en el archivo.', 'error');
+      return;
+    }
+
+    // 4. Convertir a array de filas
+    const rawValues = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    if (!rawValues || rawValues.length < 2) {
+      showToast('❌ El archivo no tiene datos suficientes o la hoja está vacía.', 'error');
+      return;
+    }
+
+    // 5. Auto-detectar fila de encabezados (igual que sync_inventory.py)
+    const COL_MAP = {
+      'codigo producto':'CODIGO PRODUCTO','código producto':'CODIGO PRODUCTO','codigo':'CODIGO PRODUCTO',
+      'descripcion':'DESCRIPCION','descripción':'DESCRIPCION',
+      'marca':'MARCA',
+      'ubicacion':'UBICACIÓN','ubicación':'UBICACIÓN',
+      'stock actual':'STOCK ACTUAL','stock':'STOCK ACTUAL',
+      'entradas':'ENTRADAS','salidas':'SALIDAS'
+    };
+    let headerRowIdx = 0;
+    let bestScore = 0;
+    for (let i = 0; i < Math.min(15, rawValues.length); i++) {
+      const score = rawValues[i].filter(v => COL_MAP[String(v).trim().toLowerCase()]).length;
+      if (score > bestScore) { bestScore = score; headerRowIdx = i; }
+    }
+    const headers = rawValues[headerRowIdx].map(h => {
+      const key = String(h).trim().toLowerCase();
+      return COL_MAP[key] || String(h).trim().toUpperCase();
+    });
+
+    // 6. Convertir filas a objetos
+    const newINV = rawValues.slice(headerRowIdx + 1)
+      .filter(row => row.some(cell => cell !== '' && cell !== null && cell !== undefined))
+      .map(row => {
+        const obj = {};
+        headers.forEach((h, i) => {
+          if (!h) return;
+          const val = (row[i] !== null && row[i] !== undefined) ? row[i] : '';
+          if (h === 'STOCK ACTUAL' || h === 'ENTRADAS' || h === 'SALIDAS') {
+            obj[h] = isNaN(Number(val)) ? 0 : Math.round(Number(val));
+          } else {
+            obj[h] = String(val);
+          }
+        });
+        return obj;
+      });
+
+    if (newINV.length === 0) {
+      showToast('❌ No se encontraron filas de datos en la hoja.', 'error');
+      return;
+    }
+
+    // 4. Guardar en localStorage y actualizar la UI
+    localStorage.setItem('inv_data_onedrive', JSON.stringify(newINV));
+    localStorage.setItem('inv_last_sync', new Date().toISOString());
+    window.INV = newINV;
+
+    // Refrescar el inventario si está visible
+    if (typeof window.invUpdateStats === 'function') window.invUpdateStats();
+    if (typeof window.invRender === 'function') window.invRender();
+
+    showToast('✅ Inventario sincronizado: ' + newINV.length + ' productos desde OneDrive.', 'success');
+
+    // Actualizar badge de sync en el botón
+    const syncBtn = document.getElementById('inv-sync-btn');
+    if (syncBtn) syncBtn.textContent = '☁️ Sincronizado ✓';
+    setTimeout(() => { if(syncBtn) syncBtn.textContent = '☁️ Sincronizar OneDrive'; }, 3000);
+
+  } catch(e) {
+    showToast('Error sincronizando inventario: ' + e.message, 'error');
+    console.error('OneDrive sync error:', e);
+  }
+}
+
+function invClearOneDriveCache() {
+  localStorage.removeItem('inv_data_onedrive');
+  localStorage.removeItem('inv_last_sync');
+  window.INV = window._INV_BASE || window.INV;
+  if (typeof window.invUpdateStats === 'function') window.invUpdateStats();
+  if (typeof window.invRender === 'function') window.invRender();
+  showToast('Cache de OneDrive limpiado. Mostrando inventario base.', 'info');
+}
+
+function saveMsConfig() {
+  const clientId = document.getElementById('ms-client-id').value.trim();
+  const tenantId = document.getElementById('ms-tenant-id').value.trim();
+  const teamId = document.getElementById('ms-team-id').value.trim();
+  if (clientId) localStorage.setItem('ms_client_id', clientId);
+  if (tenantId) localStorage.setItem('ms_tenant_id', tenantId);
+  if (teamId) localStorage.setItem('ms_team_id', teamId);
+  msalInstance = null; // reiniciar con nuevos valores
+  initMsal();
+  showToast('Configuración Microsoft guardada', 'success');
+}
+
+function saveOneDriveConfig() {
+  const fname = document.getElementById('inv-filename-input').value.trim();
+  const sheet = document.getElementById('inv-sheet-input').value.trim();
+  if (fname) localStorage.setItem('inv_onedrive_filename', fname);
+  if (sheet !== undefined) localStorage.setItem('inv_onedrive_sheet', sheet);
+  const statusEl = document.getElementById('inv-sync-status');
+  if (statusEl) {
+    const ls = localStorage.getItem('inv_last_sync');
+    statusEl.innerHTML = '✅ Configuración guardada.' + (ls ? ' Última sincronización: ' + new Date(ls).toLocaleString('es-CO') : ' Aún no se ha sincronizado.');
+  }
+  showToast('Configuración OneDrive guardada', 'success');
+}
+
+function loadOneDriveConfigUI() {
+  const fnInput = document.getElementById('inv-filename-input');
+  const shInput = document.getElementById('inv-sheet-input');
+  const statusEl = document.getElementById('inv-sync-status');
+  if (fnInput) fnInput.value = localStorage.getItem('inv_onedrive_filename') || 'Inventario definitivo_2026';
+  if (shInput) shInput.value = localStorage.getItem('inv_onedrive_sheet') || '';
+  if (statusEl) {
+    const ls = localStorage.getItem('inv_last_sync');
+    statusEl.innerHTML = ls ? '🕐 Última sincronización: <strong>' + new Date(ls).toLocaleString('es-CO') + '</strong>' : 'Aún no sincronizado desde OneDrive.';
+  }
+}
+
+// Inicializar MSAL al cargar
+document.addEventListener('DOMContentLoaded', () => { setTimeout(initMsal, 1500); });
+
+document.addEventListener('keydown', function(e) {
+  if(e.key==='Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+    if(chatOpen) toggleChat();
+  }
+});
+
+// ===== OCULTAR SPLASH AL CARGAR =====
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    const splash = document.getElementById('splash');
+    if (splash) {
+      splash.style.transition = 'opacity 0.5s ease';
+      splash.style.opacity = '0';
+      setTimeout(function() { splash.style.display = 'none'; }, 500);
+    }
+  }, 2000);
+});
 </script>
 </body>
 </html>
