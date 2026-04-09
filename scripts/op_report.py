@@ -1,17 +1,18 @@
 """
 ENERGY — Reporte Diario de Órdenes de Pedido
 =============================================
-Lee el informe HTML de OP activas desde la carpeta Energy_bot
-y lo envía por correo vía Microsoft Graph API.
+Lee las órdenes desde ordenes.json en GitHub,
+genera un informe HTML y lo envía por correo
+vía Microsoft Graph API.
 
-Ejecutado automáticamente por Cowork
+Ejecutado automáticamente por GitHub Actions
 Lunes a Viernes a las 5:00 PM Colombia (UTC-5 = 22:00 UTC)
 """
 
 import json
 import os
 import sys
-import glob
+import base64
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -24,13 +25,20 @@ MONTHS_ES = {'January':'enero','February':'febrero','March':'marzo','April':'abr
               'May':'mayo','June':'junio','July':'julio','August':'agosto',
               'September':'septiembre','October':'octubre','November':'noviembre','December':'diciembre'}
 
+GH_OWNER = 'cami902026-oss'
+GH_REPO  = 'plataforma-eyg'
+
+POC_STAGES = [
+    {'key': 'compra',   'icon': '🛒', 'label': 'Compra'},
+    {'key': 'entrega',  'icon': '🚚', 'label': 'Entrega'},
+    {'key': 'cert',     'icon': '📋', 'label': 'Certificado'},
+    {'key': 'factura',  'icon': '💰', 'label': 'Facturación'},
+]
+
 
 # ─── 1. LEER CREDENCIALES ─────────────────────────────────────────────────────
 
 def load_config() -> dict:
-    """Carga credenciales desde cowork_config.json (solo disponible en entorno local Cowork).
-    En GitHub Actions las credenciales vienen de variables de entorno (secrets).
-    """
     config_path = os.path.join(os.path.dirname(__file__), 'cowork_config.json')
     if not os.path.exists(config_path):
         return {}
@@ -38,51 +46,136 @@ def load_config() -> dict:
         return json.load(f)
 
 
-# ─── 2. ENCONTRAR EL INFORME OP MÁS RECIENTE ─────────────────────────────────
+# ─── 2. DESCARGAR ordenes.json DESDE GITHUB ───────────────────────────────────
 
-def find_op_html(base_dir: str) -> str:
-    """Busca el archivo Informe_OP_Activas*.html más reciente en la carpeta."""
-    pattern = os.path.join(base_dir, 'Informe_OP_Activas*.html')
-    files = glob.glob(pattern)
-    if not files:
-        print("ERROR: No se encontró ningún archivo Informe_OP_Activas*.html")
+def load_ordenes_from_github(gh_token: str) -> list:
+    """Descarga ordenes.json del repositorio GitHub via API."""
+    url = f'https://api.github.com/repos/{GH_OWNER}/{GH_REPO}/contents/ordenes.json'
+    req = urllib.request.Request(url, headers={
+        'Authorization': f'Bearer {gh_token}',
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'EnergyBot/1.0'
+    })
+    try:
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read())
+            content = base64.b64decode(data['content']).decode('utf-8')
+            ordenes = json.loads(content)
+            print(f'✅ ordenes.json descargado: {len(ordenes)} órdenes')
+            return ordenes
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        print(f'ERROR descargando ordenes.json: {e.code} — {body}')
+        if e.code == 404:
+            print('⚠️  ordenes.json no existe en el repo aún. Se enviará reporte vacío.')
+            return []
         sys.exit(1)
-    latest = max(files, key=os.path.getmtime)
-    print(f"📄 Usando informe: {os.path.basename(latest)}")
-    return latest
+    except Exception as ex:
+        print(f'ERROR inesperado: {ex}')
+        return []
 
 
-# ─── 3. LEER Y PREPARAR EL HTML ───────────────────────────────────────────────
+# ─── 3. GENERAR HTML DEL REPORTE ──────────────────────────────────────────────
 
-def load_op_html(html_path: str) -> str:
-    with open(html_path, 'r', encoding='utf-8') as f:
-        return f.read()
-
-
-def extract_style_and_body(html_content: str):
-    """Extrae el bloque <style> y el contenido del <body> del HTML del informe."""
-    import re
-    style_match = re.search(r'<style[^>]*>(.*?)</style>', html_content, re.DOTALL | re.IGNORECASE)
-    style_block = style_match.group(1) if style_match else ''
-    body_match = re.search(r'<body[^>]*>(.*?)</body>', html_content, re.DOTALL | re.IGNORECASE)
-    body_content = body_match.group(1) if body_match else html_content
-    return style_block, body_content
+def badge_estado(estado: str) -> str:
+    colores = {
+        'activo':     ('background:#e6f4ea;color:#1e7e34', 'Activo'),
+        'completado': ('background:#e8f0fe;color:#1a56db', 'Completado'),
+        'cancelado':  ('background:#fce8e6;color:#c0392b', 'Cancelado'),
+    }
+    style, label = colores.get(estado, ('background:#f0f0f0;color:#555', estado.title()))
+    return f"<span style='padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;{style};'>{label}</span>"
 
 
-def wrap_for_email(html_content: str, date_str: str) -> str:
-    """Envuelve el HTML del informe en un contenedor de email con estilos en <head>."""
-    style_block, body_content = extract_style_and_body(html_content)
+def stage_dot(stage: dict, idx: int) -> str:
+    s = stage.get('s', 'pending')
+    fecha = stage.get('f', '')
+    nota  = stage.get('n', '')
+    st    = POC_STAGES[idx]
+    color = '#2EAA4A' if s == 'done' else ('#E8A020' if s == 'active' else '#8899bb')
+    bg    = '#e6f4ea' if s == 'done' else ('#fff8e1' if s == 'active' else '#1e3a6e')
+    fecha_txt = f"<br><span style='font-size:10px;color:#8899bb;'>{'/'.join(reversed(fecha.split('-')))}</span>" if fecha else ''
+    nota_txt  = f"<br><span style='font-size:10px;color:#8899bb;' title='{nota}'>💬 {nota[:25]}{'…' if len(nota)>25 else ''}</span>" if nota else ''
+    return (
+        f"<td style='text-align:center;padding:4px 8px;'>"
+        f"<div style='display:inline-block;background:{bg};border-radius:50%;width:28px;height:28px;"
+        f"line-height:28px;font-size:14px;color:{color};border:2px solid {color};'>{st['icon']}</div>"
+        f"<div style='font-size:10px;color:{color};font-weight:600;margin-top:2px;'>{st['label']}</div>"
+        f"{fecha_txt}{nota_txt}</td>"
+    )
+
+
+def build_report_html(ordenes: list, date_str: str) -> str:
+    activos     = [o for o in ordenes if o.get('estado') == 'activo']
+    completados = [o for o in ordenes if o.get('estado') == 'completado']
+    cancelados  = [o for o in ordenes if o.get('estado') == 'cancelado']
+
+    resumen = f"""
+    <div style='display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;'>
+      <div style='flex:1;min-width:120px;background:#0d1f3c;border:1px solid #1e3a6e;border-radius:10px;padding:16px;text-align:center;'>
+        <div style='font-size:28px;font-weight:900;color:#fff;'>{len(ordenes)}</div>
+        <div style='font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;margin-top:4px;'>Total</div>
+      </div>
+      <div style='flex:1;min-width:120px;background:#0d1f3c;border:1px solid #1e3a6e;border-radius:10px;padding:16px;text-align:center;'>
+        <div style='font-size:28px;font-weight:900;color:#2EAA4A;'>{len(activos)}</div>
+        <div style='font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;margin-top:4px;'>Activas</div>
+      </div>
+      <div style='flex:1;min-width:120px;background:#0d1f3c;border:1px solid #1e3a6e;border-radius:10px;padding:16px;text-align:center;'>
+        <div style='font-size:28px;font-weight:900;color:#1a56db;'>{len(completados)}</div>
+        <div style='font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;margin-top:4px;'>Completadas</div>
+      </div>
+      <div style='flex:1;min-width:120px;background:#0d1f3c;border:1px solid #1e3a6e;border-radius:10px;padding:16px;text-align:center;'>
+        <div style='font-size:28px;font-weight:900;color:#e53e3e;'>{len(cancelados)}</div>
+        <div style='font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;margin-top:4px;'>Canceladas</div>
+      </div>
+    </div>"""
+
+    if not ordenes:
+        cuerpo = "<div style='text-align:center;padding:40px;color:#8899bb;'>📋 No hay órdenes de pedido registradas aún.</div>"
+    else:
+        filas = ''
+        for o in reversed(ordenes):
+            stages = o.get('stages', [{},{},{},{}])
+            while len(stages) < 4:
+                stages.append({})
+            dots = ''.join(stage_dot(stages[i], i) for i in range(4))
+            filas += f"""
+            <tr style='border-bottom:1px solid #1e3a6e;'>
+              <td style='padding:12px 10px;'>
+                <div style='font-weight:700;color:#fff;font-size:13px;'>{o.get('num','—')}</div>
+                <div style='color:#8899bb;font-size:11px;margin-top:2px;'>{o.get('cliente','')}</div>
+              </td>
+              <td style='padding:12px 10px;color:#d0d9f0;font-size:12px;max-width:200px;'>
+                {(o.get('desc') or '')[:80]}{'…' if len(o.get('desc',''))>80 else ''}
+              </td>
+              <td style='padding:12px 10px;text-align:center;'>{badge_estado(o.get('estado','activo'))}</td>
+              {dots}
+            </tr>"""
+
+        cuerpo = f"""
+        <table style='width:100%;border-collapse:collapse;background:#0d1f3c;border-radius:10px;overflow:hidden;'>
+          <thead>
+            <tr style='background:#0F2B5B;'>
+              <th style='padding:10px;text-align:left;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>OP / Proyecto</th>
+              <th style='padding:10px;text-align:left;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>Descripción</th>
+              <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>Estado</th>
+              <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>🛒 Compra</th>
+              <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>🚚 Entrega</th>
+              <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>📋 Cert.</th>
+              <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>💰 Factura</th>
+            </tr>
+          </thead>
+          <tbody>{filas}</tbody>
+        </table>"""
+
     return f"""<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-{style_block}
-</style>
 </head>
-<body style="margin:0;padding:0;background:#f4f6fb;">
-<div style="max-width:860px;margin:0 auto;padding:16px;">
+<body style="margin:0;padding:0;background:#f4f6fb;font-family:'Open Sans',Arial,sans-serif;">
+<div style="max-width:900px;margin:0 auto;padding:16px;">
   <div style="background:#0F2B5B;padding:18px 28px;border-radius:12px 12px 0 0;display:flex;justify-content:space-between;align-items:center;">
     <div>
       <div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:1px;">⚡ ENERGY</div>
@@ -91,10 +184,13 @@ def wrap_for_email(html_content: str, date_str: str) -> str:
     <div style="font-size:12px;color:#93c5fd;text-align:right;">{date_str}</div>
   </div>
   <div style="height:3px;background:linear-gradient(90deg,#E8A020,transparent);"></div>
-  {body_content}
-  <div style="background:#071525;padding:14px;border-radius:0 0 12px 12px;text-align:center;margin-top:0;">
+  <div style="background:#071525;padding:20px;border-radius:0 0 0 0;">
+    {resumen}
+    {cuerpo}
+  </div>
+  <div style="background:#071525;padding:14px;border-radius:0 0 12px 12px;text-align:center;margin-top:0;border-top:1px solid #1e3a6e;">
     <p style="margin:3px 0;font-size:11px;color:#8899bb;">⚡ Generado por <strong style="color:#E8A020;">ENERGY — Asistente Administrativo</strong></p>
-    <p style="margin:3px 0;font-size:11px;color:#8899bb;">E&G Energy Group · Reporte automático L–V 5:00 PM Colombia</p>
+    <p style="margin:3px 0;font-size:11px;color:#8899bb;">E&amp;G Energy Group · Reporte automático L–V 5:00 PM Colombia</p>
   </div>
 </div>
 </body>
@@ -155,14 +251,13 @@ if __name__ == '__main__':
     sender_email  = os.environ.get('SENDER_EMAIL',     cfg.get('sender_email',     '')).strip()
     recipients    = [r.strip() for r in os.environ.get(
                         'RECIPIENT_EMAILS', cfg.get('recipient_emails', '')).split(',')]
+    gh_token      = os.environ.get('GH_TOKEN',         cfg.get('github_token',     '')).strip()
 
-    print(f"🔍 Sender     : {sender_email}")
-    print(f"🔍 Destinatarios: {', '.join(recipients)}")
+    print(f"🔍 Sender        : {sender_email}")
+    print(f"🔍 Destinatarios : {', '.join(recipients)}")
 
-    base_dir = os.path.join(os.path.dirname(__file__), '..')
-    html_path = find_op_html(base_dir)
-    html_content = load_op_html(html_path)
-    print(f"✅ Informe OP cargado ({len(html_content):,} caracteres)")
+    # Descargar órdenes desde GitHub
+    ordenes = load_ordenes_from_github(gh_token)
 
     now      = datetime.now()
     day      = DAYS_ES.get(now.strftime('%A'), now.strftime('%A'))
@@ -170,7 +265,8 @@ if __name__ == '__main__':
     date_str = f"{day} {now.day} de {month} de {now.year}"
     subject  = f"📋 Informe OP Activas E&G — {date_str}"
 
-    email_html = wrap_for_email(html_content, date_str)
+    print(f"📝 Generando informe para {len(ordenes)} órdenes...")
+    email_html = build_report_html(ordenes, date_str)
 
     token = get_access_token(tenant_id, client_id, client_secret)
     print(f"📧 Enviando a: {', '.join(recipients)}")
