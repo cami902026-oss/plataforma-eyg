@@ -92,7 +92,7 @@ def list_drive_folder(token, user_email, folder_path='root/children'):
 # ─── 3. DESCARGA EXCEL DESDE ONEDRIVE ─────────────────────────────────────────
 
 def download_excel(token, user_email, file_path):
-    """Descarga el archivo Excel del OneDrive del usua2io vía Graph API."""
+    """Descarga el archivo Excel del OneDrive del usuario vía Graph API."""
     encoded = urllib.parse.quote(file_path, safe='/')
     url = ('https://graph.microsoft.com/v1.0/users/' + user_email +
            '/drive/root:/' + encoded + ':/content')
@@ -133,6 +133,9 @@ def parse_excel(excel_bytes):
         for row_idx in range(1, 16):
             row_vals = [str(c.value or '').strip().lower() for c in ws_cand[row_idx]]
             score = sum(1 for v in row_vals if v in COLUMN_MAP)
+            if score > 0:
+                full_headers = [str(c.value or '').strip() for c in ws_cand[row_idx]]
+                print('  [' + sheet_name + '] Fila ' + str(row_idx) + ' score=' + str(score) + ': ' + str(full_headers))
             if score > best_ws_score:
                 best_ws_score = score
                 best_ws       = ws_cand
@@ -239,7 +242,7 @@ if __name__ == '__main__':
     print('🔍 Usuario OneDrive: ' + ONEDRIVE_USER_EMAIL)
     print('📂 Archivo:          ' + ONEDRIVE_FILE_PATH)
 
-    print('🔑 bteniendo token Microsoft...')
+    print('🔑 Obteniendo token Microsoft...')
     token = get_access_token(tenant_id, client_id, client_secret)
 
     # Diagnóstico: listar raíz y carpeta LOGISTICA
