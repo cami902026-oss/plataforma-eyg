@@ -100,7 +100,81 @@ def _cat_color(cat: str) -> tuple:
     }
     return m.get(str(cat).lower().strip(), ('#37474F', '#546E7A'))
 
-def _build_familia_block(familia: str, productos: list, accent: str) -> str:
+def _auto_classify(p: dict) -> tuple:
+    """Auto-clasifica un producto en (categoria, familia) por palabras clave.
+    Usa los campos CATEGORIA y FAMILIA del Excel si ya existen.
+    """
+    # Respeta los valores del Excel si están presentes
+    cat_excel = str(p.get('CATEGORIA', '') or '').lower().strip()
+    fam_excel = str(p.get('FAMILIA',   '') or '').strip()
+
+    desc = str(p.get('DESCRIPCION', '') or '').upper()
+
+    # ── Categoría ─────────────────────────────────────────────────────────────
+    if cat_excel in ('mecanico','mecánico','electrico','eléctrico',
+                     'instrumentacion','instrumentación'):
+        cat = cat_excel.replace('á','a').replace('é','e').replace('ó','o')
+    else:
+        ELEC_KW  = ['CABLE','BREAKER','INTERRUPTOR','TRANSFORMADOR','MOTOR',
+                    'BOBINA','CONTACTOR','RELE','RELÉ','FUSIBLE','TERMINAL',
+                    'CONECTOR','SWITCH','VARIADOR','CONDUCTOR','TABLERO',
+                    'LAMPARA','LÁMPARA','SOCKET','ENCHUFE','UPS']
+        INSTR_KW = ['SENSOR','TRANSMISOR','MEDIDOR','PRESOSTATO','TERMOSTATO',
+                    'MANOMETRO','MANÓMETRO','CAUDALIMETRO','CONTROLADOR',
+                    'PLC','HMI','INDICADOR','ALARMA','TRANSDUCTOR','DETECTOR',
+                    'TERMOCUPLA','TERMOPAR','ROTAMETRO']
+        MECA_KW  = ['CODO','BUSHING','PLATINA','VALVULA','VÁLVULA','NIPLE',
+                    'NIPPLE','TEE','UNION','UNIÓN','BRIDA','JUNTA','EMPAQUE',
+                    'TORNILLO','PERNO','TUERCA','BUJE','RODAMIENTO','MANGUERA',
+                    'ABRAZADERA','ORIFICIO','REDUCCION','REDUCCIÓN','TUBO',
+                    'TUBERIA','TUBERÍA','SELLO','RESORTE','EJE','ACOPLAMIENTO',
+                    'CADENA','SPROCKET','POLEA','CORREA','FILTRO MECAN',
+                    'ADAPTADOR','TAPÓN','TAPON','PLUG','CAP ','SOCKET NPT']
+        if   any(k in desc for k in ELEC_KW):  cat = 'electrico'
+        elif any(k in desc for k in INSTR_KW): cat = 'instrumentacion'
+        elif any(k in desc for k in MECA_KW):  cat = 'mecanico'
+        else:                                   cat = 'otros'
+
+    # ── Familia ───────────────────────────────────────────────────────────────
+    if fam_excel:
+        familia = fam_excel
+    else:
+        FAM_RULES = [
+            (['CODO'],                              'Codos'),
+            (['BUSHING','REDUCCION','REDUCCIÓN'],   'Reducciones y Bushings'),
+            (['PLATINA'],                           'Platinas'),
+            (['VALVULA','VÁLVULA','VALVE'],         'Válvulas'),
+            (['NIPLE','NIPPLE'],                    'Niples'),
+            (['TEE'],                               'Tees'),
+            (['UNION','UNIÓN'],                     'Uniones'),
+            (['BRIDA'],                             'Bridas'),
+            (['JUNTA','EMPAQUE','SELLO'],           'Juntas y Empaques'),
+            (['TORNILLO','PERNO','TUERCA','ARANDELA'], 'Tornillería'),
+            (['RODAMIENTO','BUJE'],                 'Rodamientos y Bujes'),
+            (['MANGUERA','TUBERIA','TUBERÍA','TUBO'], 'Tuberías y Mangueras'),
+            (['CABLE','CONDUCTOR'],                 'Cables y Conductores'),
+            (['SENSOR','TRANSMISOR'],               'Sensores y Transmisores'),
+            (['MANOMETRO','MANÓMETRO','PRESOSTATO','TERMOSTATO'], 'Instrumentos de Medición'),
+            (['MOTOR','BOBINA','CONTACTOR'],        'Motores y Accionamiento'),
+            (['BREAKER','FUSIBLE','INTERRUPTOR'],   'Protecciones Eléctricas'),
+        ]
+        familia = 'Otros'
+        for keywords, fam_name in FAM_RULES:
+            if any(k in desc for k in keywords):
+                familia = fam_name
+                break
+
+    return cat, familia
+
+
+def _familia_id(cat: str, familia: str) -> str:
+    """Genera un id HTML seguro para anclas de familia."""
+    import re
+    safe = re.sub(r'[^a-zA-Z0-9]', '-', (cat + '-' + familia).lower())
+    return 'fam-' + safe
+
+
+def _build_familia_block(familia: str, productos: list, accent: str, cat: str = '') -> str:
     # Ordenar: primero alfabético por descripción (agrupa tees, codos, etc.)
     # Los agotados van al final dentro de cada grupo
     inv_sorted = sorted(productos, key=lambda p: (
@@ -126,12 +200,15 @@ def _build_familia_block(familia: str, productos: list, accent: str) -> str:
     if agotados:
         badge_parts += " &nbsp;&#9888; " + str(agotados) + " agotados"
 
+    fam_id = _familia_id(cat, familia)
+
     return (
-        "<tr style='background:" + accent + "18;'>"
+        "<tr id='" + fam_id + "' style='background:" + accent + "18;'>"
         "<td colspan='6' style='padding:6px 12px;font-size:11px;font-weight:700;"
         "color:" + accent + ";border-left:3px solid " + accent + ";letter-spacing:.5px;'>"
         "&#128281; " + familia +
         " <span style='font-weight:400;color:#888;font-size:10px;'>— " + badge_parts + "</span>"
+        " <a href='#idx-top' style='float:right;font-size:9px;color:#aaa;text-decoration:none;'>&#8593; inicio</a>"
         "</td></tr>"
         + rows
     )
@@ -151,10 +228,12 @@ def _build_category_section(cat: str, productos: list) -> str:
     # Bloques por familia ordenados por nombre
     familia_blocks = ''
     for fam in sorted(familias.keys()):
-        familia_blocks += _build_familia_block(fam, familias[fam], accent)
+        familia_blocks += _build_familia_block(fam, familias[fam], accent, cat)
+
+    cat_id = 'cat-' + cat.replace('ó','o').replace('ú','u').replace('é','e').replace('á','a').replace('í','i')
 
     return (
-        "<div style='margin:18px 0 8px;'>"
+        "<div id='" + cat_id + "' style='margin:18px 0 8px;'>"
         "<table width='100%' cellpadding='0' cellspacing='0' style='border-collapse:collapse;'><tr>"
         "<td bgcolor='" + hdr_color + "' style='background:" + hdr_color + ";padding:10px 14px;'>"
         "<span style='font-size:13px;font-weight:700;letter-spacing:1px;color:#ffffff;'>" + label + "</span>"
@@ -253,7 +332,85 @@ def _build_rotation_section(rot: list) -> str:
         "</div>"
     )
 
+def _build_index(grupos: dict) -> str:
+    """Genera un índice de navegación rápida por categoría y familia."""
+    CAT_ORDER   = ['mecanico', 'electrico', 'instrumentacion', 'otros']
+    CAT_ICONS   = {'mecanico': '🔧', 'electrico': '⚡', 'instrumentacion': '🎛️', 'otros': '📦'}
+    CAT_COLORS  = {'mecanico': '#0F2B5B', 'electrico': '#7B3F00',
+                   'instrumentacion': '#1B5E20', 'otros': '#37474F'}
+
+    cat_blocks = ''
+    for cat in CAT_ORDER:
+        if cat not in grupos or not grupos[cat]:
+            continue
+        color = CAT_COLORS.get(cat, '#333')
+        icon  = CAT_ICONS.get(cat, '📦')
+        label = _cat_label(cat)
+        cat_id = 'cat-' + cat
+
+        # familias dentro de esta categoría
+        familias = {}
+        for p in grupos[cat]:
+            fam = str(p.get('FAMILIA','') or 'Sin familia').strip()
+            familias.setdefault(fam, []).append(p)
+
+        fam_links = ''
+        for fam in sorted(familias.keys()):
+            fam_id  = _familia_id(cat, fam)
+            count   = len(familias[fam])
+            agot    = sum(1 for p in familias[fam] if _stock(p) == 0)
+            agot_lbl = " <span style='color:#c0392b;font-size:9px;'>&#9888;" + str(agot) + "</span>" if agot else ""
+            fam_links += (
+                "<a href='#" + fam_id + "' style='display:inline-block;margin:2px 4px 2px 0;"
+                "padding:3px 9px;background:#f0f4f8;border:1px solid #d1d9e6;"
+                "border-radius:12px;font-size:11px;color:#334155;text-decoration:none;'>"
+                + fam + " <span style='color:#888;font-size:10px;'>(" + str(count) + ")</span>" + agot_lbl +
+                "</a>"
+            )
+
+        con_stock = sum(1 for p in grupos[cat] if _stock(p) > 0)
+        agotados  = sum(1 for p in grupos[cat] if _stock(p) == 0)
+
+        cat_blocks += (
+            "<tr><td style='padding:10px 14px 8px;border-bottom:1px solid #e5eaf2;vertical-align:top;'>"
+            "<a href='#" + cat_id + "' style='text-decoration:none;'>"
+            "<span style='display:inline-block;background:" + color + ";color:#fff;"
+            "padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;margin-bottom:7px;'>"
+            + icon + " " + label +
+            " <span style='font-weight:400;font-size:10px;opacity:.85;'>— "
+            + str(len(grupos[cat])) + " prod / "
+            + str(con_stock) + " en stock"
+            + (" / <span style='color:#fca5a5;'>" + str(agotados) + " agotados</span>" if agotados else "")
+            + "</span></span></a><br>"
+            + fam_links +
+            "</td></tr>"
+        )
+
+    return (
+        "<div id='idx-top' style='margin:0 0 18px;background:#f8faff;"
+        "border:1.5px solid #d1d9e6;border-radius:10px;overflow:hidden;'>"
+        "<div style='background:#0F2B5B;padding:9px 14px;'>"
+        "<span style='font-size:11px;font-weight:700;color:#fff;letter-spacing:.5px;'>"
+        "&#128269; &nbsp;ÍNDICE RÁPIDO — haz clic para ir a la sección</span>"
+        "</div>"
+        "<table width='100%' cellpadding='0' cellspacing='0' style='border-collapse:collapse;'>"
+        + cat_blocks +
+        "</table></div>"
+    )
+
+
 def generate_html(inv: list, stats: dict, date_str: str, rot: list = None) -> str:
+    # ── Auto-clasificar productos que no tengan CATEGORIA/FAMILIA en el Excel ──
+    for p in inv:
+        cat_excel = str(p.get('CATEGORIA', '') or '').lower().strip()
+        fam_excel = str(p.get('FAMILIA',   '') or '').strip()
+        if not cat_excel or not fam_excel:
+            auto_cat, auto_fam = _auto_classify(p)
+            if not cat_excel:
+                p['CATEGORIA'] = auto_cat
+            if not fam_excel:
+                p['FAMILIA'] = auto_fam
+
     # Agrupar por categoría
     CAT_ORDER = ['mecanico', 'electrico', 'instrumentacion', 'otros']
     grupos = {}
@@ -262,6 +419,9 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None) -> st
         if cat not in ('mecanico','electrico','instrumentacion','instrumentación'):
             cat = 'otros'
         grupos.setdefault(cat, []).append(p)
+
+    # Índice de navegación
+    index_block = _build_index(grupos)
 
     # Secciones por categoría
     cat_sections = ''
@@ -402,6 +562,15 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None) -> st
     {alert_box}
 
     <div class="sec-title">&#128230; Inventario por Categor&iacute;a &mdash; {stats['total']} productos</div>
+    {index_block}
+    <div class="search-wrap">
+      <div style="display:flex;align-items:center;background:white;border:2px solid #c5d0e8;border-radius:10px;padding:8px 14px;margin-bottom:6px;" id="inv-sbox">
+        <span style="font-size:16px;margin-right:8px;color:#94a3b8;">&#128269;</span>
+        <input id="inv-report-search" class="search-bar" type="text" placeholder="Buscar por c&oacute;digo, descripci&oacute;n, marca, ubicaci&oacute;n..." autocomplete="off" style="border:none;outline:none;font-size:14px;width:100%;color:#1e293b;background:transparent;padding:0;" oninput="filtrarInventario(this.value)">
+        <button onclick="document.getElementById('inv-report-search').value='';filtrarInventario('');" style="background:none;border:none;cursor:pointer;color:#94a3b8;font-size:18px;line-height:1;" title="Limpiar">&#215;</button>
+      </div>
+      <p class="search-tip" id="inv-search-tip">Escribe para buscar entre los {stats['total']} productos del reporte.</p>
+    </div>
     {cat_sections}
 
     {agotados_section}
@@ -414,6 +583,31 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None) -> st
     <p>E&amp;G Energy Group &middot; Reporte autom&aacute;tico L&ndash;V 5:00 PM Colombia</p>
   </div>
 </div>
+<script>
+function filtrarInventario(term) {{
+  const q = (term || '').trim().toLowerCase();
+  const tip = document.getElementById('inv-search-tip');
+  const wrap = document.querySelector('.body');
+  const allRows = [];
+  wrap.querySelectorAll('table').forEach(function(tbl) {{
+    tbl.querySelectorAll('tbody tr').forEach(function(tr) {{ allRows.push(tr); }});
+  }});
+  if (!q) {{
+    allRows.forEach(function(tr) {{ tr.style.display = ''; }});
+    tip.textContent = 'Escribe para buscar entre los {stats['total']} productos del reporte.';
+    tip.style.color = '#888';
+    return;
+  }}
+  let visibles = 0;
+  allRows.forEach(function(tr) {{
+    if (tr.textContent.toLowerCase().includes(q)) {{ tr.style.display = ''; visibles++; }}
+    else {{ tr.style.display = 'none'; }}
+  }});
+  tip.textContent = visibles === 0 ? '\u26a0\ufe0f No se encontraron productos para "' + term + '"'
+    : visibles + ' producto' + (visibles !== 1 ? 's' : '') + ' encontrado' + (visibles !== 1 ? 's' : '') + ' para "' + term + '"';
+  tip.style.color = visibles === 0 ? '#c0392b' : '#15803d';
+}}
+</script>
 </body>
 </html>"""
 
