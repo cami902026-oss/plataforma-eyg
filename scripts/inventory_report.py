@@ -82,7 +82,7 @@ def _stock_badge(stock):
     elif stock <= 3:
         return "<span style='background:#fff8e1;color:#b7770d;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;'>&#9888; " + str(stock) + "</span>"
     else:
-        return "<span style='background:#e6f4ea;color:#1e7e34;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;'>&#10003; " + str(stock) + "</span>"
+        return "<span style='background:#e6f4ea;color:#1e7e34;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:7007'>&#10003; " + str(stock) + "</span>"
 
 
 def _cat_label(cat: str) -> str:
@@ -117,8 +117,12 @@ def _auto_classify(p: dict) -> tuple:
     else:
         ELEC_KW  = ['CABLE','BREAKER','INTERRUPTOR','TRANSFORMADOR','MOTOR',
                     'BOBINA','CONTACTOR','RELE','RELÉ','FUSIBLE','TERMINAL',
-                    'CONECTOR','SWITCH','VARIADOR','CONDUCTOR','TABLERO',
-                    'LAMPARA','LÁMPARA','SOCKET','ENCHUFE','UPS']
+                    'SWITCH','VARIADOR','CONDUCTOR','TABLERO',
+                    'LAMPARA','LÁMPARA','ENCHUFE','UPS',
+                    'LIQUID TIGHT','LIQUIDTIGHT','CORAZA','EMT','CONDUIT',
+                    'AISLADOR','CAJA DE PASO','CAJA FUNDIDA','CAJA ELECTRICA',
+                    'TOMA ELECT','TOMA CORR','TOMACORRIENTE',
+                    'CONECTOR CURVO','CURVA EMT','CURVA CONDUIT']
         INSTR_KW = ['SENSOR','TRANSMISOR','MEDIDOR','PRESOSTATO','TERMOSTATO',
                     'MANOMETRO','MANÓMETRO','CAUDALIMETRO','CONTROLADOR',
                     'PLC','HMI','INDICADOR','ALARMA','TRANSDUCTOR','DETECTOR',
@@ -128,8 +132,12 @@ def _auto_classify(p: dict) -> tuple:
                     'TORNILLO','PERNO','TUERCA','BUJE','RODAMIENTO','MANGUERA',
                     'ABRAZADERA','ORIFICIO','REDUCCION','REDUCCIÓN','TUBO',
                     'TUBERIA','TUBERÍA','SELLO','RESORTE','EJE','ACOPLAMIENTO',
-                    'CADENA','SPROCKET','POLEA','CORREA','FILTRO MECAN',
-                    'ADAPTADOR','TAPÓN','TAPON','PLUG','CAP ','SOCKET NPT']
+                    'CADENA','SPROCKET','POLEA','CORREA','FILTRO',
+                    'ADAPTADOR','TAPÓN','TAPON','PLUG','CAP ','SOCKET NPT',
+                    'ESPIROMETALICO','ESPIROMETÁLICO','ESPIROME',
+                    'ESPARRAGO','ESPÁRRAGO','FLANCHE','FLANGE',
+                    'THREADOLET','SOCKOLET','WELDOLET','OLET',
+                    'UNIVERSAL','COPA AC','COPA DE AC']
         if   any(k in desc for k in ELEC_KW):  cat = 'electrico'
         elif any(k in desc for k in INSTR_KW): cat = 'instrumentacion'
         elif any(k in desc for k in MECA_KW):  cat = 'mecanico'
@@ -147,12 +155,23 @@ def _auto_classify(p: dict) -> tuple:
             (['NIPLE','NIPPLE'],                    'Niples'),
             (['TEE'],                               'Tees'),
             (['UNION','UNIÓN'],                     'Uniones'),
-            (['BRIDA'],                             'Bridas'),
+            (['UNIVERSAL'],                         'Universales'),
+            (['BRIDA','FLANCHE','FLANGE'],          'Bridas y Flanches'),
+            (['ESPIROMETALICO','ESPIROMETÁLICO','ESPIROME'], 'Juntas Espirometálicas'),
             (['JUNTA','EMPAQUE','SELLO'],           'Juntas y Empaques'),
-            (['TORNILLO','PERNO','TUERCA','ARANDELA'], 'Tornillería'),
+            (['TORNILLO','PERNO','TUERCA','ARANDELA','ESPARRAGO','ESPÁRRAGO'], 'Tornillería'),
+            (['THREADOLET','SOCKOLET','WELDOLET','OLET'], 'Olets'),
+            (['COPA AC','COPA DE AC'],              'Copas AC'),
+            (['FILTRO'],                            'Filtros'),
             (['RODAMIENTO','BUJE'],                 'Rodamientos y Bujes'),
             (['MANGUERA','TUBERIA','TUBERÍA','TUBO'], 'Tuberías y Mangueras'),
             (['CABLE','CONDUCTOR'],                 'Cables y Conductores'),
+            (['LIQUID TIGHT','LIQUIDTIGHT','CORAZA','CONDUIT','EMT'],
+                                                   'Conduit y Accesorios'),
+            (['CURVA EMT','CURVA CONDUIT'],         'Curvas Conduit'),
+            (['CAJA DE PASO','CAJA FUNDIDA','CAJA ELECTRICA'], 'Cajas Eléctricas'),
+            (['AISLADOR'],                          'Aisladores'),
+            (['TOMA','TOMACORRDIENTE','ENCHUFE'],    'Tomas y Enchufes'),
             (['SENSOR','TRANSMISOR'],               'Sensores y Transmisores'),
             (['MANOMETRO','MANÓMETRO','PRESOSTATO','TERMOSTATO'], 'Instrumentos de Medición'),
             (['MOTOR','BOBINA','CONTACTOR'],        'Motores y Accionamiento'),
@@ -163,7 +182,6 @@ def _auto_classify(p: dict) -> tuple:
             if any(k in desc for k in keywords):
                 familia = fam_name
                 break
-
     return cat, familia
 
 
