@@ -28,7 +28,12 @@ MONTHS_ES = {'January':'enero','February':'febrero','March':'marzo','April':'abr
 # ─── 1. LEER CREDENCIALES ─────────────────────────────────────────────────────
 
 def load_config() -> dict:
+    """Carga credenciales desde cowork_config.json (solo disponible en entorno local Cowork).
+    En GitHub Actions las credenciales vienen de variables de entorno (secrets).
+    """
     config_path = os.path.join(os.path.dirname(__file__), 'cowork_config.json')
+    if not os.path.exists(config_path):
+        return {}
     with open(config_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
