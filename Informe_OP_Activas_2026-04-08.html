@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Informe OP Activas - E&G Energy Group</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: #f4f6fb; color: #1a1a2e; }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+    header { background: #0F2B5B; color: white; padding: 20px 28px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; }
+    .header-title font-size: 22px; font-weight: 900; }
+    .header-sub { font-size: 12px; color: #93c5fd; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+    .accent-bar { height: 3px; background: linear-gradient(90deg,#E8A020,transparent); }
+    .summary { display: flex; gap: 12px; padding: 16px; background: white; border-bottom: 1px solid #e2e8f0; }
+    .stat-card { flex: 1; text-align: center; padding: 12px; background: #f8fafc; border-radius: 8px; }
+    .stat-number { font-size: 24px; font-weight: 900; color: #0F2B5B; }
+    .stat-label { font-size: 11px; color: #64748b; margin-top: 4px; }
+    .op-card { background: white; margin: 16px 0; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden; }
+    .op-header { padding: 16px 20px; background: linear-gradient(135deg,#0F2B5B,#163873); color: white; display: flex; justify-content: space-between; align-items: center; }
+    .op-number { font-size: 18px; font-weight: 900; }
+    .op-client { font-size: 13px; opacity: 0.85; margin-top: 3px; }
+    .badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .badge-active { background: #16800d; color: white; }
+    .op-body { padding: 20px; }
+    .op-desc { color: #475569; font-size: 13px; margin-bottom: 16px; }
+    .timeline { position: relative; padding: 8px 0; }
+    .timeline::before { content: ''; position: absolute; top: 22px; left: 16px; right: 16px; height: 4px; background: #e2e8f0; border-radius: 4px; }
+    .tl-track { position: absolute; top: 22px; left: 16px; height: 4px; background: linear-gradient(90deg,#0F2B5B,#3b82f6); border-radius: 4px; transition: width 0.6s; }
+    .tl-steps { display: flex; justify-content: space-between; position: relative; }
+    .tl-step { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .tl-dot { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; border: 3px solid white; box-shadow: 0 0 0 2px #cbd0d9; z-index: 1; }
+    .tl-dot.done { background: #0f7b48; box-shadow: 0 0 0 2px #0f7b48; }
+    .tl-dot.active { background: #0F2B5B; box-shadow: 0 0 0 2px #0F2B5B; animation: pulse 2s infinite; }
+    .tl-dot.pending { background: #e2e8f0; box-shadow: 0 0 0 2px #cbd0d9; }
+    @keyframes pulse { 0, 100% { box-shadow: 0 0 0 2px #0F2B5B; } 50% { box-shadow: 0 0 0 6px rgba(15,43,91,0.3); } }
+    .tl-label { margin-top: 8px; font-size: 11px; font-weight: 700; text-align: center; }
+    .tl-sub { font-size: 10px; color: #94a3b8; margin-top: 2px; text-align: center; }
+    .search-box { padding: 10px 16px; border: 1px solid #e2e8f0; border-radius: 8px; width: 100%; font-size: 14px; margin-bottom: 16px; }
+    footer { background: #071525; padding: 16px; border-radius: 0 0 12px 12px; text-align: center; color: #8899bb; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <div class="header-title">⚡ ENERGY</div>
+        <div class="header-sub">Reporte Diario — Órdenes de Pedido</div>
+      </div>
+      <div style="font-size:12px;color:#93c5fd">2026-04-08</div>
+    </header>
+    <div class="accent-bar"></div>
+
+    <div class="summary">
+      <div class="stat-card"><div class="stat-number">2</div><div class="stat-label">Total Activas</div></div>
+      <div class="stat-card"><div class="stat-number" style="color:#1680fd">2</div><div class="stat-label">Compra lista</div></div>
+      <div class="stat-card"><div class="stat-number" style="color:#f59800">2</div><div class="stat-label">En espera entrega</div></div>
+      <div class="stat-card"><div class="stat-number" style="color:#16a34a">0</div><div class="stat-label">Certificado listo</div></div>
+    </div>
+
+    <input class="search-box" type="text" placeholder="⟑ Buscar OP por número, cliente o descripción..." oninput="filtrarOP(this.value)" id="search-input" />
+
+    <div id="op-list">
+
+      <!-- OP 1: ODC-0717 -->
+      <div class="op-card">
+        <div class="op-header">
+          <div>
+            <div class="op-number">ODC-00003717</div>
+            <div class="op-client">�b SAR ENErGY </div>
+          </div>
+          <span class="badge badge-active">✅ Activa</span>
+        </div>
+        <div class="op-body">
+          <p class="op-desc">SISTEMA DE PRETESIÓN ELECTROHIDRÁULICA - CHECK VALVE DE 24 VOLTIOS</p>
+          <div class="timeline">
+            <div class="tl-track" style="width:25%"></div>
+            <div class="tl-steps">
+              <div class="tl-step"><div class="tl-dot done">✅</div><div class="tl-label">Compra</div><div class="tl-sub">Lista</div></div>
+              <div class="tl-step"><div class="tl-dot active">🔑</div><div class="tl-label">Entrega</div><div class="tl-sub">En spera</div></div>
+              <div class="tl-step"><div class="tl-dot pending">⚑</div><div class="tl-label">Certificado</div><div class="tl-sub">Pendiente</div></div>
+              <div class="tl-step"><div class="tl-dot pending">⚑</div><div class="tl-label">Facturación</div><div class="tl-sub">Pendiente</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OP 2: 8874 -->
+      <div class="op-card">
+        <div class="op-header">
+          <div>
+            <div class="op-number">8874</div>
+            <div class="op-client">� SERTECPPT</div>
+          </div>
+          <span class="badge badge-active">✅ Activa</span>
+        </div>
+        <div class="op-body">
+          <p class="op-desc">SISTEMA DE PRETESIÓN ELECTP�HI DG–CHECK VALVE DE 24 VOLTIOS</p>
+          <div class="timeline">
+            <div class="tl-track" style="width:25%"></div>
+            <div class="tl-steps">
+              <div class="tl-step"><div class="tl-dot done">✅</div><div class="tl-label">Compra</div><div class="tl-sub">Lista</div></div>
+              <div class="tl-step"><div class="tl-dot active">🔑</div><div class="tl-label">Entrega</div><div class="tl-sub">En espera</div></div>
+              <div class="tl-step"><div class="tl-dot pending">⚑</div><div class="tl-label">Certificado</step>
+                                    <div class="tl-sub">Pendiente</div></div>
+              <div class="tl-step"><div class="tl-dot pending">⚑</div><div class="tl-label">Facturación</div><div class="tl-sub">Pendiente</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer>
+      <p style="margin:3px 0;">⚑ Generado por <strong style="color:#E8A020">ENERGY — Asistente Administrativo</strong></p>
+      <p style="margin:3px 0;">E&amp;G Energy Group · Reporte automático L–V 5:00 PM Colombia</p>
+    </footer>
+  </div>
+
+  <script>
+    function filtrarOP(term) {
+      const t = term.toLowerCase();
+      document.querySelectorAll('.op-card').forEach(card => {
+        card.style.display = card.textContent.toLowerCase().includes(t) ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>
