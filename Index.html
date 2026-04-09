@@ -1634,9 +1634,17 @@ let currentPage = 'dashboard';
 let chatOpen = false;
 let currentView = 'calendar';
 function getData(key, def) {
+  if (key === 'meetings') {
+    return MEETINGS_CACHE !== null ? MEETINGS_CACHE : def;
+  }
   try { const d = localStorage.getItem('max_'+key); return d ? JSON.parse(d) : def; } catch(e) { return def; }
 }
 function setData(key, val) {
+  if (key === 'meetings') {
+    MEETINGS_CACHE = val;
+    saveReunionesToGitHub(val);
+    return;
+  }
   localStorage.setItem('max_'+key, JSON.stringify(val));
   // Sincronizar tareas con la API cuando cambian
   if (key === 'tasks') {
@@ -1675,6 +1683,77 @@ const GH_REPO  = 'plataforma-eyg';
 // ── Caché local de órdenes (se carga desde GitHub al iniciar) ──
 let POC_CACHE = [];
 let POC_FILE_SHA = '';
+
+// ── Caché local de reuniones (se carga desde GitHub al iniciar) ──
+let MEETINGS_CACHE = null;  // null = aún no cargado
+let MEETINGS_FILE_SHA = '';
+
+async function loadReunionesFromGitHub() {
+  const token = localStorage.getItem('gh_pat_token');
+  const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/reuniones.json`;
+  try {
+    const res = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      MEETINGS_FILE_SHA = data.sha;
+      const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+      const parsed = JSON.parse(decoded);
+      // Si GitHub tiene reuniones úsalas; si está vacío usa las de localStorage o DEFAULT
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        MEETINGS_CACHE = parsed;
+      } else {
+        // Intentar recuperar desde localStorage
+        try {
+          const ls = JSON.parse(localStorage.getItem('max_meetings') || '[]');
+          MEETINGS_CACHE = ls.length > 0 ? ls : MEETINGS_DEFAULT;
+        } catch(_) { MEETINGS_CACHE = MEETINGS_DEFAULT; }
+        // Guardar en GitHub para futuras sesiones
+        saveReunionesToGitHub(MEETINGS_CACHE);
+      }
+    } else {
+      try {
+        const ls = JSON.parse(localStorage.getItem('max_meetings') || '[]');
+        MEETINGS_CACHE = ls.length > 0 ? ls : MEETINGS_DEFAULT;
+      } catch(_) { MEETINGS_CACHE = MEETINGS_DEFAULT; }
+      saveReunionesToGitHub(MEETINGS_CACHE);
+    }
+  } catch(e) {
+    console.warn('Error cargando reuniones desde GitHub:', e);
+    try {
+      const ls = JSON.parse(localStorage.getItem('max_meetings') || '[]');
+      MEETINGS_CACHE = ls.length > 0 ? ls : MEETINGS_DEFAULT;
+    } catch(_) { MEETINGS_CACHE = MEETINGS_DEFAULT; }
+  }
+  renderCalendar();
+  renderMeetingList();
+  renderDashboard();
+}
+
+async function saveReunionesToGitHub(arr) {
+  const token = localStorage.getItem('gh_pat_token');
+  localStorage.setItem('max_meetings', JSON.stringify(arr)); // backup local siempre
+  if (!token) return;
+  try {
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(arr, null, 2))));
+    const body = {
+      message: `📅 Reuniones actualizadas — ${new Date().toLocaleString('es-CO')}`,
+      content: b64, branch: 'main'
+    };
+    if (MEETINGS_FILE_SHA) body.sha = MEETINGS_FILE_SHA;
+    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/reuniones.json`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) { const r = await res.json(); MEETINGS_FILE_SHA = r.content.sha; }
+  } catch(e) { console.warn('Error guardando reuniones en GitHub:', e); }
+}
 
 async function loadOrdenesFromGitHub() {
   const token = localStorage.getItem('gh_pat_token');
@@ -1956,6 +2035,8 @@ function initApp() {
   setInterval(syncMeetingsFromAPI, 30000);
   // Cargar órdenes de pedido desde GitHub
   loadOrdenesFromGitHub();
+  // Cargar reuniones desde GitHub
+  loadReunionesFromGitHub();
 }
 // ===== NAVIGATION =====
 function navigate(page) {
