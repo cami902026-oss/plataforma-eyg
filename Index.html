@@ -1689,7 +1689,7 @@ let MEETINGS_CACHE = null;  // null = aún no cargado
 let MEETINGS_FILE_SHA = '';
 
 async function loadReunionesFromGitHub() {
-  const token = localStorage.getItem('gh_pat_token');
+  const token = getGHToken();
   const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/reuniones.json`;
   try {
     const res = await fetch(url, {
@@ -1732,9 +1732,8 @@ async function loadReunionesFromGitHub() {
 }
 
 async function saveReunionesToGitHub(arr) {
-  const token = localStorage.getItem('gh_pat_token');
+  const token = getGHToken();
   localStorage.setItem('max_meetings', JSON.stringify(arr)); // backup local siempre
-  if (!token) return;
   try {
     const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(arr, null, 2))));
     const body = {
@@ -1755,8 +1754,10 @@ async function saveReunionesToGitHub(arr) {
   } catch(e) { console.warn('Error guardando reuniones en GitHub:', e); }
 }
 
+function getGHToken() { return localStorage.getItem('gh_pat_token') || ''; }
+
 async function loadOrdenesFromGitHub() {
-  const token = localStorage.getItem('gh_pat_token');
+  const token = getGHToken();
   const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json`;
   try {
     const res = await fetch(url, {
@@ -1782,11 +1783,8 @@ async function loadOrdenesFromGitHub() {
 }
 
 async function saveOrdenesToGitHub(arr) {
-  const token = localStorage.getItem('gh_pat_token');
-  if (!token) {
-    localStorage.setItem('procesos_oc', JSON.stringify(arr));
-    return;
-  }
+  const token = getGHToken();
+  localStorage.setItem('procesos_oc', JSON.stringify(arr)); // backup local siempre
   try {
     const jsonStr = JSON.stringify(arr, null, 2);
     // Codificar UTF-8 a base64 correctamente
@@ -2033,6 +2031,14 @@ function initApp() {
   // Auto-actualizar cada 30 segundos para ver cambios del bot en tiempo real
   setInterval(syncTasksFromAPI, 30000);
   setInterval(syncMeetingsFromAPI, 30000);
+  // Si no hay token guardado, guardarlo automáticamente la primera vez
+  if (!localStorage.getItem('gh_pat_token')) {
+    const t = prompt('🔑 Ingresa el token de GitHub para guardar tus datos en la nube:\n(Solo se pide una vez)', '');
+    if (t && t.trim()) {
+      localStorage.setItem('gh_pat_token', t.trim());
+      document.getElementById('gh-token-input').value = t.trim();
+    }
+  }
   // Cargar órdenes de pedido desde GitHub
   loadOrdenesFromGitHub();
   // Cargar reuniones desde GitHub
