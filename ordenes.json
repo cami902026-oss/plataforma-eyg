@@ -276,7 +276,7 @@
     "num": "060426E8427",
     "cliente": "CIAM",
     "desc": "SUMINISTRO PERFIL",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -288,14 +288,15 @@
         "f": "2026-04-06",
         "n": "",
         "envio": "entrega_mano",
+        "transp": "",
         "guia": "",
         "dest": "",
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-10",
+        "n": "ONE DRIVE PRAR ENVIO"
       },
       {
         "s": "done",
@@ -303,7 +304,7 @@
         "n": "389"
       }
     ],
-    "updatedAt": "2026-04-10T00:00:00.000Z"
+    "updatedAt": "2026-04-10T17:23:01.878Z"
   },
   {
     "id": "02CMP-9692",
