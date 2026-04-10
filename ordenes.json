@@ -1,1 +1,104 @@
-[]
+[
+  {
+    "id": "OP-2026-001",
+    "num": "OP-2026-001",
+    "cliente": "Mansarovar Energy Colombia",
+    "desc": "Orden de suministro de válvulas de control para campo Llanos. Verificar certificados de calidad antes de despacho.",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-05",
+        "n": "Compra realizada"
+      },
+      {
+        "s": "active",
+        "f": "2026-04-30",
+        "n": "En camino",
+        "envio": "camion_energy",
+        "guia": "",
+        "dest": "Campo Llanos",
+        "resp": "Andrés Barrera"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-04-10T03:19:24.090Z"
+  },
+  {
+    "id": "OP-2026-002",
+    "num": "OP-2026-002",
+    "cliente": "Ecopetrol S.A.",
+    "desc": "Transmisores de presión diferencial y manómetros para workover WO-112.",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-04-09",
+        "n": "En proceso de compra"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-04-10T03:19:24.090Z"
+  },
+  {
+    "id": "OP-2026-003",
+    "num": "OP-2026-003",
+    "cliente": "Hocol S.A.",
+    "desc": "Platinas de orificio 3-150 y 2-300 para reemplazo en planta de separación Sur.",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-03-28",
+        "n": "Compra Ok"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-05",
+        "n": "Entregado",
+        "envio": "transportadora",
+        "guia": "TCC-789456",
+        "dest": "Planta Sur",
+        "resp": "Andrés Barrera"
+      },
+      {
+        "s": "active",
+        "f": "",
+        "n": "Pendiente certificado Alexandra"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-04-10T03:19:24.090Z"
+  }
+]
