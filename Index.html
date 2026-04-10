@@ -2578,8 +2578,9 @@ async function saveReunion(skipAutoTeams = false) {
       } catch(e) {
         showToast('Reunión guardada. Error Teams: ' + e.message, 'error');
       }
-    } else if (savedTipo === 'Teams') {
-      showToast('Reunión guardada. Para crearla en Teams inicia sesión en Configuración 🟣', 'info');
+    } else {
+      // Token no disponible — reintentar login silencioso
+      showToast('⚠️ Sesión de Microsoft expirada. Ve a Configuración → cierra sesión Microsoft → vuelve a iniciar sesión para sincronizar con Teams.', 'error');
     }
   }
 
