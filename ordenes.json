@@ -208,5 +208,40 @@
       }
     ],
     "updatedAt": "2026-04-10T15:41:04.878Z"
+  },
+  {
+    "id": "poc_1775835751028",
+    "num": "070426B2299",
+    "cliente": "CIAM",
+    "desc": "SUMINSITRO DE MATERIAL",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "GYJ"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "BARRIO PENSILVANIA",
+        "guia": "",
+        "dest": "",
+        "resp": "Andrés Barrera"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "392"
+      }
+    ],
+    "updatedAt": "2026-04-10T15:42:31.028Z"
   }
 ]
