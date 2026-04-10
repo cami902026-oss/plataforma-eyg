@@ -82,7 +82,7 @@ def _stock_badge(stock):
     elif stock <= 3:
         return "<span style='background:#fff8e1;color:#b7770d;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;'>&#9888; " + str(stock) + "</span>"
     else:
-        return "<span style='background:#e6f4ea;color:#1e7e34;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:7007'>&#10003; " + str(stock) + "</span>"
+        return "<span style='background:#e6f4ea;color:#1e7e34;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;'>&#10003; " + str(stock) + "</span>"
 
 
 def _cat_label(cat: str) -> str:
@@ -171,7 +171,7 @@ def _auto_classify(p: dict) -> tuple:
             (['CURVA EMT','CURVA CONDUIT'],         'Curvas Conduit'),
             (['CAJA DE PASO','CAJA FUNDIDA','CAJA ELECTRICA'], 'Cajas Eléctricas'),
             (['AISLADOR'],                          'Aisladores'),
-            (['TOMA','TOMACORRDIENTE','ENCHUFE'],    'Tomas y Enchufes'),
+            (['TOMA','TOMACORRIENTE','ENCHUFE'],    'Tomas y Enchufes'),
             (['SENSOR','TRANSMISOR'],               'Sensores y Transmisores'),
             (['MANOMETRO','MANÓMETRO','PRESOSTATO','TERMOSTATO'], 'Instrumentos de Medición'),
             (['MOTOR','BOBINA','CONTACTOR'],        'Motores y Accionamiento'),
@@ -182,6 +182,7 @@ def _auto_classify(p: dict) -> tuple:
             if any(k in desc for k in keywords):
                 familia = fam_name
                 break
+
     return cat, familia
 
 
@@ -684,12 +685,21 @@ def send_email(token: str, sender: str, recipients: list, subject: str, html_bod
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
+def load_config() -> dict:
+    config_path = os.path.join(os.path.dirname(__file__), 'cowork_config.json')
+    if not os.path.exists(config_path):
+        return {}
+    with open(config_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
 if __name__ == '__main__':
-    tenant_id     = os.environ.get('MS_TENANT_ID', '9876dbde-5a7f-4139-8c2d-60a4395fd7d6').strip()
-    client_id     = os.environ.get('MS_CLIENT_ID', '0c8bd7f5-a027-4da9-9d11-ccc27682b0ec').strip()
-    client_secret = os.environ['MS_CLIENT_SECRET'].strip()
-    sender_email  = os.environ['SENDER_EMAIL'].strip()
-    recipients    = [r.strip() for r in os.environ['RECIPIENT_EMAILS'].split(',')]
+    cfg = load_config()
+    tenant_id     = os.environ.get('MS_TENANT_ID',     cfg.get('ms_tenant_id',     '9876dbde-5a7f-4139-8c2d-60a4395fd7d6')).strip()
+    client_id     = os.environ.get('MS_CLIENT_ID',     cfg.get('ms_client_id',     '0c8bd7f5-a027-4da9-9d11-ccc27682b0ec')).strip()
+    client_secret = os.environ.get('MS_CLIENT_SECRET', cfg.get('ms_client_secret', '')).strip()
+    sender_email  = os.environ.get('SENDER_EMAIL',     cfg.get('sender_email',     '')).strip()
+    recipients    = [r.strip() for r in os.environ.get(
+                        'RECIPIENT_EMAILS', cfg.get('recipient_emails', '')).split(',')]
 
     print("🔍 Tenant ID  : '" + tenant_id + "' (len=" + str(len(tenant_id)) + ")")
     print("🔍 Client ID  : '" + client_id + "' (len=" + str(len(client_id)) + ")")
