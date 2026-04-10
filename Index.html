@@ -1788,9 +1788,20 @@ function _loadOrdenesGS() {
       try { script.parentNode && script.parentNode.removeChild(script); } catch(_) {}
       delete window[cbName];
       if (res && res.ok && Array.isArray(res.data) && res.data.length > 0) {
+        // Google Sheets tiene datos — usarlos
         localStorage.setItem('procesos_oc', JSON.stringify(res.data));
         ocRenderSafe();
         console.log('✅ Órdenes cargadas desde Google Sheets:', res.data.length);
+      } else {
+        // Google Sheets está vacío — cargar desde GitHub y migrar
+        console.warn('GS vacío, cargando desde GitHub...');
+        _loadOrdenesGH().then(() => {
+          const local = JSON.parse(localStorage.getItem('procesos_oc') || '[]');
+          if (local.length > 0) {
+            console.log('📤 Migrando', local.length, 'órdenes a Google Sheets...');
+            _saveOrdenesGS(local);
+          }
+        });
       }
     };
     script.onerror = () => { console.warn('GS load error, usando GitHub'); _loadOrdenesGH(); };
