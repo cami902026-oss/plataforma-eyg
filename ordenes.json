@@ -242,7 +242,7 @@
     "num": "060426S0974",
     "cliente": "CIAM",
     "desc": "SUMINISTRO DE MATERIAL",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -254,14 +254,15 @@
         "f": "2026-04-07",
         "n": "ENTREGADO PUERT",
         "envio": "transportadora",
+        "transp": "",
         "guia": "",
         "dest": "",
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-10",
+        "n": "ONE DRICE PARA ENVIO CLIENTE"
       },
       {
         "s": "done",
@@ -269,7 +270,7 @@
         "n": "388"
       }
     ],
-    "updatedAt": "2026-04-10T00:00:00.000Z"
+    "updatedAt": "2026-04-10T17:23:39.970Z"
   },
   {
     "id": "060426E8427",
