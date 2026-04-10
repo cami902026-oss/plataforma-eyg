@@ -173,5 +173,40 @@
       }
     ],
     "updatedAt": "2026-04-10T15:38:05.602Z"
+  },
+  {
+    "id": "poc_1775835664878",
+    "num": "060426C6243",
+    "cliente": "CIAM",
+    "desc": "SUMINISTRO ANGULO",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "ACEROS MAPA"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "BARRIO PENSILVANIA",
+        "guia": "",
+        "dest": "",
+        "resp": "Andrés Barrera"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "393"
+      }
+    ],
+    "updatedAt": "2026-04-10T15:41:04.878Z"
   }
 ]
