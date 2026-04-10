@@ -2051,6 +2051,7 @@ function navigate(page) {
   if(page==='cotizaciones') initCotizaciones();
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); }
   if(page==='procesos') renderProcesos();
+  if(page==='inventario') { setTimeout(async()=>{ try { const t = await getToken(); if(t) msLoadInventoryFromOneDrive(); } catch(e){} }, 500); }
 }
 function getNavLabel(page) {
   const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'cronograma',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',cotizaciones:'cotizaciones',ordenes:'procesos',configuracion:'configuraci'};
