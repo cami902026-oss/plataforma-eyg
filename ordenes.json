@@ -348,5 +348,40 @@
       }
     ],
     "updatedAt": "2026-04-10T15:53:58.599Z"
+  },
+  {
+    "id": "poc_1775836601011",
+    "num": "LM1392",
+    "cliente": "HIDROCASANARE",
+    "desc": "SUMINSITRO DE MATERIAL",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "SEGEFER, COLIMPORTADOS, BODEGA, FLEXILATINA, CODIFER"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "ENREGADO A SATISFACION",
+        "envio": "camion_energy",
+        "transp": "",
+        "guia": "",
+        "dest": "HIDROCASANARE",
+        "resp": "Andrés Barrera"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-04-10T15:56:41.011Z"
   }
 ]
