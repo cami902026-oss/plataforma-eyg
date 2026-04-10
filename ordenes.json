@@ -444,5 +444,40 @@
       }
     ],
     "updatedAt": "2026-04-10T17:12:37.865Z"
+  },
+  {
+    "id": "poc_1775861884115",
+    "num": "LM1400",
+    "cliente": "WILER",
+    "desc": "SUMINSITRO DE VALVULA 4-300",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "CODIFER"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-08",
+        "n": "",
+        "envio": "flota",
+        "transp": "LIBERTADORES",
+        "guia": "9003",
+        "dest": "WILER",
+        "resp": "Andrea Bernal"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "PENDIETE POR ARREGLAR INONVENIENTE DE GARANTIA"
+      }
+    ],
+    "updatedAt": "2026-04-10T22:58:04.115Z"
   }
 ]
