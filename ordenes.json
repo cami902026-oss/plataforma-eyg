@@ -383,5 +383,40 @@
       }
     ],
     "updatedAt": "2026-04-10T15:56:41.011Z"
+  },
+  {
+    "id": "poc_1775836673558",
+    "num": "LM1376",
+    "cliente": "CR INGENIERIA",
+    "desc": "SUMISNITRO DE MATERIAL",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "BODEGA, JOSE MONTENEGRO, TRISARCOM, GYJ"
+      },
+      {
+        "s": "active",
+        "f": "2026-04-10",
+        "n": "ESPERA DEFINICION DE ENTREGA BODEGA E&G",
+        "envio": "recoge_bodega",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-04-10T15:57:53.558Z"
   }
 ]
