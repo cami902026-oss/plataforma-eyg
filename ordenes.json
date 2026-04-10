@@ -103,5 +103,40 @@
       }
     ],
     "updatedAt": "2026-04-10T15:31:59.249Z"
+  },
+  {
+    "id": "poc_1775835284940",
+    "num": "LM1380",
+    "cliente": "WILER",
+    "desc": "SUMISNITRO DE MATERIAL MECANICO",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "BODEGA, COLIMPORTADOS"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "SE ENVIO PRIMERO UNA PARTE Y EL DIA LUNES S E ENVIO POR FLOTA DESDE YOPAL 20.000",
+        "envio": "transportadora",
+        "transp": "LIEBRTADORES",
+        "guia": "",
+        "dest": "TAME ARAUCA",
+        "resp": "ANDREA BERNAL"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-08",
+        "n": "387-394"
+      }
+    ],
+    "updatedAt": "2026-04-10T15:34:44.940Z"
   }
 ]
