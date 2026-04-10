@@ -11,7 +11,7 @@ jobs:
       - name: Disparar reporte de OP
         run: |
           curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN_REPORTS }}" \
+            -H "Authorization: Bearer ${{ secrets.REPORTS_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/cami902026-oss/plataforma-eyg/actions/workflows/op-report.yml/dispatches \
@@ -20,8 +20,16 @@ jobs:
       - name: Disparar reporte de Inventario
         run: |
           curl -s -X POST \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN_REPORTS }}" \
+            -H "Authorization: Bearer ${{ secrets.REPORTS_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/cami902026-oss/plataforma-eyg/actions/workflows/inventory-report.yml/dispatches \
             -d '{"ref":"main"}'
+
+      - name: Verificar que se dispararon correctamente
+        run: |
+          sleep 20
+          curl -s \
+            -H "Authorization: Bearer ${{ secrets.REPORTS_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/cami902026-oss/plataforma-eyg/actions/runs?per_page=5
