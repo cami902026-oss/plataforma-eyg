@@ -233,11 +233,19 @@ def update_buscador_html(records, html_path):
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
+def load_config() -> dict:
+    config_path = os.path.join(os.path.dirname(__file__), 'cowork_config.json')
+    if not os.path.exists(config_path):
+        return {}
+    with open(config_path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
 if __name__ == '__main__':
-    tenant_id     = os.environ.get('MS_TENANT_ID', '').strip()
-    client_id     = os.environ.get('MS_CLIENT_ID', '').strip()
-    client_secret = os.environ['MS_CLIENT_SECRET'].strip()
-    sender_email  = os.environ['SENDER_EMAIL'].strip()
+    cfg = load_config()
+    tenant_id     = os.environ.get('MS_TENANT_ID',     cfg.get('ms_tenant_id',     '')).strip()
+    client_id     = os.environ.get('MS_CLIENT_ID',     cfg.get('ms_client_id',     '')).strip()
+    client_secret = os.environ.get('MS_CLIENT_SECRET', cfg.get('ms_client_secret', '')).strip()
+    sender_email  = os.environ.get('SENDER_EMAIL',     cfg.get('sender_email',     '')).strip()
 
     print('🔍 Usuario OneDrive: ' + ONEDRIVE_USER_EMAIL)
     print('📂 Archivo:          ' + ONEDRIVE_FILE_PATH)
