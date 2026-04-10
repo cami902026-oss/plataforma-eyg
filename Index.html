@@ -895,6 +895,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="btn btn-primary" onclick="openPocModal(null)">+ Nueva O.C.</button>
               <button class="btn" style="background:#1d7a3a;color:#fff;border:none" onclick="exportPocExcel()">📊 Exportar Excel</button>
               <button class="btn" style="background:#8b1a1a;color:#fff;border:none" onclick="generarInformePDF()">📄 Generar Informe PDF</button>
+              <button class="btn" style="background:#0f9d58;color:#fff;border:none" onclick="window.open('https://docs.google.com/spreadsheets/d/1QjeJiCQ8fND57r0MNw1vRNdcnukqpBNHDfxjbeW7Lq0/edit','_blank')">🗂️ Ver en Google Sheets</button>
             </div>
           </div>
           <div id="poc-list"></div>
@@ -1732,6 +1733,10 @@ async function syncTasksFromAPI() {
 const GH_OWNER = 'cami902026-oss';
 const GH_REPO  = 'plataforma-eyg';
 
+// ── Google Sheets — Base de datos compartida para Órdenes de Pedido ──
+// Después de desplegar el Apps Script, pega aquí la URL:
+const GS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwt8dHYi9C4gFhwLzWstAx43tw2-DdLhZxlk5SeU3FTw9FhQJbkrLE9F-WaKNIrv2LxiQ/exec';
+
 // ── GitHub storage para Órdenes de Pedido ──────────────────────────
 let _ordenesFileSHA = '';
 function _ghToken() {
@@ -1772,6 +1777,40 @@ async function _saveOrdenesGH(arr) {
   } catch(e) { console.warn('GH ordenes save:', e); }
 }
 function ocRenderSafe() { try { ocRender(); } catch(_) {} }
+
+// ── Google Sheets — carga órdenes (JSONP para evitar CORS) ──────────
+function _loadOrdenesGS() {
+  if (!GS_SCRIPT_URL) { _loadOrdenesGH(); return; }
+  try {
+    const cbName = 'gsOrdenesCb_' + Date.now();
+    const script = document.createElement('script');
+    window[cbName] = function(res) {
+      try { script.parentNode && script.parentNode.removeChild(script); } catch(_) {}
+      delete window[cbName];
+      if (res && res.ok && Array.isArray(res.data) && res.data.length > 0) {
+        localStorage.setItem('procesos_oc', JSON.stringify(res.data));
+        ocRenderSafe();
+        console.log('✅ Órdenes cargadas desde Google Sheets:', res.data.length);
+      }
+    };
+    script.onerror = () => { console.warn('GS load error, usando GitHub'); _loadOrdenesGH(); };
+    script.src = GS_SCRIPT_URL + '?callback=' + cbName + '&t=' + Date.now();
+    document.head.appendChild(script);
+  } catch(e) { console.warn('GS load error:', e); _loadOrdenesGH(); }
+}
+
+// ── Google Sheets — guarda órdenes ──────────────────────────────────
+async function _saveOrdenesGS(arr) {
+  if (!GS_SCRIPT_URL) { _saveOrdenesGH(arr); return; }
+  try {
+    fetch(GS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ action: 'saveAll', ops: arr })
+    });
+    console.log('💾 Órdenes guardadas en Google Sheets');
+  } catch(e) { console.warn('GS save error:', e); _saveOrdenesGH(arr); }
+}
 
 // ── GitHub storage para Reuniones ──────────────────────────────────
 let _reunionesFileSHA = '';
@@ -2032,8 +2071,10 @@ function initApp() {
   // Auto-actualizar cada 30 segundos para ver cambios del bot en tiempo real
   setInterval(syncTasksFromAPI, 30000);
   setInterval(syncMeetingsFromAPI, 30000);
-  // Cargar órdenes desde GitHub (sin afectar el resto de la app)
-  _loadOrdenesGH();
+  // Cargar órdenes desde Google Sheets (compartido con todos los usuarios)
+  _loadOrdenesGS();
+  // Refrescar órdenes automáticamente cada 30 segundos para sincronizar cambios
+  setInterval(_loadOrdenesGS, 30000);
   // Cargar reuniones desde GitHub (persisten en cualquier navegador)
   _loadReunionesGH();
 }
@@ -2860,7 +2901,7 @@ function getPOC() {
 }
 function savePOCData(arr) {
   localStorage.setItem('procesos_oc', JSON.stringify(arr));
-  _saveOrdenesGH(arr);
+  _saveOrdenesGS(arr);
 }
 
 function renderProcesos() {
