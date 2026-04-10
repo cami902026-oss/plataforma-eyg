@@ -68,5 +68,40 @@
       }
     ],
     "updatedAt": "2026-04-10T15:30:30.449Z"
+  },
+  {
+    "id": "poc_1775835119249",
+    "num": "LM1358",
+    "cliente": "GLADYZ BUCHELI",
+    "desc": "SUMINSITRO NIPLES",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "DISEFER"
+      },
+      {
+        "s": "active",
+        "f": "2026-04-10",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "COOTRANSMAYO",
+        "guia": "",
+        "dest": "ORITO",
+        "resp": "Andrés Barrera"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "ENVIADO"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-04-10T15:31:59.249Z"
   }
 ]
