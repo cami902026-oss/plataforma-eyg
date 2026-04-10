@@ -243,5 +243,40 @@
       }
     ],
     "updatedAt": "2026-04-10T15:42:31.028Z"
+  },
+  {
+    "id": "poc_1775835897498",
+    "num": "060426S0974",
+    "cliente": "CIAM",
+    "desc": "SUMINSITRO DE MATERIAL",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "GYJ"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "ENTREGADO PUERTO GAITAN",
+        "envio": "transportadora",
+        "transp": "BARRIO PENSILVANIA",
+        "guia": "",
+        "dest": "",
+        "resp": "Andrés Barrera"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "388"
+      }
+    ],
+    "updatedAt": "2026-04-10T15:44:57.499Z"
   }
 ]
