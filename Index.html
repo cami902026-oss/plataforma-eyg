@@ -175,15 +175,28 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .task-date { font-size:11px; color:var(--text-muted); }
 
 /* ===== GANTT ===== */
-.gantt-table { width:100%; }
-.gantt-row { display:grid; grid-template-columns:220px 1fr; border-bottom:1px solid var(--border); align-items:center; }
-.gantt-row:first-child { font-size:12px; font-weight:600; color:var(--text-muted); background:rgba(0,0,0,0.2); }
-.gantt-info { padding:12px 16px; }
-.gantt-name { font-size:14px; font-weight:600; color:#fff; }
-.gantt-owner { font-size:12px; color:var(--text-muted); }
-.gantt-timeline { padding:12px 16px; position:relative; height:60px; display:flex; align-items:center; }
-.gantt-bar-bg { position:absolute; left:16px; right:16px; height:24px; background:rgba(255,255,255,0.05); border-radius:6px; overflow:hidden; }
-.gantt-bar-fill { height:100%; border-radius:6px; display:flex; align-items:center; padding:0 10px; font-size:11px; font-weight:700; color:#fff; }
+.gantt-wrap { width:100%; overflow-x:auto; }
+.gantt-header { display:flex; border-bottom:2px solid var(--border); background:rgba(0,0,0,0.25); border-radius:10px 10px 0 0; }
+.gantt-label-col { width:260px; min-width:260px; padding:12px 16px; font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.8px; border-right:1px solid var(--border); flex-shrink:0; }
+.gantt-months { flex:1; display:flex; min-width:0; }
+.gantt-month { flex:1; text-align:center; font-size:11px; font-weight:600; color:var(--text-muted); padding:12px 4px; border-right:1px solid rgba(255,255,255,0.05); }
+.gantt-row-g { display:flex; align-items:center; border-bottom:1px solid rgba(255,255,255,0.04); min-height:64px; transition:background .15s; }
+.gantt-row-g:hover { background:rgba(255,255,255,0.03); }
+.gantt-info-col { width:260px; min-width:260px; padding:10px 16px; border-right:1px solid var(--border); flex-shrink:0; }
+.gantt-project-name { font-size:13px; font-weight:700; color:#fff; line-height:1.3; }
+.gantt-project-meta { font-size:11px; color:var(--text-muted); margin-top:3px; }
+.gantt-status-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; margin-top:4px; }
+.gantt-timeline-col { flex:1; position:relative; height:64px; overflow:hidden; min-width:0; }
+.gantt-grid-line { position:absolute; top:0; bottom:0; width:1px; background:rgba(255,255,255,0.04); pointer-events:none; }
+.gantt-today-line { position:absolute; top:0; bottom:0; width:2px; background:rgba(212,175,55,0.85); z-index:5; pointer-events:none; box-shadow:0 0 6px rgba(212,175,55,0.4); }
+.gantt-today-label { position:absolute; top:4px; transform:translateX(-50%); font-size:9px; font-weight:800; color:#D4AF37; white-space:nowrap; background:rgba(10,20,50,0.9); padding:1px 5px; border-radius:4px; }
+.gantt-bar-g { position:absolute; top:50%; transform:translateY(-50%); height:30px; border-radius:8px; display:flex; align-items:center; padding:0 10px; font-size:11px; font-weight:700; color:#fff; overflow:hidden; min-width:4px; box-shadow:0 2px 10px rgba(0,0,0,0.4); cursor:pointer; transition:filter .2s, transform .2s; z-index:3; }
+.gantt-bar-g:hover { filter:brightness(1.25); transform:translateY(-50%) scaleY(1.08); }
+.gantt-bar-progress { position:absolute; left:0; top:0; height:100%; opacity:.3; background:#fff; pointer-events:none; }
+.gantt-bar-text { position:relative; z-index:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+.gantt-edit-btn { position:absolute; right:6px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer; opacity:0; transition:opacity .2s; z-index:6; }
+.gantt-row-g:hover .gantt-edit-btn { opacity:1; }
+.gantt-empty { padding:40px 20px; text-align:center; color:var(--text-muted); font-size:14px; }
 .gantt-dates { font-size:11px; color:var(--text-muted); position:absolute; bottom:4px; left:16px; }
 
 /* ===== COMUNICACIONES ===== */
@@ -2305,29 +2318,91 @@ function quickCompleteTask(id) {
 // ===== GANTT =====
 function renderGantt() {
   const projects = getData('projects', PROJECTS_DEFAULT);
-  const stateColors = {'En curso':'var(--green)',Atrasado:'var(--red)',Completado:'#6b7280',Planificado:'var(--blue)'};
-  let html = `<div class="gantt-row" style="font-weight:700;font-size:12px;color:var(--text-muted);">
-    <div style="padding:10px 16px;">Proyecto</div>
-    <div style="padding:10px 16px;">Progreso y Timeline</div>
-  </div>`;
-  html += projects.map(p=>`
-    <div class="gantt-row">
-      <div class="gantt-info">
-        <div class="gantt-name">${p.nombre}</div>
-        <div class="gantt-owner">👤 ${p.responsable}</div>
-        <div style="font-size:11px;margin-top:4px;"><span style="color:${stateColors[p.estado]||'var(--blue)'}">● ${p.estado}</span></div>
+  const el = document.getElementById('gantt-container');
+  if (!projects.length) { el.innerHTML = '<div class="gantt-empty">📋 No hay proyectos. Crea uno con "+ Nuevo Proyecto".</div>'; return; }
+
+  const STATUS_COLORS = { 'En curso':'#2EAA4A', 'Atrasado':'#E53E3E', 'Completado':'#6B7280', 'Planificado':'#3B82F6' };
+  const STATUS_STYLE  = {
+    'En curso':   'background:rgba(46,170,74,0.18);color:#2EAA4A;',
+    'Atrasado':   'background:rgba(229,62,62,0.18);color:#E53E3E;',
+    'Completado': 'background:rgba(107,114,128,0.18);color:#9CA3AF;',
+    'Planificado':'background:rgba(59,130,246,0.18);color:#3B82F6;'
+  };
+  const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+  // Rango de fechas del proyecto
+  const allDates = projects.flatMap(p => [new Date(p.inicio), new Date(p.fin)]).filter(d => !isNaN(d));
+  if (!allDates.length) { el.innerHTML = '<div class="gantt-empty">Sin fechas válidas en los proyectos.</div>'; return; }
+
+  let minDate = new Date(Math.min(...allDates.map(d=>d.getTime())));
+  let maxDate = new Date(Math.max(...allDates.map(d=>d.getTime())));
+  // Padding: 1 mes antes y 1 mes después
+  minDate = new Date(minDate.getFullYear(), minDate.getMonth() - 1, 1);
+  maxDate = new Date(maxDate.getFullYear(), maxDate.getMonth() + 2, 0);
+  const totalMs = maxDate - minDate;
+
+  const hoy = new Date();
+  function toPct(date) { return Math.max(0, Math.min(100, ((date - minDate) / totalMs) * 100)); }
+
+  // Meses para el header
+  const months = [];
+  let cur = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+  while (cur <= maxDate) { months.push(new Date(cur)); cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1); }
+
+  const monthHeaders = months.map(m =>
+    `<div class="gantt-month">${MONTHS_ES[m.getMonth()]}<br><span style="font-size:10px;opacity:.6;">${m.getFullYear()}</span></div>`
+  ).join('');
+
+  const gridLines = months.map(m =>
+    `<div class="gantt-grid-line" style="left:${toPct(m)}%"></div>`
+  ).join('');
+
+  const todayPct = toPct(hoy);
+  const showToday = todayPct > 0 && todayPct < 100;
+  const todayLine = showToday
+    ? `<div class="gantt-today-line" style="left:${todayPct}%"><div class="gantt-today-label">Hoy</div></div>`
+    : '';
+
+  const rows = projects.map(p => {
+    const startDate = new Date(p.inicio);
+    const endDate   = new Date(p.fin);
+    const left  = toPct(startDate);
+    const right = toPct(endDate);
+    const width = Math.max(right - left, 0.8);
+    const color = STATUS_COLORS[p.estado] || p.color || '#3B82F6';
+    const badge = STATUS_STYLE[p.estado] || 'background:rgba(255,255,255,0.1);color:#fff;';
+    const sf = startDate.toLocaleDateString('es-CO', {day:'2-digit', month:'short'});
+    const ef = endDate.toLocaleDateString('es-CO',   {day:'2-digit', month:'short', year:'2-digit'});
+
+    return `
+    <div class="gantt-row-g">
+      <div class="gantt-info-col">
+        <div class="gantt-project-name">${p.nombre}</div>
+        <div class="gantt-project-meta">👤 ${p.responsable}</div>
+        <span class="gantt-status-badge" style="${badge}">${p.estado}</span>
       </div>
-      <div class="gantt-timeline">
-        <div class="gantt-bar-bg">
-          <div class="gantt-bar-fill" style="width:${p.progreso}%;background:${stateColors[p.estado]||'var(--blue)'};">${p.progreso}%</div>
+      <div class="gantt-timeline-col">
+        ${gridLines}
+        ${todayLine}
+        <div class="gantt-bar-g"
+          style="left:${left}%;width:${width}%;background:${color};"
+          title="${p.nombre} · ${sf} → ${ef} · ${p.progreso}% completado">
+          <div class="gantt-bar-progress" style="width:${p.progreso}%;"></div>
+          <div class="gantt-bar-text">${p.progreso}% &nbsp;·&nbsp; ${sf} → ${ef}</div>
         </div>
-        <div class="gantt-dates" style="display:flex;justify-content:space-between;align-items:center;">
-          <span>${formatDate(p.inicio)} → ${formatDate(p.fin)}</span>
-          <button class="btn btn-ghost" onclick="editProject(${p.id})" style="padding:4px 8px;font-size:11px;">✏️ Editar</button>
-        </div>
+        <button class="gantt-edit-btn" onclick="editProject(${p.id})">✏️ Editar</button>
       </div>
-    </div>`).join('');
-  document.getElementById('gantt-container').innerHTML=html;
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="gantt-wrap">
+      <div class="gantt-header">
+        <div class="gantt-label-col">Proyecto / Responsable</div>
+        <div class="gantt-months">${monthHeaders}</div>
+      </div>
+      ${rows}
+    </div>`;
 }
 
 // ===== TEMPLATES =====
