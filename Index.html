@@ -3036,158 +3036,104 @@ function generarInformePDF() {
   const list = getPOC().filter(o => o.estado === 'activo');
   if (!list || list.length === 0) { showToast('No hay órdenes activas para el informe', 'info'); return; }
 
-  const ENVIO_LABELS = {moto:'Moto mensajería',camion_energy:'Camión E&G Energy',camion_externo:'Camión externo',transportadora:'Transportadora',vehiculo_personal:'Vehículo personal',recoge_bodega:'Recoge en bodega',entrega_mano:'Entrega en mano'};
-  const STAGE_NAMES = ['Compra', 'Entrega', 'Certificado', 'Facturación'];
+  const ENVIO_LABELS = {
+    moto:'🛵 Moto mensajería', camion_energy:'🚛 Camión E&G Energy',
+    camion_externo:'🚚 Camión externo', transportadora:'📦 Transportadora',
+    vehiculo_personal:'🚗 Vehículo personal', recoge_bodega:'🏭 Recoge en bodega',
+    entrega_mano:'🤝 Entrega en mano'
+  };
+  const STAGE_ICONS = ['🛒','🚚','📋','💵'];
+  const STAGE_NAMES = ['Compra','Entrega','Certificado','Facturación'];
+  const hoy = new Date().toLocaleDateString('es-CO', {day:'2-digit',month:'long',year:'numeric'});
+  const allList = getPOC();
+  const completadas = allList.filter(o=>o.estado==='completado').length;
+  const canceladas = allList.filter(o=>o.estado==='cancelado').length;
 
-  // Cargar jsPDF dinámicamente si no está disponible
-  function doGenerate(jsPDF) {
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const W = 210, margin = 14;
-    let y = 0;
+  const stageCard = (st, si) => {
+    const s = st.s || 'pending';
+    const color = s==='done'?'#2EAA4A' : s==='active'?'#E8A020' : '#9ca3af';
+    const bg    = s==='done'?'#f0fdf4' : s==='active'?'#fffbeb' : '#f9fafb';
+    const statusLabel = s==='done'?'✅ Completado' : s==='active'?'🔄 En progreso' : '⏸ Pendiente';
+    const fecha = st.f ? st.f.split('-').reverse().join('/') : 'sin fecha';
+    const nota  = st.n ? `<div style="font-size:10px;color:${color};margin-top:5px;font-weight:600;border-top:1px dashed ${color}55;padding-top:4px;">${st.n}</div>` : '';
+    return `<div style="border-radius:9px;padding:12px 8px;border:2px solid ${color};background:${bg};text-align:center;">
+      <div style="font-size:22px;margin-bottom:4px;">${STAGE_ICONS[si]}</div>
+      <div style="font-size:12px;font-weight:700;color:#1f2937;">${STAGE_NAMES[si]}</div>
+      <div style="font-size:10px;font-weight:600;color:${color};margin-top:2px;">${statusLabel}</div>
+      <div style="font-size:10px;color:#6b7280;margin-top:3px;">📅 ${fecha}</div>
+      ${nota}
+    </div>`;
+  };
 
-    // --- Header ---
-    doc.setFillColor(10, 20, 50);
-    doc.rect(0, 0, W, 30, 'F');
-    doc.setTextColor(212, 175, 55);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('E&G ENERGY GROUP', margin, 13);
-    doc.setFontSize(10);
-    doc.setTextColor(180, 180, 200);
-    doc.text('Informe de Órdenes de Compra Activas', margin, 20);
-    const hoy = new Date().toLocaleDateString('es-CO', {day:'2-digit',month:'long',year:'numeric'});
-    doc.text(hoy, W - margin, 20, {align:'right'});
-    y = 38;
+  const ocCards = list.map(o => {
+    const stages = (o.stages || [{},{},{},{}]).slice(0,4);
+    while (stages.length < 4) stages.push({});
+    const entrega = stages[1] || {};
+    const envioInfo = [
+      entrega.envio ? (ENVIO_LABELS[entrega.envio]||entrega.envio) : '',
+      entrega.guia  ? `Guía: <b>${entrega.guia}</b>` : '',
+      entrega.dest  ? `📍 ${entrega.dest}` : '',
+      entrega.resp  ? `👤 ${entrega.resp}` : ''
+    ].filter(Boolean).join('&nbsp;&nbsp;|&nbsp;&nbsp;');
 
-    // --- Stats row ---
-    const allList = getPOC();
-    const total = allList.length, activas = list.length;
-    const completadas = allList.filter(o=>o.estado==='completado').length;
-    const canceladas = allList.filter(o=>o.estado==='cancelado').length;
-    const stats = [['Total O.C.',total],['Activas',activas],['Completadas',completadas],['Canceladas',canceladas]];
-    const sw = (W - margin*2) / 4;
-    stats.forEach(([label, val], i) => {
-      const x = margin + i * sw;
-      doc.setFillColor(15, 30, 70);
-      doc.roundedRect(x+1, y, sw-2, 18, 3, 3, 'F');
-      doc.setTextColor(212, 175, 55);
-      doc.setFontSize(16);
-      doc.setFont('helvetica','bold');
-      doc.text(String(val), x + sw/2, y+10, {align:'center'});
-      doc.setFontSize(7);
-      doc.setTextColor(150,160,190);
-      doc.setFont('helvetica','normal');
-      doc.text(label, x + sw/2, y+16, {align:'center'});
-    });
-    y += 26;
+    return `<div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:18px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.07);page-break-inside:avoid;">
+      <div style="background:#0F2B5B;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:#E8A020;">${o.num||'—'} — ${o.cliente||''}</div>
+          ${o.desc?`<div style="font-size:12px;color:#93c5fd;margin-top:3px;">${o.desc.length>80?o.desc.substring(0,78)+'…':o.desc}</div>`:''}
+        </div>
+        <span style="background:rgba(46,170,74,0.2);color:#2EAA4A;border:1px solid #2EAA4A;border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;white-space:nowrap;">ACTIVO</span>
+      </div>
+      <div style="padding:16px 18px;">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+          ${stages.map((st,si)=>stageCard(st,si)).join('')}
+        </div>
+        ${envioInfo?`<div style="margin-top:10px;font-size:11px;color:#6b7280;">${envioInfo}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
 
-    // --- Orders ---
-    list.forEach((o, idx) => {
-      const stages = o.stages || [{},{},{},{}];
-      const cardH = 52;
+  const html = `<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8">
+<title>Informe OC Activas — E&G Energy Group</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6fb;color:#1a1a2e;padding:28px;}
+  @media print{body{padding:16px;background:#fff;} .no-print{display:none!important;} div{page-break-inside:avoid;}}
+  .wrap{max-width:840px;margin:0 auto;}
+</style>
+</head><body>
+<div class="wrap">
+  <button class="no-print" onclick="window.print()" style="display:block;margin:0 auto 20px;padding:10px 32px;background:#0F2B5B;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">🖨️ Imprimir / Guardar como PDF</button>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:3px solid #E8A020;margin-bottom:22px;">
+    <div>
+      <div style="font-size:22px;font-weight:900;color:#0F2B5B;letter-spacing:1px;">E&G ENERGY GROUP</div>
+      <div style="font-size:11px;color:#6b7280;margin-top:3px;text-transform:uppercase;letter-spacing:1px;">Gestión de Procesos — Órdenes de Compra</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:15px;font-weight:700;color:#0F2B5B;">📋 PROCESO OP</div>
+      <div style="font-size:12px;color:#6b7280;margin-top:4px;">${hoy}</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;">
+    <div style="background:#fff;border-radius:10px;padding:14px;text-align:center;border:1px solid #e5e7eb;"><div style="font-size:26px;font-weight:900;color:#0F2B5B;">${allList.length}</div><div style="font-size:11px;color:#6b7280;text-transform:uppercase;margin-top:2px;">Total O.C.</div></div>
+    <div style="background:#fff;border-radius:10px;padding:14px;text-align:center;border:1px solid #e5e7eb;"><div style="font-size:26px;font-weight:900;color:#2EAA4A;">${list.length}</div><div style="font-size:11px;color:#6b7280;text-transform:uppercase;margin-top:2px;">Activas</div></div>
+    <div style="background:#fff;border-radius:10px;padding:14px;text-align:center;border:1px solid #e5e7eb;"><div style="font-size:26px;font-weight:900;color:#1a56db;">${completadas}</div><div style="font-size:11px;color:#6b7280;text-transform:uppercase;margin-top:2px;">Completadas</div></div>
+    <div style="background:#fff;border-radius:10px;padding:14px;text-align:center;border:1px solid #e5e7eb;"><div style="font-size:26px;font-weight:900;color:#e53e3e;">${canceladas}</div><div style="font-size:11px;color:#6b7280;text-transform:uppercase;margin-top:2px;">Canceladas</div></div>
+  </div>
+  ${ocCards}
+  <div style="margin-top:24px;padding-top:14px;border-top:1px solid #e5e7eb;text-align:center;font-size:11px;color:#9ca3af;">
+    E&G Energy Group — Informe generado automáticamente
+  </div>
+</div>
+</body></html>`;
 
-      // Check page break
-      if (y + cardH > 280) { doc.addPage(); y = 14; }
-
-      // Card background
-      doc.setFillColor(14, 26, 60);
-      doc.roundedRect(margin, y, W - margin*2, cardH, 4, 4, 'F');
-
-      // Order title
-      doc.setTextColor(212, 175, 55);
-      doc.setFontSize(11);
-      doc.setFont('helvetica','bold');
-      doc.text(`${o.num} — ${o.cliente}`, margin + 4, y + 8);
-
-      // Description
-      doc.setTextColor(180, 190, 210);
-      doc.setFontSize(8);
-      doc.setFont('helvetica','normal');
-      const desc = o.desc ? (o.desc.length > 90 ? o.desc.substring(0,87)+'...' : o.desc) : '';
-      doc.text(desc, margin + 4, y + 15);
-
-      // Timeline
-      const tY = y + 24;
-      const tW = W - margin*2 - 8;
-      const stepW = tW / 4;
-
-      stages.forEach((st, si) => {
-        const cx = margin + 4 + si * stepW + stepW/2;
-        const status = st.s || 'pending';
-        // Connecting line
-        if (si < 3) {
-          const nextSt = (stages[si+1]||{}).s || 'pending';
-          doc.setDrawColor(status==='done'&&nextSt==='done'?30:status==='done'?212:80,
-                           status==='done'&&nextSt==='done'?160:status==='done'?175:80,
-                           status==='done'&&nextSt==='done'?30:status==='done'?55:80);
-          doc.setLineWidth(0.8);
-          doc.line(cx + 6, tY, cx + stepW - 6, tY);
-        }
-        // Circle
-        if (status === 'done') { doc.setFillColor(30, 150, 50); }
-        else if (status === 'active') { doc.setFillColor(212, 175, 55); }
-        else { doc.setFillColor(40, 50, 80); }
-        doc.circle(cx, tY, 5, 'F');
-        // Icon letter
-        doc.setTextColor(255,255,255);
-        doc.setFontSize(7);
-        doc.setFont('helvetica','bold');
-        doc.text(['C','E','Cf','F'][si], cx, tY+2.5, {align:'center'});
-        // Stage name
-        doc.setFontSize(7);
-        doc.setFont('helvetica','bold');
-        doc.setTextColor(status==='active'?212:status==='done'?100:100, status==='active'?175:status==='done'?200:110, status==='active'?55:status==='done'?100:130);
-        doc.text(STAGE_NAMES[si], cx, tY + 10, {align:'center'});
-        // Date
-        doc.setFontSize(6.5);
-        doc.setFont('helvetica','normal');
-        doc.setTextColor(140, 155, 185);
-        doc.text(st.f ? st.f : 'sin fecha', cx, tY + 15, {align:'center'});
-        // Note
-        if (st.n) {
-          doc.setFontSize(6);
-          doc.setTextColor(120,135,165);
-          const note = st.n.length > 18 ? st.n.substring(0,15)+'...' : st.n;
-          doc.text(note, cx, tY + 20, {align:'center'});
-        }
-      });
-
-      // Transport info for stage 1 (delivery)
-      const entrega = stages[1] || {};
-      if (entrega.envio || entrega.guia || entrega.dest) {
-        doc.setFontSize(6.5);
-        doc.setTextColor(180, 175, 55);
-        const envTxt = [
-          entrega.envio ? ENVIO_LABELS[entrega.envio]||entrega.envio : null,
-          entrega.guia ? 'Guía: '+entrega.guia : null,
-          entrega.dest ? '→ '+entrega.dest : null
-        ].filter(Boolean).join('  |  ');
-        doc.text('🚚 ' + envTxt, margin + 4, y + cardH - 4);
-      }
-
-      y += cardH + 6;
-    });
-
-    // Footer
-    doc.setFillColor(10, 20, 50);
-    doc.rect(0, 287, W, 10, 'F');
-    doc.setFontSize(7);
-    doc.setTextColor(100, 110, 140);
-    doc.text('E&G Energy Group — Informe generado automáticamente', W/2, 293, {align:'center'});
-
-    doc.save(`Informe_OP_Activas_${new Date().toISOString().substring(0,10)}.pdf`);
-    showToast('✅ Informe PDF generado', 'success');
-  }
-
-  if (typeof jspdf !== 'undefined' && jspdf.jsPDF) {
-    doGenerate(jspdf.jsPDF);
-  } else {
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-    script.onload = () => doGenerate(jspdf.jsPDF);
-    script.onerror = () => showToast('Error al cargar jsPDF. Verifica tu conexión.', 'error');
-    document.head.appendChild(script);
-  }
+  const w = window.open('', '_blank');
+  if (!w) { showToast('Permite ventanas emergentes para generar el informe', 'error'); return; }
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => w.print(), 500);
 }
 
 function viewPocReport(id) {
