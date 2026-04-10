@@ -6,10 +6,30 @@
     "desc": "SUMINISTRO MATERIAL MECANICO",
     "estado": "activo",
     "stages": [
-      {"s": "done", "f": "2026-04-10", "n": "BETEL, CODIFER"},
-      {"s": "done", "f": "2026-04-10", "n": "", "envio": "transportadora", "guia": "226311", "dest": "ORITO Q-CIEN", "resp": ""},
-      {"s": "pending", "f": "", "n": ""},
-      {"s": "pending", "f": "", "n": ""}
+      {
+        "s": "done",
+        "f": "2026-04-10",
+        "n": "BETEL, CODIFER"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-10",
+        "n": "",
+        "envio": "transportadora",
+        "guia": "226311",
+        "dest": "ORITO Q-CIEN",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
     ],
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
@@ -20,10 +40,30 @@
     "desc": "Suministro de material mecanico",
     "estado": "activo",
     "stages": [
-      {"s": "done", "f": "2026-04-10", "n": "Bodega, codifer"},
-      {"s": "active", "f": "2026-04-11", "n": "", "envio": "transportadora", "guia": "", "dest": "", "resp": ""},
-      {"s": "pending", "f": "", "n": ""},
-      {"s": "pending", "f": "", "n": ""}
+      {
+        "s": "done",
+        "f": "2026-04-10",
+        "n": "Bodega, codifer"
+      },
+      {
+        "s": "active",
+        "f": "2026-04-11",
+        "n": "",
+        "envio": "transportadora",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
     ],
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
@@ -34,10 +74,30 @@
     "desc": "SUMINISTRO NIPLES",
     "estado": "activo",
     "stages": [
-      {"s": "active", "f": "2026-04-06", "n": "DISEFER"},
-      {"s": "active", "f": "2026-04-10", "n": "", "envio": "transportadora", "guia": "", "dest": "ORITO", "resp": ""},
-      {"s": "done", "f": "2026-04-06", "n": "ENVIADO"},
-      {"s": "pending", "f": "", "n": ""}
+      {
+        "s": "active",
+        "f": "2026-04-06",
+        "n": "DISEFER"
+      },
+      {
+        "s": "active",
+        "f": "2026-04-10",
+        "n": "",
+        "envio": "transportadora",
+        "guia": "",
+        "dest": "ORITO",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "ENVIADO"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
     ],
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
@@ -48,10 +108,30 @@
     "desc": "SUMINISTRO DE MATERIAL MECANICO",
     "estado": "activo",
     "stages": [
-      {"s": "done", "f": "2026-04-06", "n": "BODEGA, COLIMPO"},
-      {"s": "done", "f": "2026-04-06", "n": "SE ENVIO PRIMER", "envio": "transportadora", "guia": "", "dest": "TAME ARAUCA", "resp": ""},
-      {"s": "pending", "f": "", "n": ""},
-      {"s": "done", "f": "2026-04-08", "n": "387-394"}
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "BODEGA, COLIMPO"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "SE ENVIO PRIMER",
+        "envio": "transportadora",
+        "guia": "",
+        "dest": "TAME ARAUCA",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-08",
+        "n": "387-394"
+      }
     ],
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
@@ -62,10 +142,30 @@
     "desc": "Suministro de manometros",
     "estado": "activo",
     "stages": [
-      {"s": "done", "f": "2026-04-09", "n": "WIKA"},
-      {"s": "active", "f": "", "n": "ENVIO RICARDO D", "envio": "transportadora", "guia": "", "dest": "", "resp": "RICARDO DIAZ"},
-      {"s": "pending", "f": "", "n": ""},
-      {"s": "pending", "f": "", "n": ""}
+      {
+        "s": "done",
+        "f": "2026-04-09",
+        "n": "WIKA"
+      },
+      {
+        "s": "active",
+        "f": "",
+        "n": "ENVIO RICARDO D",
+        "envio": "transportadora",
+        "guia": "",
+        "dest": "",
+        "resp": "RICARDO DIAZ"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
     ],
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
@@ -76,10 +176,30 @@
     "desc": "SUMINISTRO ANGULO",
     "estado": "activo",
     "stages": [
-      {"s": "done", "f": "2026-04-06", "n": "ACEROS MAPA"},
-      {"s": "done", "f": "2026-04-07", "n": "", "envio": "transportadora", "guia": "", "dest": "", "resp": ""},
-      {"s": "pending", "f": "", "n": ""},
-      {"s": "done", "f": "2026-04-07", "n": "393"}
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "ACEROS MAPA"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "",
+        "envio": "transportadora",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "393"
+      }
     ],
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
@@ -90,10 +210,30 @@
     "desc": "SUMINISTRO DE MATERIAL",
     "estado": "activo",
     "stages": [
-      {"s": "done", "f": "2026-04-07", "n": "GYJ"},
-      {"s": "done", "f": "2026-04-07", "n": "", "envio": "transportadora", "guia": "", "dest": "", "resp": ""},
-      {"s": "pending", "f": "", "n": ""},
-      {"s": "done", "f": "2026-04-07", "n": "392"}
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "GYJ"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "",
+        "envio": "transportadora",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "392"
+      }
     ],
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
@@ -104,10 +244,30 @@
     "desc": "SUMINISTRO DE MATERIAL",
     "estado": "activo",
     "stages": [
-      {"s": "done", "f": "2026-04-06", "n": "GYJ"},
-      {"s": "done", "f": "2026-04-07", "n": "ENTREGADO PUERT", "envio": "transportadora", "guia": "", "dest": "", "resp": ""},
-      {"s": "pending", "f": "", "n": ""},
-      {"s": "done", "f": "2026-04-07", "n": "388"}
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "GYJ"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "ENTREGADO PUERT",
+        "envio": "transportadora",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "388"
+      }
     ],
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
@@ -118,10 +278,30 @@
     "desc": "SUMINISTRO PERFIL",
     "estado": "activo",
     "stages": [
-      {"s": "done", "f": "2026-04-06", "n": "IMPERIAL"},
-      {"s": "done", "f": "2026-04-06", "n": "", "envio": "entrega_mano", "guia": "", "dest": "", "resp": ""},
-      {"s": "pending", "f": "", "n": ""},
-      {"s": "done", "f": "2026-04-06", "n": "389"}
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "IMPERIAL"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "",
+        "envio": "entrega_mano",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "389"
+      }
     ],
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
@@ -132,10 +312,30 @@
     "desc": "Suministro Ring Gasket",
     "estado": "activo",
     "stages": [
-      {"s": "done", "f": "2026-04-06", "n": "COLIMPORTADOS"},
-      {"s": "done", "f": "2026-04-06", "n": "Recibido bodega", "envio": "moto", "guia": "", "dest": "PSI", "resp": ""},
-      {"s": "done", "f": "2026-04-06", "n": "Enviado"},
-      {"s": "done", "f": "2026-04-06", "n": "390"}
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "COLIMPORTADOS"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "Recibido bodega",
+        "envio": "moto",
+        "guia": "",
+        "dest": "PSI",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "Enviado"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "390"
+      }
     ],
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
@@ -146,10 +346,30 @@
     "desc": "SUMINISTRO DE MATERIAL",
     "estado": "activo",
     "stages": [
-      {"s": "done", "f": "2026-04-06", "n": "SEGEFER, COLIMP"},
-      {"s": "done", "f": "2026-04-07", "n": "ENREGADO A SATI", "envio": "camion_energy", "guia": "", "dest": "HIDROCASANARE", "resp": ""},
-      {"s": "pending", "f": "", "n": ""},
-      {"s": "pending", "f": "", "n": ""}
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "SEGEFER, COLIMP"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "ENREGADO A SATI",
+        "envio": "camion_energy",
+        "guia": "",
+        "dest": "HIDROCASANARE",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
     ],
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
@@ -160,11 +380,66 @@
     "desc": "SUMINISTRO DE MATERIAL",
     "estado": "activo",
     "stages": [
-      {"s": "done", "f": "2026-04-06", "n": "BODEGA, JOSE MO"},
-      {"s": "active", "f": "2026-04-10", "n": "ESPERA DEFINICI", "envio": "recoge_bodega", "guia": "", "dest": "", "resp": ""},
-      {"s": "pending", "f": "", "n": ""},
-      {"s": "pending", "f": "", "n": ""}
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "BODEGA, JOSE MO"
+      },
+      {
+        "s": "active",
+        "f": "2026-04-10",
+        "n": "ESPERA DEFINICI",
+        "envio": "recoge_bodega",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
     ],
     "updatedAt": "2026-04-10T00:00:00.000Z"
+  },
+  {
+    "id": "poc_1775841157865",
+    "num": "ODC-00003713",
+    "cliente": "SAR ENERGY",
+    "desc": "SUMINSITRO GUAYAS",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "FERRELECTRICOS BELTRAN"
+      },
+      {
+        "s": "active",
+        "f": "",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-04-10T17:12:37.865Z"
   }
 ]
