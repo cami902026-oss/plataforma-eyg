@@ -4267,7 +4267,9 @@ function copyTeamsLink() {
 
 // ===== ONEDRIVE INVENTARIO =====
 async function msLoadInventoryFromOneDrive() {
-  const token = await getToken();
+  // Forzar token fresco para incluir Files.ReadWrite si fue recién concedido
+  msAccessToken = null;
+  const token = await silentToken();
   if (!token) {
     showToast('Primero inicia sesión con Microsoft en Configuración 🟣', 'error');
     navigate('configuracion');
@@ -4281,7 +4283,17 @@ async function msLoadInventoryFromOneDrive() {
       "https://graph.microsoft.com/v1.0/me/drive/root/search(q='" + encodeURIComponent(fileName) + "')?$select=id,name,file",
       { headers: { Authorization: 'Bearer ' + token } }
     );
-    if (!searchResp.ok) throw new Error('Error buscando archivo: ' + searchResp.status);
+    if (!searchResp.ok) {
+      if (searchResp.status === 401) {
+        showToast('🔐 Sesión expirada. Reconectando con Microsoft...', 'info');
+        msAccessToken = null;
+        const newToken = await msalInstance.acquireTokenPopup({ scopes: MS_SCOPES, account: msAccountInfo });
+        msAccessToken = newToken.accessToken;
+        msAccountInfo = newToken.account;
+        return msLoadInventoryFromOneDrive();
+      }
+      throw new Error('Error buscando archivo: ' + searchResp.status);
+    }
     const searchData = await searchResp.json();
     const excelFiles = (searchData.value || []).filter(f => f.file && (f.name.endsWith('.xlsx') || f.name.endsWith('.xlsm') || f.name.endsWith('.xls')));
     if (excelFiles.length === 0) {
