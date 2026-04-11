@@ -4317,13 +4317,40 @@ async function msLoadInventoryFromOneDrive() {
 
     // 3. Parsear con SheetJS (soporta .xlsm nativamente)
     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-    const sheetName = localStorage.getItem('inv_onedrive_sheet') || '';
-    const wsName = (sheetName && workbook.SheetNames.includes(sheetName))
-      ? sheetName
-      : workbook.SheetNames[0];
+
+    // 5. Auto-detectar fila de encabezados (igual que sync_inventory.py)
+    const COL_MAP = {
+      'codigo producto':'CODIGO PRODUCTO','código producto':'CODIGO PRODUCTO','codigo':'CODIGO PRODUCTO',
+      'descripcion':'DESCRIPCION','descripción':'DESCRIPCION',
+      'marca':'MARCA',
+      'ubicacion':'UBICACIÓN','ubicación':'UBICACIÓN',
+      'stock actual':'STOCK ACTUAL','stock':'STOCK ACTUAL',
+      'entradas':'ENTRADAS','salidas':'SALIDAS',
+      'familia':'FAMILIA','categoria':'CATEGORIA','categoría':'CATEGORIA','lote':'LOTE'
+    };
+
+    // Buscar la hoja con más columnas reconocibles (igual al script Python)
+    const savedSheet = localStorage.getItem('inv_onedrive_sheet') || '';
+    let bestWsName = workbook.SheetNames[0];
+    let bestWsScore = 0;
+    let bestHeaderRowIdx = 0;
+    for (const sName of workbook.SheetNames) {
+      const wsCandidate = workbook.Sheets[sName];
+      const rows = XLSX.utils.sheet_to_json(wsCandidate, { header: 1, defval: '', range: 0 });
+      for (let i = 0; i < Math.min(15, rows.length); i++) {
+        const score = rows[i].filter(v => COL_MAP[String(v).trim().toLowerCase()]).length;
+        if (score > bestWsScore) {
+          bestWsScore = score;
+          bestWsName = sName;
+          bestHeaderRowIdx = i;
+        }
+      }
+    }
+    // Si el usuario configuró una hoja manualmente, usar esa
+    const wsName = (savedSheet && workbook.SheetNames.includes(savedSheet)) ? savedSheet : bestWsName;
     const ws = workbook.Sheets[wsName];
     if (!ws) {
-      showToast('❌ No se encontró la hoja "' + (sheetName || wsName) + '" en el archivo.', 'error');
+      showToast('❌ No se encontró la hoja "' + wsName + '" en el archivo.', 'error');
       return;
     }
 
@@ -4334,17 +4361,9 @@ async function msLoadInventoryFromOneDrive() {
       return;
     }
 
-    // 5. Auto-detectar fila de encabezados (igual que sync_inventory.py)
-    const COL_MAP = {
-      'codigo producto':'CODIGO PRODUCTO','código producto':'CODIGO PRODUCTO','codigo':'CODIGO PRODUCTO',
-      'descripcion':'DESCRIPCION','descripción':'DESCRIPCION',
-      'marca':'MARCA',
-      'ubicacion':'UBICACIÓN','ubicación':'UBICACIÓN',
-      'stock actual':'STOCK ACTUAL','stock':'STOCK ACTUAL',
-      'entradas':'ENTRADAS','salidas':'SALIDAS'
-    };
-    let headerRowIdx = 0;
-    let bestScore = 0;
+    // Re-detectar fila de encabezados en la hoja seleccionada
+    let headerRowIdx = bestHeaderRowIdx;
+    let bestScore = bestWsScore;
     for (let i = 0; i < Math.min(15, rawValues.length); i++) {
       const score = rawValues[i].filter(v => COL_MAP[String(v).trim().toLowerCase()]).length;
       if (score > bestScore) { bestScore = score; headerRowIdx = i; }
