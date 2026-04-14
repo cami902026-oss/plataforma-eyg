@@ -1789,13 +1789,22 @@ function _loadOrdenesGS() {
       try { script.parentNode && script.parentNode.removeChild(script); } catch(_) {}
       delete window[cbName];
       if (res && res.ok && Array.isArray(res.data) && res.data.length > 0) {
-        // Fusionar GS con datos locales para no perder órdenes que solo están en local/GitHub
+        // Fusionar GS con local: gana la versión más reciente según updatedAt
         let local = [];
         try { local = JSON.parse(localStorage.getItem('procesos_oc') || '[]'); } catch(_) {}
+        const merged = res.data.map(gsOrder => {
+          const localOrder = local.find(o => o.id === gsOrder.id || o.num === gsOrder.num);
+          if (localOrder) {
+            const gsTime   = gsOrder.updatedAt    ? new Date(gsOrder.updatedAt).getTime()    : 0;
+            const localTime = localOrder.updatedAt ? new Date(localOrder.updatedAt).getTime() : 0;
+            return localTime > gsTime ? localOrder : gsOrder;
+          }
+          return gsOrder;
+        });
         const gsIds = new Set(res.data.map(o => o.id));
         const soloLocal = local.filter(o => !gsIds.has(o.id));
-        const merged = [...res.data, ...soloLocal];
-        localStorage.setItem('procesos_oc', JSON.stringify(merged));
+        const finalData = [...merged, ...soloLocal];
+        localStorage.setItem('procesos_oc', JSON.stringify(finalData));
         ocRenderSafe();
         console.log('✅ Órdenes cargadas desde Google Sheets:', res.data.length, '| Solo local:', soloLocal.length);
       } else {
