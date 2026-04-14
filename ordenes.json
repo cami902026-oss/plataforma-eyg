@@ -587,5 +587,41 @@
       }
     ],
     "updatedAt": "2026-04-14T23:12:33.012Z"
+  },
+  {
+    "id": "poc_1776209903635",
+    "num": "8874",
+    "cliente": "SERTECPET",
+    "desc": "SUMINISTRO MANOMETROS",
+    "estado": "completado",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-10",
+        "n": "WIKA"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-11",
+        "n": "",
+        "envio": "flota",
+        "transp": "AUTOBOY",
+        "guia": "",
+        "dest": "RICARDO DIAZ",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-14",
+        "n": "SERVIDOR"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-14",
+        "n": "399"
+      }
+    ],
+    "createdAt": "2026-04-14T23:38:23.636Z",
+    "updatedAt": "2026-04-14T23:38:23.636Z"
   }
 ]
