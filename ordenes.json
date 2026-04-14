@@ -624,46 +624,11 @@
     "updatedAt": "2026-04-14T23:12:33.012Z"
   },
   {
-    "id": 8874,
-    "num": 8874,
-    "cliente": "SERTECPET",
-    "desc": "SUMINSITRO DE MANOMETROS",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-10",
-        "n": "WIKA COLOMBIA"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-11",
-        "n": "",
-        "envio": "taquilla_bus",
-        "transp": "ENTREGA RICARDO DIAZ",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-14",
-        "n": "SERVIDOR"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-14",
-        "n": "399"
-      }
-    ],
-    "updatedAt": "2026-04-14T23:16:13.441Z"
-  },
-  {
     "id": "8874",
     "num": "8874",
     "cliente": "SERTECPET",
     "desc": "Suministro de manometros",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -681,17 +646,17 @@
         "resp": "RICARDO DIAZ"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-13",
+        "n": "servidor"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-14",
+        "n": "399"
       }
     ],
     "createdAt": "2026-04-14T23:18:02.903Z",
-    "updatedAt": "2026-04-14T23:18:02.903Z"
+    "updatedAt": "2026-04-14T23:18:50.244Z"
   }
 ]
