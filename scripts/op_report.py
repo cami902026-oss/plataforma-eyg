@@ -36,8 +36,6 @@ POC_STAGES = [
 ]
 
 
-# ─── 1. LEER CREDENCIALES ─────────────────────────────────────────────────────
-
 def load_config() -> dict:
     config_path = os.path.join(os.path.dirname(__file__), 'cowork_config.json')
     if not os.path.exists(config_path):
@@ -46,10 +44,7 @@ def load_config() -> dict:
         return json.load(f)
 
 
-# ─── 2. DESCARGAR ordenes.json DESDE GITHUB ───────────────────────────────────
-
 def load_ordenes_from_github(gh_token: str) -> list:
-    """Descarga ordenes.json del repositorio GitHub via API."""
     url = f'https://api.github.com/repos/{GH_OWNER}/{GH_REPO}/contents/ordenes.json'
     req = urllib.request.Request(url, headers={
         'Authorization': f'Bearer {gh_token}',
@@ -67,15 +62,12 @@ def load_ordenes_from_github(gh_token: str) -> list:
         body = e.read().decode()
         print(f'ERROR descargando ordenes.json: {e.code} — {body}')
         if e.code == 404:
-            print('⚠️  ordenes.json no existe en el repo aún. Se enviará reporte vacío.')
             return []
         sys.exit(1)
     except Exception as ex:
         print(f'ERROR inesperado: {ex}')
         return []
 
-
-# ─── 3. GENERAR HTML DEL REPORTE ──────────────────────────────────────────────
 
 def badge_estado(estado: str) -> str:
     colores = {
@@ -105,10 +97,68 @@ def stage_dot(stage: dict, idx: int) -> str:
     )
 
 
+def get_etapa_actual(orden: dict) -> int:
+    stages = orden.get('stages', [])
+    for i, st in enumerate(stages[:4]):
+        if st.get('s') == 'active':
+            return i
+    for i, st in enumerate(stages[:4]):
+        if st.get('s') != 'done':
+            return i
+    return 3
+
+
+def build_resumen_etapas(activos: list) -> str:
+    grupos = {0: [], 1: [], 2: [], 3: []}
+    for o in activos:
+        idx = get_etapa_actual(o)
+        grupos[idx].append(o.get('num') or o.get('id', '—'))
+
+    filas_html = ''
+    for idx, st in enumerate(POC_STAGES):
+        items = grupos[idx]
+        cantidad = len(items)
+        lista_txt = ', '.join(items) if items else '—'
+        color_num = '#E8A020' if cantidad > 0 else '#8899bb'
+        filas_html += f"""
+        <tr style='border-bottom:1px solid #1e3a6e;'>
+          <td style='padding:10px 14px;font-size:18px;text-align:center;width:40px;'>{st['icon']}</td>
+          <td style='padding:10px 8px;font-size:13px;font-weight:700;color:#e2e8f0;'>{st['label']}</td>
+          <td style='padding:10px 8px;text-align:center;'>
+            <span style='font-size:22px;font-weight:900;color:{color_num};'>{cantidad}</span>
+            <div style='font-size:10px;color:#8899bb;'>orden{'es' if cantidad != 1 else ''}</div>
+          </td>
+          <td style='padding:10px 14px;font-size:11px;color:#93c5fd;'>{lista_txt}</td>
+        </tr>"""
+
+    return f"""
+    <div style='margin-bottom:24px;'>
+      <div style='font-size:11px;color:#8899bb;font-weight:700;text-transform:uppercase;
+                  letter-spacing:1px;margin-bottom:10px;'>📊 Estado por Etapa — Órdenes Activas</div>
+      <table style='width:100%;border-collapse:collapse;background:#0d1f3c;
+                    border:1px solid #1e3a6e;border-radius:10px;overflow:hidden;'>
+        <thead>
+          <tr style='background:#0F2B5B;'>
+            <th style='padding:8px;'></th>
+            <th style='padding:8px;text-align:left;font-size:11px;color:#8899bb;
+                       text-transform:uppercase;letter-spacing:1px;'>Etapa</th>
+            <th style='padding:8px;text-align:center;font-size:11px;color:#8899bb;
+                       text-transform:uppercase;letter-spacing:1px;'>Cantidad</th>
+            <th style='padding:8px;text-align:left;font-size:11px;color:#8899bb;
+                       text-transform:uppercase;letter-spacing:1px;'>Órdenes</th>
+          </tr>
+        </thead>
+        <tbody>{filas_html}</tbody>
+      </table>
+    </div>"""
+
+
 def build_report_html(ordenes: list, date_str: str) -> str:
     activos     = [o for o in ordenes if o.get('estado') == 'activo']
     completados = [o for o in ordenes if o.get('estado') == 'completado']
     cancelados  = [o for o in ordenes if o.get('estado') == 'cancelado']
+
+    resumen_etapas = build_resumen_etapas(activos) if activos else ''
 
     resumen = f"""
     <div style='display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;'>
@@ -186,6 +236,7 @@ def build_report_html(ordenes: list, date_str: str) -> str:
   <div style="height:3px;background:linear-gradient(90deg,#E8A020,transparent);"></div>
   <div style="background:#071525;padding:20px;border-radius:0 0 0 0;">
     {resumen}
+    {resumen_etapas}
     {cuerpo}
   </div>
   <div style="background:#071525;padding:14px;border-radius:0 0 12px 12px;text-align:center;margin-top:0;border-top:1px solid #1e3a6e;">
@@ -196,8 +247,6 @@ def build_report_html(ordenes: list, date_str: str) -> str:
 </body>
 </html>"""
 
-
-# ─── 4. AUTENTICACIÓN MICROSOFT GRAPH ─────────────────────────────────────────
 
 def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
     url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
@@ -217,8 +266,6 @@ def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
         print(f"ERROR obteniendo token: {e.code} — {e.read().decode()}")
         sys.exit(1)
 
-
-# ─── 5. ENVIAR CORREO VIA GRAPH ────────────────────────────────────────────────
 
 def send_email(token: str, sender: str, recipients: list, subject: str, html_body: str):
     payload = json.dumps({
@@ -240,8 +287,6 @@ def send_email(token: str, sender: str, recipients: list, subject: str, html_bod
         sys.exit(1)
 
 
-# ─── MAIN ─────────────────────────────────────────────────────────────────────
-
 if __name__ == '__main__':
     cfg = load_config()
 
@@ -251,12 +296,15 @@ if __name__ == '__main__':
     sender_email  = os.environ.get('SENDER_EMAIL',     cfg.get('sender_email',     '')).strip()
     recipients    = [r.strip() for r in os.environ.get(
                         'RECIPIENT_EMAILS', cfg.get('recipient_emails', '')).split(',')]
+    extra_str     = os.environ.get('EXTRA_RECIPIENTS', cfg.get('extra_recipients', '')).strip()
+    if extra_str:
+        recipients += [r.strip() for r in extra_str.split(',') if r.strip()]
+    recipients    = list(dict.fromkeys(r for r in recipients if r))
     gh_token      = os.environ.get('GH_TOKEN',         cfg.get('github_token',     '')).strip()
 
     print(f"🔍 Sender        : {sender_email}")
     print(f"🔍 Destinatarios : {', '.join(recipients)}")
 
-    # Descargar órdenes desde GitHub
     ordenes = load_ordenes_from_github(gh_token)
 
     now      = datetime.now()
