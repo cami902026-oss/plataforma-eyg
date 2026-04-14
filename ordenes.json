@@ -50,6 +50,7 @@
         "f": "2026-04-11",
         "n": "",
         "envio": "transportadora",
+        "transp": "",
         "guia": "",
         "dest": "",
         "resp": ""
@@ -60,12 +61,12 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-14",
+        "n": "396"
       }
     ],
-    "updatedAt": "2026-04-10T00:00:00.000Z"
+    "updatedAt": "2026-04-14T23:14:02.947Z"
   },
   {
     "id": "LM1358",
@@ -136,8 +137,8 @@
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
   {
-    "id": "8874",
-    "num": "8874",
+    "id": 8874,
+    "num": 8874,
     "cliente": "SERTECPET",
     "desc": "Suministro de manometros",
     "estado": "activo",
@@ -148,11 +149,10 @@
         "n": "WIKA"
       },
       {
-        "s": "done",
+        "s": "active",
         "f": "",
         "n": "ENVIO RICARDO D",
-        "envio": "flota",
-        "transp": "",
+        "envio": "transportadora",
         "guia": "",
         "dest": "",
         "resp": "RICARDO DIAZ"
@@ -168,8 +168,7 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-04-14T23:18:02.903Z",
-    "updatedAt": "2026-04-14T23:18:02.903Z"
+    "updatedAt": "2026-04-10T00:00:00.000Z"
   },
   {
     "id": "060426C6243",
@@ -349,7 +348,7 @@
     "num": "LM1392",
     "cliente": "HIDROCASANARE",
     "desc": "SUMINISTRO DE MATERIAL",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -361,22 +360,24 @@
         "f": "2026-04-07",
         "n": "ENREGADO A SATI",
         "envio": "camion_energy",
+        "transp": "",
         "guia": "",
         "dest": "HIDROCASANARE",
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-13",
+        "n": "COMPLETOS EN LA CARPETA\n"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-14",
+        "n": "399"
       }
     ],
-    "updatedAt": "2026-04-10T00:00:00.000Z"
+    "createdAt": "2026-04-14T23:18:16.939Z",
+    "updatedAt": "2026-04-14T23:18:16.939Z"
   },
   {
     "id": "LM1376",
@@ -425,14 +426,14 @@
         "n": "FERRELECTRICOS BELTRAN"
       },
       {
-        "s": "active",
-        "f": "",
-        "n": "",
-        "envio": "transportadora",
+        "s": "done",
+        "f": "2026-04-13",
+        "n": "ENTREGADO BODEGA SAR RIOCARDO DIAZ",
+        "envio": "entrega_mano",
         "transp": "",
         "guia": "",
-        "dest": "",
-        "resp": ""
+        "dest": "SAR ENERGY",
+        "resp": "GERENCIA"
       },
       {
         "s": "pending",
@@ -445,7 +446,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-04-10T17:12:37.865Z"
+    "updatedAt": "2026-04-13T21:49:08.255Z"
   },
   {
     "id": "poc_1775861884115",
@@ -481,5 +482,216 @@
       }
     ],
     "updatedAt": "2026-04-10T22:58:04.115Z"
+  },
+  {
+    "id": "poc_1776103639015",
+    "num": "006-26",
+    "cliente": "Q-CIEN",
+    "desc": "SUMISNITRO VALVULAS",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-13",
+        "n": "CODIFER"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-13",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "COOTRANSAMYO",
+        "guia": "",
+        "dest": "",
+        "resp": "LINA CIFUENTES"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-04-14T13:36:43.948Z"
+  },
+  {
+    "id": "poc_1776103718938",
+    "num": "LM-1411",
+    "cliente": "ITC ASOCIADOS",
+    "desc": "SUMINSITROS FLEXITALICOS",
+    "estado": "completado",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-13",
+        "n": "BODEGA"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-14",
+        "n": "",
+        "envio": "taquilla_bus",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": "SHEILA BARON"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-13",
+        "n": "SERVIDOR"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-13",
+        "n": "395"
+      }
+    ],
+    "updatedAt": "2026-04-13T21:50:16.305Z"
+  },
+  {
+    "id": "poc_1776103775812",
+    "num": "100426J8319",
+    "cliente": "CIAM",
+    "desc": "SUMINSITRO BRIDAS",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-04-13",
+        "n": "COLIMPORTADOS\nFAIMPETROL\n"
+      },
+      {
+        "s": "active",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-04-13T18:09:35.812Z"
+  },
+  {
+    "id": "poc_1776192478524",
+    "num": "LM-1418",
+    "cliente": "HIDROCASANARE",
+    "desc": "Suminsitro de tuberia material mecanico",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-04-14",
+        "n": "Codifer\nInduvacol\ninstrugases"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-15",
+        "n": "Recogiendo",
+        "envio": "camion_energy",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": "Andrés Barrera"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-04-14T23:12:33.012Z"
+  },
+  {
+    "id": 8874,
+    "num": 8874,
+    "cliente": "SERTECPET",
+    "desc": "SUMINSITRO DE MANOMETROS",
+    "estado": "completado",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-10",
+        "n": "WIKA COLOMBIA"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-11",
+        "n": "",
+        "envio": "taquilla_bus",
+        "transp": "ENTREGA RICARDO DIAZ",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-14",
+        "n": "SERVIDOR"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-14",
+        "n": "399"
+      }
+    ],
+    "updatedAt": "2026-04-14T23:16:13.441Z"
+  },
+  {
+    "id": "8874",
+    "num": "8874",
+    "cliente": "SERTECPET",
+    "desc": "Suministro de manometros",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-09",
+        "n": "WIKA"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "ENVIO RICARDO D",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": "RICARDO DIAZ"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-04-14T23:18:02.903Z",
+    "updatedAt": "2026-04-14T23:18:02.903Z"
   }
 ]
