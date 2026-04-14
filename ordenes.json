@@ -137,40 +137,6 @@
     "updatedAt": "2026-04-10T00:00:00.000Z"
   },
   {
-    "id": 8874,
-    "num": 8874,
-    "cliente": "SERTECPET",
-    "desc": "Suministro de manometros",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-09",
-        "n": "WIKA"
-      },
-      {
-        "s": "active",
-        "f": "",
-        "n": "ENVIO RICARDO D",
-        "envio": "transportadora",
-        "guia": "",
-        "dest": "",
-        "resp": "RICARDO DIAZ"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-04-10T00:00:00.000Z"
-  },
-  {
     "id": "060426C6243",
     "num": "060426C6243",
     "cliente": "CIAM",
@@ -487,7 +453,7 @@
     "num": "006-26",
     "cliente": "Q-CIEN",
     "desc": "SUMISNITRO VALVULAS",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -505,17 +471,17 @@
         "resp": "LINA CIFUENTES"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-13",
+        "n": "SERVIDOR"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-13",
+        "n": "397"
       }
     ],
-    "updatedAt": "2026-04-14T13:36:43.948Z"
+    "updatedAt": "2026-04-14T23:26:01.812Z"
   },
   {
     "id": "poc_1776103718938",
@@ -621,76 +587,5 @@
       }
     ],
     "updatedAt": "2026-04-14T23:12:33.012Z"
-  },
-  {
-    "id": 8874,
-    "num": 8874,
-    "cliente": "SERTECPET",
-    "desc": "Suministro de manometros",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-09",
-        "n": "WIKA"
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "ENVIO RICARDO D",
-        "envio": "flota",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": "RICARDO DIAZ"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-13",
-        "n": "servidor"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-14",
-        "n": "399"
-      }
-    ],
-    "updatedAt": "2026-04-14T23:18:50.244Z"
-  },
-  {
-    "id": "8874",
-    "num": "8874",
-    "cliente": "SERTECPET",
-    "desc": "Suministro de manometros",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-09",
-        "n": "WIKA"
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "ENVIO RICARDO D",
-        "envio": "flota",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": "RICARDO DIAZ"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-13",
-        "n": "servidor"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-14",
-        "n": "399"
-      }
-    ],
-    "createdAt": "2026-04-14T23:18:02.903Z",
-    "updatedAt": "2026-04-14T23:21:19.031Z"
   }
 ]
