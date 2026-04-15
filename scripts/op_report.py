@@ -131,11 +131,17 @@ def get_etapa_actual(orden: dict) -> int:
 
 
 def build_resumen_etapas(activos: list) -> str:
-    """Genera el bloque HTML de resumen por etapa para órdenes activas."""
+    """Genera el bloque HTML de resumen por etapa para órdenes activas.
+    Para cada etapa, cuenta las órdenes que AÚN NO la tienen completada."""
     grupos = {0: [], 1: [], 2: [], 3: []}
     for o in activos:
-        idx = get_etapa_actual(o)
-        grupos[idx].append(o.get('num') or o.get('id', '—'))
+        stages = o.get('stages') or []
+        while len(stages) < 4:
+            stages.append({})
+        for i in range(4):
+            # Si esta etapa no está done → la orden aparece en este grupo
+            if not is_stage_done(stages[i]):
+                grupos[i].append(o.get('num') or o.get('id', '—'))
 
     filas_html = ''
     for idx, st in enumerate(POC_STAGES):
@@ -157,7 +163,7 @@ def build_resumen_etapas(activos: list) -> str:
     return f"""
     <div style='margin-bottom:24px;'>
       <div style='font-size:11px;color:#8899bb;font-weight:700;text-transform:uppercase;
-                  letter-spacing:1px;margin-bottom:10px;'>📊 Estado por Etapa — Órdenes Activas</div>
+                  letter-spacing:1px;margin-bottom:10px;'>📊 Órdenes Pendientes por Etapa</div>
       <table style='width:100%;border-collapse:collapse;background:#0d1f3c;
                     border:1px solid #1e3a6e;border-radius:10px;overflow:hidden;'>
         <thead>
