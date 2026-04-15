@@ -31,7 +31,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-04-10T00:00:00.000Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "LM-1389",
@@ -66,7 +66,7 @@
         "n": "396"
       }
     ],
-    "updatedAt": "2026-04-14T23:14:02.947Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "LM1358",
@@ -100,7 +100,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-04-10T00:00:00.000Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "LM1380",
@@ -134,7 +134,7 @@
         "n": "387-394"
       }
     ],
-    "updatedAt": "2026-04-10T00:00:00.000Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "060426C6243",
@@ -168,7 +168,7 @@
         "n": "393"
       }
     ],
-    "updatedAt": "2026-04-10T00:00:00.000Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "070426B2299",
@@ -202,7 +202,7 @@
         "n": "392"
       }
     ],
-    "updatedAt": "2026-04-10T00:00:00.000Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "060426S0974",
@@ -237,7 +237,7 @@
         "n": "388"
       }
     ],
-    "updatedAt": "2026-04-10T17:23:39.970Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "060426E8427",
@@ -272,7 +272,7 @@
         "n": "389"
       }
     ],
-    "updatedAt": "2026-04-10T17:23:01.878Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "02CMP-9692",
@@ -307,7 +307,7 @@
         "n": "390"
       }
     ],
-    "updatedAt": "2026-04-10T17:13:32.720Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "LM1392",
@@ -342,7 +342,7 @@
         "n": "399"
       }
     ],
-    "updatedAt": "2026-04-14T23:18:27.645Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "LM1376",
@@ -376,7 +376,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-04-10T00:00:00.000Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1775841157865",
@@ -411,7 +411,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-04-13T21:49:08.255Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1775861884115",
@@ -446,7 +446,7 @@
         "n": "PENDIETE POR ARREGLAR INONVENIENTE DE GARANTIA"
       }
     ],
-    "updatedAt": "2026-04-10T22:58:04.115Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776103639015",
@@ -481,7 +481,7 @@
         "n": "397"
       }
     ],
-    "updatedAt": "2026-04-14T23:26:01.812Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776103718938",
@@ -516,7 +516,7 @@
         "n": "395"
       }
     ],
-    "updatedAt": "2026-04-13T21:50:16.305Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776103775812",
@@ -551,7 +551,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-04-13T18:09:35.812Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776192478524",
@@ -586,11 +586,11 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-04-14T23:12:33.012Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776209903635",
-    "num": "8874",
+    "num": 8874,
     "cliente": "SERTECPET",
     "desc": "SUMINISTRO MANOMETROS",
     "estado": "completado",
@@ -621,7 +621,42 @@
         "n": "399"
       }
     ],
-    "createdAt": "2026-04-14T23:38:23.636Z",
-    "updatedAt": "2026-04-14T23:38:23.636Z"
+    "updatedAt": "✅ Facturado"
+  },
+  {
+    "id": "poc_1776219839963",
+    "num": "LM1387",
+    "cliente": "ENERFLEX",
+    "desc": "SUMINISTRO POTENCIOMETRO",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-01",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-01",
+        "n": "",
+        "envio": "taquilla_bus",
+        "transp": "RAPIDO OCHOA",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-14",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-04-15T02:23:59.963Z",
+    "updatedAt": "2026-04-15T02:23:59.963Z"
   }
 ]
