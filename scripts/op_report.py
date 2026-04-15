@@ -36,6 +36,8 @@ POC_STAGES = [
 ]
 
 
+# ─── 1. LEER CREDENCIALES ─────────────────────────────────────────────────────
+
 def load_config() -> dict:
     config_path = os.path.join(os.path.dirname(__file__), 'cowork_config.json')
     if not os.path.exists(config_path):
@@ -44,7 +46,10 @@ def load_config() -> dict:
         return json.load(f)
 
 
+# ─── 2. DESCARGAR ordenes.json DESDE GITHUB ───────────────────────────────────
+
 def load_ordenes_from_github(gh_token: str) -> list:
+    """Descarga ordenes.json del repositorio GitHub via API."""
     url = f'https://api.github.com/repos/{GH_OWNER}/{GH_REPO}/contents/ordenes.json'
     req = urllib.request.Request(url, headers={
         'Authorization': f'Bearer {gh_token}',
@@ -62,12 +67,15 @@ def load_ordenes_from_github(gh_token: str) -> list:
         body = e.read().decode()
         print(f'ERROR descargando ordenes.json: {e.code} — {body}')
         if e.code == 404:
+            print('⚠️  ordenes.json no existe en el repo aún. Se enviará reporte vacío.')
             return []
         sys.exit(1)
     except Exception as ex:
         print(f'ERROR inesperado: {ex}')
         return []
 
+
+# ─── 3. GENERAR HTML DEL REPORTE ──────────────────────────────────────────────
 
 def badge_estado(estado: str) -> str:
     colores = {
@@ -80,12 +88,14 @@ def badge_estado(estado: str) -> str:
 
 
 def stage_dot(stage: dict, idx: int) -> str:
-    s = stage.get('s', 'pending')
+    s     = stage.get('s', 'pending')
     fecha = stage.get('f', '')
     nota  = stage.get('n', '')
     st    = POC_STAGES[idx]
-    color = '#2EAA4A' if s == 'done' else ('#E8A020' if s == 'active' else '#8899bb')
-    bg    = '#e6f4ea' if s == 'done' else ('#fff8e1' if s == 'active' else '#1e3a6e')
+    # done = s=='done' ó tiene fecha (igual que frontend)
+    visually_done = (s == 'done' or bool(fecha.strip()))
+    color = '#2EAA4A' if visually_done else ('#E8A020' if s == 'active' else '#8899bb')
+    bg    = '#e6f4ea' if visually_done else ('#fff8e1' if s == 'active' else '#1e3a6e')
     fecha_txt = f"<br><span style='font-size:10px;color:#8899bb;'>{'/'.join(reversed(fecha.split('-')))}</span>" if fecha else ''
     nota_txt  = f"<br><span style='font-size:10px;color:#8899bb;' title='{nota}'>💬 {nota[:25]}{'…' if len(nota)>25 else ''}</span>" if nota else ''
     return (
@@ -97,18 +107,31 @@ def stage_dot(stage: dict, idx: int) -> str:
     )
 
 
+def is_stage_done(st: dict) -> bool:
+    """Una etapa está completa si s=='done' O si tiene fecha registrada (igual que el frontend)."""
+    return st.get('s') == 'done' or bool(st.get('f', '').strip())
+
+
 def get_etapa_actual(orden: dict) -> int:
-    stages = orden.get('stages', [])
+    """Devuelve el índice (0-3) de la etapa actual de una orden activa.
+    Busca la primera etapa 'active'; si no hay, la primera no-completada."""
+    stages = orden.get('stages') or []
+    # Asegurar 4 elementos
+    while len(stages) < 4:
+        stages.append({})
+    # Primero: buscar etapa marcada 'active'
     for i, st in enumerate(stages[:4]):
         if st.get('s') == 'active':
             return i
+    # Luego: primera etapa que NO esté done (done = s=='done' ó tiene fecha)
     for i, st in enumerate(stages[:4]):
-        if st.get('s') != 'done':
+        if not is_stage_done(st):
             return i
-    return 3
+    return 3  # todas done → se queda en facturación
 
 
 def build_resumen_etapas(activos: list) -> str:
+    """Genera el bloque HTML de resumen por etapa para órdenes activas."""
     grupos = {0: [], 1: [], 2: [], 3: []}
     for o in activos:
         idx = get_etapa_actual(o)
@@ -180,11 +203,21 @@ def build_report_html(ordenes: list, date_str: str) -> str:
       </div>
     </div>"""
 
-    if not ordenes:
-        cuerpo = "<div style='text-align:center;padding:40px;color:#8899bb;'>📋 No hay órdenes de pedido registradas aún.</div>"
+    # Solo mostrar órdenes activas con al menos una etapa pendiente
+    # (done = s=='done' ó tiene fecha, igual que el frontend)
+    def _tiene_pendiente(o):
+        stages = o.get('stages') or []
+        while len(stages) < 4:
+            stages.append({})
+        return any(not is_stage_done(stages[i]) for i in range(4))
+
+    pendientes = [o for o in activos if _tiene_pendiente(o)]
+
+    if not pendientes:
+        cuerpo = "<div style='text-align:center;padding:40px;color:#8899bb;'>✅ Todas las órdenes activas están al día.</div>"
     else:
         filas = ''
-        for o in reversed(ordenes):
+        for o in reversed(pendientes):
             stages = o.get('stages', [{},{},{},{}])
             while len(stages) < 4:
                 stages.append({})
@@ -206,6 +239,7 @@ def build_report_html(ordenes: list, date_str: str) -> str:
         <table style='width:100%;border-collapse:collapse;background:#0d1f3c;border-radius:10px;overflow:hidden;'>
           <thead>
             <tr style='background:#0F2B5B;'>
+              <th style='padding:10px;text-align:left;font-size:11px;color:#E8A020;text-transform:uppercase;letter-spacing:1px;' colspan='7'>⚠️ Órdenes con Etapas Pendientes</th></tr><tr style='background:#0F2B5B;'>
               <th style='padding:10px;text-align:left;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>OP / Proyecto</th>
               <th style='padding:10px;text-align:left;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>Descripción</th>
               <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>Estado</th>
@@ -248,6 +282,8 @@ def build_report_html(ordenes: list, date_str: str) -> str:
 </html>"""
 
 
+# ─── 4. AUTENTICACIÓN MICROSOFT GRAPH ─────────────────────────────────────────
+
 def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
     url = f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token'
     data = urllib.parse.urlencode({
@@ -266,6 +302,8 @@ def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
         print(f"ERROR obteniendo token: {e.code} — {e.read().decode()}")
         sys.exit(1)
 
+
+# ─── 5. ENVIAR CORREO VIA GRAPH ────────────────────────────────────────────────
 
 def send_email(token: str, sender: str, recipients: list, subject: str, html_body: str):
     payload = json.dumps({
@@ -287,6 +325,8 @@ def send_email(token: str, sender: str, recipients: list, subject: str, html_bod
         sys.exit(1)
 
 
+# ─── MAIN ─────────────────────────────────────────────────────────────────────
+
 if __name__ == '__main__':
     cfg = load_config()
 
@@ -299,12 +339,13 @@ if __name__ == '__main__':
     extra_str     = os.environ.get('EXTRA_RECIPIENTS', cfg.get('extra_recipients', '')).strip()
     if extra_str:
         recipients += [r.strip() for r in extra_str.split(',') if r.strip()]
-    recipients    = list(dict.fromkeys(r for r in recipients if r))
+    recipients    = list(dict.fromkeys(r for r in recipients if r))  # eliminar duplicados vacíos
     gh_token      = os.environ.get('GH_TOKEN',         cfg.get('github_token',     '')).strip()
 
     print(f"🔍 Sender        : {sender_email}")
     print(f"🔍 Destinatarios : {', '.join(recipients)}")
 
+    # Descargar órdenes desde GitHub
     ordenes = load_ordenes_from_github(gh_token)
 
     now      = datetime.now()
