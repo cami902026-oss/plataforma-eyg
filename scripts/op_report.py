@@ -274,6 +274,13 @@ def build_report_html(ordenes: list, date_str: str) -> str:
     <div style="font-size:12px;color:#93c5fd;text-align:right;">{date_str}</div>
   </div>
   <div style="height:3px;background:linear-gradient(90deg,#E8A020,transparent);"></div>
+  <div style="background:#0a1a30;padding:12px 20px;text-align:center;border-bottom:1px solid #1e3a6e;">
+    <a href="https://cami902026-oss.github.io/plataforma-eyg/Index.html" target="_blank"
+       style="display:inline-block;background:#2EAA4A;color:#fff;padding:10px 28px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;letter-spacing:0.5px;">
+      🔍 Ver informe interactivo con búsqueda
+    </a>
+    <div style="font-size:11px;color:#8899bb;margin-top:6px;">Abre la plataforma en tu navegador para buscar y filtrar órdenes</div>
+  </div>
   <div style="background:#071525;padding:20px;border-radius:0 0 0 0;">
     {resumen}
     {resumen_etapas}

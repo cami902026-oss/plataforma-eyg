@@ -539,6 +539,13 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None) -> st
     <p>Reporte Diario de Inventario &mdash; {date_str}</p>
   </div>
   <div class="gold"></div>
+  <div style="background:#0a1a30;padding:12px 20px;text-align:center;border-bottom:1px solid #1e3a6e;">
+    <a href="https://cami902026-oss.github.io/plataforma-eyg/Buscador_Inventario_2026.html" target="_blank"
+       style="display:inline-block;background:#2EAA4A;color:#fff;padding:10px 28px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;letter-spacing:0.5px;">
+      &#128269; Ver inventario interactivo con b&uacute;squeda
+    </a>
+    <div style="font-size:11px;color:#8899bb;margin-top:6px;">Abre el buscador en tu navegador para filtrar y buscar productos</div>
+  </div>
   <div class="body">
 
     <div class="sec-title">&#128230; Resumen General</div>
