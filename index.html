@@ -1271,6 +1271,10 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <!-- ===== CAMBIAR CLAVES — Solo Gerencia/Andrea ===== -->
         <div id="claves-section" style="display:none;">
           <div class="config-title">🔐 Cambiar Claves de Acceso <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(Solo Gerencia)</span></div>
+          <div id="security-warning" style="background:rgba(229,62,62,0.12);border:1px solid rgba(229,62,62,0.4);border-radius:10px;padding:14px;margin-bottom:16px;display:none;">
+            <div style="font-size:13px;color:#fc8181;font-weight:700;margin-bottom:6px;">⚠️ Estás usando credenciales por defecto</div>
+            <div style="font-size:12px;color:#feb2b2;">Por seguridad, cambia el código de empresa y las contraseñas de todos los usuarios antes de usar la plataforma.</div>
+          </div>
 
           <!-- Código de empresa -->
           <div style="background:rgba(232,160,32,0.08);border:1px solid rgba(232,160,32,0.3);border-radius:12px;padding:16px;margin-bottom:16px;">
@@ -1678,12 +1682,12 @@ function savePermsPanel() {
 }
 
 const USERS = [
-  { email:'alberto', password:'eyg2026', name:'Alberto', role:'JEFE', wa:'+573113134451' },
-  { email:'andrea', password:'eyg2026', name:'Andrea', role:'ADMIN', wa:'+573107574110' },
-  { email:'sheila', password:'eyg2026', name:'Sheila Baron', role:'COLABORADOR', wa:'+573204947227' },
-  { email:'alexandra', password:'eyg2026', name:'Alexandra', role:'COLABORADOR', wa:'+573144858382' },
-  { email:'andres', password:'eyg2026', name:'Andrés Barrera', role:'COLABORADOR', wa:'+573108893898' },
-  { email:'nelsy', password:'eyg2026', name:'Nelsy', role:'COLABORADOR', wa:'+573125099056' }
+  { email:'alberto', name:'Alberto', role:'JEFE', wa:'+573113134451' },
+  { email:'andrea', name:'Andrea', role:'ADMIN', wa:'+573107574110' },
+  { email:'sheila', name:'Sheila Baron', role:'COLABORADOR', wa:'+573204947227' },
+  { email:'alexandra', name:'Alexandra', role:'COLABORADOR', wa:'+573144858382' },
+  { email:'andres', name:'Andrés Barrera', role:'COLABORADOR', wa:'+573108893898' },
+  { email:'nelsy', name:'Nelsy', role:'COLABORADOR', wa:'+573125099056' }
 ];
 
 const TEAM_DEFAULT = [
@@ -1824,8 +1828,7 @@ const GS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwt8dHYi9C4gFhwLz
 // ── GitHub storage para Órdenes de Pedido ──────────────────────────
 let _ordenesFileSHA = '';
 function _ghToken() {
-  const p = ['ghp_P0vkBfij28bo', 'IxDOGwoHgd2oZ6XjZU2i0pSE'];
-  return localStorage.getItem('gh_pat_token') || p.join('');
+  return localStorage.getItem('gh_pat_token') || '';
 }
 async function _loadOrdenesGH() {
   try {
@@ -1993,9 +1996,8 @@ async function syncMeetingsFromAPI() {
 
 // ===== LOGIN =====
 // ===== CÓDIGO DE ACCESO =====
-const ACCESS_CODE = 'EYG2026';
 function getAccessCode() {
-  return localStorage.getItem('eyg_access_code') || ACCESS_CODE;
+  return localStorage.getItem('eyg_access_code') || 'EYG2026';
 }
 function getUserPassword(email) {
   return localStorage.getItem('eyg_pass_' + email.toLowerCase()) || 'eyg2026';
@@ -2074,7 +2076,7 @@ function checkSession() {
     try {
       const saved = JSON.parse(s);
       // Verificar que el usuario guardado existe en USERS actual
-      const valid = USERS.find(u => u.email === saved.email && u.password === saved.password);
+      const valid = USERS.find(u => u.email === saved.email && getUserPassword(u.email) === saved.password);
       if (valid) {
         currentUser = valid;
         document.getElementById('access-screen').style.display = 'none';
@@ -2119,7 +2121,13 @@ function initApp() {
   if (clavesSection) {
     const canManage = currentUser.email === 'alberto' || currentUser.email === 'andrea';
     clavesSection.style.display = canManage ? 'block' : 'none';
-    if (canManage) renderUserPasswords();
+    if (canManage) {
+      renderUserPasswords();
+      // Mostrar advertencia si aún usan credenciales por defecto
+      const usingDefault = !localStorage.getItem('eyg_access_code') || USERS.some(u => getUserPassword(u.email) === 'eyg2026');
+      const warn = document.getElementById('security-warning');
+      if (warn) warn.style.display = usingDefault ? 'block' : 'none';
+    }
   }
   // Aplicar privilegios por rol
   applyPermissions();
