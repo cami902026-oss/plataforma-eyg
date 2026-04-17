@@ -3163,10 +3163,12 @@ function savePoc() {
     createdAt: existingOrder?.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
-  // Auto-completar si todas las etapas están done
-  const allStageDone = order.stages.every(st => st.s === 'done');
-  if(allStageDone && order.estado === 'activo') {
+  // Auto-completar si todas las etapas con contenido están done
+  const filledStages = order.stages.filter(st => st.f || (st.n && st.n.trim()));
+  const allStageDone = filledStages.length > 0 && filledStages.every(st => st.s === 'done');
+  if(allStageDone && order.estado !== 'cancelado') {
     order.estado = 'completado';
+    showToast('✅ Orden completada automáticamente', 'success');
   }
   if(!order.num && !order.cliente){ showToast('Ingresa al menos número o cliente','error'); return; }
   let list = getPOC();
