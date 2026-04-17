@@ -896,7 +896,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="btn" style="background:#1d7a3a;color:#fff;border:none" onclick="exportPocExcel()">📊 Exportar Excel</button>
               <button class="btn" style="background:#8b1a1a;color:#fff;border:none" onclick="generarInformePDF()">📄 Generar Informe PDF</button>
               <button class="btn" style="background:#0f9d58;color:#fff;border:none" onclick="window.open('https://docs.google.com/spreadsheets/d/1QjeJiCQ8fND57r0MNw1vRNdcnukqpBNHDfxjbeW7Lq0/edit','_blank')">🗂️ Ver en Google Sheets</button>
-              <button class="btn" style="background:#5b21b6;color:#fff;border:none" onclick="cerrarMesOC()">📦 Cerrar Mes</button>
+              <button id="btn-cerrar-mes" class="btn" style="background:#5b21b6;color:#fff;border:none" onclick="cerrarMesOC()">📦 Cerrar Mes</button>
             </div>
           </div>
           <div id="poc-list"></div>
@@ -1628,6 +1628,9 @@ function applyPermissions() {
   const isAdmin = currentUser.email==='alberto'||currentUser.email==='andrea';
   show('perms-panel-section', isAdmin);
   if (isAdmin) renderPermsPanel();
+  // Cerrar Mes solo para JEFE y ADMIN
+  const canCerrarMes = currentUser.role === 'JEFE' || currentUser.role === 'ADMIN';
+  show('btn-cerrar-mes', canCerrarMes);
 }
 
 function renderPermsPanel() {
