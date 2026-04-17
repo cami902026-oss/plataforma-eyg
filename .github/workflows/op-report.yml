@@ -2,8 +2,8 @@ name: 📋 Reporte Diario de Órdenes de Pedido
 
 on:
   schedule:
-    # Lunes a Viernes a las 5:00 PM Colombia (UTC-5 = 22:00 UTC)
-    - cron: '0 22 * * 1-5'
+    # Lunes a Viernes a las 3:00 PM Colombia aprox. (UTC-5 = 18:00 UTC, +2hr delay GitHub)
+    - cron: '0 18 * * 1-5'
 
   # Permite ejecutar manualmente desde GitHub para pruebas
   workflow_dispatch:

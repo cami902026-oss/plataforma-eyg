@@ -2,7 +2,7 @@ name: Sincronizar Inventario desde OneDrive
 
 on:
   schedule:
-    - cron: '0 19 * * 1-5'   # 2:00 PM Colombia (UTC-5 = 19:00 UTC), Lunes a Viernes
+    - cron: '30 16 * * 1-5'   # 2:30 PM Colombia aprox. (UTC-5 = 16:30 UTC), Lunes a Viernes
   workflow_dispatch:           # También se puede ejecutar manualmente
 
 permissions:
