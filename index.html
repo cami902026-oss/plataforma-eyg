@@ -4242,8 +4242,8 @@ function updateMsUI(connected) {
   }
 }
 
-async function getToken() {
-  if (msAccessToken) return msAccessToken;
+async function getToken(forceRefresh = false) {
+  if (msAccessToken && !forceRefresh) return msAccessToken;
   return await silentToken();
 }
 
@@ -4331,7 +4331,8 @@ async function msSendTeamsMessage() {
 
 // ═══════ SINCRONIZAR REUNIONES DESDE TEAMS / OUTLOOK CALENDAR ═══════
 async function syncTeamsCalendar() {
-  const token = await getToken();
+  // Siempre renueva el token antes de llamar a la API (expiran en ~1 hora)
+  let token = await silentToken();
   if (!token) { showToast('Primero inicia sesión con Microsoft en Configuración 🟣', 'error'); navigate('configuracion'); return; }
 
   const btn = document.getElementById('btn-sync-teams');
@@ -4345,10 +4346,25 @@ async function syncTeamsCalendar() {
     const startISO = start.toISOString();
     const endISO   = end.toISOString();
 
-    const resp = await fetch(
-      `https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=${startISO}&endDateTime=${endISO}&$select=subject,start,end,isOnlineMeeting,onlineMeeting,bodyPreview&$top=100&$orderby=start/dateTime`,
+    const calUrl = `https://graph.microsoft.com/v1.0/me/calendarView?startDateTime=${startISO}&endDateTime=${endISO}&$select=subject,start,end,isOnlineMeeting,onlineMeeting,bodyPreview&$top=100&$orderby=start/dateTime`;
+
+    let resp = await fetch(calUrl,
       { headers: { Authorization: 'Bearer ' + token, Prefer: 'outlook.timezone="America/Bogota"' } }
     );
+
+    // Si el token expiró (401), pedir login interactivo y reintentar una vez
+    if (resp.status === 401) {
+      showToast('⏳ Sesión expirada, reconectando...', 'info');
+      try {
+        const r = await msalInstance.acquireTokenPopup({ scopes: MS_SCOPES, account: msAccountInfo });
+        token = r.accessToken;
+        msAccessToken = token;
+      } catch(e) {
+        showToast('No se pudo renovar la sesión. Inicia sesión de nuevo en Configuración.', 'error');
+        return;
+      }
+      resp = await fetch(calUrl, { headers: { Authorization: 'Bearer ' + token, Prefer: 'outlook.timezone="America/Bogota"' } });
+    }
 
     if (!resp.ok) {
       const err = await resp.json();
