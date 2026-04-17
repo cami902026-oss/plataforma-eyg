@@ -85,6 +85,7 @@
         "f": "2026-04-10",
         "n": "",
         "envio": "transportadora",
+        "transp": "",
         "guia": "",
         "dest": "ORITO",
         "resp": ""
@@ -95,12 +96,12 @@
         "n": "ENVIADO"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-17",
+        "n": "403"
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "LM1380",
@@ -332,8 +333,8 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-04-14",
         "n": "COMPLETOS EN LA CARPETA\n"
       },
       {
@@ -384,7 +385,7 @@
     "num": "ODC-00003713",
     "cliente": "SAR ENERGY",
     "desc": "SUMINSITRO GUAYAS",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -402,17 +403,17 @@
         "resp": "GERENCIA"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-11",
+        "n": "VIDEO"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-15",
+        "n": "400"
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1775861884115",
@@ -437,8 +438,8 @@
         "resp": "Andrea Bernal"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-04-17",
         "n": ""
       },
       {
@@ -587,8 +588,7 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-04-15T16:00:07.298Z",
-    "updatedAt": "2026-04-15T16:00:07.298Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776209903635",
@@ -665,7 +665,7 @@
     "num": "02CMP-9748",
     "cliente": "PSI",
     "desc": "SUMINSITRO ESPARRAGOS RING GASKET",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -673,14 +673,49 @@
         "n": "COLIMPORTADOS MUNDIAL Y FLEXILATINA\n"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-04-15",
-        "n": "",
+        "n": "40000",
         "envio": "moto",
         "transp": "",
-        "guia": "",
+        "guia": "PICAP",
         "dest": "PSI",
         "resp": "ALEJANDRO"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-17",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-15",
+        "n": "401"
+      }
+    ],
+    "updatedAt": "✅ Facturado"
+  },
+  {
+    "id": "poc_1776440609874",
+    "num": "02CMP-9753",
+    "cliente": "PSI",
+    "desc": "SUMINSTRO RING GASKET",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-17",
+        "n": "COLIMPORTADOS\nFLEXILATINA"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-17",
+        "n": "ANDRES ENTREGA EN LA MOTO",
+        "envio": "moto",
+        "transp": "",
+        "guia": "ANDRES BARRERA",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -694,5 +729,41 @@
       }
     ],
     "updatedAt": "❌ Pendiente"
+  },
+  {
+    "id": "poc_1776449624971",
+    "num": "LM1435",
+    "cliente": "ITC",
+    "desc": "SUMISNITRO MATERIAL MECANICO",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-17",
+        "n": ""
+      },
+      {
+        "s": "active",
+        "f": "2026-04-18",
+        "n": "",
+        "envio": "flota",
+        "transp": "PAZ DE ARIPORO",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-04-17T18:13:44.971Z",
+    "updatedAt": "2026-04-17T18:13:44.971Z"
   }
 ]
