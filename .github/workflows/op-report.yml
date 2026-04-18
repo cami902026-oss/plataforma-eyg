@@ -2,8 +2,8 @@ name: 📋 Reporte Diario de Órdenes de Pedido
 
 on:
   schedule:
-    # Lunes a Viernes a las 3:00 PM Colombia aprox. (UTC-5 = 18:00 UTC, +2hr delay GitHub)
-    - cron: '0 18 * * 1-5'
+    # Lunes a Viernes a las 7:00 PM Colombia aprox. (UTC-5 = 22:00 UTC, +2hr delay GitHub)
+    - cron: '0 22 * * 1-5'
 
   # Permite ejecutar manualmente desde GitHub para pruebas
   workflow_dispatch:
@@ -26,6 +26,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      - name: 📦 Instalar dependencias
+        run: pip install openpyxl
 
       - name: 📋 Generar y enviar reporte OP
         env:

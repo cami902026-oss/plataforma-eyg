@@ -1,7 +1,7 @@
 name: Reporte Diario de Inventario
 on:
   schedule:
-    - cron: '0 18 * * 1-5'
+    - cron: '0 22 * * 1-5'
   workflow_dispatch:
 jobs:
   send-inventory-report:
@@ -11,6 +11,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Instalar dependencias
+        run: pip install openpyxl
+
       - name: Enviar reporte
         env:
           MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}

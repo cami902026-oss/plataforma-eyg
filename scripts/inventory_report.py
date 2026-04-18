@@ -10,12 +10,21 @@ Lunes a Viernes a las 5:00 PM Colombia (UTC-5 = 22:00 UTC)
 
 import json
 import re
+import io
 import os
 import sys
+import base64
 import urllib.request
 import urllib.parse
 import urllib.error
 from datetime import datetime
+
+try:
+    import openpyxl
+    from openpyxl.styles import PatternFill, Font, Alignment
+    OPENPYXL_OK = True
+except ImportError:
+    OPENPYXL_OK = False
 
 
 # ─── CONFIGURACIÓN ─────────────────────────────────────────────────────────────
@@ -56,7 +65,67 @@ def extract_inv_from_html(html_path: str) -> list:
         return []
 
 
-# ─── 2. CALCULA ESTADÍSTICAS ──────────────────────────────────────────────────
+# ─── 2. GENERA EXCEL ─────────────────────────────────────────────────────────
+
+def generate_excel_inv(inv: list) -> bytes | None:
+    if not OPENPYXL_OK:
+        print("⚠️  openpyxl no disponible — se omite el Excel adjunto")
+        return None
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'Inventario'
+
+    hdr_fill  = PatternFill('solid', fgColor='0F2B5B')
+    hdr_font  = Font(bold=True, color='FFFFFF', size=10)
+    ok_fill   = PatternFill('solid', fgColor='E6F4EA')
+    low_fill  = PatternFill('solid', fgColor='FFF8E1')
+    zero_fill = PatternFill('solid', fgColor='FCE8E6')
+
+    headers = ['Código', 'Descripción', 'Marca', 'Ubicación',
+               'Categoría', 'Familia', 'Stock Actual', 'Entradas', 'Salidas']
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.fill = hdr_fill
+        cell.font = hdr_font
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    for row_idx, p in enumerate(inv, 2):
+        stock = int(p.get('STOCK ACTUAL') or 0)
+        cat, fam = _auto_classify(p)
+        ws.cell(row=row_idx, column=1, value=str(p.get('CODIGO PRODUCTO', '')))
+        ws.cell(row=row_idx, column=2, value=str(p.get('DESCRIPCION', '')))
+        ws.cell(row=row_idx, column=3, value=str(p.get('MARCA', '')))
+        ws.cell(row=row_idx, column=4, value=str(p.get('UBICACIÓN') or p.get('UBICACION', '')))
+        ws.cell(row=row_idx, column=5, value=_cat_label(cat))
+        ws.cell(row=row_idx, column=6, value=fam)
+        ws.cell(row=row_idx, column=7, value=stock)
+        ws.cell(row=row_idx, column=8, value=int(p.get('ENTRADAS') or 0))
+        ws.cell(row=row_idx, column=9, value=int(p.get('SALIDAS') or 0))
+
+        if stock == 0:
+            row_fill = zero_fill
+        elif stock <= 3:
+            row_fill = low_fill
+        else:
+            row_fill = ok_fill if row_idx % 2 == 0 else None
+
+        if row_fill:
+            for col in range(1, len(headers) + 1):
+                ws.cell(row=row_idx, column=col).fill = row_fill
+
+    col_widths = [14, 45, 18, 14, 20, 28, 13, 11, 11]
+    for i, w in enumerate(col_widths, 1):
+        ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = w
+
+    ws.freeze_panes = 'A2'
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+# ─── 3. CALCULA ESTADÍSTICAS ──────────────────────────────────────────────────
 
 def calculate_stats(inv: list) -> dict:
     total     = len(inv)
@@ -670,15 +739,21 @@ def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
 
 # ─── 5. ENVÍA EL CORREO VIA GRAPH ─────────────────────────────────────────────
 
-def send_email(token: str, sender: str, recipients: list, subject: str, html_body: str):
-    payload = json.dumps({
-        'message': {
-            'subject': subject,
-            'body': {'contentType': 'HTML', 'content': html_body},
-            'toRecipients': [{'emailAddress': {'address': r.strip()}} for r in recipients]
-        },
-        'saveToSentItems': True
-    }).encode('utf-8')
+def send_email(token: str, sender: str, recipients: list, subject: str, html_body: str,
+               attachment_bytes: bytes = None, attachment_name: str = None):
+    msg = {
+        'subject': subject,
+        'body': {'contentType': 'HTML', 'content': html_body},
+        'toRecipients': [{'emailAddress': {'address': r.strip()}} for r in recipients]
+    }
+    if attachment_bytes and attachment_name:
+        msg['attachments'] = [{
+            '@odata.type': '#microsoft.graph.fileAttachment',
+            'name': attachment_name,
+            'contentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'contentBytes': base64.b64encode(attachment_bytes).decode('utf-8')
+        }]
+    payload = json.dumps({'message': msg, 'saveToSentItems': True}).encode('utf-8')
     url = 'https://graph.microsoft.com/v1.0/users/' + sender + '/sendMail'
     req = urllib.request.Request(url, data=payload, method='POST',
         headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'})
@@ -735,9 +810,16 @@ if __name__ == '__main__':
     html_body = generate_html(inv, stats, date_str, rot)
     subject   = "📦 Reporte Inventario E&G — " + date_str
 
+    excel_bytes = generate_excel_inv(inv)
+    excel_name  = "Inventario_EyG_" + now.strftime('%Y-%m-%d') + ".xlsx"
+    if excel_bytes:
+        print("📊 Excel generado: " + excel_name + " (" + str(len(excel_bytes)//1024) + " KB)")
+    else:
+        print("⚠️  Excel no generado (openpyxl no disponible)")
+
     print("🔑 Obteniendo token Microsoft...")
     token = get_access_token(tenant_id, client_id, client_secret)
 
     print("📧 Enviando correo a: " + ', '.join(recipients))
-    send_email(token, sender_email, recipients, subject, html_body)
+    send_email(token, sender_email, recipients, subject, html_body, excel_bytes, excel_name)
     print("🎉 Reporte enviado exitosamente.")

@@ -12,11 +12,19 @@ Lunes a Viernes a las 5:00 PM Colombia (UTC-5 = 22:00 UTC)
 import json
 import os
 import sys
+import io
 import base64
 import urllib.request
 import urllib.parse
 import urllib.error
 from datetime import datetime
+
+try:
+    import openpyxl
+    from openpyxl.styles import PatternFill, Font, Alignment
+    OPENPYXL_OK = True
+except ImportError:
+    OPENPYXL_OK = False
 
 
 DAYS_ES   = {'Monday':'Lunes','Tuesday':'Martes','Wednesday':'Miércoles',
@@ -75,7 +83,75 @@ def load_ordenes_from_github(gh_token: str) -> list:
         return []
 
 
-# ─── 3. GENERAR HTML DEL REPORTE ──────────────────────────────────────────────
+# ─── 3. GENERAR EXCEL ────────────────────────────────────────────────────────
+
+def generate_excel_op(ordenes: list) -> bytes | None:
+    if not OPENPYXL_OK:
+        print("⚠️  openpyxl no disponible — se omite el Excel adjunto")
+        return None
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'Órdenes de Pedido'
+
+    hdr_fill = PatternFill('solid', fgColor='0F2B5B')
+    hdr_font = Font(bold=True, color='FFFFFF', size=10)
+    done_font = Font(color='1E7E34', bold=True)
+    pend_font = Font(color='B7770D')
+
+    headers = ['N° OP', 'Cliente', 'Descripción', 'Estado',
+               'Compra', 'F. Compra', 'Entrega', 'F. Entrega',
+               'Certificado', 'F. Cert.', 'Facturación', 'F. Factura']
+    for col, h in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.fill = hdr_fill
+        cell.font = hdr_font
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+
+    for row_idx, o in enumerate(ordenes, 2):
+        stages = list(o.get('stages') or [])
+        while len(stages) < 4:
+            stages.append({})
+
+        ws.cell(row=row_idx, column=1, value=o.get('num', '—'))
+        ws.cell(row=row_idx, column=2, value=o.get('cliente', ''))
+        ws.cell(row=row_idx, column=3, value=(o.get('desc') or '')[:120])
+        ws.cell(row=row_idx, column=4, value=o.get('estado', 'activo').title())
+
+        for si, st in enumerate(stages[:4]):
+            col_base = 5 + si * 2
+            done = is_stage_done(st)
+            estado_txt = '✓ Hecho' if done else ('▶ Activo' if st.get('s') == 'active' else 'Pendiente')
+            fecha_raw = st.get('f', '')
+            fecha_txt = ''
+            if fecha_raw:
+                try:
+                    p = fecha_raw.split('-')
+                    fecha_txt = f"{p[2]}/{p[1]}/{p[0]}"
+                except Exception:
+                    fecha_txt = fecha_raw
+            c_est = ws.cell(row=row_idx, column=col_base, value=estado_txt)
+            c_est.font = done_font if done else pend_font
+            ws.cell(row=row_idx, column=col_base + 1, value=fecha_txt)
+
+        # Alternar fondo por fila
+        if row_idx % 2 == 0:
+            fill = PatternFill('solid', fgColor='EEF3FF')
+            for col in range(1, len(headers) + 1):
+                ws.cell(row=row_idx, column=col).fill = fill
+
+    col_widths = [12, 22, 42, 12, 12, 12, 12, 12, 14, 12, 14, 12]
+    for i, w in enumerate(col_widths, 1):
+        ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = w
+
+    ws.freeze_panes = 'A2'
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+# ─── 4. GENERAR HTML DEL REPORTE ──────────────────────────────────────────────
 
 def badge_estado(estado: str) -> str:
     colores = {
@@ -318,15 +394,21 @@ def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
 
 # ─── 5. ENVIAR CORREO VIA GRAPH ────────────────────────────────────────────────
 
-def send_email(token: str, sender: str, recipients: list, subject: str, html_body: str):
-    payload = json.dumps({
-        'message': {
-            'subject': subject,
-            'body': {'contentType': 'HTML', 'content': html_body},
-            'toRecipients': [{'emailAddress': {'address': r.strip()}} for r in recipients]
-        },
-        'saveToSentItems': True
-    }).encode('utf-8')
+def send_email(token: str, sender: str, recipients: list, subject: str, html_body: str,
+               attachment_bytes: bytes = None, attachment_name: str = None):
+    msg = {
+        'subject': subject,
+        'body': {'contentType': 'HTML', 'content': html_body},
+        'toRecipients': [{'emailAddress': {'address': r.strip()}} for r in recipients]
+    }
+    if attachment_bytes and attachment_name:
+        msg['attachments'] = [{
+            '@odata.type': '#microsoft.graph.fileAttachment',
+            'name': attachment_name,
+            'contentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'contentBytes': base64.b64encode(attachment_bytes).decode('utf-8')
+        }]
+    payload = json.dumps({'message': msg, 'saveToSentItems': True}).encode('utf-8')
     url = f'https://graph.microsoft.com/v1.0/users/{sender}/sendMail'
     req = urllib.request.Request(url, data=payload, method='POST',
         headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'})
@@ -370,7 +452,14 @@ if __name__ == '__main__':
     print(f"📝 Generando informe para {len(ordenes)} órdenes...")
     email_html = build_report_html(ordenes, date_str)
 
+    excel_bytes = generate_excel_op(ordenes)
+    excel_name  = f"OP_EyG_{now.strftime('%Y-%m-%d')}.xlsx"
+    if excel_bytes:
+        print(f"📊 Excel generado: {excel_name} ({len(excel_bytes)//1024} KB)")
+    else:
+        print("⚠️  Excel no generado (openpyxl no disponible)")
+
     token = get_access_token(tenant_id, client_id, client_secret)
     print(f"📧 Enviando a: {', '.join(recipients)}")
-    send_email(token, sender_email, recipients, subject, email_html)
+    send_email(token, sender_email, recipients, subject, email_html, excel_bytes, excel_name)
     print("🎉 Informe OP enviado exitosamente.")
