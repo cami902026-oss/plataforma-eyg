@@ -82,8 +82,7 @@ def generate_excel_inv(inv: list) -> bytes | None:
     low_fill  = PatternFill('solid', fgColor='FFF8E1')
     zero_fill = PatternFill('solid', fgColor='FCE8E6')
 
-    headers = ['Código', 'Descripción', 'Marca', 'Ubicación',
-               'Categoría', 'Familia', 'Stock Actual', 'Entradas', 'Salidas']
+    headers = ['Código', 'Descripción', 'Marca', 'Ubicación', 'Categoría', 'Familia', 'Stock Actual']
     for col, h in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col, value=h)
         cell.fill = hdr_fill
@@ -100,8 +99,6 @@ def generate_excel_inv(inv: list) -> bytes | None:
         ws.cell(row=row_idx, column=5, value=_cat_label(cat))
         ws.cell(row=row_idx, column=6, value=fam)
         ws.cell(row=row_idx, column=7, value=stock)
-        ws.cell(row=row_idx, column=8, value=int(p.get('ENTRADAS') or 0))
-        ws.cell(row=row_idx, column=9, value=int(p.get('SALIDAS') or 0))
 
         if stock == 0:
             row_fill = zero_fill
@@ -114,7 +111,7 @@ def generate_excel_inv(inv: list) -> bytes | None:
             for col in range(1, len(headers) + 1):
                 ws.cell(row=row_idx, column=col).fill = row_fill
 
-    col_widths = [14, 45, 18, 14, 20, 28, 13, 11, 11]
+    col_widths = [14, 45, 18, 14, 20, 28, 13]
     for i, w in enumerate(col_widths, 1):
         ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = w
 
