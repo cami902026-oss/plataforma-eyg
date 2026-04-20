@@ -136,8 +136,7 @@
         "n": "387-394"
       }
     ],
-    "createdAt": "2026-04-20T21:50:22.037Z",
-    "updatedAt": "2026-04-20T21:50:22.037Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "060426C6243",
@@ -871,5 +870,41 @@
       }
     ],
     "updatedAt": "❌ Pendiente"
+  },
+  {
+    "id": "poc_1776723607018",
+    "num": "200426H3268",
+    "cliente": "CIAM",
+    "desc": "SUMINSITRO VIGA",
+    "estado": "completado",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-20",
+        "n": "LA CAMPIÑA"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-21",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "YOPAL EXPRESS",
+        "guia": "",
+        "dest": "",
+        "resp": "SHEILA BARON"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-04-20T22:20:07.018Z",
+    "updatedAt": "2026-04-20T22:20:07.018Z"
   }
 ]
