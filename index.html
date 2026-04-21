@@ -552,7 +552,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 
 <!-- ===== LOGIN ===== -->
 <!-- PANTALLA CÓDIGO DE ACCESO -->
-<div id="access-screen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#071525 0%,#0F2B5B 60%,#071525 100%);">
+<div id="access-screen" style="position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#071525 0%,#0F2B5B 60%,#071525 100%);">
   <div class="login-box" style="text-align:center;">
     <div style="margin-bottom:28px;">
       <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" alt="E&G Energy Group" style="width:110px;margin-bottom:16px;">
@@ -2214,7 +2214,7 @@ function renderUserPasswords() {
 }
 function checkAccess() {
   const code = document.getElementById('access-code').value.trim().toUpperCase();
-  if (code === getAccessCode()) {
+  if (code === getAccessCode().toUpperCase()) {
     sessionStorage.setItem('eyg_access', '1');
     document.getElementById('access-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
@@ -2276,8 +2276,13 @@ function checkSession() {
     }
   }
   // Sin sesión válida — mostrar pantalla de acceso
-  document.getElementById('access-screen').style.display = 'flex';
-  document.getElementById('login-screen').style.display = 'none';
+  if (sessionStorage.getItem('eyg_access') === '1') {
+    document.getElementById('access-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  } else {
+    document.getElementById('access-screen').style.display = 'flex';
+    document.getElementById('login-screen').style.display = 'none';
+  }
   document.getElementById('app').style.display = 'none';
 }
 
