@@ -3599,7 +3599,7 @@ function fotoinvRenderGaleria(){
   }).join('');
 }
 function fotoinvEliminar(cod){const f=JSON.parse(localStorage.getItem('energy_fotos_inv')||'{}');delete f[cod];localStorage.setItem('energy_fotos_inv',JSON.stringify(f));fotoinvRenderGaleria();showToast('Foto eliminada','info');}
-async function visitasGuardar(){
+async async function visitasGuardar(){
   const cliente=document.getElementById('vis-cliente').value.trim();
   const empresa=document.getElementById('vis-empresa').value.trim();
   const motivo=document.getElementById('vis-motivo').value.trim();
@@ -3646,7 +3646,7 @@ function visitasVerHistorial(){
     return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><b style="color:#fff;">'+v.cliente+' - '+v.empresa+'</b><span style="color:var(--text-muted);font-size:12px;">'+v.hora+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+v.motivo+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Atendio: '+v.atendio+'</div><div style="display:flex;gap:12px;">'+f1+f2+'</div></div>';
   }).join('');
 }
-async function mensajeriaGuardar(){
+async async function mensajeriaGuardar(){
   const dest=document.getElementById('msg-destinatario').value.trim();
   const emp=document.getElementById('msg-empresa').value.trim();
   const desc=document.getElementById('msg-descripcion').value.trim();
