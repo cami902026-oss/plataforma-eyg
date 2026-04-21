@@ -2027,6 +2027,8 @@ async function _loadOrdenesGH() {
       _ordenesFileSHA = d.sha;
       const arr = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
       if (Array.isArray(arr) && arr.length > 0) {
+        // Si hubo guardado local reciente (<60s), no sobreescribir
+        if (Date.now() - _pocLastSave < 60000) { ocRenderSafe(); return; }
         // Merge: keep the most recent version of each order
         const local = getPOC();
         const merged = arr.map(ghOrder => {
@@ -2074,6 +2076,8 @@ function _loadOrdenesGS() {
       try { script.parentNode && script.parentNode.removeChild(script); } catch(_) {}
       delete window[cbName];
       if (res && res.ok && Array.isArray(res.data) && res.data.length > 0) {
+        // Si hubo guardado local reciente (<60s), no sobreescribir
+        if (Date.now() - _pocLastSave < 60000) { ocRenderSafe(); return; }
         // Fusionar GS con local: gana la versión más reciente según updatedAt
         let local = [];
         try { local = JSON.parse(localStorage.getItem('procesos_oc') || '[]'); } catch(_) {}
@@ -3331,7 +3335,9 @@ let pocEditId = null;
 function getPOC() {
   try { return JSON.parse(localStorage.getItem('procesos_oc')) || POC_DEFAULT; } catch(e) { return POC_DEFAULT; }
 }
+let _pocLastSave = 0; // timestamp del último guardado local — bloquea sync remoto 60s
 function savePOCData(arr) {
+  _pocLastSave = Date.now();
   const now = new Date().toISOString();
   arr = arr.map(o => o.updatedAt ? o : { ...o, updatedAt: now });
   localStorage.setItem('procesos_oc', JSON.stringify(arr));
