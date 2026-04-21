@@ -1429,13 +1429,19 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               tbody.innerHTML='<tr><td colspan="6"><div class="inv-empty"><div class="ie-icon">&#128270;</div><p>No se encontraron productos</p></div></td></tr>';
               return;
             }
+            const fotosInv = JSON.parse(localStorage.getItem('energy_fotos_inv')||'{}');
             tbody.innerHTML = filtered.map(p => {
               const s = Number(p['STOCK ACTUAL']);
               const bc = s>0?'ok':'out';
               const bt = s>0?(s+' und.'):'Agotado';
-              const ubi = p['UBICACION']||p['UBICACI\u00d3N']||p['UBICACIÓN']?'<span class="inv-ubi">'+(p['UBICACIÓN']||p['UBICACION'])+'</span>':'-';
-              return '<tr><td class="inv-codigo">'+p['CODIGO PRODUCTO']+'</td>'
-                +'<td class="inv-desc">'+invHL(p['DESCRIPCION'],term)+'</td>'
+              const ubi = p['UBICACION']||p['UBICACIÓN']?'<span class="inv-ubi">'+(p['UBICACIÓN']||p['UBICACION'])+'</span>':'-';
+              const cod = p['CODIGO PRODUCTO'];
+              const fotoEntry = fotosInv[cod];
+              const fotoThumb = fotoEntry
+                ? '<img src="'+fotoEntry.base64+'" onclick="invVerFoto(''+cod+'')" title="Ver foto" style="width:32px;height:32px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--border);margin-right:8px;vertical-align:middle;flex-shrink:0;">'
+                : '';
+              return '<tr><td class="inv-codigo">'+cod+'</td>'
+                +'<td class="inv-desc" style="display:flex;align-items:center;">'+fotoThumb+invHL(p['DESCRIPCION'],term)+'</td>'
                 +'<td class="inv-prov">'+(p['MARCA']||'-')+'</td>'
                 +'<td><span class="inv-badge '+bc+'">'+bt+'</span></td>'
                 +'<td>'+ubi+'</td>'
@@ -5068,27 +5074,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== MODULOS NUEVOS =====
 function getBackendURL(){return localStorage.getItem('energy_backend_url')||'';}
-function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(file);});}
+
+// Comprime imagen a max 800px y calidad 0.7 antes de guardar en localStorage
+function fileToBase64(file, maxW, quality) {
+  maxW = maxW || 800; quality = quality || 0.7;
+  return new Promise(function(res, rej) {
+    const reader = new FileReader();
+    reader.onerror = rej;
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onerror = rej;
+      img.onload = function() {
+        const scale = Math.min(1, maxW / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        res(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function visPreview(input,previewId,phId){const file=input.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{const img=document.getElementById(previewId);const ph=document.getElementById(phId);img.src=e.target.result;img.style.display='block';ph.style.display='none';};r.readAsDataURL(file);}
 function fotoinvPreview(input){visPreview(input,'fotoinv-preview','fotoinv-placeholder');}
-function fotoinvGuardar(){
+async function fotoinvGuardar(){
   const codigo=document.getElementById('fotoinv-codigo').value.trim();
   const nombre=document.getElementById('fotoinv-nombre').value.trim();
   const file=document.getElementById('fotoinv-file').files[0];
   if(!codigo){showToast('Ingresa el codigo del elemento','error');return;}
   if(!file){showToast('Selecciona una foto','error');return;}
-  const r=new FileReader();
-  r.onload=async function(e){
-    const b64=e.target.result;
-    const fotos=JSON.parse(localStorage.getItem('energy_fotos_inv')||'{}');
-    fotos[codigo]={base64:b64,nombre:nombre,fecha:new Date().toLocaleString('es-CO')};
+  const fotos=JSON.parse(localStorage.getItem('energy_fotos_inv')||'{}');
+  if(fotos[codigo]){
+    if(!confirm('Ya existe una foto para "'+codigo+'". ¿Deseas reemplazarla?'))return;
+  }
+  showToast('Procesando foto...','info');
+  const b64 = await fileToBase64(file, 800, 0.75);
+  fotos[codigo]={base64:b64,nombre:nombre,fecha:new Date().toLocaleString('es-CO')};
+  try {
     localStorage.setItem('energy_fotos_inv',JSON.stringify(fotos));
-    fotoinvRenderGaleria();
-    showToast('Foto guardada correctamente','success');
-    const url=getBackendURL();
-    if(url){try{await fetch(url,{method:'POST',body:JSON.stringify({tipo:'foto_inventario',codigo:codigo,nombre:nombre,foto:b64})});}catch(ex){}}
-  };
-  r.readAsDataURL(file);
+  } catch(ex) {
+    showToast('Almacenamiento lleno. Elimina fotos antiguas primero.','error');
+    return;
+  }
+  fotoinvRenderGaleria();
+  showToast('Foto guardada correctamente','success');
+  document.getElementById('fotoinv-codigo').value='';
+  document.getElementById('fotoinv-nombre').value='';
+  document.getElementById('fotoinv-file').value='';
+  document.getElementById('fotoinv-preview').style.display='none';
+  document.getElementById('fotoinv-placeholder').style.display='block';
+  const url=getBackendURL();
+  if(url){try{await fetch(url,{method:'POST',body:JSON.stringify({tipo:'foto_inventario',codigo:codigo,nombre:nombre,foto:b64})});}catch(ex){}}
 }
 function fotoinvRenderGaleria(){
   const fotos=JSON.parse(localStorage.getItem('energy_fotos_inv')||'{}');
@@ -5113,12 +5152,17 @@ async function visitasGuardar(){
   if(!f1||!f2){showToast('Se requieren ambas fotografias','error');return;}
   const hora=new Date().toLocaleString('es-CO');
   document.getElementById('vis-hora').value=hora;
-  const fv=await fileToBase64(f1);
-  const fvd=await fileToBase64(f2);
+  showToast('Procesando fotos...','info');
+  const fv=await fileToBase64(f1, 800, 0.7);
+  const fvd=await fileToBase64(f2, 800, 0.7);
   const vis=JSON.parse(localStorage.getItem('energy_visitas')||'[]');
   vis.unshift({cliente:cliente,empresa:empresa,motivo:motivo,atendio:atendio,hora:hora,fotoVisitante:fv,fotoVisitado:fvd});
-  if(vis.length>50)vis.pop();
-  localStorage.setItem('energy_visitas',JSON.stringify(vis));
+  if(vis.length>30)vis.pop();
+  try {
+    localStorage.setItem('energy_visitas',JSON.stringify(vis));
+  } catch(ex) {
+    showToast('Almacenamiento lleno. Contacta al administrador.','error'); return;
+  }
   showToast('Visita registrada','success');
   const url=getBackendURL();
   if(url){
@@ -5159,12 +5203,17 @@ async function mensajeriaGuardar(){
   const f2=document.getElementById('msg-foto2').files[0];
   if(!dest||!desc||!rec){showToast('Completa los campos obligatorios','error');return;}
   if(!f1||!f2){showToast('Se requieren ambas fotografias','error');return;}
-  const fr=await fileToBase64(f1);
-  const fe=await fileToBase64(f2);
+  showToast('Procesando fotos...','info');
+  const fr=await fileToBase64(f1, 800, 0.7);
+  const fe=await fileToBase64(f2, 800, 0.7);
   const data=JSON.parse(localStorage.getItem('energy_mensajeria')||'[]');
   data.unshift({destinatario:dest,empresa:emp,descripcion:desc,quienRecibe:rec,mensajero:mens,hora:new Date().toLocaleString('es-CO'),fotoRecibe:fr,fotoElementos:fe});
-  if(data.length>50)data.pop();
-  localStorage.setItem('energy_mensajeria',JSON.stringify(data));
+  if(data.length>30)data.pop();
+  try {
+    localStorage.setItem('energy_mensajeria',JSON.stringify(data));
+  } catch(ex) {
+    showToast('Almacenamiento lleno. Contacta al administrador.','error'); return;
+  }
   showToast('Entrega registrada','success');
   const url=getBackendURL();
   if(url){
@@ -5198,6 +5247,20 @@ function mensajeriaVerHistorial(){
 document.addEventListener('DOMContentLoaded',function(){fotoinvRenderGaleria();});
 
 document.addEventListener('DOMContentLoaded', function() { checkSession(); });
+
+function invVerFoto(cod) {
+  const fotos = JSON.parse(localStorage.getItem('energy_fotos_inv')||'{}');
+  const f = fotos[cod];
+  if (!f) return;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;cursor:pointer;';
+  overlay.innerHTML = '<img src="'+f.base64+'" style="max-width:90vw;max-height:75vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.6);">'
+    +'<div style="color:#fff;font-family:Montserrat,sans-serif;font-weight:700;font-size:16px;">'+cod+(f.nombre?' — '+f.nombre:'')+'</div>'
+    +'<div style="color:rgba(255,255,255,0.5);font-size:12px;">'+f.fecha+'</div>'
+    +'<div style="color:rgba(255,255,255,0.4);font-size:12px;">Toca en cualquier lugar para cerrar</div>';
+  overlay.onclick = function(){ document.body.removeChild(overlay); };
+  document.body.appendChild(overlay);
+}
 
 // ===== SIDEBAR MOBILE =====
 function toggleSidebar() {
