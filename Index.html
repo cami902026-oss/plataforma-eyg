@@ -895,6 +895,16 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="poc-filter-btn" onclick="pocFilterFn('activo',this)">Activos</button>
               <button class="poc-filter-btn" onclick="pocFilterFn('completado',this)">Completados</button>
               <button class="poc-filter-btn" onclick="pocFilterFn('cancelado',this)">Cancelados</button>
+              <div class="poc-stage-dropdown" id="poc-stage-dd">
+                <button class="poc-filter-btn poc-stage-dd-btn" onclick="pocToggleStageDD()" id="poc-stage-dd-label">🔽 Por etapa</button>
+                <div class="poc-stage-dd-menu" id="poc-stage-dd-menu" style="display:none;">
+                  <button onclick="pocStageFilterFn(null)">📋 Todas las etapas</button>
+                  <button onclick="pocStageFilterFn(0)">🛒 Pendiente Compra</button>
+                  <button onclick="pocStageFilterFn(1)">🚛 Pendiente Entrega</button>
+                  <button onclick="pocStageFilterFn(2)">📄 Pendiente Certificado</button>
+                  <button onclick="pocStageFilterFn(3)">💰 Pendiente Facturación</button>
+                </div>
+              </div>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button id="btn-nueva-oc" class="btn btn-primary" onclick="openPocModal(null)">+ Nueva O.C.</button>
@@ -3220,6 +3230,7 @@ const POC_DEFAULT = [
   { id:'OP-2026-004', num:'OP-2026-004', cliente:'Perenco Colombia', desc:'Kit completo de mantenimiento preventivo para compresores de gas. Incluye sellos, empaques y rodamientos.', estado:'activo', stages:[{s:'active',f:'2026-04-09',n:'Cotizando proveedores'},{s:'pending',f:'',n:'',envio:'',guia:'',dest:'',resp:''},{s:'pending',f:'',n:''},{s:'pending',f:'',n:''}], updatedAt:new Date().toISOString() }
 ];
 let pocCurrentFilter = 'todos';
+let pocStageFilter = null;
 let pocEditId = null;
 
 function getPOC() {
@@ -3244,7 +3255,13 @@ function renderProcesos() {
    +`<div class="poc-stat green"><div class="poc-stat-num">${activos}</div><div class="poc-stat-label">Activas</div></div>`
    +`<div class="poc-stat gold"><div class="poc-stat-num">${completados}</div><div class="poc-stat-label">Completadas</div></div>`
    +`<div class="poc-stat" style="border-left:3px solid var(--red)"><div class="poc-stat-num">${cancelados}</div><div class="poc-stat-label">Canceladas</div></div>`;
-  const filtered = pocCurrentFilter==='todos' ? list : list.filter(o=>o.estado===pocCurrentFilter);
+  let filtered = pocCurrentFilter==='todos' ? list : list.filter(o=>o.estado===pocCurrentFilter);
+  if (pocStageFilter !== null) {
+    filtered = filtered.filter(o => {
+      const st = (o.stages || [])[pocStageFilter];
+      return st && st.s !== 'done';
+    });
+  }
   const el = document.getElementById('poc-list');
   if(!filtered.length){
     el.innerHTML = `<div class="poc-empty"><div class="poc-empty-icon">📋</div><div>No hay órdenes ${pocCurrentFilter==='todos'?'registradas':'en este estado'}</div><div style="margin-top:8px;font-size:12px">Crea una nueva O.C. con el botón superior</div></div>`;
@@ -3293,6 +3310,26 @@ function pocFilterFn(f, btn) {
   btn.classList.add('active');
   renderProcesos();
 }
+function pocToggleStageDD() {
+  const menu = document.getElementById('poc-stage-dd-menu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+function pocStageFilterFn(stageIdx) {
+  pocStageFilter = stageIdx;
+  const btn = document.getElementById('poc-stage-dd-label');
+  const stageLabels = {0:'🛒 Pend. Compra', 1:'🚛 Pend. Entrega', 2:'📄 Pend. Certif.', 3:'💰 Pend. Factura'};
+  btn.textContent = stageIdx === null ? '🔽 Por etapa' : stageLabels[stageIdx];
+  btn.classList.toggle('active-stage', stageIdx !== null);
+  document.getElementById('poc-stage-dd-menu').style.display = 'none';
+  renderProcesos();
+}
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('poc-stage-dd');
+  if (dd && !dd.contains(e.target)) {
+    const menu = document.getElementById('poc-stage-dd-menu');
+    if (menu) menu.style.display = 'none';
+  }
+});
 
 function openPocModal(id) {
   pocEditId = id || null;
