@@ -2,7 +2,7 @@ name: Enviar Reportes Diarios - 5 PM
 
 on:
   schedule:
-    - cron: '30 21 * * 1-5'
+    - cron: '0 22 * * 1-5'
 
 jobs:
   send-reports:
