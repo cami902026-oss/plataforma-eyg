@@ -2038,6 +2038,8 @@ async function _loadOrdenesGH() {
         });
         // Add local-only orders not in GitHub yet
         local.forEach(lo => { if (!merged.find(o => o.id === lo.id)) merged.push(lo); });
+        // Normalize stages 2&3 status derived from date
+        merged.forEach(o => { if(o.stages) o.stages = o.stages.map((st,i)=>i>=2?{...st,s:st.f?'done':'pending'}:st); });
         localStorage.setItem('procesos_oc', JSON.stringify(merged));
         ocRenderSafe();
       }
@@ -3281,7 +3283,8 @@ function renderProcesos() {
   el.innerHTML = filtered.slice().reverse().map(o => {
     const stages = o.stages || [{s:'pending',f:'',n:''},{s:'pending',f:'',n:''},{s:'pending',f:'',n:''},{s:'pending',f:'',n:''}];
     const tl = POC_STAGES.map((st,i) => {
-      const cls = stages[i]?.s==='done'?'done':stages[i]?.s==='active'?'active':'pending';
+      const sVal = (i>=2) ? (stages[i]?.f?'done':'pending') : (stages[i]?.s||'pending');
+      const cls = sVal==='done'?'done':sVal==='active'?'active':'pending';
       const lineClass = i<3?(stages[i]?.s==='done'?'done':''):'';
       const dateVal = stages[i]?.f || '';
       const dateTxt = dateVal
@@ -3407,6 +3410,8 @@ function savePoc() {
     updatedAt: new Date().toISOString()
   };
   // Auto-completar si todas las etapas con contenido están done
+  // Normalize stages 2&3: derive s from date
+  order.stages = order.stages.map((st,i) => i>=2 ? {...st, s: st.f?'done':'pending'} : st);
   const filledStages = order.stages.filter(st => st.f || (st.n && st.n.trim()));
   const allStageDone = filledStages.length > 0 && filledStages.every(st => st.s === 'done');
   if(allStageDone && order.estado !== 'cancelado') {
