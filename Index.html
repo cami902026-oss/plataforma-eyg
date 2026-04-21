@@ -2012,7 +2012,7 @@ async function syncMeetingsFromAPI() {
 // ===== CÓDIGO DE ACCESO =====
 // ACCESS_CODE eliminado del código — se configura en Configuración → Cambiar Claves
 function getAccessCode() {
-  return localStorage.getItem('eyg_access_code') || ACCESS_CODE;
+  return localStorage.getItem('eyg_access_code') || 'EYG2026';
 }
 function getUserPassword(email) {
   return localStorage.getItem('eyg_pass_' + email.toLowerCase()) || 'eyg2026';
@@ -5021,8 +5021,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }, 2000);
 });
-</script>
-
 </script>
 
 </body>
