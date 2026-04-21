@@ -662,76 +662,6 @@
     "updatedAt": "❌ Pendiente"
   },
   {
-    "id": "LM1376",
-    "num": "LM1376",
-    "cliente": "CR INGENIERIA",
-    "desc": "SUMINISTRO DE MATERIAL",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-06",
-        "n": "BODEGA, JOSE MO"
-      },
-      {
-        "s": "active",
-        "f": "2026-04-10",
-        "n": "ESPERA DEFINICI",
-        "envio": "recoge_bodega",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-14",
-        "n": "servidor"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "❌ Pendiente"
-  },
-  {
-    "id": "poc_1775841157865",
-    "num": "ODC-00003713",
-    "cliente": "SAR ENERGY",
-    "desc": "SUMINSITRO GUAYAS",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-07",
-        "n": "FERRELECTRICOS BELTRAN"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-13",
-        "n": "ENTREGADO BODEGA SAR RIOCARDO DIAZ",
-        "envio": "entrega_mano",
-        "transp": "",
-        "guia": "",
-        "dest": "SAR ENERGY",
-        "resp": "GERENCIA"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-11",
-        "n": "VIDEO"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-15",
-        "n": "400"
-      }
-    ],
-    "updatedAt": "✅ Facturado"
-  },
-  {
     "id": "poc_1775861884115",
     "num": "LM1400",
     "cliente": "WILER",
@@ -1111,11 +1041,11 @@
       {
         "s": "done",
         "f": "2026-04-20",
-        "n": "409"
+        "n": "408"
       }
     ],
     "createdAt": "2026-04-21T18:25:07.921Z",
-    "updatedAt": "2026-04-21T18:25:07.921Z"
+    "updatedAt": "2026-04-21T18:25:31.706Z"
   },
   {
     "id": "poc_1776723607018",
