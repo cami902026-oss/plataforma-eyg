@@ -2027,7 +2027,18 @@ async function _loadOrdenesGH() {
       _ordenesFileSHA = d.sha;
       const arr = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
       if (Array.isArray(arr) && arr.length > 0) {
-        localStorage.setItem('procesos_oc', JSON.stringify(arr));
+        // Merge: keep the most recent version of each order
+        const local = getPOC();
+        const merged = arr.map(ghOrder => {
+          const loc = local.find(o => o.id === ghOrder.id);
+          if (!loc) return ghOrder;
+          const ghTime = new Date(ghOrder.updatedAt || 0).getTime();
+          const locTime = new Date(loc.updatedAt || 0).getTime();
+          return locTime > ghTime ? loc : ghOrder;
+        });
+        // Add local-only orders not in GitHub yet
+        local.forEach(lo => { if (!merged.find(o => o.id === lo.id)) merged.push(lo); });
+        localStorage.setItem('procesos_oc', JSON.stringify(merged));
         ocRenderSafe();
       }
     }
@@ -2047,7 +2058,7 @@ async function _saveOrdenesGH(arr) {
     );
     if (r.ok) { const res = await r.json(); _ordenesFileSHA = res.content.sha; }
     else { console.warn('GH save error:', await r.text()); }
-  } catch(e) { console.warn('GH ordenes save:', e); }
+  } catch(e) { console.warn('GH ordenes save:', e); showToast('⚠️ No se sincronizó con GitHub — datos guardados localmente', 'info'); }
 }
 function ocRenderSafe() { try { ocRender(); } catch(_) {} }
 
