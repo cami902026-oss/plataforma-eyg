@@ -677,7 +677,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div class="stat-card gold"><div class="stat-icon">💬</div><div class="stat-num" id="stat-mensajes">7</div><div class="stat-label">Mensajes sin leer</div></div>
           <div class="stat-card red"><div class="stat-icon">📋</div><div class="stat-num" id="stat-proyectos">0</div><div class="stat-label">OPs activas</div></div>
         </div>
-        <div class="grid-2">
+        <div id="dash-alerts" style="margin-bottom:20px;"></div>
+                <div class="grid-2">
           <div class="card">
             <div class="section-header"><span class="section-title">📅 Reuniones de hoy</span><button class="btn btn-ghost" onclick="navigate('reuniones')" style="padding:6px 14px;font-size:12px;">Ver todas</button></div>
             <div id="dash-meetings"></div>
@@ -2429,6 +2430,87 @@ function getNavLabel(page) {
 }
 
 // ===== DASHBOARD =====
+
+function renderAlerts() {
+  const alerts = [];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tomorrow = new Date(today.getTime()+86400000);
+  const fmtDate = s => s ? s.split('-').reverse().join('/') : '';
+
+  // --- O.C. con etapas vencidas ---
+  getPOC().filter(o=>o.estado==='activo').forEach(o=>{
+    const stages = o.stages||[];
+    POC_STAGES.forEach((st,i)=>{
+      const s = stages[i]||{};
+      const isDone = i>=2 ? !!s.f : s.s==='done';
+      if(!isDone && s.f){
+        const d = new Date(s.f); d.setHours(0,0,0,0);
+        if(d < today){
+          const dias = Math.round((today-d)/86400000);
+          alerts.push({type:'red', icon:'🚨', title:`O.C. ${o.num||o.id} — ${st.label} VENCIDA`,
+            detail:`Cliente: ${o.cliente||'—'} · Fecha límite: ${fmtDate(s.f)} · Hace ${dias} día${dias>1?'s':''}`,
+            badge:{cls:'red',txt:'VENCIDA'}, action:"navigate('procesos')"});
+        } else if(d<=tomorrow){
+          alerts.push({type:'orange', icon:'⚠️', title:`O.C. ${o.num||o.id} — ${st.label} vence hoy/mañana`,
+            detail:`Cliente: ${o.cliente||'—'} · Fecha: ${fmtDate(s.f)}`,
+            badge:{cls:'orange',txt:'HOY'}, action:"navigate('procesos')"});
+        }
+      }
+    });
+  });
+
+  // --- Tareas vencidas o para hoy ---
+  const tasks = getData('tasks', TASKS_DEFAULT).filter(t=>t.estado!=='Completado'&&t.fecha);
+  tasks.forEach(t=>{
+    const d = new Date(t.fecha); d.setHours(0,0,0,0);
+    if(d < today){
+      const dias = Math.round((today-d)/86400000);
+      alerts.push({type:'red', icon:'📌', title:`Tarea vencida: ${t.titulo}`,
+        detail:`Responsable: ${t.responsable} · Venció hace ${dias} día${dias>1?'s':''}`,
+        badge:{cls:'red',txt:'VENCIDA'}, action:"navigate('tareas')"});
+    } else if(d.getTime()===today.getTime()){
+      alerts.push({type:'orange', icon:'📌', title:`Tarea para hoy: ${t.titulo}`,
+        detail:`Responsable: ${t.responsable} · Prioridad: ${t.prioridad}`,
+        badge:{cls:'orange',txt:'HOY'}, action:"navigate('tareas')"});
+    } else if(d<=tomorrow){
+      alerts.push({type:'yellow', icon:'📌', title:`Tarea para mañana: ${t.titulo}`,
+        detail:`Responsable: ${t.responsable}`,
+        badge:{cls:'yellow',txt:'MAÑANA'}, action:"navigate('tareas')"});
+    }
+  });
+
+  // --- Cotizaciones sin fecha de seguimiento ---
+  try {
+    const cotz = JSON.parse(localStorage.getItem('energy_cotizaciones')||'[]');
+    cotz.forEach(c=>{
+      if(!c.fecha) return;
+      const d = new Date(c.fecha); d.setHours(0,0,0,0);
+      const dias = Math.round((today-d)/86400000);
+      if(dias>=5){
+        alerts.push({type:'blue', icon:'📄', title:`Cotización sin seguimiento: ${c.cliente||c.id}`,
+          detail:`Enviada hace ${dias} días · Total: ${c.total||'—'}`,
+          badge:{cls:'blue',txt:'SEGUIMIENTO'}, action:"navigate('cotizaciones')"});
+      }
+    });
+  } catch(_){}
+
+  const el = document.getElementById('dash-alerts');
+  if(!el) return;
+  if(!alerts.length){
+    el.innerHTML='<div style="background:rgba(46,170,74,.1);border:1px solid rgba(46,170,74,.3);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:10px;"><span style="font-size:18px;">✅</span><span style="color:#68d391;font-size:13px;font-weight:600;">Todo al día — Sin alertas pendientes</span></div>';
+    return;
+  }
+  el.innerHTML = alerts.map(a=>`
+    <div class="alert-panel alert-${a.type}" onclick="${a.action}">
+      <span class="alert-icon">${a.icon}</span>
+      <div class="alert-body">
+        <div class="alert-title">${a.title}</div>
+        <div class="alert-detail">${a.detail}</div>
+      </div>
+      <span class="alert-badge ${a.badge.cls}">${a.badge.txt}</span>
+    </div>`).join('');
+}
+
 function renderDashboard() {
   let meetings = getData('meetings', MEETINGS_DEFAULT);
   let tasks = getData('tasks', TASKS_DEFAULT);
@@ -2485,6 +2567,7 @@ function renderDashboard() {
     {icon:'📊',text:'Proyecto "Plan Comercial Q2" actualizado al 40%',time:'Ayer'},
     {icon:'👤',text:'Tarea asignada a Andrés Barrera: Inventario bodega',time:'Hace 2 días'}
   ];
+  renderAlerts();
   document.getElementById('dash-activity').innerHTML = acts.map(a=>`
     <div class="activity-item">
       <div class="activity-dot" style="background:var(--green)"></div>
