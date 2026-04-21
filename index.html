@@ -1432,6 +1432,166 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         </script>
       </div>
 
+    
+
+
+<!-- MODULO FOTOS INVENTARIO -->
+<div class="page" id="page-fotoinv">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h2 style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:#fff;">&#128247; Fotos de Inventario</h2>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Asocia una foto a cada tipo de elemento del inventario</p>
+  </div>
+</div>
+<div style="background:rgba(13,31,60,0.8);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+  <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Configura la URL del backend (Google Apps Script) en Configuracion para sincronizar con Drive</p>
+  <div class="form-group">
+    <label>Codigo / Tipo del elemento</label>
+    <input type="text" id="fotoinv-codigo" placeholder="Ej: SILLA-01, ESCRITORIO, PC-DELL" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:#fff;font-size:14px;">
+  </div>
+  <div class="form-group">
+    <label>Nombre descriptivo</label>
+    <input type="text" id="fotoinv-nombre" placeholder="Ej: Silla ergonomica negra" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:#fff;font-size:14px;">
+  </div>
+  <div class="form-group" style="margin-top:16px;">
+    <label>&#128247; Foto del elemento (abre camara en celular)</label>
+    <div style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;" onclick="document.getElementById('fotoinv-file').click()">
+      <img id="fotoinv-preview" src="" alt="" style="display:none;max-width:200px;max-height:200px;border-radius:8px;margin-bottom:12px;">
+      <div id="fotoinv-placeholder" style="color:var(--text-muted);font-size:14px;">&#128247; Toca para tomar foto<br><small>Abre la camara directamente en el celular</small></div>
+      <input type="file" id="fotoinv-file" accept="image/*" capture="environment" style="display:none" onchange="fotoinvPreview(this)">
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="fotoinvGuardar()" style="margin-top:16px;max-width:250px;">&#128190; Guardar foto</button>
+</div>
+<div id="fotoinv-galeria" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;"></div>
+</div>
+
+<!-- MODULO VISITAS COMERCIALES -->
+<div class="page" id="page-visitas">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h2 style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:#fff;">&#129309; Visitas Comerciales</h2>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Registra visitas con foto de constancia — se guarda en Google Sheets</p>
+  </div>
+  <button class="btn btn-secondary" onclick="visitasVerHistorial()" style="font-size:13px;">&#128203; Ver historial</button>
+</div>
+<div style="background:rgba(13,31,60,0.8);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="form-group">
+      <label>&#128100; Nombre del cliente</label>
+      <input type="text" id="vis-cliente" placeholder="Nombre completo" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
+    </div>
+    <div class="form-group">
+      <label>&#127970; Empresa</label>
+      <input type="text" id="vis-empresa" placeholder="Nombre de la empresa" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>&#128221; Motivo de la visita</label>
+    <textarea id="vis-motivo" placeholder="Describe el motivo de la visita..." rows="3" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;resize:vertical;"></textarea>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="form-group">
+      <label>&#128084; Persona que atendio</label>
+      <input type="text" id="vis-atendio" placeholder="Nombre del colaborador" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
+    </div>
+    <div class="form-group">
+      <label>&#128197; Hora de registro</label>
+      <input type="text" id="vis-hora" readonly style="width:100%;background:rgba(15,43,91,0.3);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--gold);font-size:14px;" placeholder="Automatico al guardar">
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
+    <div class="form-group">
+      <label>&#128247; Foto del VISITANTE (quien llega)</label>
+      <div style="border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;" onclick="document.getElementById('vis-foto1').click()">
+        <img id="vis-preview1" src="" alt="" style="display:none;max-width:140px;max-height:140px;border-radius:8px;margin-bottom:8px;">
+        <div id="vis-ph1" style="color:var(--text-muted);font-size:13px;">&#128247; Tomar foto<br><small>Visitante</small></div>
+        <input type="file" id="vis-foto1" accept="image/*" capture="environment" style="display:none" onchange="visPreview(this,'vis-preview1','vis-ph1')">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>&#128247; Foto del VISITADO (quien atiende)</label>
+      <div style="border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;" onclick="document.getElementById('vis-foto2').click()">
+        <img id="vis-preview2" src="" alt="" style="display:none;max-width:140px;max-height:140px;border-radius:8px;margin-bottom:8px;">
+        <div id="vis-ph2" style="color:var(--text-muted);font-size:13px;">&#128247; Tomar foto<br><small>Quien atiende</small></div>
+        <input type="file" id="vis-foto2" accept="image/*" capture="environment" style="display:none" onchange="visPreview(this,'vis-preview2','vis-ph2')">
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;margin-top:20px;">
+    <button class="btn btn-primary" onclick="visitasGuardar()" style="flex:1;">&#128190; Registrar visita</button>
+    <button class="btn btn-ghost" onclick="visitasLimpiar()" style="padding:12px 20px;">&#128465; Limpiar</button>
+  </div>
+</div>
+<div id="vis-historial-box" style="display:none;">
+  <h3 style="font-family:'Montserrat',sans-serif;font-size:16px;color:#fff;margin-bottom:16px;">&#128203; Ultimas visitas registradas</h3>
+  <div id="vis-historial-lista"></div>
+</div>
+</div>
+
+<!-- MODULO MENSAJERIA -->
+<div class="page" id="page-mensajeria">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h2 style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:#fff;">&#128236; Mensajeria</h2>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Registra entregas de paquetes con foto de constancia</p>
+  </div>
+  <button class="btn btn-secondary" onclick="mensajeriaVerHistorial()" style="font-size:13px;">&#128203; Ver historial</button>
+</div>
+<div style="background:rgba(13,31,60,0.8);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="form-group">
+      <label>&#128100; Destinatario</label>
+      <input type="text" id="msg-destinatario" placeholder="A quien va dirigido" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
+    </div>
+    <div class="form-group">
+      <label>&#127970; Empresa destinatario</label>
+      <input type="text" id="msg-empresa" placeholder="Empresa o area" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>&#128230; Descripcion del paquete</label>
+    <textarea id="msg-descripcion" placeholder="Que contiene, numero de guia, empresa mensajeria..." rows="3" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;resize:vertical;"></textarea>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="form-group">
+      <label>&#9997; Nombre de quien recibe</label>
+      <input type="text" id="msg-recibe" placeholder="Persona que firma o recibe" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
+    </div>
+    <div class="form-group">
+      <label>&#128692; Nombre del mensajero</label>
+      <input type="text" id="msg-mensajero" placeholder="Mensajero o empresa" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
+    <div class="form-group">
+      <label>&#128247; Foto de quien RECIBE</label>
+      <div style="border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;" onclick="document.getElementById('msg-foto1').click()">
+        <img id="msg-preview1" src="" alt="" style="display:none;max-width:140px;max-height:140px;border-radius:8px;margin-bottom:8px;">
+        <div id="msg-ph1" style="color:var(--text-muted);font-size:13px;">&#128247; Foto de quien recibe</div>
+        <input type="file" id="msg-foto1" accept="image/*" capture="environment" style="display:none" onchange="visPreview(this,'msg-preview1','msg-ph1')">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>&#128247; Foto de los ELEMENTOS entregados</label>
+      <div style="border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;" onclick="document.getElementById('msg-foto2').click()">
+        <img id="msg-preview2" src="" alt="" style="display:none;max-width:140px;max-height:140px;border-radius:8px;margin-bottom:8px;">
+        <div id="msg-ph2" style="color:var(--text-muted);font-size:13px;">&#128247; Foto del paquete</div>
+        <input type="file" id="msg-foto2" accept="image/*" capture="environment" style="display:none" onchange="visPreview(this,'msg-preview2','msg-ph2')">
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;gap:12px;margin-top:20px;">
+    <button class="btn btn-primary" onclick="mensajeriaGuardar()" style="flex:1;">&#128190; Registrar entrega</button>
+    <button class="btn btn-ghost" onclick="mensajeriaLimpiar()" style="padding:12px 20px;">&#128465; Limpiar</button>
+  </div>
+</div>
+<div id="msg-historial-box" style="display:none;">
+  <h3 style="font-family:'Montserrat',sans-serif;font-size:16px;color:#fff;margin-bottom:16px;">&#128203; Ultimas entregas registradas</h3>
+  <div id="msg-historial-lista"></div>
+</div>
+</div>
+
     </div><!-- /content -->
   </div><!-- /main-area -->
 </div><!-- /app -->
@@ -4870,163 +5030,6 @@ function mensajeriaVerHistorial(){
 document.addEventListener('DOMContentLoaded',function(){fotoinvRenderGaleria();});
 
 </script>
-
-<!-- MODULO FOTOS INVENTARIO -->
-<div class="page" id="page-fotoinv">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-  <div>
-    <h2 style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:#fff;">&#128247; Fotos de Inventario</h2>
-    <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Asocia una foto a cada tipo de elemento del inventario</p>
-  </div>
-</div>
-<div style="background:rgba(13,31,60,0.8);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
-  <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Configura la URL del backend (Google Apps Script) en Configuracion para sincronizar con Drive</p>
-  <div class="form-group">
-    <label>Codigo / Tipo del elemento</label>
-    <input type="text" id="fotoinv-codigo" placeholder="Ej: SILLA-01, ESCRITORIO, PC-DELL" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:#fff;font-size:14px;">
-  </div>
-  <div class="form-group">
-    <label>Nombre descriptivo</label>
-    <input type="text" id="fotoinv-nombre" placeholder="Ej: Silla ergonomica negra" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:#fff;font-size:14px;">
-  </div>
-  <div class="form-group" style="margin-top:16px;">
-    <label>&#128247; Foto del elemento (abre camara en celular)</label>
-    <div style="border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;" onclick="document.getElementById('fotoinv-file').click()">
-      <img id="fotoinv-preview" src="" alt="" style="display:none;max-width:200px;max-height:200px;border-radius:8px;margin-bottom:12px;">
-      <div id="fotoinv-placeholder" style="color:var(--text-muted);font-size:14px;">&#128247; Toca para tomar foto<br><small>Abre la camara directamente en el celular</small></div>
-      <input type="file" id="fotoinv-file" accept="image/*" capture="environment" style="display:none" onchange="fotoinvPreview(this)">
-    </div>
-  </div>
-  <button class="btn btn-primary" onclick="fotoinvGuardar()" style="margin-top:16px;max-width:250px;">&#128190; Guardar foto</button>
-</div>
-<div id="fotoinv-galeria" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;"></div>
-</div>
-
-<!-- MODULO VISITAS COMERCIALES -->
-<div class="page" id="page-visitas">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-  <div>
-    <h2 style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:#fff;">&#129309; Visitas Comerciales</h2>
-    <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Registra visitas con foto de constancia — se guarda en Google Sheets</p>
-  </div>
-  <button class="btn btn-secondary" onclick="visitasVerHistorial()" style="font-size:13px;">&#128203; Ver historial</button>
-</div>
-<div style="background:rgba(13,31,60,0.8);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-    <div class="form-group">
-      <label>&#128100; Nombre del cliente</label>
-      <input type="text" id="vis-cliente" placeholder="Nombre completo" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
-    </div>
-    <div class="form-group">
-      <label>&#127970; Empresa</label>
-      <input type="text" id="vis-empresa" placeholder="Nombre de la empresa" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
-    </div>
-  </div>
-  <div class="form-group">
-    <label>&#128221; Motivo de la visita</label>
-    <textarea id="vis-motivo" placeholder="Describe el motivo de la visita..." rows="3" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;resize:vertical;"></textarea>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-    <div class="form-group">
-      <label>&#128084; Persona que atendio</label>
-      <input type="text" id="vis-atendio" placeholder="Nombre del colaborador" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
-    </div>
-    <div class="form-group">
-      <label>&#128197; Hora de registro</label>
-      <input type="text" id="vis-hora" readonly style="width:100%;background:rgba(15,43,91,0.3);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--gold);font-size:14px;" placeholder="Automatico al guardar">
-    </div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
-    <div class="form-group">
-      <label>&#128247; Foto del VISITANTE (quien llega)</label>
-      <div style="border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;" onclick="document.getElementById('vis-foto1').click()">
-        <img id="vis-preview1" src="" alt="" style="display:none;max-width:140px;max-height:140px;border-radius:8px;margin-bottom:8px;">
-        <div id="vis-ph1" style="color:var(--text-muted);font-size:13px;">&#128247; Tomar foto<br><small>Visitante</small></div>
-        <input type="file" id="vis-foto1" accept="image/*" capture="environment" style="display:none" onchange="visPreview(this,'vis-preview1','vis-ph1')">
-      </div>
-    </div>
-    <div class="form-group">
-      <label>&#128247; Foto del VISITADO (quien atiende)</label>
-      <div style="border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;" onclick="document.getElementById('vis-foto2').click()">
-        <img id="vis-preview2" src="" alt="" style="display:none;max-width:140px;max-height:140px;border-radius:8px;margin-bottom:8px;">
-        <div id="vis-ph2" style="color:var(--text-muted);font-size:13px;">&#128247; Tomar foto<br><small>Quien atiende</small></div>
-        <input type="file" id="vis-foto2" accept="image/*" capture="environment" style="display:none" onchange="visPreview(this,'vis-preview2','vis-ph2')">
-      </div>
-    </div>
-  </div>
-  <div style="display:flex;gap:12px;margin-top:20px;">
-    <button class="btn btn-primary" onclick="visitasGuardar()" style="flex:1;">&#128190; Registrar visita</button>
-    <button class="btn btn-ghost" onclick="visitasLimpiar()" style="padding:12px 20px;">&#128465; Limpiar</button>
-  </div>
-</div>
-<div id="vis-historial-box" style="display:none;">
-  <h3 style="font-family:'Montserrat',sans-serif;font-size:16px;color:#fff;margin-bottom:16px;">&#128203; Ultimas visitas registradas</h3>
-  <div id="vis-historial-lista"></div>
-</div>
-</div>
-
-<!-- MODULO MENSAJERIA -->
-<div class="page" id="page-mensajeria">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-  <div>
-    <h2 style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:#fff;">&#128236; Mensajeria</h2>
-    <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Registra entregas de paquetes con foto de constancia</p>
-  </div>
-  <button class="btn btn-secondary" onclick="mensajeriaVerHistorial()" style="font-size:13px;">&#128203; Ver historial</button>
-</div>
-<div style="background:rgba(13,31,60,0.8);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-    <div class="form-group">
-      <label>&#128100; Destinatario</label>
-      <input type="text" id="msg-destinatario" placeholder="A quien va dirigido" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
-    </div>
-    <div class="form-group">
-      <label>&#127970; Empresa destinatario</label>
-      <input type="text" id="msg-empresa" placeholder="Empresa o area" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
-    </div>
-  </div>
-  <div class="form-group">
-    <label>&#128230; Descripcion del paquete</label>
-    <textarea id="msg-descripcion" placeholder="Que contiene, numero de guia, empresa mensajeria..." rows="3" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;resize:vertical;"></textarea>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-    <div class="form-group">
-      <label>&#9997; Nombre de quien recibe</label>
-      <input type="text" id="msg-recibe" placeholder="Persona que firma o recibe" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
-    </div>
-    <div class="form-group">
-      <label>&#128692; Nombre del mensajero</label>
-      <input type="text" id="msg-mensajero" placeholder="Mensajero o empresa" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:#fff;font-size:14px;">
-    </div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
-    <div class="form-group">
-      <label>&#128247; Foto de quien RECIBE</label>
-      <div style="border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;" onclick="document.getElementById('msg-foto1').click()">
-        <img id="msg-preview1" src="" alt="" style="display:none;max-width:140px;max-height:140px;border-radius:8px;margin-bottom:8px;">
-        <div id="msg-ph1" style="color:var(--text-muted);font-size:13px;">&#128247; Foto de quien recibe</div>
-        <input type="file" id="msg-foto1" accept="image/*" capture="environment" style="display:none" onchange="visPreview(this,'msg-preview1','msg-ph1')">
-      </div>
-    </div>
-    <div class="form-group">
-      <label>&#128247; Foto de los ELEMENTOS entregados</label>
-      <div style="border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;" onclick="document.getElementById('msg-foto2').click()">
-        <img id="msg-preview2" src="" alt="" style="display:none;max-width:140px;max-height:140px;border-radius:8px;margin-bottom:8px;">
-        <div id="msg-ph2" style="color:var(--text-muted);font-size:13px;">&#128247; Foto del paquete</div>
-        <input type="file" id="msg-foto2" accept="image/*" capture="environment" style="display:none" onchange="visPreview(this,'msg-preview2','msg-ph2')">
-      </div>
-    </div>
-  </div>
-  <div style="display:flex;gap:12px;margin-top:20px;">
-    <button class="btn btn-primary" onclick="mensajeriaGuardar()" style="flex:1;">&#128190; Registrar entrega</button>
-    <button class="btn btn-ghost" onclick="mensajeriaLimpiar()" style="padding:12px 20px;">&#128465; Limpiar</button>
-  </div>
-</div>
-<div id="msg-historial-box" style="display:none;">
-  <h3 style="font-family:'Montserrat',sans-serif;font-size:16px;color:#fff;margin-bottom:16px;">&#128203; Ultimas entregas registradas</h3>
-  <div id="msg-historial-lista"></div>
-</div>
-</div>
 
 
 
