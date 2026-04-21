@@ -2214,7 +2214,8 @@ function renderUserPasswords() {
 }
 function checkAccess() {
   const code = document.getElementById('access-code').value.trim().toUpperCase();
-  if (code === getAccessCode().toUpperCase()) {
+  const VALID_CODE = (localStorage.getItem('eyg_access_code') || 'EYG2026').toUpperCase();
+  if (code === VALID_CODE) {
     sessionStorage.setItem('eyg_access', '1');
     document.getElementById('access-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
@@ -2275,7 +2276,7 @@ function checkSession() {
       localStorage.removeItem('max_session');
     }
   }
-  // Sin sesión válida — mostrar pantalla de acceso
+  // Sin sesión válida — mostrar acceso o login según sessión
   if (sessionStorage.getItem('eyg_access') === '1') {
     document.getElementById('access-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
