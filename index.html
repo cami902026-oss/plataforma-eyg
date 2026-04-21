@@ -325,7 +325,21 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   .grid-2 { grid-template-columns:1fr; }
   .form-row { grid-template-columns:1fr; }
   .chat-panel { right:12px; width:calc(100vw - 24px); }
+  .hamburger { display:flex !important; }
 }
+.hamburger {
+  display:none; flex-direction:column; justify-content:center; gap:5px;
+  background:none; border:none; cursor:pointer; padding:6px; margin-right:4px;
+}
+.hamburger span {
+  display:block; width:22px; height:2px; background:var(--light);
+  border-radius:2px; transition:all 0.25s;
+}
+.sidebar-overlay {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
+  z-index:99; backdrop-filter:blur(2px);
+}
+.sidebar-overlay.open { display:block; }
 
 /* templates list */
 .template-list { display:flex; flex-direction:column; gap:10px; }
@@ -645,10 +659,16 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     </div>
   </div>
 
+  <!-- Overlay para cerrar sidebar en mobile -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
   <!-- Main -->
   <div class="main-area">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:12px;">
+        <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Menú">
+          <span></span><span></span><span></span>
+        </button>
         <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" alt="E&G" style="width:28px;height:28px;object-fit:contain;">
         <div class="topbar-left">
           <h2 id="page-title" style="font-family:'Montserrat',sans-serif;">Dashboard</h2>
@@ -2412,6 +2432,7 @@ function initApp() {
 
 // ===== NAVIGATION =====
 function navigate(page) {
+  if (window.innerWidth <= 768) closeSidebar();
   document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
@@ -5177,6 +5198,24 @@ function mensajeriaVerHistorial(){
 document.addEventListener('DOMContentLoaded',function(){fotoinvRenderGaleria();});
 
 document.addEventListener('DOMContentLoaded', function() { checkSession(); });
+
+// ===== SIDEBAR MOBILE =====
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  const isOpen = sidebar.classList.contains('open');
+  if (isOpen) {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  } else {
+    sidebar.classList.add('open');
+    overlay.classList.add('open');
+  }
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
 
 </script>
 
