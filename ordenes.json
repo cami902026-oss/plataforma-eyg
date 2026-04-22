@@ -1,10 +1,45 @@
 [
   {
+    "id": "poc_1776469165261",
+    "num": "2_OCOP35_OT48_1",
+    "cliente": "CR INGENIERIA Y CONSULTORIA",
+    "desc": "SUMINISTRO OCENSA",
+    "estado": "completado",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-17",
+        "n": "CAMPANA\nGYJ\nCAMPIÑA\nFORLAN SAS"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-20",
+        "n": "",
+        "envio": "recoge_bodega",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": "Andrés Barrera"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-21",
+        "n": "408"
+      }
+    ],
+    "updatedAt": "✅ Facturado"
+  },
+  {
     "id": "LM1376",
     "num": "LM1376",
     "cliente": "CR INGENIERIA",
     "desc": "SUMINISTRO DE MATERIAL",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -12,7 +47,7 @@
         "n": "BODEGA, JOSE MO"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-04-10",
         "n": "ESPERA DEFINICI",
         "envio": "recoge_bodega",
@@ -25,6 +60,41 @@
         "s": "done",
         "f": "2026-04-14",
         "n": "servidor"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-21",
+        "n": "409"
+      }
+    ],
+    "updatedAt": "✅ Facturado"
+  },
+  {
+    "id": "poc_1776723607018",
+    "num": "200426H3268",
+    "cliente": "CIAM",
+    "desc": "SUMINSITRO VIGA",
+    "estado": "completado",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-20",
+        "n": "LA CAMPIÑA"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-21",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "YOPAL EXPRESS",
+        "guia": "",
+        "dest": "",
+        "resp": "SHEILA BARON"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
       },
       {
         "s": "pending",
@@ -837,41 +907,6 @@
     "updatedAt": "✅ Facturado"
   },
   {
-    "id": "poc_1776192478524",
-    "num": "LM-1418",
-    "cliente": "HIDROCASANARE",
-    "desc": "Suminsitro de tuberia material mecanico",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-14",
-        "n": "Codifer\nInduvacol\ninstrugases"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-15",
-        "n": "Recogiendo",
-        "envio": "camion_energy",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": "Andrés Barrera"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-15",
-        "n": "servidor"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "❌ Pendiente"
-  },
-  {
     "id": "poc_1776449624971",
     "num": "LM1435",
     "cliente": "ITC",
@@ -911,10 +946,10 @@
     "num": "170426L2873",
     "cliente": "CIAM",
     "desc": "SUMINISTRO MATERIAL MECANICO",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-04-17",
         "n": "NSTRUGASES\nCODIFER"
       },
@@ -939,7 +974,8 @@
         "n": "407"
       }
     ],
-    "updatedAt": "✅ Facturado"
+    "createdAt": "2026-04-22T17:32:51.981Z",
+    "updatedAt": "2026-04-22T17:32:51.982Z"
   },
   {
     "id": "poc_1776469053057",
@@ -975,112 +1011,6 @@
       }
     ],
     "updatedAt": "❌ Pendiente"
-  },
-  {
-    "id": "poc_1776209903635",
-    "num": 8874,
-    "cliente": "SERTECPET",
-    "desc": "SUMINISTRO MANOMETROS",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-10",
-        "n": "WIKA"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-11",
-        "n": "",
-        "envio": "flota",
-        "transp": "AUTOBOY",
-        "guia": "",
-        "dest": "RICARDO DIAZ",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-14",
-        "n": "SERVIDOR"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-14",
-        "n": "399"
-      }
-    ],
-    "updatedAt": "✅ Facturado"
-  },
-  {
-    "id": "poc_1776469165261",
-    "num": "2_OCOP35_OT48_1",
-    "cliente": "CR INGENIERIA Y CONSULTORIA",
-    "desc": "SUMINISTRO OCENSA",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-17",
-        "n": "CAMPANA\nGYJ\nCAMPIÑA\nFORLAN SAS"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-20",
-        "n": "",
-        "envio": "recoge_bodega",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": "Andrés Barrera"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-20",
-        "n": "408"
-      }
-    ],
-    "createdAt": "2026-04-21T18:25:07.921Z",
-    "updatedAt": "2026-04-21T18:25:40.895Z"
-  },
-  {
-    "id": "poc_1776723607018",
-    "num": "200426H3268",
-    "cliente": "CIAM",
-    "desc": "SUMINSITRO VIGA",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-20",
-        "n": "LA CAMPIÑA"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-21",
-        "n": "",
-        "envio": "transportadora",
-        "transp": "YOPAL EXPRESS",
-        "guia": "",
-        "dest": "",
-        "resp": "SHEILA BARON"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-21",
-        "n": "410"
-      }
-    ],
-    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776264970049",
@@ -1243,76 +1173,6 @@
         "guia": "",
         "dest": "",
         "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "❌ Pendiente"
-  },
-  {
-    "id": "poc_1776469165261",
-    "num": "2_OCOP35_OT48_1",
-    "cliente": "CR INGENIERIA Y CONSULTORIA",
-    "desc": "SUMINISTRO OCENSA",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-17",
-        "n": "CAMPANA\nGYJ\nCAMPIÑA\nFORLAN SAS"
-      },
-      {
-        "s": "active",
-        "f": "2026-04-20",
-        "n": "",
-        "envio": "recoge_bodega",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": "Andrés Barrera"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "❌ Pendiente"
-  },
-  {
-    "id": "poc_1776723607018",
-    "num": "200426H3268",
-    "cliente": "CIAM",
-    "desc": "SUMINSITRO VIGA",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-20",
-        "n": "LA CAMPIÑA"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-21",
-        "n": "",
-        "envio": "transportadora",
-        "transp": "YOPAL EXPRESS",
-        "guia": "",
-        "dest": "",
-        "resp": "SHEILA BARON"
       },
       {
         "s": "pending",
