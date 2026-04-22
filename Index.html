@@ -2428,7 +2428,10 @@ function navigate(page) {
   if(page==='cotizaciones') initCotizaciones();
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); }
   if(page==='procesos') renderProcesos();
-  if(page==='inventario') { setTimeout(async()=>{ try { const t = await getToken(); if(t) msLoadInventoryFromOneDrive(); } catch(e){} }, 500); }
+  if(page==='inventario') {
+    setTimeout(async()=>{ try { const t = await getToken(); if(t) msLoadInventoryFromOneDrive(); } catch(e){} }, 500);
+    setTimeout(sincFotosDesdeBackend, 800);
+  }
 }
 function getNavLabel(page) {
   const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'cronograma',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',cotizaciones:'cotizaciones',ordenes:'procesos',visitas:'visitas',mensajeria:'mensajeria',configuracion:'configuraci'};
@@ -5050,6 +5053,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== MODULOS NUEVOS =====
 function getBackendURL(){return localStorage.getItem('energy_backend_url')||'';}
+
+async function sincFotosDesdeBackend() {
+  const url = getBackendURL();
+  if (!url) return;
+  try {
+    const resp = await fetch(url + '?tipo=fotos');
+    const data = await resp.json();
+    if (data.ok && data.fotos && Object.keys(data.fotos).length > 0) {
+      // Merge: las fotos del backend tienen prioridad sobre el localStorage local
+      const local = JSON.parse(localStorage.getItem('energy_fotos_inv') || '{}');
+      const merged = Object.assign({}, local, data.fotos);
+      localStorage.setItem('energy_fotos_inv', JSON.stringify(merged));
+      if (typeof window.invRender === 'function') window.invRender();
+    }
+  } catch(ex) { /* sin conexion, usar cache local */ }
+}
 
 // Comprime imagen a max 800px y calidad 0.7 antes de guardar en localStorage
 function fileToBase64(file, maxW, quality) {
