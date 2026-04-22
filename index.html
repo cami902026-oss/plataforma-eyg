@@ -695,7 +695,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <div class="stat-grid">
           <div class="stat-card green"><div class="stat-icon">📅</div><div class="stat-num" id="stat-reuniones">3</div><div class="stat-label">Reuniones hoy</div></div>
           <div class="stat-card blue"><div class="stat-icon">✅</div><div class="stat-num" id="stat-tareas">4</div><div class="stat-label">Tareas pendientes</div></div>
-          <div class="stat-card gold"><div class="stat-icon">💬</div><div class="stat-num" id="stat-mensajes">7</div><div class="stat-label">Mensajes sin leer</div></div>
+          <div class="stat-card gold"><div class="stat-icon">📄</div><div class="stat-num" id="stat-mensajes">0</div><div class="stat-label">Cotizaciones activas</div></div>
           <div class="stat-card red"><div class="stat-icon">📋</div><div class="stat-num" id="stat-proyectos">0</div><div class="stat-label">OPs activas</div></div>
         </div>
         <div id="dash-alerts" style="margin-bottom:20px;"></div>
@@ -2576,8 +2576,11 @@ function renderDashboard() {
   const todayMeetings = meetings.filter(m=>m.fecha===todayStr);
   const pendingTasks = tasks.filter(t=>t.estado!=='Completado');
   const activeOPs = getPOC().filter(o=>o.estado==='activo');
+  const cotizaciones = getData('cotizaciones', []);
+  const cotizActivas = cotizaciones.filter(c => c.estado === 'Enviada' || c.estado === 'Pendiente').length;
   document.getElementById('stat-reuniones').textContent = todayMeetings.length;
   document.getElementById('stat-tareas').textContent = pendingTasks.length;
+  document.getElementById('stat-mensajes').textContent = cotizActivas;
   document.getElementById('stat-proyectos').textContent = activeOPs.length;
 
   // Today's meetings
@@ -2610,18 +2613,42 @@ function renderDashboard() {
       </div>`).join('');
   }
 
-  // Activity
-  const acts = [
-    {icon:'📅',text:'Reunión "Seguimiento semanal" programada para hoy 9:00 AM',time:'Hace 2h'},
-    {icon:'✅',text:'Tarea "Actualizar base de datos clientes" marcada como completada',time:'Hace 3h'},
-    {icon:'💬',text:'Mensaje de seguimiento enviado a Sheila Baron',time:'Hace 4h'},
-    {icon:'📊',text:'Proyecto "Plan Comercial Q2" actualizado al 40%',time:'Ayer'},
-    {icon:'👤',text:'Tarea asignada a Andrés Barrera: Inventario bodega',time:'Hace 2 días'}
-  ];
+  // Activity — generada desde datos reales
+  const acts = [];
+  const now = Date.now();
+  function timeAgo(ts) {
+    if (!ts) return '';
+    const diff = Math.floor((now - ts) / 60000);
+    if (diff < 2)   return 'Ahora mismo';
+    if (diff < 60)  return `Hace ${diff} min`;
+    if (diff < 120) return 'Hace 1 hora';
+    if (diff < 1440) return `Hace ${Math.floor(diff/60)} horas`;
+    if (diff < 2880) return 'Ayer';
+    return `Hace ${Math.floor(diff/1440)} días`;
+  }
+  // Próximas reuniones (hoy y mañana)
+  const upcomingMtg = meetings.filter(m => m.fecha >= todayStr).slice(0,2);
+  upcomingMtg.forEach(m => {
+    const isToday = m.fecha === todayStr;
+    acts.push({icon:'📅', text:`Reunión "${m.titulo}" — ${isToday?'Hoy':'Mañana'} ${m.horaInicio}`, time: isToday?'Hoy':'Mañana', dot:'var(--blue)'});
+  });
+  // Tareas en progreso o alta prioridad
+  const inProgress = tasks.filter(t => t.estado === 'En progreso').slice(0,2);
+  inProgress.forEach(t => acts.push({icon:'⚡', text:`En progreso: "${t.titulo}" — ${t.responsable}`, time: t.fecha||'', dot:'var(--gold)'}));
+  // Tareas completadas recientemente (las últimas de la lista)
+  const done = getData('tasks', TASKS_DEFAULT).filter(t => t.estado === 'Completado').slice(-2);
+  done.forEach(t => acts.push({icon:'✅', text:`Completada: "${t.titulo}" por ${t.responsable}`, time:'Reciente', dot:'var(--green)'}));
+  // OPs activas
+  activeOPs.slice(0,2).forEach(o => acts.push({icon:'🚛', text:`O.P. ${o.num||o.id} activa — Cliente: ${o.cliente||'—'}`, time:'Activa', dot:'var(--blue)'}));
+  // Cotizaciones recientes
+  cotizaciones.slice(-2).forEach(c => acts.push({icon:'📄', text:`Cotización ${c.id||''} — ${c.cliente||'Cliente'} · ${c.estado||'Enviada'}`, time: c.fecha||'', dot:'var(--text-muted)'}));
+  // Si no hay nada
+  if (!acts.length) acts.push({icon:'🟢', text:'Todo al día — Sin actividad reciente registrada', time:'', dot:'var(--green)'});
+
   renderAlerts();
-  document.getElementById('dash-activity').innerHTML = acts.map(a=>`
+  document.getElementById('dash-activity').innerHTML = acts.slice(0,6).map(a=>`
     <div class="activity-item">
-      <div class="activity-dot" style="background:var(--green)"></div>
+      <div class="activity-dot" style="background:${a.dot||'var(--green)'}"></div>
       <div class="activity-text">${a.icon} ${a.text}</div>
       <div class="activity-time">${a.time}</div>
     </div>`).join('');
