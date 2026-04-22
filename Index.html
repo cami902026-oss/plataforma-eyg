@@ -2373,6 +2373,34 @@ function checkSession() {
   document.getElementById('app').style.display = 'none';
 }
 
+// Corrige órdenes que quedaron en 'completado' sin tener las 4 etapas terminadas
+function _fixCompletadoIncorrecto() {
+  try {
+    const raw = localStorage.getItem('procesos_oc');
+    if (!raw) return;
+    const list = JSON.parse(raw);
+    if (!Array.isArray(list)) return;
+    let changed = false;
+    list.forEach(o => {
+      if (o.estado !== 'completado') return;
+      const st = o.stages || [];
+      const allFour = [0,1,2,3].map(i => {
+        const s = st[i] || {};
+        return i >= 2 ? (s.f ? 'done' : 'pending') : (s.s || 'pending');
+      });
+      if (!allFour.every(s => s === 'done')) {
+        o.estado = 'activo';
+        changed = true;
+      }
+    });
+    if (changed) {
+      localStorage.setItem('procesos_oc', JSON.stringify(list));
+      if (_db) _db.collection(FB_COL).doc('procesos_oc').set({ data: list, ts: Date.now() })
+               .catch(e => console.warn('Firebase fix completado:', e));
+    }
+  } catch(e) { console.warn('_fixCompletadoIncorrecto:', e); }
+}
+
 // ===== INIT =====
 function initApp() {
   document.getElementById('login-screen').style.display='none';
@@ -2461,6 +2489,8 @@ function initApp() {
   // Auto-actualizar cada 30 segundos para ver cambios del bot en tiempo real
   setInterval(syncTasksFromAPI, 30000);
   setInterval(syncMeetingsFromAPI, 30000);
+  // Corregir órdenes marcadas como 'completado' sin tener las 4 etapas realmente listas
+  _fixCompletadoIncorrecto();
   // Carga inicial de órdenes desde GS/GH (solo una vez al iniciar — Firebase toma el relevo)
   _loadOrdenesGS();
   // Cargar reuniones desde GitHub (persisten en cualquier navegador)
