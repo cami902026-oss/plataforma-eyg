@@ -540,6 +540,9 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js" onerror="document.head.insertAdjacentHTML('beforeend','<script src=\'https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js\'><\/script>')"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -1964,31 +1967,68 @@ let currentPage = 'dashboard';
 let chatOpen = false;
 let currentView = 'calendar';
 
+// ── Firebase config ────────────────────────────────────────────────────────
+const _fbConfig = {
+  apiKey: "AIzaSyDgVkxrsU1ftspLsIZ9F7YvjZek4wf6oFc",
+  authDomain: "energy-bot-ea8f7.firebaseapp.com",
+  projectId: "energy-bot-ea8f7",
+  storageBucket: "energy-bot-ea8f7.firebasestorage.app",
+  messagingSenderId: "550739056854",
+  appId: "1:550739056854:web:777db43f8161076e9a9177"
+};
+let _db = null;
+try {
+  if (!firebase.apps.length) firebase.initializeApp(_fbConfig);
+  _db = firebase.firestore();
+} catch(e) { console.warn('Firebase init:', e); }
+
+const FB_KEYS = ['meetings','tasks','minutas','team','projects','procesos_oc','cotizaciones'];
+const FB_COL  = 'eyg_data';
+
 function getData(key, def) {
   try { const d = localStorage.getItem('max_'+key); return d ? JSON.parse(d) : def; } catch(e) { return def; }
 }
 function setData(key, val) {
   localStorage.setItem('max_'+key, JSON.stringify(val));
+  // Sincronizar con Firebase si es clave compartida
+  if (_db && FB_KEYS.includes(key)) {
+    _db.collection(FB_COL).doc(key).set({ data: val, ts: Date.now() })
+      .catch(e => console.warn('Firebase write:', e));
+  }
   // Guardar órdenes en GitHub automáticamente
   if (key === 'ordenes') { _saveOrdenesGH(val); }
-  // Sincronizar tareas con la API cuando cambian
-  if (key === 'tasks') {
-    fetch('/.netlify/functions/tasks-api', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(val)
-    }).catch(e => console.warn('API sync tasks:', e));
-  }
   // Guardar reuniones en GitHub automáticamente
   if (key === 'meetings') { _saveReunionesGH(val); }
-  // Sincronizar reuniones con la API cuando cambian
-  if (key === 'meetings') {
-    fetch('/.netlify/functions/meetings-api', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(val)
-    }).catch(e => console.warn('API sync meetings:', e));
-  }
+}
+
+// Carga inicial desde Firebase y activa listeners en tiempo real
+async function startFirebaseSync() {
+  if (!_db) return;
+  try {
+    for (const key of FB_KEYS) {
+      const snap = await _db.collection(FB_COL).doc(key).get();
+      if (snap.exists && snap.data() && snap.data().data) {
+        localStorage.setItem('max_'+key, JSON.stringify(snap.data().data));
+      }
+    }
+  } catch(e) { console.warn('Firebase load:', e); }
+  renderDashboard(); renderCalendar(); renderMeetingList();
+  renderKanban('all'); renderMinutas(); renderTeam(); renderTeamMgmt();
+  FB_KEYS.forEach(key => {
+    _db.collection(FB_COL).doc(key).onSnapshot(snap => {
+      if (!snap.exists || !snap.data() || !snap.data().data) return;
+      const remote = snap.data();
+      const localTs = parseInt(localStorage.getItem('fb_ts_'+key)||'0');
+      if (remote.ts <= localTs) return;
+      localStorage.setItem('max_'+key, JSON.stringify(remote.data));
+      localStorage.setItem('fb_ts_'+key, String(remote.ts));
+      if (key==='tasks')    { renderDashboard(); if(currentPage==='tareas')     renderKanban('all'); }
+      if (key==='meetings') { renderDashboard(); if(currentPage==='reuniones')  { renderCalendar(); renderMeetingList(); } }
+      if (key==='minutas')  { if(currentPage==='minutas')   renderMinutas(); }
+      if (key==='team')     { if(currentPage==='equipo')    { renderTeam(); renderTeamMgmt(); } }
+      if (key==='projects') { if(currentPage==='cronograma') renderGantt(); }
+    });
+  });
 }
 
 // Sincroniza tareas desde la API (para ver cambios del bot de WhatsApp)
@@ -2410,6 +2450,8 @@ function initApp() {
   setInterval(_loadOrdenesGS, 30000);
   // Cargar reuniones desde GitHub (persisten en cualquier navegador)
   _loadReunionesGH();
+  // Sincronizar con Firebase — datos en tiempo real entre todos los usuarios
+  startFirebaseSync();
 }
 
 // ===== NAVIGATION =====
