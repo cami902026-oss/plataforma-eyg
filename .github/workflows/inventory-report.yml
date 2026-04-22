@@ -1,7 +1,7 @@
 name: Reporte Diario de Inventario
 on:
   schedule:
-    - cron: '0 22 * * 1-5'
+    - cron: '10 21 * * 1-5'
   workflow_dispatch:
 jobs:
   send-inventory-report:
