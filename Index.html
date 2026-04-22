@@ -2117,6 +2117,8 @@ function ocRenderSafe() { try { ocRender(); } catch(_) {} }
 
 // ── Google Sheets — carga órdenes (JSONP para evitar CORS) ──────────
 function _loadOrdenesGS() {
+  // Si hay datos locales recientes (<5min), no cargar desde GS para evitar revertir cambios
+  if (Date.now() - _pocLastSave < 300000 && localStorage.getItem('procesos_oc')) { ocRenderSafe(); return; }
   if (!GS_SCRIPT_URL) { _loadOrdenesGH(); return; }
   try {
     const cbName = 'gsOrdenesCb_' + Date.now();
@@ -2451,10 +2453,8 @@ function initApp() {
   // Auto-actualizar cada 30 segundos para ver cambios del bot en tiempo real
   setInterval(syncTasksFromAPI, 30000);
   setInterval(syncMeetingsFromAPI, 30000);
-  // Cargar órdenes desde Google Sheets (compartido con todos los usuarios)
+  // Carga inicial de órdenes desde GS/GH (solo una vez al iniciar — Firebase toma el relevo)
   _loadOrdenesGS();
-  // Refrescar órdenes automáticamente cada 30 segundos para sincronizar cambios
-  setInterval(_loadOrdenesGS, 30000);
   // Cargar reuniones desde GitHub (persisten en cualquier navegador)
   _loadReunionesGH();
   // Sincronizar con Firebase — datos en tiempo real entre todos los usuarios
