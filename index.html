@@ -2066,6 +2066,8 @@ function _ghToken() {
   return localStorage.getItem('gh_pat_token') || '';
 }
 async function _loadOrdenesGH() {
+  // Si ya hay datos locales, no sobrescribir — Firebase maneja el sync
+  if (localStorage.getItem('procesos_oc')) { ocRenderSafe(); return; }
   try {
     const r = await fetch(
       `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json`,
@@ -2117,8 +2119,8 @@ function ocRenderSafe() { try { ocRender(); } catch(_) {} }
 
 // ── Google Sheets — carga órdenes (JSONP para evitar CORS) ──────────
 function _loadOrdenesGS() {
-  // Si hay datos locales recientes (<5min), no cargar desde GS para evitar revertir cambios
-  if (Date.now() - _pocLastSave < 300000 && localStorage.getItem('procesos_oc')) { ocRenderSafe(); return; }
+  // Si ya hay datos locales, no cargar desde GS/GH — Firebase maneja el sync
+  if (localStorage.getItem('procesos_oc')) { ocRenderSafe(); return; }
   if (!GS_SCRIPT_URL) { _loadOrdenesGH(); return; }
   try {
     const cbName = 'gsOrdenesCb_' + Date.now();
@@ -3417,20 +3419,19 @@ let pocEditId = null;
 function getPOC() {
   try { return JSON.parse(localStorage.getItem('procesos_oc')) || POC_DEFAULT; } catch(e) { return POC_DEFAULT; }
 }
-let _pocLastSave = 0; // timestamp del último guardado local — bloquea sync remoto 5 minutos
+let _pocLastSave = 0;
 function savePOCData(arr) {
   _pocLastSave = Date.now();
   const now = new Date().toISOString();
-  // SIEMPRE actualizar updatedAt al guardar, no solo si no existe
   arr = arr.map(o => ({ ...o, updatedAt: now }));
   localStorage.setItem('procesos_oc', JSON.stringify(arr));
-  // Sincronizar con Firebase
+  // Firebase — fuente principal de sync entre usuarios
   if (_db) {
     _db.collection(FB_COL).doc('procesos_oc').set({ data: arr, ts: Date.now() })
       .catch(e => console.warn('Firebase POC write:', e));
   }
-  _saveOrdenesGS(arr);   // → Google Sheets
-  _saveOrdenesGH(arr);   // → GitHub
+  // GS y GH solo como respaldo (no bloquean ni revierten)
+  try { _saveOrdenesGS(arr); } catch(_) {}
 }
 
 function renderProcesos() {
