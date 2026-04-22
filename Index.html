@@ -3432,10 +3432,11 @@ function savePOCData(arr) {
   }
   // GS y GH solo como respaldo (no bloquean ni revierten)
   try { _saveOrdenesGS(arr); } catch(_) {}
+  return arr;
 }
 
-function renderProcesos() {
-  const list = getPOC();
+function renderProcesos(overrideList) {
+  const list = overrideList || getPOC();
   const total = list.length;
   const activos = list.filter(o=>o.estado==='activo').length;
   const completados = list.filter(o=>o.estado==='completado').length;
@@ -3599,9 +3600,9 @@ function savePoc() {
   let list = getPOC();
   if(pocEditId) { const idx=list.findIndex(o=>o.id===pocEditId); if(idx>=0) list[idx]=order; else list.push(order); }
   else list.push(order);
-  savePOCData(list);
+  const savedList = savePOCData(list);
   closePocModal();
-  renderProcesos();
+  renderProcesos(savedList);
   showToast('Orden guardada','success');
 }
 
@@ -3614,10 +3615,10 @@ function pocToggleTransp() {
 function deletePoc() {
   if(!pocEditId) return;
   if(!confirm('¿Eliminar esta orden de compra?')) return;
-  let list = getPOC().filter(o=>o.id!==pocEditId);
-  savePOCData(list);
+  const list = getPOC().filter(o=>o.id!==pocEditId);
+  const savedList = savePOCData(list);
   closePocModal();
-  renderProcesos();
+  renderProcesos(savedList);
   showToast('Orden eliminada','info');
 }
 
@@ -3666,8 +3667,8 @@ function cerrarMesOC() {
 
   // 3. Dejar solo las activas en la lista principal
   const activas = list.filter(o => o.estado === 'activo');
-  savePOCData(activas);
-  renderProcesos();
+  const savedList = savePOCData(activas);
+  renderProcesos(savedList);
   showToast(`📦 Mes cerrado — ${archivar.length} órdenes archivadas`, 'success');
 }
 
