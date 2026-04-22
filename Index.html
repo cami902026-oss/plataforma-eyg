@@ -2083,14 +2083,18 @@ async function _loadOrdenesGH() {
         // Merge: keep the most recent version of each order
         const local = getPOC();
         const merged = arr.map(ghOrder => {
-          const loc = local.find(o => o.id === ghOrder.id);
+          const loc = local.find(o => o.id === ghOrder.id || (ghOrder.num && o.num === ghOrder.num));
           if (!loc) return ghOrder;
           const ghTime = new Date(ghOrder.updatedAt || 0).getTime();
           const locTime = new Date(loc.updatedAt || 0).getTime();
           return locTime > ghTime ? loc : ghOrder;
         });
-        // Add local-only orders not in GitHub yet
-        local.forEach(lo => { if (!merged.find(o => o.id === lo.id)) merged.push(lo); });
+        // Add local-only orders not already represented in merged (check by id AND num)
+        const mergedIds = new Set(merged.map(o => o.id));
+        const mergedNums = new Set(merged.map(o => o.num).filter(Boolean));
+        local.forEach(lo => {
+          if (!mergedIds.has(lo.id) && !(lo.num && mergedNums.has(lo.num))) merged.push(lo);
+        });
         // Normalize stages 2&3 status derived from date
         merged.forEach(o => { if(o.stages) o.stages = o.stages.map((st,i)=>i>=2?{...st,s:st.f?'done':'pending'}:st); });
         localStorage.setItem('procesos_oc', JSON.stringify(merged));
@@ -2143,8 +2147,10 @@ function _loadOrdenesGS() {
           }
           return gsOrder;
         });
-        const gsIds = new Set(res.data.map(o => o.id));
-        const soloLocal = local.filter(o => !gsIds.has(o.id));
+        // soloLocal: órdenes locales que NO quedaron representadas en merged (ni por id ni por num)
+        const mergedIds2 = new Set(merged.map(o => o.id));
+        const mergedNums2 = new Set(merged.map(o => o.num).filter(Boolean));
+        const soloLocal = local.filter(o => !mergedIds2.has(o.id) && !(o.num && mergedNums2.has(o.num)));
         const finalData = [...merged, ...soloLocal];
         localStorage.setItem('procesos_oc', JSON.stringify(finalData));
         ocRenderSafe();
@@ -3417,7 +3423,20 @@ let pocStageFilter = null;
 let pocEditId = null;
 
 function getPOC() {
-  try { return JSON.parse(localStorage.getItem('procesos_oc')) || POC_DEFAULT; } catch(e) { return POC_DEFAULT; }
+  try {
+    const raw = JSON.parse(localStorage.getItem('procesos_oc'));
+    if (!Array.isArray(raw) || raw.length === 0) return POC_DEFAULT;
+    // Deduplicar por id: si hay duplicados, conservar el más reciente
+    const seen = new Map();
+    raw.forEach(o => {
+      const prev = seen.get(o.id);
+      if (!prev) { seen.set(o.id, o); return; }
+      const prevT = new Date(prev.updatedAt||0).getTime();
+      const curT  = new Date(o.updatedAt||0).getTime();
+      if (curT > prevT) seen.set(o.id, o);
+    });
+    return [...seen.values()];
+  } catch(e) { return POC_DEFAULT; }
 }
 let _pocLastSave = 0;
 function savePOCData(arr) {
@@ -3587,11 +3606,14 @@ function savePoc() {
     createdAt: existingOrder?.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
-  // Auto-completar si todas las etapas con contenido están done
   // Normalize stages 2&3: derive s from date
   order.stages = order.stages.map((st,i) => i>=2 ? {...st, s: st.f?'done':'pending'} : st);
-  const filledStages = order.stages.filter(st => st.f || (st.n && st.n.trim()));
-  const allStageDone = filledStages.length > 0 && filledStages.every(st => st.s === 'done');
+  // Auto-completar solo si las 4 etapas están done (incluyendo Facturación)
+  const allFour = [0,1,2,3].map(i => {
+    const st = order.stages[i] || {};
+    return i >= 2 ? (st.f ? 'done' : 'pending') : (st.s || 'pending');
+  });
+  const allStageDone = allFour.every(s => s === 'done');
   if(allStageDone && order.estado !== 'cancelado') {
     order.estado = 'completado';
     showToast('✅ Orden completada automáticamente', 'success');
