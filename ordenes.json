@@ -946,10 +946,10 @@
     "num": "170426L2873",
     "cliente": "CIAM",
     "desc": "SUMINISTRO MATERIAL MECANICO",
-    "estado": "completado",
+    "estado": "activo",
     "stages": [
       {
-        "s": "done",
+        "s": "active",
         "f": "2026-04-17",
         "n": "NSTRUGASES\nCODIFER"
       },
@@ -974,8 +974,7 @@
         "n": "407"
       }
     ],
-    "createdAt": "2026-04-22T17:32:51.981Z",
-    "updatedAt": "2026-04-22T17:32:51.982Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776469053057",
@@ -1186,5 +1185,41 @@
       }
     ],
     "updatedAt": "❌ Pendiente"
+  },
+  {
+    "id": "poc_1776879880110",
+    "num": "210426C2571",
+    "cliente": "CIAM",
+    "desc": "SUMINSITRO POZOS SABANERO 3",
+    "estado": "completado",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-21",
+        "n": "BODEGA"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-22",
+        "n": "411"
+      }
+    ],
+    "createdAt": "2026-04-22T17:44:40.110Z",
+    "updatedAt": "2026-04-22T17:44:40.110Z"
   }
 ]
