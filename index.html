@@ -1224,14 +1224,14 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">Tu API Key se guarda localmente y nunca se envía a ningún servidor externo excepto a Anthropic.</p>
         </div>
         <div class="config-section">
-          <div class="config-title">🔔 Token GitHub (Notificaciones Teams)</div>
+          <div class="config-title">🔔 Token GitHub (Informes diarios + Notificaciones)</div>
           <div class="api-key-row">
             <div class="form-group" style="flex:1;margin:0;">
               <input type="password" id="gh-token-input" placeholder="ghp_...">
             </div>
-            <button class="btn btn-primary" onclick="saveGhToken()" style="width:auto;white-space:nowrap;">Guardar</button>
+            <button class="btn btn-primary" onclick="saveGhToken()" style="width:auto;white-space:nowrap;">Guardar y Verificar</button>
           </div>
-          <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">Token personal de GitHub con permiso <b>workflow</b>. Se guarda localmente en tu navegador.</p>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">Token personal de GitHub con permisos <b>repo + workflow</b>. Requerido para los informes diarios de O.C. y notificaciones Teams. Se guarda localmente en tu navegador. Si los informes muestran datos desactualizados, renueva el token aquí.</p>
         </div>
 
         <!-- ===== MICROSOFT TEAMS CONFIG ===== -->
@@ -2116,8 +2116,16 @@ async function _saveOrdenesGH(arr) {
       { method: 'PUT', headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
     );
     if (r.ok) { const res = await r.json(); _ordenesFileSHA = res.content.sha; }
-    else { console.warn('GH save error:', await r.text()); }
-  } catch(e) { console.warn('GH ordenes save:', e); showToast('⚠️ No se sincronizó con GitHub — datos guardados localmente', 'info'); }
+    else {
+      const errText = await r.text();
+      console.warn('GH save error:', r.status, errText);
+      if (r.status === 401) {
+        showToast('⚠️ Token de GitHub vencido — el reporte diario no se actualizará. Ve a ⚙️ Configuración y renueva el Token GitHub.', 'error');
+      } else {
+        showToast('⚠️ Error sincronizando con GitHub (' + r.status + '). Reporte puede quedar desactualizado.', 'info');
+      }
+    }
+  } catch(e) { console.warn('GH ordenes save:', e); }
 }
 function ocRenderSafe() { try { ocRender(); } catch(_) {} }
 
@@ -3479,8 +3487,9 @@ function savePOCData(arr) {
     _db.collection(FB_COL).doc('procesos_oc').set({ data: arr, ts: Date.now() })
       .catch(e => console.warn('Firebase POC write:', e));
   }
-  // GS y GH solo como respaldo (no bloquean ni revierten)
+  // GS y GH en paralelo (ambos necesarios: GS para la plataforma, GH para el reporte diario)
   try { _saveOrdenesGS(arr); } catch(_) {}
+  try { _saveOrdenesGH(arr); } catch(_) {}
   return arr;
 }
 
@@ -4339,11 +4348,30 @@ function initCotizaciones() {
   if (!cotizItems.length) cotizRender();
 }
 
-function saveGhToken() {
+async function saveGhToken() {
   const token = document.getElementById('gh-token-input').value.trim();
   if(!token) { showToast('Ingresa el token de GitHub','error'); return; }
   localStorage.setItem('gh_pat_token', token);
-  showToast('Token de GitHub guardado. Las notificaciones a Teams están activas.','success');
+  // Validar token inmediatamente
+  try {
+    const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' }
+    });
+    if (r.ok) {
+      const d = await r.json();
+      _ordenesFileSHA = d.sha;
+      showToast('✅ Token de GitHub válido y guardado. El reporte diario se actualizará correctamente.', 'success');
+      // Forzar sync inmediato con las órdenes actuales
+      const ordenes = getPOC();
+      if (ordenes.length > 0) { _saveOrdenesGH(ordenes); }
+    } else if (r.status === 401) {
+      showToast('❌ Token inválido o vencido. Genera uno nuevo en github.com → Settings → Developer settings → Tokens.', 'error');
+    } else {
+      showToast('Token guardado (no se pudo verificar: ' + r.status + ')', 'info');
+    }
+  } catch(e) {
+    showToast('Token guardado (sin conexión para verificar)', 'info');
+  }
 }
 
 function saveProfile() {
