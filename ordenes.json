@@ -1,197 +1,197 @@
 [
   {
-    "id": "poc_1776469165261",
-    "num": "2_OCOP35_OT48_1",
-    "cliente": "CR INGENIERIA Y CONSULTORIA",
     "desc": "SUMINISTRO OCENSA",
-    "estado": "completado",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
     "stages": [
       {
-        "s": "done",
         "f": "2026-04-17",
+        "s": "done",
         "n": "CAMPANA\nGYJ\nCAMPIÑA\nFORLAN SAS"
       },
       {
-        "s": "done",
-        "f": "2026-04-20",
-        "n": "",
-        "envio": "recoge_bodega",
         "transp": "",
+        "s": "done",
+        "n": "",
+        "f": "2026-04-20",
         "guia": "",
         "dest": "",
+        "envio": "recoge_bodega",
         "resp": "Andrés Barrera"
       },
       {
-        "s": "done",
-        "f": "2026-04-23",
-        "n": "servidor"
+        "n": "",
+        "s": "pending",
+        "f": ""
       },
       {
-        "s": "done",
         "f": "2026-04-21",
-        "n": "408"
+        "n": "408",
+        "s": "done"
       }
     ],
-    "createdAt": "2026-04-23T20:18:28.762Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
+    "cliente": "CR INGENIERIA Y CONSULTORIA",
+    "num": "2_OCOP35_OT48_1",
+    "id": "poc_1776469165261",
+    "estado": "activo"
   },
   {
+    "estado": "completado",
     "stages": [
       {
         "f": "2026-04-06",
-        "s": "done",
-        "n": "BODEGA, JOSE MO"
+        "n": "BODEGA, JOSE MO",
+        "s": "done"
       },
       {
         "f": "2026-04-10",
-        "dest": "",
-        "guia": "",
-        "s": "done",
-        "resp": "",
         "n": "ESPERA DEFINICI",
         "transp": "",
-        "envio": "recoge_bodega"
+        "s": "done",
+        "envio": "recoge_bodega",
+        "resp": "",
+        "dest": "",
+        "guia": ""
       },
       {
         "s": "done",
-        "f": "2026-04-14",
-        "n": "servidor"
+        "n": "servidor",
+        "f": "2026-04-14"
       },
       {
-        "n": "409",
         "f": "2026-04-21",
+        "n": "409",
         "s": "done"
       }
     ],
     "cliente": "CR INGENIERIA",
-    "desc": "SUMINISTRO DE MATERIAL",
-    "num": "LM1376",
     "id": "LM1376",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
-    "estado": "completado"
+    "num": "LM1376",
+    "desc": "SUMINISTRO DE MATERIAL",
+    "updatedAt": "2026-04-29T16:37:10.849Z"
   },
   {
-    "id": "poc_1776723607018",
-    "num": "200426H3268",
     "cliente": "CIAM",
-    "desc": "SUMINSITRO VIGA",
-    "estado": "completado",
     "stages": [
       {
-        "s": "done",
         "f": "2026-04-20",
-        "n": "LA CAMPIÑA"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-21",
-        "n": "",
-        "envio": "transportadora",
-        "transp": "YOPAL EXPRESS",
-        "guia": "",
-        "dest": "",
-        "resp": "SHEILA BARON"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-23",
-        "n": "SERVIDOR"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-20",
-        "n": "410"
-      }
-    ],
-    "createdAt": "2026-04-22T23:41:40.371Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
-  },
-  {
-    "stages": [
-      {
-        "n": "BETEL, CODIFER",
-        "s": "done",
-        "f": "2026-04-10"
-      },
-      {
-        "n": "",
-        "envio": "transportadora",
-        "s": "done",
-        "resp": "",
-        "dest": "ORITO Q-CIEN",
-        "guia": "226311",
-        "f": "2026-04-10"
-      },
-      {
-        "n": "",
-        "f": "",
-        "s": "pending"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "id": "LM1320",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
-    "estado": "activo",
-    "desc": "SUMINISTRO MATERIAL MECANICO",
-    "cliente": "PETRORIOS",
-    "num": "LM1320"
-  },
-  {
-    "id": "LM-1389",
-    "num": "LM-1389",
-    "cliente": "COSTA DIAZ",
-    "desc": "Suministro de material mecanico",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-10",
-        "n": "Bodega, codifer"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-11",
-        "n": "",
-        "envio": "transportadora",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-23",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-14",
-        "n": "396"
-      }
-    ],
-    "createdAt": "2026-04-22T23:43:33.797Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
-  },
-  {
-    "stages": [
-      {
-        "n": "DISEFER",
-        "f": "2026-04-06",
+        "n": "LA CAMPIÑA",
         "s": "done"
       },
       {
-        "s": "done",
-        "resp": "",
-        "n": "",
+        "resp": "SHEILA BARON",
         "envio": "transportadora",
+        "dest": "",
+        "guia": "",
+        "f": "2026-04-21",
+        "s": "done",
+        "n": "",
+        "transp": "YOPAL EXPRESS"
+      },
+      {
+        "n": "",
+        "s": "pending",
+        "f": ""
+      },
+      {
+        "f": "",
+        "s": "pending",
+        "n": ""
+      }
+    ],
+    "id": "poc_1776723607018",
+    "num": "200426H3268",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "desc": "SUMINSITRO VIGA",
+    "estado": "activo"
+  },
+  {
+    "estado": "activo",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "desc": "SUMINISTRO MATERIAL MECANICO",
+    "cliente": "PETRORIOS",
+    "stages": [
+      {
+        "f": "2026-04-10",
+        "s": "done",
+        "n": "BETEL, CODIFER"
+      },
+      {
+        "envio": "transportadora",
+        "resp": "",
+        "dest": "ORITO Q-CIEN",
+        "guia": "226311",
+        "f": "2026-04-10",
+        "s": "done",
+        "n": ""
+      },
+      {
+        "n": "",
+        "s": "pending",
+        "f": ""
+      },
+      {
+        "s": "pending",
+        "n": "",
+        "f": ""
+      }
+    ],
+    "num": "LM1320",
+    "id": "LM1320"
+  },
+  {
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "desc": "Suministro de material mecanico",
+    "num": "LM-1389",
+    "id": "LM-1389",
+    "stages": [
+      {
+        "n": "Bodega, codifer",
+        "s": "done",
+        "f": "2026-04-10"
+      },
+      {
+        "s": "active",
         "transp": "",
+        "n": "",
+        "f": "2026-04-11",
+        "guia": "",
+        "dest": "",
+        "envio": "transportadora",
+        "resp": ""
+      },
+      {
+        "f": "",
+        "n": "",
+        "s": "pending"
+      },
+      {
+        "n": "396",
+        "s": "done",
+        "f": "2026-04-14"
+      }
+    ],
+    "cliente": "COSTA DIAZ",
+    "estado": "activo"
+  },
+  {
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "desc": "SUMINISTRO NIPLES",
+    "cliente": "GLADYZ BUCHELI",
+    "stages": [
+      {
+        "f": "2026-04-06",
+        "n": "DISEFER",
+        "s": "done"
+      },
+      {
+        "n": "",
+        "transp": "",
+        "s": "done",
         "f": "2026-04-10",
         "dest": "ORITO",
-        "guia": ""
+        "guia": "",
+        "resp": "",
+        "envio": "transportadora"
       },
       {
         "f": "2026-04-06",
@@ -200,230 +200,228 @@
       },
       {
         "s": "done",
-        "f": "2026-04-17",
-        "n": "403"
+        "n": "403",
+        "f": "2026-04-17"
       }
     ],
-    "desc": "SUMINISTRO NIPLES",
-    "num": "LM1358",
-    "cliente": "GLADYZ BUCHELI",
     "id": "LM1358",
-    "estado": "completado",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
+    "num": "LM1358",
+    "estado": "completado"
   },
   {
-    "num": "ODC-00003713",
-    "desc": "SUMINSITRO GUAYAS",
-    "cliente": "SAR ENERGY",
     "estado": "completado",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
-    "id": "poc_1775841157865",
+    "cliente": "SAR ENERGY",
     "stages": [
       {
-        "n": "FERRELECTRICOS BELTRAN",
         "f": "2026-04-07",
+        "n": "FERRELECTRICOS BELTRAN",
         "s": "done"
       },
       {
         "n": "ENTREGADO BODEGA SAR RIOCARDO DIAZ",
-        "envio": "entrega_mano",
-        "transp": "",
         "s": "done",
-        "resp": "GERENCIA",
-        "guia": "",
+        "transp": "",
+        "f": "2026-04-13",
         "dest": "SAR ENERGY",
-        "f": "2026-04-13"
+        "guia": "",
+        "envio": "entrega_mano",
+        "resp": "GERENCIA"
       },
       {
-        "n": "VIDEO",
         "f": "2026-04-11",
-        "s": "done"
+        "s": "done",
+        "n": "VIDEO"
       },
       {
         "f": "2026-04-15",
         "s": "done",
         "n": "400"
       }
-    ]
+    ],
+    "id": "poc_1775841157865",
+    "num": "ODC-00003713",
+    "desc": "SUMINSITRO GUAYAS",
+    "updatedAt": "2026-04-29T16:37:10.849Z"
   },
   {
+    "estado": "completado",
+    "cliente": "WILER",
     "stages": [
       {
-        "n": "BODEGA, COLIMPO",
         "f": "2026-04-06",
-        "s": "done"
+        "s": "done",
+        "n": "BODEGA, COLIMPO"
       },
       {
-        "f": "2026-04-06",
-        "dest": "TAME ARAUCA",
-        "guia": "",
-        "resp": "",
-        "s": "done",
         "envio": "transportadora",
+        "resp": "",
+        "guia": "",
+        "dest": "TAME ARAUCA",
+        "f": "2026-04-06",
+        "s": "done",
         "transp": "",
         "n": "SE ENVIO PRIMER"
       },
       {
-        "s": "done",
         "f": "2026-04-08",
+        "s": "done",
         "n": ""
       },
       {
         "s": "done",
-        "f": "2026-04-08",
-        "n": "387-394"
+        "n": "387-394",
+        "f": "2026-04-08"
       }
     ],
-    "cliente": "WILER",
     "num": "LM1380",
+    "id": "LM1380",
     "desc": "SUMINISTRO DE MATERIAL MECANICO",
-    "estado": "completado",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
-    "id": "LM1380"
+    "updatedAt": "2026-04-29T16:37:10.849Z"
   },
   {
-    "id": "060426C6243",
-    "num": "060426C6243",
-    "cliente": "CIAM",
-    "desc": "SUMINISTRO ANGULO",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-06",
-        "n": "ACEROS MAPA"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-07",
-        "n": "",
-        "envio": "transportadora",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-23",
-        "n": "SERVIDOR"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-07",
-        "n": "393"
-      }
-    ],
-    "createdAt": "2026-04-23T20:43:13.477Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
-  },
-  {
-    "id": "070426B2299",
-    "num": "070426B2299",
-    "cliente": "CIAM",
-    "desc": "SUMINISTRO DE MATERIAL",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-07",
-        "n": "GYJ"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-07",
-        "n": "",
-        "envio": "transportadora",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-23",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-07",
-        "n": "392"
-      }
-    ],
-    "createdAt": "2026-04-23T21:18:24.138Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
-  },
-  {
-    "id": "060426S0974",
-    "estado": "completado",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
-    "desc": "SUMINISTRO DE MATERIAL",
-    "num": "060426S0974",
-    "cliente": "CIAM",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-06",
-        "n": "GYJ"
-      },
-      {
-        "envio": "transportadora",
-        "transp": "",
-        "n": "ENTREGADO PUERT",
-        "resp": "",
-        "s": "done",
-        "dest": "",
-        "guia": "",
-        "f": "2026-04-07"
-      },
-      {
-        "n": "ONE DRICE PARA ENVIO CLIENTE",
-        "f": "2026-04-10",
-        "s": "done"
-      },
-      {
-        "n": "388",
-        "s": "done",
-        "f": "2026-04-07"
-      }
-    ]
-  },
-  {
-    "num": "LM1400",
-    "cliente": "WILER",
-    "desc": "SUMINSITRO DE VALVULA 4-300",
-    "id": "poc_1775861884115",
     "estado": "activo",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
+    "num": "060426C6243",
+    "id": "060426C6243",
+    "cliente": "CIAM",
     "stages": [
       {
-        "s": "done",
-        "f": "2026-04-07",
-        "n": "CODIFER"
-      },
-      {
-        "f": "2026-04-08",
-        "dest": "WILER",
-        "guia": "9003",
-        "resp": "Andrea Bernal",
-        "s": "done",
-        "transp": "LIBERTADORES",
-        "envio": "flota",
-        "n": ""
-      },
-      {
-        "n": "",
-        "f": "2026-04-17",
+        "f": "2026-04-06",
+        "n": "ACEROS MAPA",
         "s": "done"
+      },
+      {
+        "s": "done",
+        "n": "",
+        "f": "2026-04-07",
+        "dest": "",
+        "guia": "",
+        "resp": "",
+        "envio": "transportadora"
       },
       {
         "f": "",
         "s": "pending",
-        "n": "PENDIETE POR ARREGLAR INONVENIENTE DE GARANTIA"
+        "n": ""
+      },
+      {
+        "f": "2026-04-07",
+        "s": "done",
+        "n": "393"
       }
-    ]
+    ],
+    "desc": "SUMINISTRO ANGULO",
+    "updatedAt": "2026-04-29T16:37:10.849Z"
   },
   {
+    "estado": "activo",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "desc": "SUMINISTRO DE MATERIAL",
+    "cliente": "CIAM",
+    "stages": [
+      {
+        "n": "GYJ",
+        "s": "done",
+        "f": "2026-04-07"
+      },
+      {
+        "envio": "transportadora",
+        "resp": "",
+        "guia": "",
+        "dest": "",
+        "f": "2026-04-07",
+        "s": "done",
+        "n": ""
+      },
+      {
+        "f": "",
+        "n": "",
+        "s": "pending"
+      },
+      {
+        "s": "done",
+        "n": "392",
+        "f": "2026-04-07"
+      }
+    ],
+    "num": "070426B2299",
+    "id": "070426B2299"
+  },
+  {
+    "desc": "SUMINISTRO DE MATERIAL",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "num": "060426S0974",
+    "id": "060426S0974",
+    "cliente": "CIAM",
+    "stages": [
+      {
+        "f": "2026-04-06",
+        "n": "GYJ",
+        "s": "done"
+      },
+      {
+        "guia": "",
+        "dest": "",
+        "envio": "transportadora",
+        "resp": "",
+        "transp": "",
+        "n": "ENTREGADO PUERT",
+        "s": "done",
+        "f": "2026-04-07"
+      },
+      {
+        "f": "2026-04-10",
+        "s": "done",
+        "n": "ONE DRICE PARA ENVIO CLIENTE"
+      },
+      {
+        "f": "2026-04-07",
+        "n": "388",
+        "s": "done"
+      }
+    ],
+    "estado": "completado"
+  },
+  {
+    "estado": "activo",
+    "desc": "SUMINSITRO DE VALVULA 4-300",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "cliente": "WILER",
+    "stages": [
+      {
+        "s": "done",
+        "n": "CODIFER",
+        "f": "2026-04-07"
+      },
+      {
+        "guia": "9003",
+        "dest": "WILER",
+        "envio": "flota",
+        "resp": "Andrea Bernal",
+        "transp": "LIBERTADORES",
+        "s": "done",
+        "n": "",
+        "f": "2026-04-08"
+      },
+      {
+        "n": "",
+        "s": "done",
+        "f": "2026-04-17"
+      },
+      {
+        "n": "PENDIETE POR ARREGLAR INONVENIENTE DE GARANTIA",
+        "s": "pending",
+        "f": ""
+      }
+    ],
+    "id": "poc_1775861884115",
+    "num": "LM1400"
+  },
+  {
+    "desc": "SUMINISTRO PERFIL",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "num": "060426E8427",
+    "id": "060426E8427",
+    "cliente": "CIAM",
     "stages": [
       {
         "f": "2026-04-06",
@@ -431,125 +429,118 @@
         "n": "IMPERIAL"
       },
       {
-        "f": "2026-04-06",
         "guia": "",
         "dest": "",
         "resp": "",
-        "s": "done",
         "envio": "entrega_mano",
+        "n": "",
         "transp": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-04-06"
       },
       {
         "n": "ONE DRIVE PRAR ENVIO",
-        "f": "2026-04-10",
-        "s": "done"
+        "s": "done",
+        "f": "2026-04-10"
       },
       {
         "s": "done",
-        "f": "2026-04-06",
-        "n": "389"
+        "n": "389",
+        "f": "2026-04-06"
       }
     ],
-    "desc": "SUMINISTRO PERFIL",
-    "num": "060426E8427",
-    "cliente": "CIAM",
-    "id": "060426E8427",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
     "estado": "completado"
   },
   {
-    "estado": "completado",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
-    "id": "poc_1776103639015",
-    "cliente": "Q-CIEN",
     "desc": "SUMISNITRO VALVULAS",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "id": "poc_1776103639015",
     "num": "006-26",
+    "cliente": "Q-CIEN",
     "stages": [
       {
         "s": "done",
-        "f": "2026-04-13",
-        "n": "CODIFER"
+        "n": "CODIFER",
+        "f": "2026-04-13"
       },
       {
-        "s": "done",
         "resp": "LINA CIFUENTES",
-        "n": "",
-        "transp": "COOTRANSAMYO",
         "envio": "transportadora",
-        "f": "2026-04-13",
-        "dest": "",
-        "guia": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-13",
-        "n": "SERVIDOR"
-      },
-      {
-        "f": "2026-04-13",
-        "s": "done",
-        "n": "397"
-      }
-    ]
-  },
-  {
-    "num": "LM-1411",
-    "desc": "SUMINSITROS FLEXITALICOS",
-    "cliente": "ITC ASOCIADOS",
-    "id": "poc_1776103718938",
-    "estado": "completado",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-13",
-        "n": "BODEGA"
-      },
-      {
         "dest": "",
         "guia": "",
-        "f": "2026-04-14",
-        "n": "",
-        "transp": "",
-        "envio": "taquilla_bus",
-        "s": "done",
-        "resp": "SHEILA BARON"
-      },
-      {
-        "n": "SERVIDOR",
         "f": "2026-04-13",
+        "n": "",
+        "transp": "COOTRANSAMYO",
         "s": "done"
       },
       {
-        "f": "2026-04-13",
         "s": "done",
-        "n": "395"
+        "n": "SERVIDOR",
+        "f": "2026-04-13"
+      },
+      {
+        "f": "2026-04-13",
+        "n": "397",
+        "s": "done"
       }
-    ]
+    ],
+    "estado": "completado"
   },
   {
-    "desc": "Suministro Ring Gasket",
-    "num": "02CMP-9692",
-    "cliente": "PSI",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
-    "estado": "completado",
-    "id": "02CMP-9692",
     "stages": [
       {
-        "f": "2026-04-06",
+        "f": "2026-04-13",
         "s": "done",
-        "n": "COLIMPORTADOS"
+        "n": "BODEGA"
+      },
+      {
+        "guia": "",
+        "dest": "",
+        "resp": "SHEILA BARON",
+        "envio": "taquilla_bus",
+        "n": "",
+        "s": "done",
+        "transp": "",
+        "f": "2026-04-14"
+      },
+      {
+        "f": "2026-04-13",
+        "s": "done",
+        "n": "SERVIDOR"
+      },
+      {
+        "n": "395",
+        "s": "done",
+        "f": "2026-04-13"
+      }
+    ],
+    "cliente": "ITC ASOCIADOS",
+    "id": "poc_1776103718938",
+    "num": "LM-1411",
+    "desc": "SUMINSITROS FLEXITALICOS",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "estado": "completado"
+  },
+  {
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "desc": "Suministro Ring Gasket",
+    "id": "02CMP-9692",
+    "num": "02CMP-9692",
+    "stages": [
+      {
+        "s": "done",
+        "n": "COLIMPORTADOS",
+        "f": "2026-04-06"
       },
       {
         "n": "Recibido bodega",
-        "envio": "moto",
-        "transp": "",
         "s": "done",
-        "resp": "",
+        "transp": "",
+        "f": "2026-04-06",
         "dest": "PSI",
         "guia": "",
-        "f": "2026-04-06"
+        "resp": "",
+        "envio": "moto"
       },
       {
         "f": "2026-04-06",
@@ -557,140 +548,138 @@
         "n": "Enviado"
       },
       {
-        "s": "done",
         "f": "2026-04-06",
+        "s": "done",
         "n": "390"
       }
-    ]
+    ],
+    "cliente": "PSI",
+    "estado": "completado"
   },
   {
-    "id": "poc_1776103775812",
+    "estado": "activo",
     "num": "100426J8319",
+    "id": "poc_1776103775812",
     "cliente": "CIAM",
-    "desc": "SUMINSITRO BRIDAS",
-    "estado": "completado",
     "stages": [
       {
-        "s": "done",
         "f": "2026-04-13",
-        "n": "COLIMPORTADOS\nFAIMPETROL\n"
+        "n": "COLIMPORTADOS\nFAIMPETROL\n",
+        "s": "done"
       },
       {
-        "s": "done",
-        "f": "2026-04-18",
-        "n": "",
+        "resp": "",
         "envio": "transportadora",
-        "transp": "YOPAL EXPRESS",
         "guia": "",
         "dest": "",
-        "resp": ""
+        "f": "2026-04-18",
+        "s": "done",
+        "n": "",
+        "transp": "YOPAL EXPRESS"
       },
       {
-        "s": "done",
-        "f": "2026-04-23",
-        "n": ""
+        "f": "",
+        "n": "",
+        "s": "pending"
       },
       {
-        "s": "done",
-        "f": "2026-04-21",
-        "n": "411"
+        "n": "",
+        "s": "pending",
+        "f": ""
       }
     ],
-    "createdAt": "2026-04-22T23:41:58.884Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "desc": "SUMINSITRO BRIDAS"
   },
   {
-    "stages": [
-      {
-        "n": "SEGEFER, COLIMP",
-        "f": "2026-04-06",
-        "s": "done"
-      },
-      {
-        "dest": "HIDROCASANARE",
-        "guia": "",
-        "f": "2026-04-07",
-        "envio": "camion_energy",
-        "transp": "",
-        "n": "ENREGADO A SATI",
-        "resp": "",
-        "s": "done"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-14",
-        "n": "COMPLETOS EN LA CARPETA\n"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": "399"
-      }
-    ],
-    "updatedAt": "2026-04-24T22:47:51.102Z",
     "estado": "activo",
     "id": "LM1392",
-    "cliente": "HIDROCASANARE",
     "num": "LM1392",
-    "desc": "SUMINISTRO DE MATERIAL"
-  },
-  {
-    "id": "poc_1776192478524",
-    "estado": "activo",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
-    "cliente": "HIDROCASANARE",
-    "desc": "Suminsitro de tuberia material mecanico",
-    "num": "LM-1418",
     "stages": [
       {
-        "n": "Codifer\nInduvacol\ninstrugases",
+        "f": "2026-04-06",
+        "s": "done",
+        "n": "SEGEFER, COLIMP"
+      },
+      {
+        "envio": "camion_energy",
+        "resp": "",
+        "guia": "",
+        "dest": "HIDROCASANARE",
+        "f": "2026-04-07",
+        "s": "done",
+        "transp": "",
+        "n": "ENREGADO A SATI"
+      },
+      {
+        "n": "COMPLETOS EN LA CARPETA\n",
         "s": "done",
         "f": "2026-04-14"
       },
       {
-        "f": "2026-04-15",
-        "dest": "",
-        "guia": "",
-        "s": "done",
-        "resp": "Andrés Barrera",
-        "n": "Recogiendo",
-        "transp": "",
-        "envio": "camion_energy"
-      },
-      {
-        "f": "2026-04-15",
-        "s": "done",
-        "n": "servidor"
-      },
-      {
-        "n": "",
         "f": "",
+        "n": "399",
         "s": "pending"
       }
-    ]
+    ],
+    "cliente": "HIDROCASANARE",
+    "desc": "SUMINISTRO DE MATERIAL",
+    "updatedAt": "2026-04-29T16:37:10.849Z"
+  },
+  {
+    "id": "poc_1776192478524",
+    "num": "LM-1418",
+    "stages": [
+      {
+        "s": "done",
+        "n": "Codifer\nInduvacol\ninstrugases",
+        "f": "2026-04-14"
+      },
+      {
+        "f": "2026-04-15",
+        "transp": "",
+        "s": "done",
+        "n": "Recogiendo",
+        "resp": "Andrés Barrera",
+        "envio": "camion_energy",
+        "guia": "",
+        "dest": ""
+      },
+      {
+        "s": "done",
+        "n": "servidor",
+        "f": "2026-04-15"
+      },
+      {
+        "f": "",
+        "n": "",
+        "s": "pending"
+      }
+    ],
+    "cliente": "HIDROCASANARE",
+    "desc": "Suminsitro de tuberia material mecanico",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "estado": "activo"
   },
   {
     "id": "poc_1776209903635",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
-    "estado": "completado",
     "num": 8874,
-    "desc": "SUMINISTRO MANOMETROS",
     "cliente": "SERTECPET",
     "stages": [
       {
         "f": "2026-04-10",
-        "s": "done",
-        "n": "WIKA"
+        "n": "WIKA",
+        "s": "done"
       },
       {
-        "s": "done",
-        "resp": "",
-        "n": "",
-        "transp": "AUTOBOY",
-        "envio": "flota",
-        "f": "2026-04-11",
         "dest": "RICARDO DIAZ",
-        "guia": ""
+        "guia": "",
+        "envio": "flota",
+        "resp": "",
+        "transp": "AUTOBOY",
+        "n": "",
+        "s": "done",
+        "f": "2026-04-11"
       },
       {
         "f": "2026-04-14",
@@ -702,15 +691,15 @@
         "s": "done",
         "f": "2026-04-14"
       }
-    ]
+    ],
+    "desc": "SUMINISTRO MANOMETROS",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "estado": "completado"
   },
   {
-    "num": "LM1387",
-    "desc": "SUMINISTRO POTENCIOMETRO",
-    "cliente": "ENERFLEX",
-    "id": "poc_1776219839963",
     "estado": "activo",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "desc": "SUMINISTRO POTENCIOMETRO",
     "stages": [
       {
         "n": "",
@@ -718,14 +707,14 @@
         "f": "2026-04-01"
       },
       {
-        "s": "done",
-        "resp": "",
-        "n": "",
-        "transp": "RAPIDO OCHOA",
-        "envio": "taquilla_bus",
-        "f": "2026-04-01",
         "dest": "",
-        "guia": ""
+        "guia": "",
+        "resp": "",
+        "envio": "taquilla_bus",
+        "s": "done",
+        "transp": "RAPIDO OCHOA",
+        "n": "",
+        "f": "2026-04-01"
       },
       {
         "f": "2026-04-14",
@@ -733,54 +722,57 @@
         "n": ""
       },
       {
-        "n": "",
         "f": "",
-        "s": "pending"
+        "s": "pending",
+        "n": ""
       }
-    ]
+    ],
+    "cliente": "ENERFLEX",
+    "num": "LM1387",
+    "id": "poc_1776219839963"
   },
   {
-    "desc": "SUMINSITRO ESPARRAGOS RING GASKET",
     "num": "02CMP-9748",
-    "cliente": "PSI",
     "id": "poc_1776264970049",
-    "estado": "completado",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
     "stages": [
       {
-        "n": "COLIMPORTADOS MUNDIAL Y FLEXILATINA\n",
         "s": "done",
+        "n": "COLIMPORTADOS MUNDIAL Y FLEXILATINA\n",
         "f": "2026-04-15"
       },
       {
-        "s": "done",
-        "resp": "ALEJANDRO",
+        "f": "2026-04-15",
         "n": "40000",
         "transp": "",
+        "s": "done",
         "envio": "moto",
-        "f": "2026-04-15",
-        "dest": "PSI",
-        "guia": "PICAP"
+        "resp": "ALEJANDRO",
+        "guia": "PICAP",
+        "dest": "PSI"
       },
       {
         "n": "",
-        "f": "2026-04-17",
-        "s": "done"
+        "s": "done",
+        "f": "2026-04-17"
       },
       {
-        "s": "done",
         "f": "2026-04-15",
-        "n": "401"
+        "n": "401",
+        "s": "done"
       }
-    ]
+    ],
+    "cliente": "PSI",
+    "desc": "SUMINSITRO ESPARRAGOS RING GASKET",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "estado": "completado"
   },
   {
-    "desc": "SUMINSTRO RING GASKET",
-    "cliente": "PSI",
-    "num": "02CMP-9753",
-    "updatedAt": "2026-04-24T22:47:51.102Z",
     "estado": "completado",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "desc": "SUMINSTRO RING GASKET",
+    "num": "02CMP-9753",
     "id": "poc_1776440609874",
+    "cliente": "PSI",
     "stages": [
       {
         "f": "2026-04-17",
@@ -788,24 +780,24 @@
         "n": "COLIMPORTADOS\nFLEXILATINA"
       },
       {
-        "guia": "ANDRES BARRERA",
-        "dest": "",
-        "f": "2026-04-17",
-        "envio": "moto",
+        "s": "done",
         "transp": "",
         "n": "ANDRES ENTREGA EN LA MOTO",
+        "f": "2026-04-17",
+        "guia": "ANDRES BARRERA",
+        "dest": "",
         "resp": "",
-        "s": "done"
+        "envio": "moto"
+      },
+      {
+        "n": "SERVIDOR",
+        "s": "done",
+        "f": "2026-04-17"
       },
       {
         "s": "done",
-        "f": "2026-04-17",
-        "n": "SERVIDOR"
-      },
-      {
-        "f": "2026-04-17",
-        "s": "done",
-        "n": "404"
+        "n": "404",
+        "f": "2026-04-17"
       }
     ]
   },
@@ -813,252 +805,321 @@
     "id": "poc_1776449624971",
     "num": "LM1435",
     "cliente": "ITC",
-    "desc": "SUMISNITRO MATERIAL MECANICO",
-    "estado": "completado",
     "stages": [
       {
         "s": "done",
-        "f": "2026-04-17",
-        "n": ""
+        "n": "",
+        "f": "2026-04-17"
       },
       {
-        "s": "done",
         "f": "2026-04-18",
         "n": "",
-        "envio": "flota",
         "transp": "PAZ DE ARIPORO",
-        "guia": "",
+        "s": "active",
+        "resp": "",
+        "envio": "flota",
         "dest": "",
-        "resp": ""
+        "guia": ""
       },
       {
-        "s": "done",
-        "f": "2026-04-24",
-        "n": ""
+        "f": "",
+        "n": "",
+        "s": "pending"
       },
       {
-        "s": "done",
         "f": "2026-04-20",
+        "s": "done",
         "n": "406"
       }
     ],
-    "createdAt": "2026-04-22T23:43:41.263Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "desc": "SUMISNITRO MATERIAL MECANICO",
+    "estado": "activo"
   },
   {
-    "id": "poc_1776468993843",
+    "estado": "activo",
     "num": "170426L2873",
-    "cliente": "CIAM",
-    "desc": "SUMINISTRO MATERIAL MECANICO",
-    "estado": "completado",
+    "id": "poc_1776468993843",
     "stages": [
       {
-        "s": "done",
-        "f": "2026-04-17",
-        "n": "NSTRUGASES\nCODIFER"
+        "n": "NSTRUGASES\nCODIFER",
+        "s": "active",
+        "f": "2026-04-17"
       },
       {
-        "s": "done",
         "f": "2026-04-20",
+        "s": "done",
         "n": "",
-        "envio": "flota",
         "transp": "ENVIADO",
+        "resp": "SHEILA BARON",
+        "envio": "flota",
         "guia": "",
-        "dest": "",
-        "resp": "SHEILA BARON"
+        "dest": ""
       },
       {
-        "s": "done",
-        "f": "2026-04-23",
-        "n": ""
+        "f": "",
+        "n": "",
+        "s": "pending"
       },
       {
-        "s": "done",
         "f": "2026-04-20",
+        "s": "done",
         "n": "407"
       }
     ],
-    "createdAt": "2026-04-22T23:30:37.230Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
+    "cliente": "CIAM",
+    "desc": "SUMINISTRO MATERIAL MECANICO",
+    "updatedAt": "2026-04-29T16:37:10.849Z"
   },
   {
-    "id": "poc_1776469053057",
-    "num": "LM438",
-    "cliente": "SAR ENERGY",
-    "desc": "SUMISNITRO MATERIAL MECANICO",
     "estado": "activo",
+    "desc": "SUMISNITRO MATERIAL MECANICO",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
     "stages": [
       {
-        "s": "done",
         "f": "2026-04-17",
-        "n": "CODIFER\nMUNDIAL\nBODEGA"
+        "n": "CODIFER\nMUNDIAL\nBODEGA",
+        "s": "done"
       },
       {
-        "s": "done",
         "f": "2026-04-18",
+        "s": "done",
+        "transp": "LIEBRTADORES",
         "n": "",
         "envio": "flota",
-        "transp": "LIEBRTADORES",
+        "resp": "",
         "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-23",
-        "n": ""
+        "dest": ""
       },
       {
         "s": "pending",
+        "n": "",
+        "f": ""
+      },
+      {
         "f": "",
+        "s": "pending",
         "n": ""
       }
     ],
-    "createdAt": "2026-04-23T21:03:52.912Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
+    "cliente": "SAR ENERGY",
+    "num": "LM438",
+    "id": "poc_1776469053057"
   },
   {
-    "id": "poc_1776879880110",
-    "num": "210426C2571",
-    "cliente": "CIAM",
     "desc": "SUMINSITRO POZOS SABANERO 3",
-    "estado": "completado",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "createdAt": "2026-04-22T17:44:40.110Z",
     "stages": [
       {
-        "s": "done",
         "f": "2026-04-21",
-        "n": "BODEGA"
+        "n": "BODEGA",
+        "s": "done"
       },
       {
         "s": "done",
-        "f": "",
         "n": "",
-        "envio": "flota",
         "transp": "",
+        "f": "",
         "guia": "",
         "dest": "",
-        "resp": ""
+        "resp": "",
+        "envio": "flota"
       },
       {
         "s": "done",
-        "f": "2026-04-23",
-        "n": ""
+        "n": "",
+        "f": "2026-04-23"
       },
       {
+        "n": "411",
         "s": "done",
-        "f": "2026-04-22",
-        "n": "411"
+        "f": "2026-04-22"
       }
     ],
-    "createdAt": "2026-04-22T17:44:40.110Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
+    "cliente": "CIAM",
+    "num": "210426C2571",
+    "id": "poc_1776879880110",
+    "estado": "completado"
   },
   {
-    "id": "poc_1776978339802",
     "num": "LM1446",
-    "cliente": "MAUREL",
-    "desc": "MATERIAL MECANICO",
-    "estado": "activo",
+    "id": "poc_1776978339802",
     "stages": [
       {
         "s": "active",
-        "f": "2026-04-22",
-        "n": "CODIFER\nFABRICACION WELDOLET"
+        "n": "CODIFER\nFABRICACION WELDOLET pendiente",
+        "f": "2026-04-22"
       },
       {
-        "s": "pending",
-        "f": "",
         "n": "",
-        "envio": "",
+        "s": "pending",
         "transp": "",
+        "f": "",
         "guia": "",
         "dest": "",
-        "resp": ""
+        "resp": "",
+        "envio": ""
       },
       {
+        "n": "",
         "s": "pending",
-        "f": "",
-        "n": ""
+        "f": ""
       },
       {
-        "s": "pending",
         "f": "",
+        "s": "pending",
         "n": ""
       }
     ],
+    "cliente": "MAUREL",
     "createdAt": "2026-04-23T21:05:39.802Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
+    "desc": "MATERIAL MECANICO",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "estado": "activo"
   },
   {
+    "estado": "activo",
     "id": "poc_1776978416135",
     "num": "LM1434",
     "cliente": "NIKOIL ENERGY",
-    "desc": "MATERIAL CORDON PLOMAGINADO",
-    "estado": "activo",
     "stages": [
       {
+        "n": "EMPAQUETAS Y EMPAQUETADURAS",
         "s": "done",
-        "f": "2026-04-23",
-        "n": "EMPAQUETAS Y EMPAQUETADURAS"
+        "f": "2026-04-23"
       },
       {
-        "s": "pending",
         "f": "",
         "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
+        "s": "active",
+        "transp": "SERVIENTREGA",
+        "resp": "Alexandra Fernandez",
+        "envio": "transportadora",
         "dest": "",
-        "resp": ""
+        "guia": ""
       },
       {
         "s": "pending",
-        "f": "",
-        "n": ""
+        "n": "",
+        "f": ""
       },
       {
+        "n": "",
         "s": "pending",
-        "f": "",
-        "n": ""
+        "f": ""
       }
     ],
     "createdAt": "2026-04-23T21:06:56.135Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
+    "desc": "MATERIAL CORDON PLOMAGINADO",
+    "updatedAt": "2026-04-29T16:37:10.849Z"
   },
   {
-    "id": "poc_1777047477580",
-    "num": "LM1450",
-    "cliente": "CIAM",
-    "desc": "REDUCCION EXCENTRICA",
     "estado": "completado",
+    "num": "LM1450",
+    "id": "poc_1777047477580",
+    "cliente": "CIAM",
     "stages": [
       {
-        "s": "done",
         "f": "2026-04-24",
+        "s": "done",
         "n": "CODIFER"
       },
       {
-        "s": "done",
         "f": "2026-04-24",
         "n": "",
-        "envio": "flota",
         "transp": "",
+        "s": "done",
+        "envio": "flota",
+        "resp": "",
         "guia": "",
-        "dest": "",
-        "resp": ""
+        "dest": ""
       },
       {
-        "s": "done",
         "f": "2026-04-24",
+        "s": "done",
+        "n": ""
+      },
+      {
+        "n": "412",
+        "s": "done",
+        "f": "2026-04-24"
+      }
+    ],
+    "createdAt": "2026-04-24T16:17:57.580Z",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "desc": "REDUCCION EXCENTRICA"
+  },
+  {
+    "cliente": "CIAM",
+    "stages": [
+      {
+        "s": "done",
+        "n": "FERRETERIA IMPERIAL",
+        "f": "2026-04-27"
+      },
+      {
+        "guia": "",
+        "dest": "",
+        "resp": "",
+        "envio": "",
+        "n": "",
+        "s": "done",
+        "transp": "",
+        "f": ""
+      },
+      {
+        "f": "",
+        "s": "pending",
         "n": ""
       },
       {
         "s": "done",
-        "f": "2026-04-24",
-        "n": "412"
+        "n": "414",
+        "f": "2026-04-29"
       }
     ],
-    "createdAt": "2026-04-24T16:17:57.580Z",
-    "updatedAt": "2026-04-24T22:47:51.102Z"
+    "id": "poc_1777313410272",
+    "num": "240426Z1941",
+    "desc": "PERFILERIA",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "createdAt": "2026-04-27T18:10:10.272Z",
+    "estado": "activo"
+  },
+  {
+    "estado": "activo",
+    "desc": "UNION DE GOLPE",
+    "updatedAt": "2026-04-29T16:37:10.849Z",
+    "createdAt": "2026-04-29T16:21:28.761Z",
+    "stages": [
+      {
+        "n": "CODIFER",
+        "s": "done",
+        "f": "2026-04-28"
+      },
+      {
+        "dest": "",
+        "guia": "",
+        "resp": "",
+        "envio": "transportadora",
+        "s": "active",
+        "n": "",
+        "transp": "ENCOEXPRESS YOPAL",
+        "f": ""
+      },
+      {
+        "n": "",
+        "s": "pending",
+        "f": ""
+      },
+      {
+        "s": "done",
+        "n": "413",
+        "f": "2026-04-29"
+      }
+    ],
+    "cliente": "COLPAZ INGENIERIA",
+    "num": "LM1476",
+    "id": "poc_1777479688761"
   }
 ]
