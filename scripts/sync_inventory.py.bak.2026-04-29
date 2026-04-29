@@ -203,58 +203,19 @@ def parse_excel(excel_bytes):
 # ─── 4. ACTUALIZA ARCHIVOS HTML ──────────────────────────────────────────────
 
 def update_html_array(records, html_path, array_name):
-    """Reemplaza un array JS en un archivo HTML con los datos frescos.
-
-    PRESERVA CATEGORIA y FAMILIA: si el Excel trae estos campos vacíos,
-    se usan los valores que ya tenía el HTML (clasificación manual).
-    Si el Excel los trae con valor, gana el Excel.
-    """
+    """Reemplaza un array JS en un archivo HTML con los datos frescos."""
     with open(html_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # Extraer mapping codigo -> (categoria, familia) del HTML actual
-    prev_cat_map = {}
-    pattern = r'const ' + array_name + r'\s*=\s*(\[[\s\S]*?\]);'
-    prev_match = re.search(pattern, content)
-    if prev_match:
-        try:
-            prev_data = json.loads(prev_match.group(1))
-            for prev in prev_data:
-                cod = str(prev.get('CODIGO PRODUCTO', '') or '').strip()
-                if cod:
-                    prev_cat_map[cod] = (
-                        str(prev.get('CATEGORIA', '') or '').strip(),
-                        str(prev.get('FAMILIA',   '') or '').strip(),
-                    )
-        except Exception as e:
-            print('⚠️  No se pudo leer datos previos para preservar CAT/FAM: ' + str(e))
-
-    # Aplicar preservación: si Excel viene sin CAT/FAM, usar la del HTML
-    preserved = 0
-    for r in records:
-        cod = str(r.get('CODIGO PRODUCTO', '') or '').strip()
-        if not cod or cod not in prev_cat_map:
-            continue
-        prev_cat, prev_fam = prev_cat_map[cod]
-        cur_cat = str(r.get('CATEGORIA', '') or '').strip()
-        cur_fam = str(r.get('FAMILIA',   '') or '').strip()
-        if not cur_cat and prev_cat:
-            r['CATEGORIA'] = prev_cat
-            preserved += 1
-        if not cur_fam and prev_fam:
-            r['FAMILIA'] = prev_fam
-    if preserved:
-        print('🔒 Preservados CAT/FAM en ' + str(preserved) + ' productos (clasificación manual conservada)')
-
     new_json = json.dumps(records, ensure_ascii=False, separators=(',', ':'))
-    pattern_repl = r'const ' + array_name + r'\s*=\s*\[[\s\S]*?\];'
+    pattern = r'const ' + array_name + r'\s*=\s*\[[\s\S]*?\];'
     replacement = 'const ' + array_name + ' = ' + new_json + ';'
 
-    if not re.search(pattern_repl, content):
+    if not re.search(pattern, content):
         print('⚠️  No se encontró "const ' + array_name + '" en ' + html_path)
         return False
 
-    new_content = re.sub(pattern_repl, replacement, content)
+    new_content = re.sub(pattern, replacement, content)
     if new_content == content:
         print('ℹ️  Sin cambios en ' + array_name)
     else:
