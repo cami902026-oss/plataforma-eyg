@@ -146,10 +146,6 @@ def generate_excel_op(ordenes: list) -> bytes | None:
 
     ws.freeze_panes = 'A2'
 
-    # Autofiltro en los títulos (permite filtrar/ordenar al abrir el Excel)
-    last_col_letter = openpyxl.utils.get_column_letter(len(headers))
-    ws.auto_filter.ref = f"A1:{last_col_letter}{ws.max_row}"
-
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
