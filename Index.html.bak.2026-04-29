@@ -2105,44 +2105,16 @@ async function _loadOrdenesGH() {
 }
 async function _saveOrdenesGH(arr) {
   try {
-    // FIX 422: si no tenemos SHA en memoria, obtenerlo de GitHub antes de guardar
-    if (!_ordenesFileSHA) {
-      try {
-        const rGet = await fetch(
-          `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json`,
-          { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
-        );
-        if (rGet.ok) { const dGet = await rGet.json(); _ordenesFileSHA = dGet.sha; }
-      } catch(_) {}
-    }
     const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(arr, null, 2))));
     const body = {
       message: `💾 Órdenes — ${new Date().toLocaleString('es-CO')}`,
       content: b64, branch: 'main'
     };
     if (_ordenesFileSHA) body.sha = _ordenesFileSHA;
-    let r = await fetch(
+    const r = await fetch(
       `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json`,
       { method: 'PUT', headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
     );
-    // FIX 422: si falló por SHA desactualizado, refrescar SHA y reintentar UNA vez
-    if (!r.ok && (r.status === 422 || r.status === 409)) {
-      try {
-        const rGet2 = await fetch(
-          `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json`,
-          { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
-        );
-        if (rGet2.ok) {
-          const dGet2 = await rGet2.json();
-          _ordenesFileSHA = dGet2.sha;
-          body.sha = _ordenesFileSHA;
-          r = await fetch(
-            `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json`,
-            { method: 'PUT', headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-          );
-        }
-      } catch(_) {}
-    }
     if (r.ok) { const res = await r.json(); _ordenesFileSHA = res.content.sha; }
     else {
       const errText = await r.text();
