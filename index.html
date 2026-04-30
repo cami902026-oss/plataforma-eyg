@@ -2452,8 +2452,13 @@ async function syncMeetingsFromAPI() {
 // Prefijo "h:" indica valor ya hasheado. Valores sin prefijo (formato viejo)
 // se migran automáticamente al primer login exitoso.
 async function _sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  try {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  } catch(e) {
+    console.warn('[ENERGY] crypto.subtle no disponible:', e);
+    return null; // señal: el sistema cae en comparación directa abajo
+  }
 }
 function getAccessCode() {
   return localStorage.getItem('eyg_access_code') || 'EYG2026';
@@ -2464,25 +2469,36 @@ function getUserPassword(email) {
 // Verifica un input contra un valor almacenado (hasheado o plano por compat)
 // Si era plano y coincide, lo migra al formato hasheado en localStorage.
 async function _verifyAndMigrate(storageKey, storedValue, defaultValue, input) {
-  // Caso 1: nunca se ha guardado nada → comparar con el default
-  if (storedValue === null || storedValue === undefined) {
-    if (input === defaultValue) {
-      // Migrar el default a hash para que se quede como hash desde la 1ra vez
-      localStorage.setItem(storageKey, 'h:' + await _sha256(defaultValue));
+  try {
+    // Caso 1: nunca se ha guardado nada → comparar con el default
+    if (storedValue === null || storedValue === undefined) {
+      if (input === defaultValue) {
+        const h = await _sha256(defaultValue);
+        if (h) localStorage.setItem(storageKey, 'h:' + h);
+        return true;
+      }
+      return false;
+    }
+    // Caso 2: ya está hasheado
+    if (typeof storedValue === 'string' && storedValue.startsWith('h:')) {
+      const h = await _sha256(input);
+      if (!h) return false; // crypto no disponible y no podemos verificar
+      return ('h:' + h) === storedValue;
+    }
+    // Caso 3: legacy plain text → compara directo y migra a hash si coincide
+    if (storedValue === input) {
+      const h = await _sha256(input);
+      if (h) localStorage.setItem(storageKey, 'h:' + h);
       return true;
     }
     return false;
+  } catch(e) {
+    console.warn('[ENERGY] _verifyAndMigrate falló, fallback a texto plano:', e);
+    // Fallback de emergencia: comparación directa sin cifrado
+    if ((storedValue === null || storedValue === undefined) && input === defaultValue) return true;
+    if (storedValue === input) return true;
+    return false;
   }
-  // Caso 2: ya está hasheado
-  if (typeof storedValue === 'string' && storedValue.startsWith('h:')) {
-    return ('h:' + await _sha256(input)) === storedValue;
-  }
-  // Caso 3: legacy plain text → compara directo y migra a hash si coincide
-  if (storedValue === input) {
-    localStorage.setItem(storageKey, 'h:' + await _sha256(input));
-    return true;
-  }
-  return false;
 }
 async function saveAccessCode() {
   const newCode = document.getElementById('new-access-code').value.trim().toUpperCase();
