@@ -1245,14 +1245,17 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <!-- CONFIGURACION -->
       <div class="page" id="page-configuracion">
         <div class="config-section">
-          <div class="config-title">🤖 API Key de Claude (ENERGY IA)</div>
+          <div class="config-title">🤖 ENERGY IA — URL del Proxy seguro</div>
           <div class="api-key-row">
             <div class="form-group" style="flex:1;margin:0;">
-              <input type="password" id="api-key-input" placeholder="sk-ant-api03-...">
+              <input type="text" id="proxy-url-input" placeholder="https://tu-sitio.netlify.app">
             </div>
-            <button class="btn btn-primary" onclick="saveApiKey()" style="width:auto;white-space:nowrap;">Guardar</button>
+            <button class="btn btn-primary" onclick="saveProxyUrl()" style="width:auto;white-space:nowrap;">Guardar</button>
           </div>
-          <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">Tu API Key se guarda localmente y nunca se envía a ningún servidor externo excepto a Anthropic.</p>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">
+            Pega aquí la URL base de tu sitio en Netlify (sin <code>/</code> al final). La API Key de Claude vive como variable de entorno en Netlify (<code>CLAUDE_API_KEY</code>) — nunca se expone al navegador.
+            <br>👉 En Netlify ve a <b>Site settings → Environment variables</b> y agrega <code>CLAUDE_API_KEY</code> con tu clave <code>sk-ant-...</code>.
+          </p>
         </div>
         <div class="config-section">
           <div class="config-title">🔔 Token GitHub (Notificaciones Teams)</div>
@@ -2501,7 +2504,7 @@ function navigate(page) {
   const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',configuracion:'Configuración'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
-  if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); }
+  if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); }
   if(page==='procesos') renderProcesos();
   if(page==='inventario') { setTimeout(async()=>{ try { const t = await getToken(); if(t) msLoadInventoryFromOneDrive(); } catch(e){} }, 500); }
 }
@@ -3492,12 +3495,25 @@ function saveMiembro() {
   document.getElementById('mb-email').value=''; document.getElementById('mb-wa').value='';
 }
 
-function saveApiKey() {
-  const key = document.getElementById('api-key-input').value.trim();
-  if(!key) { showToast('Ingresa una API Key válida','error'); return; }
-  localStorage.setItem('claude_api_key', key);
-  showToast('API Key guardada. ¡ENERGY IA está activo!','success');
+function saveProxyUrl() {
+  const raw = document.getElementById('proxy-url-input').value.trim().replace(/\/+$/,'');
+  if(!raw) { showToast('Ingresa la URL de tu sitio en Netlify','error'); return; }
+  if(!/^https?:\/\//i.test(raw)) { showToast('La URL debe empezar con https://','error'); return; }
+  localStorage.setItem('energy_proxy_url', raw);
+  showToast('URL del proxy guardada. ¡ENERGY IA está activo!','success');
 }
+function loadProxyUrlUI() {
+  const el = document.getElementById('proxy-url-input');
+  if(!el) return;
+  el.value = localStorage.getItem('energy_proxy_url') || '';
+}
+// Migración: si había una API Key vieja en localStorage, la borramos por seguridad
+(function _purgeLegacyKey(){
+  if(localStorage.getItem('claude_api_key')) {
+    localStorage.removeItem('claude_api_key');
+    console.log('[ENERGY] API Key local removida — ahora se usa proxy seguro.');
+  }
+})();
 
 // ===== PROCESOS ORDEN DE COMPRA =====
 // ===== PROCESOS O.C. =====
@@ -4402,31 +4418,43 @@ function saveProfile() {
   showToast('Perfil actualizado','success');
 }
 
-// ===== CLAUDE API =====
-async function callEnergyAI(prompt, systemContext) {
-  const apiKey = localStorage.getItem('claude_api_key');
-  if(!apiKey) return '⚙️ Configura tu API Key de Claude en Configuración para activar ENERGY con IA. Ve a ⚙️ Configuración > API Key de Claude.';
+// ===== CLAUDE API (vía proxy seguro) =====
+// La API Key vive en variable de entorno de Netlify (CLAUDE_API_KEY).
+// El navegador llama al proxy /.netlify/functions/claude-proxy y NUNCA toca la clave.
+// Configuración del endpoint: por defecto usa el host actual si está en Netlify;
+// si la app corre desde GitHub Pages u otro host, lee `localStorage.energy_proxy_url`
+// (configurable en Configuración → "URL del Proxy ENERGY IA").
+function getClaudeProxyURL() {
+  const stored = localStorage.getItem('energy_proxy_url');
+  if (stored) return stored.replace(/\/+$/,'') + '/.netlify/functions/claude-proxy';
+  if (/\.netlify\.app$/i.test(location.hostname) || location.hostname === 'localhost') {
+    return '/.netlify/functions/claude-proxy';
+  }
+  return '';
+}
+
+async function callEnergyAI(prompt, systemContext, history) {
+  const url = getClaudeProxyURL();
+  if(!url) return '⚙️ Configura la URL del Proxy ENERGY IA en Configuración (ej: https://tu-sitio.netlify.app). El proxy mantiene la API Key segura en el servidor.';
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const messages = Array.isArray(history) ? [...history] : [];
+    messages.push({role:'user', content:prompt});
+    const resp = await fetch(url, {
       method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key':apiKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
+      headers:{ 'Content-Type':'application/json' },
       body:JSON.stringify({
         model:'claude-haiku-4-5-20251001',
         max_tokens:1024,
         system:`Eres ENERGY, un asistente administrativo profesional para la empresa GERENCIA. Eres eficiente, conciso y profesional. Ayudas con reuniones, tareas, comunicaciones y gestión del equipo. Hoy es ${today.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}. Usuario actual: ${currentUser.name} (${currentUser.role}). ${systemContext||''}`,
-        messages:[{role:'user',content:prompt}]
+        messages
       })
     });
     const data = await resp.json();
-    if(data.error) return '❌ Error: '+data.error.message;
+    if(data.error) return '❌ Error: '+(data.error.message||JSON.stringify(data.error));
+    if(!data.content || !data.content[0]) return '❌ Respuesta inválida del proxy';
     return data.content[0].text;
   } catch(e) {
-    return '❌ Error de conexión. Verifica tu API Key y conexión a internet.';
+    return '❌ Error de conexión con el proxy ENERGY IA. Verifica tu conexión y la URL configurada.';
   }
 }
 
