@@ -210,53 +210,106 @@ def get_etapa_actual(orden: dict) -> int:
     return 3  # todas done → se queda en facturación
 
 
-def build_resumen_etapas(activos: list) -> str:
-    """Genera el bloque HTML de resumen por etapa para órdenes activas.
-    Para cada etapa, cuenta las órdenes que AÚN NO la tienen completada."""
-    grupos = {0: [], 1: [], 2: [], 3: []}
-    for o in activos:
-        stages = o.get('stages') or []
-        while len(stages) < 4:
-            stages.append({})
-        for i in range(4):
-            # Si esta etapa no está done → la orden aparece en este grupo
-            if not is_stage_done(stages[i]):
-                grupos[i].append(o.get('num') or o.get('id', '—'))
+def clasificar_orden(orden: dict, today) -> tuple:
+    """Clasifica una O.C. activa en su nivel de urgencia REAL.
+    Retorna: (categoria, etapa_idx, fecha_obj_or_None)
+    Categorías: 'vencida', 'sin_fecha', 'solo_cert', 'solo_factura', 'en_proceso'
+    """
+    stages = list(orden.get('stages') or [])
+    while len(stages) < 4:
+        stages.append({})
+    pendientes = [i for i in range(4) if not is_stage_done(stages[i])]
+    if not pendientes:
+        return ('completa', None, None)
 
+    # ¿Alguna etapa pendiente tiene fecha vencida?
+    for i in pendientes:
+        f = (stages[i].get('f') or '').strip()
+        if f:
+            try:
+                fdt = datetime.strptime(f, '%Y-%m-%d').date()
+                if fdt < today:
+                    return ('vencida', i, fdt)
+            except Exception:
+                pass
+
+    # Si solo certificado está pendiente → baja prioridad
+    if pendientes == [2]:
+        return ('solo_cert', 2, None)
+    # Si solo facturación está pendiente → baja prioridad
+    if pendientes == [3]:
+        return ('solo_factura', 3, None)
+
+    # Próxima etapa pendiente
+    next_idx = pendientes[0]
+    next_fecha = (stages[next_idx].get('f') or '').strip()
+    if not next_fecha:
+        return ('sin_fecha', next_idx, None)
+    try:
+        fdt = datetime.strptime(next_fecha, '%Y-%m-%d').date()
+        return ('en_proceso', next_idx, fdt)
+    except Exception:
+        return ('sin_fecha', next_idx, None)
+
+
+def build_resumen_etapas(activos: list) -> str:
+    """Resumen accionable: clasifica cada O.C. activa en UNA categoría según urgencia real."""
+    today = datetime.now().date()
+    cats = {'vencida': [], 'sin_fecha': [], 'solo_cert': [], 'solo_factura': [], 'en_proceso': []}
+    for o in activos:
+        cat, idx, fecha = clasificar_orden(o, today)
+        if cat in cats:
+            num = o.get('num') or o.get('id', '—')
+            extra = ''
+            if cat == 'vencida' and fecha:
+                dias = (today - fecha).days
+                extra = f' (hace {dias}d)'
+            elif cat == 'en_proceso' and fecha:
+                dias = (fecha - today).days
+                extra = f' (en {dias}d)'
+            cats[cat].append((num, idx, extra))
+
+    rows = [
+        ('vencida',      '🚨', 'Vencidas',          '#e53e3e', 'Etapas con fecha pasada — requieren acción inmediata.'),
+        ('sin_fecha',    '⚠️', 'Sin fecha',         '#E8A020', 'Próxima etapa sin fecha planificada.'),
+        ('solo_cert',    '📋', 'Solo Certificado',  '#93c5fd', 'Únicamente falta el Certificado (baja prioridad — usualmente del cliente).'),
+        ('solo_factura', '💰', 'Solo Facturación',  '#93c5fd', 'Únicamente falta la facturación.'),
+        ('en_proceso',   '✅', 'En proceso al día', '#2EAA4A', 'Próxima etapa con fecha futura — todo en orden.'),
+    ]
     filas_html = ''
-    for idx, st in enumerate(POC_STAGES):
-        items = grupos[idx]
-        cantidad = len(items)
-        lista_txt = ', '.join(items) if items else '—'
-        color_num = '#E8A020' if cantidad > 0 else '#8899bb'
+    for key, icon, label, color, hint in rows:
+        items = cats[key]
+        cant = len(items)
+        if cant == 0:
+            lista = '—'
+        else:
+            etapa_nombres = ['Compra','Entrega','Certif.','Factura']
+            partes = []
+            for num, idx, extra in items[:20]:
+                etapa = etapa_nombres[idx] if idx is not None else ''
+                partes.append(f"<b>{num}</b>{f' · {etapa}' if etapa else ''}{extra}")
+            lista = '<br>'.join(partes)
+            if cant > 20:
+                lista += f"<br><i>… y {cant-20} más</i>"
         filas_html += f"""
         <tr style='border-bottom:1px solid #1e3a6e;'>
-          <td style='padding:10px 14px;font-size:18px;text-align:center;width:40px;'>{st['icon']}</td>
-          <td style='padding:10px 8px;font-size:13px;font-weight:700;color:#e2e8f0;'>{st['label']}</td>
-          <td style='padding:10px 8px;text-align:center;'>
-            <span style='font-size:22px;font-weight:900;color:{color_num};'>{cantidad}</span>
-            <div style='font-size:10px;color:#8899bb;'>orden{'es' if cantidad != 1 else ''}</div>
+          <td style='padding:12px 14px;font-size:22px;text-align:center;width:50px;'>{icon}</td>
+          <td style='padding:12px 8px;'>
+            <div style='font-size:13px;font-weight:700;color:{color};'>{label}</div>
+            <div style='font-size:10px;color:#8899bb;margin-top:2px;'>{hint}</div>
           </td>
-          <td style='padding:10px 14px;font-size:11px;color:#93c5fd;'>{lista_txt}</td>
+          <td style='padding:12px 8px;text-align:center;width:80px;'>
+            <span style='font-size:24px;font-weight:900;color:{color};'>{cant}</span>
+          </td>
+          <td style='padding:12px 14px;font-size:11px;color:#cbd5ff;line-height:1.6;'>{lista}</td>
         </tr>"""
 
     return f"""
     <div style='margin-bottom:24px;'>
       <div style='font-size:11px;color:#8899bb;font-weight:700;text-transform:uppercase;
-                  letter-spacing:1px;margin-bottom:10px;'>📊 Órdenes Pendientes por Etapa</div>
+                  letter-spacing:1px;margin-bottom:10px;'>📊 Estado Real de las Órdenes Activas</div>
       <table style='width:100%;border-collapse:collapse;background:#0d1f3c;
                     border:1px solid #1e3a6e;border-radius:10px;overflow:hidden;'>
-        <thead>
-          <tr style='background:#0F2B5B;'>
-            <th style='padding:8px;'></th>
-            <th style='padding:8px;text-align:left;font-size:11px;color:#8899bb;
-                       text-transform:uppercase;letter-spacing:1px;'>Etapa</th>
-            <th style='padding:8px;text-align:center;font-size:11px;color:#8899bb;
-                       text-transform:uppercase;letter-spacing:1px;'>Cantidad</th>
-            <th style='padding:8px;text-align:left;font-size:11px;color:#8899bb;
-                       text-transform:uppercase;letter-spacing:1px;'>Órdenes</th>
-          </tr>
-        </thead>
         <tbody>{filas_html}</tbody>
       </table>
     </div>"""
@@ -289,21 +342,23 @@ def build_report_html(ordenes: list, date_str: str) -> str:
       </div>
     </div>"""
 
-    # Solo mostrar órdenes activas con al menos una etapa pendiente
-    # (done = s=='done' ó tiene fecha, igual que el frontend)
-    def _tiene_pendiente(o):
-        stages = o.get('stages') or []
-        while len(stages) < 4:
-            stages.append({})
-        return any(not is_stage_done(stages[i]) for i in range(4))
-
-    pendientes = [o for o in activos if _tiene_pendiente(o)]
+    # Solo mostrar órdenes activas con al menos una etapa pendiente, ordenadas por urgencia
+    today = datetime.now().date()
+    PRIORIDAD = {'vencida':0, 'sin_fecha':1, 'solo_factura':2, 'solo_cert':3, 'en_proceso':4, 'completa':5}
+    pendientes_clasif = []
+    for o in activos:
+        cat, idx, fecha = clasificar_orden(o, today)
+        if cat == 'completa':
+            continue
+        pendientes_clasif.append((PRIORIDAD.get(cat, 9), cat, o))
+    pendientes_clasif.sort(key=lambda x: x[0])
+    pendientes = [p[2] for p in pendientes_clasif]
 
     if not pendientes:
         cuerpo = "<div style='text-align:center;padding:40px;color:#8899bb;'>✅ Todas las órdenes activas están al día.</div>"
     else:
         filas = ''
-        for o in reversed(pendientes):
+        for o in pendientes:
             stages = o.get('stages', [{},{},{},{}])
             while len(stages) < 4:
                 stages.append({})
