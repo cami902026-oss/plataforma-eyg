@@ -1,7 +1,10 @@
 [
   {
+    "id": "poc_1776469165261",
+    "num": "2_OCOP35_OT48_1",
+    "cliente": "CR INGENIERIA Y CONSULTORIA",
     "desc": "SUMINISTRO OCENSA",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
+    "estado": "activo",
     "stages": [
       {
         "f": "2026-04-17",
@@ -29,12 +32,13 @@
         "s": "done"
       }
     ],
-    "cliente": "CR INGENIERIA Y CONSULTORIA",
-    "num": "2_OCOP35_OT48_1",
-    "id": "poc_1776469165261",
-    "estado": "activo"
+    "updatedAt": "✅ Facturado"
   },
   {
+    "id": "LM1376",
+    "num": "LM1376",
+    "cliente": "CR INGENIERIA",
+    "desc": "SUMINISTRO DE MATERIAL",
     "estado": "completado",
     "stages": [
       {
@@ -63,14 +67,14 @@
         "s": "done"
       }
     ],
-    "cliente": "CR INGENIERIA",
-    "id": "LM1376",
-    "num": "LM1376",
-    "desc": "SUMINISTRO DE MATERIAL",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "✅ Facturado"
   },
   {
+    "id": "poc_1776723607018",
+    "num": "200426H3268",
     "cliente": "CIAM",
+    "desc": "SUMINSITRO VIGA",
+    "estado": "activo",
     "stages": [
       {
         "f": "2026-04-20",
@@ -98,17 +102,14 @@
         "n": ""
       }
     ],
-    "id": "poc_1776723607018",
-    "num": "200426H3268",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "desc": "SUMINSITRO VIGA",
-    "estado": "activo"
+    "updatedAt": "❌ Pendiente"
   },
   {
-    "estado": "activo",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "desc": "SUMINISTRO MATERIAL MECANICO",
+    "id": "LM1320",
+    "num": "LM1320",
     "cliente": "PETRORIOS",
+    "desc": "SUMINISTRO MATERIAL MECANICO",
+    "estado": "activo",
     "stages": [
       {
         "f": "2026-04-10",
@@ -135,8 +136,7 @@
         "f": ""
       }
     ],
-    "num": "LM1320",
-    "id": "LM1320"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "LM-1389",
@@ -171,13 +171,14 @@
         "n": "396"
       }
     ],
-    "createdAt": "2026-04-30T16:04:33.728Z",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "desc": "SUMINISTRO NIPLES",
+    "id": "LM1358",
+    "num": "LM1358",
     "cliente": "GLADYZ BUCHELI",
+    "desc": "SUMINISTRO NIPLES",
+    "estado": "completado",
     "stages": [
       {
         "f": "2026-04-06",
@@ -205,13 +206,14 @@
         "f": "2026-04-17"
       }
     ],
-    "id": "LM1358",
-    "num": "LM1358",
-    "estado": "completado"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "estado": "completado",
+    "id": "poc_1775841157865",
+    "num": "ODC-00003713",
     "cliente": "SAR ENERGY",
+    "desc": "SUMINSITRO GUAYAS",
+    "estado": "completado",
     "stages": [
       {
         "f": "2026-04-07",
@@ -239,14 +241,14 @@
         "n": "400"
       }
     ],
-    "id": "poc_1775841157865",
-    "num": "ODC-00003713",
-    "desc": "SUMINSITRO GUAYAS",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "estado": "completado",
+    "id": "LM1380",
+    "num": "LM1380",
     "cliente": "WILER",
+    "desc": "SUMINISTRO DE MATERIAL MECANICO",
+    "estado": "completado",
     "stages": [
       {
         "f": "2026-04-06",
@@ -274,16 +276,14 @@
         "f": "2026-04-08"
       }
     ],
-    "num": "LM1380",
-    "id": "LM1380",
-    "desc": "SUMINISTRO DE MATERIAL MECANICO",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "estado": "activo",
-    "num": "060426C6243",
     "id": "060426C6243",
+    "num": "060426C6243",
     "cliente": "CIAM",
+    "desc": "SUMINISTRO ANGULO",
+    "estado": "activo",
     "stages": [
       {
         "f": "2026-04-06",
@@ -310,14 +310,14 @@
         "n": "393"
       }
     ],
-    "desc": "SUMINISTRO ANGULO",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "estado": "activo",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "desc": "SUMINISTRO DE MATERIAL",
+    "id": "070426B2299",
+    "num": "070426B2299",
     "cliente": "CIAM",
+    "desc": "SUMINISTRO DE MATERIAL",
+    "estado": "activo",
     "stages": [
       {
         "n": "GYJ",
@@ -344,15 +344,14 @@
         "f": "2026-04-07"
       }
     ],
-    "num": "070426B2299",
-    "id": "070426B2299"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "desc": "SUMINISTRO DE MATERIAL",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "num": "060426S0974",
     "id": "060426S0974",
+    "num": "060426S0974",
     "cliente": "CIAM",
+    "desc": "SUMINISTRO DE MATERIAL",
+    "estado": "completado",
     "stages": [
       {
         "f": "2026-04-06",
@@ -380,13 +379,14 @@
         "s": "done"
       }
     ],
-    "estado": "completado"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "estado": "activo",
-    "desc": "SUMINSITRO DE VALVULA 4-300",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
+    "id": "poc_1775861884115",
+    "num": "LM1400",
     "cliente": "WILER",
+    "desc": "SUMINSITRO DE VALVULA 4-300",
+    "estado": "activo",
     "stages": [
       {
         "s": "done",
@@ -414,15 +414,14 @@
         "f": ""
       }
     ],
-    "id": "poc_1775861884115",
-    "num": "LM1400"
+    "updatedAt": "❌ Pendiente"
   },
   {
-    "desc": "SUMINISTRO PERFIL",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "num": "060426E8427",
     "id": "060426E8427",
+    "num": "060426E8427",
     "cliente": "CIAM",
+    "desc": "SUMINISTRO PERFIL",
+    "estado": "completado",
     "stages": [
       {
         "f": "2026-04-06",
@@ -450,14 +449,14 @@
         "f": "2026-04-06"
       }
     ],
-    "estado": "completado"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "desc": "SUMISNITRO VALVULAS",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
     "id": "poc_1776103639015",
     "num": "006-26",
     "cliente": "Q-CIEN",
+    "desc": "SUMISNITRO VALVULAS",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -485,9 +484,14 @@
         "s": "done"
       }
     ],
-    "estado": "completado"
+    "updatedAt": "✅ Facturado"
   },
   {
+    "id": "poc_1776103718938",
+    "num": "LM-1411",
+    "cliente": "ITC ASOCIADOS",
+    "desc": "SUMINSITROS FLEXITALICOS",
+    "estado": "completado",
     "stages": [
       {
         "f": "2026-04-13",
@@ -515,18 +519,14 @@
         "f": "2026-04-13"
       }
     ],
-    "cliente": "ITC ASOCIADOS",
-    "id": "poc_1776103718938",
-    "num": "LM-1411",
-    "desc": "SUMINSITROS FLEXITALICOS",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "estado": "completado"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "desc": "Suministro Ring Gasket",
     "id": "02CMP-9692",
     "num": "02CMP-9692",
+    "cliente": "PSI",
+    "desc": "Suministro Ring Gasket",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -554,14 +554,14 @@
         "n": "390"
       }
     ],
-    "cliente": "PSI",
-    "estado": "completado"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "estado": "activo",
-    "num": "100426J8319",
     "id": "poc_1776103775812",
+    "num": "100426J8319",
     "cliente": "CIAM",
+    "desc": "SUMINSITRO BRIDAS",
+    "estado": "activo",
     "stages": [
       {
         "f": "2026-04-13",
@@ -589,13 +589,14 @@
         "f": ""
       }
     ],
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "desc": "SUMINSITRO BRIDAS"
+    "updatedAt": "❌ Pendiente"
   },
   {
-    "estado": "activo",
     "id": "LM1392",
     "num": "LM1392",
+    "cliente": "HIDROCASANARE",
+    "desc": "SUMINISTRO DE MATERIAL",
+    "estado": "activo",
     "stages": [
       {
         "f": "2026-04-06",
@@ -623,13 +624,14 @@
         "s": "pending"
       }
     ],
-    "cliente": "HIDROCASANARE",
-    "desc": "SUMINISTRO DE MATERIAL",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776192478524",
     "num": "LM-1418",
+    "cliente": "HIDROCASANARE",
+    "desc": "Suminsitro de tuberia material mecanico",
+    "estado": "activo",
     "stages": [
       {
         "s": "done",
@@ -657,15 +659,14 @@
         "s": "pending"
       }
     ],
-    "cliente": "HIDROCASANARE",
-    "desc": "Suminsitro de tuberia material mecanico",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "estado": "activo"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776209903635",
     "num": 8874,
     "cliente": "SERTECPET",
+    "desc": "SUMINISTRO MANOMETROS",
+    "estado": "completado",
     "stages": [
       {
         "f": "2026-04-10",
@@ -693,14 +694,14 @@
         "f": "2026-04-14"
       }
     ],
-    "desc": "SUMINISTRO MANOMETROS",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "estado": "completado"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "estado": "activo",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
+    "id": "poc_1776219839963",
+    "num": "LM1387",
+    "cliente": "ENERFLEX",
     "desc": "SUMINISTRO POTENCIOMETRO",
+    "estado": "activo",
     "stages": [
       {
         "n": "",
@@ -728,13 +729,14 @@
         "n": ""
       }
     ],
-    "cliente": "ENERFLEX",
-    "num": "LM1387",
-    "id": "poc_1776219839963"
+    "updatedAt": "❌ Pendiente"
   },
   {
-    "num": "02CMP-9748",
     "id": "poc_1776264970049",
+    "num": "02CMP-9748",
+    "cliente": "PSI",
+    "desc": "SUMINSITRO ESPARRAGOS RING GASKET",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -762,18 +764,14 @@
         "s": "done"
       }
     ],
-    "cliente": "PSI",
-    "desc": "SUMINSITRO ESPARRAGOS RING GASKET",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "estado": "completado"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "estado": "completado",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "desc": "SUMINSTRO RING GASKET",
-    "num": "02CMP-9753",
     "id": "poc_1776440609874",
+    "num": "02CMP-9753",
     "cliente": "PSI",
+    "desc": "SUMINSTRO RING GASKET",
+    "estado": "completado",
     "stages": [
       {
         "f": "2026-04-17",
@@ -800,7 +798,8 @@
         "n": "404",
         "f": "2026-04-17"
       }
-    ]
+    ],
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776449624971",
@@ -835,8 +834,7 @@
         "n": "406"
       }
     ],
-    "createdAt": "2026-04-30T16:34:29.303Z",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776468993843",
@@ -871,13 +869,14 @@
         "n": "407"
       }
     ],
-    "createdAt": "2026-04-30T16:34:20.270Z",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "estado": "activo",
+    "id": "poc_1776469053057",
+    "num": "LM438",
+    "cliente": "SAR ENERGY",
     "desc": "SUMISNITRO MATERIAL MECANICO",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
+    "estado": "activo",
     "stages": [
       {
         "f": "2026-04-17",
@@ -905,14 +904,14 @@
         "n": ""
       }
     ],
-    "cliente": "SAR ENERGY",
-    "num": "LM438",
-    "id": "poc_1776469053057"
+    "updatedAt": "❌ Pendiente"
   },
   {
+    "id": "poc_1776879880110",
+    "num": "210426C2571",
+    "cliente": "CIAM",
     "desc": "SUMINSITRO POZOS SABANERO 3",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "createdAt": "2026-04-22T17:44:40.110Z",
+    "estado": "completado",
     "stages": [
       {
         "f": "2026-04-21",
@@ -940,14 +939,14 @@
         "f": "2026-04-22"
       }
     ],
-    "cliente": "CIAM",
-    "num": "210426C2571",
-    "id": "poc_1776879880110",
-    "estado": "completado"
+    "updatedAt": "✅ Facturado"
   },
   {
-    "num": "LM1446",
     "id": "poc_1776978339802",
+    "num": "LM1446",
+    "cliente": "MAUREL",
+    "desc": "MATERIAL MECANICO",
+    "estado": "activo",
     "stages": [
       {
         "s": "active",
@@ -975,17 +974,14 @@
         "n": ""
       }
     ],
-    "cliente": "MAUREL",
-    "createdAt": "2026-04-23T21:05:39.802Z",
-    "desc": "MATERIAL MECANICO",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "estado": "activo"
+    "updatedAt": "❌ Pendiente"
   },
   {
-    "estado": "activo",
     "id": "poc_1776978416135",
     "num": "LM1434",
     "cliente": "NIKOIL ENERGY",
+    "desc": "MATERIAL CORDON PLOMAGINADO",
+    "estado": "activo",
     "stages": [
       {
         "n": "EMPAQUETAS Y EMPAQUETADURAS",
@@ -1013,15 +1009,14 @@
         "f": ""
       }
     ],
-    "createdAt": "2026-04-23T21:06:56.135Z",
-    "desc": "MATERIAL CORDON PLOMAGINADO",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
-    "estado": "completado",
-    "num": "LM1450",
     "id": "poc_1777047477580",
+    "num": "LM1450",
     "cliente": "CIAM",
+    "desc": "REDUCCION EXCENTRICA",
+    "estado": "completado",
     "stages": [
       {
         "f": "2026-04-24",
@@ -1049,12 +1044,14 @@
         "f": "2026-04-24"
       }
     ],
-    "createdAt": "2026-04-24T16:17:57.580Z",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "desc": "REDUCCION EXCENTRICA"
+    "updatedAt": "✅ Facturado"
   },
   {
+    "id": "poc_1777313410272",
+    "num": "240426Z1941",
     "cliente": "CIAM",
+    "desc": "PERFILERIA",
+    "estado": "activo",
     "stages": [
       {
         "s": "done",
@@ -1082,12 +1079,7 @@
         "f": "2026-04-29"
       }
     ],
-    "id": "poc_1777313410272",
-    "num": "240426Z1941",
-    "desc": "PERFILERIA",
-    "updatedAt": "2026-04-30T16:34:29.304Z",
-    "createdAt": "2026-04-27T18:10:10.272Z",
-    "estado": "activo"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1777479688761",
@@ -1122,8 +1114,7 @@
         "n": "414"
       }
     ],
-    "createdAt": "2026-04-29T16:21:28.761Z",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1777493314013",
@@ -1158,8 +1149,7 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-04-29T20:08:34.013Z",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1777493972827",
@@ -1194,12 +1184,11 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-04-29T20:19:32.827Z",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1777494029142",
-    "num": "4600007246",
+    "num": 4600007246,
     "cliente": "PBI",
     "desc": "SUMISNITRO MATERIAL",
     "estado": "activo",
@@ -1230,7 +1219,44 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-04-29T20:20:29.142Z",
-    "updatedAt": "2026-04-30T16:34:29.304Z"
+    "updatedAt": "❌ Pendiente"
+  },
+  {
+    "id": "poc_1777575777180",
+    "num": "test",
+    "cliente": "test",
+    "desc": "test",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-04-30T19:02:57.180Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-04-30T19:02:57.180Z",
+    "updatedBy": "andrea"
   }
 ]
