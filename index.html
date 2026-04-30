@@ -2410,32 +2410,61 @@ async function syncMeetingsFromAPI() {
 
 // ===== LOGIN =====
 // ===== CÓDIGO DE ACCESO =====
-// ACCESS_CODE eliminado del código — se configura en Configuración → Cambiar Claves
+// Las contraseñas y el código de acceso se guardan HASHEADAS con SHA-256.
+// Prefijo "h:" indica valor ya hasheado. Valores sin prefijo (formato viejo)
+// se migran automáticamente al primer login exitoso.
+async function _sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
 function getAccessCode() {
   return localStorage.getItem('eyg_access_code') || 'EYG2026';
 }
 function getUserPassword(email) {
   return localStorage.getItem('eyg_pass_' + email.toLowerCase()) || 'eyg2026';
 }
-function saveAccessCode() {
+// Verifica un input contra un valor almacenado (hasheado o plano por compat)
+// Si era plano y coincide, lo migra al formato hasheado en localStorage.
+async function _verifyAndMigrate(storageKey, storedValue, defaultValue, input) {
+  // Caso 1: nunca se ha guardado nada → comparar con el default
+  if (storedValue === null || storedValue === undefined) {
+    if (input === defaultValue) {
+      // Migrar el default a hash para que se quede como hash desde la 1ra vez
+      localStorage.setItem(storageKey, 'h:' + await _sha256(defaultValue));
+      return true;
+    }
+    return false;
+  }
+  // Caso 2: ya está hasheado
+  if (typeof storedValue === 'string' && storedValue.startsWith('h:')) {
+    return ('h:' + await _sha256(input)) === storedValue;
+  }
+  // Caso 3: legacy plain text → compara directo y migra a hash si coincide
+  if (storedValue === input) {
+    localStorage.setItem(storageKey, 'h:' + await _sha256(input));
+    return true;
+  }
+  return false;
+}
+async function saveAccessCode() {
   const newCode = document.getElementById('new-access-code').value.trim().toUpperCase();
   const confirm = document.getElementById('confirm-access-code').value.trim().toUpperCase();
   if (!newCode || newCode.length < 4) { showToast('El código debe tener al menos 4 caracteres', 'error'); return; }
   if (newCode !== confirm) { showToast('Los códigos no coinciden', 'error'); return; }
-  localStorage.setItem('eyg_access_code', newCode);
+  localStorage.setItem('eyg_access_code', 'h:' + await _sha256(newCode));
   document.getElementById('new-access-code').value = '';
   document.getElementById('confirm-access-code').value = '';
-  showToast('✅ Código de acceso de la empresa actualizado', 'success');
+  showToast('✅ Código de acceso actualizado (cifrado SHA-256)', 'success');
 }
-function saveUserPassword(email) {
+async function saveUserPassword(email) {
   const newPass = document.getElementById('pass-' + email).value.trim().toLowerCase();
   const confirm = document.getElementById('pass-confirm-' + email).value.trim().toLowerCase();
   if (!newPass || newPass.length < 4) { showToast('La contraseña debe tener al menos 4 caracteres', 'error'); return; }
   if (newPass !== confirm) { showToast('Las contraseñas no coinciden', 'error'); return; }
-  localStorage.setItem('eyg_pass_' + email, newPass);
+  localStorage.setItem('eyg_pass_' + email, 'h:' + await _sha256(newPass));
   document.getElementById('pass-' + email).value = '';
   document.getElementById('pass-confirm-' + email).value = '';
-  showToast('✅ Contraseña de ' + email + ' actualizada', 'success');
+  showToast('✅ Contraseña de ' + email + ' actualizada (cifrada SHA-256)', 'success');
 }
 function renderUserPasswords() {
   const list = document.getElementById('user-passwords-list');
@@ -2450,10 +2479,11 @@ function renderUserPasswords() {
       </div>
     </div>`).join('');
 }
-function checkAccess() {
+async function checkAccess() {
   const code = document.getElementById('access-code').value.trim().toUpperCase();
-  const VALID_CODE = (localStorage.getItem('eyg_access_code') || 'EYG2026').toUpperCase();
-  if (code === VALID_CODE) {
+  const stored = localStorage.getItem('eyg_access_code');
+  const ok = await _verifyAndMigrate('eyg_access_code', stored, 'EYG2026', code);
+  if (ok) {
     sessionStorage.setItem('eyg_access', '1');
     document.getElementById('access-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
@@ -2472,12 +2502,20 @@ function checkAccess() {
   }
 }
 
-function doLogin() {
+async function doLogin() {
   const email = document.getElementById('login-email').value.trim().toLowerCase().replace(/\s+/g,'');
   const pass = document.getElementById('login-pass').value.trim().toLowerCase().replace(/\s+/g,'');
-  const u = USERS.find(u => u.email.toLowerCase()===email && getUserPassword(u.email)===pass);
+  // Buscar usuario por email primero
+  const u = USERS.find(uu => uu.email.toLowerCase() === email);
   if (!u) {
-    showToast('Error — Usuario: "'+email+'" Clave: "'+pass+'"','error');
+    showToast('Usuario o contraseña incorrectos','error');
+    return;
+  }
+  // Verificar contraseña con hash (migra automáticamente si era texto plano)
+  const stored = localStorage.getItem('eyg_pass_' + u.email.toLowerCase());
+  const ok = await _verifyAndMigrate('eyg_pass_' + u.email.toLowerCase(), stored, 'eyg2026', pass);
+  if (!ok) {
+    showToast('Usuario o contraseña incorrectos','error');
     return;
   }
   currentUser = u;
