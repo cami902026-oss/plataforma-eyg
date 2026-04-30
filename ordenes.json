@@ -1086,7 +1086,7 @@
     "num": "LM1476",
     "cliente": "COLPAZ INGENIERIA",
     "desc": "UNION DE GOLPE",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -1094,7 +1094,7 @@
         "n": "CODIFER"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "",
         "n": "",
         "envio": "transportadora",
@@ -1114,7 +1114,10 @@
         "n": "414"
       }
     ],
-    "updatedAt": "✅ Facturado"
+    "createdAt": "2026-04-30T20:30:37.523Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-04-30T20:30:37.523Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777493314013",
@@ -1188,7 +1191,7 @@
   },
   {
     "id": "poc_1777494029142",
-    "num": "4600007246",
+    "num": 4600007246,
     "cliente": "PBI",
     "desc": "SUMISNITRO MATERIAL",
     "estado": "completado",
@@ -1219,9 +1222,6 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-04-30T19:03:26.708Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-04-30T19:03:26.708Z",
-    "updatedBy": "andrea"
+    "updatedAt": "❌ Pendiente"
   }
 ]
