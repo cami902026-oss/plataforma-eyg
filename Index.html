@@ -2351,8 +2351,29 @@ function _scheduleBackupGH(key, val) {
   clearTimeout(_ghBackupTimers[key]);
   _ghBackupTimers[key] = setTimeout(() => _saveDataGH(cfg.file, val, cfg.label), 1500);
 }
+// Configuración compartida por toda la empresa (URL del proxy, etc.)
+// Se guarda en data/config.json y se sincroniza a todos los dispositivos.
+async function _loadCompanyConfig() {
+  if (!_ghToken()) return;
+  const cfg = await _loadDataGH('data/config.json');
+  if (!cfg) return;
+  // Si el proxy URL no está local, copiarlo desde la config compartida
+  if (cfg.proxyUrl && !localStorage.getItem('energy_proxy_url')) {
+    localStorage.setItem('energy_proxy_url', cfg.proxyUrl);
+    console.log('[ENERGY] Proxy URL sincronizada desde config compartida');
+  }
+}
+async function _saveCompanyConfig(patch) {
+  if (!_ghToken()) return;
+  const current = (await _loadDataGH('data/config.json')) || {};
+  const merged = Object.assign({}, current, patch, { updatedAt: new Date().toISOString() });
+  clearTimeout(_ghBackupTimers.config);
+  _ghBackupTimers.config = setTimeout(() => _saveDataGH('data/config.json', merged, '⚙️ Config'), 1500);
+}
+
 async function _loadAllBackupsGH() {
   if (!_ghToken()) return;
+  await _loadCompanyConfig();
   for (const key in GH_BACKUP_MAP) {
     const cfg = GH_BACKUP_MAP[key];
     const remote = await _loadDataGH(cfg.file);
@@ -3685,12 +3706,13 @@ function saveMiembro() {
   document.getElementById('mb-email').value=''; document.getElementById('mb-wa').value='';
 }
 
-function saveProxyUrl() {
+async function saveProxyUrl() {
   const raw = document.getElementById('proxy-url-input').value.trim().replace(/\/+$/,'');
-  if(!raw) { showToast('Ingresa la URL de tu sitio en Netlify','error'); return; }
+  if(!raw) { showToast('Ingresa la URL del proxy','error'); return; }
   if(!/^https?:\/\//i.test(raw)) { showToast('La URL debe empezar con https://','error'); return; }
   localStorage.setItem('energy_proxy_url', raw);
-  showToast('URL del proxy guardada. ¡ENERGY IA está activo!','success');
+  await _saveCompanyConfig({ proxyUrl: raw });
+  showToast('URL del proxy guardada y sincronizada al equipo','success');
 }
 function loadProxyUrlUI() {
   const el = document.getElementById('proxy-url-input');
