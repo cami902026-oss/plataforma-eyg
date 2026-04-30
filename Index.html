@@ -3730,6 +3730,8 @@ function renderProcesos() {
     }).join('');
     const badgeClass = {activo:'activo',completado:'completado',cancelado:'cancelado'}[o.estado]||'activo';
     const badgeTxt = {activo:'Activo',completado:'Completado',cancelado:'Cancelado'}[o.estado]||o.estado;
+    const auditTooltip = o.createdBy ? `Creada por ${o.createdBy.split('@')[0]}${o.createdAt?' el '+new Date(o.createdAt).toLocaleDateString('es-CO'):''}` : '';
+    const auditLine = o.updatedBy ? `<div class="audit-line" title="${auditTooltip}">✏️ ${_auditLabel(o)}${o.createdBy && o.createdBy !== o.updatedBy ? ' · creada por '+o.createdBy.split('@')[0] : ''}</div>` : '';
     return `<div class="poc-card">
       <div class="poc-ch">
         <div>
@@ -3743,6 +3745,7 @@ function renderProcesos() {
         <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="openPocModal('${o.id}')">✏️ Editar</button>
         <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;color:#93c5fd;" onclick="viewPocReport('${o.id}')">📄 Ver Informe</button>
       </div>
+      ${auditLine}
     </div>`;
   }).join('');
 }
