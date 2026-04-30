@@ -369,12 +369,16 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   .hamburger { display:flex !important; }
 }
 .hamburger {
-  display:none; flex-direction:column; justify-content:center; gap:5px;
-  background:none; border:none; cursor:pointer; padding:6px; margin-right:4px;
+  display:none; flex-direction:column; justify-content:center; align-items:center; gap:5px;
+  width:44px; height:44px; padding:0; margin-right:8px;
+  background:rgba(255,255,255,0.06); border:1px solid rgba(232,160,32,0.4);
+  border-radius:10px; cursor:pointer;
+  -webkit-tap-highlight-color: rgba(46,170,74,0.3);
 }
+.hamburger:active { background:rgba(46,170,74,0.2); }
 .hamburger span {
-  display:block; width:22px; height:2px; background:var(--light);
-  border-radius:2px; transition:all 0.25s;
+  display:block; width:22px; height:3px; background:var(--gold);
+  border-radius:2px; transition:all 0.25s; pointer-events:none;
 }
 .sidebar-overlay {
   display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
@@ -707,7 +711,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   <div class="main-area">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:12px;">
-        <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Menú">
+        <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Menú" type="button">
           <span></span><span></span><span></span>
         </button>
         <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" alt="E&G" style="width:28px;height:28px;object-fit:contain;">
@@ -4853,6 +4857,15 @@ function addBotMsg(text) {
   const msgs = document.getElementById('chat-messages');
   const d = document.createElement('div');
   d.className='msg bot'; d.textContent=text;
+  // Si el mensaje pide configurar el proxy, agrego un botón directo (útil desde móvil)
+  if (typeof text === 'string' && /Configura.*Proxy|URL del Proxy/i.test(text)) {
+    const btn = document.createElement('button');
+    btn.textContent = '⚙️ Abrir Configuración';
+    btn.className = 'quick-btn';
+    btn.style.cssText = 'margin-top:10px;display:block;background:var(--gold);color:#071525;font-weight:700;border:none;padding:10px 16px;border-radius:8px;cursor:pointer;';
+    btn.onclick = () => { toggleChat(); navigate('configuracion'); };
+    d.appendChild(btn);
+  }
   msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
 }
 function addUserMsg(text) {
