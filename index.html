@@ -140,6 +140,14 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .proceso-pill.orange { background:rgba(232,160,32,.15); color:#f6ad55; border:1px solid rgba(232,160,32,.3); }
 .proceso-pill.red { background:rgba(239,68,68,.15); color:#fc8181; border:1px solid rgba(239,68,68,.3); }
 .proceso-pill.blue { background:rgba(26,58,143,.25); color:#90cdf4; border:1px solid rgba(26,58,143,.4); }
+.proceso-stages { display:flex; gap:4px; margin-top:8px; flex-wrap:wrap; }
+.proceso-stage { display:flex; align-items:center; gap:4px; padding:3px 8px; border-radius:10px; font-size:10px; font-weight:600; border:1px solid transparent; }
+.proceso-stage.done { background:rgba(46,170,74,.12); color:#68d391; border-color:rgba(46,170,74,.3); }
+.proceso-stage.current { background:rgba(232,160,32,.18); color:#f6ad55; border-color:rgba(232,160,32,.5); box-shadow:0 0 0 1px rgba(232,160,32,.3); }
+.proceso-stage.current.overdue { background:rgba(239,68,68,.18); color:#fc8181; border-color:rgba(239,68,68,.5); box-shadow:0 0 0 1px rgba(239,68,68,.3); }
+.proceso-stage.pending { background:rgba(255,255,255,.04); color:var(--text-muted); border-color:rgba(255,255,255,.08); }
+.proceso-stage .ps-check { font-size:9px; }
+.proceso-arrow { color:var(--text-muted); font-size:10px; align-self:center; }
 .content { padding:28px; flex:1; }
 
 /* ===== CARDS ===== */
@@ -2608,16 +2616,26 @@ function renderProcesoSection() {
     if(pendingIdx === -1) return;
     const st = POC_STAGES[pendingIdx];
     const s = stages[pendingIdx]||{};
-    let estado = 'Sin fecha', cls='blue';
+    let estado = 'Sin fecha', cls='blue', overdue=false;
     if(s.f){
       const d = new Date(s.f); d.setHours(0,0,0,0);
       const diff = Math.round((d-today)/86400000);
-      if(diff < 0){ estado = `Vencida ${-diff}d`; cls='red'; }
+      if(diff < 0){ estado = `Vencida ${-diff}d`; cls='red'; overdue=true; }
       else if(diff === 0){ estado = 'Vence hoy'; cls='orange'; }
       else if(diff <= 3){ estado = `En ${diff}d`; cls='orange'; }
       else { estado = `En ${diff}d`; cls='green'; }
     }
-    items.push({ num:o.num||o.id, cliente:o.cliente||'—', stageLabel:st.label, stageIcon:st.icon, fecha:fmtDate(s.f), estado, cls });
+    // Construir progresión de etapas
+    const stagesView = POC_STAGES.map((sd,i)=>{
+      const ss = stages[i]||{};
+      const done = i>=2 ? !!ss.f : ss.s==='done';
+      let kind;
+      if(done) kind='done';
+      else if(i===pendingIdx) kind = overdue ? 'current overdue' : 'current';
+      else kind='pending';
+      return { kind, icon:sd.icon, label:sd.label };
+    });
+    items.push({ num:o.num||o.id, cliente:o.cliente||'—', stageLabel:st.label, stageIcon:st.icon, fecha:fmtDate(s.f), estado, cls, stagesView });
   });
   if(!items.length){ el.innerHTML=''; return; }
   // Orden: vencidas primero, luego por urgencia
@@ -2629,7 +2647,10 @@ function renderProcesoSection() {
       <div class="proceso-row" onclick="navigate('procesos')">
         <div class="proceso-info">
           <div class="proceso-num">${i.stageIcon} ${i.num} · ${i.cliente}</div>
-          <div class="proceso-meta">Etapa pendiente: <strong style="color:#fff;">${i.stageLabel}</strong> · Fecha límite: ${i.fecha}</div>
+          <div class="proceso-meta">Etapa actual: <strong style="color:#fff;">${i.stageLabel}</strong> · Fecha límite: ${i.fecha}</div>
+          <div class="proceso-stages">${i.stagesView.map((sv,k)=>`
+            <span class="proceso-stage ${sv.kind}">${sv.kind==='done'?'<span class="ps-check">✓</span>':sv.icon} ${sv.label}</span>${k<i.stagesView.length-1?'<span class="proceso-arrow">›</span>':''}
+          `).join('')}</div>
         </div>
         <span class="proceso-pill ${i.cls}">${i.estado}</span>
       </div>`).join('')}</div>
