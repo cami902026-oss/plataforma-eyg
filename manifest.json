@@ -1,0 +1,28 @@
+{
+  "name": "ENERGY — Plataforma E&G",
+  "short_name": "ENERGY",
+  "description": "Plataforma administrativa de E&G Energy Group SAS",
+  "start_url": "./Index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0F2B5B",
+  "background_color": "#071525",
+  "lang": "es-CO",
+  "dir": "ltr",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
