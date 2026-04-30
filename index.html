@@ -2038,6 +2038,8 @@ function setData(key, val) {
       body: JSON.stringify(val)
     }).catch(e => console.warn('API sync meetings:', e));
   }
+  // Backup automático a GitHub para tasks, minutas, team, projects (debounced)
+  _scheduleBackupGH(key, val);
 }
 
 // Sincroniza tareas desde la API (para ver cambios del bot de WhatsApp)
@@ -2243,6 +2245,115 @@ async function _saveReunionesGH(arr) {
     if (r.ok) { const res = await r.json(); _reunionesFileSHA = res.content.sha; }
     else { console.warn('GH save reuniones error:', await r.text()); }
   } catch(e) { console.warn('GH reuniones save:', e); }
+}
+
+// ── BACKUP GENÉRICO A GITHUB (tareas, minutas, equipo, proyectos, cotizaciones) ──
+// Patrón replicado de _saveOrdenesGH / _saveReunionesGH pero parametrizado.
+// Cada clave de localStorage se respalda en data/{filename}.json del repo.
+const _ghShaCache = {};
+const GH_BACKUP_MAP = {
+  tasks:           { file: 'data/tasks.json',           label: '✅ Tareas' },
+  minutas:         { file: 'data/minutas.json',         label: '📋 Minutas' },
+  team:            { file: 'data/team.json',            label: '👥 Equipo' },
+  projects:        { file: 'data/projects.json',        label: '📊 Proyectos' },
+  bd_cotizaciones: { file: 'data/cotizaciones.json',    label: '📄 Cotizaciones' },
+};
+// Alias para código histórico que llamaba saveData() (no estaba definido — bug previo)
+const saveData = setData;
+async function _ghGetSHA(filename) {
+  if (_ghShaCache[filename]) return _ghShaCache[filename];
+  if (!_ghToken()) return '';
+  try {
+    const r = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filename}`,
+      { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
+    );
+    if (r.ok) { const d = await r.json(); _ghShaCache[filename] = d.sha; return d.sha; }
+  } catch(_) {}
+  return '';
+}
+async function _saveDataGH(filename, data, label) {
+  if (!_ghToken()) return;
+  try {
+    const sha = await _ghGetSHA(filename);
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+    const body = { message: `${label} — ${new Date().toLocaleString('es-CO')}`, content: b64, branch: 'main' };
+    if (sha) body.sha = sha;
+    let r = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filename}`,
+      { method: 'PUT', headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    );
+    if (!r.ok && (r.status === 422 || r.status === 409)) {
+      delete _ghShaCache[filename];
+      const nsha = await _ghGetSHA(filename);
+      if (nsha) {
+        body.sha = nsha;
+        r = await fetch(
+          `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filename}`,
+          { method: 'PUT', headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+        );
+      }
+    }
+    if (r.ok) { const res = await r.json(); _ghShaCache[filename] = res.content.sha; }
+    else console.warn('GH save', filename, 'error:', await r.text());
+  } catch(e) { console.warn('GH save', filename, e); }
+}
+async function _loadDataGH(filename) {
+  if (!_ghToken()) return null;
+  try {
+    const r = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filename}`,
+      { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
+    );
+    if (r.ok) {
+      const d = await r.json();
+      _ghShaCache[filename] = d.sha;
+      return JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+    }
+  } catch(e) { console.warn('GH load', filename, e); }
+  return null;
+}
+const _ghBackupTimers = {};
+function _scheduleBackupGH(key, val) {
+  const cfg = GH_BACKUP_MAP[key];
+  if (!cfg) return;
+  clearTimeout(_ghBackupTimers[key]);
+  _ghBackupTimers[key] = setTimeout(() => _saveDataGH(cfg.file, val, cfg.label), 1500);
+}
+async function _loadAllBackupsGH() {
+  if (!_ghToken()) return;
+  for (const key in GH_BACKUP_MAP) {
+    const cfg = GH_BACKUP_MAP[key];
+    const remote = await _loadDataGH(cfg.file);
+    if (Array.isArray(remote) && remote.length > 0) {
+      // Merge: si local existe, comparar updatedAt; si no, usar remoto
+      const localRaw = localStorage.getItem('max_'+key);
+      if (!localRaw) {
+        localStorage.setItem('max_'+key, JSON.stringify(remote));
+      } else {
+        // Para arrays de items con id+updatedAt: merge por id quedándose con el más nuevo
+        try {
+          const local = JSON.parse(localRaw);
+          if (Array.isArray(local)) {
+            const merged = remote.map(rem => {
+              const loc = local.find(x => x.id === rem.id);
+              if (!loc) return rem;
+              const rTime = new Date(rem.updatedAt || 0).getTime();
+              const lTime = new Date(loc.updatedAt || 0).getTime();
+              return lTime > rTime ? loc : rem;
+            });
+            local.forEach(l => { if (!merged.find(m => m.id === l.id)) merged.push(l); });
+            localStorage.setItem('max_'+key, JSON.stringify(merged));
+          }
+        } catch(_) { localStorage.setItem('max_'+key, JSON.stringify(remote)); }
+      }
+    }
+  }
+  try { renderKanban('all'); } catch(_) {}
+  try { renderTeam(); renderTeamMgmt(); } catch(_) {}
+  try { renderDashboard(); } catch(_) {}
+  try { renderGantt(); } catch(_) {}
+  try { renderMinutas(); } catch(_) {}
 }
 
 function notifyTeamsApp(title, text, color) {
@@ -2489,6 +2600,8 @@ function initApp() {
   setInterval(_loadOrdenesGS, 30000);
   // Cargar reuniones desde GitHub (persisten en cualquier navegador)
   _loadReunionesGH();
+  // Cargar TODOS los demás backups desde GitHub (tasks, minutas, team, projects, cotizaciones)
+  _loadAllBackupsGH();
 }
 
 // ===== NAVIGATION =====
