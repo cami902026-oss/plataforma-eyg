@@ -1248,13 +1248,14 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div class="config-title">🤖 ENERGY IA — URL del Proxy seguro</div>
           <div class="api-key-row">
             <div class="form-group" style="flex:1;margin:0;">
-              <input type="text" id="proxy-url-input" placeholder="https://tu-sitio.netlify.app">
+              <input type="text" id="proxy-url-input" placeholder="https://script.google.com/macros/s/AKfyc.../exec">
             </div>
             <button class="btn btn-primary" onclick="saveProxyUrl()" style="width:auto;white-space:nowrap;">Guardar</button>
           </div>
           <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">
-            Pega aquí la URL base de tu sitio en Netlify (sin <code>/</code> al final). La API Key de Claude vive como variable de entorno en Netlify (<code>CLAUDE_API_KEY</code>) — nunca se expone al navegador.
-            <br>👉 En Netlify ve a <b>Site settings → Environment variables</b> y agrega <code>CLAUDE_API_KEY</code> con tu clave <code>sk-ant-...</code>.
+            Pega aquí la URL del proxy donde reside la API Key de Claude. La clave NUNCA se expone al navegador.
+            <br><b>✅ Recomendado (gratis): Google Apps Script.</b> Crea un proyecto en <a href="https://script.google.com/home" target="_blank" style="color:#90cdf4;">script.google.com</a>, pega el código del archivo <code>claude-proxy.gs</code>, en <b>Configuración del proyecto → Propiedades del script</b> agrega <code>CLAUDE_API_KEY</code> con tu <code>sk-ant-...</code>, despliega como Aplicación web (acceso: cualquier usuario) y pega aquí la URL <code>/exec</code>.
+            <br>Alternativa: URL base de Netlify (requiere plan pago si superas 125k req/mes).
           </p>
         </div>
         <div class="config-section">
@@ -4418,15 +4419,18 @@ function saveProfile() {
   showToast('Perfil actualizado','success');
 }
 
-// ===== CLAUDE API (vía proxy seguro) =====
-// La API Key vive en variable de entorno de Netlify (CLAUDE_API_KEY).
-// El navegador llama al proxy /.netlify/functions/claude-proxy y NUNCA toca la clave.
-// Configuración del endpoint: por defecto usa el host actual si está en Netlify;
-// si la app corre desde GitHub Pages u otro host, lee `localStorage.energy_proxy_url`
-// (configurable en Configuración → "URL del Proxy ENERGY IA").
+// ===== CLAUDE API (vía proxy seguro — Apps Script o Netlify) =====
+// La API Key NUNCA viaja al navegador: vive como propiedad de script en
+// Apps Script (CLAUDE_API_KEY) o como env var en Netlify.
+// La URL configurada por el usuario decide el destino:
+//   • Apps Script: https://script.google.com/macros/s/.../exec
+//   • Netlify:     https://tu-sitio.netlify.app  (se le agrega /.netlify/functions/claude-proxy)
 function getClaudeProxyURL() {
-  const stored = localStorage.getItem('energy_proxy_url');
-  if (stored) return stored.replace(/\/+$/,'') + '/.netlify/functions/claude-proxy';
+  const stored = (localStorage.getItem('energy_proxy_url') || '').trim().replace(/\/+$/,'');
+  if (stored) {
+    if (/script\.google\.com/i.test(stored)) return stored;          // Apps Script /exec
+    return stored + '/.netlify/functions/claude-proxy';              // Netlify base URL
+  }
   if (/\.netlify\.app$/i.test(location.hostname) || location.hostname === 'localhost') {
     return '/.netlify/functions/claude-proxy';
   }
@@ -4435,19 +4439,24 @@ function getClaudeProxyURL() {
 
 async function callEnergyAI(prompt, systemContext, history) {
   const url = getClaudeProxyURL();
-  if(!url) return '⚙️ Configura la URL del Proxy ENERGY IA en Configuración (ej: https://tu-sitio.netlify.app). El proxy mantiene la API Key segura en el servidor.';
+  if(!url) return '⚙️ Configura la URL del Proxy ENERGY IA en Configuración. La API Key vive segura en el servidor (Apps Script o Netlify).';
+  const isAppsScript = /script\.google\.com/i.test(url);
   try {
     const messages = Array.isArray(history) ? [...history] : [];
     messages.push({role:'user', content:prompt});
+    const payload = {
+      model:'claude-haiku-4-5-20251001',
+      max_tokens:1024,
+      system:`Eres ENERGY, un asistente administrativo profesional para la empresa GERENCIA. Eres eficiente, conciso y profesional. Ayudas con reuniones, tareas, comunicaciones y gestión del equipo. Hoy es ${today.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}. Usuario actual: ${currentUser.name} (${currentUser.role}). ${systemContext||''}`,
+      messages
+    };
+    // Apps Script no maneja preflight CORS → enviamos como text/plain (simple request).
+    // El servidor lee e.postData.contents igual y hace JSON.parse.
     const resp = await fetch(url, {
       method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',
-        max_tokens:1024,
-        system:`Eres ENERGY, un asistente administrativo profesional para la empresa GERENCIA. Eres eficiente, conciso y profesional. Ayudas con reuniones, tareas, comunicaciones y gestión del equipo. Hoy es ${today.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}. Usuario actual: ${currentUser.name} (${currentUser.role}). ${systemContext||''}`,
-        messages
-      })
+      headers:{ 'Content-Type': isAppsScript ? 'text/plain;charset=utf-8' : 'application/json' },
+      body:JSON.stringify(payload),
+      redirect:'follow'
     });
     const data = await resp.json();
     if(data.error) return '❌ Error: '+(data.error.message||JSON.stringify(data.error));
