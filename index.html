@@ -200,6 +200,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .count-badge { background:rgba(255,255,255,0.1); border-radius:20px; padding:2px 10px; font-size:12px; color:var(--text-muted); }
 .task-card { background:var(--card-bg); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:10px; cursor:pointer; transition:all 0.2s; }
 .task-card:hover { border-color:var(--green); transform:translateY(-1px); }
+.audit-line { margin-top:8px; padding-top:8px; border-top:1px dashed rgba(255,255,255,.06); font-size:10px; color:var(--text-muted); opacity:.7; cursor:help; }
 .task-title { font-size:14px; font-weight:600; color:#fff; margin-bottom:8px; }
 .task-meta { display:flex; align-items:center; justify-content:space-between; }
 .task-assignee { font-size:12px; color:var(--text-muted); }
@@ -2014,6 +2015,24 @@ let currentView = 'calendar';
 function getData(key, def) {
   try { const d = localStorage.getItem('max_'+key); return d ? JSON.parse(d) : def; } catch(e) { return def; }
 }
+// ===== AUDIT LOG =====
+// Estampa cada item con quién/cuándo lo creó y quién/cuándo lo modificó por última vez.
+// Aplicar al guardar tareas, OPs, reuniones, minutas, proyectos, equipo, cotizaciones.
+function _audit(item, isCreate) {
+  if (!item || typeof item !== 'object') return item;
+  const who  = currentUser ? (currentUser.email || currentUser.name) : 'system';
+  const when = new Date().toISOString();
+  if (isCreate || !item.createdAt) { item.createdAt = when; item.createdBy = who; }
+  item.updatedAt = when;
+  item.updatedBy = who;
+  return item;
+}
+function _auditLabel(item) {
+  if (!item || !item.updatedBy) return '';
+  const t = item.updatedAt ? new Date(item.updatedAt) : null;
+  const fmt = t ? t.toLocaleDateString('es-CO',{day:'2-digit',month:'short'})+' '+t.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}) : '';
+  return `${item.updatedBy.split('@')[0]} · ${fmt}`;
+}
 // Solo aplica cuando la plataforma corre en Netlify (donde existen las functions).
 const _NETLIFY_HOST = /\.netlify\.app$/i.test(location.hostname) || location.hostname === 'localhost';
 function setData(key, val) {
@@ -3025,6 +3044,7 @@ function renderKanban(filter) {
             ${p.canDelete?`<button onclick="deleteTask(${t.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;" title="Eliminar">🗑</button>`:''}
           </div>
         </div>
+        ${t.updatedBy?`<div class="audit-line" title="${t.createdBy?'Creada por '+t.createdBy.split('@')[0]+(t.createdAt?' el '+new Date(t.createdAt).toLocaleDateString('es-CO'):''):''}">✏️ ${_auditLabel(t)}</div>`:''}
       </div>`).join('')}
     </div>`;
   }).join('');
@@ -3359,7 +3379,8 @@ async function saveReunion(skipAutoTeams = false) {
     const meetingId = parseInt(editMode);
     const idx = meetings.findIndex(m => m.id === meetingId);
     if (idx !== -1) {
-      meetings[idx] = {
+      const prev = meetings[idx];
+      meetings[idx] = _audit({
         id: meetingId,
         titulo,
         fecha: savedFecha,
@@ -3367,8 +3388,9 @@ async function saveReunion(skipAutoTeams = false) {
         horaFin: savedHoraFin,
         tipo: savedTipo,
         participantes,
-        descripcion: savedDesc
-      };
+        descripcion: savedDesc,
+        createdAt: prev.createdAt, createdBy: prev.createdBy
+      }, false);
       setData('meetings', meetings);
       showToast('Reunión actualizada correctamente','success');
       notifyTeamsApp(
@@ -3380,7 +3402,7 @@ async function saveReunion(skipAutoTeams = false) {
   } else {
     // MODO CREACIÓN
     const newId = Math.max(0,...meetings.map(m=>m.id))+1;
-    meetings.push({
+    meetings.push(_audit({
       id:newId, titulo,
       fecha: savedFecha,
       horaInicio: savedHoraIn,
@@ -3388,7 +3410,7 @@ async function saveReunion(skipAutoTeams = false) {
       tipo: savedTipo,
       participantes,
       descripcion: savedDesc
-    });
+    }, true));
     setData('meetings', meetings);
     notifyTeamsApp(
       '📅 Nueva reunión agendada',
@@ -3473,7 +3495,8 @@ function saveTarea() {
     const taskId = parseInt(editMode);
     const idx = tasks.findIndex(t => t.id === taskId);
     if (idx !== -1) {
-      tasks[idx] = {
+      const prev = tasks[idx];
+      tasks[idx] = _audit({
         id: taskId,
         titulo,
         desc: document.getElementById('t-desc').value,
@@ -3481,14 +3504,15 @@ function saveTarea() {
         fecha: document.getElementById('t-fecha').value,
         prioridad: document.getElementById('t-prioridad').value,
         estado: document.getElementById('t-estado').value,
-        proyecto: document.getElementById('t-proyecto').value
-      };
+        proyecto: document.getElementById('t-proyecto').value,
+        createdAt: prev.createdAt, createdBy: prev.createdBy
+      }, false);
       showToast('Tarea actualizada correctamente','success');
     }
   } else {
     // MODO CREACIÓN
     const newId = Math.max(0,...tasks.map(t=>t.id))+1;
-    tasks.push({
+    tasks.push(_audit({
       id:newId,
       titulo,
       desc:document.getElementById('t-desc').value,
@@ -3497,7 +3521,7 @@ function saveTarea() {
       prioridad:document.getElementById('t-prioridad').value,
       estado:document.getElementById('t-estado').value,
       proyecto:document.getElementById('t-proyecto').value
-    });
+    }, true));
     showToast('Tarea guardada correctamente','success');
   }
 
@@ -3548,7 +3572,8 @@ function saveProyecto() {
     const projectId = parseInt(editMode);
     const idx = projects.findIndex(p => p.id === projectId);
     if (idx !== -1) {
-      projects[idx] = {
+      const prev = projects[idx];
+      projects[idx] = _audit({
         id: projectId,
         nombre,
         responsable: document.getElementById('p-responsable').value,
@@ -3556,15 +3581,16 @@ function saveProyecto() {
         fin: document.getElementById('p-fin').value,
         progreso: parseInt(document.getElementById('p-progreso').value) || 0,
         estado: document.getElementById('p-estado').value,
-        color: projects[idx].color
-      };
+        color: prev.color,
+        createdAt: prev.createdAt, createdBy: prev.createdBy
+      }, false);
       setData('projects', projects);
       showToast('Proyecto actualizado correctamente','success');
     }
   } else {
     // MODO CREACIÓN
     const newId = Math.max(0,...projects.map(p=>p.id))+1;
-    projects.push({
+    projects.push(_audit({
       id: newId,
       nombre,
       responsable: document.getElementById('p-responsable').value,
@@ -3573,7 +3599,7 @@ function saveProyecto() {
       progreso: parseInt(document.getElementById('p-progreso').value) || 0,
       estado: document.getElementById('p-estado').value,
       color: colors[newId % colors.length]
-    });
+    }, true));
     setData('projects', projects);
     showToast('Proyecto guardado correctamente','success');
   }
@@ -3594,13 +3620,13 @@ function saveMiembro() {
   const team = getData('team', TEAM_DEFAULT);
   const colors = ['#1A3A8F','#2EAA4A','#E8A020','#9333ea','#dc2626','#0891b2'];
   const newId = Math.max(0,...team.map(m=>m.id))+1;
-  team.push({
+  team.push(_audit({
     id:newId, name:nombre,
     role:document.getElementById('mb-rol').value,
     email:document.getElementById('mb-email').value,
     wa:document.getElementById('mb-wa').value,
     color:colors[newId%colors.length]
-  });
+  }, true));
   setData('team', team);
   closeModal('modal-miembro');
   renderTeam(); renderTeamMgmt(); populateSelects();
@@ -3802,16 +3828,16 @@ function savePoc() {
     };
   });
   const existingOrder = pocEditId ? getPOC().find(o => o.id === pocEditId) : null;
-  const order = {
+  const order = _audit({
     id: pocEditId || 'poc_'+Date.now(),
     num: document.getElementById('poc-num').value.trim(),
     cliente: document.getElementById('poc-cliente').value.trim(),
     desc: document.getElementById('poc-desc').value.trim(),
     estado: document.getElementById('poc-estado').value,
     stages,
-    createdAt: existingOrder?.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
+    createdAt: existingOrder?.createdAt,
+    createdBy: existingOrder?.createdBy
+  }, !existingOrder);
   // Auto-completar si todas las etapas con contenido están done
   // Normalize stages 2&3: derive s from date
   order.stages = order.stages.map((st,i) => i>=2 ? {...st, s: st.f?'done':'pending'} : st);
@@ -4313,10 +4339,12 @@ function cotizGuardarBD() {
     fechaGuardado: new Date().toISOString()
   };
   if (idx >= 0) {
-    bd[idx] = record;
+    record.createdAt = bd[idx].createdAt;
+    record.createdBy = bd[idx].createdBy;
+    bd[idx] = _audit(record, false);
     showToast('Cotización ' + id + ' actualizada','success');
   } else {
-    bd.push(record);
+    bd.push(_audit(record, true));
     showToast('Cotización ' + id + ' guardada en base de datos','success');
   }
   saveData('bd_cotizaciones', bd);
@@ -4675,7 +4703,7 @@ function saveMinutaFromPreview() {
 function saveMinutaData(contenido, reunionId) {
   const minutas = getData('minutas', MINUTAS_DEFAULT);
   const newId = Math.max(0,...minutas.map(m=>m.id))+1;
-  minutas.unshift({ id:newId, reunionId, fecha:todayStr, contenido });
+  minutas.unshift(_audit({ id:newId, reunionId, fecha:todayStr, contenido }, true));
   setData('minutas', minutas);
   closeModal('modal-minuta');
   renderMinutas();
