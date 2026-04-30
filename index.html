@@ -362,9 +362,9 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   .kanban-board { grid-template-columns:1fr; }
   .grid-2 { grid-template-columns:1fr; }
   .form-row { grid-template-columns:1fr; }
-  .chat-panel { right:0; left:0; bottom:0; top:0; width:100vw; max-height:100vh; height:100vh; border-radius:0; }
-  .chat-panel .chat-header { border-radius:0; padding-top:max(16px, env(safe-area-inset-top)); }
-  .chat-panel .chat-input-row { padding-bottom:max(12px, env(safe-area-inset-bottom)); }
+  .chat-panel { right:0; left:0; bottom:0; top:0; width:100vw; height:100vh; height:100dvh; max-height:100dvh; border-radius:0; }
+  .chat-panel .chat-header { border-radius:0; padding-top:max(16px, env(safe-area-inset-top)); position:sticky; top:0; z-index:10; }
+  .chat-panel .chat-input-row { padding-bottom:max(12px, env(safe-area-inset-bottom)); position:sticky; bottom:0; background:var(--card-bg); z-index:10; }
   .max-fab { right:16px; bottom:16px; }
   .hamburger { display:flex !important; }
 }
@@ -1856,6 +1856,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     <button class="quick-btn" onclick="quickChat('Redacta un mensaje al equipo')">Redacta un mensaje</button>
     <button class="quick-btn" onclick="quickChat('¿Cuáles tareas vencen esta semana?')">Tareas urgentes</button>
     <button class="quick-btn" onclick="quickChat('Dame un resumen del equipo')">Resumen del equipo</button>
+    <button class="quick-btn" onclick="toggleChat();navigate('configuracion')" style="background:rgba(232,160,32,0.15);border-color:rgba(232,160,32,0.5);color:var(--gold);">⚙️ Configuración</button>
   </div>
   <div class="chat-input-row">
     <textarea class="chat-input" id="chat-input" rows="1" placeholder="Pregunta algo a ENERGY..." onkeydown="chatKeydown(event)"></textarea>
