@@ -2039,7 +2039,10 @@ async function startFirebaseSync() {
 }
 
 // Sincroniza tareas desde la API (para ver cambios del bot de WhatsApp)
+// Solo aplica cuando la plataforma corre en Netlify (donde existen las functions).
+const _NETLIFY_HOST = /\.netlify\.app$/i.test(location.hostname) || location.hostname === 'localhost';
 async function syncTasksFromAPI() {
+  if (!_NETLIFY_HOST) return;
   try {
     const res = await fetch('/.netlify/functions/tasks-api');
     if (!res.ok) return;
@@ -2279,6 +2282,7 @@ function notifyTeamsApp(title, text, color) {
 
 // Sincroniza reuniones desde la API (para ver cambios del bot de WhatsApp)
 async function syncMeetingsFromAPI() {
+  if (!_NETLIFY_HOST) return;
   try {
     const res = await fetch('/.netlify/functions/meetings-api');
     if (!res.ok) return;
