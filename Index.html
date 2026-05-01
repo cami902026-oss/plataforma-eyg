@@ -2357,6 +2357,11 @@ function _scheduleBackupGH(key, val) {
   clearTimeout(_ghBackupTimers[key]);
   _ghBackupTimers[key] = setTimeout(() => _saveDataGH(cfg.file, val, cfg.label), 1500);
 }
+// Backup para keys que no usan el prefijo max_ (visitas, mensajería)
+function _scheduleBackupGHCustom(storageKey, file, label, val) {
+  clearTimeout(_ghBackupTimers[storageKey]);
+  _ghBackupTimers[storageKey] = setTimeout(() => _saveDataGH(file, val, label), 1500);
+}
 // Configuración compartida por toda la empresa (URL del proxy, etc.)
 // Se guarda en data/config.json y se sincroniza a todos los dispositivos.
 async function _loadCompanyConfig() {
@@ -2404,6 +2409,33 @@ async function _loadAllBackupsGH() {
             localStorage.setItem('max_'+key, JSON.stringify(merged));
           }
         } catch(_) { localStorage.setItem('max_'+key, JSON.stringify(remote)); }
+      }
+    }
+  }
+  // Cargar visitas y mensajería (storage keys con prefijo distinto)
+  const customExtras = [
+    { storageKey:'energy_visitas',    file:'data/visitas.json' },
+    { storageKey:'energy_mensajeria', file:'data/mensajeria.json' }
+  ];
+  for (const c of customExtras) {
+    const remote = await _loadDataGH(c.file);
+    if (Array.isArray(remote) && remote.length > 0) {
+      const localRaw = localStorage.getItem(c.storageKey);
+      if (!localRaw) {
+        localStorage.setItem(c.storageKey, JSON.stringify(remote));
+      } else {
+        try {
+          const local = JSON.parse(localRaw);
+          const seen = new Map();
+          // Conservar el item más nuevo por id; si no hay id, por hora
+          for (const item of [...remote, ...local]) {
+            const k = item.id || item.hora;
+            const prev = seen.get(k);
+            if (!prev || (item.updatedAt||'') > (prev.updatedAt||'')) seen.set(k, item);
+          }
+          const merged = Array.from(seen.values()).sort((a,b)=>(b.hora||'').localeCompare(a.hora||''));
+          localStorage.setItem(c.storageKey, JSON.stringify(merged.slice(0, 100)));
+        } catch(_) { localStorage.setItem(c.storageKey, JSON.stringify(remote)); }
       }
     }
   }
@@ -5613,6 +5645,31 @@ if ('serviceWorker' in navigator) {
 // ===== MODULOS NUEVOS =====
 function getBackendURL(){return localStorage.getItem('energy_backend_url')||'';}
 function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(file);});}
+// Comprime imágenes en el navegador antes de guardar (de ~2MB a ~150KB)
+function compressImage(file, maxWidth=1024, quality=0.72){
+  return new Promise((resolve, reject)=>{
+    if(!file) { resolve(null); return; }
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const ratio = Math.min(1, maxWidth / img.width);
+        const w = Math.round(img.width * ratio);
+        const h = Math.round(img.height * ratio);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        try { resolve(canvas.toDataURL('image/jpeg', quality)); }
+        catch(err){ resolve(e.target.result); } // si falla canvas, usar original
+      };
+      img.onerror = ()=>resolve(e.target.result);
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 function visPreview(input,previewId,phId){const file=input.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{const img=document.getElementById(previewId);const ph=document.getElementById(phId);img.src=e.target.result;img.style.display='block';ph.style.display='none';};r.readAsDataURL(file);}
 function fotoinvPreview(input){visPreview(input,'fotoinv-preview','fotoinv-placeholder');}
 function fotoinvGuardar(){
@@ -5653,26 +5710,34 @@ async function visitasGuardar(){
   const atendio=document.getElementById('vis-atendio').value.trim();
   const f1=document.getElementById('vis-foto1').files[0];
   const f2=document.getElementById('vis-foto2').files[0];
-  if(!cliente||!empresa||!motivo||!atendio){showToast('Completa todos los campos','error');return;}
-  if(!f1||!f2){showToast('Se requieren ambas fotografias','error');return;}
+  if(!cliente||!empresa||!motivo||!atendio){showToast('Completa los campos de texto','error');return;}
+  // Las fotos son OPCIONALES (a veces no se pueden tomar; lo importante es el registro)
+  showToast('Guardando…','info');
   const hora=new Date().toLocaleString('es-CO');
   document.getElementById('vis-hora').value=hora;
-  const fv=await fileToBase64(f1);
-  const fvd=await fileToBase64(f2);
+  const fv = f1 ? await compressImage(f1) : null;
+  const fvd = f2 ? await compressImage(f2) : null;
+  const who = currentUser ? (currentUser.email||currentUser.name) : 'system';
+  const registro = _audit({
+    id: 'vis_'+Date.now(),
+    cliente, empresa, motivo, atendio, hora,
+    fotoVisitante: fv, fotoVisitado: fvd,
+    registradoPor: who
+  }, true);
   const vis=JSON.parse(localStorage.getItem('energy_visitas')||'[]');
-  vis.unshift({cliente:cliente,empresa:empresa,motivo:motivo,atendio:atendio,hora:hora,fotoVisitante:fv,fotoVisitado:fvd});
-  if(vis.length>50)vis.pop();
+  vis.unshift(registro);
+  if(vis.length>100)vis.pop();
   localStorage.setItem('energy_visitas',JSON.stringify(vis));
-  showToast('Visita registrada','success');
+  // Backup compartido a GitHub para que todo el equipo lo vea
+  _scheduleBackupGHCustom('energy_visitas', 'data/visitas.json', '🤝 Visitas', vis);
+  showToast('Visita registrada y compartida con el equipo','success');
+  // Backend opcional (Google Sheets) si está configurado
   const url=getBackendURL();
   if(url){
-    showToast('Enviando a Google Sheets...','info');
     try{
-      const resp=await fetch(url,{method:'POST',body:JSON.stringify({tipo:'visita',cliente:cliente,empresa:empresa,motivo:motivo,personaAtendida:atendio,fotoVisitante:fv,fotoVisitado:fvd})});
-      const j=await resp.json();
-      if(j.ok)showToast('Guardado en Google Sheets','success');
-    }catch(ex){showToast('Sin conexion al servidor','info');}
-  }else{showToast('Configura el backend para guardar en Sheets','info');}
+      await fetch(url,{method:'POST',body:JSON.stringify({tipo:'visita',cliente,empresa,motivo,personaAtendida:atendio,fotoVisitante:fv,fotoVisitado:fvd})});
+    }catch(ex){}
+  }
   visitasLimpiar();
 }
 function visitasLimpiar(){
@@ -5702,23 +5767,30 @@ async function mensajeriaGuardar(){
   const f1=document.getElementById('msg-foto1').files[0];
   const f2=document.getElementById('msg-foto2').files[0];
   if(!dest||!desc||!rec){showToast('Completa los campos obligatorios','error');return;}
-  if(!f1||!f2){showToast('Se requieren ambas fotografias','error');return;}
-  const fr=await fileToBase64(f1);
-  const fe=await fileToBase64(f2);
+  // Las fotos son OPCIONALES
+  showToast('Guardando…','info');
+  const fr = f1 ? await compressImage(f1) : null;
+  const fe = f2 ? await compressImage(f2) : null;
+  const who = currentUser ? (currentUser.email||currentUser.name) : 'system';
+  const registro = _audit({
+    id: 'msg_'+Date.now(),
+    destinatario:dest, empresa:emp, descripcion:desc, quienRecibe:rec, mensajero:mens,
+    hora: new Date().toLocaleString('es-CO'),
+    fotoRecibe: fr, fotoElementos: fe,
+    registradoPor: who
+  }, true);
   const data=JSON.parse(localStorage.getItem('energy_mensajeria')||'[]');
-  data.unshift({destinatario:dest,empresa:emp,descripcion:desc,quienRecibe:rec,mensajero:mens,hora:new Date().toLocaleString('es-CO'),fotoRecibe:fr,fotoElementos:fe});
-  if(data.length>50)data.pop();
+  data.unshift(registro);
+  if(data.length>100)data.pop();
   localStorage.setItem('energy_mensajeria',JSON.stringify(data));
-  showToast('Entrega registrada','success');
+  _scheduleBackupGHCustom('energy_mensajeria', 'data/mensajeria.json', '📬 Mensajería', data);
+  showToast('Entrega registrada y compartida con el equipo','success');
   const url=getBackendURL();
   if(url){
-    showToast('Enviando a Google Sheets...','info');
     try{
-      const resp=await fetch(url,{method:'POST',body:JSON.stringify({tipo:'mensajeria',destinatario:dest,empresaDestinatario:emp,descripcion:desc,quienRecibe:rec,mensajero:mens,fotoRecibe:fr,fotoElementos:fe})});
-      const j=await resp.json();
-      if(j.ok)showToast('Guardado en Google Sheets','success');
-    }catch(ex){showToast('Sin conexion al servidor','info');}
-  }else{showToast('Configura el backend para guardar en Sheets','info');}
+      await fetch(url,{method:'POST',body:JSON.stringify({tipo:'mensajeria',destinatario:dest,empresaDestinatario:emp,descripcion:desc,quienRecibe:rec,mensajero:mens,fotoRecibe:fr,fotoElementos:fe})});
+    }catch(ex){}
+  }
   mensajeriaLimpiar();
 }
 function mensajeriaLimpiar(){
