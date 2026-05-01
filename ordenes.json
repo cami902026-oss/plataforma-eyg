@@ -1054,35 +1054,38 @@
     "num": "240426Z1941",
     "cliente": "CIAM",
     "desc": "PERFILERIA",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
-        "n": "FERRETERIA IMPERIAL",
-        "f": "2026-04-27"
+        "f": "2026-04-27",
+        "n": "FERRETERIA IMPERIAL"
       },
       {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
         "guia": "",
         "dest": "",
-        "resp": "",
-        "envio": "",
-        "n": "",
-        "s": "done",
-        "transp": "",
-        "f": ""
+        "resp": ""
       },
       {
-        "f": "",
-        "s": "pending",
+        "s": "done",
+        "f": "2026-04-29",
         "n": ""
       },
       {
         "s": "done",
-        "n": "414",
-        "f": "2026-04-29"
+        "f": "2026-04-29",
+        "n": "414"
       }
     ],
-    "updatedAt": "✅ Facturado"
+    "createdAt": "2026-05-01T22:31:47.246Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-01T22:31:47.246Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777479688761",
