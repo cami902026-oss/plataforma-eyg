@@ -32,10 +32,7 @@
         "n": "408"
       }
     ],
-    "createdAt": "2026-05-01T22:25:07.249Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-01T22:25:07.249Z",
-    "updatedBy": "andrea"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "LM1376",
@@ -879,35 +876,38 @@
     "num": "LM438",
     "cliente": "SAR ENERGY",
     "desc": "SUMISNITRO MATERIAL MECANICO",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
+        "s": "done",
         "f": "2026-04-17",
-        "n": "CODIFER\nMUNDIAL\nBODEGA",
-        "s": "done"
+        "n": "CODIFER\nMUNDIAL\nBODEGA"
       },
       {
-        "f": "2026-04-18",
         "s": "done",
-        "transp": "LIEBRTADORES",
+        "f": "2026-04-18",
         "n": "",
         "envio": "flota",
-        "resp": "",
+        "transp": "LIEBRTADORES",
         "guia": "",
-        "dest": ""
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-19",
+        "n": ""
       },
       {
         "s": "pending",
-        "n": "",
-        "f": ""
-      },
-      {
         "f": "",
-        "s": "pending",
         "n": ""
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "createdAt": "2026-05-01T22:26:25.054Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-01T22:26:25.054Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1776879880110",
