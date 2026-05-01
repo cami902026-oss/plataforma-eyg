@@ -74,35 +74,38 @@
     "num": "200426H3268",
     "cliente": "CIAM",
     "desc": "SUMINSITRO VIGA",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
-        "f": "2026-04-20",
-        "n": "LA CAMPIÑA",
-        "s": "done"
-      },
-      {
-        "resp": "SHEILA BARON",
-        "envio": "transportadora",
-        "dest": "",
-        "guia": "",
-        "f": "2026-04-21",
         "s": "done",
-        "n": "",
-        "transp": "YOPAL EXPRESS"
+        "f": "2026-04-20",
+        "n": "LA CAMPIÑA"
       },
       {
+        "s": "done",
+        "f": "2026-04-21",
         "n": "",
+        "envio": "transportadora",
+        "transp": "YOPAL EXPRESS",
+        "guia": "",
+        "dest": "",
+        "resp": "SHEILA BARON"
+      },
+      {
         "s": "pending",
-        "f": ""
-      },
-      {
         "f": "",
-        "s": "pending",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-21",
         "n": ""
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "createdAt": "2026-05-01T22:31:17.889Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-01T22:31:17.889Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1320",
@@ -904,10 +907,7 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-01T22:26:25.054Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-01T22:26:25.054Z",
-    "updatedBy": "andrea"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776879880110",
