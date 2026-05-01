@@ -71,7 +71,7 @@ function doGet(e) {
             desc:      r[3],
             estado:    r[4],
             stages:    stages,
-            updatedAt: r[20]
+            updatedAt: r[21]   // FIX: r[20] era la columna "¿Facturado?" (etiqueta), no el timestamp
           };
         });
     }
