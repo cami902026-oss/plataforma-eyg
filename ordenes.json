@@ -4,35 +4,38 @@
     "num": "2_OCOP35_OT48_1",
     "cliente": "CR INGENIERIA Y CONSULTORIA",
     "desc": "SUMINISTRO OCENSA",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
-        "f": "2026-04-17",
         "s": "done",
+        "f": "2026-04-17",
         "n": "CAMPANA\nGYJ\nCAMPIÑA\nFORLAN SAS"
       },
       {
-        "transp": "",
         "s": "done",
-        "n": "",
         "f": "2026-04-20",
+        "n": "",
+        "envio": "recoge_bodega",
+        "transp": "",
         "guia": "",
         "dest": "",
-        "envio": "recoge_bodega",
         "resp": "Andrés Barrera"
       },
       {
-        "n": "",
-        "s": "pending",
-        "f": ""
+        "s": "done",
+        "f": "2026-04-21",
+        "n": ""
       },
       {
+        "s": "done",
         "f": "2026-04-21",
-        "n": "408",
-        "s": "done"
+        "n": "408"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "createdAt": "2026-05-01T22:25:07.249Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-01T22:25:07.249Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1376",
@@ -67,7 +70,7 @@
         "s": "done"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776723607018",
@@ -102,7 +105,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "LM1320",
@@ -136,7 +139,7 @@
         "f": ""
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "LM-1389",
@@ -171,7 +174,7 @@
         "n": "396"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "LM1358",
@@ -206,7 +209,7 @@
         "f": "2026-04-17"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1775841157865",
@@ -241,7 +244,7 @@
         "n": "400"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "LM1380",
@@ -276,7 +279,7 @@
         "f": "2026-04-08"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "060426C6243",
@@ -310,7 +313,7 @@
         "n": "393"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "070426B2299",
@@ -344,7 +347,7 @@
         "f": "2026-04-07"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "060426S0974",
@@ -379,7 +382,7 @@
         "s": "done"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1775861884115",
@@ -414,7 +417,7 @@
         "f": ""
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "060426E8427",
@@ -449,7 +452,7 @@
         "f": "2026-04-06"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776103639015",
@@ -484,7 +487,7 @@
         "s": "done"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776103718938",
@@ -519,7 +522,7 @@
         "f": "2026-04-13"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "02CMP-9692",
@@ -554,7 +557,7 @@
         "n": "390"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776103775812",
@@ -589,7 +592,7 @@
         "f": ""
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "LM1392",
@@ -624,7 +627,7 @@
         "s": "pending"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776192478524",
@@ -659,7 +662,7 @@
         "s": "pending"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776209903635",
@@ -694,7 +697,7 @@
         "f": "2026-04-14"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776219839963",
@@ -729,7 +732,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776264970049",
@@ -764,7 +767,7 @@
         "s": "done"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776440609874",
@@ -799,7 +802,7 @@
         "f": "2026-04-17"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776449624971",
@@ -834,7 +837,7 @@
         "n": "406"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776468993843",
@@ -869,7 +872,7 @@
         "n": "407"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776469053057",
@@ -904,7 +907,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776879880110",
@@ -939,7 +942,7 @@
         "f": "2026-04-22"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776978339802",
@@ -974,7 +977,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776978416135",
@@ -1009,7 +1012,7 @@
         "f": ""
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1777047477580",
@@ -1044,7 +1047,7 @@
         "f": "2026-04-24"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1777313410272",
@@ -1079,7 +1082,7 @@
         "f": "2026-04-29"
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1777479688761",
@@ -1114,10 +1117,7 @@
         "n": "414"
       }
     ],
-    "createdAt": "2026-04-30T20:30:37.523Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-04-30T20:30:37.523Z",
-    "updatedBy": "andrea"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1777493314013",
@@ -1152,7 +1152,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1777493972827",
@@ -1187,7 +1187,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1777494029142",
@@ -1222,6 +1222,6 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-01T17:15:05.051007Z"
+    "updatedAt": "❌ Pendiente"
   }
 ]
