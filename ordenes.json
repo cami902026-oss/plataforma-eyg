@@ -1188,7 +1188,7 @@
   },
   {
     "id": "poc_1777494029142",
-    "num": "4600007246",
+    "num": 4600007246,
     "cliente": "PBI",
     "desc": "SUMISNITRO MATERIAL",
     "estado": "completado",
@@ -1219,9 +1219,44 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-01T22:34:11.768Z",
+    "updatedAt": "❌ Pendiente"
+  },
+  {
+    "id": "poc_1777675044439",
+    "num": "ODC-4047",
+    "cliente": "SAR ENERGY",
+    "desc": "SUMINSITRO DE PREOSTATO",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-05-02",
+        "n": "MT RACORES"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-05-01T22:37:24.440Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-05-01T22:34:11.768Z",
+    "updatedAt": "2026-05-01T22:37:24.440Z",
     "updatedBy": "andrea"
   }
 ]
