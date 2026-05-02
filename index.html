@@ -5940,11 +5940,25 @@ document.addEventListener('DOMContentLoaded', function() {
   }, 2000);
 });
 
-// ===== PWA — Registro del Service Worker =====
+// ===== PWA — Registro del Service Worker + auto-actualización =====
+const APP_VERSION = 'v14';
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./service-worker.js')
-      .then(reg => console.log('[ENERGY PWA] Service Worker registrado:', reg.scope))
+      .then(reg => {
+        console.log('[ENERGY PWA] Service Worker registrado:', reg.scope, 'app', APP_VERSION);
+        // Si hay un SW nuevo esperando, lo activamos y recargamos
+        reg.addEventListener('updatefound', () => {
+          const sw = reg.installing;
+          if (!sw) return;
+          sw.addEventListener('statechange', () => {
+            if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+              showToast('Nueva versión disponible — recargando…','info');
+              setTimeout(() => location.reload(), 1500);
+            }
+          });
+        });
+      })
       .catch(err => console.warn('[ENERGY PWA] Error al registrar SW:', err));
   });
 }
