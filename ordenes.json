@@ -286,34 +286,38 @@
     "num": "060426C6243",
     "cliente": "CIAM",
     "desc": "SUMINISTRO ANGULO",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
+        "s": "done",
         "f": "2026-04-06",
-        "n": "ACEROS MAPA",
-        "s": "done"
+        "n": "ACEROS MAPA"
       },
       {
         "s": "done",
-        "n": "",
         "f": "2026-04-07",
-        "dest": "",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "",
         "guia": "",
-        "resp": "",
-        "envio": "transportadora"
+        "dest": "",
+        "resp": ""
       },
       {
-        "f": "",
-        "s": "pending",
+        "s": "done",
+        "f": "2026-04-23",
         "n": ""
       },
       {
-        "f": "2026-04-07",
         "s": "done",
+        "f": "2026-04-07",
         "n": "393"
       }
     ],
-    "updatedAt": "✅ Facturado"
+    "createdAt": "2026-05-02T01:20:19.553Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-02T01:20:19.553Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "070426B2299",
