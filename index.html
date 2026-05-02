@@ -128,6 +128,15 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .notif-btn:hover { color:var(--white); }
 .notif-badge { position:absolute; top:-4px; right:-4px; min-width:16px; height:16px; padding:0 4px; background:var(--red); border-radius:8px; font-size:9px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; }
 .notif-wrap { position:relative; }
+.sync-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:14px; font-size:11px; font-weight:600; cursor:default; transition:all .2s; user-select:none; }
+.sync-pill.ok { background:rgba(46,170,74,.12); color:#68d391; border:1px solid rgba(46,170,74,.3); }
+.sync-pill.syncing { background:rgba(232,160,32,.12); color:#f6ad55; border:1px solid rgba(232,160,32,.3); }
+.sync-pill.offline { background:rgba(239,68,68,.12); color:#fc8181; border:1px solid rgba(239,68,68,.3); cursor:pointer; }
+.sync-pill.queued { background:rgba(26,58,143,.25); color:#90cdf4; border:1px solid rgba(26,58,143,.4); cursor:pointer; }
+.sync-pill .dot { width:8px; height:8px; border-radius:50%; background:currentColor; }
+.sync-pill.syncing .dot { animation: syncpulse 1s infinite; }
+@keyframes syncpulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+@media(max-width:768px) { .sync-pill .lbl { display:none; } .sync-pill { padding:6px 8px; } }
 .notif-panel { display:none; position:absolute; top:38px; right:0; width:380px; max-height:480px; overflow-y:auto; background:#0F1A2E; border:1px solid rgba(255,255,255,.1); border-radius:12px; box-shadow:0 12px 40px rgba(0,0,0,.6); z-index:500; padding:8px; }
 .notif-panel.open { display:block; }
 .notif-panel-header { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.08); margin-bottom:6px; font-size:13px; font-weight:700; color:#fff; font-family:'Montserrat',sans-serif; }
@@ -722,6 +731,9 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         </div>
       </div>
       <div class="topbar-right">
+        <div class="sync-pill ok" id="sync-pill" title="Estado de sincronización" onclick="syncNow()">
+          <span class="dot"></span><span class="lbl" id="sync-label">Sincronizado</span>
+        </div>
         <div class="notif-wrap">
           <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel(event)">
             🔔<span class="notif-badge" id="notif-badge" style="display:none;">0</span>
@@ -2275,7 +2287,7 @@ const GH_BACKUP_MAP = {
 const saveData = setData;
 async function _ghGetSHA(filename) {
   if (_ghShaCache[filename]) return _ghShaCache[filename];
-  if (!_ghToken()) return '';
+  if (!_ghToken()) return ''; // sin token no hay write, así que no hace falta SHA
   try {
     const r = await fetch(
       `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filename}`,
@@ -2343,13 +2355,100 @@ function _scheduleBackupGH(key, val) {
   const cfg = GH_BACKUP_MAP[key];
   if (!cfg) return;
   clearTimeout(_ghBackupTimers[key]);
-  _ghBackupTimers[key] = setTimeout(() => _saveDataGH(cfg.file, val, cfg.label), 1500);
+  _ghBackupTimers[key] = setTimeout(() => _enqueueOrSave(cfg.file, val, cfg.label), 1500);
 }
 // Backup para keys que no usan el prefijo max_ (visitas, mensajería)
 function _scheduleBackupGHCustom(storageKey, file, label, val) {
   clearTimeout(_ghBackupTimers[storageKey]);
-  _ghBackupTimers[storageKey] = setTimeout(() => _saveDataGH(file, val, label), 1500);
+  _ghBackupTimers[storageKey] = setTimeout(() => _enqueueOrSave(file, val, label), 1500);
 }
+
+// ===== ESTADO DE SYNC + COLA OFFLINE =====
+// Cuando hay red y token: guarda directo a GitHub.
+// Cuando no hay red o falla: encola en localStorage y reintenta cuando vuelva la red.
+const SYNC_QUEUE_KEY = 'energy_sync_queue';
+function _getSyncQueue() {
+  try { return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || '[]'); } catch(_) { return []; }
+}
+function _setSyncQueue(arr) { localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(arr)); }
+function _setSyncStatus(state, msg) {
+  const pill = document.getElementById('sync-pill');
+  const label = document.getElementById('sync-label');
+  if (!pill) return;
+  pill.classList.remove('ok','syncing','offline','queued');
+  pill.classList.add(state);
+  if (label) label.textContent = msg;
+  pill.title = msg + (state==='queued' ? ' — toca para reintentar' : state==='offline' ? ' — toca para reintentar' : '');
+}
+function _refreshSyncBadge() {
+  const q = _getSyncQueue();
+  if (!navigator.onLine) {
+    _setSyncStatus('offline', q.length ? 'Sin conexión · '+q.length+' en cola' : 'Sin conexión');
+  } else if (q.length) {
+    _setSyncStatus('queued', 'Pendiente: '+q.length);
+  } else {
+    _setSyncStatus('ok', 'Sincronizado');
+  }
+}
+async function _enqueueOrSave(file, data, label) {
+  if (!_ghToken()) {
+    // Sin token: no podemos escribir; simplemente devolvemos OK silencioso
+    return;
+  }
+  if (!navigator.onLine) {
+    const q = _getSyncQueue();
+    // Reemplaza cualquier entrada anterior para el mismo archivo (queremos solo la última)
+    const filtered = q.filter(item => item.file !== file);
+    filtered.push({ file, data, label, ts: Date.now() });
+    _setSyncQueue(filtered);
+    _refreshSyncBadge();
+    return;
+  }
+  _setSyncStatus('syncing', 'Sincronizando…');
+  try {
+    await _saveDataGH(file, data, label);
+    // Si se guardó OK, intenta drenar lo que estaba en cola
+    await _drainSyncQueue();
+    _refreshSyncBadge();
+  } catch(e) {
+    // Falló: encolar para reintentar
+    const q = _getSyncQueue();
+    const filtered = q.filter(item => item.file !== file);
+    filtered.push({ file, data, label, ts: Date.now() });
+    _setSyncQueue(filtered);
+    _refreshSyncBadge();
+  }
+}
+async function _drainSyncQueue() {
+  if (!navigator.onLine || !_ghToken()) return;
+  const q = _getSyncQueue();
+  if (!q.length) return;
+  _setSyncStatus('syncing', 'Subiendo '+q.length+'…');
+  const remaining = [];
+  for (const item of q) {
+    try {
+      await _saveDataGH(item.file, item.data, item.label + ' (cola)');
+    } catch(_) {
+      remaining.push(item);
+    }
+  }
+  _setSyncQueue(remaining);
+}
+async function syncNow() {
+  if (!navigator.onLine) {
+    showToast('Sin conexión a internet — espera y se reintenta solo','info');
+    return;
+  }
+  await _drainSyncQueue();
+  _refreshSyncBadge();
+  showToast('Sincronización completa','success');
+}
+window.addEventListener('online',  () => { _refreshSyncBadge(); _drainSyncQueue().then(_refreshSyncBadge); });
+window.addEventListener('offline', () => _refreshSyncBadge());
+// Al cargar la app, intentar drenar lo que haya quedado pendiente
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => { _refreshSyncBadge(); _drainSyncQueue().then(_refreshSyncBadge); }, 2000);
+});
 // Configuración compartida por toda la empresa (URL del proxy, etc.)
 // Se guarda en data/config.json y se sincroniza a todos los dispositivos.
 async function _loadCompanyConfig() {
