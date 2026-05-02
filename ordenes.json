@@ -817,7 +817,7 @@
     "num": "LM1435",
     "cliente": "ITC",
     "desc": "SUMISNITRO MATERIAL MECANICO",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -835,8 +835,8 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-04-24",
         "n": ""
       },
       {
@@ -845,7 +845,10 @@
         "n": "406"
       }
     ],
-    "updatedAt": "✅ Facturado"
+    "createdAt": "2026-05-02T01:20:53.496Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-02T01:20:53.496Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1776468993843",
