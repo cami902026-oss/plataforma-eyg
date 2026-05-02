@@ -5751,8 +5751,17 @@ async function visitasGuardar(){
   if(vis.length>100)vis.pop();
   localStorage.setItem('energy_visitas',JSON.stringify(vis));
   // Backup compartido a GitHub para que todo el equipo lo vea
-  _scheduleBackupGHCustom('energy_visitas', 'data/visitas.json', '🤝 Visitas', vis);
-  showToast('Visita registrada y compartida con el equipo','success');
+  if (!_ghToken()) {
+    showToast('⚠️ Visita guardada solo aquí — configura GitHub Token para compartir con el equipo','error');
+  } else {
+    // Sync inmediato (sin debounce) y avisar al usuario del resultado real
+    try {
+      await _saveDataGH('data/visitas.json', vis, '🤝 Visitas');
+      showToast('✅ Visita compartida con el equipo (GitHub)','success');
+    } catch(e) {
+      showToast('⚠️ Visita local OK pero falló sync con GitHub: '+e.message,'error');
+    }
+  }
   // Backend opcional (Google Sheets) si está configurado
   const url=getBackendURL();
   if(url){
@@ -5768,17 +5777,36 @@ function visitasLimpiar(){
   ['vis-preview1','vis-preview2'].forEach(function(id){var e=document.getElementById(id);if(e){e.src='';e.style.display='none';}});
   ['vis-ph1','vis-ph2'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='block';});
 }
-function visitasVerHistorial(){
+async function visitasVerHistorial(){
   const box=document.getElementById('vis-historial-box');
   const lista=document.getElementById('vis-historial-lista');
+  // Refrescar desde GitHub primero (datos compartidos del equipo)
+  try {
+    const remote = await _loadDataGH('data/visitas.json');
+    if (Array.isArray(remote) && remote.length > 0) {
+      const local = JSON.parse(localStorage.getItem('energy_visitas')||'[]');
+      const seen = new Map();
+      for (const item of [...remote, ...local]) {
+        const k = item.id || item.hora;
+        const prev = seen.get(k);
+        if (!prev || (item.updatedAt||'') > (prev.updatedAt||'')) seen.set(k, item);
+      }
+      const merged = Array.from(seen.values()).sort((a,b)=>(b.hora||'').localeCompare(a.hora||''));
+      localStorage.setItem('energy_visitas', JSON.stringify(merged.slice(0, 100)));
+    }
+  } catch(_){}
   const vis=JSON.parse(localStorage.getItem('energy_visitas')||'[]');
-  box.style.display=box.style.display==='none'?'block':'none';
-  if(!vis.length){lista.innerHTML='<p style="color:var(--text-muted);">Sin visitas aun.</p>';return;}
+  const isHidden = box.style.display === 'none' || !box.style.display;
+  box.style.display = isHidden ? 'block' : 'none';
+  if(!isHidden) return;
+  if(!vis.length){lista.innerHTML='<p style="color:var(--text-muted);padding:20px;text-align:center;">Sin visitas registradas aún.</p>';box.scrollIntoView({behavior:'smooth',block:'start'});return;}
   lista.innerHTML=vis.map(function(v){
     var f1=v.fotoVisitante?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Visitante</div><img src="'+v.fotoVisitante+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
     var f2=v.fotoVisitado?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Visitado</div><img src="'+v.fotoVisitado+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
-    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><b style="color:#fff;">'+v.cliente+' - '+v.empresa+'</b><span style="color:var(--text-muted);font-size:12px;">'+v.hora+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+v.motivo+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Atendio: '+v.atendio+'</div><div style="display:flex;gap:12px;">'+f1+f2+'</div></div>';
+    var who = v.registradoPor || v.updatedBy ? '<div style="color:#8899bb;font-size:10px;margin-top:6px;">📝 Registrado por '+(v.registradoPor||v.updatedBy).split('@')[0]+'</div>' : '';
+    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><b style="color:#fff;">'+(v.cliente||'')+' - '+(v.empresa||'')+'</b><span style="color:var(--text-muted);font-size:12px;">'+(v.hora||'')+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+(v.motivo||'')+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Atendio: '+(v.atendio||'-')+'</div><div style="display:flex;gap:12px;">'+f1+f2+'</div>'+who+'</div>';
   }).join('');
+  box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function mensajeriaGuardar(){
   const dest=document.getElementById('msg-destinatario').value.trim();
@@ -5805,8 +5833,16 @@ async function mensajeriaGuardar(){
   data.unshift(registro);
   if(data.length>100)data.pop();
   localStorage.setItem('energy_mensajeria',JSON.stringify(data));
-  _scheduleBackupGHCustom('energy_mensajeria', 'data/mensajeria.json', '📬 Mensajería', data);
-  showToast('Entrega registrada y compartida con el equipo','success');
+  if (!_ghToken()) {
+    showToast('⚠️ Entrega guardada solo aquí — configura GitHub Token para compartir con el equipo','error');
+  } else {
+    try {
+      await _saveDataGH('data/mensajeria.json', data, '📬 Mensajería');
+      showToast('✅ Entrega compartida con el equipo (GitHub)','success');
+    } catch(e) {
+      showToast('⚠️ Entrega local OK pero falló sync con GitHub: '+e.message,'error');
+    }
+  }
   const url=getBackendURL();
   if(url){
     try{
@@ -5821,17 +5857,36 @@ function mensajeriaLimpiar(){
   ['msg-preview1','msg-preview2'].forEach(function(id){var e=document.getElementById(id);if(e){e.src='';e.style.display='none';}});
   ['msg-ph1','msg-ph2'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='block';});
 }
-function mensajeriaVerHistorial(){
+async function mensajeriaVerHistorial(){
   const box=document.getElementById('msg-historial-box');
   const lista=document.getElementById('msg-historial-lista');
+  // Refrescar desde GitHub primero (datos compartidos del equipo)
+  try {
+    const remote = await _loadDataGH('data/mensajeria.json');
+    if (Array.isArray(remote) && remote.length > 0) {
+      const local = JSON.parse(localStorage.getItem('energy_mensajeria')||'[]');
+      const seen = new Map();
+      for (const item of [...remote, ...local]) {
+        const k = item.id || item.hora;
+        const prev = seen.get(k);
+        if (!prev || (item.updatedAt||'') > (prev.updatedAt||'')) seen.set(k, item);
+      }
+      const merged = Array.from(seen.values()).sort((a,b)=>(b.hora||'').localeCompare(a.hora||''));
+      localStorage.setItem('energy_mensajeria', JSON.stringify(merged.slice(0, 100)));
+    }
+  } catch(_){}
   const data=JSON.parse(localStorage.getItem('energy_mensajeria')||'[]');
-  box.style.display=box.style.display==='none'?'block':'none';
-  if(!data.length){lista.innerHTML='<p style="color:var(--text-muted);">Sin entregas aun.</p>';return;}
+  const isHidden = box.style.display === 'none' || !box.style.display;
+  box.style.display = isHidden ? 'block' : 'none';
+  if(!isHidden) return;
+  if(!data.length){lista.innerHTML='<p style="color:var(--text-muted);padding:20px;text-align:center;">Sin entregas registradas aún.</p>';box.scrollIntoView({behavior:'smooth',block:'start'});return;}
   lista.innerHTML=data.map(function(e){
     var f1=e.fotoRecibe?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Quien recibe</div><img src="'+e.fotoRecibe+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
     var f2=e.fotoElementos?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Elementos</div><img src="'+e.fotoElementos+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
-    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><b style="color:#fff;">'+e.destinatario+(e.empresa?' - '+e.empresa:'')+'</b><span style="color:var(--text-muted);font-size:12px;">'+e.hora+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+e.descripcion+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Recibio: '+e.quienRecibe+' | Mensajero: '+(e.mensajero||'-')+'</div><div style="display:flex;gap:12px;">'+f1+f2+'</div></div>';
+    var who = (e.registradoPor||e.updatedBy) ? '<div style="color:#8899bb;font-size:10px;margin-top:6px;">📝 Registrado por '+(e.registradoPor||e.updatedBy).split('@')[0]+'</div>' : '';
+    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><b style="color:#fff;">'+(e.destinatario||'')+(e.empresa?' - '+e.empresa:'')+'</b><span style="color:var(--text-muted);font-size:12px;">'+(e.hora||'')+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+(e.descripcion||'')+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Recibió: '+(e.quienRecibe||'-')+' | Mensajero: '+(e.mensajero||'-')+'</div><div style="display:flex;gap:12px;">'+f1+f2+'</div>'+who+'</div>';
   }).join('');
+  box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 document.addEventListener('DOMContentLoaded',function(){fotoinvRenderGaleria();});
 
