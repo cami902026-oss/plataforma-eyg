@@ -2607,9 +2607,31 @@ async function doLogin() {
   }
   currentUser = u;
   if (document.getElementById('remember').checked) localStorage.setItem('max_session', JSON.stringify(u));
+  // Aviso a Gerencia: usuario conectado
+  try {
+    const hora = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    const fecha = new Date().toLocaleDateString('es-CO',{weekday:'long', day:'2-digit', month:'short'});
+    const dispositivo = /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent) ? '📱 móvil' : '💻 PC';
+    notifyTeamsApp(
+      '🟢 ' + u.name + ' se conectó a ENERGY',
+      '**' + u.name + '** (' + (u.role||'') + ') · ' + dispositivo + '\n🕐 ' + hora + ' · ' + fecha,
+      '2EAA4A'
+    );
+  } catch(_) {}
   initApp();
 }
 function doLogout() {
+  // Aviso a Gerencia: usuario desconectado (antes de borrar currentUser)
+  try {
+    if (currentUser) {
+      const hora = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+      notifyTeamsApp(
+        '🔴 ' + currentUser.name + ' cerró sesión',
+        '**' + currentUser.name + '** salió de ENERGY · 🕐 ' + hora,
+        '8899bb'
+      );
+    }
+  } catch(_) {}
   localStorage.removeItem('max_session');
   sessionStorage.removeItem('eyg_access');
   currentUser = null;
