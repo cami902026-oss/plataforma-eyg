@@ -699,6 +699,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="nav-item" onclick="navigate('procesos')"><span class="icon">🚛</span>Procesos O.C.</div>
       <div class="nav-item" onclick="navigate('visitas')"><span class="icon">🤝</span>Visitas Comerciales</div>
       <div class="nav-item" onclick="navigate('mensajeria')"><span class="icon">📬</span>Mensajería</div>
+      <div class="nav-item" onclick="navigate('historico')"><span class="icon">📚</span>Históricos</div>
             <div class="nav-item" onclick="navigate('configuracion')"><span class="icon">⚙️</span>Configuración</div>
     </nav>
     <div class="sidebar-footer">
@@ -1266,6 +1267,45 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div style="font-size:12px;margin-top:4px;">Crea una cotización y guárdala para verla aquí.</div>
           </div>
         </div>
+      </div>
+
+      <!-- HISTORICOS — Solo Admin/Jefe -->
+      <div class="page" id="page-historico">
+        <div style="margin-bottom:24px;">
+          <h2 style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:#fff;">📚 Históricos del equipo</h2>
+          <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Bases de datos archivadas mes a mes — solo Andrea y Alberto pueden verlas. Útil para búsquedas de información antigua.</p>
+        </div>
+        <div class="config-section" style="border-left:3px solid #9333ea;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px;">
+            <div class="form-group" style="margin:0;">
+              <label>Módulo</label>
+              <select id="hist-modulo" onchange="historicoListMonths()" style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:#fff;">
+                <option value="">— Todos los módulos —</option>
+                <option value="tareas">✅ Tareas</option>
+                <option value="reuniones">📅 Reuniones</option>
+                <option value="visitas">🤝 Visitas</option>
+                <option value="mensajeria">📬 Mensajería</option>
+                <option value="cotizaciones">📋 Cotizaciones</option>
+                <option value="minutas">📋 Minutas</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>Período (mes)</label>
+              <select id="hist-mes" style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:#fff;">
+                <option value="">— Todos los períodos —</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label>Buscar (cliente, número, etc.)</label>
+              <input type="text" id="hist-busqueda" placeholder="Texto libre" style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:#fff;">
+            </div>
+            <div class="form-group" style="margin:0;display:flex;align-items:flex-end;">
+              <button class="btn btn-primary" onclick="historicoBuscar()" style="width:100%;background:#9333ea;">🔍 Buscar</button>
+            </div>
+          </div>
+          <div id="hist-archivos-disponibles" style="margin-top:8px;font-size:12px;color:var(--text-muted);"></div>
+        </div>
+        <div id="hist-resultados" style="margin-top:20px;"></div>
       </div>
 
       <!-- CONFIGURACION -->
@@ -1912,6 +1952,7 @@ const ALL_MODULES = [
   { id:'procesos',      label:'🚛 Procesos O.C.' },
   { id:'visitas',       label:'🤝 Visitas Comerciales' },
   { id:'mensajeria',    label:'📬 Mensajería' },
+  { id:'historico',     label:'📚 Históricos (Solo Admin)' },
   { id:'configuracion', label:'⚙️ Configuración' }
 ];
 const DEFAULT_USER_MODULES = {
@@ -1932,8 +1973,11 @@ function saveUserModules(cfg) {
 function userCanSeeModule(mod) {
   if (!currentUser) return true;
   const email = (currentUser.email||'').toLowerCase();
-  // Admin/Jefe ve todo siempre
-  if (currentUser.role === 'ADMIN' || currentUser.role === 'JEFE') return true;
+  const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'JEFE';
+  // Históricos es estrictamente admin/jefe (no se puede destrabar por config)
+  if (mod === 'historico') return isAdmin;
+  // Admin/Jefe ve todo el resto siempre
+  if (isAdmin) return true;
   const cfg = getUserModules();
   const denied = cfg[email] || [];
   return !denied.includes(mod);
@@ -3217,6 +3261,7 @@ function navigate(page) {
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); }
+  if(page==='historico') { setTimeout(historicoListMonths, 100); }
   if(page==='procesos') renderProcesos();
   if(page==='inventario') { setTimeout(async()=>{ try { const t = await getToken(); if(t) msLoadInventoryFromOneDrive(); } catch(e){} }, 500); }
 }
@@ -4635,6 +4680,147 @@ async function cerrarMesModulo(moduleId) {
   } catch(e) {
     showToast('Error cerrando mes: '+e.message,'error');
   }
+}
+
+// ===== MÓDULO HISTÓRICOS (página completa, solo admin) =====
+let _histArchivosCache = null; // [{name, path, moduleId, yyyymm}]
+async function historicoListAvailable() {
+  // Lista los archivos en data/historico/ usando GitHub contents API (público)
+  if (_histArchivosCache) return _histArchivosCache;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/data/historico?t=${Date.now()}`);
+    if (!r.ok) { _histArchivosCache = []; return _histArchivosCache; }
+    const arr = await r.json();
+    _histArchivosCache = arr.filter(f => f.type === 'file' && f.name.endsWith('.json')).map(f => {
+      // formato esperado: {modulo}-{YYYY}-{MM}.json
+      const m = f.name.match(/^([a-z]+)-(\d{4}-\d{2})\.json$/i);
+      return {
+        name: f.name,
+        path: f.path,
+        moduleId: m ? m[1] : 'desconocido',
+        yyyymm:   m ? m[2] : ''
+      };
+    });
+    return _histArchivosCache;
+  } catch(e) { console.warn('Histórico list:', e); _histArchivosCache = []; return _histArchivosCache; }
+}
+
+async function historicoListMonths() {
+  const archivos = await historicoListAvailable();
+  const moduloSel = document.getElementById('hist-modulo').value;
+  const mesSel = document.getElementById('hist-mes');
+  const filtrados = moduloSel ? archivos.filter(a => a.moduleId === moduloSel) : archivos;
+  const meses = [...new Set(filtrados.map(a => a.yyyymm).filter(Boolean))].sort().reverse();
+  mesSel.innerHTML = '<option value="">— Todos los períodos —</option>' + meses.map(m=>`<option value="${m}">${m}</option>`).join('');
+  document.getElementById('hist-archivos-disponibles').textContent =
+    `${filtrados.length} archivo(s) histórico(s) disponible(s)${moduloSel?' para '+moduloSel:''}.`;
+}
+
+async function historicoBuscar() {
+  const cont = document.getElementById('hist-resultados');
+  cont.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">⏳ Cargando…</div>';
+  const moduloSel = document.getElementById('hist-modulo').value;
+  const mesSel = document.getElementById('hist-mes').value;
+  const q = document.getElementById('hist-busqueda').value.trim().toLowerCase();
+  const archivos = await historicoListAvailable();
+  const filtrados = archivos.filter(a =>
+    (!moduloSel || a.moduleId === moduloSel) &&
+    (!mesSel || a.yyyymm === mesSel)
+  );
+  if (!filtrados.length) {
+    cont.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">No hay archivos históricos para ese filtro.</div>';
+    return;
+  }
+  // Cargar todos los archivos filtrados
+  const todos = [];
+  for (const f of filtrados) {
+    const data = await _loadDataGH(f.path);
+    if (Array.isArray(data)) {
+      data.forEach(item => todos.push({ ...item, _moduloId: f.moduleId, _yyyymm: f.yyyymm }));
+    }
+  }
+  // Filtro de búsqueda libre
+  let visibles = todos;
+  if (q) {
+    visibles = todos.filter(it => {
+      const txt = JSON.stringify(it).toLowerCase();
+      return txt.includes(q);
+    });
+  }
+  if (!visibles.length) {
+    cont.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);">Sin resultados.</div>';
+    return;
+  }
+  // Render por bloques de módulo
+  const ICONS = { tareas:'✅', reuniones:'📅', visitas:'🤝', mensajeria:'📬', cotizaciones:'📋', minutas:'📋' };
+  cont.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-weight:700;color:#fff;font-size:15px;">📊 ${visibles.length} resultado(s)</div>
+      <button onclick="historicoExportarJSON()" id="hist-export-btn" style="background:rgba(46,170,74,.15);color:#68d391;border:1px solid rgba(46,170,74,.4);border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;">⬇️ Exportar JSON</button>
+    </div>
+    <div id="hist-lista">${visibles.map((it,i) => _historicoCard(it, i)).join('')}</div>`;
+  window.__histVisibles = visibles;
+}
+
+function _historicoCard(it, i) {
+  const mod = it._moduloId;
+  const icon = { tareas:'✅', reuniones:'📅', visitas:'🤝', mensajeria:'📬', cotizaciones:'📋', minutas:'📋' }[mod] || '📦';
+  const titulo = (() => {
+    if (mod === 'tareas') return it.titulo || 'Tarea';
+    if (mod === 'reuniones') return it.titulo || 'Reunión';
+    if (mod === 'visitas') return `${it.cliente||'-'} · ${it.empresa||''}`;
+    if (mod === 'mensajeria') return `${it.destinatario||'-'} ${it.empresa?'· '+it.empresa:''}`;
+    if (mod === 'cotizaciones') return `${it.id||''} · ${it.cliente||'-'}`;
+    if (mod === 'minutas') return 'Minuta';
+    return JSON.stringify(it).slice(0,40);
+  })();
+  const meta = (() => {
+    if (mod === 'tareas') return `${it.responsable||''} · ${it.fecha||''} · ${it.estado||''}`;
+    if (mod === 'reuniones') return `${it.fecha||''} ${it.horaInicio||''} · ${it.tipo||''}`;
+    if (mod === 'visitas') return `${it.hora||''} · ${it.motivo||''}`;
+    if (mod === 'mensajeria') return `${it.hora||''} · ${it.descripcion||''}`;
+    if (mod === 'cotizaciones') return `${it.fecha||''} · Total: ${it.total||'-'} · ${it.estado||''}`;
+    if (mod === 'minutas') return `${it.fecha||''}`;
+    return '';
+  })();
+  return `<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;cursor:pointer;" onclick="_historicoVerDetalle(${i})">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;">
+      <div style="flex:1;"><span style="font-size:16px;">${icon}</span> <b style="color:#fff;">${titulo}</b></div>
+      <span style="font-size:10px;background:rgba(147,51,234,.15);color:#c084fc;border:1px solid rgba(147,51,234,.4);border-radius:6px;padding:2px 8px;">${it._yyyymm}</span>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);">${meta}</div>
+  </div>`;
+}
+
+function _historicoVerDetalle(i) {
+  const it = window.__histVisibles && window.__histVisibles[i];
+  if (!it) return;
+  const overlay = document.createElement('div');
+  overlay.id = '_histDetalle';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2500;padding:20px;overflow-y:auto;';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div style="max-width:800px;margin:30px auto;background:#0a1a30;border:1px solid var(--border);border-radius:14px;padding:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="color:#fff;">📦 Detalle archivado · ${it._moduloId} · ${it._yyyymm}</h3>
+        <button onclick="document.getElementById('_histDetalle').remove()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">✕</button>
+      </div>
+      <pre style="background:rgba(0,0,0,.3);padding:14px;border-radius:8px;color:#cbd5ff;font-size:11px;line-height:1.5;overflow-x:auto;white-space:pre-wrap;">${JSON.stringify(it, null, 2)}</pre>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+function historicoExportarJSON() {
+  const data = window.__histVisibles || [];
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `historico-energy-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 100);
+  showToast('JSON descargado','success');
 }
 
 // ===== VER HISTÓRICO POR MES =====
