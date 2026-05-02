@@ -596,35 +596,38 @@
     "num": "LM1392",
     "cliente": "HIDROCASANARE",
     "desc": "SUMINISTRO DE MATERIAL",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
-        "f": "2026-04-06",
         "s": "done",
+        "f": "2026-04-06",
         "n": "SEGEFER, COLIMP"
       },
       {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "ENREGADO A SATI",
         "envio": "camion_energy",
-        "resp": "",
+        "transp": "",
         "guia": "",
         "dest": "HIDROCASANARE",
-        "f": "2026-04-07",
-        "s": "done",
-        "transp": "",
-        "n": "ENREGADO A SATI"
+        "resp": ""
       },
       {
-        "n": "COMPLETOS EN LA CARPETA\n",
         "s": "done",
-        "f": "2026-04-14"
+        "f": "2026-04-14",
+        "n": "COMPLETOS EN LA CARPETA\n"
       },
       {
+        "s": "pending",
         "f": "",
-        "n": "399",
-        "s": "pending"
+        "n": ""
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "createdAt": "2026-05-02T01:09:53.631Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-02T01:09:53.631Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1776192478524",
