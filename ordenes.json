@@ -102,10 +102,7 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-02T00:15:35.617Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-02T00:15:35.617Z",
-    "updatedBy": "andrea"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "LM1320",
@@ -634,35 +631,38 @@
     "num": "LM-1418",
     "cliente": "HIDROCASANARE",
     "desc": "Suminsitro de tuberia material mecanico",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
-        "n": "Codifer\nInduvacol\ninstrugases",
-        "f": "2026-04-14"
+        "f": "2026-04-14",
+        "n": "Codifer\nInduvacol\ninstrugases"
       },
       {
+        "s": "done",
         "f": "2026-04-15",
-        "transp": "",
-        "s": "done",
         "n": "Recogiendo",
-        "resp": "Andrés Barrera",
         "envio": "camion_energy",
+        "transp": "",
         "guia": "",
-        "dest": ""
+        "dest": "",
+        "resp": "Andrés Barrera"
       },
       {
         "s": "done",
-        "n": "servidor",
-        "f": "2026-04-15"
+        "f": "2026-04-15",
+        "n": "servidor"
       },
       {
-        "f": "",
-        "n": "",
-        "s": "pending"
+        "s": "done",
+        "f": "2026-05-01",
+        "n": "417"
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "createdAt": "2026-05-02T01:09:48.878Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-02T01:09:48.878Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1776209903635",
