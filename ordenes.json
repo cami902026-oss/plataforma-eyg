@@ -143,7 +143,7 @@
     "num": "LM-1389",
     "cliente": "COSTA DIAZ",
     "desc": "Suministro de material mecanico",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -161,8 +161,8 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-04-14",
         "n": ""
       },
       {
@@ -171,7 +171,10 @@
         "n": "396"
       }
     ],
-    "updatedAt": "✅ Facturado"
+    "createdAt": "2026-05-02T01:19:49.161Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-02T01:19:49.161Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1358",
@@ -589,10 +592,7 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-02T01:14:56.748Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-02T01:14:56.748Z",
-    "updatedBy": "andrea"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "LM1392",
