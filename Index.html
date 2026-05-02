@@ -1948,6 +1948,37 @@ function applyUserModuleVisibility() {
     el.style.display = userCanSeeModule(mod) ? '' : 'none';
   });
 }
+
+// Inserta los botones "📦 Cerrar Mes" y "📚 Histórico" en cada página de módulo
+// si el usuario es admin/jefe. Idempotente: si ya están, no los duplica.
+function _injectArchiveButtons() {
+  if (!currentUser) return;
+  const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'JEFE';
+  if (!isAdmin) return;
+  const mapping = [
+    { pageId:'page-tareas',       moduleId:'tareas' },
+    { pageId:'page-reuniones',    moduleId:'reuniones' },
+    { pageId:'page-visitas',      moduleId:'visitas' },
+    { pageId:'page-mensajeria',   moduleId:'mensajeria' },
+    { pageId:'page-cotizaciones', moduleId:'cotizaciones' },
+    { pageId:'page-minutas',      moduleId:'minutas' }
+  ];
+  mapping.forEach(({pageId, moduleId}) => {
+    const page = document.getElementById(pageId);
+    if (!page) return;
+    if (page.querySelector(`[data-archive-bar="${moduleId}"]`)) return; // ya inyectado
+    const cfg = ARCHIVE_CONFIGS[moduleId];
+    const bar = document.createElement('div');
+    bar.setAttribute('data-archive-bar', moduleId);
+    bar.style.cssText = 'display:flex;gap:10px;justify-content:flex-end;margin-bottom:14px;flex-wrap:wrap;';
+    bar.innerHTML = `
+      <button onclick="cerrarMesModulo('${moduleId}')" title="Archiva los registros cerrados/completados del mes anterior" style="background:#5b21b6;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;font-weight:600;">📦 Cerrar Mes</button>
+      <button onclick="verHistoricoModulo('${moduleId}')" title="Ver registros archivados de meses anteriores" style="background:rgba(147,51,234,.15);color:#c084fc;border:1px solid rgba(147,51,234,.4);border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;font-weight:600;">📚 Histórico</button>
+    `;
+    // Insertar al inicio del page
+    page.insertBefore(bar, page.firstChild);
+  });
+}
 function getPerms() {
   try { return Object.assign({},DEFAULT_PERMS,JSON.parse(localStorage.getItem('energy_perms')||'{}')); }
   catch(e) { return DEFAULT_PERMS; }
@@ -1974,6 +2005,8 @@ function applyPermissions() {
   // Render del panel de acceso por usuario (solo admin)
   show('user-modules-section', isAdmin);
   if (isAdmin) renderUserModulesPanel();
+  // Inyecta botones "Cerrar Mes" y "Histórico" en cada módulo (solo admin)
+  _injectArchiveButtons();
 }
 
 function renderPermsPanel() {
@@ -4489,6 +4522,165 @@ function deletePoc() {
   closePocModal();
   renderProcesos();
   showToast('Orden eliminada','info');
+}
+
+// ===== CIERRE DE MES GENÉRICO POR MÓDULO =====
+// Archiva los registros "cerrados/completados" del mes actual a un archivo
+// histórico en GitHub: data/historico/{module}-YYYY-MM.json
+// La vista activa solo muestra registros vivos → app más rápida y el chat
+// ENERGY no se satura con histórico.
+const ARCHIVE_CONFIGS = {
+  tareas: {
+    label:'Tareas', icon:'✅',
+    storageKey:'max_tasks',
+    githubFile:'data/tasks.json',
+    isClosed: (t) => t.estado === 'Completado' || t.estado === 'Cancelado',
+    rerender: () => { try{renderKanban('all');renderDashboard();}catch(_){} }
+  },
+  reuniones: {
+    label:'Reuniones', icon:'📅',
+    storageKey:'max_meetings',
+    githubFile:'reuniones.json',
+    isClosed: (m) => { try { return m.fecha && new Date(m.fecha) < _firstOfThisMonth(); } catch(_){ return false; } },
+    rerender: () => { try{renderMeetingList();renderCalendar();renderDashboard();}catch(_){} }
+  },
+  visitas: {
+    label:'Visitas', icon:'🤝',
+    storageKey:'energy_visitas',
+    githubFile:'data/visitas.json',
+    isClosed: (v) => { try { return v.hora && _parseLocaleDate(v.hora) < _firstOfThisMonth(); } catch(_){ return false; } },
+    rerender: () => { try{_refreshVisitasIfOpen();}catch(_){} }
+  },
+  mensajeria: {
+    label:'Mensajería', icon:'📬',
+    storageKey:'energy_mensajeria',
+    githubFile:'data/mensajeria.json',
+    isClosed: (e) => { try { return e.hora && _parseLocaleDate(e.hora) < _firstOfThisMonth(); } catch(_){ return false; } },
+    rerender: () => { try{_refreshMensajeriaIfOpen();}catch(_){} }
+  },
+  cotizaciones: {
+    label:'Cotizaciones', icon:'📋',
+    storageKey:'max_bd_cotizaciones',
+    githubFile:'data/cotizaciones.json',
+    isClosed: (c) => ['Aceptada','Rechazada','Vencida','Cerrada'].includes(c.estado),
+    rerender: () => { try{bdRender();}catch(_){} }
+  },
+  minutas: {
+    label:'Minutas', icon:'📋',
+    storageKey:'max_minutas',
+    githubFile:'data/minutas.json',
+    isClosed: (m) => { try { return m.fecha && new Date(m.fecha) < _firstOfThisMonth(); } catch(_){ return false; } },
+    rerender: () => { try{renderMinutas();}catch(_){} }
+  }
+};
+function _firstOfThisMonth() {
+  const d = new Date(); d.setHours(0,0,0,0); d.setDate(1); return d;
+}
+function _parseLocaleDate(s) {
+  // Acepta '1/5/2026, 8:49:14 p. m.' (es-CO toLocaleString)
+  if (!s) return new Date(0);
+  const cleaned = String(s).replace(/\s*p\.?\s*m\.?/i, ' PM').replace(/\s*a\.?\s*m\.?/i, ' AM');
+  const parts = cleaned.split(',');
+  if (parts.length < 2) return new Date(s);
+  const [d,mes,a] = parts[0].trim().split('/').map(n=>parseInt(n));
+  const dt = new Date(a, mes-1, d);
+  return dt;
+}
+function _yyyymmPrev() {
+  // Etiqueta del mes que se está cerrando (mes anterior)
+  const d = _firstOfThisMonth();
+  d.setDate(0); // último día del mes anterior
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+async function cerrarMesModulo(moduleId) {
+  const cfg = ARCHIVE_CONFIGS[moduleId];
+  if (!cfg) { showToast('Módulo desconocido','error'); return; }
+  if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'JEFE')) {
+    showToast('Solo el administrador puede cerrar el mes','error'); return;
+  }
+  let lista = [];
+  try { lista = JSON.parse(localStorage.getItem(cfg.storageKey) || '[]'); } catch(_){ lista = []; }
+  if (!Array.isArray(lista)) { showToast('Datos del módulo inválidos','error'); return; }
+  const archivar = lista.filter(cfg.isClosed);
+  if (archivar.length === 0) {
+    showToast(`No hay ${cfg.label.toLowerCase()} cerrado/completado del mes anterior para archivar`,'info');
+    return;
+  }
+  const yyyymm = _yyyymmPrev();
+  const ok = confirm(
+    `📦 Cerrar Mes — ${cfg.icon} ${cfg.label}\n\n`+
+    `Se archivarán ${archivar.length} registro(s) cerrado(s)/completado(s).\n`+
+    `Período: ${yyyymm}\n\n`+
+    `Los activos siguen visibles. Los archivados podrás consultarlos desde "Ver histórico".\n\n¿Continuar?`
+  );
+  if (!ok) return;
+  try {
+    showToast('Archivando…','info');
+    // 1) Cargar histórico actual del mes (si ya existía) y agregarle
+    const histFile = `data/historico/${moduleId}-${yyyymm}.json`;
+    let historicoExistente = [];
+    try {
+      const remoto = await _loadDataGH(histFile);
+      if (Array.isArray(remoto)) historicoExistente = remoto;
+    } catch(_){}
+    const merged = [...historicoExistente, ...archivar];
+    await _saveDataGH(histFile, merged, `📦 Histórico ${cfg.label} ${yyyymm}`);
+    // 2) Quitar de la lista activa
+    const activos = lista.filter(x => !cfg.isClosed(x));
+    localStorage.setItem(cfg.storageKey, JSON.stringify(activos));
+    await _saveDataGH(cfg.githubFile, activos, `📦 Cerrar mes ${cfg.label}`);
+    cfg.rerender();
+    showToast(`📦 Mes cerrado — ${archivar.length} ${cfg.label.toLowerCase()} archivado(s)`,'success');
+  } catch(e) {
+    showToast('Error cerrando mes: '+e.message,'error');
+  }
+}
+
+// ===== VER HISTÓRICO POR MES =====
+async function verHistoricoModulo(moduleId) {
+  const cfg = ARCHIVE_CONFIGS[moduleId];
+  if (!cfg) return;
+  const yyyymm = prompt(`📚 Ver histórico de ${cfg.icon} ${cfg.label}\n\nIngresa el período (formato YYYY-MM, ej: 2026-04):`, _yyyymmPrev());
+  if (!yyyymm) return;
+  if (!/^\d{4}-\d{2}$/.test(yyyymm)) { showToast('Formato inválido. Usa YYYY-MM, ej: 2026-04','error'); return; }
+  showToast('Cargando histórico…','info');
+  const histFile = `data/historico/${moduleId}-${yyyymm}.json`;
+  const data = await _loadDataGH(histFile);
+  if (!Array.isArray(data) || !data.length) {
+    showToast(`No hay registros archivados para ${yyyymm}`,'info'); return;
+  }
+  // Mostrar en modal genérico
+  _showHistoricoModal(moduleId, yyyymm, data);
+}
+function _showHistoricoModal(moduleId, yyyymm, data) {
+  const cfg = ARCHIVE_CONFIGS[moduleId];
+  const overlay = document.createElement('div');
+  overlay.id = '_histModal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;padding:20px;overflow-y:auto;';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  const items = data.map(item => {
+    if (moduleId === 'tareas') {
+      return `<div class="task-card"><div class="task-title">${item.titulo||''}</div><div style="font-size:12px;color:var(--text-muted);">${item.responsable||''} · ${item.fecha||''} · ${item.estado||''}</div></div>`;
+    }
+    if (moduleId === 'visitas' || moduleId === 'mensajeria') {
+      const h = item.hora || '';
+      const a = moduleId === 'visitas' ? `${item.cliente||''} - ${item.empresa||''}` : `${item.destinatario||''}${item.empresa?' - '+item.empresa:''}`;
+      const d = moduleId === 'visitas' ? item.motivo||'' : item.descripcion||'';
+      return `<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;"><div style="font-weight:700;color:#fff;">${a}</div><div style="font-size:11px;color:var(--text-muted);">${h}</div><div style="font-size:13px;color:var(--text-muted);margin-top:4px;">${d}</div></div>`;
+    }
+    return `<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;"><pre style="color:#cbd5ff;font-size:11px;white-space:pre-wrap;">${JSON.stringify(item,null,2)}</pre></div>`;
+  }).join('');
+  overlay.innerHTML = `
+    <div style="max-width:900px;margin:40px auto;background:#0a1a30;border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h2 style="color:#fff;font-family:'Montserrat',sans-serif;font-size:18px;">${cfg.icon} Histórico ${cfg.label} — ${yyyymm}</h2>
+        <button onclick="document.getElementById('_histModal').remove()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;">✕</button>
+      </div>
+      <div style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">${data.length} registro(s) archivado(s)</div>
+      <div>${items}</div>
+    </div>`;
+  document.body.appendChild(overlay);
 }
 
 function cerrarMesOC() {
