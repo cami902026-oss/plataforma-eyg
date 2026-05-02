@@ -1966,54 +1966,13 @@ const todayStr = today.toISOString().split('T')[0];
 const tomorrowStr = new Date(today.getTime()+86400000).toISOString().split('T')[0];
 const dayAfterStr = new Date(today.getTime()+172800000).toISOString().split('T')[0];
 
-const MEETINGS_DEFAULT = [
-  { id:1, titulo:'Entrega Oferta Mansarovar', fecha:'2026-03-24', horaInicio:'09:00', horaFin:'10:00', tipo:'Presencial', participantes:[1,2,5], descripcion:'Entrega y presentación de oferta comercial para Mansarovar.' },
-  { id:2, titulo:'Grado Alberto', fecha:'2026-03-26', horaInicio:'10:00', horaFin:'13:00', tipo:'Presencial', participantes:[1], descripcion:'Ceremonia de grado — Alberto.' },
-  { id:3, titulo:'Cuadro de Gastos Semanal', fecha:todayStr, horaInicio:'16:00', horaFin:'16:30', tipo:'Teams', participantes:[1,6], descripcion:'Revisión semanal del cuadro de gastos con Nelsy.' },
-  { id:4, titulo:'Reunión de seguimiento semanal', fecha:todayStr, horaInicio:'09:00', horaFin:'10:00', tipo:'Teams', participantes:[1,2,3,4,5,6,7], descripcion:'Revisión de avances y pendientes de la semana.' }
-];
+const MEETINGS_DEFAULT = [];
 
 const TASKS_DEFAULT = [];
 
-const PROJECTS_DEFAULT = [
-  { id:1, nombre:'Plan Comercial 2026', responsable:'Sheila Baron', inicio:'2026-01-01', fin:'2026-12-31', progreso:20, estado:'En curso', color:'#2EAA4A' },
-  { id:2, nombre:'Inventario y Organización Bodega', responsable:'Andrés Barrera', inicio:'2026-03-01', fin:'2026-03-31', progreso:60, estado:'En curso', color:'#E8A020' },
-  { id:3, nombre:'Cierre Contable Q1', responsable:'Nelsy', inicio:'2026-03-01', fin:'2026-03-31', progreso:70, estado:'En curso', color:'#1A3A8F' },
-  { id:4, nombre:'Cuadro de Ofertas', responsable:'Alexandra', inicio:'2026-03-01', fin:'2026-03-31', progreso:40, estado:'En curso', color:'#9333ea' }
-];
+const PROJECTS_DEFAULT = [];
 
-const MINUTAS_DEFAULT = [
-  {
-    id:1, reunionId:1, fecha:todayStr,
-    contenido:`ACTA DE REUNIÓN — Seguimiento Semanal
-Fecha: ${today.toLocaleDateString('es-CO')}
-Asistentes: Alberto, Sheila Baron, Alexandra, Andrés Barrera, Andrea, Nelsy
-
-AGENDA
-1. Revisión de avances de la semana
-2. Pendientes y bloqueos
-3. Compromisos para próxima semana
-
-PUNTOS TRATADOS
-• Se revisó el avance del Plan Comercial Q2, actualmente al 40%.
-• Andrés Barrera informó el estado del inventario de bodega pendiente de revisión.
-• Sheila confirmó envío de cotización a cliente para el jueves.
-• Nelsy reportó avance del 70% en el cierre contable de Q1.
-
-DECISIONES
-• Priorizar cierre contable Q1 antes del 31 de marzo.
-• Andrea gestiona compras y órdenes pendientes antes del 26 de marzo.
-
-COMPROMISOS
-• Sheila Baron — Entregar oferta Mansarovar — 24/03/2026
-• Andrés Barrera — Finalizar inventario bodega — 28/03/2026
-• Nelsy — Cuadro de gastos semanal — todos los viernes
-• Alexandra — Actualizar cuadro de ofertas — 27/03/2026
-• Andrea — Gestión compras proveedores — 26/03/2026
-
-PRÓXIMA REUNIÓN: Lunes ${new Date(today.getTime()+7*86400000).toLocaleDateString('es-CO')} — 9:00 AM — Teams`
-  }
-];
+const MINUTAS_DEFAULT = [];
 
 const TEMPLATES_DEFAULT = [
   { cat:'Convocatorias', name:'Convocatoria reunión Teams', text:'Hola equipo 👋\n\nLos convocamos a una reunión el [FECHA] a las [HORA] por Microsoft Teams.\n\n📌 Agenda:\n• [PUNTO 1]\n• [PUNTO 2]\n\nPor favor confirmar asistencia.\n\nSaludos,' },
@@ -3840,12 +3799,7 @@ const POC_STAGES = [
   {key:'cert',    icon:'📄', label:'Certificado'},
   {key:'factura', icon:'💰', label:'Facturación'}
 ];
-const POC_DEFAULT = [
-  { id:'OP-2026-001', num:'OP-2026-001', cliente:'Mansarovar Energy Colombia', desc:'Orden de suministro de válvulas de control para campo Llanos. Verificar certificados de calidad antes de despacho.', estado:'activo', stages:[{s:'done',f:'2026-04-05',n:'Compra realizada'},{s:'active',f:'2026-04-30',n:'En camino',envio:'camion_energy',guia:'',dest:'Campo Llanos',resp:'Andrés Barrera'},{s:'pending',f:'',n:''},{s:'pending',f:'',n:''}], updatedAt:new Date().toISOString() },
-  { id:'OP-2026-002', num:'OP-2026-002', cliente:'Ecopetrol S.A.', desc:'Transmisores de presión diferencial y manómetros para workover WO-112.', estado:'activo', stages:[{s:'active',f:'2026-04-09',n:'En proceso de compra'},{s:'pending',f:'',n:'',envio:'',guia:'',dest:'',resp:''},{s:'pending',f:'',n:''},{s:'pending',f:'',n:''}], updatedAt:new Date().toISOString() },
-  { id:'OP-2026-003', num:'OP-2026-003', cliente:'Hocol S.A.', desc:'Platinas de orificio 3-150 y 2-300 para reemplazo en planta de separación Sur.', estado:'activo', stages:[{s:'done',f:'2026-03-28',n:'Compra Ok'},{s:'done',f:'2026-04-05',n:'Entregado',envio:'transportadora',guia:'TCC-789456',dest:'Planta Sur',resp:'Andrés Barrera'},{s:'active',f:'',n:'Pendiente certificado Alexandra'},{s:'pending',f:'',n:''}], updatedAt:new Date().toISOString() },
-  { id:'OP-2026-004', num:'OP-2026-004', cliente:'Perenco Colombia', desc:'Kit completo de mantenimiento preventivo para compresores de gas. Incluye sellos, empaques y rodamientos.', estado:'activo', stages:[{s:'active',f:'2026-04-09',n:'Cotizando proveedores'},{s:'pending',f:'',n:'',envio:'',guia:'',dest:'',resp:''},{s:'pending',f:'',n:''},{s:'pending',f:'',n:''}], updatedAt:new Date().toISOString() }
-];
+const POC_DEFAULT = [];
 let pocCurrentFilter = 'todos';
 let pocStageFilter = null;
 let pocEditId = null;
