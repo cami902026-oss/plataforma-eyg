@@ -707,35 +707,38 @@
     "num": "LM1387",
     "cliente": "ENERFLEX",
     "desc": "SUMINISTRO POTENCIOMETRO",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
-        "n": "",
         "s": "done",
-        "f": "2026-04-01"
+        "f": "2026-04-01",
+        "n": ""
       },
       {
-        "dest": "",
-        "guia": "",
-        "resp": "",
+        "s": "done",
+        "f": "2026-04-01",
+        "n": "",
         "envio": "taquilla_bus",
-        "s": "done",
         "transp": "RAPIDO OCHOA",
-        "n": "",
-        "f": "2026-04-01"
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
-        "f": "2026-04-14",
         "s": "done",
+        "f": "2026-04-14",
         "n": ""
       },
       {
-        "f": "",
-        "s": "pending",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-01",
+        "n": "416"
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "createdAt": "2026-05-02T01:10:07.782Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-02T01:10:07.782Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1776264970049",
