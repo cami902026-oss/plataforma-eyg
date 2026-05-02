@@ -324,34 +324,38 @@
     "num": "070426B2299",
     "cliente": "CIAM",
     "desc": "SUMINISTRO DE MATERIAL",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
-        "n": "GYJ",
         "s": "done",
-        "f": "2026-04-07"
+        "f": "2026-04-07",
+        "n": "GYJ"
       },
       {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "",
         "envio": "transportadora",
-        "resp": "",
+        "transp": "",
         "guia": "",
         "dest": "",
-        "f": "2026-04-07",
+        "resp": ""
+      },
+      {
         "s": "done",
+        "f": "2026-04-23",
         "n": ""
       },
       {
-        "f": "",
-        "n": "",
-        "s": "pending"
-      },
-      {
         "s": "done",
-        "n": "392",
-        "f": "2026-04-07"
+        "f": "2026-04-07",
+        "n": "392"
       }
     ],
-    "updatedAt": "✅ Facturado"
+    "createdAt": "2026-05-02T01:20:32.635Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-02T01:20:32.635Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "060426S0974",
