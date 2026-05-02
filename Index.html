@@ -2513,8 +2513,8 @@ const POLL_TARGETS = [
   { file:'data/projects.json',     storageKey:'max_projects',        renderFn: () => { try{ renderGantt(); }catch(_){} try{ renderDashboard(); }catch(_){} }, mergeBy:'id' },
   { file:'data/team.json',         storageKey:'max_team',            renderFn: () => { try{ renderTeam(); renderTeamMgmt(); populateSelects(); }catch(_){} }, mergeBy:'id' },
   { file:'data/cotizaciones.json', storageKey:'max_bd_cotizaciones', renderFn: () => { try{ bdRender(); }catch(_){} }, mergeBy:'id' },
-  { file:'data/visitas.json',      storageKey:'energy_visitas',      renderFn: () => {}, mergeBy:'id' },
-  { file:'data/mensajeria.json',   storageKey:'energy_mensajeria',   renderFn: () => {}, mergeBy:'id' },
+  { file:'data/visitas.json',      storageKey:'energy_visitas',      renderFn: () => { _refreshVisitasIfOpen(); }, mergeBy:'id' },
+  { file:'data/mensajeria.json',   storageKey:'energy_mensajeria',   renderFn: () => { _refreshMensajeriaIfOpen(); }, mergeBy:'id' },
   { file:'data/fotos_inv.json',    storageKey:'energy_fotos_inv',    renderFn: () => { try{ if(typeof invRender==='function') invRender(); }catch(_){} }, mergeBy:'__obj__' },
   { file:'data/config.json',       storageKey:null,                  renderFn: () => {}, mergeBy:null },
 ];
@@ -6172,6 +6172,42 @@ function visitasLimpiar(){
   ['vis-preview1','vis-preview2'].forEach(function(id){var e=document.getElementById(id);if(e){e.src='';e.style.display='none';}});
   ['vis-ph1','vis-ph2'].forEach(function(id){var e=document.getElementById(id);if(e)e.style.display='block';});
 }
+// Re-render del historial sin toggle: solo si está abierto, vuelve a pintar
+// usando los datos de localStorage actualizados por el polling.
+function _refreshVisitasIfOpen() {
+  const box = document.getElementById('vis-historial-box');
+  if (!box || box.style.display === 'none' || !box.style.display) return;
+  const lista = document.getElementById('vis-historial-lista');
+  if (!lista) return;
+  const vis = JSON.parse(localStorage.getItem('energy_visitas')||'[]');
+  if (!vis.length) { lista.innerHTML = '<p style="color:var(--text-muted);padding:20px;text-align:center;">Sin visitas registradas aún.</p>'; return; }
+  const isAdmin = currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'JEFE' || currentUser.email === 'andrea' || currentUser.email === 'alberto');
+  lista.innerHTML = vis.map(function(v){
+    var f1=v.fotoVisitante?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Visitante</div><img src="'+v.fotoVisitante+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
+    var f2=v.fotoVisitado?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Visitado</div><img src="'+v.fotoVisitado+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
+    var who = v.registradoPor || v.updatedBy ? '<div style="color:#8899bb;font-size:11px;">📝 Registrado por '+(v.registradoPor||v.updatedBy).split('@')[0]+'</div>' : '';
+    var delBtn = isAdmin ? '<button onclick="visitaEliminar(\''+(v.id||v.hora)+'\')" style="background:#e53e3e;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 6px rgba(229,62,62,.3);">🗑️ Eliminar</button>' : '';
+    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;"><b style="color:#fff;flex:1;">'+(v.cliente||'')+' - '+(v.empresa||'')+'</b><span style="color:var(--text-muted);font-size:12px;white-space:nowrap;">'+(v.hora||'')+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+(v.motivo||'')+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Atendio: '+(v.atendio||'-')+'</div><div style="display:flex;gap:12px;margin-bottom:12px;">'+f1+f2+'</div><div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px dashed rgba(255,255,255,.08);">'+who+delBtn+'</div></div>';
+  }).join('');
+}
+
+function _refreshMensajeriaIfOpen() {
+  const box = document.getElementById('msg-historial-box');
+  if (!box || box.style.display === 'none' || !box.style.display) return;
+  const lista = document.getElementById('msg-historial-lista');
+  if (!lista) return;
+  const data = JSON.parse(localStorage.getItem('energy_mensajeria')||'[]');
+  if (!data.length) { lista.innerHTML = '<p style="color:var(--text-muted);padding:20px;text-align:center;">Sin entregas registradas aún.</p>'; return; }
+  const isAdmin = currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'JEFE' || currentUser.email === 'andrea' || currentUser.email === 'alberto');
+  lista.innerHTML = data.map(function(e){
+    var f1=e.fotoRecibe?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Quien recibe</div><img src="'+e.fotoRecibe+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
+    var f2=e.fotoElementos?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Elementos</div><img src="'+e.fotoElementos+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
+    var who = (e.registradoPor||e.updatedBy) ? '<div style="color:#8899bb;font-size:11px;">📝 Registrado por '+(e.registradoPor||e.updatedBy).split('@')[0]+'</div>' : '';
+    var delBtn = isAdmin ? '<button onclick="mensajeriaEliminar(\''+(e.id||e.hora)+'\')" style="background:#e53e3e;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 6px rgba(229,62,62,.3);">🗑️ Eliminar</button>' : '';
+    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;"><b style="color:#fff;flex:1;">'+(e.destinatario||'')+(e.empresa?' - '+e.empresa:'')+'</b><span style="color:var(--text-muted);font-size:12px;white-space:nowrap;">'+(e.hora||'')+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+(e.descripcion||'')+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Recibió: '+(e.quienRecibe||'-')+' | Mensajero: '+(e.mensajero||'-')+'</div><div style="display:flex;gap:12px;margin-bottom:12px;">'+f1+f2+'</div><div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px dashed rgba(255,255,255,.08);">'+who+delBtn+'</div></div>';
+  }).join('');
+}
+
 async function visitasVerHistorial(){
   const box=document.getElementById('vis-historial-box');
   const lista=document.getElementById('vis-historial-lista');
