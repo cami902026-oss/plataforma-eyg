@@ -1287,6 +1287,13 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <br>Alternativa: URL base de Netlify (requiere plan pago si superas 125k req/mes).
           </p>
         </div>
+        <div class="config-section" style="border-left:3px solid #e53e3e;">
+          <div class="config-title">🧹 Resetear datos locales</div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+            Si ves tareas, OPs o proyectos viejos que ya borraste y vuelven a aparecer, este botón limpia tu localStorage y vuelve a descargar todo desde GitHub (la fuente real del equipo).
+          </p>
+          <button class="btn" onclick="resetearDatosLocales()" style="background:#e53e3e;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:700;">🗑️ Limpiar y recargar desde el servidor</button>
+        </div>
         <div class="config-section">
           <div class="config-title">🔔 Token GitHub (Notificaciones Teams)</div>
           <div class="api-key-row">
@@ -2434,6 +2441,32 @@ async function _drainSyncQueue() {
   }
   _setSyncQueue(remaining);
 }
+// Borra localStorage compartido y recarga desde el servidor (GitHub).
+// Útil cuando el merge quedó atrapado con items demos que el servidor ya no tiene.
+async function resetearDatosLocales() {
+  if (!confirm('Esto borrará tus datos locales (tareas, OPs, reuniones, proyectos, equipo, cotizaciones, visitas y mensajería) y los volverá a descargar desde el servidor. ¿Continuar?')) return;
+  const keys = ['max_tasks','max_meetings','max_minutas','max_projects','max_team','max_bd_cotizaciones','procesos_oc','energy_visitas','energy_mensajeria',SYNC_QUEUE_KEY];
+  keys.forEach(k => localStorage.removeItem(k));
+  // Limpiar etags para forzar re-fetch
+  Object.keys(_pollEtags).forEach(k => delete _pollEtags[k]);
+  showToast('Limpiando…','info');
+  try {
+    await _loadOrdenesGH();
+    await _loadReunionesGH();
+    await _loadAllBackupsGH();
+    await _runPollCycle();
+    showToast('✅ Datos recargados desde el servidor','success');
+    // Re-render de todo
+    try { renderProcesos(); } catch(_){}
+    try { renderKanban('all'); } catch(_){}
+    try { renderMeetingList(); renderCalendar(); } catch(_){}
+    try { renderGantt(); } catch(_){}
+    try { renderTeam(); renderTeamMgmt(); } catch(_){}
+    try { renderMinutas(); } catch(_){}
+    try { renderDashboard(); } catch(_){}
+  } catch(e) { showToast('Error recargando: '+e.message,'error'); }
+}
+
 async function syncNow() {
   if (!navigator.onLine) {
     showToast('Sin conexión a internet — espera y se reintenta solo','info');
@@ -2490,20 +2523,45 @@ async function _pollOne(target) {
       return true;
     }
     if (!Array.isArray(remote)) return false;
-    // Merge por id: nos quedamos con el más reciente por updatedAt
+    // Merge respetando eliminaciones del servidor:
+    // - Item en remoto: se queda (con updatedAt más reciente entre remote/local)
+    // - Item en local NO en remoto:
+    //     · si tiene updatedAt > último sync visto → es nuevo local pendiente de push, se preserva
+    //     · si es más viejo → fue eliminado en el servidor, se descarta
     const localRaw = localStorage.getItem(target.storageKey);
     let local = [];
     try { local = localRaw ? JSON.parse(localRaw) : []; } catch(_) { local = []; }
+    const lastSyncKey = '_lastSync_'+target.file;
+    const lastSync = localStorage.getItem(lastSyncKey) || '';
+    const remoteIds = new Set();
     const seen = new Map();
-    const allItems = [...remote, ...(Array.isArray(local) ? local : [])];
-    for (const item of allItems) {
+    for (const item of remote) {
       if (!item || typeof item !== 'object') continue;
       const k = item[target.mergeBy] || item.hora || item.id;
       if (k === undefined) continue;
-      const prev = seen.get(k);
-      if (!prev || (item.updatedAt||'') > (prev.updatedAt||'')) seen.set(k, item);
+      remoteIds.add(k);
+      seen.set(k, item);
+    }
+    if (Array.isArray(local)) {
+      for (const item of local) {
+        if (!item || typeof item !== 'object') continue;
+        const k = item[target.mergeBy] || item.hora || item.id;
+        if (k === undefined) continue;
+        if (remoteIds.has(k)) {
+          // Existe en ambos: ganador por updatedAt
+          const prev = seen.get(k);
+          if ((item.updatedAt||'') > (prev.updatedAt||'')) seen.set(k, item);
+        } else {
+          // Solo en local: ¿es nuevo (post última sync) o eliminado en remoto?
+          if ((item.updatedAt||'') > lastSync) {
+            seen.set(k, item); // edición local fresca, pendiente de push
+          }
+          // si es viejo → se descarta (asume eliminación del servidor)
+        }
+      }
     }
     const merged = Array.from(seen.values());
+    localStorage.setItem(lastSyncKey, new Date().toISOString());
     const before = JSON.stringify(local);
     const after = JSON.stringify(merged);
     if (before === after) return false; // ya estaba todo en local
