@@ -2449,6 +2449,92 @@ window.addEventListener('offline', () => _refreshSyncBadge());
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => { _refreshSyncBadge(); _drainSyncQueue().then(_refreshSyncBadge); }, 2000);
 });
+
+// ===== SYNC EN TIEMPO REAL (polling con ETag) =====
+// Cada 30s consulta los archivos más cambiantes en raw.githubusercontent.com.
+// Usa ETag (If-None-Match) → 304 si no hay cambios → no descarga ni re-renderiza.
+// Si hay cambios: hace merge inteligente y re-renderiza el módulo afectado.
+const POLL_INTERVAL_MS = 30000;
+const _pollEtags = {}; // file -> last seen ETag
+const POLL_TARGETS = [
+  // Cada uno define cómo aplicar el remoto: storage key + función de re-render
+  { file:'ordenes.json',           storageKey:'procesos_oc',         renderFn: () => { try{ renderProcesos(); }catch(_){} try{ renderDashboard(); }catch(_){} }, mergeBy:'id' },
+  { file:'reuniones.json',         storageKey:'max_meetings',        renderFn: () => { try{ renderMeetingList(); }catch(_){} try{ renderCalendar(); }catch(_){} try{ renderDashboard(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/tasks.json',        storageKey:'max_tasks',           renderFn: () => { try{ renderKanban('all'); }catch(_){} try{ renderDashboard(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/minutas.json',      storageKey:'max_minutas',         renderFn: () => { try{ renderMinutas(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/projects.json',     storageKey:'max_projects',        renderFn: () => { try{ renderGantt(); }catch(_){} try{ renderDashboard(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/team.json',         storageKey:'max_team',            renderFn: () => { try{ renderTeam(); renderTeamMgmt(); populateSelects(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/cotizaciones.json', storageKey:'max_bd_cotizaciones', renderFn: () => { try{ bdRender(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/visitas.json',      storageKey:'energy_visitas',      renderFn: () => {}, mergeBy:'id' },
+  { file:'data/mensajeria.json',   storageKey:'energy_mensajeria',   renderFn: () => {}, mergeBy:'id' },
+  { file:'data/config.json',       storageKey:null,                  renderFn: () => {}, mergeBy:null },
+];
+
+async function _pollOne(target) {
+  const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${target.file}`;
+  try {
+    const headers = { 'Cache-Control':'no-cache' };
+    const lastEtag = _pollEtags[target.file];
+    if (lastEtag) headers['If-None-Match'] = lastEtag;
+    const r = await fetch(url, { headers, cache:'no-store' });
+    if (r.status === 304) return false; // sin cambios
+    if (!r.ok) return false;
+    const newEtag = r.headers.get('etag');
+    if (newEtag) _pollEtags[target.file] = newEtag;
+    const remote = await r.json();
+    // Caso especial: config.json (objeto, no array) — solo aplica proxyUrl
+    if (target.file === 'data/config.json') {
+      if (remote && remote.proxyUrl && !localStorage.getItem('energy_proxy_url')) {
+        localStorage.setItem('energy_proxy_url', remote.proxyUrl);
+      }
+      return true;
+    }
+    if (!Array.isArray(remote)) return false;
+    // Merge por id: nos quedamos con el más reciente por updatedAt
+    const localRaw = localStorage.getItem(target.storageKey);
+    let local = [];
+    try { local = localRaw ? JSON.parse(localRaw) : []; } catch(_) { local = []; }
+    const seen = new Map();
+    const allItems = [...remote, ...(Array.isArray(local) ? local : [])];
+    for (const item of allItems) {
+      if (!item || typeof item !== 'object') continue;
+      const k = item[target.mergeBy] || item.hora || item.id;
+      if (k === undefined) continue;
+      const prev = seen.get(k);
+      if (!prev || (item.updatedAt||'') > (prev.updatedAt||'')) seen.set(k, item);
+    }
+    const merged = Array.from(seen.values());
+    const before = JSON.stringify(local);
+    const after = JSON.stringify(merged);
+    if (before === after) return false; // ya estaba todo en local
+    localStorage.setItem(target.storageKey, after);
+    target.renderFn();
+    return true;
+  } catch(_) { return false; }
+}
+
+let _pollTimer = null;
+async function _runPollCycle() {
+  if (!navigator.onLine) return;
+  if (document.hidden) return; // tab no visible: no consumir red ni cuota raw
+  if (!currentUser) return;     // no autenticado todavía
+  let anyChange = false;
+  for (const t of POLL_TARGETS) {
+    const changed = await _pollOne(t);
+    if (changed) anyChange = true;
+  }
+  if (anyChange) showToast('Datos actualizados desde el servidor','info');
+}
+function _startPolling() {
+  if (_pollTimer) clearInterval(_pollTimer);
+  // Primer ciclo a los 5s para no saturar el load inicial
+  setTimeout(_runPollCycle, 5000);
+  _pollTimer = setInterval(_runPollCycle, POLL_INTERVAL_MS);
+}
+// Si el tab estaba oculto y vuelve a estar visible, polling inmediato
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && currentUser) _runPollCycle();
+});
 // Configuración compartida por toda la empresa (URL del proxy, etc.)
 // Se guarda en data/config.json y se sincroniza a todos los dispositivos.
 async function _loadCompanyConfig() {
@@ -2855,6 +2941,8 @@ function initApp() {
   _loadReunionesGH();
   // Cargar TODOS los demás backups desde GitHub (tasks, minutas, team, projects, cotizaciones)
   _loadAllBackupsGH();
+  // Iniciar sync en tiempo real (polling cada 30s con ETag — solo descarga si hay cambios)
+  _startPolling();
 }
 
 // ===== NAVIGATION =====
