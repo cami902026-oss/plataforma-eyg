@@ -1291,6 +1291,20 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           </p>
           <button class="btn" onclick="resetearDatosLocales()" style="background:#e53e3e;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-weight:700;">🗑️ Limpiar y recargar desde el servidor</button>
         </div>
+        <div class="config-section" style="border-left:3px solid #2EAA4A;">
+          <div class="config-title">📤 Proxy GitHub (escritura compartida sin PAT)</div>
+          <div class="api-key-row">
+            <div class="form-group" style="flex:1;margin:0;">
+              <input type="text" id="gh-proxy-input" placeholder="https://script.google.com/macros/s/.../exec">
+            </div>
+            <button class="btn btn-primary" onclick="saveGhProxyUrl()" style="width:auto;white-space:nowrap;">Guardar</button>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">
+            <b>Recomendado para todos los dispositivos del equipo.</b> Permite que ENERGY guarde cambios al servidor sin que cada persona tenga que configurar su propio Token GitHub.
+            <br>El Token vive seguro en Google Apps Script (Propiedades del script). Pega aquí la URL <code>/exec</code> que generas al desplegar el archivo <code>github-proxy.gs</code>.
+            <br>Esta URL se sincroniza automáticamente con todo el equipo via <code>data/config.json</code>.
+          </p>
+        </div>
         <div class="config-section">
           <div class="config-title">🔔 Token GitHub (Notificaciones Teams)</div>
           <div class="api-key-row">
@@ -2279,8 +2293,34 @@ async function _ghGetSHA(filename) {
   } catch(_) {}
   return '';
 }
+// Proxy de escritura (Apps Script) — permite escribir sin PAT por usuario
+function _ghWriteProxyURL() {
+  const stored = (localStorage.getItem('energy_gh_proxy_url') || '').trim().replace(/\/+$/,'');
+  return stored || '';
+}
 async function _saveDataGH(filename, data, label) {
-  if (!_ghToken()) return;
+  // Estrategia 1: si el dispositivo tiene PAT local, usarlo
+  if (_ghToken()) return _saveDataGH_directPAT(filename, data, label);
+  // Estrategia 2: si hay proxy de escritura configurado, enviar por ahí
+  const proxy = _ghWriteProxyURL();
+  if (proxy) return _saveDataGH_viaProxy(proxy, filename, data, label);
+  // Sin token y sin proxy: imposible escribir
+  throw new Error('Sin GitHub Token ni proxy configurado para escribir');
+}
+async function _saveDataGH_viaProxy(proxyURL, filename, data, label) {
+  // Apps Script: usar text/plain para evitar preflight CORS
+  const resp = await fetch(proxyURL, {
+    method:'POST',
+    headers:{ 'Content-Type':'text/plain;charset=utf-8' },
+    body: JSON.stringify({ file: filename, content: data, label: label }),
+    redirect:'follow'
+  });
+  const j = await resp.json();
+  if (!j.ok) throw new Error(j.error || 'Proxy GitHub error');
+  if (j.sha) _ghShaCache[filename] = j.sha;
+  return j;
+}
+async function _saveDataGH_directPAT(filename, data, label) {
   try {
     const sha = await _ghGetSHA(filename);
     const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
@@ -2373,8 +2413,8 @@ function _refreshSyncBadge() {
   }
 }
 async function _enqueueOrSave(file, data, label) {
-  if (!_ghToken()) {
-    // Sin token: no podemos escribir; simplemente devolvemos OK silencioso
+  if (!_ghToken() && !_ghWriteProxyURL()) {
+    // Sin token y sin proxy: no podemos escribir, queda solo local
     return;
   }
   if (!navigator.onLine) {
@@ -2591,7 +2631,11 @@ async function _loadCompanyConfig() {
   // Si el proxy URL no está local, copiarlo desde la config compartida
   if (cfg.proxyUrl && !localStorage.getItem('energy_proxy_url')) {
     localStorage.setItem('energy_proxy_url', cfg.proxyUrl);
-    console.log('[ENERGY] Proxy URL sincronizada desde config compartida');
+    console.log('[ENERGY] Proxy URL (Claude) sincronizada desde config compartida');
+  }
+  if (cfg.ghProxyUrl && !localStorage.getItem('energy_gh_proxy_url')) {
+    localStorage.setItem('energy_gh_proxy_url', cfg.ghProxyUrl);
+    console.log('[ENERGY] Proxy GitHub sincronizado desde config compartida');
   }
 }
 async function _saveCompanyConfig(patch) {
@@ -3017,7 +3061,7 @@ function navigate(page) {
   const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',configuracion:'Configuración'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
-  if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); }
+  if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); }
   if(page==='procesos') renderProcesos();
   if(page==='inventario') { setTimeout(async()=>{ try { const t = await getToken(); if(t) msLoadInventoryFromOneDrive(); } catch(e){} }, 500); }
 }
@@ -4022,6 +4066,20 @@ async function saveProxyUrl() {
   localStorage.setItem('energy_proxy_url', raw);
   await _saveCompanyConfig({ proxyUrl: raw });
   showToast('URL del proxy guardada y sincronizada al equipo','success');
+}
+async function saveGhProxyUrl() {
+  const raw = document.getElementById('gh-proxy-input').value.trim().replace(/\/+$/,'');
+  if(!raw) { showToast('Ingresa la URL del proxy','error'); return; }
+  if(!/^https?:\/\//i.test(raw)) { showToast('La URL debe empezar con https://','error'); return; }
+  localStorage.setItem('energy_gh_proxy_url', raw);
+  // Compartir con el equipo via config.json (subir es vía el propio proxy o PAT)
+  await _saveCompanyConfig({ ghProxyUrl: raw });
+  showToast('Proxy GitHub guardado y sincronizado al equipo','success');
+}
+function loadGhProxyUrlUI() {
+  const el = document.getElementById('gh-proxy-input');
+  if(!el) return;
+  el.value = localStorage.getItem('energy_gh_proxy_url') || '';
 }
 function loadProxyUrlUI() {
   const el = document.getElementById('proxy-url-input');
@@ -6015,15 +6073,14 @@ async function visitasGuardar(){
   if(vis.length>100)vis.pop();
   localStorage.setItem('energy_visitas',JSON.stringify(vis));
   // Backup compartido a GitHub para que todo el equipo lo vea
-  if (!_ghToken()) {
-    showToast('⚠️ Visita guardada solo aquí — configura GitHub Token para compartir con el equipo','error');
+  if (!_ghToken() && !_ghWriteProxyURL()) {
+    showToast('⚠️ Visita guardada solo aquí — configura el proxy de GitHub para compartir con el equipo','error');
   } else {
-    // Sync inmediato (sin debounce) y avisar al usuario del resultado real
     try {
       await _saveDataGH('data/visitas.json', vis, '🤝 Visitas');
-      showToast('✅ Visita compartida con el equipo (GitHub)','success');
+      showToast('✅ Visita compartida con el equipo','success');
     } catch(e) {
-      showToast('⚠️ Visita local OK pero falló sync con GitHub: '+e.message,'error');
+      showToast('⚠️ Visita local OK pero falló sync: '+e.message,'error');
     }
   }
   // Backend opcional (Google Sheets) si está configurado
@@ -6064,13 +6121,38 @@ async function visitasVerHistorial(){
   box.style.display = isHidden ? 'block' : 'none';
   if(!isHidden) return;
   if(!vis.length){lista.innerHTML='<p style="color:var(--text-muted);padding:20px;text-align:center;">Sin visitas registradas aún.</p>';box.scrollIntoView({behavior:'smooth',block:'start'});return;}
+  const isAdmin = currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'JEFE');
   lista.innerHTML=vis.map(function(v){
     var f1=v.fotoVisitante?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Visitante</div><img src="'+v.fotoVisitante+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
     var f2=v.fotoVisitado?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Visitado</div><img src="'+v.fotoVisitado+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
     var who = v.registradoPor || v.updatedBy ? '<div style="color:#8899bb;font-size:10px;margin-top:6px;">📝 Registrado por '+(v.registradoPor||v.updatedBy).split('@')[0]+'</div>' : '';
-    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><b style="color:#fff;">'+(v.cliente||'')+' - '+(v.empresa||'')+'</b><span style="color:var(--text-muted);font-size:12px;">'+(v.hora||'')+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+(v.motivo||'')+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Atendio: '+(v.atendio||'-')+'</div><div style="display:flex;gap:12px;">'+f1+f2+'</div>'+who+'</div>';
+    var delBtn = isAdmin ? '<button onclick="visitaEliminar(\''+(v.id||v.hora)+'\')" title="Eliminar (solo administrador)" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#fc8181;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">🗑️ Eliminar</button>' : '';
+    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;"><b style="color:#fff;flex:1;">'+(v.cliente||'')+' - '+(v.empresa||'')+'</b><span style="color:var(--text-muted);font-size:12px;white-space:nowrap;">'+(v.hora||'')+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+(v.motivo||'')+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Atendio: '+(v.atendio||'-')+'</div><div style="display:flex;gap:12px;">'+f1+f2+'</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">'+who+delBtn+'</div></div>';
   }).join('');
   box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function visitaEliminar(id) {
+  if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'JEFE')) {
+    showToast('Solo el administrador puede eliminar registros','error');
+    return;
+  }
+  if (!confirm('¿Eliminar esta visita? Se borrará del registro compartido.')) return;
+  let vis = JSON.parse(localStorage.getItem('energy_visitas')||'[]');
+  vis = vis.filter(v => (v.id||v.hora) !== id);
+  localStorage.setItem('energy_visitas', JSON.stringify(vis));
+  try {
+    await _saveDataGH('data/visitas.json', vis, '🗑️ Visita eliminada');
+    showToast('✅ Visita eliminada del registro compartido','success');
+  } catch(e) {
+    showToast('Eliminada local, falló sync: '+e.message,'error');
+  }
+  // Re-llenar la lista sin toggle
+  const box = document.getElementById('vis-historial-box');
+  if (box && box.style.display !== 'none') {
+    box.style.display = 'none';
+    visitasVerHistorial();
+  }
 }
 async function mensajeriaGuardar(){
   const dest=document.getElementById('msg-destinatario').value.trim();
@@ -6097,14 +6179,14 @@ async function mensajeriaGuardar(){
   data.unshift(registro);
   if(data.length>100)data.pop();
   localStorage.setItem('energy_mensajeria',JSON.stringify(data));
-  if (!_ghToken()) {
-    showToast('⚠️ Entrega guardada solo aquí — configura GitHub Token para compartir con el equipo','error');
+  if (!_ghToken() && !_ghWriteProxyURL()) {
+    showToast('⚠️ Entrega guardada solo aquí — configura el proxy de GitHub para compartir con el equipo','error');
   } else {
     try {
       await _saveDataGH('data/mensajeria.json', data, '📬 Mensajería');
-      showToast('✅ Entrega compartida con el equipo (GitHub)','success');
+      showToast('✅ Entrega compartida con el equipo','success');
     } catch(e) {
-      showToast('⚠️ Entrega local OK pero falló sync con GitHub: '+e.message,'error');
+      showToast('⚠️ Entrega local OK pero falló sync: '+e.message,'error');
     }
   }
   const url=getBackendURL();
@@ -6144,13 +6226,37 @@ async function mensajeriaVerHistorial(){
   box.style.display = isHidden ? 'block' : 'none';
   if(!isHidden) return;
   if(!data.length){lista.innerHTML='<p style="color:var(--text-muted);padding:20px;text-align:center;">Sin entregas registradas aún.</p>';box.scrollIntoView({behavior:'smooth',block:'start'});return;}
+  const isAdmin = currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'JEFE');
   lista.innerHTML=data.map(function(e){
     var f1=e.fotoRecibe?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Quien recibe</div><img src="'+e.fotoRecibe+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
     var f2=e.fotoElementos?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Elementos</div><img src="'+e.fotoElementos+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
     var who = (e.registradoPor||e.updatedBy) ? '<div style="color:#8899bb;font-size:10px;margin-top:6px;">📝 Registrado por '+(e.registradoPor||e.updatedBy).split('@')[0]+'</div>' : '';
-    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:8px;"><b style="color:#fff;">'+(e.destinatario||'')+(e.empresa?' - '+e.empresa:'')+'</b><span style="color:var(--text-muted);font-size:12px;">'+(e.hora||'')+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+(e.descripcion||'')+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Recibió: '+(e.quienRecibe||'-')+' | Mensajero: '+(e.mensajero||'-')+'</div><div style="display:flex;gap:12px;">'+f1+f2+'</div>'+who+'</div>';
+    var delBtn = isAdmin ? '<button onclick="mensajeriaEliminar(\''+(e.id||e.hora)+'\')" title="Eliminar (solo administrador)" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#fc8181;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">🗑️ Eliminar</button>' : '';
+    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;"><b style="color:#fff;flex:1;">'+(e.destinatario||'')+(e.empresa?' - '+e.empresa:'')+'</b><span style="color:var(--text-muted);font-size:12px;white-space:nowrap;">'+(e.hora||'')+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+(e.descripcion||'')+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Recibió: '+(e.quienRecibe||'-')+' | Mensajero: '+(e.mensajero||'-')+'</div><div style="display:flex;gap:12px;">'+f1+f2+'</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">'+who+delBtn+'</div></div>';
   }).join('');
   box.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function mensajeriaEliminar(id) {
+  if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'JEFE')) {
+    showToast('Solo el administrador puede eliminar registros','error');
+    return;
+  }
+  if (!confirm('¿Eliminar esta entrega? Se borrará del registro compartido.')) return;
+  let data = JSON.parse(localStorage.getItem('energy_mensajeria')||'[]');
+  data = data.filter(e => (e.id||e.hora) !== id);
+  localStorage.setItem('energy_mensajeria', JSON.stringify(data));
+  try {
+    await _saveDataGH('data/mensajeria.json', data, '🗑️ Entrega eliminada');
+    showToast('✅ Entrega eliminada del registro compartido','success');
+  } catch(e) {
+    showToast('Eliminada local, falló sync: '+e.message,'error');
+  }
+  const box = document.getElementById('msg-historial-box');
+  if (box && box.style.display !== 'none') {
+    box.style.display = 'none';
+    mensajeriaVerHistorial();
+  }
 }
 document.addEventListener('DOMContentLoaded',function(){fotoinvRenderGaleria();});
 

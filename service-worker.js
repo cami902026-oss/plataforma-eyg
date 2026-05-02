@@ -2,7 +2,7 @@
 // Estrategia: network-first para HTML/JS (siempre intenta traer la última versión),
 // cache fallback cuando no hay internet → la app sigue abriendo del cache offline.
 
-const CACHE_NAME = 'energy-v12';
+const CACHE_NAME = 'energy-v13';
 const ASSETS = [
   './Index.html',
   './manifest.json',
