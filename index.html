@@ -4167,6 +4167,10 @@ function renderProcesos() {
     const badgeTxt = {activo:'Activo',completado:'Completado',cancelado:'Cancelado'}[o.estado]||o.estado;
     const auditTooltip = o.createdBy ? `Creada por ${o.createdBy.split('@')[0]}${o.createdAt?' el '+new Date(o.createdAt).toLocaleDateString('es-CO'):''}` : '';
     const auditLine = o.updatedBy ? `<div class="audit-line" title="${auditTooltip}">✏️ ${_auditLabel(o)}${o.createdBy && o.createdBy !== o.updatedBy ? ' · creada por '+o.createdBy.split('@')[0] : ''}</div>` : '';
+    const lockInfo = _pocIsLockedByOther(o);
+    const lockBanner = lockInfo
+      ? `<div style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);border-radius:8px;padding:6px 12px;margin:8px 0;font-size:12px;color:#f6ad55;display:flex;align-items:center;gap:8px;"><span style="font-size:14px;">🔒</span><span><b>${lockInfo.by.split('@')[0]}</b> está editando esta orden (hace ${lockInfo.ageMin} min)</span></div>`
+      : '';
     return `<div class="poc-card">
       <div class="poc-ch">
         <div>
@@ -4175,6 +4179,7 @@ function renderProcesos() {
         </div>
         <span class="poc-badge ${badgeClass}">${badgeTxt}</span>
       </div>
+      ${lockBanner}
       <div class="poc-tl">${tl}</div>
       <div class="poc-actions">
         <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="openPocModal('${o.id}')">✏️ Editar</button>
@@ -4212,6 +4217,41 @@ document.addEventListener('click', function(e) {
   }
 });
 
+// ===== BLOQUEO COLABORATIVO DE O.C. =====
+// Cuando alguien abre el modal para editar, marcamos lockedBy/lockedAt en la orden.
+// Otros usuarios ven un banner "X está editando" durante 5 minutos.
+// Al guardar/cerrar/cancelar se libera el lock. Auto-expira a los 5 min.
+const POC_LOCK_TIMEOUT_MS = 5 * 60 * 1000;
+function _pocLockUser() { return currentUser ? (currentUser.email || currentUser.name) : 'desconocido'; }
+function _pocIsLockedByOther(order) {
+  if (!order || !order.lockedBy) return null;
+  const me = _pocLockUser();
+  if (order.lockedBy === me) return null;
+  const ageMs = Date.now() - new Date(order.lockedAt || 0).getTime();
+  if (isNaN(ageMs) || ageMs > POC_LOCK_TIMEOUT_MS) return null; // lock expirado
+  return { by: order.lockedBy, ageMin: Math.max(1, Math.round(ageMs / 60000)) };
+}
+async function _pocAcquireLock(orderId) {
+  const list = getPOC();
+  const idx = list.findIndex(o => o.id === orderId || o.id === String(orderId));
+  if (idx < 0) return;
+  list[idx].lockedBy = _pocLockUser();
+  list[idx].lockedAt = new Date().toISOString();
+  list[idx].updatedAt = new Date().toISOString();
+  savePOCData(list); // persiste local + sync GitHub
+}
+async function _pocReleaseLock(orderId) {
+  if (!orderId) return;
+  const list = getPOC();
+  const idx = list.findIndex(o => o.id === orderId || o.id === String(orderId));
+  if (idx < 0) return;
+  if (list[idx].lockedBy && list[idx].lockedBy !== _pocLockUser()) return; // no tocar lock ajeno
+  delete list[idx].lockedBy;
+  delete list[idx].lockedAt;
+  list[idx].updatedAt = new Date().toISOString();
+  savePOCData(list);
+}
+
 function openPocModal(id) {
   pocEditId = id || null;
   let order = id ? getPOC().find(o => o.id === id || o.id === String(id)) : null;
@@ -4219,6 +4259,19 @@ function openPocModal(id) {
   if (!order && id) order = getPOC().find(o => o.num === id || o.num === String(id));
   // Usar el id real del objeto encontrado para que el guardado funcione correcto
   if (order) pocEditId = order.id;
+
+  // Verificar lock antes de abrir
+  if (order) {
+    const lock = _pocIsLockedByOther(order);
+    if (lock) {
+      const editor = lock.by.split('@')[0];
+      const proceder = confirm('⚠️ Esta orden está siendo editada por ' + editor + ' (hace ' + lock.ageMin + ' min).\n\nSi continúas y guardas, podrías sobrescribir sus cambios.\n\n¿Abrir de todos modos?');
+      if (!proceder) { pocEditId = null; return; }
+    }
+    // Adquirir lock al abrir
+    _pocAcquireLock(order.id);
+  }
+
   document.getElementById('poc-modal-title').textContent = order ? 'Editar Orden de Compra' : 'Nueva Orden de Compra';
   document.getElementById('poc-del-btn').style.display = order ? 'inline-flex' : 'none';
   document.getElementById('poc-num').value = order?.num||'';
@@ -4246,6 +4299,7 @@ function openPocModal(id) {
 
 function closePocModal() {
   document.getElementById('modal-poc').classList.remove('open');
+  if (pocEditId) _pocReleaseLock(pocEditId);
   pocEditId = null;
 }
 
@@ -4286,11 +4340,16 @@ function savePoc() {
     showToast('✅ Orden completada automáticamente', 'success');
   }
   if(!order.num && !order.cliente){ showToast('Ingresa al menos número o cliente','error'); return; }
+  // Liberar el lock al guardar (el editor ya terminó)
+  delete order.lockedBy;
+  delete order.lockedAt;
   let list = getPOC();
   if(pocEditId) { const idx=list.findIndex(o=>o.id===pocEditId); if(idx>=0) list[idx]=order; else list.push(order); }
   else list.push(order);
   savePOCData(list);
-  closePocModal();
+  // Cerrar modal sin disparar release (ya se hizo arriba)
+  document.getElementById('modal-poc').classList.remove('open');
+  pocEditId = null;
   renderProcesos();
   showToast('Orden guardada','success');
 }
