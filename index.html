@@ -2109,14 +2109,24 @@ function _ghToken() {
 }
 async function _loadOrdenesGH() {
   try {
-    const r = await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json`,
-      { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
-    );
-    if (r.ok) {
-      const d = await r.json();
-      _ordenesFileSHA = d.sha;
-      const arr = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+    let arr = null;
+    if (_ghToken()) {
+      const r = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json?t=${Date.now()}`,
+        { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
+      );
+      if (r.ok) {
+        const d = await r.json();
+        _ordenesFileSHA = d.sha;
+        arr = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+      }
+    }
+    // Fallback a raw público si no hay token o la API falló
+    if (!arr) {
+      const rRaw = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/ordenes.json?t=${Date.now()}`, { cache:'no-store' });
+      if (rRaw.ok) arr = await rRaw.json();
+    }
+    if (arr) {
       if (Array.isArray(arr) && arr.length > 0) {
         // Si hubo guardado local reciente (<60s), no sobreescribir
         if (Date.now() - _pocLastSave < 60000) { ocRenderSafe(); return; }
@@ -2251,19 +2261,26 @@ async function _saveOrdenesGS(arr) {
 let _reunionesFileSHA = '';
 async function _loadReunionesGH() {
   try {
-    const r = await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/reuniones.json`,
-      { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
-    );
-    if (r.ok) {
-      const d = await r.json();
-      _reunionesFileSHA = d.sha;
-      const arr = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
-      if (Array.isArray(arr) && arr.length > 0) {
-        localStorage.setItem('max_meetings', JSON.stringify(arr));
-        try { renderDashboard(); } catch(_) {}
-        try { renderMeetingList(); } catch(_) {}
+    let arr = null;
+    if (_ghToken()) {
+      const r = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/reuniones.json?t=${Date.now()}`,
+        { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
+      );
+      if (r.ok) {
+        const d = await r.json();
+        _reunionesFileSHA = d.sha;
+        arr = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
       }
+    }
+    if (!arr) {
+      const rRaw = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/reuniones.json?t=${Date.now()}`, { cache:'no-store' });
+      if (rRaw.ok) arr = await rRaw.json();
+    }
+    if (Array.isArray(arr) && arr.length > 0) {
+      localStorage.setItem('max_meetings', JSON.stringify(arr));
+      try { renderDashboard(); } catch(_) {}
+      try { renderMeetingList(); } catch(_) {}
     }
   } catch(e) { console.warn('GH reuniones load:', e); }
 }
@@ -2336,18 +2353,30 @@ async function _saveDataGH(filename, data, label) {
   } catch(e) { console.warn('GH save', filename, e); }
 }
 async function _loadDataGH(filename) {
-  if (!_ghToken()) return null;
+  // Si hay token: usar la API (devuelve también el sha para poder escribir después)
+  if (_ghToken()) {
+    try {
+      const r = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filename}?t=${Date.now()}`,
+        { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
+      );
+      if (r.ok) {
+        const d = await r.json();
+        _ghShaCache[filename] = d.sha;
+        return JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+      }
+    } catch(e) { console.warn('GH API load', filename, e); }
+  }
+  // Sin token (o si la API falló): fallback público. El repo es público,
+  // raw.githubusercontent.com sirve cualquier archivo sin autenticación.
+  // Esto permite que cualquier dispositivo del equipo VEA los datos compartidos.
   try {
     const r = await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filename}`,
-      { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
+      `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${filename}?t=${Date.now()}`,
+      { cache: 'no-store' }
     );
-    if (r.ok) {
-      const d = await r.json();
-      _ghShaCache[filename] = d.sha;
-      return JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
-    }
-  } catch(e) { console.warn('GH load', filename, e); }
+    if (r.ok) return await r.json();
+  } catch(e) { console.warn('GH raw load', filename, e); }
   return null;
 }
 const _ghBackupTimers = {};
@@ -2365,7 +2394,6 @@ function _scheduleBackupGHCustom(storageKey, file, label, val) {
 // Configuración compartida por toda la empresa (URL del proxy, etc.)
 // Se guarda en data/config.json y se sincroniza a todos los dispositivos.
 async function _loadCompanyConfig() {
-  if (!_ghToken()) return;
   const cfg = await _loadDataGH('data/config.json');
   if (!cfg) return;
   // Si el proxy URL no está local, copiarlo desde la config compartida
@@ -2383,7 +2411,8 @@ async function _saveCompanyConfig(patch) {
 }
 
 async function _loadAllBackupsGH() {
-  if (!_ghToken()) return;
+  // Lee SIEMPRE — incluso sin token usa raw.githubusercontent.com (repo público).
+  // Esto garantiza que cualquier dispositivo del equipo vea los mismos datos.
   await _loadCompanyConfig();
   for (const key in GH_BACKUP_MAP) {
     const cfg = GH_BACKUP_MAP[key];
