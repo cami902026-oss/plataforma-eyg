@@ -2639,7 +2639,8 @@ async function _loadCompanyConfig() {
   }
 }
 async function _saveCompanyConfig(patch) {
-  if (!_ghToken()) return;
+  // Permitir escribir si hay PAT O proxy configurado
+  if (!_ghToken() && !_ghWriteProxyURL()) return;
   const current = (await _loadDataGH('data/config.json')) || {};
   const merged = Object.assign({}, current, patch, { updatedAt: new Date().toISOString() });
   clearTimeout(_ghBackupTimers.config);
@@ -6135,13 +6136,14 @@ async function visitasVerHistorial(){
   box.style.display = isHidden ? 'block' : 'none';
   if(!isHidden) return;
   if(!vis.length){lista.innerHTML='<p style="color:var(--text-muted);padding:20px;text-align:center;">Sin visitas registradas aún.</p>';box.scrollIntoView({behavior:'smooth',block:'start'});return;}
-  const isAdmin = currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'JEFE');
+  const isAdmin = currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'JEFE' || currentUser.email === 'andrea' || currentUser.email === 'alberto');
+  console.log('[ENERGY] visitas historial — isAdmin:', isAdmin, 'currentUser:', currentUser);
   lista.innerHTML=vis.map(function(v){
     var f1=v.fotoVisitante?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Visitante</div><img src="'+v.fotoVisitante+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
     var f2=v.fotoVisitado?'<div><div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Visitado</div><img src="'+v.fotoVisitado+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;"></div>':'';
-    var who = v.registradoPor || v.updatedBy ? '<div style="color:#8899bb;font-size:10px;margin-top:6px;">📝 Registrado por '+(v.registradoPor||v.updatedBy).split('@')[0]+'</div>' : '';
-    var delBtn = isAdmin ? '<button onclick="visitaEliminar(\''+(v.id||v.hora)+'\')" title="Eliminar (solo administrador)" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#fc8181;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">🗑️ Eliminar</button>' : '';
-    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;"><b style="color:#fff;flex:1;">'+(v.cliente||'')+' - '+(v.empresa||'')+'</b><span style="color:var(--text-muted);font-size:12px;white-space:nowrap;">'+(v.hora||'')+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+(v.motivo||'')+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Atendio: '+(v.atendio||'-')+'</div><div style="display:flex;gap:12px;">'+f1+f2+'</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">'+who+delBtn+'</div></div>';
+    var who = v.registradoPor || v.updatedBy ? '<div style="color:#8899bb;font-size:11px;">📝 Registrado por '+(v.registradoPor||v.updatedBy).split('@')[0]+'</div>' : '';
+    var delBtn = isAdmin ? '<button onclick="visitaEliminar(\''+(v.id||v.hora)+'\')" style="background:#e53e3e;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 6px rgba(229,62,62,.3);">🗑️ Eliminar</button>' : '';
+    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:8px;"><b style="color:#fff;flex:1;">'+(v.cliente||'')+' - '+(v.empresa||'')+'</b><span style="color:var(--text-muted);font-size:12px;white-space:nowrap;">'+(v.hora||'')+'</span></div><div style="color:var(--text-muted);font-size:13px;margin-bottom:4px;">'+(v.motivo||'')+'</div><div style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Atendio: '+(v.atendio||'-')+'</div><div style="display:flex;gap:12px;margin-bottom:12px;">'+f1+f2+'</div><div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px dashed rgba(255,255,255,.08);">'+who+delBtn+'</div></div>';
   }).join('');
   box.scrollIntoView({behavior:'smooth',block:'start'});
 }
