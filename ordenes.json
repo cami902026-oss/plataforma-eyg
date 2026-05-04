@@ -420,10 +420,10 @@
   },
   {
     "id": "poc_1777494029142",
-    "num": 4600007246,
+    "num": "4600007246",
     "cliente": "PBI",
     "desc": "SUMISNITRO MATERIAL",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -446,14 +446,15 @@
         "n": ""
       },
       {
-        "s": "done",
-        "f": "2026-05-05",
+        "s": "pending",
+        "f": "",
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-04T22:06:48.930Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-04T22:06:48.930Z"
+    "createdAt": "2026-05-04T22:06:55.140Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-04T22:06:55.140Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777675044439",
