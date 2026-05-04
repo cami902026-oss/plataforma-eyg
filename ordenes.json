@@ -207,5 +207,191 @@
       }
     ],
     "updatedAt": "❌ Pendiente"
+  },
+  {
+    "id": "LM1392",
+    "num": "LM1392",
+    "cliente": "HIDROCASANARE",
+    "desc": "SUMINISTRO DE MATERIAL",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "SEGEFER, COLIMP"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "ENREGADO A SATI",
+        "envio": "camion_energy",
+        "transp": "",
+        "guia": "",
+        "dest": "HIDROCASANARE",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-14",
+        "n": "COMPLETOS EN LA CARPETA\n"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-05-04T16:36:44.800647",
+    "updatedBy": "Recuperación post-cierre mes (Claude)"
+  },
+  {
+    "id": "poc_1776469053057",
+    "num": "LM438",
+    "cliente": "SAR ENERGY",
+    "desc": "SUMISNITRO MATERIAL MECANICO",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-17",
+        "n": "CODIFER\nMUNDIAL\nBODEGA"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-18",
+        "n": "",
+        "envio": "flota",
+        "transp": "LIEBRTADORES",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-19",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-05-04T16:36:44.800647",
+    "updatedBy": "Recuperación post-cierre mes (Claude)"
+  },
+  {
+    "id": "poc_1777493314013",
+    "num": "ODC-00004170",
+    "cliente": "SAR ENERGY",
+    "desc": "SUMISNITRO MATERIAL",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-29",
+        "n": "ANDERSON\nCODIFER\nDISEFER\nDISEFER\n"
+      },
+      {
+        "s": "active",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-05-04T14:52:15.080Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-04T16:36:44.800647",
+    "updatedBy": "Recuperación post-cierre mes (Claude)"
+  },
+  {
+    "id": "poc_1777494029142",
+    "num": "4600007246",
+    "cliente": "PBI",
+    "desc": "SUMISNITRO MATERIAL",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-29",
+        "n": "codifer\nROCHA Y LONDONO\nBODEGA\nJOSE MONTENEGRO\nDISEFER"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "SERVIENTREGA",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-05-05",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-05-04T14:51:58.969Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-04T16:36:44.800647",
+    "updatedBy": "Recuperación post-cierre mes (Claude)"
+  },
+  {
+    "id": "poc_1777675044439",
+    "num": "ODC-4047",
+    "cliente": "SAR ENERGY",
+    "desc": "SUMINSITRO DE PREOSTATO",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-02",
+        "n": "MT RACORES"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "RICARDO DIAZ",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-05-04",
+        "n": "NO APLICA"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-05-04T14:51:43.369Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-04T16:36:44.800647",
+    "updatedBy": "Recuperación post-cierre mes (Claude)"
   }
 ]
