@@ -210,24 +210,24 @@
   },
   {
     "id": "poc_1777926438588",
-    "num": 2026005441,
+    "num": "2026005441",
     "cliente": "NEW GRANADA",
     "desc": "Sumisitro",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-05-04",
         "n": "Jose montenegro"
       },
       {
-        "s": "pending",
+        "s": "active",
         "f": "",
         "n": "",
-        "envio": "",
+        "envio": "moto",
         "transp": "",
         "guia": "",
-        "dest": "",
+        "dest": "YESID",
         "resp": ""
       },
       {
@@ -241,9 +241,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-04T21:48:25.945Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-04T21:48:25.945Z"
+    "createdAt": "2026-05-04T21:48:45.978Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-04T21:48:45.978Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777926969044",
