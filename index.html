@@ -561,6 +561,9 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .cotiz-estado-adjudicada{background:rgba(46,170,74,.25);color:#4ade80;}
 .cotiz-estado-rechazada{background:rgba(229,62,62,.25);color:#f87171;}
 .cotiz-estado-pendiente{background:rgba(214,158,46,.25);color:var(--gold);}
+.cotiz-estado-borrador{background:rgba(136,153,187,.25);color:#cbd5ff;}
+.cotiz-estado-facturada{background:rgba(46,170,74,.45);color:#fff;}
+.cotiz-estado-vencida{background:rgba(229,62,62,.45);color:#fff;}
 .cotiz-upload-zone{border:2px dashed var(--blue);border-radius:12px;padding:22px;text-align:center;cursor:pointer;transition:.2s;background:rgba(26,58,143,.07);}
 .cotiz-upload-zone:hover{border-color:var(--gold);background:rgba(232,160,32,.07);}
 .cotiz-upload-zone input[type=file]{display:none;}
@@ -1147,10 +1150,13 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                 <div class="form-group" style="margin-bottom:8px;">
                   <label>ESTADO</label>
                   <select id="cotiz-estado" style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
-                    <option value="Enviada">Enviada</option>
-                    <option value="Adjudicada">Adjudicada</option>
-                    <option value="Rechazada">Rechazada</option>
-                    <option value="Pendiente">Pendiente</option>
+                    <option value="Borrador">📝 Borrador (no enviada)</option>
+                    <option value="Enviada">📤 Enviada al cliente</option>
+                    <option value="Adjudicada">✅ Adjudicada</option>
+                    <option value="Facturada">💰 Facturada</option>
+                    <option value="Rechazada">❌ Rechazada</option>
+                    <option value="Vencida">⏰ Vencida</option>
+                    <option value="Pendiente">⏳ Pendiente seguimiento</option>
                   </select>
                 </div>
                 <div class="form-group" style="margin-bottom:8px;">
@@ -4609,7 +4615,7 @@ const ARCHIVE_CONFIGS = {
     label:'Cotizaciones', icon:'📋',
     storageKey:'max_bd_cotizaciones',
     githubFile:'data/cotizaciones.json',
-    isClosed: (c) => ['Aceptada','Rechazada','Vencida','Cerrada'].includes(c.estado),
+    isClosed: (c) => ['Adjudicada','Aceptada','Facturada','Rechazada','Vencida','Cerrada'].includes(c.estado),
     rerender: () => { try{bdRender();}catch(_){} }
   },
   minutas: {
@@ -5148,9 +5154,12 @@ let cotizImgBase64 = null;
 let cotizEditId = null;
 
 const COTIZ_ESTADOS_COLOR = {
+  'Borrador':'cotiz-estado-borrador',
   'Enviada':'cotiz-estado-enviada',
   'Adjudicada':'cotiz-estado-adjudicada',
+  'Facturada':'cotiz-estado-facturada',
   'Rechazada':'cotiz-estado-rechazada',
+  'Vencida':'cotiz-estado-vencida',
   'Pendiente':'cotiz-estado-pendiente'
 };
 
