@@ -4538,14 +4538,14 @@ function savePoc() {
     createdAt: existingOrder?.createdAt,
     createdBy: existingOrder?.createdBy
   }, !existingOrder);
-  // Auto-completar si todas las etapas con contenido están done
+  // Auto-completar SOLO si las 4 etapas (compra, entrega, cert, factura) están done o con fecha
   // Normalize stages 2&3: derive s from date
   order.stages = order.stages.map((st,i) => i>=2 ? {...st, s: st.f?'done':'pending'} : st);
-  const filledStages = order.stages.filter(st => st.f || (st.n && st.n.trim()));
-  const allStageDone = filledStages.length > 0 && filledStages.every(st => st.s === 'done');
-  if(allStageDone && order.estado !== 'cancelado') {
+  while (order.stages.length < 4) order.stages.push({});
+  const allFourDone = order.stages.slice(0,4).every(st => st.s === 'done' || !!(st.f && String(st.f).trim()));
+  if(allFourDone && order.estado !== 'cancelado') {
     order.estado = 'completado';
-    showToast('✅ Orden completada automáticamente', 'success');
+    showToast('✅ Orden completada automáticamente (4 etapas con fecha)', 'success');
   }
   if(!order.num && !order.cliente){ showToast('Ingresa al menos número o cliente','error'); return; }
   // Liberar el lock al guardar (el editor ya terminó)
@@ -4889,25 +4889,43 @@ function _showHistoricoModal(moduleId, yyyymm, data) {
 
 function cerrarMesOC() {
   const list = getPOC();
-  const completadas = list.filter(o => o.estado === 'completado');
+  // Sólo archivar OCs con las 4 etapas completas (done o con fecha) o canceladas.
+  // Esto blinda contra OCs marcadas "completado" por bug de auto-complete.
+  const _todasEtapasDone = (o) => {
+    const s = (o.stages || []).slice(0,4);
+    while (s.length < 4) s.push({});
+    return s.every(st => st.s === 'done' || !!(st.f && String(st.f).trim()));
+  };
+  const completadas = list.filter(o => o.estado === 'completado' && _todasEtapasDone(o));
   const canceladas  = list.filter(o => o.estado === 'cancelado');
   const archivar    = [...completadas, ...canceladas];
 
-  if (archivar.length === 0) {
+  // OCs marcadas completado pero a las que les falta alguna etapa → corregir a activo
+  const incoherentes = list.filter(o => o.estado === 'completado' && !_todasEtapasDone(o));
+
+  if (archivar.length === 0 && incoherentes.length === 0) {
     showToast('No hay órdenes completadas ni canceladas para archivar', 'info');
     return;
   }
 
   const now = new Date();
   const mesLabel = now.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
+  const aviso = incoherentes.length
+    ? `\n⚠️ ${incoherentes.length} orden(es) marcada(s) "completado" sin las 4 etapas terminadas → se devolverán a ACTIVO en lugar de archivarse.\n`
+    : '';
   const confirm1 = confirm(
     `📦 Cerrar Mes — ${mesLabel}\n\n` +
     `Se archivarán:\n` +
-    `• ${completadas.length} orden(es) completada(s)\n` +
-    `• ${canceladas.length} orden(es) cancelada(s)\n\n` +
-    `Quedarán solo las órdenes ACTIVAS en la lista.\n\n¿Confirmar?`
+    `• ${completadas.length} orden(es) completada(s) con las 4 etapas done\n` +
+    `• ${canceladas.length} orden(es) cancelada(s)\n` +
+    aviso +
+    `\nQuedarán en la lista las ACTIVAS${incoherentes.length?' (incluidas las corregidas)':''}.\n\n¿Confirmar?`
   );
   if (!confirm1) return;
+  // Corregir las incoherentes ANTES de archivar
+  if (incoherentes.length) {
+    incoherentes.forEach(o => { o.estado = 'activo'; o.updatedAt = new Date().toISOString(); });
+  }
 
   // 1. Guardar en historial local (localStorage) — comportamiento original
   const histKey = 'procesos_oc_historial';
