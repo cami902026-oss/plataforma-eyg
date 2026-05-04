@@ -139,6 +139,21 @@ const TOOLS = [
         responsable: { type:'string', description:'Filtrar por responsable (opcional)' }
       }
     }
+  },
+  {
+    name: 'crear_oc',
+    description: 'Crea una Orden de Pedido nueva en el módulo Procesos OC. Usa el número que vino del cliente (ej. LM1500, ODC-4170, 4600007246). Si la fecha de compra no se da, usa hoy.',
+    input_schema: {
+      type:'object',
+      properties: {
+        num:           { type:'string', description:'Número de la OC tal como lo envió el cliente' },
+        cliente:       { type:'string', description:'Nombre del cliente (ej. PETRORIOS, SAR ENERGY, CIAM)' },
+        desc:          { type:'string', description:'Descripción de lo que se está comprando' },
+        fecha_compra:  { type:'string', description:'YYYY-MM-DD (default hoy)' },
+        nota:          { type:'string', description:'Nota opcional' }
+      },
+      required: ['num','cliente']
+    }
   }
 ];
 
@@ -214,6 +229,7 @@ function executeTool(name, args, user) {
   if (name === 'marcar_etapa_oc')         return tool_marcar_etapa_oc(args, user);
   if (name === 'listar_oc_pendientes')    return tool_listar_oc_pendientes(args);
   if (name === 'listar_tareas_pendientes') return tool_listar_tareas_pendientes(args);
+  if (name === 'crear_oc')                return tool_crear_oc(args, user);
   return { ok: false, mensaje: 'Herramienta desconocida: ' + name };
 }
 
@@ -353,4 +369,43 @@ function _ghSaveJSON(path, data, label) {
     Logger.log('GH save error ' + r.getResponseCode() + ': ' + r.getContentText());
     throw new Error('GitHub PUT ' + r.getResponseCode());
   }
+}
+
+// ─── tool_crear_oc ─────────────────────────────────────────────────────────
+// Crea OC en ordenes.json. Usa num del cliente como num de OC.
+// Stage 0 (Compra) queda con la fecha indicada (default hoy). Resto vacío.
+function tool_crear_oc(args, user) {
+  if (!args || !args.num || !args.cliente) {
+    return { ok:false, mensaje:'Faltan datos. Necesito al menos número y cliente.' };
+  }
+  const list = _ghLoadJSON('ordenes.json') || [];
+  // Evitar duplicados por num
+  const numNorm = String(args.num).trim();
+  const yaExiste = list.find(function(o){ return String(o.num||'').trim().toLowerCase() === numNorm.toLowerCase(); });
+  if (yaExiste) {
+    return { ok:false, mensaje:'Ya existe una OC con número ' + numNorm + ' (cliente: ' + (yaExiste.cliente||'-') + ').' };
+  }
+  const fecha = args.fecha_compra || new Date().toISOString().slice(0,10);
+  const now = new Date().toISOString();
+  const nuevoId = 'poc_' + Date.now();
+  const oc = {
+    id: nuevoId,
+    num: numNorm,
+    cliente: String(args.cliente).trim().toUpperCase(),
+    desc: args.desc || '',
+    estado: 'activo',
+    stages: [
+      { s:'done', f: fecha, n: args.nota || '' },
+      { s:'pending', f:'', n:'' },
+      { s:'pending', f:'', n:'' },
+      { s:'pending', f:'', n:'' }
+    ],
+    createdAt: now,
+    createdBy: (user && user.name) ? user.name + ' (vía WhatsApp)' : 'Bot WhatsApp',
+    updatedAt: now,
+    updatedBy: (user && user.name) ? user.name + ' (vía WhatsApp)' : 'Bot WhatsApp'
+  };
+  list.push(oc);
+  _ghSaveJSON('ordenes.json', list, '🆕 OC ' + numNorm + ' (' + oc.cliente + ') vía bot');
+  return { ok:true, mensaje:'OC ' + numNorm + ' creada para ' + oc.cliente + ', compra ' + fecha + '.' };
 }

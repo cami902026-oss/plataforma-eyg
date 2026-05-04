@@ -4320,10 +4320,36 @@ function getPOC() {
   try { return JSON.parse(localStorage.getItem('procesos_oc')) || POC_DEFAULT; } catch(e) { return POC_DEFAULT; }
 }
 let _pocLastSave = 0; // timestamp del último guardado local — bloquea sync remoto 60s
-function savePOCData(arr) {
+// Merge defensivo: NUNCA dejar fuera una OC que esté en remoto pero no en local.
+// Razón: 04-may-2026 la app sobrescribió 5 OCs recuperadas porque savePOCData
+// empujaba el local sin mergear con la versión remota.
+async function savePOCData(arr) {
   _pocLastSave = Date.now();
   const now = new Date().toISOString();
   arr = arr.map(o => o.updatedAt ? o : { ...o, updatedAt: now });
+  // Merge con remoto antes de empujar (no aplica si no hay PAT configurado)
+  try {
+    if (_ghToken()) {
+      const r = await fetch(
+        `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/ordenes.json?t=${Date.now()}`,
+        { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
+      );
+      if (r.ok) {
+        const d = await r.json();
+        _ordenesFileSHA = d.sha;
+        const remoto = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+        if (Array.isArray(remoto)) {
+          const localIds = new Set(arr.map(o => o.id || o.num));
+          // Mantener cualquier OC remota que NO esté en el array local
+          const huerfanas = remoto.filter(r => !localIds.has(r.id || r.num));
+          if (huerfanas.length) {
+            console.warn(`[ENERGY] savePOCData: protegiendo ${huerfanas.length} OC(s) remotas no presentes en local`, huerfanas.map(o=>o.num||o.id));
+            arr = [...arr, ...huerfanas];
+          }
+        }
+      }
+    }
+  } catch(e) { console.warn('savePOC merge:', e); }
   localStorage.setItem('procesos_oc', JSON.stringify(arr));
   _saveOrdenesGS(arr);   // → Google Sheets
   _saveOrdenesGH(arr);   // → GitHub (para que el correo diario tenga los datos al día)
