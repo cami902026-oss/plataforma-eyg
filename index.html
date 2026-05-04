@@ -1913,10 +1913,10 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   </div>
   <div class="chat-messages" id="chat-messages"></div>
   <div class="quick-actions" id="quick-actions">
+    <button class="quick-btn" onclick="quickChat('¿Qué O.C. están vencidas?')">O.C. vencidas</button>
+    <button class="quick-btn" onclick="quickChat('Lista tareas pendientes mías')">Mis tareas</button>
+    <button class="quick-btn" onclick="quickChat('Buscar inventario: válvula 2 pulgadas')">Buscar inventario</button>
     <button class="quick-btn" onclick="quickChat('¿Qué tengo hoy?')">¿Qué tengo hoy?</button>
-    <button class="quick-btn" onclick="quickChat('Redacta un mensaje al equipo')">Redacta un mensaje</button>
-    <button class="quick-btn" onclick="quickChat('¿Cuáles tareas vencen esta semana?')">Tareas urgentes</button>
-    <button class="quick-btn" onclick="quickChat('Dame un resumen del equipo')">Resumen del equipo</button>
     <button class="quick-btn" onclick="toggleChat();navigate('configuracion')" style="background:rgba(232,160,32,0.15);border-color:rgba(232,160,32,0.5);color:var(--gold);">⚙️ Configuración</button>
   </div>
   <div class="chat-input-row">
@@ -5574,33 +5574,296 @@ function getClaudeProxyURL() {
   return '';
 }
 
+// ===== HERRAMIENTAS QUE EL CHAT ENERGY PUEDE EJECUTAR =====
+const ENERGY_TOOLS = [
+  {
+    name: 'crear_tarea',
+    description: 'Crea una nueva tarea en el módulo Tareas. La tarea queda visible para todo el equipo.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        titulo:      { type: 'string', description: 'Título corto de la tarea' },
+        responsable: { type: 'string', description: 'Nombre del responsable. Debe ser uno del equipo: Alberto, Sheila Baron, Alexandra, Andrea, Nelsy, Lina Cifientes' },
+        fecha:       { type: 'string', description: 'Fecha límite en formato YYYY-MM-DD' },
+        prioridad:   { type: 'string', enum: ['Alta','Media','Baja'], description: 'Prioridad' },
+        desc:        { type: 'string', description: 'Descripción opcional' }
+      },
+      required: ['titulo','responsable','fecha']
+    }
+  },
+  {
+    name: 'marcar_etapa_oc',
+    description: 'Marca una etapa de una Orden de Compra como completada. Las etapas son: compra, entrega, certificado, factura.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        num:   { type: 'string', description: 'Número o ID de la O.C. (ej: LM-1389, ODC-4049, etc.)' },
+        etapa: { type: 'string', enum: ['compra','entrega','certificado','factura'], description: 'Etapa a marcar como completada' },
+        fecha: { type: 'string', description: 'Fecha en YYYY-MM-DD. Si no se proporciona, usa hoy.' },
+        nota:  { type: 'string', description: 'Nota opcional' }
+      },
+      required: ['num','etapa']
+    }
+  },
+  {
+    name: 'enviar_whatsapp',
+    description: 'Abre WhatsApp con un mensaje predefinido para un miembro del equipo. El mensaje queda listo para enviar — el usuario debe presionar el botón verde de WhatsApp.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        persona: { type: 'string', description: 'Nombre del miembro del equipo' },
+        mensaje: { type: 'string', description: 'Mensaje completo a enviar' }
+      },
+      required: ['persona','mensaje']
+    }
+  },
+  {
+    name: 'buscar_inventario',
+    description: 'Busca productos en el inventario por descripción, código, marca o ubicación. Retorna hasta 10 resultados con stock actual.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Texto a buscar' }
+      },
+      required: ['query']
+    }
+  },
+  {
+    name: 'listar_oc_pendientes',
+    description: 'Lista las O.C. activas con su etapa pendiente actual. Útil para preguntas como "cuáles están vencidas", "qué falta para CIAM", "estado de las O.C.".',
+    input_schema: {
+      type: 'object',
+      properties: {
+        cliente: { type: 'string', description: 'Filtrar por nombre de cliente (opcional)' }
+      }
+    }
+  },
+  {
+    name: 'crear_reunion',
+    description: 'Agenda una nueva reunión.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        titulo:        { type: 'string' },
+        fecha:         { type: 'string', description: 'YYYY-MM-DD' },
+        horaInicio:    { type: 'string', description: 'HH:MM' },
+        horaFin:       { type: 'string', description: 'HH:MM' },
+        tipo:          { type: 'string', enum:['Presencial','Teams','Telefónica'] },
+        descripcion:   { type: 'string' }
+      },
+      required: ['titulo','fecha','horaInicio']
+    }
+  }
+];
+
+// ===== EJECUCIÓN DE HERRAMIENTAS =====
+function tool_crear_tarea(args) {
+  const tasks = getData('tasks', TASKS_DEFAULT) || [];
+  const newId = Math.max(0, ...tasks.map(t=>t.id||0)) + 1;
+  const task = _audit({
+    id: newId,
+    titulo: args.titulo,
+    desc: args.desc || '',
+    responsable: args.responsable,
+    fecha: args.fecha,
+    prioridad: args.prioridad || 'Media',
+    estado: 'En Progreso',
+    proyecto: ''
+  }, true);
+  tasks.push(task);
+  setData('tasks', tasks);
+  try { renderKanban('all'); renderDashboard(); } catch(_) {}
+  showToast(`✅ ENERGY creó tarea: "${args.titulo}" → ${args.responsable}`,'success');
+  return { ok:true, id:newId, mensaje:`Tarea "${args.titulo}" creada para ${args.responsable}, vence ${args.fecha}` };
+}
+
+function tool_marcar_etapa_oc(args) {
+  const list = getPOC();
+  const stageMap = { compra:0, entrega:1, certificado:2, certif:2, factura:3, facturacion:3, 'facturación':3 };
+  const idx = stageMap[(args.etapa||'').toLowerCase()];
+  if (idx === undefined) return { ok:false, mensaje:'Etapa inválida. Usa: compra, entrega, certificado o factura.' };
+  const order = list.find(o => (o.num||'').toString().toLowerCase() === (args.num||'').toString().toLowerCase() || o.id === args.num);
+  if (!order) return { ok:false, mensaje:`No encontré la O.C. "${args.num}".` };
+  const stages = order.stages || [{},{},{},{}];
+  while (stages.length < 4) stages.push({});
+  const fecha = args.fecha || new Date().toISOString().slice(0,10);
+  stages[idx] = { ...stages[idx], s:'done', f:fecha, n: args.nota || stages[idx].n || '' };
+  order.stages = stages;
+  order.updatedAt = new Date().toISOString();
+  if (currentUser) order.updatedBy = currentUser.email || currentUser.name;
+  // Auto-completar si todas las etapas con datos están done
+  const filledDone = stages.every(s => s.s === 'done' || !!s.f);
+  if (filledDone) order.estado = 'completado';
+  savePOCData(list);
+  try { renderProcesos(); renderDashboard(); } catch(_) {}
+  const labels = ['Compra','Entrega','Certificado','Facturación'];
+  showToast(`✅ ENERGY marcó ${labels[idx]} de ${args.num} (${fecha})`,'success');
+  return { ok:true, mensaje:`Etapa ${labels[idx]} de O.C. ${args.num} marcada como completada el ${fecha}.${filledDone?' La O.C. quedó como completada porque todas las etapas tienen fecha.':''}` };
+}
+
+function tool_enviar_whatsapp(args) {
+  const team = getData('team', TEAM_DEFAULT) || [];
+  const target = (args.persona||'').toLowerCase();
+  const member = team.find(m => (m.name||'').toLowerCase().includes(target));
+  if (!member) return { ok:false, mensaje:`No encontré a "${args.persona}" en el equipo.` };
+  const wa = (member.wa||'').replace(/\D/g,'');
+  if (!wa) return { ok:false, mensaje:`${member.name} no tiene número de WhatsApp registrado.` };
+  const url = `https://wa.me/${wa}?text=${encodeURIComponent(args.mensaje)}`;
+  window.open(url, '_blank');
+  showToast(`📱 ENERGY abrió WhatsApp para ${member.name}`,'success');
+  return { ok:true, mensaje:`Abrí WhatsApp en una pestaña nueva para ${member.name}. El mensaje está listo, solo presiona el botón verde de enviar.` };
+}
+
+function tool_buscar_inventario(args) {
+  const inv = window.INV || [];
+  if (!inv.length) return { ok:false, mensaje:'El inventario aún no se cargó en este dispositivo. Abre el módulo Inventario primero.' };
+  const q = (args.query||'').toLowerCase();
+  if (!q) return { ok:false, mensaje:'Falta el texto de búsqueda.' };
+  const matches = inv.filter(p => {
+    const txt = String((p['DESCRIPCION']||'') + ' ' + (p['CODIGO PRODUCTO']||'') + ' ' + (p['MARCA']||'') + ' ' + (p['UBICACIÓN']||p['UBICACION']||'')).toLowerCase();
+    return txt.includes(q);
+  }).slice(0, 10);
+  if (!matches.length) return { ok:true, count:0, mensaje:`Sin resultados para "${args.query}".` };
+  return {
+    ok:true,
+    count: matches.length,
+    productos: matches.map(p => ({
+      codigo: p['CODIGO PRODUCTO'],
+      desc: p['DESCRIPCION'],
+      marca: p['MARCA'],
+      stock: p['STOCK ACTUAL'],
+      ubicacion: p['UBICACIÓN']||p['UBICACION'],
+      proveedor: p['PROVEEDOR']
+    }))
+  };
+}
+
+function tool_listar_oc_pendientes(args) {
+  const list = getPOC().filter(o => o.estado === 'activo');
+  const filtered = args && args.cliente
+    ? list.filter(o => (o.cliente||'').toLowerCase().includes(args.cliente.toLowerCase()))
+    : list;
+  const STAGE_LBL = ['Compra','Entrega','Certificado','Facturación'];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const result = filtered.slice(0, 30).map(o => {
+    const stages = o.stages || [];
+    let pending = 'completa';
+    let estado = '';
+    for (let i=0; i<4; i++) {
+      const s = stages[i] || {};
+      const done = i>=2 ? !!s.f : s.s==='done';
+      if (!done) {
+        pending = STAGE_LBL[i];
+        if (s.f) {
+          const d = new Date(s.f); d.setHours(0,0,0,0);
+          const diff = Math.round((d-today)/86400000);
+          estado = diff < 0 ? `vencida hace ${-diff}d` : (diff===0?'vence hoy':`en ${diff}d`);
+        } else {
+          estado = 'sin fecha';
+        }
+        break;
+      }
+    }
+    return { num: o.num||o.id, cliente: o.cliente||'-', etapa_pendiente: pending, estado };
+  });
+  return { ok:true, count: result.length, ordenes: result };
+}
+
+function tool_crear_reunion(args) {
+  const meetings = getData('meetings', MEETINGS_DEFAULT) || [];
+  const newId = Math.max(0, ...meetings.map(m=>m.id||0)) + 1;
+  const meeting = _audit({
+    id: newId,
+    titulo: args.titulo,
+    fecha: args.fecha,
+    horaInicio: args.horaInicio,
+    horaFin: args.horaFin || args.horaInicio,
+    tipo: args.tipo || 'Presencial',
+    participantes: [],
+    descripcion: args.descripcion || ''
+  }, true);
+  meetings.push(meeting);
+  setData('meetings', meetings);
+  try { renderMeetingList(); renderCalendar(); renderDashboard(); } catch(_) {}
+  showToast(`✅ ENERGY agendó: "${args.titulo}" el ${args.fecha}`,'success');
+  return { ok:true, id:newId, mensaje:`Reunión "${args.titulo}" agendada para ${args.fecha} a las ${args.horaInicio}.` };
+}
+
+async function executeEnergyTool(name, args) {
+  console.log('[ENERGY tool]', name, args);
+  try {
+    if (name === 'crear_tarea')         return tool_crear_tarea(args||{});
+    if (name === 'marcar_etapa_oc')     return tool_marcar_etapa_oc(args||{});
+    if (name === 'enviar_whatsapp')     return tool_enviar_whatsapp(args||{});
+    if (name === 'buscar_inventario')   return tool_buscar_inventario(args||{});
+    if (name === 'listar_oc_pendientes')return tool_listar_oc_pendientes(args||{});
+    if (name === 'crear_reunion')       return tool_crear_reunion(args||{});
+    return { ok:false, mensaje:'Herramienta desconocida: '+name };
+  } catch(e) {
+    return { ok:false, mensaje:'Error ejecutando '+name+': '+e.message };
+  }
+}
+
 async function callEnergyAI(prompt, systemContext, history) {
   const url = getClaudeProxyURL();
   if(!url) return '⚙️ Configura la URL del Proxy ENERGY IA en Configuración. La API Key vive segura en el servidor (Apps Script o Netlify).';
   const isAppsScript = /script\.google\.com/i.test(url);
   try {
-    const messages = Array.isArray(history) ? [...history] : [];
+    const messages = Array.isArray(history) ? history.map(m=>({role:m.role, content:m.content})) : [];
     messages.push({role:'user', content:prompt});
-    const payload = {
-      model:'claude-haiku-4-5-20251001',
-      max_tokens:1024,
-      system:`Eres ENERGY, un asistente administrativo profesional para la empresa GERENCIA. Eres eficiente, conciso y profesional. Ayudas con reuniones, tareas, comunicaciones y gestión del equipo. Hoy es ${today.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}. Usuario actual: ${currentUser.name} (${currentUser.role}). ${systemContext||''}`,
-      messages
-    };
-    // Apps Script no maneja preflight CORS → enviamos como text/plain (simple request).
-    // El servidor lee e.postData.contents igual y hace JSON.parse.
-    const resp = await fetch(url, {
-      method:'POST',
-      headers:{ 'Content-Type': isAppsScript ? 'text/plain;charset=utf-8' : 'application/json' },
-      body:JSON.stringify(payload),
-      redirect:'follow'
-    });
-    const data = await resp.json();
-    if(data.error) return '❌ Error: '+(data.error.message||JSON.stringify(data.error));
-    if(!data.content || !data.content[0]) return '❌ Respuesta inválida del proxy';
-    return data.content[0].text;
+
+    const systemPrompt = `Eres ENERGY, asistente administrativo de E&G Energy Group SAS. Eres eficiente, breve y profesional. Hoy es ${today.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}. Usuario actual: ${currentUser?.name||'?'} (${currentUser?.role||'?'}).
+
+TIENES HERRAMIENTAS PARA EJECUTAR ACCIONES. Cuando el usuario pida hacer algo (crear tarea, marcar O.C., enviar WhatsApp, buscar producto, agendar reunión), USA las herramientas — no solo describas. Después de ejecutar confirma brevemente qué hiciste.
+
+Si el usuario solo pregunta información (sin pedir acción), responde con texto usando el contexto disponible.
+
+${systemContext||''}`;
+
+    let iterations = 0;
+    while (iterations < 5) {
+      iterations++;
+      const payload = {
+        model:'claude-haiku-4-5-20251001',
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages,
+        tools: ENERGY_TOOLS
+      };
+      const resp = await fetch(url, {
+        method:'POST',
+        headers:{ 'Content-Type': isAppsScript ? 'text/plain;charset=utf-8' : 'application/json' },
+        body: JSON.stringify(payload),
+        redirect:'follow'
+      });
+      const data = await resp.json();
+      if (data.error) return '❌ Error: '+(data.error.message||JSON.stringify(data.error));
+      if (!data.content) return '❌ Respuesta inválida del proxy';
+
+      // Si Claude no usó tools → respuesta final
+      if (data.stop_reason !== 'tool_use') {
+        const textBlocks = data.content.filter(c => c.type === 'text');
+        return textBlocks.map(b => b.text).join('\n').trim() || '(sin respuesta)';
+      }
+
+      // Ejecutar todas las tool_use que devolvió
+      const toolUseBlocks = data.content.filter(c => c.type === 'tool_use');
+      const toolResults = [];
+      for (const block of toolUseBlocks) {
+        const result = await executeEnergyTool(block.name, block.input);
+        toolResults.push({
+          type:'tool_result',
+          tool_use_id: block.id,
+          content: typeof result === 'string' ? result : JSON.stringify(result)
+        });
+      }
+      // Continuar la conversación
+      messages.push({ role:'assistant', content: data.content });
+      messages.push({ role:'user', content: toolResults });
+    }
+    return '⚠️ Demasiadas iteraciones. Reformula tu pedido.';
   } catch(e) {
-    return '❌ Error de conexión con el proxy ENERGY IA. Verifica tu conexión y la URL configurada.';
+    return '❌ Error de conexión con el proxy ENERGY IA: ' + (e.message||'desconocido');
   }
 }
 
@@ -5746,7 +6009,7 @@ function initChat() {
     });
     return;
   }
-  addBotMsg(`¡Hola, ${currentUser.name.split(' ')[0]}! 👋 Soy ENERGY, tu asistente administrativo.\n\n${_briefingDelDia()}\n\n¿En qué te puedo ayudar?`);
+  addBotMsg(`¡Hola, ${currentUser.name.split(' ')[0]}! 👋 Soy ENERGY, tu asistente.\n\n${_briefingDelDia()}\n\nAhora puedo ejecutar acciones por ti. Por ejemplo:\n• "crea tarea para Sheila vence viernes: cotizar válvulas CIAM"\n• "marca la O.C. LM-1389 como entregada hoy"\n• "manda WhatsApp a Alexandra: recordando oferta Mansarovar"\n• "busca inventario válvula 2 pulgadas"\n\n¿En qué te ayudo?`);
 }
 
 function _briefingDelDia() {
