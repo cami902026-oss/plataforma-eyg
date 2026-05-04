@@ -1184,6 +1184,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
               <button class="btn btn-primary" onclick="cotizExtract()" style="width:auto;font-size:13px;">🤖 Extraer ítems con IA</button>
               <button class="btn btn-secondary" onclick="cotizAddRow()" style="width:auto;font-size:13px;">+ Fila manual</button>
+              <button class="btn btn-secondary" onclick="cotizBuscarInventarioModal()" style="width:auto;font-size:13px;background:rgba(26,58,143,.4);">🔍 Buscar en inventario</button>
               <button class="btn btn-secondary" onclick="cotizClear()" style="width:auto;font-size:13px;">🗑 Limpiar ítems</button>
             </div>
             <div id="cotiz-ai-status" style="display:none;" class="cotiz-ai-status">
@@ -1235,6 +1236,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <!-- Botones -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
             <button class="btn btn-primary" onclick="cotizGuardarBD()" style="width:auto;font-size:13px;">💾 Guardar en base de datos</button>
+            <button class="btn btn-primary" onclick="cotizGenerarPDF()" style="width:auto;font-size:13px;background:rgba(229,62,62,.3);border-color:#e53e3e;">📄 Generar PDF</button>
             <button class="btn btn-primary" onclick="cotizDownloadExcel()" style="width:auto;font-size:13px;background:rgba(46,170,74,.3);border-color:#2eaa4a;">⬇️ Descargar Excel</button>
             <button class="btn btn-secondary" onclick="cotizNueva()" style="width:auto;font-size:13px;">+ Nueva cotización</button>
           </div>
@@ -5345,6 +5347,254 @@ function cotizGuardarBD() {
   }
   saveData('bd_cotizaciones', bd);
   cotizEditId = id;
+}
+
+// ===== GENERAR PDF DE COTIZACIÓN =====
+// Abre ventana imprimible con formato matching el Excel actual de E&G:
+// - Encabezado: logo + datos empresa + COTIZACION No.
+// - Banda azul · Tabla cliente/fecha · Banda verde · Tabla ítems
+// - Footer: Observaciones + SubTotal/IVA/Total · Condiciones comerciales
+function cotizGenerarPDF() {
+  if (!cotizItems.length) { showToast('Agrega ítems primero','error'); return; }
+  const cliente = document.getElementById('cotiz-cliente').value || '';
+  const contacto = document.getElementById('cotiz-contacto').value || '';
+  const correo = document.getElementById('cotiz-correo').value || '';
+  const numCot = document.getElementById('cotiz-numero').textContent;
+  const fechaGen = document.getElementById('cotiz-fecha-gen').value;
+  const fechaVenc = document.getElementById('cotiz-fecha-venc').value;
+  const iva = parseFloat(document.getElementById('cotiz-iva').value) || 0;
+  const observaciones = document.getElementById('cotiz-observaciones').value;
+  const formaPago = document.getElementById('cotiz-pago').value;
+  const sitio = document.getElementById('cotiz-sitio').value;
+  const validez = document.getElementById('cotiz-validez').value;
+  const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
+  const ivaVal = subtotal * iva / 100;
+  const total = subtotal + ivaVal;
+  const fmt = (n) => '$ ' + (n||0).toLocaleString('es-CO',{minimumFractionDigits:0,maximumFractionDigits:0});
+  const fmtFecha = (s) => s ? s.split('-').reverse().join('/') : '';
+
+  const itemsRows = cotizItems.map((it,i) => `
+    <tr>
+      <td class="c">${i+1}</td>
+      <td class="c">${it.udm||'EA'}</td>
+      <td class="c">${it.qty||0}</td>
+      <td class="l">${(it.desc||'').replace(/</g,'&lt;')}</td>
+      <td class="c">${it.tiempoEntrega||''}</td>
+      <td class="c">${it.desvTec||''}</td>
+      <td class="c">${it.marca||''}</td>
+      <td class="r">${fmt(it.precio||0)}</td>
+      <td class="r">${fmt((it.qty||0)*(it.precio||0))}</td>
+    </tr>`).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8">
+<title>Cotización ${numCot} — E&G Energy Group</title>
+<style>
+  @page { size: letter landscape; margin: 12mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000; font-size: 10px; }
+  .hdr { display:flex; align-items:center; border:1px solid #000; }
+  .hdr-logo { width:120px; padding:8px; text-align:center; border-right:1px solid #000; }
+  .hdr-logo img { max-width:100px; max-height:50px; }
+  .hdr-emp { flex:1; padding:8px; text-align:center; font-size:10px; line-height:1.4; font-weight:700; }
+  .hdr-emp .em-1 { font-size:11px; }
+  .hdr-cot { width:200px; border-left:1px solid #000; }
+  .hdr-cot .cot-lbl { background:#fff; padding:6px; border-bottom:1px solid #000; text-align:center; font-weight:700; font-size:10px; }
+  .hdr-cot .cot-num { padding:8px; text-align:center; font-weight:700; font-size:13px; }
+  .band-blue { height:14px; background:#1a3a8f; margin:0; }
+  .band-green { height:14px; background:#5cb85c; margin:0; }
+  table.cli { width:100%; border-collapse:collapse; }
+  table.cli td { border:1px solid #000; padding:6px 10px; font-size:10px; }
+  table.cli .lbl { background:#f5f5f5; font-weight:700; width:120px; text-align:center; }
+  table.cli .lbl-r { background:#f5f5f5; font-weight:700; width:170px; text-align:center; }
+  table.cli .val-r { width:120px; text-align:center; }
+  table.items { width:100%; border-collapse:collapse; margin-top:0; }
+  table.items th { background:#f5f5f5; border:1px solid #000; padding:6px 4px; font-size:9px; font-weight:700; text-align:center; }
+  table.items td { border:1px solid #000; padding:5px 6px; font-size:9px; }
+  table.items td.c { text-align:center; }
+  table.items td.l { text-align:left; }
+  table.items td.r { text-align:right; }
+  .obs-tot { display:flex; }
+  .obs-box { flex:1; border:1px solid #000; padding:8px; font-size:9px; }
+  .obs-box .obs-lbl { background:#f5f5f5; font-weight:700; text-align:center; padding:6px; margin:-8px -8px 6px -8px; border-bottom:1px solid #000; }
+  .tot-box { width:300px; border:1px solid #000; border-left:none; }
+  .tot-row { display:flex; border-bottom:1px solid #000; }
+  .tot-row:last-child { border-bottom:none; }
+  .tot-row .tot-lbl { width:50%; padding:6px 8px; background:#f5f5f5; font-weight:700; font-size:10px; text-align:right; border-right:1px solid #000; }
+  .tot-row .tot-val { width:50%; padding:6px 8px; font-size:10px; text-align:right; font-weight:700; }
+  .cond { display:flex; border:1px solid #000; border-top:none; }
+  .cond-lbl { width:170px; background:#f5f5f5; padding:8px; font-weight:700; text-align:center; font-size:10px; border-right:1px solid #000; }
+  .cond-cell { flex:1; border-right:1px solid #000; }
+  .cond-cell:last-child { border-right:none; }
+  .cond-h { background:#f5f5f5; padding:6px; font-weight:700; text-align:center; border-bottom:1px solid #000; font-size:10px; }
+  .cond-v { padding:8px; text-align:center; font-size:10px; }
+  .print-controls { position:fixed; top:10px; right:10px; z-index:9999; }
+  .print-controls button { padding:8px 16px; margin-left:8px; cursor:pointer; border:none; border-radius:6px; font-weight:700; }
+  .btn-print { background:#1a3a8f; color:#fff; }
+  .btn-close { background:#ddd; color:#333; }
+  @media print { .print-controls { display:none; } body { font-size:9px; } }
+</style>
+</head>
+<body>
+  <div class="print-controls">
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+    <button class="btn-close" onclick="window.close()">Cerrar</button>
+  </div>
+  <div class="hdr">
+    <div class="hdr-logo">
+      <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" alt="E&G">
+    </div>
+    <div class="hdr-emp">
+      <div class="em-1">E&G ENERGY GROUP SAS · CARRERA 7 # 12-61 CHIA · TELEFONO 320 494 7227</div>
+      <div>CORREO ELECTRONICO comercial1@eygenergygroup.com</div>
+    </div>
+    <div class="hdr-cot">
+      <div class="cot-lbl">COTIZACION No.</div>
+      <div class="cot-num">${numCot}</div>
+    </div>
+  </div>
+  <div class="band-blue"></div>
+  <table class="cli">
+    <tr>
+      <td class="lbl">CLIENTE</td>
+      <td>${cliente}</td>
+      <td class="lbl-r">FECHA</td>
+      <td class="val-r"></td>
+    </tr>
+    <tr>
+      <td class="lbl">CONTACTO</td>
+      <td>${contacto}</td>
+      <td class="lbl-r">FECHA DE GENERACION</td>
+      <td class="val-r">${fmtFecha(fechaGen)}</td>
+    </tr>
+    <tr>
+      <td class="lbl">CORREO</td>
+      <td>${correo}</td>
+      <td class="lbl-r">FECHA DE VENCIMIENTO</td>
+      <td class="val-r">${fmtFecha(fechaVenc)}</td>
+    </tr>
+  </table>
+  <div class="band-green"></div>
+  <table class="items">
+    <thead><tr>
+      <th style="width:30px;">ITEM</th>
+      <th style="width:60px;">UNIDAD MEDIDA</th>
+      <th style="width:50px;">CANTIDAD</th>
+      <th>DESCRIPCION</th>
+      <th style="width:80px;">TIEMPO DE ENTREGA</th>
+      <th style="width:90px;">DESVIACION TECNICA</th>
+      <th style="width:80px;">MARCA</th>
+      <th style="width:80px;">VALOR UNITARIO</th>
+      <th style="width:90px;">VALOR TOTAL</th>
+    </tr></thead>
+    <tbody>${itemsRows}</tbody>
+  </table>
+  <div class="obs-tot">
+    <div class="obs-box">
+      <div class="obs-lbl">OBSERVACIONES</div>
+      ${(observaciones||'').replace(/\n/g,'<br>')}
+    </div>
+    <div class="tot-box">
+      <div class="tot-row"><div class="tot-lbl">SUB TOTAL</div><div class="tot-val">${fmt(subtotal)}</div></div>
+      <div class="tot-row"><div class="tot-lbl">IVA (${iva}%)</div><div class="tot-val">${fmt(ivaVal)}</div></div>
+      <div class="tot-row"><div class="tot-lbl">TOTAL</div><div class="tot-val">${fmt(total)}</div></div>
+    </div>
+  </div>
+  <div class="cond">
+    <div class="cond-lbl">CONDICIONES COMERCIALES</div>
+    <div class="cond-cell">
+      <div class="cond-h">FORMA DE PAGO</div>
+      <div class="cond-v">${formaPago||''}</div>
+    </div>
+    <div class="cond-cell">
+      <div class="cond-h">SITIO DE ENTREGA</div>
+      <div class="cond-v">${sitio||''}</div>
+    </div>
+    <div class="cond-cell">
+      <div class="cond-h">VALIDEZ DE ESTA OFERTA</div>
+      <div class="cond-v">${validez||''}</div>
+    </div>
+  </div>
+</body></html>`;
+  const w = window.open('', '_blank');
+  if (!w) { showToast('Permite las ventanas emergentes para generar el PDF','error'); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
+// ===== BUSCAR EN INVENTARIO PARA AUTOCOMPLETAR =====
+function cotizBuscarInventarioModal() {
+  const inv = window.INV || [];
+  if (!inv.length) { showToast('Abre el módulo Inventario primero para cargar la base','error'); return; }
+  const overlay = document.createElement('div');
+  overlay.id = '_cotizInvModal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2500;padding:20px;overflow-y:auto;';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div style="max-width:900px;margin:30px auto;background:#0a1a30;border:1px solid var(--border);border-radius:14px;padding:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="color:#fff;">🔍 Buscar producto en inventario</h3>
+        <button onclick="document.getElementById('_cotizInvModal').remove()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">✕</button>
+      </div>
+      <input id="_cotizInvSearch" placeholder="Escribe descripción, código o marca…" oninput="_cotizInvFilter()" style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:10px;padding:12px;color:#fff;margin-bottom:14px;font-size:14px;">
+      <div id="_cotizInvResults" style="max-height:50vh;overflow-y:auto;"></div>
+      <p style="font-size:11px;color:var(--text-muted);margin-top:12px;">Toca un producto para agregarlo a la cotización. Si no tiene precio, podrás ingresarlo después en la fila.</p>
+    </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById('_cotizInvSearch').focus(), 100);
+  _cotizInvFilter();
+}
+function _cotizInvFilter() {
+  const inv = window.INV || [];
+  const q = (document.getElementById('_cotizInvSearch').value || '').toLowerCase();
+  const matches = inv.filter(p => {
+    if (!q) return false; // no mostrar nada si no hay búsqueda
+    const txt = ((p['DESCRIPCION']||'') + ' ' + (p['CODIGO PRODUCTO']||'') + ' ' + (p['MARCA']||'')).toLowerCase();
+    return txt.includes(q);
+  }).slice(0, 30);
+  const cont = document.getElementById('_cotizInvResults');
+  if (!q) { cont.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px;">Escribe para buscar…</p>'; return; }
+  if (!matches.length) { cont.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px;">Sin resultados.</p>'; return; }
+  cont.innerHTML = matches.map(p => {
+    const precio = parseFloat(p['PRECIO VENTA'] || p['COSTO VENTA A 30 DIAS'] || p['COSTO COMPRA'] || 0) || 0;
+    const stock = p['STOCK ACTUAL'] || 0;
+    const codigo = p['CODIGO PRODUCTO'] || '';
+    const desc = (p['DESCRIPCION']||'').replace(/'/g,"\\'");
+    const marca = (p['MARCA']||'').replace(/'/g,"\\'");
+    const udm = p['UDM'] || 'EA';
+    return `<div onclick="_cotizInvAdd(${codigo}, '${desc.replace(/"/g,'&quot;')}', '${marca.replace(/"/g,'&quot;')}', ${precio}, '${udm}')" style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;color:#fff;font-size:13px;">${desc.substring(0,80)}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${codigo} · ${marca||'—'} · Stock: ${stock}</div>
+      </div>
+      <div style="text-align:right;white-space:nowrap;">
+        <div style="font-weight:700;color:#68d391;font-size:13px;">${precio?'$ '+precio.toLocaleString('es-CO'):'<span style="color:#f6ad55;">Sin precio</span>'}</div>
+        <div style="font-size:10px;color:var(--text-muted);">Click para agregar</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function _cotizInvAdd(codigo, desc, marca, precio, udm) {
+  cotizItems.push({
+    id: cotizItems.length+1,
+    desc: desc,
+    udm: udm || 'EA',
+    qty: 1,
+    precio: precio || 0,
+    tiempoEntrega: '1-2 DÍAS HÁBILES',
+    desvTec: '',
+    marca: marca || '',
+    proveedor: '',
+    codigo: codigo
+  });
+  cotizRender();
+  document.getElementById('_cotizInvModal').remove();
+  if (precio) {
+    showToast(`✅ "${desc.substring(0,40)}…" agregado con precio $${precio.toLocaleString('es-CO')}`,'success');
+  } else {
+    showToast(`⚠️ "${desc.substring(0,40)}…" agregado SIN precio — recuerda colocarlo en la fila`,'info');
+  }
 }
 
 function cotizDownloadExcel() {
