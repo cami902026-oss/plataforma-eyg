@@ -1228,27 +1228,27 @@
     "num": "ODC-4047",
     "cliente": "SAR ENERGY",
     "desc": "SUMINSITRO DE PREOSTATO",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-05-02",
         "n": "MT RACORES"
       },
       {
-        "s": "pending",
+        "s": "done",
         "f": "",
         "n": "",
-        "envio": "",
+        "envio": "flota",
         "transp": "",
         "guia": "",
-        "dest": "",
+        "dest": "RICARDO DIAZ",
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-04",
+        "n": "NO APLICA"
       },
       {
         "s": "pending",
@@ -1256,9 +1256,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-04T14:51:23.277Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-04T14:51:23.277Z"
+    "createdAt": "2026-05-04T14:51:43.369Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-04T14:51:43.369Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777675105625",
