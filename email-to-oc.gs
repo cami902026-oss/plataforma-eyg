@@ -88,21 +88,32 @@ function procesarCorreosNuevos() {
       if (subj.toUpperCase().indexOf('ORDEN DE COMPRA ENERGY') < 0) continue;
 
       try {
+        Logger.log('Procesando msg: "' + subj + '" de ' + msg.getFrom());
         // Construir el body que normalmente arma Power Automate
         var attsRaw = msg.getAttachments() || [];
+        Logger.log('  Adjuntos detectados: ' + attsRaw.length);
         var attachments = [];
         for (var a = 0; a < attsRaw.length && a < 5; a++) {
           var att = attsRaw[a];
           var ct = att.getContentType() || '';
           var name = att.getName() || '';
+          var size = att.getBytes().length;
+          Logger.log('    Adjunto ' + (a+1) + ': ' + name + ' | ' + ct + ' | ' + Math.round(size/1024) + ' KB');
           // Solo PDFs e imágenes
           if (ct.indexOf('pdf') < 0 && ct.indexOf('image') < 0 &&
-              !/\.(pdf|jpe?g|png|gif|webp)$/i.test(name)) continue;
-          var bytes = att.getBytes();
+              !/\.(pdf|jpe?g|png|gif|webp)$/i.test(name)) {
+            Logger.log('    → ignorado (no es PDF ni imagen)');
+            continue;
+          }
+          // Limite de tamaño: 9 MB (límite Claude PDF)
+          if (size > 9 * 1024 * 1024) {
+            Logger.log('    → demasiado grande para Claude (>9MB), ignorado');
+            continue;
+          }
           attachments.push({
             name: name,
             contentType: ct,
-            contentBytes: Utilities.base64Encode(bytes)
+            contentBytes: Utilities.base64Encode(att.getBytes())
           });
         }
         var body = {
@@ -116,13 +127,25 @@ function procesarCorreosNuevos() {
         var fakeEvent = { postData: { contents: JSON.stringify(body) } };
         var resp = doPost(fakeEvent);
         var content = resp.getContent ? resp.getContent() : '';
-        Logger.log('Procesado msg "' + subj + '" → ' + content);
+        Logger.log('  Resultado doPost: ' + content);
 
-        // Marcar como leído + label (se procese OK o no, para no reintentar infinito)
-        msg.markRead();
-        thread.addLabel(label);
+        // Decisión de marcar leído:
+        // - Si OC fue creada (ok:true) → marcar leído + label
+        // - Si OC ya existe (duplicado) → marcar leído + label
+        // - Si fue cualquier otro error → DEJAR NO LEÍDO para reintentar
+        var parsed = {};
+        try { parsed = JSON.parse(content); } catch(_) {}
+        var debeMarcarse = (parsed.ok === true) ||
+                           (parsed.error && String(parsed.error).indexOf('ya existe') >= 0);
+        if (debeMarcarse) {
+          msg.markRead();
+          thread.addLabel(label);
+          Logger.log('  ✅ Marcado leído + label');
+        } else {
+          Logger.log('  ⚠️ NO marcado leído (reintentará en próximo trigger)');
+        }
       } catch (err) {
-        Logger.log('ERROR procesando msg: ' + err);
+        Logger.log('  ❌ ERROR procesando msg: ' + err + (err.stack ? '\n' + err.stack : ''));
         // No marcamos como leído para que reintente la próxima vez
       }
     }
