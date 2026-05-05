@@ -59,6 +59,95 @@ function doGet() {
   });
 }
 
+// ─── POLLING DE GMAIL (corre cada 1 min con trigger de tiempo) ─────────────
+// Lee correos no leídos cuyo asunto contenga "ORDEN DE COMPRA ENERGY",
+// extrae datos con Claude y crea la OC. Marca el correo como leído + label
+// "ENERGY-OC-Procesado" para no procesarlo dos veces.
+function procesarCorreosNuevos() {
+  var query = 'subject:"ORDEN DE COMPRA ENERGY" is:unread newer_than:7d';
+  var threads = GmailApp.search(query, 0, 20);
+  if (!threads.length) {
+    Logger.log('No hay correos nuevos.');
+    return;
+  }
+  Logger.log('Hilos encontrados: ' + threads.length);
+
+  // Asegurar label de procesados
+  var labelName = 'ENERGY-OC-Procesado';
+  var label = GmailApp.getUserLabelByName(labelName);
+  if (!label) label = GmailApp.createLabel(labelName);
+
+  for (var t = 0; t < threads.length; t++) {
+    var thread = threads[t];
+    var msgs = thread.getMessages();
+    for (var m = 0; m < msgs.length; m++) {
+      var msg = msgs[m];
+      if (!msg.isUnread()) continue;
+      // Verificar de nuevo el asunto (search es laxo)
+      var subj = msg.getSubject() || '';
+      if (subj.toUpperCase().indexOf('ORDEN DE COMPRA ENERGY') < 0) continue;
+
+      try {
+        // Construir el body que normalmente arma Power Automate
+        var attsRaw = msg.getAttachments() || [];
+        var attachments = [];
+        for (var a = 0; a < attsRaw.length && a < 5; a++) {
+          var att = attsRaw[a];
+          var ct = att.getContentType() || '';
+          var name = att.getName() || '';
+          // Solo PDFs e imágenes
+          if (ct.indexOf('pdf') < 0 && ct.indexOf('image') < 0 &&
+              !/\.(pdf|jpe?g|png|gif|webp)$/i.test(name)) continue;
+          var bytes = att.getBytes();
+          attachments.push({
+            name: name,
+            contentType: ct,
+            contentBytes: Utilities.base64Encode(bytes)
+          });
+        }
+        var body = {
+          subject: subj,
+          from: msg.getFrom() || '',
+          bodyText: (msg.getPlainBody() || '').slice(0, 5000),
+          attachments: attachments
+        };
+
+        // Reusar el mismo pipeline del doPost
+        var fakeEvent = { postData: { contents: JSON.stringify(body) } };
+        var resp = doPost(fakeEvent);
+        var content = resp.getContent ? resp.getContent() : '';
+        Logger.log('Procesado msg "' + subj + '" → ' + content);
+
+        // Marcar como leído + label (se procese OK o no, para no reintentar infinito)
+        msg.markRead();
+        thread.addLabel(label);
+      } catch (err) {
+        Logger.log('ERROR procesando msg: ' + err);
+        // No marcamos como leído para que reintente la próxima vez
+      }
+    }
+  }
+}
+
+// ─── INSTALADOR DEL TRIGGER (correrlo UNA SOLA VEZ a mano) ─────────────────
+// Crea el trigger de tiempo que dispara procesarCorreosNuevos() cada 1 min.
+// En el editor: dropdown de funciones → "instalarTriggerCorreo" → ▶ Ejecutar.
+function instalarTriggerCorreo() {
+  // Borrar triggers viejos del mismo handler
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'procesarCorreosNuevos') {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  // Crear trigger nuevo cada 1 min
+  ScriptApp.newTrigger('procesarCorreosNuevos')
+    .timeBased()
+    .everyMinutes(1)
+    .create();
+  Logger.log('✅ Trigger instalado: procesarCorreosNuevos cada 1 min');
+}
+
 function doPost(e) {
   try {
     var body = {};
