@@ -56,6 +56,62 @@ def load_config() -> dict:
 
 # ─── 2. DESCARGAR ordenes.json DESDE GITHUB ───────────────────────────────────
 
+def get_ordenes_last_commit(gh_token: str) -> dict:
+    """Devuelve {'iso': str, 'hours_ago': float, 'author': str} del último commit
+    que tocó ordenes.json. Si falla, retorna {} (banner se omite)."""
+    url = (f'https://api.github.com/repos/{GH_OWNER}/{GH_REPO}/commits'
+           f'?path=ordenes.json&per_page=1')
+    req = urllib.request.Request(url, headers={
+        'Authorization': f'Bearer {gh_token}',
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'EnergyBot/1.0'
+    })
+    try:
+        with urllib.request.urlopen(req) as resp:
+            arr = json.loads(resp.read())
+            if not arr:
+                return {}
+            iso = arr[0]['commit']['committer']['date']  # e.g. 2026-05-05T18:30:00Z
+            author = arr[0]['commit']['author'].get('name', '—')
+            from datetime import timezone
+            commit_dt = datetime.strptime(iso, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+            hours = (datetime.now(timezone.utc) - commit_dt).total_seconds() / 3600
+            return {'iso': iso, 'hours_ago': hours, 'author': author}
+    except Exception as ex:
+        print(f'⚠️  No se pudo leer último commit de ordenes.json: {ex}')
+        return {}
+
+
+def build_freshness_banner(commit_info: dict, threshold_hours: float = 4.0) -> str:
+    """Genera un banner HTML solo si los datos llevan > threshold_hours sin actualizarse.
+    Si están al día o no se pudo determinar, retorna ''. """
+    if not commit_info or 'hours_ago' not in commit_info:
+        return ''
+    h = commit_info['hours_ago']
+    if h <= threshold_hours:
+        return ''
+    # Convertir UTC ISO a hora Colombia para mostrar
+    try:
+        from datetime import timezone, timedelta
+        commit_dt_utc = datetime.strptime(commit_info['iso'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+        commit_dt_co  = commit_dt_utc.astimezone(timezone(timedelta(hours=-5)))
+        fecha_co = commit_dt_co.strftime('%d/%m/%Y %H:%M')
+    except Exception:
+        fecha_co = commit_info.get('iso', '—')
+    horas_txt = f"{int(h)} h" if h < 24 else f"{int(h/24)} día(s)"
+    return (
+        '<div style="background:#fff3cd;border-left:5px solid #E8A020;'
+        'padding:14px 18px;margin:0 0 14px 0;border-radius:6px;color:#7a5a00;'
+        'font-size:13px;font-weight:600;">'
+        f'⚠️ <strong>Datos posiblemente desactualizados.</strong> '
+        f'La última actualización registrada fue hace <strong>{horas_txt}</strong> '
+        f'({fecha_co} hora Colombia, por {commit_info.get("author","—")}). '
+        'Si hiciste cambios después de esa hora y no se reflejan, revisa que tu sesión '
+        'haya sincronizado a GitHub (token PAT vigente y conexión estable).'
+        '</div>'
+    )
+
+
 def load_ordenes_from_github(gh_token: str) -> list:
     """Descarga ordenes.json del repositorio GitHub via API."""
     url = f'https://api.github.com/repos/{GH_OWNER}/{GH_REPO}/contents/ordenes.json'
@@ -315,7 +371,7 @@ def build_resumen_etapas(activos: list) -> str:
     </div>"""
 
 
-def build_report_html(ordenes: list, date_str: str) -> str:
+def build_report_html(ordenes: list, date_str: str, freshness_banner: str = '') -> str:
     activos     = [o for o in ordenes if o.get('estado') == 'activo']
     completados = [o for o in ordenes if o.get('estado') == 'completado']
     cancelados  = [o for o in ordenes if o.get('estado') == 'cancelado']
@@ -417,6 +473,7 @@ def build_report_html(ordenes: list, date_str: str) -> str:
     <div style="font-size:11px;color:#8899bb;margin-top:6px;">Abre la plataforma en tu navegador para buscar y filtrar órdenes</div>
   </div>
   <div style="background:#071525;padding:20px;border-radius:0 0 0 0;">
+    {freshness_banner}
     {resumen}
     {resumen_etapas}
     {cuerpo}
@@ -502,6 +559,15 @@ if __name__ == '__main__':
     # Descargar órdenes desde GitHub
     ordenes = load_ordenes_from_github(gh_token)
 
+    # Verificar frescura de los datos (último commit de ordenes.json)
+    commit_info = get_ordenes_last_commit(gh_token)
+    if commit_info:
+        print(f"🕒 Último cambio en ordenes.json: hace {commit_info['hours_ago']:.1f} h "
+              f"(por {commit_info['author']})")
+    freshness_banner = build_freshness_banner(commit_info, threshold_hours=4.0)
+    if freshness_banner:
+        print("⚠️  Datos > 4h sin actualizar — se incluirá banner de advertencia.")
+
     now      = datetime.now()
     day      = DAYS_ES.get(now.strftime('%A'), now.strftime('%A'))
     month    = MONTHS_ES.get(now.strftime('%B'), now.strftime('%B'))
@@ -509,7 +575,7 @@ if __name__ == '__main__':
     subject  = f"📋 Informe OP Activas E&G — {date_str}"
 
     print(f"📝 Generando informe para {len(ordenes)} órdenes...")
-    email_html = build_report_html(ordenes, date_str)
+    email_html = build_report_html(ordenes, date_str, freshness_banner)
 
     excel_bytes = generate_excel_op(ordenes)
     excel_name  = f"OP_EyG_{now.strftime('%Y-%m-%d')}.xlsx"
