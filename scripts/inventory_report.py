@@ -35,6 +35,10 @@ MONTHS_ES  = {'January':'enero','February':'febrero','March':'marzo','April':'ab
                'May':'mayo','June':'junio','July':'julio','August':'agosto',
                'September':'septiembre','October':'octubre','November':'noviembre','December':'diciembre'}
 
+# Path del libro maestro en OneDrive de Andrea (mismo que sync_inventory.py usa)
+ONEDRIVE_KARDEX_PATH  = 'LOGISTICA/Inventario definitivo_2026.xlsm'
+ONEDRIVE_KARDEX_USER  = 'andrea.bernal@eygenergygroup.com'
+
 
 # ─── 1. EXTRAE INVENTARIO DESDE Buscador_Inventario_2026.html ────────────────
 
@@ -554,7 +558,7 @@ def _build_index(grupos: dict) -> str:
     )
 
 
-def generate_html(inv: list, stats: dict, date_str: str, rot: list = None) -> str:
+def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, kardex_html: str = '') -> str:
     # ── Auto-clasificar productos que no tengan CATEGORIA/FAMILIA en el Excel ──
     for p in inv:
         cat_excel = str(p.get('CATEGORIA', '') or '').lower().strip()
@@ -757,6 +761,8 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None) -> st
 
     {alert_box}
 
+    {kardex_html}
+
     <div class="sec-title">&#128230; Inventario por Categor&iacute;a &mdash; {stats['total']} productos</div>
     {index_block}
     <div class="search-wrap">
@@ -806,6 +812,220 @@ function filtrarInventario(term) {{
 </script>
 </body>
 </html>"""
+
+
+# ─── 3.5 KARDEX — DESCARGA Y LEE MOVIMIENTOS DEL DÍA ──────────────────────────
+
+def _download_kardex_xlsx(token: str) -> bytes | None:
+    """Descarga el libro maestro de inventario desde OneDrive de Andrea."""
+    encoded = urllib.parse.quote(ONEDRIVE_KARDEX_PATH, safe='/')
+    url = ('https://graph.microsoft.com/v1.0/users/' + ONEDRIVE_KARDEX_USER +
+           '/drive/root:/' + encoded + ':/content')
+    req = urllib.request.Request(url, headers={'Authorization': 'Bearer ' + token})
+    try:
+        with urllib.request.urlopen(req) as resp:
+            data = resp.read()
+            print('📥 Libro inventario descargado (' + str(len(data)//1024) + ' KB)')
+            return data
+    except Exception as ex:
+        print('⚠️  No se pudo descargar libro de inventario para Kardex: ' + str(ex))
+        return None
+
+
+def _today_co_date():
+    """Devuelve la fecha de HOY en hora Colombia (UTC-5) como objeto date."""
+    from datetime import timezone, timedelta
+    co = datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=-5)))
+    return co.date()
+
+
+def _normalize_header(h):
+    return str(h or '').strip().upper().replace('Á','A').replace('É','E').replace('Í','I').replace('Ó','O').replace('Ú','U')
+
+
+def read_kardex_today(xlsx_bytes: bytes) -> list:
+    """Lee la pestaña 'Kardex' del libro y retorna SOLO los movimientos de HOY (Colombia).
+    Mapea columnas por nombre (no por posición) para resistir reordenamientos."""
+    if not xlsx_bytes or not OPENPYXL_OK:
+        return []
+    try:
+        wb = openpyxl.load_workbook(io.BytesIO(xlsx_bytes), data_only=True, read_only=True)
+    except Exception as ex:
+        print('⚠️  No se pudo abrir el libro: ' + str(ex))
+        return []
+
+    # Buscar hoja "Kardex" (case-insensitive, contiene)
+    sheet = None
+    for name in wb.sheetnames:
+        if 'kardex' in name.lower():
+            sheet = wb[name]
+            print('📋 Hoja Kardex encontrada: "' + name + '"')
+            break
+    if sheet is None:
+        print('⚠️  No se encontró hoja "Kardex" en el libro. Hojas: ' + ', '.join(wb.sheetnames))
+        return []
+
+    # Leer headers (fila 1) y mapear nombre normalizado → índice
+    headers = {}
+    first_row = next(sheet.iter_rows(min_row=1, max_row=1, values_only=True), None)
+    if not first_row:
+        return []
+    for idx, h in enumerate(first_row):
+        if h is None: continue
+        headers[_normalize_header(h)] = idx
+    print('   Columnas detectadas: ' + ', '.join(list(headers.keys())[:14]))
+
+    # Resolver índices de las columnas que nos interesan (con fallbacks de nombres)
+    def col(*names):
+        for n in names:
+            n_norm = _normalize_header(n)
+            if n_norm in headers:
+                return headers[n_norm]
+        return None
+
+    i_fecha     = col('FECHA')
+    i_hora      = col('HORA')
+    i_producto  = col('PRODUCTO', 'CODIGO PRODUCTO', 'CODIGO')
+    i_descrip   = col('DESCRIPCION', 'DESCRIPCIÓN')
+    i_tipo      = col('TIPO', 'MOVIMIENTO', 'TIPO_NOI')
+    i_cant      = col('CANT', 'CANTIDAD', 'CANT.')
+    i_stock     = col('STOCK', 'STOCK ACTUAL', 'SALDO')
+    i_costo     = col('COSTO', 'VALOR', 'COSTO UNITARIO')
+    i_resp      = col('RESPONSABLE', 'USUARIO')
+    i_remision  = col('REMISION', 'REMISIÓN', 'NUMERO', 'NÚMERO')
+    i_lote      = col('ID LOTE', 'LOTE')
+    i_colada    = col('COLADA')
+
+    if i_fecha is None:
+        print('⚠️  No se encontró columna FECHA en Kardex.')
+        return []
+
+    today = _today_co_date()
+    movs = []
+    for row in sheet.iter_rows(min_row=2, values_only=True):
+        if not row or all(c is None for c in row):
+            continue
+        f = row[i_fecha] if i_fecha < len(row) else None
+        if f is None:
+            continue
+        # Soportar datetime real, string DD/MM/YYYY o YYYY-MM-DD
+        row_date = None
+        if isinstance(f, datetime):
+            row_date = f.date()
+        else:
+            s = str(f).strip().split(' ')[0]
+            for fmt in ('%d/%m/%Y','%Y-%m-%d','%d-%m-%Y','%m/%d/%Y'):
+                try:
+                    row_date = datetime.strptime(s, fmt).date()
+                    break
+                except Exception:
+                    continue
+        if row_date != today:
+            continue
+
+        def safe(i):
+            if i is None or i >= len(row): return ''
+            v = row[i]
+            return '' if v is None else v
+
+        # Hora puede venir como datetime/time o string
+        h_raw = safe(i_hora)
+        if hasattr(h_raw, 'strftime'):
+            try: h_raw = h_raw.strftime('%H:%M')
+            except Exception: h_raw = str(h_raw)
+        movs.append({
+            'fecha':    str(f) if not isinstance(f, datetime) else f.strftime('%d/%m/%Y'),
+            'hora':     str(h_raw)[:8],
+            'producto': str(safe(i_producto)),
+            'desc':     str(safe(i_descrip)),
+            'tipo':     str(safe(i_tipo)).upper(),
+            'cant':     safe(i_cant),
+            'stock':    safe(i_stock),
+            'costo':    safe(i_costo),
+            'resp':     str(safe(i_resp)),
+            'remision': str(safe(i_remision)),
+            'lote':     str(safe(i_lote)),
+            'colada':   str(safe(i_colada)),
+        })
+
+    print('📊 Kardex de hoy: ' + str(len(movs)) + ' movimientos')
+    return movs
+
+
+def build_kardex_html(movs: list, date_str: str) -> str:
+    """Genera la sección HTML del Kardex del día. Si no hay movimientos, retorna ''."""
+    if not movs:
+        return ''
+    # Resumen rápido: entradas vs salidas
+    entradas = [m for m in movs if 'ENTRADA' in m['tipo']]
+    salidas  = [m for m in movs if 'SALIDA' in m['tipo']]
+
+    def fmt_num(v):
+        try: return str(int(float(v)))
+        except Exception: return str(v) if v != '' else '—'
+
+    def cell(v, mono=False, w=None):
+        s = '' if v in (None,'') else str(v)
+        s = s.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
+        sty = "padding:6px 8px;border-bottom:1px solid #e8eef9;font-size:12px;color:#1e293b;"
+        if mono: sty += "font-family:'Courier New',monospace;"
+        if w:    sty += f"width:{w};"
+        return "<td style=\"" + sty + "\">" + s + "</td>"
+
+    rows = ''
+    for m in movs:
+        is_in = 'ENTRADA' in m['tipo']
+        tipo_color = '#15803d' if is_in else '#c0392b'
+        tipo_bg    = '#dcfce7' if is_in else '#fee2e2'
+        tipo_icon  = '⬆️' if is_in else '⬇️'
+        tipo_html  = ('<span style="display:inline-block;background:' + tipo_bg +
+                      ';color:' + tipo_color + ';padding:2px 8px;border-radius:10px;'
+                      'font-size:10px;font-weight:700;">' + tipo_icon + ' ' + m['tipo'] + '</span>')
+        rows += ("<tr>"
+                 + cell(m['hora'])
+                 + cell(m['producto'], mono=True)
+                 + cell(m['desc'])
+                 + "<td style=\"padding:6px 8px;border-bottom:1px solid #e8eef9;\">" + tipo_html + "</td>"
+                 + cell(fmt_num(m['cant']))
+                 + cell(fmt_num(m['stock']))
+                 + cell(m['resp'])
+                 + cell(m['remision'])
+                 + cell(m['lote'])
+                 + "</tr>")
+
+    return ("""
+    <div style="margin:24px 0;background:white;border-radius:10px;overflow:hidden;border:1px solid #d8e1f0;">
+      <div style="background:linear-gradient(135deg,#0F2B5B,#1A3A8F);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="color:white;font-size:15px;font-weight:700;font-family:Montserrat,Arial,sans-serif;">📊 Kardex de hoy</div>
+          <div style="color:#93c5fd;font-size:11px;margin-top:2px;">Movimientos registrados el """ + date_str + """</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <span style="background:rgba(46,170,74,.25);color:#86efac;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;">⬆️ """ + str(len(entradas)) + """ entradas</span>
+          <span style="background:rgba(229,62,62,.25);color:#fca5a5;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;">⬇️ """ + str(len(salidas)) + """ salidas</span>
+          <span style="background:rgba(255,255,255,.15);color:white;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;">""" + str(len(movs)) + """ total</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-family:'Open Sans',Arial,sans-serif;">
+        <thead>
+          <tr style="background:#f1f5f9;">
+            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Hora</th>
+            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Código</th>
+            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Producto</th>
+            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Tipo</th>
+            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Cant.</th>
+            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Stock</th>
+            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Responsable</th>
+            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Remisión</th>
+            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Lote</th>
+          </tr>
+        </thead>
+        <tbody>""" + rows + """</tbody>
+      </table>
+      </div>
+    </div>
+    """)
 
 
 # ─── 4. AUTENTICACIÓN MICROSOFT GRAPH ─────────────────────────────────────────
@@ -908,7 +1128,20 @@ if __name__ == '__main__':
     month    = MONTHS_ES.get(now.strftime('%B'), now.strftime('%B'))
     date_str = day + " " + str(now.day) + " de " + month + " de " + str(now.year)
 
-    html_body = generate_html(inv, stats, date_str, rot)
+    # Obtener token PRIMERO para poder descargar el libro y leer Kardex
+    print("🔑 Obteniendo token Microsoft...")
+    token = get_access_token(tenant_id, client_id, client_secret)
+
+    # Descargar libro y leer Kardex de hoy (si falla, el correo sigue sin Kardex)
+    kardex_html = ''
+    try:
+        xlsx_bytes = _download_kardex_xlsx(token)
+        movs = read_kardex_today(xlsx_bytes) if xlsx_bytes else []
+        kardex_html = build_kardex_html(movs, date_str)
+    except Exception as ex:
+        print("⚠️  Kardex omitido por error: " + str(ex))
+
+    html_body = generate_html(inv, stats, date_str, rot, kardex_html)
     subject   = "📦 Reporte Inventario E&G — " + date_str
 
     excel_bytes = generate_excel_inv(inv)
@@ -917,9 +1150,6 @@ if __name__ == '__main__':
         print("📊 Excel generado: " + excel_name + " (" + str(len(excel_bytes)//1024) + " KB)")
     else:
         print("⚠️  Excel no generado (openpyxl no disponible)")
-
-    print("🔑 Obteniendo token Microsoft...")
-    token = get_access_token(tenant_id, client_id, client_secret)
 
     print("📧 Enviando correo a: " + ', '.join(recipients))
     send_email(token, sender_email, recipients, subject, html_body, excel_bytes, excel_name)
