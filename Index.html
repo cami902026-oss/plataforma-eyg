@@ -2804,17 +2804,21 @@ const POLL_TARGETS = [
 ];
 
 async function _pollOne(target) {
-  const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${target.file}`;
+  // FIX CORS: NO usar If-None-Match ni Cache-Control: no-cache → disparan preflight
+  // OPTIONS que raw.githubusercontent.com no responde → bloquea todo el polling.
+  // En su lugar: GET simple con cache-buster ?t= y comparar contenido contra hash previo.
+  const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${target.file}?t=${Date.now()}`;
   try {
-    const headers = { 'Cache-Control':'no-cache' };
-    const lastEtag = _pollEtags[target.file];
-    if (lastEtag) headers['If-None-Match'] = lastEtag;
-    const r = await fetch(url, { headers, cache:'no-store' });
-    if (r.status === 304) return false; // sin cambios
+    const r = await fetch(url);
     if (!r.ok) return false;
-    const newEtag = r.headers.get('etag');
-    if (newEtag) _pollEtags[target.file] = newEtag;
-    const remote = await r.json();
+    const text = await r.text();
+    if (!text) return false;
+    // Hash barato del body para detectar cambios sin parsear cada vez
+    const lastSig = _pollEtags[target.file];
+    if (lastSig === text.length+':'+text.slice(0,80)) return false; // sin cambios
+    _pollEtags[target.file] = text.length+':'+text.slice(0,80);
+    let remote;
+    try { remote = JSON.parse(text); } catch(_) { return false; }
     // Caso especial: config.json (objeto, no array) — solo aplica proxyUrl
     if (target.file === 'data/config.json') {
       if (remote && remote.proxyUrl && !localStorage.getItem('energy_proxy_url')) {
