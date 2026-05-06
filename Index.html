@@ -848,7 +848,11 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="page" id="page-cronograma">
         <div class="section-header" style="margin-bottom:20px;">
           <span class="section-title">📊 Proyectos y Cronograma</span>
-          <button id="btn-nuevo-proyecto" class="btn btn-primary" onclick="openModal('modal-proyecto')" style="width:auto;">+ Nuevo Proyecto</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="btn-nuevo-proyecto" class="btn btn-primary" onclick="openModal('modal-proyecto')" style="width:auto;">+ Nuevo Proyecto</button>
+            <button class="btn" style="background:#475569;color:#fff;border:none;width:auto;" onclick="projectsOpenTrash()" title="Proyectos eliminados (30 días para restaurar)">🗑️ Papelera</button>
+            <button class="btn" style="background:#8b1a1a;color:#fff;border:none;width:auto;" onclick="projectsClearAll()" title="Mover TODOS los proyectos activos a la papelera">🧹 Vaciar Cronograma</button>
+          </div>
         </div>
         <div class="card">
           <div id="gantt-container"></div>
@@ -3562,7 +3566,7 @@ document.addEventListener('click', function(e){
 function renderDashboard() {
   let meetings = getData('meetings', MEETINGS_DEFAULT);
   let tasks = getData('tasks', TASKS_DEFAULT);
-  const projects = getData('projects', PROJECTS_DEFAULT);
+  const projects = getProjects(); // filtra deleted
   // Vista filtrada: colaborador solo ve lo suyo
   if (currentUser && currentPerms().filteredView) {
     const team = getData('team', TEAM_DEFAULT);
@@ -3843,8 +3847,140 @@ function quickCompleteTask(id) {
 }
 
 // ===== GANTT =====
+// ===== HELPERS PROYECTOS (PAPELERA) =====
+function getProjects(includeDeleted) {
+  const all = getData('projects', PROJECTS_DEFAULT);
+  if (includeDeleted) return all;
+  return (all || []).filter(p => !p.deleted);
+}
+function getProjectsAll() { return getData('projects', PROJECTS_DEFAULT) || []; }
+function getProjectsTrash() { return getProjectsAll().filter(p => p.deleted); }
+function _projectsAutoPurge(daysKeep) {
+  daysKeep = daysKeep || 30;
+  try {
+    const all = getProjectsAll();
+    const cutoff = Date.now() - daysKeep*86400000;
+    const kept = all.filter(p => {
+      if (!p.deleted || !p.deletedAt) return true;
+      try { return new Date(p.deletedAt).getTime() > cutoff; } catch(_) { return true; }
+    });
+    if (kept.length !== all.length) {
+      setData('projects', kept);
+      console.log('🗑️ Papelera proyectos: purgados', all.length - kept.length, '>'+daysKeep+'d');
+    }
+  } catch(_){}
+}
+document.addEventListener('DOMContentLoaded', () => setTimeout(_projectsAutoPurge, 5000));
+
+function deleteProject(id) {
+  const list = getProjectsAll();
+  const idx = list.findIndex(p => p.id === id);
+  if (idx < 0) return;
+  if (!confirm('¿Eliminar este proyecto?\n\nQueda 30 días en la papelera por si lo necesitas restaurar.')) return;
+  const snapshot = JSON.parse(JSON.stringify(list[idx]));
+  list[idx].deleted   = true;
+  list[idx].deletedAt = new Date().toISOString();
+  list[idx].deletedBy = (currentUser && (currentUser.email || currentUser.name)) || 'system';
+  list[idx].updatedAt = new Date().toISOString();
+  setData('projects', list);
+  renderGantt(); renderDashboard();
+  showToast('Proyecto "' + (snapshot.nombre||'?') + '" eliminado', 'info', {
+    actionLabel: '↩ Deshacer',
+    durationMs: 10000,
+    onAction: () => _undoDeleteProject(id)
+  });
+}
+function _undoDeleteProject(id) {
+  const list = getProjectsAll();
+  const idx = list.findIndex(p => p.id === id);
+  if (idx < 0) { showToast('No encontrado','error'); return; }
+  delete list[idx].deleted;
+  delete list[idx].deletedAt;
+  delete list[idx].deletedBy;
+  list[idx].updatedAt = new Date().toISOString();
+  setData('projects', list);
+  renderGantt(); renderDashboard();
+  showToast('✅ Proyecto restaurado','success');
+}
+function projectsPurgeForever(id) {
+  if (!confirm('¿Eliminar PERMANENTEMENTE este proyecto? No se puede recuperar.')) return;
+  const list = getProjectsAll().filter(p => p.id !== id);
+  setData('projects', list);
+  projectsOpenTrash();
+  showToast('Proyecto eliminado permanentemente','info');
+}
+function projectsEmptyTrash() {
+  const trash = getProjectsTrash();
+  if (!trash.length) { showToast('La papelera está vacía','info'); return; }
+  if (!confirm('¿Vaciar la papelera? Se eliminarán PERMANENTEMENTE ' + trash.length + ' proyecto(s). No se puede deshacer.')) return;
+  const list = getProjectsAll().filter(p => !p.deleted);
+  setData('projects', list);
+  projectsOpenTrash();
+  showToast('Papelera vaciada ('+trash.length+' eliminados)','info');
+}
+function projectsClearAll() {
+  const active = getProjects();
+  if (!active.length) { showToast('El cronograma ya está vacío','info'); return; }
+  if (!confirm('¿Vaciar el cronograma completo?\n\nSe enviarán a la papelera los ' + active.length + ' proyecto(s) activos.\nQuedan 30 días para restaurar.')) return;
+  const all = getProjectsAll();
+  const now = new Date().toISOString();
+  const who = (currentUser && (currentUser.email || currentUser.name)) || 'system';
+  all.forEach(p => {
+    if (!p.deleted) {
+      p.deleted = true;
+      p.deletedAt = now;
+      p.deletedBy = who;
+      p.updatedAt = now;
+    }
+  });
+  setData('projects', all);
+  renderGantt(); renderDashboard();
+  showToast('Cronograma vaciado — ' + active.length + ' proyecto(s) en papelera','success');
+}
+function projectsOpenTrash() {
+  const trash = getProjectsTrash().sort((a,b) => (b.deletedAt||'').localeCompare(a.deletedAt||''));
+  let body;
+  if (!trash.length) {
+    body = '<div style="padding:40px;text-align:center;color:#8899bb;"><div style="font-size:42px;margin-bottom:10px;">🗑️</div>La papelera está vacía</div>';
+  } else {
+    const fmt = iso => { try { const d = new Date(iso); return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}); } catch(_){ return iso || ''; } };
+    const daysLeft = iso => { try { const d = 30 - Math.floor((Date.now()-new Date(iso).getTime())/86400000); return d>0 ? d : 0; } catch(_){ return '?'; } };
+    body = '<div style="padding:8px 0;font-size:11px;color:#8899bb;margin-bottom:8px;">Los proyectos en la papelera se eliminan automáticamente después de 30 días.</div>';
+    body += trash.map(p => {
+      const dl = daysLeft(p.deletedAt);
+      const dlColor = dl <= 5 ? '#f87171' : dl <= 15 ? '#fbd38d' : '#8899bb';
+      return '<div style="display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.02);">'
+        + '<div style="flex:1;min-width:0;">'
+        +   '<div style="font-weight:700;color:#fff;">' + (p.nombre||'(sin nombre)') + ' <span style="color:#8899bb;font-weight:400;">· ' + (p.responsable||'—') + '</span></div>'
+        +   '<div style="font-size:11px;color:#8899bb;margin-top:2px;">Eliminado ' + fmt(p.deletedAt) + ' por ' + ((p.deletedBy||'').split('@')[0]||'—') + ' · <span style="color:'+dlColor+'">'+dl+' días restantes</span></div>'
+        + '</div>'
+        + '<button onclick="_undoDeleteProject(' + p.id + ');projectsOpenTrash();" style="background:rgba(46,170,74,.2);color:#86efac;border:1px solid rgba(46,170,74,.4);padding:6px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">↩ Restaurar</button>'
+        + '<button onclick="projectsPurgeForever(' + p.id + ')" style="background:rgba(229,62,62,.15);color:#fca5a5;border:1px solid rgba(229,62,62,.35);padding:6px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">🗑️ Borrar ya</button>'
+        + '</div>';
+    }).join('');
+  }
+  const existing = document.getElementById('modal-projects-trash');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-projects-trash';
+  overlay.className = 'modal-overlay open';
+  overlay.style.zIndex = '9000';
+  overlay.innerHTML = '<div class="modal-content" style="max-width:640px;background:#0F1A2E;border:1px solid rgba(232,160,32,.35);">'
+    + '<div class="modal-header" style="border-bottom:1px solid rgba(255,255,255,.08);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">'
+    +   '<h3 style="margin:0;color:#fff;font-family:Montserrat,sans-serif;">🗑️ Papelera de Proyectos ('+trash.length+')</h3>'
+    +   '<div style="display:flex;gap:8px;">'
+    +     (trash.length ? '<button onclick="projectsEmptyTrash()" style="background:rgba(229,62,62,.2);color:#fca5a5;border:1px solid rgba(229,62,62,.4);padding:6px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">Vaciar todo</button>' : '')
+    +     '<button onclick="document.getElementById(\'modal-projects-trash\').remove()" style="background:transparent;border:none;color:#8899bb;font-size:22px;cursor:pointer;line-height:1;">&times;</button>'
+    +   '</div>'
+    + '</div>'
+    + '<div style="padding:14px 18px;max-height:60vh;overflow-y:auto;">' + body + '</div>'
+    + '</div>';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
+
 function renderGantt() {
-  const projects = getData('projects', PROJECTS_DEFAULT);
+  const projects = getProjects();
   const el = document.getElementById('gantt-container');
   if (!projects.length) { el.innerHTML = '<div class="gantt-empty">📋 No hay proyectos. Crea uno con "+ Nuevo Proyecto".</div>'; return; }
 
@@ -3917,7 +4053,8 @@ function renderGantt() {
           <div class="gantt-bar-progress" style="width:${p.progreso}%;"></div>
           <div class="gantt-bar-text">${p.progreso}% &nbsp;·&nbsp; ${sf} → ${ef}</div>
         </div>
-        <button class="gantt-edit-btn" onclick="editProject(${p.id})">✏️ Editar</button>
+        <button class="gantt-edit-btn" onclick="editProject(${p.id})" style="right:90px;">✏️ Editar</button>
+        <button class="gantt-edit-btn" onclick="deleteProject(${p.id})" style="background:rgba(229,62,62,0.2);border-color:rgba(229,62,62,0.4);color:#fca5a5;" title="Eliminar (queda en papelera 30 días)">🗑️ Borrar</button>
       </div>
     </div>`;
   }).join('');
@@ -4289,7 +4426,7 @@ function saveProyecto() {
   if(!nombre) { showToast('Ingresa el nombre del proyecto','error'); return; }
 
   const editMode = document.getElementById('modal-proyecto-editmode').value;
-  const projects = getData('projects', PROJECTS_DEFAULT);
+  const projects = getProjectsAll(); // incluye deleted para no perder la papelera
   const colors = ['#2EAA4A','#1A3A8F','#E8A020','#9333ea','#dc2626'];
 
   if (editMode) {
