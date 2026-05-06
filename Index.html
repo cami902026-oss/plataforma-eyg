@@ -1030,6 +1030,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="btn" style="background:#8b1a1a;color:#fff;border:none" onclick="generarInformePDF()">📄 Generar Informe PDF</button>
               <button class="btn" style="background:#0f9d58;color:#fff;border:none" onclick="window.open('https://docs.google.com/spreadsheets/d/1QjeJiCQ8fND57r0MNw1vRNdcnukqpBNHDfxjbeW7Lq0/edit','_blank')">🗂️ Ver en Google Sheets</button>
               <button id="btn-cerrar-mes" class="btn" style="background:#5b21b6;color:#fff;border:none" onclick="cerrarMesOC()">📦 Cerrar Mes</button>
+              <button class="btn" style="background:#475569;color:#fff;border:none" onclick="pocOpenTrash()" title="Órdenes eliminadas (30 días para restaurar)">🗑️ Papelera</button>
             </div>
           </div>
           <div id="poc-list"></div>
@@ -4407,9 +4408,32 @@ let pocCurrentFilter = 'todos';
 let pocStageFilter = null;
 let pocEditId = null;
 
-function getPOC() {
-  try { return JSON.parse(localStorage.getItem('procesos_oc')) || POC_DEFAULT; } catch(e) { return POC_DEFAULT; }
+function getPOC(includeDeleted) {
+  try {
+    const all = JSON.parse(localStorage.getItem('procesos_oc')) || POC_DEFAULT;
+    if (includeDeleted) return all;
+    return all.filter(o => !o.deleted);
+  } catch(e) { return POC_DEFAULT; }
 }
+function getPOCAll() { return getPOC(true); }
+function getPOCTrash() { return getPOCAll().filter(o => o.deleted); }
+function _pocAutoPurge(daysKeep) {
+  daysKeep = daysKeep || 30;
+  try {
+    const all = getPOCAll();
+    const cutoff = Date.now() - daysKeep*86400000;
+    const kept = all.filter(o => {
+      if (!o.deleted || !o.deletedAt) return true;
+      try { return new Date(o.deletedAt).getTime() > cutoff; } catch(_) { return true; }
+    });
+    if (kept.length !== all.length) {
+      localStorage.setItem('procesos_oc', JSON.stringify(kept));
+      console.log('🗑️ Papelera: purgadas', all.length - kept.length, 'OPs >'+daysKeep+'d');
+      try { _saveOrdenesGH(kept); } catch(_){}
+    }
+  } catch(_){}
+}
+document.addEventListener('DOMContentLoaded', () => setTimeout(_pocAutoPurge, 5000));
 let _pocLastSave = 0; // timestamp del último guardado local — bloquea sync remoto 60s
 // Merge defensivo: NUNCA dejar fuera una OC que esté en remoto pero no en local.
 // Razón: 04-may-2026 la app sobrescribió 5 OCs recuperadas porque savePOCData
@@ -4557,7 +4581,7 @@ function _pocIsLockedByOther(order) {
   return { by: order.lockedBy, ageMin: Math.max(1, Math.round(ageMs / 60000)) };
 }
 async function _pocAcquireLock(orderId) {
-  const list = getPOC();
+  const list = getPOCAll();
   const idx = list.findIndex(o => o.id === orderId || o.id === String(orderId));
   if (idx < 0) return;
   list[idx].lockedBy = _pocLockUser();
@@ -4567,7 +4591,7 @@ async function _pocAcquireLock(orderId) {
 }
 async function _pocReleaseLock(orderId) {
   if (!orderId) return;
-  const list = getPOC();
+  const list = getPOCAll();
   const idx = list.findIndex(o => o.id === orderId || o.id === String(orderId));
   if (idx < 0) return;
   if (list[idx].lockedBy && list[idx].lockedBy !== _pocLockUser()) return; // no tocar lock ajeno
@@ -4668,7 +4692,7 @@ function savePoc() {
   // Liberar el lock al guardar (el editor ya terminó)
   delete order.lockedBy;
   delete order.lockedAt;
-  let list = getPOC();
+  let list = getPOCAll();
   if(pocEditId) { const idx=list.findIndex(o=>o.id===pocEditId); if(idx>=0) list[idx]=order; else list.push(order); }
   else list.push(order);
   savePOCData(list);
@@ -4687,12 +4711,97 @@ function pocToggleTransp() {
 
 function deletePoc() {
   if(!pocEditId) return;
-  if(!confirm('¿Eliminar esta orden de compra?')) return;
-  let list = getPOC().filter(o=>o.id!==pocEditId);
+  if(!confirm('¿Eliminar esta orden de compra?\n\nQueda 30 días en la papelera por si la necesitas restaurar.')) return;
+  const idToDelete = pocEditId;
+  let list = getPOCAll();
+  const idx = list.findIndex(o => o.id === idToDelete);
+  if (idx < 0) { closePocModal(); return; }
+  const orderSnapshot = JSON.parse(JSON.stringify(list[idx]));
+  list[idx].deleted    = true;
+  list[idx].deletedAt  = new Date().toISOString();
+  list[idx].deletedBy  = (currentUser && (currentUser.email || currentUser.name)) || 'system';
+  list[idx].updatedAt  = new Date().toISOString();
   savePOCData(list);
   closePocModal();
   renderProcesos();
-  showToast('Orden eliminada','info');
+  showToast(
+    'Orden ' + (orderSnapshot.num || '?') + ' eliminada',
+    'info',
+    {
+      actionLabel: '↩ Deshacer',
+      durationMs: 10000,
+      onAction: () => _undoDeletePoc(idToDelete)
+    }
+  );
+}
+function _undoDeletePoc(orderId) {
+  let list = getPOCAll();
+  const idx = list.findIndex(o => o.id === orderId);
+  if (idx < 0) { showToast('No encontrada','error'); return; }
+  delete list[idx].deleted;
+  delete list[idx].deletedAt;
+  delete list[idx].deletedBy;
+  list[idx].updatedAt = new Date().toISOString();
+  savePOCData(list);
+  renderProcesos();
+  showToast('✅ Orden restaurada','success');
+}
+function pocPurgeForever(orderId) {
+  if (!confirm('¿Eliminar PERMANENTEMENTE esta orden? No se puede recuperar.')) return;
+  let list = getPOCAll().filter(o => o.id !== orderId);
+  savePOCData(list);
+  pocOpenTrash();
+  showToast('Orden eliminada permanentemente','info');
+}
+function pocEmptyTrash() {
+  const trash = getPOCTrash();
+  if (!trash.length) { showToast('La papelera ya está vacía','info'); return; }
+  if (!confirm('¿Vaciar la papelera completa? Se eliminarán PERMANENTEMENTE ' + trash.length + ' orden(es). No se puede deshacer.')) return;
+  let list = getPOCAll().filter(o => !o.deleted);
+  savePOCData(list);
+  pocOpenTrash();
+  showToast('Papelera vaciada ('+trash.length+' eliminadas)','info');
+}
+function pocOpenTrash() {
+  const trash = getPOCTrash().sort((a,b) => (b.deletedAt||'').localeCompare(a.deletedAt||''));
+  let body;
+  if (!trash.length) {
+    body = '<div style="padding:40px;text-align:center;color:#8899bb;"><div style="font-size:42px;margin-bottom:10px;">🗑️</div>La papelera está vacía</div>';
+  } else {
+    const fmt = iso => { try { const d = new Date(iso); return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short'}) + ' ' + d.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'}); } catch(_){ return iso || ''; } };
+    const daysLeft = iso => { try { const d = 30 - Math.floor((Date.now()-new Date(iso).getTime())/86400000); return d>0 ? d : 0; } catch(_){ return '?'; } };
+    body = '<div style="padding:8px 0;font-size:11px;color:#8899bb;margin-bottom:8px;">Las órdenes en la papelera se eliminan automáticamente después de 30 días.</div>';
+    body += trash.map(o => {
+      const dl = daysLeft(o.deletedAt);
+      const dlColor = dl <= 5 ? '#f87171' : dl <= 15 ? '#fbd38d' : '#8899bb';
+      return '<div style="display:flex;gap:12px;align-items:center;padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,.02);">'
+        + '<div style="flex:1;min-width:0;">'
+        +   '<div style="font-weight:700;color:#fff;">' + (o.num||'(sin número)') + ' <span style="color:#8899bb;font-weight:400;">· ' + (o.cliente||'—') + '</span></div>'
+        +   '<div style="font-size:11px;color:#8899bb;margin-top:2px;">Eliminada ' + fmt(o.deletedAt) + ' por ' + ((o.deletedBy||'').split('@')[0]||'—') + ' · <span style="color:'+dlColor+'">'+dl+' días restantes</span></div>'
+        + '</div>'
+        + '<button onclick="_undoDeletePoc(\'' + o.id + '\');pocOpenTrash();" style="background:rgba(46,170,74,.2);color:#86efac;border:1px solid rgba(46,170,74,.4);padding:6px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">↩ Restaurar</button>'
+        + '<button onclick="pocPurgeForever(\'' + o.id + '\')" style="background:rgba(229,62,62,.15);color:#fca5a5;border:1px solid rgba(229,62,62,.35);padding:6px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">🗑️ Borrar ya</button>'
+        + '</div>';
+    }).join('');
+  }
+  const existing = document.getElementById('modal-poc-trash');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-poc-trash';
+  overlay.className = 'modal-overlay open';
+  overlay.style.zIndex = '9000';
+  overlay.innerHTML = '<div class="modal-content" style="max-width:640px;background:#0F1A2E;border:1px solid rgba(232,160,32,.35);">'
+    + '<div class="modal-header" style="border-bottom:1px solid rgba(255,255,255,.08);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">'
+    +   '<h3 style="margin:0;color:#fff;font-family:Montserrat,sans-serif;">🗑️ Papelera de Órdenes ('+trash.length+')</h3>'
+    +   '<div style="display:flex;gap:8px;">'
+    +     (trash.length ? '<button onclick="pocEmptyTrash()" style="background:rgba(229,62,62,.2);color:#fca5a5;border:1px solid rgba(229,62,62,.4);padding:6px 12px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer;">Vaciar todo</button>' : '')
+    +     '<button onclick="document.getElementById(\'modal-poc-trash\').remove()" style="background:transparent;border:none;color:#8899bb;font-size:22px;cursor:pointer;line-height:1;">&times;</button>'
+    +   '</div>'
+    + '</div>'
+    + '<div style="padding:14px 18px;max-height:60vh;overflow-y:auto;">' + body + '</div>'
+    + '</div>';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
 }
 
 // ===== CIERRE DE MES GENÉRICO POR MÓDULO =====
@@ -5082,9 +5191,10 @@ function cerrarMesOC() {
     } catch(e) { console.warn('GS archive error:', e); }
   }
 
-  // 3. Dejar solo las activas en la lista principal
+  // 3. Dejar solo las activas en la lista principal — preservando la papelera
   const activas = list.filter(o => o.estado === 'activo');
-  savePOCData(activas);
+  const trash = getPOCTrash(); // los borrados no se tocan al cerrar mes
+  savePOCData([...activas, ...trash]);
   renderProcesos();
   showToast(`📦 Mes cerrado — ${archivar.length} órdenes archivadas`, 'success');
 }
@@ -6099,7 +6209,7 @@ function tool_crear_tarea(args) {
 }
 
 function tool_marcar_etapa_oc(args) {
-  const list = getPOC();
+  const list = getPOCAll();
   const stageMap = { compra:0, entrega:1, certificado:2, certif:2, factura:3, facturacion:3, 'facturación':3 };
   const idx = stageMap[(args.etapa||'').toLowerCase()];
   if (idx === undefined) return { ok:false, mensaje:'Etapa inválida. Usa: compra, entrega, certificado o factura.' };
@@ -6558,14 +6668,32 @@ function chatKeydown(e) {
 }
 
 // ===== UTILS =====
-function showToast(msg, type='info') {
+function showToast(msg, type='info', opts) {
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
   toast.className=`toast ${type}`;
   const icons = {success:'✅',error:'❌',info:'ℹ️'};
+  const dur = (opts && opts.durationMs) || 3500;
+  if (opts && opts.actionLabel && typeof opts.onAction === 'function') {
+    const btnId = 'toast-act-' + Date.now() + '-' + Math.random().toString(36).slice(2,6);
+    toast.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>` +
+      `<button id="${btnId}" style="margin-left:14px;background:rgba(232,160,32,.85);color:#0a1a30;border:none;padding:5px 12px;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;">${opts.actionLabel}</button>`;
+    container.appendChild(toast);
+    const tm = setTimeout(() => toast.remove(), dur);
+    setTimeout(() => {
+      const btn = document.getElementById(btnId);
+      if (btn) btn.onclick = (e) => {
+        e.stopPropagation();
+        clearTimeout(tm);
+        try { opts.onAction(); } catch(_){}
+        toast.remove();
+      };
+    }, 0);
+    return;
+  }
   toast.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
   container.appendChild(toast);
-  setTimeout(()=>toast.remove(), 3500);
+  setTimeout(()=>toast.remove(), dur);
 }
 
 function initials(name) {
