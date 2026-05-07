@@ -2765,9 +2765,74 @@ async function syncNow() {
     showToast('Sin conexión a internet — espera y se reintenta solo','info');
     return;
   }
+  const before = _getSyncQueue();
+  if (!before.length) { _refreshSyncBadge(); showToast('✅ Todo sincronizado','success'); return; }
+  if (!_ghToken()) {
+    showToast('⚠️ No tienes token GitHub configurado — los cambios no pueden subir. Configuración → Token GitHub','error',{durationMs:7000});
+    return;
+  }
   await _drainSyncQueue();
   _refreshSyncBadge();
-  showToast('Sincronización completa','success');
+  const after = _getSyncQueue();
+  if (!after.length) {
+    showToast('✅ '+before.length+' cambio(s) subidos correctamente','success');
+  } else {
+    _syncShowStuck(after);
+  }
+}
+function _syncShowStuck(items) {
+  const fmt = ts => { try { const min = Math.round((Date.now()-ts)/60000); return min < 60 ? min+' min' : Math.round(min/60)+' h'; } catch(_){ return '?'; } };
+  const rows = items.map((it, i) => {
+    return '<tr style="border-bottom:1px solid rgba(255,255,255,.06);">'
+      + '<td style="padding:8px;font-family:monospace;font-size:11px;color:#90cdf4;">'+(it.file||'?')+'</td>'
+      + '<td style="padding:8px;font-size:11px;color:#fbd38d;">'+(it.motivo||'desconocido')+'</td>'
+      + '<td style="padding:8px;font-size:11px;color:#8899bb;">hace '+fmt(it.ts)+'</td>'
+      + '<td style="padding:8px;text-align:right;"><button onclick="_syncDiscardOne(\''+(it.file||'').replace(/[\'"]/g,'')+'\')" style="background:rgba(229,62,62,.2);color:#fca5a5;border:1px solid rgba(229,62,62,.4);padding:4px 10px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;">Descartar</button></td>'
+      + '</tr>';
+  }).join('');
+  const existing = document.getElementById('modal-sync-stuck');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-sync-stuck';
+  overlay.className = 'modal-overlay open';
+  overlay.style.zIndex = '9999';
+  overlay.innerHTML = '<div class="modal-content" style="max-width:680px;background:#0F1A2E;border:1px solid rgba(229,62,62,.4);">'
+    + '<div style="padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;">'
+    +   '<h3 style="margin:0;color:#fff;font-family:Montserrat,sans-serif;">⚠️ '+items.length+' cambio(s) atascado(s)</h3>'
+    +   '<button onclick="document.getElementById(\'modal-sync-stuck\').remove()" style="background:transparent;border:none;color:#8899bb;font-size:22px;cursor:pointer;line-height:1;">&times;</button>'
+    + '</div>'
+    + '<div style="padding:14px 18px;">'
+    +   '<p style="color:#cbd5ff;font-size:13px;line-height:1.5;margin:0 0 14px;">Estos cambios NO se han podido subir a GitHub. Causas comunes: <strong>token vencido</strong>, <strong>permisos del repo</strong> o <strong>conflicto de versión</strong>.</p>'
+    +   '<table style="width:100%;border-collapse:collapse;background:rgba(255,255,255,.02);border-radius:6px;overflow:hidden;">'
+    +     '<thead><tr style="background:rgba(15,43,91,.5);"><th style="padding:8px;text-align:left;font-size:10px;color:#8899bb;text-transform:uppercase;letter-spacing:.5px;">Archivo</th><th style="padding:8px;text-align:left;font-size:10px;color:#8899bb;text-transform:uppercase;letter-spacing:.5px;">Motivo</th><th style="padding:8px;text-align:left;font-size:10px;color:#8899bb;text-transform:uppercase;letter-spacing:.5px;">Esperando</th><th></th></tr></thead>'
+    +     '<tbody>'+rows+'</tbody>'
+    +   '</table>'
+    +   '<div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">'
+    +     '<button onclick="navigate(\'configuracion\');document.getElementById(\'modal-sync-stuck\').remove();" style="background:rgba(26,58,143,.4);color:#90cdf4;border:1px solid rgba(26,58,143,.6);padding:8px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">⚙️ Renovar token</button>'
+    +     '<button onclick="_drainSyncQueue().then(()=>{document.getElementById(\'modal-sync-stuck\').remove();syncNow();})" style="background:rgba(46,170,74,.3);color:#86efac;border:1px solid rgba(46,170,74,.5);padding:8px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">🔄 Reintentar todo</button>'
+    +     '<button onclick="_syncDiscardAll()" style="background:rgba(229,62,62,.25);color:#fca5a5;border:1px solid rgba(229,62,62,.5);padding:8px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">🗑️ Descartar todo</button>'
+    +   '</div>'
+    + '</div>'
+    + '</div>';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
+function _syncDiscardOne(file) {
+  if (!confirm('¿Descartar el cambio pendiente de "'+file+'"?\n\nLa versión actual del archivo en GitHub se mantiene. Tu cambio local se pierde.')) return;
+  const q = _getSyncQueue().filter(it => it.file !== file);
+  _setSyncQueue(q);
+  _refreshSyncBadge();
+  document.getElementById('modal-sync-stuck')?.remove();
+  if (q.length) _syncShowStuck(q);
+  else showToast('Cambio descartado','info');
+}
+function _syncDiscardAll() {
+  const q = _getSyncQueue();
+  if (!confirm('¿Descartar TODOS los '+q.length+' cambios pendientes?\n\nSe pierden los cambios locales que NO se pudieron subir. Las versiones en GitHub se mantienen como están.')) return;
+  _setSyncQueue([]);
+  _refreshSyncBadge();
+  document.getElementById('modal-sync-stuck')?.remove();
+  showToast(q.length+' cambio(s) descartado(s)','info');
 }
 window.addEventListener('online',  () => { _refreshSyncBadge(); _drainSyncQueue().then(_refreshSyncBadge); });
 window.addEventListener('offline', () => _refreshSyncBadge());
