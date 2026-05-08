@@ -283,7 +283,7 @@
     "num": "LM1392",
     "cliente": "HIDROCASANARE",
     "desc": "SUMINISTRO DE MATERIAL",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -306,14 +306,15 @@
         "n": "COMPLETOS EN LA CARPETA\n"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-07",
+        "n": "422"
       }
     ],
-    "updatedAt": "2026-05-08T02:50:06.590Z",
-    "lockedBy": "alberto",
-    "lockedAt": "2026-05-08T02:50:06.590Z"
+    "createdAt": "2026-05-08T02:50:12.144Z",
+    "createdBy": "alberto",
+    "updatedAt": "2026-05-08T02:50:12.144Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "poc_1776469053057",
