@@ -4,36 +4,38 @@
     "num": "LM1320",
     "cliente": "PETRORIOS",
     "desc": "SUMINISTRO MATERIAL MECANICO",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
-        "f": "2026-04-10",
         "s": "done",
+        "f": "2026-04-10",
         "n": "BETEL, CODIFER"
       },
       {
-        "envio": "transportadora",
-        "resp": "",
-        "dest": "ORITO Q-CIEN",
-        "guia": "226311",
-        "f": "2026-04-10",
         "s": "done",
+        "f": "2026-04-10",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "",
+        "guia": "226311",
+        "dest": "ORITO Q-CIEN",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-05-09",
         "n": ""
       },
       {
-        "n": "",
-        "s": "pending",
-        "f": ""
-      },
-      {
-        "s": "pending",
-        "n": "",
-        "f": ""
+        "s": "done",
+        "f": "2026-05-08",
+        "n": "426"
       }
     ],
-    "updatedAt": "2026-05-09T14:30:02.371Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-09T14:30:02.371Z"
+    "createdAt": "2026-05-09T14:30:23.641Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-09T14:30:23.641Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1775861884115",
