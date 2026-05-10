@@ -182,15 +182,15 @@
     "estado": "activo",
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-05-04",
         "n": "TECINCOL"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-05-09",
         "n": "",
-        "envio": "",
+        "envio": "camion_energy",
         "transp": "",
         "guia": "",
         "dest": "",
@@ -202,14 +202,15 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-09",
+        "n": "429"
       }
     ],
-    "updatedAt": "2026-05-10T03:39:58.313Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-10T03:39:58.313Z"
+    "createdAt": "2026-05-10T03:40:27.777Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-10T03:40:27.777Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777926438588",
