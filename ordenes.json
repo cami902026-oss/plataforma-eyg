@@ -672,7 +672,7 @@
     "num": "02CMP-9777",
     "cliente": "PETROSERVICIOS INDUSTRIALES",
     "desc": "Ring Gasket BX-152 (x2) y Ring Gasket BX-156 (x2)",
-    "estado": "activo",
+    "estado": "completado",
     "stages": [
       {
         "s": "done",
@@ -690,9 +690,9 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-11",
+        "n": "Servidor"
       },
       {
         "s": "done",
@@ -700,9 +700,10 @@
         "n": "427"
       }
     ],
-    "updatedAt": "2026-05-11T18:23:43.824Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-11T18:23:43.824Z"
+    "createdAt": "2026-05-11T18:23:53.079Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-11T18:23:53.079Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1778337238517",
