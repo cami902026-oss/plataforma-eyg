@@ -137,7 +137,9 @@
         "f": ""
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "updatedAt": "2026-05-11T18:23:06.660Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-11T18:23:06.660Z"
   },
   {
     "id": "poc_1777493972827",
@@ -182,15 +184,15 @@
     "estado": "activo",
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-05-04",
         "n": "TECINCOL"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-05-09",
         "n": "",
-        "envio": "",
+        "envio": "camion_energy",
         "transp": "",
         "guia": "",
         "dest": "",
@@ -202,12 +204,12 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-09",
+        "n": "429"
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1777926438588",
@@ -412,12 +414,12 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-08",
+        "n": "427"
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1777675044439",
@@ -589,7 +591,7 @@
       {
         "s": "done",
         "f": "2026-05-07",
-        "n": "414"
+        "n": "431"
       }
     ],
     "updatedAt": "✅ Facturado"
@@ -627,9 +629,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-10T03:39:16.581Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-10T03:39:16.581Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1778255156528",
@@ -664,10 +664,7 @@
         "n": "430"
       }
     ],
-    "createdAt": "2026-05-10T03:39:15.796Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-10T03:39:15.796Z",
-    "updatedBy": "andrea"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1778258217718",
@@ -737,9 +734,6 @@
         "n": "428"
       }
     ],
-    "createdAt": "2026-05-10T03:38:54.873Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-10T03:38:59.438Z",
-    "updatedBy": "andrea"
+    "updatedAt": "✅ Facturado"
   }
 ]
