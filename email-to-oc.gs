@@ -199,9 +199,19 @@ function doPost(e) {
       return _json({ ok:false, error:'OC ya existe', num: numNorm, cliente: existente.cliente });
     }
 
-    // 4. Crear OC
-    var fecha = datos.fecha || new Date().toISOString().slice(0,10);
+    // 4. Crear OC — distinguir fecha de creación (emisión OC) de fecha de compra
+    var hoyStr = new Date().toISOString().slice(0,10);
+    // Fallbacks encadenados: campos nuevos → campo viejo "fecha" → hoy
+    var fechaCreacion = datos.fechaCreacion || datos.fecha || hoyStr;
+    var fechaCompra   = datos.fechaCompra   || datos.fecha || fechaCreacion;
+    // createdAt: usamos la fechaCreacion a las 00:00 si vino válida; si no, el timestamp del momento
     var now = new Date().toISOString();
+    var createdAtIso;
+    try {
+      createdAtIso = /^\d{4}-\d{2}-\d{2}$/.test(fechaCreacion)
+        ? new Date(fechaCreacion + 'T00:00:00').toISOString()
+        : now;
+    } catch(_) { createdAtIso = now; }
     var nuevaOC = {
       id: 'poc_' + Date.now(),
       num: numNorm,
@@ -209,16 +219,16 @@ function doPost(e) {
       desc: datos.desc || '',
       estado: 'activo',
       stages: [
-        { s:'done', f: fecha, n: 'Auto-creada desde correo' },
+        { s:'done', f: fechaCompra, n: 'Auto-creada desde correo' },
         { s:'pending', f:'', n:'' },
         { s:'pending', f:'', n:'' },
         { s:'pending', f:'', n:'' }
       ],
-      createdAt: now,
+      createdAt: createdAtIso,
       createdBy: 'Auto (correo de ' + fromAddr + ')',
       updatedAt: now,
       updatedBy: 'Auto (correo)',
-      origenCorreo: { from: fromAddr, subject: subject, fecha: now }
+      origenCorreo: { from: fromAddr, subject: subject, fecha: now, fechaCreacionOC: fechaCreacion, fechaCompra: fechaCompra }
     };
     list.push(nuevaOC);
 
@@ -228,8 +238,8 @@ function doPost(e) {
     // 6. Sincronizar a Google Sheets (para que la app la vea sin tener que recargar 2 veces)
     _saveToGS(list);
 
-    Logger.log('OC creada: ' + numNorm + ' / ' + nuevaOC.cliente);
-    return _json({ ok:true, num: numNorm, cliente: nuevaOC.cliente, desc: nuevaOC.desc });
+    Logger.log('OC creada: ' + numNorm + ' / ' + nuevaOC.cliente + ' | creación: ' + fechaCreacion + ' | compra: ' + fechaCompra);
+    return _json({ ok:true, num: numNorm, cliente: nuevaOC.cliente, desc: nuevaOC.desc, fechaCreacion: fechaCreacion, fechaCompra: fechaCompra });
 
   } catch (err) {
     Logger.log('doPost error: ' + err);
@@ -248,11 +258,13 @@ function _extraerDatosOC(bodyText, attachments, subject, fromAddr) {
     'De este correo y/o adjuntos te están enviando una ORDEN DE COMPRA. ' +
     'Debes extraer los siguientes campos y devolverlos en JSON puro (sin texto extra, sin markdown):\n' +
     '{\n' +
-    '  "num":     "número de la OC tal como aparece (LM1500, ODC-4170, 4600007246, etc.) — REQUERIDO",\n' +
-    '  "cliente": "nombre del cliente / razón social en MAYÚSCULAS",\n' +
-    '  "desc":    "descripción corta de qué se está comprando (máximo 80 caracteres)",\n' +
-    '  "fecha":   "fecha de la OC en formato YYYY-MM-DD (si no se ve, usa la de hoy)"\n' +
+    '  "num":           "número de la OC tal como aparece (LM1500, ODC-4170, 4600007246, etc.) — REQUERIDO",\n' +
+    '  "cliente":       "nombre del cliente / razón social en MAYÚSCULAS",\n' +
+    '  "desc":          "descripción corta de qué se está comprando (máximo 80 caracteres)",\n' +
+    '  "fechaCreacion": "fecha de EMISIÓN/ELABORACIÓN de la OC tal como aparece en el documento (cuándo el cliente la generó), formato YYYY-MM-DD. Si no se ve en el documento, usa la fecha del correo.",\n' +
+    '  "fechaCompra":   "fecha de la COMPRA real al proveedor en formato YYYY-MM-DD. Suele coincidir con fechaCreacion. Si no se distingue una fecha separada, deja igual a fechaCreacion."\n' +
     '}\n' +
+    'IMPORTANTE: fechaCreacion (cuándo se elaboró la OC) y fechaCompra (cuándo se ejecuta la compra) son conceptualmente distintas — si en el documento aparece "Fecha:" o "Fecha de emisión", esa es fechaCreacion. Si aparece otra fecha distinta como "Fecha de compra" o "Fecha de entrega esperada", úsala según corresponda.\n' +
     'Si no encuentras el número de la OC, devuelve {"num": null}.\n' +
     'Asunto del correo: ' + subject + '\n' +
     'Remitente: ' + fromAddr + '\n' +
