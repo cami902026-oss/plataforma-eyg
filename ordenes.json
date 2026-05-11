@@ -112,34 +112,35 @@
     "estado": "activo",
     "stages": [
       {
-        "n": "EMPAQUETAS Y EMPAQUETADURAS",
         "s": "done",
-        "f": "2026-04-23"
+        "f": "2026-04-23",
+        "n": "EMPAQUETAS Y EMPAQUETADURAS"
       },
       {
+        "s": "done",
         "f": "",
         "n": "",
-        "s": "active",
-        "transp": "SERVIENTREGA",
-        "resp": "Alexandra Fernandez",
         "envio": "transportadora",
+        "transp": "SERVIENTREGA",
+        "guia": "",
         "dest": "",
-        "guia": ""
+        "resp": "Alexandra Fernandez"
       },
       {
         "s": "pending",
-        "n": "",
-        "f": ""
+        "f": "",
+        "n": ""
       },
       {
-        "n": "",
         "s": "pending",
-        "f": ""
+        "f": "",
+        "n": ""
       }
     ],
-    "updatedAt": "2026-05-11T18:23:06.660Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-11T18:23:06.660Z"
+    "createdAt": "2026-05-11T18:23:11.532Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-11T18:23:11.532Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777493972827",
