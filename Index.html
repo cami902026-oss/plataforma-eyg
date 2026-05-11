@@ -1373,6 +1373,19 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <br>Alternativa: URL base de Netlify (requiere plan pago si superas 125k req/mes).
           </p>
         </div>
+        <div class="config-section" style="border-left:3px solid #E8A020;">
+          <div class="config-title">📝 URL Evaluación de Desempeño (Google Form)</div>
+          <div class="api-key-row">
+            <div class="form-group" style="flex:1;margin:0;">
+              <input type="text" id="eval-url-input" placeholder="https://forms.gle/... o https://docs.google.com/forms/.../viewform?usp=pp_url&entry.123={NOMBRE}">
+            </div>
+            <button class="btn btn-primary" onclick="saveEvalUrl()" style="width:auto;white-space:nowrap;">Guardar</button>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">
+            URL del Google Form que se abre desde el botón 📝 de cada miembro del equipo.
+            <br>Si incluyes <code>{NOMBRE}</code> en la URL, ENERGY lo reemplaza por el nombre del evaluado (útil para prellenar campos con <code>?usp=pp_url&entry.XXX={NOMBRE}</code>).
+          </p>
+        </div>
         <div class="config-section" style="border-left:3px solid #e53e3e;">
           <div class="config-title">🧹 Resetear datos locales</div>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
@@ -1942,6 +1955,37 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="form-group"><label>WhatsApp</label><input type="text" id="mb-wa" placeholder="+57 300 000 0000"></div>
     </div>
     <button class="btn btn-primary" onclick="saveMiembro()" style="margin-top:8px;">Agregar al equipo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal KPIs por miembro ===== -->
+<style>
+  #modal-kpis .modal { max-width: 760px; width: 95%; }
+  .kpi-card-mini { background: rgba(15,43,91,0.35); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+  .kpi-card-mini .kpi-lbl { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+  .kpi-card-mini .kpi-val { font-size:22px; font-weight:800; color:#fff; font-family:'Montserrat',sans-serif; }
+  #kpi-modal-ai-box { background: rgba(46,170,74,0.06); border:1px solid rgba(46,170,74,0.3); border-radius:10px; padding:14px; min-height:80px; }
+</style>
+<div class="modal-overlay" id="modal-kpis">
+  <div class="modal">
+    <div class="modal-header" style="display:flex;align-items:center;gap:12px;">
+      <div style="flex:1;">
+        <div class="modal-title" id="kpi-modal-title" style="margin:0;">📊 KPIs</div>
+        <div id="kpi-modal-subtitle" style="font-size:12px;color:var(--text-muted);margin-top:2px;"></div>
+      </div>
+      <button class="close-btn" onclick="closeKPIsMiembro()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="kpi-modal-stats"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px 0;">
+        <button id="kpi-modal-ai-btn" class="btn btn-primary" style="width:auto;">✨ Analizar con ENERGY</button>
+        <button id="kpi-modal-eval-btn" class="btn btn-ghost" style="width:auto;">📝 Abrir Evaluación de Desempeño</button>
+        <button class="btn btn-ghost" onclick="closeKPIsMiembro()" style="width:auto;">Cerrar</button>
+      </div>
+      <div id="kpi-modal-ai-box">
+        <div id="kpi-modal-ai"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -3430,7 +3474,7 @@ function navigate(page) {
   const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',configuracion:'Configuración'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
-  if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); }
+  if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
   if(page==='historico') { setTimeout(historicoListMonths, 100); }
   if(page==='procesos') renderProcesos();
   if(page==='inventario') { setTimeout(async()=>{ try { const t = await getToken(); if(t) msLoadInventoryFromOneDrive(); } catch(e){} }, 500); }
@@ -4202,6 +4246,8 @@ function renderTeam() {
         <button class="icon-btn" onclick="openWA('${m.wa}')" title="WhatsApp">📱</button>
         <button class="icon-btn" onclick="showToast('Abriendo Teams...','info')" title="Teams">💻</button>
         <button class="icon-btn" onclick="copyEmail('${m.email}')" title="Copiar email">📧</button>
+        <button class="icon-btn" onclick="openKPIsMiembro(${m.id})" title="KPIs / Desempeño">📊</button>
+        <button class="icon-btn" onclick="abrirEvalDesempeno('${(m.name||'').replace(/'/g,"\\'")}')" title="Evaluación de Desempeño">📝</button>
       </div>
     </div>`).join('');
 }
@@ -4231,6 +4277,131 @@ function deleteMember(id) {
   setData('team', team);
   renderTeam(); renderTeamMgmt();
   showToast('Miembro eliminado','info');
+}
+
+// ===== KPIs por miembro =====
+function _computeKPIsMiembro(member) {
+  const name = member.name || '';
+  const lcName = name.toLowerCase();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const tasks = getData('tasks', []) || [];
+  const mias = tasks.filter(t => {
+    if (!t || t.deleted) return false;
+    const r = t.responsable || '';
+    if (Array.isArray(r)) return r.some(x => (x||'').toLowerCase() === lcName);
+    return (r||'').toLowerCase().includes(lcName);
+  });
+  const completadas = mias.filter(t => (t.estado||'').toLowerCase() === 'completada').length;
+  const enProgreso  = mias.filter(t => ['en progreso','pendiente'].includes((t.estado||'').toLowerCase())).length;
+  const vencidas    = mias.filter(t => {
+    if (!t.fecha || (t.estado||'').toLowerCase() === 'completada') return false;
+    const f = new Date(t.fecha); f.setHours(0,0,0,0);
+    return f < today;
+  }).length;
+
+  const ocs = (typeof getPOC === 'function' ? getPOC() : []) || [];
+  const ocsResp = ocs.filter(o => {
+    const st1 = (o.stages||[])[1] || {};
+    return (st1.resp||'').toLowerCase().includes(lcName);
+  });
+  const ocsActivas    = ocsResp.filter(o => o.estado === 'activo').length;
+  const ocsCompletas  = ocsResp.filter(o => o.estado === 'completado').length;
+
+  let cotizaciones = 0;
+  try {
+    const cot = getData('cotizaciones', []) || [];
+    cotizaciones = cot.filter(c => (c.responsable||c.vendedor||c.creadoPor||'').toLowerCase().includes(lcName)).length;
+  } catch(_) {}
+
+  let reuniones = 0;
+  try {
+    const meetings = getData('meetings', []) || [];
+    reuniones = meetings.filter(m => Array.isArray(m.participantes) && m.participantes.includes(member.id)).length;
+  } catch(_) {}
+
+  let minutas = 0;
+  try {
+    const min = getData('minutas', []) || [];
+    minutas = min.filter(mm => (mm.creadoPor||mm.autor||'').toLowerCase().includes(lcName)).length;
+  } catch(_) {}
+
+  return {
+    tareas: { total: mias.length, completadas, enProgreso, vencidas },
+    ocs:    { totalComoResponsable: ocsResp.length, activas: ocsActivas, completas: ocsCompletas },
+    cotizaciones,
+    reuniones,
+    minutas
+  };
+}
+
+function _kpisToHTML(name, k) {
+  const pctTareas = k.tareas.total ? Math.round((k.tareas.completadas / k.tareas.total) * 100) : 0;
+  return `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px;">
+      <div class="kpi-card-mini"><div class="kpi-lbl">Tareas asignadas</div><div class="kpi-val">${k.tareas.total}</div></div>
+      <div class="kpi-card-mini"><div class="kpi-lbl">Completadas</div><div class="kpi-val" style="color:#2EAA4A;">${k.tareas.completadas} <span style="font-size:13px;color:var(--text-muted);">(${pctTareas}%)</span></div></div>
+      <div class="kpi-card-mini"><div class="kpi-lbl">En progreso</div><div class="kpi-val" style="color:#E8A020;">${k.tareas.enProgreso}</div></div>
+      <div class="kpi-card-mini"><div class="kpi-lbl">Vencidas</div><div class="kpi-val" style="color:#dc2626;">${k.tareas.vencidas}</div></div>
+      <div class="kpi-card-mini"><div class="kpi-lbl">O.C. responsable envío</div><div class="kpi-val">${k.ocs.totalComoResponsable} <span style="font-size:12px;color:var(--text-muted);">(${k.ocs.activas} act · ${k.ocs.completas} compl)</span></div></div>
+      <div class="kpi-card-mini"><div class="kpi-lbl">Cotizaciones</div><div class="kpi-val">${k.cotizaciones}</div></div>
+      <div class="kpi-card-mini"><div class="kpi-lbl">Reuniones</div><div class="kpi-val">${k.reuniones}</div></div>
+      <div class="kpi-card-mini"><div class="kpi-lbl">Minutas</div><div class="kpi-val">${k.minutas}</div></div>
+    </div>`;
+}
+
+async function openKPIsMiembro(memberId) {
+  const team = getData('team', TEAM_DEFAULT) || [];
+  const member = team.find(m => m.id === memberId);
+  if (!member) { showToast('Miembro no encontrado','error'); return; }
+  const k = _computeKPIsMiembro(member);
+  document.getElementById('kpi-modal-title').textContent = `📊 KPIs — ${member.name}`;
+  document.getElementById('kpi-modal-subtitle').textContent = `${member.role||''} · ${member.email||''}`;
+  document.getElementById('kpi-modal-stats').innerHTML = _kpisToHTML(member.name, k);
+  document.getElementById('kpi-modal-ai').innerHTML = '<div style="color:var(--text-muted);font-size:13px;">Pulsa "Analizar con ENERGY" para un análisis y recomendaciones.</div>';
+  document.getElementById('kpi-modal-ai-btn').onclick = () => _analizarKPIsConEnergy(member, k);
+  document.getElementById('kpi-modal-eval-btn').onclick = () => abrirEvalDesempeno(member.name);
+  document.getElementById('modal-kpis').classList.add('open');
+}
+
+async function _analizarKPIsConEnergy(member, k) {
+  const out = document.getElementById('kpi-modal-ai');
+  out.innerHTML = '<div style="color:var(--text-muted);font-size:13px;"><span class="spinner"></span> ENERGY está analizando el desempeño...</div>';
+  const prompt = `Analiza el desempeño de ${member.name} (${member.role||''}) en E&G Energy Group. Datos del período:
+- Tareas: ${k.tareas.total} asignadas, ${k.tareas.completadas} completadas, ${k.tareas.enProgreso} en progreso, ${k.tareas.vencidas} vencidas.
+- Órdenes de compra como responsable de envío: ${k.ocs.totalComoResponsable} total (${k.ocs.activas} activas, ${k.ocs.completas} completas).
+- Cotizaciones generadas: ${k.cotizaciones}.
+- Reuniones donde participó: ${k.reuniones}.
+- Minutas redactadas: ${k.minutas}.
+
+Devuelve un análisis breve y profesional en español con:
+1. Fortalezas observadas (2-3 puntos)
+2. Áreas de atención o alertas (2-3 puntos)
+3. Recomendaciones concretas para el próximo período (2-3 puntos)
+
+Sé directo, sin saludos, formato con viñetas y subtítulos cortos. NO uses herramientas — solo texto.`;
+  try {
+    const res = await callEnergyAI(prompt, `Análisis interno de desempeño. Solo texto, sin acciones.`);
+    out.innerHTML = '<div style="white-space:pre-wrap;line-height:1.5;font-size:14px;color:#fff;">' + (res||'(sin respuesta)').replace(/</g,'&lt;') + '</div>';
+  } catch(e) {
+    out.innerHTML = '<div style="color:#dc2626;font-size:13px;">Error: '+(e.message||e)+'</div>';
+  }
+}
+
+function closeKPIsMiembro() {
+  document.getElementById('modal-kpis').classList.remove('open');
+}
+
+function abrirEvalDesempeno(nombre) {
+  const baseUrl = (getData('eval_url', '') || '').trim();
+  if (!baseUrl) {
+    showToast('⚙️ Configura primero la URL del Google Form en Configuración → "URL Evaluación Desempeño"', 'info');
+    return;
+  }
+  const finalUrl = baseUrl.includes('{NOMBRE}')
+    ? baseUrl.replace('{NOMBRE}', encodeURIComponent(nombre||''))
+    : baseUrl;
+  window.open(finalUrl, '_blank');
 }
 
 // ===== POPULATE SELECTS =====
@@ -4588,6 +4759,17 @@ function loadProxyUrlUI() {
   const el = document.getElementById('proxy-url-input');
   if(!el) return;
   el.value = localStorage.getItem('energy_proxy_url') || '';
+}
+async function saveEvalUrl() {
+  const raw = (document.getElementById('eval-url-input').value||'').trim();
+  if(raw && !/^https?:\/\//i.test(raw)) { showToast('La URL debe empezar con https://','error'); return; }
+  setData('eval_url', raw);
+  showToast(raw ? '✅ URL de evaluación guardada' : 'URL de evaluación borrada','success');
+}
+function loadEvalUrlUI() {
+  const el = document.getElementById('eval-url-input');
+  if(!el) return;
+  el.value = getData('eval_url','') || '';
 }
 // Migración: si había una API Key vieja en localStorage, la borramos por seguridad
 (function _purgeLegacyKey(){
@@ -6386,6 +6568,64 @@ const ENERGY_TOOLS = [
       },
       required: ['titulo','fecha','horaInicio']
     }
+  },
+  {
+    name: 'crear_orden_pedido',
+    description: 'Crea una nueva Orden de Compra (O.C.) y marca automáticamente la etapa "Compra" como completada. IMPORTANTE: distingue dos fechas distintas — fechaCreacion (cuándo se registra la O.C. en el sistema, por defecto HOY) y fechaCompra (cuándo se hizo realmente la compra al proveedor, puede ser anterior). El número de O.C. es OBLIGATORIO — si el usuario no lo proporcionó, NO uses esta herramienta y pregúntaselo primero. Si el usuario solo dice "crea una OP", asume que fechaCreacion = hoy y pregunta si la fechaCompra fue diferente.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        num:           { type: 'string', description: 'Número de la O.C. (ej: LM-1389, ODC-4049). Obligatorio.' },
+        cliente:       { type: 'string', description: 'Nombre del cliente o proveedor' },
+        desc:          { type: 'string', description: 'Descripción del pedido (qué se compró)' },
+        fechaCreacion: { type: 'string', description: 'Fecha en que se registra la O.C. en el sistema (YYYY-MM-DD). Si no se da, usa hoy.' },
+        fechaCompra:   { type: 'string', description: 'Fecha real en que se hizo la compra al proveedor (YYYY-MM-DD). Puede ser distinta a fechaCreacion. Si no se da, usa fechaCreacion (o hoy).' },
+        nota:          { type: 'string', description: 'Nota opcional sobre la etapa de compra' }
+      },
+      required: ['num']
+    }
+  },
+  {
+    name: 'consultar_oc_detalle',
+    description: 'Devuelve TODOS los detalles de UNA Orden de Compra: cliente, descripción, estado global, las 4 etapas con sus fechas y notas, y datos de envío. Úsalo cuando el usuario pregunte por una O.C. específica.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        num: { type: 'string', description: 'Número o ID de la O.C.' }
+      },
+      required: ['num']
+    }
+  },
+  {
+    name: 'editar_oc',
+    description: 'Edita datos básicos de una O.C. existente: cliente, descripción, número o estado global (activo/completado/cancelado). Solo cambia los campos que se pasen; los demás quedan iguales.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        num:         { type: 'string', description: 'Número actual de la O.C. para identificarla' },
+        nuevoNum:    { type: 'string', description: 'Nuevo número (si quieres cambiarlo)' },
+        cliente:     { type: 'string', description: 'Nuevo nombre de cliente' },
+        desc:        { type: 'string', description: 'Nueva descripción' },
+        estado:      { type: 'string', enum:['activo','completado','cancelado'], description: 'Nuevo estado global' }
+      },
+      required: ['num']
+    }
+  },
+  {
+    name: 'registrar_envio_oc',
+    description: 'Registra/actualiza los datos de envío en la etapa Entrega de una O.C.: medio de envío, transportadora, número de guía, destinatario y responsable. NO marca la etapa como completada — solo guarda los datos.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        num:           { type: 'string', description: 'Número de la O.C.' },
+        envio:         { type: 'string', enum:['transportadora','camion_externo','flota','taquilla_bus','recoge_cliente','otro'], description: 'Medio de envío' },
+        transportadora:{ type: 'string', description: 'Nombre de la transportadora (Servientrega, TCC, etc.)' },
+        guia:          { type: 'string', description: 'Número de guía' },
+        destinatario:  { type: 'string', description: 'Nombre de quien recibe' },
+        responsable:   { type: 'string', description: 'Persona responsable del envío en el equipo' }
+      },
+      required: ['num']
+    }
   }
 ];
 
@@ -6522,6 +6762,136 @@ function tool_crear_reunion(args) {
   return { ok:true, id:newId, mensaje:`Reunión "${args.titulo}" agendada para ${args.fecha} a las ${args.horaInicio}.` };
 }
 
+function tool_crear_orden_pedido(args) {
+  if (!args.num || !String(args.num).trim()) {
+    return { ok:false, mensaje:'Falta el número de O.C. Pide el número al usuario antes de crear la orden.' };
+  }
+  const list = getPOCAll();
+  const ya = list.find(o => !o.deleted && (o.num||'').toString().toLowerCase() === args.num.toString().toLowerCase());
+  if (ya) return { ok:false, mensaje:`Ya existe una O.C. con número "${args.num}" (cliente: ${ya.cliente||'-'}). Usa editar_oc si quieres modificarla.` };
+  const hoy = new Date().toISOString().slice(0,10);
+  const fechaCreacion = args.fechaCreacion || hoy;
+  const fechaCompra   = args.fechaCompra   || fechaCreacion;
+  const stages = [
+    { s:'done', f:fechaCompra, n:args.nota||'' },
+    { s:'pending', f:'', n:'' },
+    { s:'pending', f:'', n:'' },
+    { s:'pending', f:'', n:'' }
+  ];
+  const order = _audit({
+    id: 'poc_'+Date.now(),
+    num: String(args.num).trim(),
+    cliente: args.cliente||'',
+    desc: args.desc||'',
+    estado: 'activo',
+    stages
+  }, true);
+  if (args.fechaCreacion) {
+    order.createdAt = new Date(args.fechaCreacion + 'T00:00:00').toISOString();
+  }
+  list.push(order);
+  savePOCData(list);
+  try { renderProcesos(); renderDashboard(); } catch(_) {}
+  const distintas = fechaCreacion !== fechaCompra;
+  showToast(`✅ ENERGY creó O.C. ${order.num}${distintas?' (creación '+fechaCreacion+' · compra '+fechaCompra+')':' ('+fechaCreacion+')'}`,'success');
+  return {
+    ok:true,
+    id:order.id,
+    num:order.num,
+    fechaCreacion,
+    fechaCompra,
+    mensaje:`O.C. ${order.num} creada para "${order.cliente||'sin cliente'}". Registrada el ${fechaCreacion}; compra realizada el ${fechaCompra}. Etapa Compra marcada como completada. Pendientes: Entrega, Certificado y Facturación.`
+  };
+}
+
+function tool_consultar_oc_detalle(args) {
+  const list = getPOC();
+  const q = (args.num||'').toString().toLowerCase();
+  const order = list.find(o => (o.num||'').toString().toLowerCase() === q || o.id === args.num);
+  if (!order) return { ok:false, mensaje:`No encontré la O.C. "${args.num}".` };
+  const STAGE_LBL = ['Compra','Entrega','Certificado','Facturación'];
+  const stages = (order.stages||[]).map((s,i) => ({
+    etapa: STAGE_LBL[i],
+    estado: s.s||'pending',
+    fecha: s.f||'',
+    nota: s.n||'',
+    ...(i===1 ? { envio:s.envio||'', transportadora:s.transp||'', guia:s.guia||'', destinatario:s.dest||'', responsable:s.resp||'' } : {})
+  }));
+  return {
+    ok:true,
+    num: order.num,
+    cliente: order.cliente||'',
+    descripcion: order.desc||'',
+    estado: order.estado||'activo',
+    creadaEn: order.createdAt||'',
+    creadaPor: order.createdBy||'',
+    actualizadaEn: order.updatedAt||'',
+    etapas: stages
+  };
+}
+
+function tool_editar_oc(args) {
+  const list = getPOCAll();
+  const q = (args.num||'').toString().toLowerCase();
+  const order = list.find(o => (o.num||'').toString().toLowerCase() === q || o.id === args.num);
+  if (!order) return { ok:false, mensaje:`No encontré la O.C. "${args.num}".` };
+  const cambios = [];
+  if (args.nuevoNum && args.nuevoNum.trim() && args.nuevoNum !== order.num) {
+    const choca = list.find(o => o !== order && (o.num||'').toLowerCase() === args.nuevoNum.toLowerCase());
+    if (choca) return { ok:false, mensaje:`Ya existe otra O.C. con número "${args.nuevoNum}".` };
+    cambios.push(`num: ${order.num} → ${args.nuevoNum}`);
+    order.num = args.nuevoNum.trim();
+  }
+  if (args.cliente !== undefined && args.cliente !== order.cliente) {
+    cambios.push(`cliente: "${order.cliente||''}" → "${args.cliente}"`);
+    order.cliente = args.cliente;
+  }
+  if (args.desc !== undefined && args.desc !== order.desc) {
+    cambios.push(`descripción actualizada`);
+    order.desc = args.desc;
+  }
+  if (args.estado && args.estado !== order.estado) {
+    cambios.push(`estado: ${order.estado} → ${args.estado}`);
+    order.estado = args.estado;
+  }
+  if (!cambios.length) return { ok:false, mensaje:'No se proporcionó ningún cambio.' };
+  order.updatedAt = new Date().toISOString();
+  if (currentUser) order.updatedBy = currentUser.email || currentUser.name;
+  savePOCData(list);
+  try { renderProcesos(); renderDashboard(); } catch(_) {}
+  showToast(`✏️ ENERGY editó O.C. ${order.num}`,'success');
+  return { ok:true, mensaje:`O.C. ${order.num} actualizada. Cambios: ${cambios.join(' · ')}` };
+}
+
+function tool_registrar_envio_oc(args) {
+  const list = getPOCAll();
+  const q = (args.num||'').toString().toLowerCase();
+  const order = list.find(o => (o.num||'').toString().toLowerCase() === q || o.id === args.num);
+  if (!order) return { ok:false, mensaje:`No encontré la O.C. "${args.num}".` };
+  const stages = order.stages || [{},{},{},{}];
+  while (stages.length < 4) stages.push({});
+  const st = stages[1] || {};
+  if (args.envio !== undefined)          st.envio = args.envio;
+  if (args.transportadora !== undefined) st.transp = args.transportadora;
+  if (args.guia !== undefined)           st.guia = args.guia;
+  if (args.destinatario !== undefined)   st.dest = args.destinatario;
+  if (args.responsable !== undefined)    st.resp = args.responsable;
+  stages[1] = st;
+  order.stages = stages;
+  order.updatedAt = new Date().toISOString();
+  if (currentUser) order.updatedBy = currentUser.email || currentUser.name;
+  savePOCData(list);
+  try { renderProcesos(); } catch(_) {}
+  const partes = [];
+  if (st.envio) partes.push('medio='+st.envio);
+  if (st.transp) partes.push('transp='+st.transp);
+  if (st.guia) partes.push('guía='+st.guia);
+  if (st.dest) partes.push('destinatario='+st.dest);
+  if (st.resp) partes.push('responsable='+st.resp);
+  showToast(`📦 ENERGY registró envío en O.C. ${order.num}`,'success');
+  return { ok:true, mensaje:`Datos de envío guardados en O.C. ${order.num}: ${partes.join(' · ')||'(sin datos nuevos)'}` };
+}
+
 async function executeEnergyTool(name, args) {
   console.log('[ENERGY tool]', name, args);
   try {
@@ -6531,6 +6901,10 @@ async function executeEnergyTool(name, args) {
     if (name === 'buscar_inventario')   return tool_buscar_inventario(args||{});
     if (name === 'listar_oc_pendientes')return tool_listar_oc_pendientes(args||{});
     if (name === 'crear_reunion')       return tool_crear_reunion(args||{});
+    if (name === 'crear_orden_pedido')  return tool_crear_orden_pedido(args||{});
+    if (name === 'consultar_oc_detalle')return tool_consultar_oc_detalle(args||{});
+    if (name === 'editar_oc')           return tool_editar_oc(args||{});
+    if (name === 'registrar_envio_oc')  return tool_registrar_envio_oc(args||{});
     return { ok:false, mensaje:'Herramienta desconocida: '+name };
   } catch(e) {
     return { ok:false, mensaje:'Error ejecutando '+name+': '+e.message };
