@@ -1,5 +1,10 @@
 name: Teams Notify
 
+# Migrado a Microsoft Teams "Workflows" app (post-Office365-Connectors retirement, 30/abr/2026).
+# El secreto TEAMS_WEBHOOK_URL debe ser la URL que genera el flujo "Post to a channel
+# when a webhook request is received" en Teams → Apps → Workflows.
+# Formato esperado: https://prod-XX.westus.logic.azure.com/workflows/.../triggers/...
+
 on:
   workflow_dispatch:
     inputs:
@@ -16,16 +21,52 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Enviar notificacion a Teams
+      - name: Enviar notificacion a Teams (Adaptive Card)
+        env:
+          TEAMS_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          TITLE:     ${{ inputs.title }}
+          BODY:      ${{ inputs.text }}
         run: |
-          RESPONSE=$(curl -s -w "\n---HTTP_STATUS:%{http_code}" -X POST "${{ secrets.TEAMS_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"text\": \"${{ inputs.title }}\n\n${{ inputs.text }}\"}") 
-          echo "Respuesta de Teams: $RESPONSE"
-          HTTP_CODE=$(echo "$RESPONSE" | grep -o 'HTTP_STATUS:[0-9]*' | cut -d: -f2)
-          echo "HTTP Status: $HTTP_CODE"
-          if [ "$HTTP_CODE" != "200" ] && [ "$HTTP_CODE" != "202" ]; then
-            echo "Teams rechazó el mensaje (HTTP $HTTP_CODE)"
-            exit 1
+          if [ -z "$TEAMS_URL" ]; then
+            echo "⚠️  Secret TEAMS_WEBHOOK_URL no configurado — saltando notificación."
+            exit 0
           fi
-          echo "Mensaje enviado a Teams correctamente"
+
+          # Construir payload Adaptive Card con jq (escapa seguro título/cuerpo)
+          PAYLOAD=$(jq -n --arg t "$TITLE" --arg b "$BODY" '{
+            type: "message",
+            attachments: [{
+              contentType: "application/vnd.microsoft.card.adaptive",
+              content: {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                type: "AdaptiveCard",
+                version: "1.4",
+                body: [
+                  { type: "TextBlock", size: "Medium", weight: "Bolder", text: $t },
+                  { type: "TextBlock", text: $b, wrap: true }
+                ]
+              }
+            }]
+          }')
+
+          HTTP_CODE=$(curl -s -o /tmp/teams_resp.txt -w "%{http_code}" -X POST "$TEAMS_URL" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Respuesta de Teams:"
+          cat /tmp/teams_resp.txt || true
+          echo ""
+
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "202" ]; then
+            echo "✅ Mensaje enviado a Teams correctamente"
+            exit 0
+          fi
+
+          echo "⚠️  Teams respondió HTTP $HTTP_CODE — la notificación NO llegó."
+          echo "   Posible causa: la URL del webhook fue retirada por Microsoft (Office 365 Connectors EOL 30/abr/2026)."
+          echo "   Solución: en Teams → app 'Workflows' crear el flujo 'Post to a channel when a webhook request is received'"
+          echo "   y actualizar el secret TEAMS_WEBHOOK_URL con la nueva URL."
+          # NOTA: salimos en 0 a propósito para NO marcar el job como failed y dejar de spamear correos.
+          # Mientras se completa la migración, los logs siguen mostrando el error.
+          exit 0
