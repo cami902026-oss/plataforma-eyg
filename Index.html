@@ -735,6 +735,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="nav-item" onclick="navigate('visitas')"><span class="icon">🤝</span>Visitas Comerciales</div>
       <div class="nav-item" onclick="navigate('mensajeria')"><span class="icon">📬</span>Mensajería</div>
       <div class="nav-item" onclick="navigate('historico')"><span class="icon">📚</span>Históricos</div>
+      <div class="nav-item" onclick="navigate('dashboard_gerencial')"><span class="icon">📊</span>Dashboard Gerencial</div>
             <div class="nav-item" onclick="navigate('configuracion')"><span class="icon">⚙️</span>Configuración</div>
     </nav>
     <div class="sidebar-footer">
@@ -1071,6 +1072,11 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                 <option value="cancelado">Cancelado</option>
               </select>
             </div>
+            <div class="form-group" style="margin-top:10px">
+              <label>💰 Valor total (COP) — opcional, usado para KPIs</label>
+              <input type="number" id="poc-valor" min="0" step="1000" placeholder="Ej: 5000000">
+              <small style="color:var(--text-muted);font-size:11px;display:block;margin-top:4px;">Se usa para el Dashboard Gerencial (revenue). Puedes dejarlo vacío.</small>
+            </div>
             <div style="margin-top:18px;font-weight:600;font-size:14px;margin-bottom:12px">📍 Etapas del Proceso</div>
             <div class="poc-stages">
               <div class="poc-stage-box">
@@ -1355,6 +1361,42 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div id="hist-archivos-disponibles" style="margin-top:8px;font-size:12px;color:var(--text-muted);"></div>
         </div>
         <div id="hist-resultados" style="margin-top:20px;"></div>
+      </div>
+
+      <!-- DASHBOARD GERENCIAL -->
+      <div class="page" id="page-dashboard_gerencial">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap;">
+          <h2 style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:#fff;margin:0;">📊 Dashboard Gerencial</h2>
+          <div style="flex:1;"></div>
+          <label style="font-size:12px;color:var(--text-muted);font-weight:600;">Período:</label>
+          <select id="dg-periodo" onchange="renderDashboardGerencial()" style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;min-width:170px;">
+            <option value="mes_actual">Mes actual</option>
+            <option value="mes_anterior">Mes anterior</option>
+            <option value="q_actual">Trimestre actual</option>
+            <option value="ano_actual">Año actual</option>
+            <option value="todo">Todo el historial</option>
+          </select>
+          <button class="btn btn-ghost" onclick="abrirModalMetasKPI()" style="width:auto;font-size:12px;padding:8px 14px;">🎯 Editar metas</button>
+          <button class="btn btn-ghost" onclick="renderDashboardGerencial()" style="width:auto;font-size:12px;padding:8px 14px;">🔄 Refrescar</button>
+        </div>
+
+        <div id="dg-global-cards" style="margin-bottom:24px;"></div>
+
+        <div style="background:rgba(15,43,91,0.25);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:18px;">
+          <h3 style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;color:#fff;margin:0 0 14px 0;">👥 Por miembro</h3>
+          <div id="dg-por-miembro"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;">
+          <div style="background:rgba(15,43,91,0.25);border:1px solid var(--border);border-radius:14px;padding:18px;">
+            <h3 style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;color:#fff;margin:0 0 14px 0;">🏆 Top 5 Clientes del período</h3>
+            <div id="dg-top-clientes"></div>
+          </div>
+          <div style="background:rgba(15,43,91,0.25);border:1px solid var(--border);border-radius:14px;padding:18px;">
+            <h3 style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;color:#fff;margin:0 0 14px 0;">🚛 Estado de las O.C. activas</h3>
+            <div id="dg-estado-ocs"></div>
+          </div>
+        </div>
       </div>
 
       <!-- CONFIGURACION -->
@@ -2046,6 +2088,7 @@ const ALL_MODULES = [
   { id:'visitas',       label:'🤝 Visitas Comerciales' },
   { id:'mensajeria',    label:'📬 Mensajería' },
   { id:'historico',     label:'📚 Históricos (Solo Admin)' },
+  { id:'dashboard_gerencial', label:'📊 Dashboard Gerencial (Admin/Jefe)' },
   { id:'configuracion', label:'⚙️ Configuración' }
 ];
 const DEFAULT_USER_MODULES = {
@@ -2069,6 +2112,8 @@ function userCanSeeModule(mod) {
   const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'JEFE';
   // Históricos es estrictamente admin/jefe (no se puede destrabar por config)
   if (mod === 'historico') return isAdmin;
+  // Dashboard Gerencial también es estrictamente admin/jefe (Alberto y Andrea)
+  if (mod === 'dashboard_gerencial') return isAdmin;
   // Admin/Jefe ve todo el resto siempre
   if (isAdmin) return true;
   const cfg = getUserModules();
@@ -2262,6 +2307,29 @@ const TASKS_DEFAULT = [];
 const PROJECTS_DEFAULT = [];
 
 const MINUTAS_DEFAULT = [];
+
+// ===== KPI METAS POR DEFECTO =====
+// Estructura: getData('kpi_metas', KPI_METAS_DEFAULT)
+// Las metas globales aplican a toda la empresa. Las por miembro aplican solo a ese rol/persona.
+// Cada métrica tiene un "tipo" implícito:
+//   - "mayor" (más es mejor): real/meta*100 capado a 100
+//   - "menor" (menos es mejor): max(0, 100 - real/maxAceptable*100)
+const KPI_METAS_DEFAULT = {
+  global: {
+    revenue_mes:          50000000,  // COP — Meta de revenue mensual (OCs + cotizaciones cerradas)
+    tasa_conversion_pct:  25,        // % — Cotizaciones Adjudicadas+Facturadas / total enviadas
+    tareas_completadas_pct: 90,      // % — Tareas completadas a tiempo
+    ocs_vencidas_max:     5,         // # — Máximo de OCs activas con etapa pendiente >15 días
+    cumplimiento_etapas_pct: 85      // % — % promedio de etapas de OCs completadas a tiempo
+  },
+  porMiembro: {
+    'Sheila Baron': { cotizaciones_mes: 20, revenue_mes: 30000000, tasa_conversion_pct: 25 },
+    'Andrea':       { ocs_a_tiempo_pct: 90, ocs_vencidas_max: 3 },
+    'Alexandra':    { tareas_completadas_pct: 95 },
+    'Nelsy':        { facturacion_dias_max: 5, ocs_sin_facturar_max: 0 },
+    'Alberto':      { } // gerencia, ve dashboard global
+  }
+};
 
 const TEMPLATES_DEFAULT = [
   { cat:'Convocatorias', name:'Convocatoria reunión Teams', text:'Hola equipo 👋\n\nLos convocamos a una reunión el [FECHA] a las [HORA] por Microsoft Teams.\n\n📌 Agenda:\n• [PUNTO 1]\n• [PUNTO 2]\n\nPor favor confirmar asistencia.\n\nSaludos,' },
@@ -3471,11 +3539,12 @@ function navigate(page) {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
   currentPage = page;
-  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',configuracion:'Configuración'};
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',dashboard_gerencial:'Dashboard Gerencial',configuracion:'Configuración'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
   if(page==='historico') { setTimeout(historicoListMonths, 100); }
+  if(page==='dashboard_gerencial') { setTimeout(renderDashboardGerencial, 100); }
   if(page==='procesos') renderProcesos();
   if(page==='inventario') { setTimeout(async()=>{ try { const t = await getToken(); if(t) msLoadInventoryFromOneDrive(); } catch(e){} }, 500); }
 }
@@ -4404,6 +4473,447 @@ function abrirEvalDesempeno(nombre) {
   window.open(finalUrl, '_blank');
 }
 
+// =====================================================
+// DASHBOARD GERENCIAL — KPIs medibles para gerencia
+// =====================================================
+
+function getKPIMetas() {
+  const stored = getData('kpi_metas', null);
+  if (!stored) return JSON.parse(JSON.stringify(KPI_METAS_DEFAULT));
+  // Merge profundo con defaults para no perder claves nuevas
+  return {
+    global: Object.assign({}, KPI_METAS_DEFAULT.global, stored.global||{}),
+    porMiembro: Object.assign({}, KPI_METAS_DEFAULT.porMiembro, stored.porMiembro||{})
+  };
+}
+function saveKPIMetas(m) { setData('kpi_metas', m); }
+
+// Rango de fechas (Date inicio, Date finExclusivo) según selector de período
+function _dgRangoFechas(periodo) {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  if (periodo === 'mes_actual')   return [new Date(y,m,1),   new Date(y,m+1,1)];
+  if (periodo === 'mes_anterior') return [new Date(y,m-1,1), new Date(y,m,1)];
+  if (periodo === 'q_actual')     { const qStart = Math.floor(m/3)*3; return [new Date(y,qStart,1), new Date(y,qStart+3,1)]; }
+  if (periodo === 'ano_actual')   return [new Date(y,0,1),   new Date(y+1,0,1)];
+  return [new Date(2000,0,1), new Date(2100,0,1)]; // todo
+}
+
+function _dgFechaEnRango(fechaStr, ini, fin) {
+  if (!fechaStr) return false;
+  const d = new Date(fechaStr);
+  if (isNaN(d.getTime())) return false;
+  return d >= ini && d < fin;
+}
+
+// Normaliza un valor a 0-100 según meta (tipo "mayor" o "menor")
+function _kpiScore(real, meta, tipo) {
+  if (meta === 0 || meta == null) return null;
+  if (tipo === 'menor') {
+    // Menos es mejor (ej: OCs vencidas, días en facturación). meta = máx aceptable.
+    if (real <= 0) return 100;
+    return Math.max(0, Math.round(100 - (real / meta) * 100));
+  }
+  // Mayor (default): más es mejor
+  return Math.min(100, Math.round((real / meta) * 100));
+}
+
+function _scoreColor(score) {
+  if (score == null) return '#888';
+  if (score >= 80) return '#2EAA4A';
+  if (score >= 50) return '#E8A020';
+  return '#dc2626';
+}
+
+function _kpiBarHTML(label, real, meta, unidad, tipo, scoreOverride) {
+  const score = scoreOverride != null ? scoreOverride : _kpiScore(real, meta, tipo);
+  const color = _scoreColor(score);
+  const fmt = (v) => unidad === '$' ? '$' + (Math.round(v||0)).toLocaleString('es-CO') : (v||0) + (unidad||'');
+  const pct = score == null ? 0 : score;
+  return `
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;">
+        <span style="font-size:12px;color:#fff;font-weight:600;">${label}</span>
+        <span style="font-size:11px;color:var(--text-muted);">${fmt(real)} / ${fmt(meta)} meta · <span style="color:${color};font-weight:700;">${score==null?'—':score+'/100'}</span></span>
+      </div>
+      <div style="background:rgba(255,255,255,0.06);border-radius:8px;height:10px;overflow:hidden;">
+        <div style="background:${color};width:${pct}%;height:100%;transition:width 0.4s;"></div>
+      </div>
+    </div>`;
+}
+
+// Calcula KPIs globales en el período
+function _dgKPIsGlobales(periodo) {
+  const [ini, fin] = _dgRangoFechas(periodo);
+  const metas = getKPIMetas().global;
+
+  // Revenue: OCs completadas con etapa Facturación done en el período + cotizaciones Adjudicadas/Facturadas
+  const ocs = (typeof getPOC === 'function' ? getPOC() : []) || [];
+  let revenueOCs = 0;
+  ocs.forEach(o => {
+    const fact = (o.stages||[])[3] || {};
+    if (fact.s === 'done' && _dgFechaEnRango(fact.f, ini, fin)) {
+      revenueOCs += parseFloat(o.valor||0) || 0;
+    }
+  });
+  const cotizaciones = getData('cotizaciones', []) || [];
+  let revenueCotiz = 0;
+  let cotizGanadas = 0, cotizEnviadas = 0, cotizPerdidas = 0;
+  cotizaciones.forEach(c => {
+    const f = c.fecha || c.createdAt;
+    if (!_dgFechaEnRango(f, ini, fin)) return;
+    const est = (c.estado||'').toLowerCase();
+    if (est === 'enviada' || est === 'adjudicada' || est === 'facturada' || est === 'rechazada' || est === 'pendiente' || est === 'vencida') {
+      cotizEnviadas++;
+    }
+    if (est === 'adjudicada' || est === 'facturada') {
+      revenueCotiz += parseFloat(c.total||0) || 0;
+      cotizGanadas++;
+    }
+    if (est === 'rechazada' || est === 'vencida') {
+      cotizPerdidas++;
+    }
+  });
+  const revenue = revenueOCs + revenueCotiz;
+  const tasaConv = cotizEnviadas > 0 ? Math.round((cotizGanadas / cotizEnviadas) * 100) : 0;
+
+  // Tareas completadas en el período
+  const tasks = getData('tasks', []) || [];
+  let tareasTotal = 0, tareasCompletadas = 0;
+  tasks.forEach(t => {
+    if (!t || t.deleted) return;
+    const f = t.fecha || t.createdAt;
+    if (!_dgFechaEnRango(f, ini, fin)) return;
+    tareasTotal++;
+    if ((t.estado||'').toLowerCase() === 'completada') tareasCompletadas++;
+  });
+  const tareasPct = tareasTotal > 0 ? Math.round((tareasCompletadas / tareasTotal) * 100) : 0;
+
+  // OCs activas con etapa pendiente más de 15 días (vencidas)
+  const today = new Date(); today.setHours(0,0,0,0);
+  let ocsVencidas = 0;
+  ocs.filter(o => o.estado === 'activo').forEach(o => {
+    const stages = o.stages || [];
+    for (let i = 0; i < 4; i++) {
+      const s = stages[i] || {};
+      const done = i >= 2 ? !!s.f : s.s === 'done';
+      if (!done) {
+        // Etapa pendiente: si tiene fecha esperada y ya pasó, o si lleva >15 días desde createdAt
+        const refDate = s.f ? new Date(s.f) : new Date(o.createdAt || today);
+        refDate.setHours(0,0,0,0);
+        const diffDays = Math.round((today - refDate) / 86400000);
+        if (diffDays > 15) ocsVencidas++;
+        break;
+      }
+    }
+  });
+
+  // Cumplimiento de etapas: % de etapas con fecha (de OCs en el período)
+  let etapasConFecha = 0, etapasTotal = 0;
+  ocs.forEach(o => {
+    const created = o.createdAt;
+    if (!_dgFechaEnRango(created, ini, fin) && periodo !== 'todo') return;
+    (o.stages||[]).forEach(s => {
+      etapasTotal++;
+      if (s.f) etapasConFecha++;
+    });
+  });
+  const cumplEtapasPct = etapasTotal > 0 ? Math.round((etapasConFecha / etapasTotal) * 100) : 0;
+
+  return {
+    metas,
+    revenue, revenueOCs, revenueCotiz,
+    tasaConv, cotizGanadas, cotizEnviadas, cotizPerdidas,
+    tareasTotal, tareasCompletadas, tareasPct,
+    ocsVencidas, cumplEtapasPct,
+    ocsActivas: ocs.filter(o => o.estado === 'activo').length,
+    ocsCompletadas: ocs.filter(o => o.estado === 'completado' && _dgFechaEnRango((o.stages||[])[3]?.f, ini, fin)).length
+  };
+}
+
+function renderDashboardGerencial() {
+  const sel = document.getElementById('dg-periodo');
+  const periodo = sel ? sel.value : 'mes_actual';
+  const k = _dgKPIsGlobales(periodo);
+
+  // Tarjetas globales con barras
+  const cards = document.getElementById('dg-global-cards');
+  if (cards) {
+    cards.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+        <div style="background:rgba(15,43,91,0.35);border:1px solid var(--border);border-radius:14px;padding:18px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">💰 Revenue del período</div>
+          ${_kpiBarHTML('Revenue total', k.revenue, k.metas.revenue_mes, '$', 'mayor')}
+          <div style="font-size:11px;color:var(--text-muted);">OCs: $${Math.round(k.revenueOCs).toLocaleString('es-CO')} · Cotiz: $${Math.round(k.revenueCotiz).toLocaleString('es-CO')}</div>
+        </div>
+        <div style="background:rgba(15,43,91,0.35);border:1px solid var(--border);border-radius:14px;padding:18px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🎯 Tasa de adjudicación</div>
+          ${_kpiBarHTML('Cotiz. ganadas / enviadas', k.tasaConv, k.metas.tasa_conversion_pct, '%', 'mayor')}
+          <div style="font-size:11px;color:var(--text-muted);">${k.cotizGanadas} ganadas · ${k.cotizPerdidas} perdidas · ${k.cotizEnviadas} total</div>
+        </div>
+        <div style="background:rgba(15,43,91,0.35);border:1px solid var(--border);border-radius:14px;padding:18px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">✅ Tareas completadas</div>
+          ${_kpiBarHTML('% del período', k.tareasPct, k.metas.tareas_completadas_pct, '%', 'mayor')}
+          <div style="font-size:11px;color:var(--text-muted);">${k.tareasCompletadas} / ${k.tareasTotal}</div>
+        </div>
+        <div style="background:rgba(15,43,91,0.35);border:1px solid var(--border);border-radius:14px;padding:18px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">⏰ Control de O.C. vencidas</div>
+          ${_kpiBarHTML('Vencidas (etapa >15d)', k.ocsVencidas, k.metas.ocs_vencidas_max, '', 'menor')}
+          <div style="font-size:11px;color:var(--text-muted);">${k.ocsActivas} activas · ${k.ocsCompletadas} cerradas en período</div>
+        </div>
+        <div style="background:rgba(15,43,91,0.35);border:1px solid var(--border);border-radius:14px;padding:18px;">
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">📊 Cumplimiento de etapas</div>
+          ${_kpiBarHTML('% etapas con fecha', k.cumplEtapasPct, k.metas.cumplimiento_etapas_pct, '%', 'mayor')}
+        </div>
+      </div>`;
+  }
+
+  // Por miembro
+  _renderDgPorMiembro(periodo);
+  _renderDgTopClientes(periodo);
+  _renderDgEstadoOCs(periodo);
+}
+
+function _renderDgPorMiembro(periodo) {
+  const cont = document.getElementById('dg-por-miembro');
+  if (!cont) return;
+  const team = getData('team', TEAM_DEFAULT) || [];
+  const metasPM = getKPIMetas().porMiembro;
+  const [ini, fin] = _dgRangoFechas(periodo);
+
+  const tasks = getData('tasks', []) || [];
+  const ocs   = (typeof getPOC === 'function' ? getPOC() : []) || [];
+  const cot   = getData('cotizaciones', []) || [];
+
+  const html = team.map(m => {
+    const lc = (m.name||'').toLowerCase();
+    const metas = metasPM[m.name] || {};
+
+    // Tareas del miembro en período
+    const mias = tasks.filter(t => {
+      if (!t || t.deleted) return false;
+      const f = t.fecha || t.createdAt;
+      if (!_dgFechaEnRango(f, ini, fin)) return false;
+      const r = t.responsable || '';
+      if (Array.isArray(r)) return r.some(x => (x||'').toLowerCase() === lc);
+      return (r||'').toLowerCase().includes(lc);
+    });
+    const tareasCompletas = mias.filter(t => (t.estado||'').toLowerCase()==='completada').length;
+    const tareasPct = mias.length ? Math.round((tareasCompletas/mias.length)*100) : 0;
+
+    // Cotizaciones del miembro en período (revenue + count)
+    const cMias = cot.filter(c => {
+      const f = c.fecha || c.createdAt;
+      if (!_dgFechaEnRango(f, ini, fin)) return false;
+      return (c.responsable||c.vendedor||c.creadoPor||'').toLowerCase().includes(lc);
+    });
+    const cGanadas = cMias.filter(c => ['adjudicada','facturada'].includes((c.estado||'').toLowerCase()));
+    const revenueMiembro = cGanadas.reduce((s,c) => s + (parseFloat(c.total||0) || 0), 0);
+
+    // OCs donde es responsable de envío, activas, vencidas
+    const ocsResp = ocs.filter(o => ((o.stages||[])[1]?.resp||'').toLowerCase().includes(lc));
+    const today = new Date(); today.setHours(0,0,0,0);
+    const ocsRespVencidas = ocsResp.filter(o => {
+      if (o.estado !== 'activo') return false;
+      const stages = o.stages || [];
+      for (let i=0; i<4; i++) {
+        const s = stages[i] || {};
+        const done = i>=2 ? !!s.f : s.s==='done';
+        if (!done) {
+          const refDate = s.f ? new Date(s.f) : new Date(o.createdAt||today);
+          refDate.setHours(0,0,0,0);
+          return Math.round((today - refDate)/86400000) > 15;
+        }
+      }
+      return false;
+    }).length;
+    const ocsRespOnTime = ocsResp.length - ocsRespVencidas;
+    const ocsAtTimePct = ocsResp.length ? Math.round((ocsRespOnTime/ocsResp.length)*100) : 100;
+
+    // Barras según rol/configuración
+    const barras = [];
+    if (metas.cotizaciones_mes)        barras.push(_kpiBarHTML('Cotizaciones generadas', cMias.length, metas.cotizaciones_mes, '', 'mayor'));
+    if (metas.revenue_mes)             barras.push(_kpiBarHTML('Revenue cotizaciones $', revenueMiembro, metas.revenue_mes, '$', 'mayor'));
+    if (metas.tasa_conversion_pct) {
+      const tc = cMias.length ? Math.round((cGanadas.length/cMias.length)*100) : 0;
+      barras.push(_kpiBarHTML('Tasa conversión propia', tc, metas.tasa_conversion_pct, '%', 'mayor'));
+    }
+    if (metas.tareas_completadas_pct)  barras.push(_kpiBarHTML('% Tareas completadas', tareasPct, metas.tareas_completadas_pct, '%', 'mayor'));
+    if (metas.ocs_a_tiempo_pct)        barras.push(_kpiBarHTML('% OCs a tiempo', ocsAtTimePct, metas.ocs_a_tiempo_pct, '%', 'mayor'));
+    if (metas.ocs_vencidas_max != null) barras.push(_kpiBarHTML('OCs vencidas', ocsRespVencidas, metas.ocs_vencidas_max, '', 'menor'));
+    // Fallback si no hay metas configuradas para el miembro
+    if (!barras.length) {
+      barras.push(`<div style="font-size:12px;color:var(--text-muted);font-style:italic;">Sin metas configuradas. Pulsa "🎯 Editar metas" arriba para asignarle KPIs a ${m.name}.</div>`);
+      barras.push(`<div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Actividad del período: ${mias.length} tareas (${tareasPct}% completadas) · ${cMias.length} cotizaciones · ${ocsResp.length} OCs (envío)</div>`);
+    }
+
+    return `
+      <div style="background:rgba(15,43,91,0.4);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div class="avatar" style="background:${m.color||'var(--blue)'};width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px;">${initials(m.name)}</div>
+          <div>
+            <div style="font-weight:700;color:#fff;font-size:14px;">${m.name}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${m.role||''}</div>
+          </div>
+        </div>
+        ${barras.join('')}
+      </div>`;
+  }).join('');
+
+  cont.innerHTML = html || '<div style="color:var(--text-muted);font-size:13px;">Sin miembros del equipo configurados.</div>';
+}
+
+function _renderDgTopClientes(periodo) {
+  const cont = document.getElementById('dg-top-clientes');
+  if (!cont) return;
+  const [ini, fin] = _dgRangoFechas(periodo);
+  const ocs = (typeof getPOC === 'function' ? getPOC() : []) || [];
+  const sumByClient = {};
+  ocs.forEach(o => {
+    const fact = (o.stages||[])[3] || {};
+    const enRango = fact.s === 'done' && _dgFechaEnRango(fact.f, ini, fin);
+    if (!enRango && periodo !== 'todo') return;
+    const cli = (o.cliente||'POR DEFINIR').toUpperCase();
+    sumByClient[cli] = (sumByClient[cli]||0) + (parseFloat(o.valor||0) || 0);
+  });
+  const top = Object.entries(sumByClient).sort((a,b) => b[1]-a[1]).slice(0,5);
+  if (!top.length || top.every(t => t[1]===0)) {
+    cont.innerHTML = '<div style="color:var(--text-muted);font-size:12px;font-style:italic;">Sin datos de valor en OCs del período. Asigna valor a las OCs para ver el ranking.</div>';
+    return;
+  }
+  const max = top[0][1] || 1;
+  cont.innerHTML = top.map(([cli, val], i) => {
+    const pct = Math.round((val/max)*100);
+    return `
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#fff;margin-bottom:4px;"><span>${i+1}. ${cli}</span><span style="color:var(--gold);font-weight:700;">$${Math.round(val).toLocaleString('es-CO')}</span></div>
+        <div style="background:rgba(255,255,255,0.06);border-radius:6px;height:8px;overflow:hidden;"><div style="background:var(--gold);width:${pct}%;height:100%;"></div></div>
+      </div>`;
+  }).join('');
+}
+
+function _renderDgEstadoOCs(periodo) {
+  const cont = document.getElementById('dg-estado-ocs');
+  if (!cont) return;
+  const ocs = (typeof getPOC === 'function' ? getPOC() : []) || [];
+  const activas = ocs.filter(o => o.estado === 'activo');
+  const STAGE_LBL = ['🛒 Compra','🚛 Entrega','📄 Certificado','💰 Facturación'];
+  const counts = [0,0,0,0]; // cuántas OCs están bloqueadas en cada etapa
+  activas.forEach(o => {
+    const stages = o.stages || [];
+    for (let i=0; i<4; i++) {
+      const s = stages[i] || {};
+      const done = i>=2 ? !!s.f : s.s==='done';
+      if (!done) { counts[i]++; break; }
+    }
+  });
+  const total = activas.length || 1;
+  cont.innerHTML = STAGE_LBL.map((lbl, i) => {
+    const pct = Math.round((counts[i]/total)*100);
+    return `
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#fff;margin-bottom:4px;"><span>${lbl}</span><span style="color:var(--text-muted);">${counts[i]} OCs (${pct}%)</span></div>
+        <div style="background:rgba(255,255,255,0.06);border-radius:6px;height:8px;overflow:hidden;"><div style="background:#7eb3ff;width:${pct}%;height:100%;"></div></div>
+      </div>`;
+  }).join('') + `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Total OCs activas: ${activas.length}</div>`;
+}
+
+// ===== Modal de edición de metas KPI =====
+function abrirModalMetasKPI() {
+  const metas = getKPIMetas();
+  const team = getData('team', TEAM_DEFAULT) || [];
+  const g = metas.global;
+
+  const html = `
+    <div class="modal-overlay open" id="modal-metas-kpi" onclick="if(event.target===this) cerrarModalMetasKPI()">
+      <div class="modal" style="max-width:680px;width:95%;">
+        <div class="modal-header" style="display:flex;align-items:center;gap:12px;">
+          <div style="flex:1;">
+            <div class="modal-title" style="margin:0;">🎯 Metas KPI</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Configura las metas globales y por miembro</div>
+          </div>
+          <button class="close-btn" onclick="cerrarModalMetasKPI()">✕</button>
+        </div>
+        <div class="modal-body">
+          <h4 style="color:var(--gold);margin:0 0 12px 0;font-size:14px;">📈 Metas Globales</h4>
+          <div class="form-row">
+            <div class="form-group"><label>Revenue mensual (COP)</label><input type="number" id="meta-revenue-mes" value="${g.revenue_mes||0}"></div>
+            <div class="form-group"><label>Tasa adjudicación (%)</label><input type="number" id="meta-tasa-conv" value="${g.tasa_conversion_pct||0}"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Tareas completadas (%)</label><input type="number" id="meta-tareas-pct" value="${g.tareas_completadas_pct||0}"></div>
+            <div class="form-group"><label>Cumplimiento etapas (%)</label><input type="number" id="meta-cumpl-pct" value="${g.cumplimiento_etapas_pct||0}"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>OCs vencidas máx</label><input type="number" id="meta-ocs-venc" value="${g.ocs_vencidas_max||0}"></div>
+            <div class="form-group"></div>
+          </div>
+
+          <h4 style="color:var(--gold);margin:18px 0 12px 0;font-size:14px;">👤 Metas por Miembro</h4>
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Deja en 0 / vacío los campos que no apliquen al miembro.</div>
+          <div id="metas-miembros-list">
+            ${team.map(m => {
+              const mm = metas.porMiembro[m.name] || {};
+              return `
+                <div style="background:rgba(15,43,91,0.3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;">
+                  <div style="font-weight:700;color:#fff;font-size:13px;margin-bottom:8px;">${m.name} — ${m.role||''}</div>
+                  <div class="form-row" style="margin-bottom:6px;">
+                    <div class="form-group"><label style="font-size:10px;">Cotizaciones/mes</label><input type="number" data-meta-key="cotizaciones_mes" data-miembro="${m.name}" value="${mm.cotizaciones_mes||''}"></div>
+                    <div class="form-group"><label style="font-size:10px;">Revenue mes ($)</label><input type="number" data-meta-key="revenue_mes" data-miembro="${m.name}" value="${mm.revenue_mes||''}"></div>
+                  </div>
+                  <div class="form-row" style="margin-bottom:6px;">
+                    <div class="form-group"><label style="font-size:10px;">Tasa conversión (%)</label><input type="number" data-meta-key="tasa_conversion_pct" data-miembro="${m.name}" value="${mm.tasa_conversion_pct||''}"></div>
+                    <div class="form-group"><label style="font-size:10px;">Tareas completadas (%)</label><input type="number" data-meta-key="tareas_completadas_pct" data-miembro="${m.name}" value="${mm.tareas_completadas_pct||''}"></div>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group"><label style="font-size:10px;">OCs a tiempo (%)</label><input type="number" data-meta-key="ocs_a_tiempo_pct" data-miembro="${m.name}" value="${mm.ocs_a_tiempo_pct||''}"></div>
+                    <div class="form-group"><label style="font-size:10px;">OCs vencidas máx</label><input type="number" data-meta-key="ocs_vencidas_max" data-miembro="${m.name}" value="${mm.ocs_vencidas_max||''}"></div>
+                  </div>
+                </div>`;
+            }).join('')}
+          </div>
+          <div style="display:flex;gap:10px;margin-top:14px;justify-content:flex-end;">
+            <button class="btn btn-ghost" onclick="cerrarModalMetasKPI()" style="width:auto;">Cancelar</button>
+            <button class="btn btn-primary" onclick="guardarMetasKPI()" style="width:auto;">💾 Guardar metas</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function cerrarModalMetasKPI() {
+  const m = document.getElementById('modal-metas-kpi');
+  if (m) m.remove();
+}
+
+function guardarMetasKPI() {
+  const num = (id) => parseFloat(document.getElementById(id)?.value || 0) || 0;
+  const metas = {
+    global: {
+      revenue_mes:            num('meta-revenue-mes'),
+      tasa_conversion_pct:    num('meta-tasa-conv'),
+      tareas_completadas_pct: num('meta-tareas-pct'),
+      cumplimiento_etapas_pct:num('meta-cumpl-pct'),
+      ocs_vencidas_max:       num('meta-ocs-venc')
+    },
+    porMiembro: {}
+  };
+  document.querySelectorAll('[data-meta-key]').forEach(inp => {
+    const miembro = inp.getAttribute('data-miembro');
+    const key = inp.getAttribute('data-meta-key');
+    const val = parseFloat(inp.value);
+    if (!isNaN(val) && val !== 0) {
+      if (!metas.porMiembro[miembro]) metas.porMiembro[miembro] = {};
+      metas.porMiembro[miembro][key] = val;
+    }
+  });
+  saveKPIMetas(metas);
+  showToast('✅ Metas KPI guardadas','success');
+  cerrarModalMetasKPI();
+  if (currentPage === 'dashboard_gerencial') renderDashboardGerencial();
+}
+
 // ===== POPULATE SELECTS =====
 function populateSelects() {
   const team = getData('team', TEAM_DEFAULT);
@@ -5011,6 +5521,8 @@ function openPocModal(id) {
   document.getElementById('poc-cliente').value = order?.cliente||'';
   document.getElementById('poc-desc').value = order?.desc||'';
   document.getElementById('poc-estado').value = order?.estado||'activo';
+  const pocValorEl = document.getElementById('poc-valor');
+  if (pocValorEl) pocValorEl.value = order?.valor || '';
   const stages = order?.stages || Array(4).fill({s:'pending',f:'',n:''});
   [0,1].forEach(i=>{
     document.getElementById('poc-s'+i+'-est').value = stages[i]?.s||'pending';
@@ -5059,6 +5571,7 @@ function savePoc() {
     cliente: document.getElementById('poc-cliente').value.trim(),
     desc: document.getElementById('poc-desc').value.trim(),
     estado: document.getElementById('poc-estado').value,
+    valor: parseFloat(document.getElementById('poc-valor')?.value || 0) || 0,
     stages,
     createdAt: existingOrder?.createdAt,
     createdBy: existingOrder?.createdBy
@@ -6578,6 +7091,7 @@ const ENERGY_TOOLS = [
         num:           { type: 'string', description: 'Número de la O.C. (ej: LM-1389, ODC-4049). Obligatorio.' },
         cliente:       { type: 'string', description: 'Nombre del cliente o proveedor' },
         desc:          { type: 'string', description: 'Descripción del pedido (qué se compró)' },
+        valor:         { type: 'number', description: 'Valor total de la O.C. en pesos colombianos (sin separadores, ej: 5000000 para $5M). Usado para KPIs gerenciales. Opcional.' },
         fechaCreacion: { type: 'string', description: 'Fecha en que se registra la O.C. en el sistema (YYYY-MM-DD). Si no se da, usa hoy.' },
         fechaCompra:   { type: 'string', description: 'Fecha real en que se hizo la compra al proveedor (YYYY-MM-DD). Puede ser distinta a fechaCreacion. Si no se da, usa fechaCreacion (o hoy).' },
         nota:          { type: 'string', description: 'Nota opcional sobre la etapa de compra' }
@@ -6606,6 +7120,7 @@ const ENERGY_TOOLS = [
         nuevoNum:    { type: 'string', description: 'Nuevo número (si quieres cambiarlo)' },
         cliente:     { type: 'string', description: 'Nuevo nombre de cliente' },
         desc:        { type: 'string', description: 'Nueva descripción' },
+        valor:       { type: 'number', description: 'Nuevo valor total en COP (sin separadores)' },
         estado:      { type: 'string', enum:['activo','completado','cancelado'], description: 'Nuevo estado global' }
       },
       required: ['num']
@@ -6783,6 +7298,7 @@ function tool_crear_orden_pedido(args) {
     num: String(args.num).trim(),
     cliente: args.cliente||'',
     desc: args.desc||'',
+    valor: parseFloat(args.valor||0) || 0,
     estado: 'activo',
     stages
   }, true);
@@ -6849,6 +7365,13 @@ function tool_editar_oc(args) {
   if (args.desc !== undefined && args.desc !== order.desc) {
     cambios.push(`descripción actualizada`);
     order.desc = args.desc;
+  }
+  if (args.valor !== undefined) {
+    const v = parseFloat(args.valor) || 0;
+    if (v !== (order.valor||0)) {
+      cambios.push(`valor: $${(order.valor||0).toLocaleString('es-CO')} → $${v.toLocaleString('es-CO')}`);
+      order.valor = v;
+    }
   }
   if (args.estado && args.estado !== order.estado) {
     cambios.push(`estado: ${order.estado} → ${args.estado}`);
