@@ -4835,6 +4835,14 @@ function abrirModalMetasKPI() {
           <button class="close-btn" onclick="cerrarModalMetasKPI()">✕</button>
         </div>
         <div class="modal-body">
+          <div style="background:rgba(46,170,74,0.08);border:1px dashed rgba(46,170,74,0.4);border-radius:10px;padding:12px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="font-size:13px;color:#fff;flex:1;">📷 ¿Tienes las metas en una tabla escrita / impresa? Sube la foto y ENERGY las lee:</span>
+              <input type="file" id="metas-img-input" accept="image/*" style="display:none;" onchange="importarMetasDesdeImagen(event)">
+              <button class="btn btn-primary" onclick="document.getElementById('metas-img-input').click()" style="width:auto;font-size:12px;padding:8px 14px;background:#2EAA4A;">📷 Subir imagen</button>
+            </div>
+            <div id="metas-img-status" style="font-size:11px;color:var(--text-muted);margin-top:8px;display:none;"></div>
+          </div>
           <h4 style="color:var(--gold);margin:0 0 12px 0;font-size:14px;">📈 Metas Globales</h4>
           <div class="form-row">
             <div class="form-group"><label>Revenue mensual (COP)</label><input type="number" id="meta-revenue-mes" value="${g.revenue_mes||0}"></div>
@@ -4885,6 +4893,152 @@ function abrirModalMetasKPI() {
 function cerrarModalMetasKPI() {
   const m = document.getElementById('modal-metas-kpi');
   if (m) m.remove();
+}
+
+// Lee imagen → base64 → la envía a Claude Vision → recibe JSON con metas → prellena el modal
+async function importarMetasDesdeImagen(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('metas-img-status');
+  const showStatus = (txt, color) => {
+    if (!status) return;
+    status.style.display = 'block';
+    status.style.color = color || 'var(--text-muted)';
+    status.innerHTML = txt;
+  };
+
+  // Validación tamaño (Claude Vision max ~5MB para imágenes)
+  if (file.size > 5 * 1024 * 1024) {
+    showStatus('⚠️ La imagen pesa más de 5MB. Reduce su tamaño y vuelve a intentar.', '#dc2626');
+    return;
+  }
+
+  showStatus('⏳ Cargando imagen...');
+  const proxyUrl = getClaudeProxyURL ? getClaudeProxyURL() : (localStorage.getItem('energy_proxy_url') || '');
+  if (!proxyUrl) {
+    showStatus('⚙️ Falta configurar la URL del proxy ENERGY IA en Configuración.', '#dc2626');
+    return;
+  }
+
+  try {
+    // Leer imagen como base64
+    const b64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const match = b64.match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) { showStatus('❌ No se pudo procesar la imagen', '#dc2626'); return; }
+    const mediaType = match[1];
+    const data      = match[2];
+
+    showStatus('🧠 ENERGY está leyendo la imagen...');
+
+    const team = getData('team', TEAM_DEFAULT) || [];
+    const nombresEquipo = team.map(m => m.name).join(', ');
+
+    const prompt = `Te estoy pasando una tabla (puede estar escrita a mano o impresa) con METAS KPI para la empresa E&G Energy Group SAS. Necesito que extraigas los números y los devuelvas en JSON puro (sin texto extra, sin markdown).
+
+Estructura esperada (todos los campos son opcionales — si no ves alguno, omítelo):
+{
+  "global": {
+    "revenue_mes":           <número en pesos colombianos, ej: 50000000>,
+    "tasa_conversion_pct":   <porcentaje 0-100, ej: 25>,
+    "tareas_completadas_pct":<porcentaje 0-100, ej: 90>,
+    "cumplimiento_etapas_pct":<porcentaje 0-100, ej: 85>,
+    "ocs_vencidas_max":      <número entero, ej: 5>
+  },
+  "porMiembro": {
+    "<NombreExacto>": {
+      "cotizaciones_mes":      <número entero>,
+      "revenue_mes":           <número pesos colombianos>,
+      "tasa_conversion_pct":   <porcentaje 0-100>,
+      "tareas_completadas_pct":<porcentaje 0-100>,
+      "ocs_a_tiempo_pct":      <porcentaje 0-100>,
+      "ocs_vencidas_max":      <número entero>
+    }
+  }
+}
+
+Miembros del equipo (usa estos nombres EXACTOS): ${nombresEquipo}
+
+IMPORTANTE:
+- Si el revenue aparece como "$50M" o "50 millones", conviértelo a 50000000 (sin separadores ni decimales).
+- Si solo dice "25%" o "25", devuelve 25 (sin signo %).
+- Si no estás seguro de un valor, NO lo inventes — omítelo del JSON.
+- Devuelve SOLO el JSON, sin explicaciones, sin \`\`\`json\`\`\`.`;
+
+    const body = {
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1500,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: data } },
+          { type: 'text', text: prompt }
+        ]
+      }]
+    };
+
+    const isAppsScript = /script\.google\.com/i.test(proxyUrl);
+    const resp = await fetch(proxyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': isAppsScript ? 'text/plain;charset=utf-8' : 'application/json' },
+      body: JSON.stringify(body),
+      redirect: 'follow'
+    });
+    const dataResp = await resp.json();
+    if (dataResp.error) { showStatus('❌ Error: '+(dataResp.error.message||JSON.stringify(dataResp.error)), '#dc2626'); return; }
+    const raw = (dataResp.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').trim();
+    if (!raw) { showStatus('❌ ENERGY no devolvió respuesta', '#dc2626'); return; }
+
+    // Limpiar markdown ```json ... ``` si vino
+    let jsonStr = raw.replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim();
+    const mb = jsonStr.indexOf('{');
+    const me = jsonStr.lastIndexOf('}');
+    if (mb >= 0 && me > mb) jsonStr = jsonStr.substring(mb, me+1);
+
+    let parsed;
+    try { parsed = JSON.parse(jsonStr); }
+    catch(e) { showStatus('❌ No pude leer el JSON. Respuesta: '+raw.slice(0,200), '#dc2626'); return; }
+
+    // Aplicar al modal (sin guardar todavía — el usuario revisa primero)
+    const setIf = (id, val) => {
+      const el = document.getElementById(id);
+      if (el && val != null && !isNaN(parseFloat(val))) el.value = val;
+    };
+    const g = parsed.global || {};
+    setIf('meta-revenue-mes',  g.revenue_mes);
+    setIf('meta-tasa-conv',    g.tasa_conversion_pct);
+    setIf('meta-tareas-pct',   g.tareas_completadas_pct);
+    setIf('meta-cumpl-pct',    g.cumplimiento_etapas_pct);
+    setIf('meta-ocs-venc',     g.ocs_vencidas_max);
+
+    const pm = parsed.porMiembro || {};
+    let camposPMAplicados = 0;
+    document.querySelectorAll('[data-meta-key]').forEach(inp => {
+      const miembro = inp.getAttribute('data-miembro');
+      const key = inp.getAttribute('data-meta-key');
+      if (pm[miembro] && pm[miembro][key] != null && !isNaN(parseFloat(pm[miembro][key]))) {
+        inp.value = pm[miembro][key];
+        camposPMAplicados++;
+        // Resaltar visualmente lo que ENERGY rellenó
+        inp.style.background = 'rgba(46,170,74,0.15)';
+        inp.style.borderColor = '#2EAA4A';
+        setTimeout(() => { inp.style.background=''; inp.style.borderColor=''; }, 4000);
+      }
+    });
+
+    const camposGlobales = Object.keys(g).length;
+    showStatus(`✅ ENERGY extrajo ${camposGlobales} metas globales y ${camposPMAplicados} metas por miembro. Revisa los campos y pulsa "💾 Guardar metas".`, '#2EAA4A');
+
+    // Limpiar el input para permitir cargar otra imagen
+    event.target.value = '';
+
+  } catch(err) {
+    showStatus('❌ Error procesando imagen: '+(err.message||err), '#dc2626');
+  }
 }
 
 function guardarMetasKPI() {
