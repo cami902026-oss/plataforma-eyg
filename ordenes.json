@@ -182,15 +182,15 @@
     "estado": "activo",
     "stages": [
       {
-        "s": "done",
+        "s": "active",
         "f": "2026-05-04",
         "n": "TECINCOL"
       },
       {
-        "s": "done",
-        "f": "2026-05-09",
+        "s": "pending",
+        "f": "",
         "n": "",
-        "envio": "camion_energy",
+        "envio": "",
         "transp": "",
         "guia": "",
         "dest": "",
@@ -202,15 +202,12 @@
         "n": ""
       },
       {
-        "s": "done",
-        "f": "2026-05-09",
-        "n": "429"
+        "s": "pending",
+        "f": "",
+        "n": ""
       }
     ],
-    "createdAt": "2026-05-10T03:40:27.777Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-10T03:40:33.738Z",
-    "updatedBy": "andrea"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1777926438588",
@@ -389,7 +386,7 @@
   },
   {
     "id": "poc_1777494029142",
-    "num": "4600007246",
+    "num": 4600007246,
     "cliente": "PBI",
     "desc": "SUMISNITRO MATERIAL",
     "estado": "completado",
@@ -415,15 +412,12 @@
         "n": ""
       },
       {
-        "s": "done",
-        "f": "2026-05-08",
-        "n": "427"
+        "s": "pending",
+        "f": "",
+        "n": ""
       }
     ],
-    "createdAt": "2026-05-10T03:39:45.339Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-10T03:39:51.705Z",
-    "updatedBy": "andrea"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1777675044439",
@@ -595,13 +589,10 @@
       {
         "s": "done",
         "f": "2026-05-07",
-        "n": "431"
+        "n": "414"
       }
     ],
-    "createdAt": "2026-05-10T03:40:56.495Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-10T03:41:00.771Z",
-    "updatedBy": "andrea"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1778175600594",
@@ -636,10 +627,9 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-10T03:39:17.197Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-10T03:39:17.197Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-05-10T03:39:16.581Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-10T03:39:16.581Z"
   },
   {
     "id": "poc_1778255156528",
