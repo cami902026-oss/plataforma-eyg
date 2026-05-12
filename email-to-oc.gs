@@ -64,7 +64,9 @@ function doGet() {
 // extrae datos con Claude y crea la OC. Marca el correo como leído + label
 // "ENERGY-OC-Procesado" para no procesarlo dos veces.
 function procesarCorreosNuevos() {
-  var query = 'subject:"ORDEN DE COMPRA ENERGY" is:unread newer_than:7d';
+  // FIX: en vez de buscar "is:unread", buscamos correos sin el label de procesado.
+  // Esto evita que un correo abierto manualmente (que pasa a "leído") deje de procesarse.
+  var query = 'subject:"ORDEN DE COMPRA ENERGY" -label:ENERGY-OC-Procesado newer_than:14d';
   var threads = GmailApp.search(query, 0, 20);
   if (!threads.length) {
     Logger.log('No hay correos nuevos.');
@@ -80,9 +82,14 @@ function procesarCorreosNuevos() {
   for (var t = 0; t < threads.length; t++) {
     var thread = threads[t];
     var msgs = thread.getMessages();
+    // Saltar hilos que ya tienen el label de procesado (defensa adicional)
+    var threadLabels = thread.getLabels().map(function(l){ return l.getName(); });
+    if (threadLabels.indexOf(labelName) >= 0) {
+      Logger.log('Hilo ya procesado (tiene label), saltando.');
+      continue;
+    }
     for (var m = 0; m < msgs.length; m++) {
       var msg = msgs[m];
-      if (!msg.isUnread()) continue;
       // Verificar de nuevo el asunto (search es laxo)
       var subj = msg.getSubject() || '';
       if (subj.toUpperCase().indexOf('ORDEN DE COMPRA ENERGY') < 0) continue;
@@ -192,11 +199,28 @@ function doPost(e) {
     var list = _ghLoadJSON('ordenes.json') || [];
     var numNorm = String(datos.num).trim();
 
-    // 3. Evitar duplicados
-    var existente = list.find(function(o){ return String(o.num||'').trim().toLowerCase() === numNorm.toLowerCase(); });
+    // 3. Evitar duplicados — comparar TANTO el num literal como una versión "fuerte"
+    // que quita espacios/guiones/puntos/slashes/underscores, para detectar variantes
+    // de Claude como "LM-1389" vs "LM 1389" vs "LM1389".
+    var normFuerte = function(s) {
+      return String(s||'').toLowerCase().replace(/[\s\-\.\/_]/g,'').trim();
+    };
+    var numFuerte = normFuerte(numNorm);
+    var existente = list.find(function(o){
+      var on = String(o.num||'').toLowerCase().trim();
+      var of = normFuerte(o.num);
+      return on === numNorm.toLowerCase() || of === numFuerte;
+    });
     if (existente) {
-      Logger.log('OC ya existe: ' + numNorm);
-      return _json({ ok:false, error:'OC ya existe', num: numNorm, cliente: existente.cliente });
+      var nota = existente.deleted ? ' (estaba en papelera)' : '';
+      Logger.log('OC ya existe: ' + numNorm + ' → mismo num que ' + (existente.num||'?') + nota);
+      return _json({
+        ok:false,
+        error:'OC ya existe' + nota,
+        num: numNorm,
+        cliente: existente.cliente,
+        existenteDeleted: !!existente.deleted
+      });
     }
 
     // 4. Crear OC — distinguir fecha de creación (emisión OC) de fecha de compra
@@ -303,18 +327,34 @@ function _extraerDatosOC(bodyText, attachments, subject, fromAddr) {
     messages: [{ role:'user', content: content }]
   };
 
-  var resp = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
-    method: 'post',
-    contentType: 'application/json',
-    headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
-    payload: JSON.stringify(payload),
-    muteHttpExceptions: true
-  });
-  var status = resp.getResponseCode();
-  var text = resp.getContentText();
+  // Retry con backoff exponencial para errores transitorios (529 Overloaded, 503, 429 rate limit)
+  var resp, status, text;
+  var maxIntentos = 4;
+  var espera = 4000; // ms iniciales
+  for (var attempt = 1; attempt <= maxIntentos; attempt++) {
+    resp = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    });
+    status = resp.getResponseCode();
+    text = resp.getContentText();
+    // Códigos transitorios → reintentar
+    if (status === 529 || status === 503 || status === 429 || status === 500 || status === 502 || status === 504) {
+      Logger.log('Claude ' + status + ' (intento ' + attempt + '/' + maxIntentos + '). Esperando ' + espera + 'ms...');
+      if (attempt < maxIntentos) {
+        Utilities.sleep(espera);
+        espera = Math.min(espera * 2, 30000); // hasta 30s entre intentos
+        continue;
+      }
+    }
+    break; // exit on éxito o error no-retry
+  }
   if (status >= 400) {
-    Logger.log('Claude error ' + status + ': ' + text);
-    throw new Error('Claude API ' + status);
+    Logger.log('Claude error final ' + status + ': ' + text.slice(0, 500));
+    throw new Error('Claude API ' + status + ' (tras ' + maxIntentos + ' intentos)');
   }
   var data = JSON.parse(text);
   var raw = (data.content || []).filter(function(c){ return c.type==='text'; })
