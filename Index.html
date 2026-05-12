@@ -2462,15 +2462,19 @@ async function _loadOrdenesGH() {
         // Si hubo guardado local reciente (<60s), no sobreescribir
         if (Date.now() - _pocLastSave < 60000) { ocRenderSafe(); return; }
         // Merge: keep the most recent version of each order
-        const local = getPOC();
+        // FIX: usar getPOCAll() para INCLUIR las soft-deleted (antes con getPOC() las
+        // borradas no se veían y se sobrescribían con la versión de GitHub).
+        const local = getPOCAll();
         const merged = arr.map(ghOrder => {
           const loc = local.find(o => o.id === ghOrder.id);
           if (!loc) return ghOrder;
+          // FIX: si localmente la OC está soft-deleted, respetar el deleted
+          if (loc.deleted) return loc;
           const ghTime = new Date(ghOrder.updatedAt || 0).getTime();
           const locTime = new Date(loc.updatedAt || 0).getTime();
           return locTime > ghTime ? loc : ghOrder;
         });
-        // Add local-only orders not in GitHub yet
+        // Add local-only orders not in GitHub yet (incluye soft-deleted que solo están local)
         local.forEach(lo => { if (!merged.find(o => o.id === lo.id)) merged.push(lo); });
         // Normalize stages 2&3 status derived from date
         merged.forEach(o => { if(o.stages) o.stages = o.stages.map((st,i)=>i>=2?{...st,s:st.f?'done':'pending'}:st); });
@@ -2565,6 +2569,10 @@ function _loadOrdenesGS() {
         const merged = res.data.map(gsOrder => {
           const localOrder = local.find(o => o.id === gsOrder.id || o.num === gsOrder.num);
           if (localOrder) {
+            // FIX: si localmente está soft-deleted, respetar eso y NO sobrescribir desde Sheets.
+            // Antes el sync de Sheets repoblaba OCs borradas porque la versión en Sheets
+            // no preserva el flag deleted:true.
+            if (localOrder.deleted) return localOrder;
             const gsTime   = gsOrder.updatedAt    ? new Date(gsOrder.updatedAt).getTime()    : 0;
             const localTime = localOrder.updatedAt ? new Date(localOrder.updatedAt).getTime() : 0;
             return localTime > gsTime ? localOrder : gsOrder;
