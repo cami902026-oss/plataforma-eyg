@@ -48,7 +48,7 @@
  */
 
 const PROPS = PropertiesService.getScriptProperties();
-const MODEL = 'claude-sonnet-4-6';   // Sonnet — mejor para extracción visual
+const MODEL = 'claude-haiku-4-5-20251001';   // Haiku 4.5 — más rápido y menos sobrecargado para extracción de OCs
 
 function doGet() {
   return _json({
