@@ -75,6 +75,7 @@
     "cliente": "MAUREL",
     "desc": "MATERIAL MECANICO",
     "estado": "activo",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -82,7 +83,7 @@
         "n": "CODIFER\nFABRICACION WELDOLET pendiente"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-05-11",
         "n": "Enviado Tcc\nEnvío camion",
         "envio": "entrega_mano",
@@ -102,9 +103,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-12T19:45:42.751Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-12T19:45:42.751Z"
+    "createdAt": "2026-05-12T19:45:47.480Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-12T19:45:47.480Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1776978416135",
