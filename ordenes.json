@@ -102,10 +102,7 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-11T22:00:44.331Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-11T22:08:25.818Z",
-    "updatedBy": "andrea"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1776978416135",
@@ -175,12 +172,7 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-11T22:08:39.392Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-11T22:08:40.295Z",
-    "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-11T22:08:40.294Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1777675105625",
@@ -741,5 +733,42 @@
       }
     ],
     "updatedAt": "✅ Facturado"
+  },
+  {
+    "id": "poc_1777927194950",
+    "num": 2026005442,
+    "cliente": "NEW GRANADA",
+    "desc": "Suministro material",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-05-04",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-05-12T19:21:34.454Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-12T19:21:34.454Z"
   }
 ]
