@@ -2308,26 +2308,40 @@ const PROJECTS_DEFAULT = [];
 
 const MINUTAS_DEFAULT = [];
 
-// ===== KPI METAS POR DEFECTO =====
-// Estructura: getData('kpi_metas', KPI_METAS_DEFAULT)
-// Las metas globales aplican a toda la empresa. Las por miembro aplican solo a ese rol/persona.
-// Cada métrica tiene un "tipo" implícito:
-//   - "mayor" (más es mejor): real/meta*100 capado a 100
-//   - "menor" (menos es mejor): max(0, 100 - real/maxAceptable*100)
+// ===== KPI METAS — Sistema flexible v2 =====
+// Cada KPI es un objeto libre: { id, label, meta, real, unidad, tipo, actualizado }
+//   - tipo "mayor": más es mejor (real/meta*100 capado a 100)
+//   - tipo "menor": menos es mejor (max(0, 100 - real/maxAceptable*100))
+//   - unidad: '$' '%' '' 'd' (días) etc. — texto libre (prefijo si es $, sufijo en los demás)
+//   - real: cargado manualmente o por imagen con Claude Vision
 const KPI_METAS_DEFAULT = {
-  global: {
-    revenue_mes:          50000000,  // COP — Meta de revenue mensual (OCs + cotizaciones cerradas)
-    tasa_conversion_pct:  25,        // % — Cotizaciones Adjudicadas+Facturadas / total enviadas
-    tareas_completadas_pct: 90,      // % — Tareas completadas a tiempo
-    ocs_vencidas_max:     5,         // # — Máximo de OCs activas con etapa pendiente >15 días
-    cumplimiento_etapas_pct: 85      // % — % promedio de etapas de OCs completadas a tiempo
-  },
+  version: 2,
+  global: [
+    { id:'g_rev',   label:'Revenue mensual',       meta:50000000, real:0, unidad:'$', tipo:'mayor', actualizado:'' },
+    { id:'g_conv',  label:'Tasa de adjudicación',  meta:25,       real:0, unidad:'%', tipo:'mayor', actualizado:'' },
+    { id:'g_tar',   label:'Tareas completadas',    meta:90,       real:0, unidad:'%', tipo:'mayor', actualizado:'' },
+    { id:'g_venc',  label:'OCs vencidas',          meta:5,        real:0, unidad:'',  tipo:'menor', actualizado:'' }
+  ],
   porMiembro: {
-    'Sheila Baron': { cotizaciones_mes: 20, revenue_mes: 30000000, tasa_conversion_pct: 25 },
-    'Andrea':       { ocs_a_tiempo_pct: 90, ocs_vencidas_max: 3 },
-    'Alexandra':    { tareas_completadas_pct: 95 },
-    'Nelsy':        { facturacion_dias_max: 5, ocs_sin_facturar_max: 0 },
-    'Alberto':      { } // gerencia, ve dashboard global
+    'Sheila Baron': [
+      { id:'sh_cot',  label:'Cotizaciones generadas/mes', meta:20,       real:0, unidad:'',  tipo:'mayor', actualizado:'' },
+      { id:'sh_rev',  label:'Revenue mensual',            meta:30000000, real:0, unidad:'$', tipo:'mayor', actualizado:'' },
+      { id:'sh_conv', label:'Tasa conversión',            meta:25,       real:0, unidad:'%', tipo:'mayor', actualizado:'' }
+    ],
+    'Andrea': [
+      { id:'an_oct',  label:'OCs a tiempo',               meta:90, real:0, unidad:'%', tipo:'mayor', actualizado:'' },
+      { id:'an_venc', label:'OCs vencidas',               meta:3,  real:0, unidad:'',  tipo:'menor', actualizado:'' },
+      { id:'an_dias', label:'Días promedio Compra→Entrega',meta:15, real:0, unidad:'d', tipo:'menor', actualizado:'' }
+    ],
+    'Alexandra': [
+      { id:'al_tar', label:'% Tareas completadas',  meta:95, real:0, unidad:'%', tipo:'mayor', actualizado:'' },
+      { id:'al_vis', label:'Visitas comerciales/mes',meta:8, real:0, unidad:'',  tipo:'mayor', actualizado:'' }
+    ],
+    'Nelsy': [
+      { id:'ne_dias', label:'Días promedio facturación',  meta:5,  real:0, unidad:'d', tipo:'menor', actualizado:'' },
+      { id:'ne_pct',  label:'% OCs entregadas facturadas',meta:100,real:0, unidad:'%', tipo:'mayor', actualizado:'' },
+      { id:'ne_sin',  label:'OCs sin facturar >15d',      meta:0,  real:0, unidad:'',  tipo:'menor', actualizado:'' }
+    ]
   }
 };
 
@@ -4474,19 +4488,56 @@ function abrirEvalDesempeno(nombre) {
 }
 
 // =====================================================
-// DASHBOARD GERENCIAL — KPIs medibles para gerencia
+// DASHBOARD GERENCIAL — KPIs flexibles (v2)
 // =====================================================
+// Cada KPI es un objeto libre con label/meta/real/unidad/tipo definidos por el admin.
+// El "real" se carga manualmente o por foto (Claude Vision matchea labels).
+
+function _migrarKPIMetasViejo(viejo) {
+  // Convierte el formato v1 (objetos planos con claves fijas) al v2 (arrays de KPIs libres).
+  const lbl = {
+    revenue_mes:            { label:'Revenue mensual',           unidad:'$', tipo:'mayor' },
+    tasa_conversion_pct:    { label:'Tasa de adjudicación',      unidad:'%', tipo:'mayor' },
+    tareas_completadas_pct: { label:'Tareas completadas',        unidad:'%', tipo:'mayor' },
+    cumplimiento_etapas_pct:{ label:'Cumplimiento etapas',       unidad:'%', tipo:'mayor' },
+    ocs_vencidas_max:       { label:'OCs vencidas',              unidad:'',  tipo:'menor' },
+    cotizaciones_mes:       { label:'Cotizaciones generadas/mes',unidad:'',  tipo:'mayor' },
+    ocs_a_tiempo_pct:       { label:'OCs a tiempo',              unidad:'%', tipo:'mayor' },
+    facturacion_dias_max:   { label:'Días promedio facturación', unidad:'d', tipo:'menor' },
+    ocs_sin_facturar_max:   { label:'OCs sin facturar >15d',     unidad:'',  tipo:'menor' }
+  };
+  const conv = (objMetas, prefijo) => {
+    const arr = [];
+    let i = 0;
+    Object.entries(objMetas||{}).forEach(([k, v]) => {
+      if (!isFinite(v) || v === 0) return;
+      const def = lbl[k] || { label:k, unidad:'', tipo:'mayor' };
+      arr.push({ id: prefijo+'_'+(i++), label: def.label, meta: v, real: 0, unidad: def.unidad, tipo: def.tipo, actualizado:'' });
+    });
+    return arr;
+  };
+  const out = { version:2, global: conv(viejo.global, 'g'), porMiembro: {} };
+  Object.entries(viejo.porMiembro||{}).forEach(([nombre, obj]) => {
+    const arr = conv(obj, nombre.replace(/\s+/g,'_').slice(0,8).toLowerCase());
+    if (arr.length) out.porMiembro[nombre] = arr;
+  });
+  return out;
+}
 
 function getKPIMetas() {
-  const stored = getData('kpi_metas', null);
+  let stored = getData('kpi_metas', null);
   if (!stored) return JSON.parse(JSON.stringify(KPI_METAS_DEFAULT));
-  // Merge profundo con defaults para no perder claves nuevas
-  return {
-    global: Object.assign({}, KPI_METAS_DEFAULT.global, stored.global||{}),
-    porMiembro: Object.assign({}, KPI_METAS_DEFAULT.porMiembro, stored.porMiembro||{})
-  };
+  // Migrar si es formato viejo (sin version: 2)
+  if (stored.version !== 2 && stored.global && !Array.isArray(stored.global)) {
+    stored = _migrarKPIMetasViejo(stored);
+    setData('kpi_metas', stored);
+  }
+  if (!Array.isArray(stored.global)) stored.global = [];
+  if (!stored.porMiembro || typeof stored.porMiembro !== 'object') stored.porMiembro = {};
+  return stored;
 }
 function saveKPIMetas(m) { setData('kpi_metas', m); }
+function _kpiNewId(prefix) { return prefix + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,6); }
 
 // Rango de fechas (Date inicio, Date finExclusivo) según selector de período
 function _dgRangoFechas(periodo) {
@@ -4542,133 +4593,28 @@ function _kpiBarHTML(label, real, meta, unidad, tipo, scoreOverride) {
     </div>`;
 }
 
-// Calcula KPIs globales en el período
-function _dgKPIsGlobales(periodo) {
-  const [ini, fin] = _dgRangoFechas(periodo);
-  const metas = getKPIMetas().global;
-
-  // Revenue: OCs completadas con etapa Facturación done en el período + cotizaciones Adjudicadas/Facturadas
-  const ocs = (typeof getPOC === 'function' ? getPOC() : []) || [];
-  let revenueOCs = 0;
-  ocs.forEach(o => {
-    const fact = (o.stages||[])[3] || {};
-    if (fact.s === 'done' && _dgFechaEnRango(fact.f, ini, fin)) {
-      revenueOCs += parseFloat(o.valor||0) || 0;
-    }
-  });
-  const cotizaciones = getData('cotizaciones', []) || [];
-  let revenueCotiz = 0;
-  let cotizGanadas = 0, cotizEnviadas = 0, cotizPerdidas = 0;
-  cotizaciones.forEach(c => {
-    const f = c.fecha || c.createdAt;
-    if (!_dgFechaEnRango(f, ini, fin)) return;
-    const est = (c.estado||'').toLowerCase();
-    if (est === 'enviada' || est === 'adjudicada' || est === 'facturada' || est === 'rechazada' || est === 'pendiente' || est === 'vencida') {
-      cotizEnviadas++;
-    }
-    if (est === 'adjudicada' || est === 'facturada') {
-      revenueCotiz += parseFloat(c.total||0) || 0;
-      cotizGanadas++;
-    }
-    if (est === 'rechazada' || est === 'vencida') {
-      cotizPerdidas++;
-    }
-  });
-  const revenue = revenueOCs + revenueCotiz;
-  const tasaConv = cotizEnviadas > 0 ? Math.round((cotizGanadas / cotizEnviadas) * 100) : 0;
-
-  // Tareas completadas en el período
-  const tasks = getData('tasks', []) || [];
-  let tareasTotal = 0, tareasCompletadas = 0;
-  tasks.forEach(t => {
-    if (!t || t.deleted) return;
-    const f = t.fecha || t.createdAt;
-    if (!_dgFechaEnRango(f, ini, fin)) return;
-    tareasTotal++;
-    if ((t.estado||'').toLowerCase() === 'completada') tareasCompletadas++;
-  });
-  const tareasPct = tareasTotal > 0 ? Math.round((tareasCompletadas / tareasTotal) * 100) : 0;
-
-  // OCs activas con etapa pendiente más de 15 días (vencidas)
-  const today = new Date(); today.setHours(0,0,0,0);
-  let ocsVencidas = 0;
-  ocs.filter(o => o.estado === 'activo').forEach(o => {
-    const stages = o.stages || [];
-    for (let i = 0; i < 4; i++) {
-      const s = stages[i] || {};
-      const done = i >= 2 ? !!s.f : s.s === 'done';
-      if (!done) {
-        // Etapa pendiente: si tiene fecha esperada y ya pasó, o si lleva >15 días desde createdAt
-        const refDate = s.f ? new Date(s.f) : new Date(o.createdAt || today);
-        refDate.setHours(0,0,0,0);
-        const diffDays = Math.round((today - refDate) / 86400000);
-        if (diffDays > 15) ocsVencidas++;
-        break;
-      }
-    }
-  });
-
-  // Cumplimiento de etapas: % de etapas con fecha (de OCs en el período)
-  let etapasConFecha = 0, etapasTotal = 0;
-  ocs.forEach(o => {
-    const created = o.createdAt;
-    if (!_dgFechaEnRango(created, ini, fin) && periodo !== 'todo') return;
-    (o.stages||[]).forEach(s => {
-      etapasTotal++;
-      if (s.f) etapasConFecha++;
-    });
-  });
-  const cumplEtapasPct = etapasTotal > 0 ? Math.round((etapasConFecha / etapasTotal) * 100) : 0;
-
-  return {
-    metas,
-    revenue, revenueOCs, revenueCotiz,
-    tasaConv, cotizGanadas, cotizEnviadas, cotizPerdidas,
-    tareasTotal, tareasCompletadas, tareasPct,
-    ocsVencidas, cumplEtapasPct,
-    ocsActivas: ocs.filter(o => o.estado === 'activo').length,
-    ocsCompletadas: ocs.filter(o => o.estado === 'completado' && _dgFechaEnRango((o.stages||[])[3]?.f, ini, fin)).length
-  };
-}
-
+// Render del Dashboard usando KPIs configurables (v2)
 function renderDashboardGerencial() {
   const sel = document.getElementById('dg-periodo');
   const periodo = sel ? sel.value : 'mes_actual';
-  const k = _dgKPIsGlobales(periodo);
+  const metas = getKPIMetas();
 
-  // Tarjetas globales con barras
+  // Tarjetas globales: una por cada KPI configurado
   const cards = document.getElementById('dg-global-cards');
   if (cards) {
-    cards.innerHTML = `
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
-        <div style="background:rgba(15,43,91,0.35);border:1px solid var(--border);border-radius:14px;padding:18px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">💰 Revenue del período</div>
-          ${_kpiBarHTML('Revenue total', k.revenue, k.metas.revenue_mes, '$', 'mayor')}
-          <div style="font-size:11px;color:var(--text-muted);">OCs: $${Math.round(k.revenueOCs).toLocaleString('es-CO')} · Cotiz: $${Math.round(k.revenueCotiz).toLocaleString('es-CO')}</div>
-        </div>
-        <div style="background:rgba(15,43,91,0.35);border:1px solid var(--border);border-radius:14px;padding:18px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🎯 Tasa de adjudicación</div>
-          ${_kpiBarHTML('Cotiz. ganadas / enviadas', k.tasaConv, k.metas.tasa_conversion_pct, '%', 'mayor')}
-          <div style="font-size:11px;color:var(--text-muted);">${k.cotizGanadas} ganadas · ${k.cotizPerdidas} perdidas · ${k.cotizEnviadas} total</div>
-        </div>
-        <div style="background:rgba(15,43,91,0.35);border:1px solid var(--border);border-radius:14px;padding:18px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">✅ Tareas completadas</div>
-          ${_kpiBarHTML('% del período', k.tareasPct, k.metas.tareas_completadas_pct, '%', 'mayor')}
-          <div style="font-size:11px;color:var(--text-muted);">${k.tareasCompletadas} / ${k.tareasTotal}</div>
-        </div>
-        <div style="background:rgba(15,43,91,0.35);border:1px solid var(--border);border-radius:14px;padding:18px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">⏰ Control de O.C. vencidas</div>
-          ${_kpiBarHTML('Vencidas (etapa >15d)', k.ocsVencidas, k.metas.ocs_vencidas_max, '', 'menor')}
-          <div style="font-size:11px;color:var(--text-muted);">${k.ocsActivas} activas · ${k.ocsCompletadas} cerradas en período</div>
-        </div>
-        <div style="background:rgba(15,43,91,0.35);border:1px solid var(--border);border-radius:14px;padding:18px;">
-          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">📊 Cumplimiento de etapas</div>
-          ${_kpiBarHTML('% etapas con fecha', k.cumplEtapasPct, k.metas.cumplimiento_etapas_pct, '%', 'mayor')}
-        </div>
+    if (!metas.global.length) {
+      cards.innerHTML = '<div style="background:rgba(15,43,91,0.35);border:1px dashed var(--border);border-radius:14px;padding:24px;text-align:center;color:var(--text-muted);">Sin KPIs globales configurados. Pulsa <b>🎯 Editar metas</b> para agregar los que necesites.</div>';
+    } else {
+      cards.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+        ${metas.global.map(k => `
+          <div style="background:rgba(15,43,91,0.35);border:1px solid var(--border);border-radius:14px;padding:18px;">
+            ${_kpiBarHTML(k.label, k.real||0, k.meta||0, k.unidad||'', k.tipo||'mayor')}
+            <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">${k.actualizado ? 'Actualizado: '+k.actualizado : 'Sin actualizar'}</div>
+          </div>`).join('')}
       </div>`;
+    }
   }
 
-  // Por miembro
   _renderDgPorMiembro(periodo);
   _renderDgTopClientes(periodo);
   _renderDgEstadoOCs(periodo);
@@ -4678,85 +4624,26 @@ function _renderDgPorMiembro(periodo) {
   const cont = document.getElementById('dg-por-miembro');
   if (!cont) return;
   const team = getData('team', TEAM_DEFAULT) || [];
-  const metasPM = getKPIMetas().porMiembro;
-  const [ini, fin] = _dgRangoFechas(periodo);
-
-  const tasks = getData('tasks', []) || [];
-  const ocs   = (typeof getPOC === 'function' ? getPOC() : []) || [];
-  const cot   = getData('cotizaciones', []) || [];
+  const metas = getKPIMetas();
 
   const html = team.map(m => {
-    const lc = (m.name||'').toLowerCase();
-    const metas = metasPM[m.name] || {};
-
-    // Tareas del miembro en período
-    const mias = tasks.filter(t => {
-      if (!t || t.deleted) return false;
-      const f = t.fecha || t.createdAt;
-      if (!_dgFechaEnRango(f, ini, fin)) return false;
-      const r = t.responsable || '';
-      if (Array.isArray(r)) return r.some(x => (x||'').toLowerCase() === lc);
-      return (r||'').toLowerCase().includes(lc);
-    });
-    const tareasCompletas = mias.filter(t => (t.estado||'').toLowerCase()==='completada').length;
-    const tareasPct = mias.length ? Math.round((tareasCompletas/mias.length)*100) : 0;
-
-    // Cotizaciones del miembro en período (revenue + count)
-    const cMias = cot.filter(c => {
-      const f = c.fecha || c.createdAt;
-      if (!_dgFechaEnRango(f, ini, fin)) return false;
-      return (c.responsable||c.vendedor||c.creadoPor||'').toLowerCase().includes(lc);
-    });
-    const cGanadas = cMias.filter(c => ['adjudicada','facturada'].includes((c.estado||'').toLowerCase()));
-    const revenueMiembro = cGanadas.reduce((s,c) => s + (parseFloat(c.total||0) || 0), 0);
-
-    // OCs donde es responsable de envío, activas, vencidas
-    const ocsResp = ocs.filter(o => ((o.stages||[])[1]?.resp||'').toLowerCase().includes(lc));
-    const today = new Date(); today.setHours(0,0,0,0);
-    const ocsRespVencidas = ocsResp.filter(o => {
-      if (o.estado !== 'activo') return false;
-      const stages = o.stages || [];
-      for (let i=0; i<4; i++) {
-        const s = stages[i] || {};
-        const done = i>=2 ? !!s.f : s.s==='done';
-        if (!done) {
-          const refDate = s.f ? new Date(s.f) : new Date(o.createdAt||today);
-          refDate.setHours(0,0,0,0);
-          return Math.round((today - refDate)/86400000) > 15;
-        }
-      }
-      return false;
-    }).length;
-    const ocsRespOnTime = ocsResp.length - ocsRespVencidas;
-    const ocsAtTimePct = ocsResp.length ? Math.round((ocsRespOnTime/ocsResp.length)*100) : 100;
-
-    // Barras según rol/configuración
-    const barras = [];
-    if (metas.cotizaciones_mes)        barras.push(_kpiBarHTML('Cotizaciones generadas', cMias.length, metas.cotizaciones_mes, '', 'mayor'));
-    if (metas.revenue_mes)             barras.push(_kpiBarHTML('Revenue cotizaciones $', revenueMiembro, metas.revenue_mes, '$', 'mayor'));
-    if (metas.tasa_conversion_pct) {
-      const tc = cMias.length ? Math.round((cGanadas.length/cMias.length)*100) : 0;
-      barras.push(_kpiBarHTML('Tasa conversión propia', tc, metas.tasa_conversion_pct, '%', 'mayor'));
+    const kpis = metas.porMiembro[m.name] || [];
+    let barras;
+    if (!kpis.length) {
+      barras = `<div style="font-size:12px;color:var(--text-muted);font-style:italic;">Sin KPIs configurados para ${m.name}. Pulsa <b>🎯 Editar metas</b> y agrégale los suyos.</div>`;
+    } else {
+      barras = kpis.map(k => _kpiBarHTML(k.label, k.real||0, k.meta||0, k.unidad||'', k.tipo||'mayor')).join('');
     }
-    if (metas.tareas_completadas_pct)  barras.push(_kpiBarHTML('% Tareas completadas', tareasPct, metas.tareas_completadas_pct, '%', 'mayor'));
-    if (metas.ocs_a_tiempo_pct)        barras.push(_kpiBarHTML('% OCs a tiempo', ocsAtTimePct, metas.ocs_a_tiempo_pct, '%', 'mayor'));
-    if (metas.ocs_vencidas_max != null) barras.push(_kpiBarHTML('OCs vencidas', ocsRespVencidas, metas.ocs_vencidas_max, '', 'menor'));
-    // Fallback si no hay metas configuradas para el miembro
-    if (!barras.length) {
-      barras.push(`<div style="font-size:12px;color:var(--text-muted);font-style:italic;">Sin metas configuradas. Pulsa "🎯 Editar metas" arriba para asignarle KPIs a ${m.name}.</div>`);
-      barras.push(`<div style="font-size:11px;color:var(--text-muted);margin-top:6px;">Actividad del período: ${mias.length} tareas (${tareasPct}% completadas) · ${cMias.length} cotizaciones · ${ocsResp.length} OCs (envío)</div>`);
-    }
-
     return `
       <div style="background:rgba(15,43,91,0.4);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
           <div class="avatar" style="background:${m.color||'var(--blue)'};width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px;">${initials(m.name)}</div>
-          <div>
+          <div style="flex:1;">
             <div style="font-weight:700;color:#fff;font-size:14px;">${m.name}</div>
-            <div style="font-size:11px;color:var(--text-muted);">${m.role||''}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${m.role||''} · ${kpis.length} KPI${kpis.length===1?'':'s'}</div>
           </div>
         </div>
-        ${barras.join('')}
+        ${barras}
       </div>`;
   }).join('');
 
@@ -4818,88 +4705,139 @@ function _renderDgEstadoOCs(periodo) {
   }).join('') + `<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Total OCs activas: ${activas.length}</div>`;
 }
 
-// ===== Modal de edición de metas KPI =====
-function abrirModalMetasKPI() {
-  const metas = getKPIMetas();
-  const team = getData('team', TEAM_DEFAULT) || [];
-  const g = metas.global;
+// ===== Modal de edición de metas KPI (sistema flexible v2) =====
+// Cada miembro puede tener cualquier cantidad de KPIs personalizados.
+// Cada KPI: label libre, meta, real, unidad, tipo (mayor/menor).
 
+let _kpiEditState = null; // Estado en memoria mientras el modal está abierto
+
+function abrirModalMetasKPI() {
+  _kpiEditState = JSON.parse(JSON.stringify(getKPIMetas()));
   const html = `
     <div class="modal-overlay open" id="modal-metas-kpi" onclick="if(event.target===this) cerrarModalMetasKPI()">
-      <div class="modal" style="max-width:680px;width:95%;">
+      <div class="modal" style="max-width:820px;width:96%;">
         <div class="modal-header" style="display:flex;align-items:center;gap:12px;">
           <div style="flex:1;">
             <div class="modal-title" style="margin:0;">🎯 Metas KPI</div>
-            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Configura las metas globales y por miembro</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Cada miembro tiene sus propios KPIs — son distintos según el cargo.</div>
           </div>
           <button class="close-btn" onclick="cerrarModalMetasKPI()">✕</button>
         </div>
         <div class="modal-body">
-          <div style="background:rgba(46,170,74,0.08);border:1px dashed rgba(46,170,74,0.4);border-radius:10px;padding:12px;margin-bottom:16px;">
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-              <span style="font-size:13px;color:#fff;flex:1;">📷 ¿Tienes las metas en una tabla escrita / impresa? Sube la foto y ENERGY las lee:</span>
-              <input type="file" id="metas-img-input" accept="image/*" style="display:none;" onchange="importarMetasDesdeImagen(event)">
-              <button class="btn btn-primary" onclick="document.getElementById('metas-img-input').click()" style="width:auto;font-size:12px;padding:8px 14px;background:#2EAA4A;">📷 Subir imagen</button>
-            </div>
-            <div id="metas-img-status" style="font-size:11px;color:var(--text-muted);margin-top:8px;display:none;"></div>
-          </div>
-          <h4 style="color:var(--gold);margin:0 0 12px 0;font-size:14px;">📈 Metas Globales</h4>
-          <div class="form-row">
-            <div class="form-group"><label>Revenue mensual (COP)</label><input type="number" id="meta-revenue-mes" value="${g.revenue_mes||0}"></div>
-            <div class="form-group"><label>Tasa adjudicación (%)</label><input type="number" id="meta-tasa-conv" value="${g.tasa_conversion_pct||0}"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>Tareas completadas (%)</label><input type="number" id="meta-tareas-pct" value="${g.tareas_completadas_pct||0}"></div>
-            <div class="form-group"><label>Cumplimiento etapas (%)</label><input type="number" id="meta-cumpl-pct" value="${g.cumplimiento_etapas_pct||0}"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>OCs vencidas máx</label><input type="number" id="meta-ocs-venc" value="${g.ocs_vencidas_max||0}"></div>
-            <div class="form-group"></div>
-          </div>
-
-          <h4 style="color:var(--gold);margin:18px 0 12px 0;font-size:14px;">👤 Metas por Miembro</h4>
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Deja en 0 / vacío los campos que no apliquen al miembro.</div>
-          <div id="metas-miembros-list">
-            ${team.map(m => {
-              const mm = metas.porMiembro[m.name] || {};
-              return `
-                <div style="background:rgba(15,43,91,0.3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;">
-                  <div style="font-weight:700;color:#fff;font-size:13px;margin-bottom:8px;">${m.name} — ${m.role||''}</div>
-                  <div class="form-row" style="margin-bottom:6px;">
-                    <div class="form-group"><label style="font-size:10px;">Cotizaciones/mes</label><input type="number" data-meta-key="cotizaciones_mes" data-miembro="${m.name}" value="${mm.cotizaciones_mes||''}"></div>
-                    <div class="form-group"><label style="font-size:10px;">Revenue mes ($)</label><input type="number" data-meta-key="revenue_mes" data-miembro="${m.name}" value="${mm.revenue_mes||''}"></div>
-                  </div>
-                  <div class="form-row" style="margin-bottom:6px;">
-                    <div class="form-group"><label style="font-size:10px;">Tasa conversión (%)</label><input type="number" data-meta-key="tasa_conversion_pct" data-miembro="${m.name}" value="${mm.tasa_conversion_pct||''}"></div>
-                    <div class="form-group"><label style="font-size:10px;">Tareas completadas (%)</label><input type="number" data-meta-key="tareas_completadas_pct" data-miembro="${m.name}" value="${mm.tareas_completadas_pct||''}"></div>
-                  </div>
-                  <div class="form-row">
-                    <div class="form-group"><label style="font-size:10px;">OCs a tiempo (%)</label><input type="number" data-meta-key="ocs_a_tiempo_pct" data-miembro="${m.name}" value="${mm.ocs_a_tiempo_pct||''}"></div>
-                    <div class="form-group"><label style="font-size:10px;">OCs vencidas máx</label><input type="number" data-meta-key="ocs_vencidas_max" data-miembro="${m.name}" value="${mm.ocs_vencidas_max||''}"></div>
-                  </div>
-                </div>`;
-            }).join('')}
-          </div>
-          <div style="display:flex;gap:10px;margin-top:14px;justify-content:flex-end;">
+          <div id="metas-modal-body"></div>
+          <div style="display:flex;gap:10px;margin-top:14px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:14px;">
             <button class="btn btn-ghost" onclick="cerrarModalMetasKPI()" style="width:auto;">Cancelar</button>
-            <button class="btn btn-primary" onclick="guardarMetasKPI()" style="width:auto;">💾 Guardar metas</button>
+            <button class="btn btn-primary" onclick="guardarMetasKPI()" style="width:auto;">💾 Guardar todo</button>
           </div>
         </div>
       </div>
     </div>`;
   document.body.insertAdjacentHTML('beforeend', html);
+  _renderModalMetasKPI();
 }
 
 function cerrarModalMetasKPI() {
   const m = document.getElementById('modal-metas-kpi');
   if (m) m.remove();
+  _kpiEditState = null;
 }
 
-// Lee imagen → base64 → la envía a Claude Vision → recibe JSON con metas → prellena el modal
-async function importarMetasDesdeImagen(event) {
+function _renderModalMetasKPI() {
+  if (!_kpiEditState) return;
+  const team = getData('team', TEAM_DEFAULT) || [];
+  const body = document.getElementById('metas-modal-body');
+  if (!body) return;
+
+  const renderKpiRow = (kpi, bucketKey, idx) => {
+    return `
+      <div style="display:grid;grid-template-columns:2.4fr 1fr 1fr 0.8fr 0.9fr 32px;gap:6px;align-items:center;margin-bottom:6px;background:rgba(15,43,91,0.35);padding:6px;border-radius:8px;">
+        <input type="text"   placeholder="Nombre del KPI" value="${(kpi.label||'').replace(/"/g,'&quot;')}" oninput="_kpiSet('${bucketKey}',${idx},'label',this.value)" style="font-size:12px;padding:6px 8px;">
+        <input type="number" placeholder="Meta" value="${kpi.meta||''}" oninput="_kpiSet('${bucketKey}',${idx},'meta',parseFloat(this.value)||0)" style="font-size:12px;padding:6px 8px;">
+        <input type="number" placeholder="Real" value="${kpi.real||''}" oninput="_kpiSet('${bucketKey}',${idx},'real',parseFloat(this.value)||0)" style="font-size:12px;padding:6px 8px;">
+        <select onchange="_kpiSet('${bucketKey}',${idx},'unidad',this.value)" style="font-size:12px;padding:6px 4px;">
+          <option value=""  ${kpi.unidad===''?'selected':''}>—</option>
+          <option value="$" ${kpi.unidad==='$'?'selected':''}>$</option>
+          <option value="%" ${kpi.unidad==='%'?'selected':''}>%</option>
+          <option value="d" ${kpi.unidad==='d'?'selected':''}>días</option>
+          <option value="h" ${kpi.unidad==='h'?'selected':''}>horas</option>
+        </select>
+        <select onchange="_kpiSet('${bucketKey}',${idx},'tipo',this.value)" style="font-size:12px;padding:6px 4px;">
+          <option value="mayor" ${kpi.tipo==='mayor'?'selected':''}>↑ mayor</option>
+          <option value="menor" ${kpi.tipo==='menor'?'selected':''}>↓ menor</option>
+        </select>
+        <button onclick="_kpiDel('${bucketKey}',${idx})" title="Eliminar KPI" style="background:#dc2626;color:#fff;border:none;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:14px;">×</button>
+      </div>`;
+  };
+
+  const labelsHeader = `
+    <div style="display:grid;grid-template-columns:2.4fr 1fr 1fr 0.8fr 0.9fr 32px;gap:6px;padding:0 6px;margin-bottom:4px;font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">
+      <div>KPI</div><div>Meta</div><div>Real</div><div>Unid</div><div>Tipo</div><div></div>
+    </div>`;
+
+  let html = `
+    <div style="background:rgba(15,43,91,0.25);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+        <h4 style="color:var(--gold);margin:0;font-size:14px;flex:1;">🌐 KPIs Globales (empresa)</h4>
+        <input type="file" id="meta-img-global" accept="image/*" style="display:none;" onchange="importarMetasDesdeImagen(event,'_global')">
+        <button class="btn btn-primary" onclick="document.getElementById('meta-img-global').click()" style="width:auto;font-size:11px;padding:6px 10px;background:#2EAA4A;">📷 Foto</button>
+        <button class="btn btn-ghost" onclick="_kpiAdd('_global')" style="width:auto;font-size:11px;padding:6px 10px;">+ Agregar KPI</button>
+      </div>
+      <div id="meta-img-status-_global" style="font-size:11px;margin-bottom:8px;display:none;"></div>
+      ${labelsHeader}
+      ${_kpiEditState.global.map((k,i)=>renderKpiRow(k,'_global',i)).join('') || '<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:8px;">Sin KPIs globales. Pulsa "+ Agregar KPI" o sube una foto.</div>'}
+    </div>`;
+
+  team.forEach(m => {
+    const bucketKey = m.name;
+    if (!_kpiEditState.porMiembro[bucketKey]) _kpiEditState.porMiembro[bucketKey] = [];
+    const kpis = _kpiEditState.porMiembro[bucketKey];
+    const idSafe = bucketKey.replace(/[^a-zA-Z0-9]/g,'_');
+    html += `
+      <div style="background:rgba(15,43,91,0.25);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+          <div class="avatar" style="background:${m.color||'var(--blue)'};width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:11px;">${initials(m.name)}</div>
+          <h4 style="color:#fff;margin:0;font-size:13px;flex:1;">${m.name} <span style="color:var(--text-muted);font-weight:400;font-size:11px;">· ${m.role||''}</span></h4>
+          <input type="file" id="meta-img-${idSafe}" accept="image/*" style="display:none;" onchange="importarMetasDesdeImagen(event,'${bucketKey.replace(/'/g,"\\'")}')">
+          <button class="btn btn-primary" onclick="document.getElementById('meta-img-${idSafe}').click()" style="width:auto;font-size:11px;padding:6px 10px;background:#2EAA4A;">📷 Foto suya</button>
+          <button class="btn btn-ghost" onclick="_kpiAdd('${bucketKey.replace(/'/g,"\\'")}')" style="width:auto;font-size:11px;padding:6px 10px;">+ KPI</button>
+        </div>
+        <div id="meta-img-status-${idSafe}" style="font-size:11px;margin-bottom:8px;display:none;"></div>
+        ${kpis.length ? labelsHeader + kpis.map((k,i)=>renderKpiRow(k,bucketKey,i)).join('') : '<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:8px;">Sin KPIs para '+m.name+'. Pulsa "+ KPI" o sube una foto.</div>'}
+      </div>`;
+  });
+
+  body.innerHTML = html;
+}
+
+function _kpiBucket(bucketKey) {
+  if (bucketKey === '_global') return _kpiEditState.global;
+  if (!_kpiEditState.porMiembro[bucketKey]) _kpiEditState.porMiembro[bucketKey] = [];
+  return _kpiEditState.porMiembro[bucketKey];
+}
+function _kpiAdd(bucketKey) {
+  const b = _kpiBucket(bucketKey);
+  b.push({ id: _kpiNewId(bucketKey==='_global'?'g':'m'), label:'', meta:0, real:0, unidad:'', tipo:'mayor', actualizado:'' });
+  _renderModalMetasKPI();
+}
+function _kpiDel(bucketKey, idx) {
+  const b = _kpiBucket(bucketKey);
+  b.splice(idx, 1);
+  _renderModalMetasKPI();
+}
+function _kpiSet(bucketKey, idx, campo, valor) {
+  const b = _kpiBucket(bucketKey);
+  if (!b[idx]) return;
+  b[idx][campo] = valor;
+  b[idx].actualizado = new Date().toISOString().slice(0,10);
+}
+
+// Lee imagen → Claude Vision → JSON {kpis:[{label,meta,real,unidad,tipo}]} → matchea por label
+// y carga al bucket correspondiente (global o un miembro). bucketKey='_global' o el nombre del miembro.
+async function importarMetasDesdeImagen(event, bucketKey) {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
-  const status = document.getElementById('metas-img-status');
+  const idSafe = (bucketKey==='_global') ? '_global' : bucketKey.replace(/[^a-zA-Z0-9]/g,'_');
+  const status = document.getElementById('meta-img-status-' + idSafe);
   const showStatus = (txt, color) => {
     if (!status) return;
     status.style.display = 'block';
@@ -4907,71 +4845,66 @@ async function importarMetasDesdeImagen(event) {
     status.innerHTML = txt;
   };
 
-  // Validación tamaño (Claude Vision max ~5MB para imágenes)
   if (file.size > 5 * 1024 * 1024) {
-    showStatus('⚠️ La imagen pesa más de 5MB. Reduce su tamaño y vuelve a intentar.', '#dc2626');
+    showStatus('⚠️ La imagen pesa >5MB. Redúcela e intenta de nuevo.', '#dc2626');
+    return;
+  }
+
+  const proxyUrl = getClaudeProxyURL ? getClaudeProxyURL() : (localStorage.getItem('energy_proxy_url') || '');
+  if (!proxyUrl) {
+    showStatus('⚙️ Falta configurar URL del proxy ENERGY IA en Configuración.', '#dc2626');
     return;
   }
 
   showStatus('⏳ Cargando imagen...');
-  const proxyUrl = getClaudeProxyURL ? getClaudeProxyURL() : (localStorage.getItem('energy_proxy_url') || '');
-  if (!proxyUrl) {
-    showStatus('⚙️ Falta configurar la URL del proxy ENERGY IA en Configuración.', '#dc2626');
-    return;
-  }
-
   try {
-    // Leer imagen como base64
-    const b64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+    const b64Full = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
     });
-    const match = b64.match(/^data:([^;]+);base64,(.+)$/);
+    const match = b64Full.match(/^data:([^;]+);base64,(.+)$/);
     if (!match) { showStatus('❌ No se pudo procesar la imagen', '#dc2626'); return; }
-    const mediaType = match[1];
-    const data      = match[2];
+    const mediaType = match[1], data = match[2];
 
     showStatus('🧠 ENERGY está leyendo la imagen...');
 
-    const team = getData('team', TEAM_DEFAULT) || [];
-    const nombresEquipo = team.map(m => m.name).join(', ');
+    // KPIs existentes en este bucket — guían el matching
+    const bucket = _kpiBucket(bucketKey);
+    const labelsExistentes = bucket.map(k => k.label).filter(Boolean);
+    const contexto = bucketKey === '_global'
+      ? 'KPIs globales de la empresa E&G Energy Group SAS'
+      : 'KPIs de '+bucketKey+' (un miembro específico del equipo)';
 
-    const prompt = `Te estoy pasando una tabla (puede estar escrita a mano o impresa) con METAS KPI para la empresa E&G Energy Group SAS. Necesito que extraigas los números y los devuelvas en JSON puro (sin texto extra, sin markdown).
+    const prompt = `Te paso una imagen (foto/captura/escrita a mano) con una tabla de KPIs. Contexto: ${contexto}.
 
-Estructura esperada (todos los campos son opcionales — si no ves alguno, omítelo):
+Devuelve JSON puro (sin markdown, sin texto extra) con esta estructura:
 {
-  "global": {
-    "revenue_mes":           <número en pesos colombianos, ej: 50000000>,
-    "tasa_conversion_pct":   <porcentaje 0-100, ej: 25>,
-    "tareas_completadas_pct":<porcentaje 0-100, ej: 90>,
-    "cumplimiento_etapas_pct":<porcentaje 0-100, ej: 85>,
-    "ocs_vencidas_max":      <número entero, ej: 5>
-  },
-  "porMiembro": {
-    "<NombreExacto>": {
-      "cotizaciones_mes":      <número entero>,
-      "revenue_mes":           <número pesos colombianos>,
-      "tasa_conversion_pct":   <porcentaje 0-100>,
-      "tareas_completadas_pct":<porcentaje 0-100>,
-      "ocs_a_tiempo_pct":      <porcentaje 0-100>,
-      "ocs_vencidas_max":      <número entero>
+  "kpis": [
+    {
+      "label": "<nombre del KPI tal como aparece, p.ej. 'Cotizaciones generadas/mes'>",
+      "meta":  <número de la meta, ej: 20 o 50000000>,
+      "real":  <número del valor REAL/actual si aparece — opcional>,
+      "unidad": "<'$' | '%' | 'd' | 'h' | ''>",
+      "tipo":  "<'mayor' si más es mejor, 'menor' si menos es mejor>"
     }
-  }
+  ]
 }
 
-Miembros del equipo (usa estos nombres EXACTOS): ${nombresEquipo}
-
-IMPORTANTE:
-- Si el revenue aparece como "$50M" o "50 millones", conviértelo a 50000000 (sin separadores ni decimales).
-- Si solo dice "25%" o "25", devuelve 25 (sin signo %).
-- Si no estás seguro de un valor, NO lo inventes — omítelo del JSON.
-- Devuelve SOLO el JSON, sin explicaciones, sin \`\`\`json\`\`\`.`;
+Reglas para extracción:
+- Si en la tabla aparece "$50M" o "50 millones", devuelve meta:50000000 (sin separadores).
+- Si dice "25%" o "25", devuelve meta:25 y unidad:"%".
+- Si la tabla tiene columnas "META" y "REAL", llena ambos. Si solo hay una columna, asume que es la META.
+- KPIs típicos "menores son mejores" (vencidas, días, errores) → tipo:"menor". Resto → "mayor".
+- Si hay un KPI cuyo nombre se parece a uno de estos labels existentes, USA exactamente el label existente para que el sistema pueda actualizarlo:
+${labelsExistentes.length ? labelsExistentes.map(l=>'  • '+l).join('\n') : '  (no hay KPIs previos en este bucket)'}
+- Si no estás seguro de un valor, omite todo ese KPI.
+- Devuelve SOLO el JSON.`;
 
     const body = {
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1500,
+      max_tokens: 2000,
       messages: [{
         role: 'user',
         content: [
@@ -4993,76 +4926,64 @@ IMPORTANTE:
     const raw = (dataResp.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('').trim();
     if (!raw) { showStatus('❌ ENERGY no devolvió respuesta', '#dc2626'); return; }
 
-    // Limpiar markdown ```json ... ``` si vino
     let jsonStr = raw.replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim();
-    const mb = jsonStr.indexOf('{');
-    const me = jsonStr.lastIndexOf('}');
+    const mb = jsonStr.indexOf('{'), me = jsonStr.lastIndexOf('}');
     if (mb >= 0 && me > mb) jsonStr = jsonStr.substring(mb, me+1);
 
     let parsed;
     try { parsed = JSON.parse(jsonStr); }
     catch(e) { showStatus('❌ No pude leer el JSON. Respuesta: '+raw.slice(0,200), '#dc2626'); return; }
 
-    // Aplicar al modal (sin guardar todavía — el usuario revisa primero)
-    const setIf = (id, val) => {
-      const el = document.getElementById(id);
-      if (el && val != null && !isNaN(parseFloat(val))) el.value = val;
-    };
-    const g = parsed.global || {};
-    setIf('meta-revenue-mes',  g.revenue_mes);
-    setIf('meta-tasa-conv',    g.tasa_conversion_pct);
-    setIf('meta-tareas-pct',   g.tareas_completadas_pct);
-    setIf('meta-cumpl-pct',    g.cumplimiento_etapas_pct);
-    setIf('meta-ocs-venc',     g.ocs_vencidas_max);
+    const kpisExtraidos = Array.isArray(parsed.kpis) ? parsed.kpis : [];
+    if (!kpisExtraidos.length) { showStatus('❌ ENERGY no encontró KPIs en la imagen', '#dc2626'); return; }
 
-    const pm = parsed.porMiembro || {};
-    let camposPMAplicados = 0;
-    document.querySelectorAll('[data-meta-key]').forEach(inp => {
-      const miembro = inp.getAttribute('data-miembro');
-      const key = inp.getAttribute('data-meta-key');
-      if (pm[miembro] && pm[miembro][key] != null && !isNaN(parseFloat(pm[miembro][key]))) {
-        inp.value = pm[miembro][key];
-        camposPMAplicados++;
-        // Resaltar visualmente lo que ENERGY rellenó
-        inp.style.background = 'rgba(46,170,74,0.15)';
-        inp.style.borderColor = '#2EAA4A';
-        setTimeout(() => { inp.style.background=''; inp.style.borderColor=''; }, 4000);
+    // Merge: si label coincide con uno existente, actualiza ese; si no, agrega nuevo
+    let actualizados = 0, agregados = 0;
+    const norm = s => (s||'').toLowerCase().replace(/\s+/g,' ').trim();
+    kpisExtraidos.forEach(k => {
+      if (!k.label || !isFinite(k.meta)) return;
+      const idx = bucket.findIndex(x => norm(x.label) === norm(k.label));
+      const hoy = new Date().toISOString().slice(0,10);
+      if (idx >= 0) {
+        bucket[idx].meta = parseFloat(k.meta) || bucket[idx].meta;
+        if (k.real != null && isFinite(k.real)) bucket[idx].real = parseFloat(k.real);
+        if (k.unidad) bucket[idx].unidad = k.unidad;
+        if (k.tipo)   bucket[idx].tipo   = k.tipo;
+        bucket[idx].actualizado = hoy;
+        actualizados++;
+      } else {
+        bucket.push({
+          id: _kpiNewId(bucketKey==='_global'?'g':'m'),
+          label: k.label,
+          meta:  parseFloat(k.meta) || 0,
+          real:  isFinite(k.real) ? parseFloat(k.real) : 0,
+          unidad: k.unidad || '',
+          tipo:  k.tipo === 'menor' ? 'menor' : 'mayor',
+          actualizado: hoy
+        });
+        agregados++;
       }
     });
 
-    const camposGlobales = Object.keys(g).length;
-    showStatus(`✅ ENERGY extrajo ${camposGlobales} metas globales y ${camposPMAplicados} metas por miembro. Revisa los campos y pulsa "💾 Guardar metas".`, '#2EAA4A');
-
-    // Limpiar el input para permitir cargar otra imagen
+    _renderModalMetasKPI();
+    showStatus(`✅ ${actualizados} KPI${actualizados===1?'':'s'} actualizado${actualizados===1?'':'s'} · ${agregados} nuevo${agregados===1?'':'s'}. Revisa y pulsa "💾 Guardar todo".`, '#2EAA4A');
     event.target.value = '';
 
   } catch(err) {
-    showStatus('❌ Error procesando imagen: '+(err.message||err), '#dc2626');
+    showStatus('❌ Error: '+(err.message||err), '#dc2626');
   }
 }
 
 function guardarMetasKPI() {
-  const num = (id) => parseFloat(document.getElementById(id)?.value || 0) || 0;
-  const metas = {
-    global: {
-      revenue_mes:            num('meta-revenue-mes'),
-      tasa_conversion_pct:    num('meta-tasa-conv'),
-      tareas_completadas_pct: num('meta-tareas-pct'),
-      cumplimiento_etapas_pct:num('meta-cumpl-pct'),
-      ocs_vencidas_max:       num('meta-ocs-venc')
-    },
-    porMiembro: {}
-  };
-  document.querySelectorAll('[data-meta-key]').forEach(inp => {
-    const miembro = inp.getAttribute('data-miembro');
-    const key = inp.getAttribute('data-meta-key');
-    const val = parseFloat(inp.value);
-    if (!isNaN(val) && val !== 0) {
-      if (!metas.porMiembro[miembro]) metas.porMiembro[miembro] = {};
-      metas.porMiembro[miembro][key] = val;
-    }
+  if (!_kpiEditState) return;
+  // Limpiar KPIs sin label (placeholders vacíos)
+  _kpiEditState.global = _kpiEditState.global.filter(k => (k.label||'').trim());
+  Object.keys(_kpiEditState.porMiembro).forEach(name => {
+    _kpiEditState.porMiembro[name] = (_kpiEditState.porMiembro[name]||[]).filter(k => (k.label||'').trim());
+    if (!_kpiEditState.porMiembro[name].length) delete _kpiEditState.porMiembro[name];
   });
-  saveKPIMetas(metas);
+  _kpiEditState.version = 2;
+  saveKPIMetas(_kpiEditState);
   showToast('✅ Metas KPI guardadas','success');
   cerrarModalMetasKPI();
   if (currentPage === 'dashboard_gerencial') renderDashboardGerencial();
