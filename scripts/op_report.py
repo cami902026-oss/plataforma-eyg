@@ -124,8 +124,12 @@ def load_ordenes_from_github(gh_token: str) -> list:
         with urllib.request.urlopen(req) as resp:
             data = json.loads(resp.read())
             content = base64.b64decode(data['content']).decode('utf-8')
-            ordenes = json.loads(content)
-            print(f'✅ ordenes.json descargado: {len(ordenes)} órdenes')
+            ordenes_raw = json.loads(content)
+            # FIX: filtrar OCs soft-deleted aquí — antes aparecían en el informe aunque
+            # el usuario las hubiera borrado en la plataforma.
+            ordenes = [o for o in ordenes_raw if not o.get('deleted')]
+            borradas = len(ordenes_raw) - len(ordenes)
+            print(f'✅ ordenes.json descargado: {len(ordenes)} órdenes activas (filtradas {borradas} en papelera).')
             return ordenes
     except urllib.error.HTTPError as e:
         body = e.read().decode()
@@ -145,6 +149,9 @@ def generate_excel_op(ordenes: list) -> bytes | None:
     if not OPENPYXL_OK:
         print("⚠️  openpyxl no disponible — se omite el Excel adjunto")
         return None
+
+    # FIX: excluir OCs soft-deleted del Excel adjunto
+    ordenes = [o for o in ordenes if not o.get('deleted')]
 
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -372,9 +379,11 @@ def build_resumen_etapas(activos: list) -> str:
 
 
 def build_report_html(ordenes: list, date_str: str, freshness_banner: str = '') -> str:
-    activos     = [o for o in ordenes if o.get('estado') == 'activo']
-    completados = [o for o in ordenes if o.get('estado') == 'completado']
-    cancelados  = [o for o in ordenes if o.get('estado') == 'cancelado']
+    # FIX: excluir OCs soft-deleted (estaban apareciendo en el informe aunque el usuario las borró)
+    ordenes      = [o for o in ordenes if not o.get('deleted')]
+    activos      = [o for o in ordenes if o.get('estado') == 'activo']
+    completados  = [o for o in ordenes if o.get('estado') == 'completado']
+    cancelados   = [o for o in ordenes if o.get('estado') == 'cancelado']
 
     resumen_etapas = build_resumen_etapas(activos) if activos else ''
 
