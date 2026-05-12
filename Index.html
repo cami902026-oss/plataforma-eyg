@@ -1036,6 +1036,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="btn" style="background:#0f9d58;color:#fff;border:none" onclick="window.open('https://docs.google.com/spreadsheets/d/1QjeJiCQ8fND57r0MNw1vRNdcnukqpBNHDfxjbeW7Lq0/edit','_blank')">🗂️ Ver en Google Sheets</button>
               <button id="btn-cerrar-mes" class="btn" style="background:#5b21b6;color:#fff;border:none" onclick="cerrarMesOC()">📦 Cerrar Mes</button>
               <button class="btn" style="background:#475569;color:#fff;border:none" onclick="pocOpenTrash()" title="Órdenes eliminadas (30 días para restaurar)">🗑️ Papelera</button>
+              <button class="btn" style="background:#0891b2;color:#fff;border:none" onclick="pocVerificarEstados()" title="Detecta OCs marcadas como completadas sin tener todas las etapas hechas y las regresa a activo">🩹 Verificar estados</button>
             </div>
           </div>
           <div id="poc-list"></div>
@@ -5729,6 +5730,42 @@ function pocPurgeForever(orderId) {
   savePOCData(list);
   pocOpenTrash();
   showToast('Orden eliminada permanentemente','info');
+}
+
+// Recorre todas las OCs y corrige las marcadas como completadas que no cumplen
+// el criterio estricto (4 etapas con done Y fecha). Las regresa a "activo".
+function pocVerificarEstados() {
+  const list = getPOCAll();
+  const _ok = (o) => {
+    const s = (o.stages || []).slice(0,4);
+    while (s.length < 4) s.push({});
+    return s.every(st => st.s === 'done' && !!(st.f && String(st.f).trim()));
+  };
+  const incoherentes = list.filter(o => !o.deleted && o.estado === 'completado' && !_ok(o));
+  if (!incoherentes.length) {
+    showToast('✅ Todas las OCs completadas tienen sus 4 etapas correctas','success');
+    return;
+  }
+  const detalle = incoherentes.map(o => {
+    const STAGE_LBL = ['Compra','Entrega','Certificado','Facturación'];
+    const faltantes = [];
+    (o.stages||[]).slice(0,4).forEach((st,i) => {
+      if (st.s !== 'done' || !st.f) faltantes.push(STAGE_LBL[i]);
+    });
+    return `• ${o.num||'(sin num)'} — ${o.cliente||'(sin cliente)'} → falta: ${faltantes.join(', ')||'(estructura mal)'}`;
+  }).join('\n');
+  const msg = `Se encontraron ${incoherentes.length} OC(s) marcadas como completadas pero con etapas incompletas:\n\n${detalle}\n\n¿Regresarlas a "activo"?`;
+  if (!confirm(msg)) return;
+  // Aplicar corrección
+  incoherentes.forEach(o => {
+    o.estado = 'activo';
+    o.updatedAt = new Date().toISOString();
+    if (currentUser) o.updatedBy = currentUser.email || currentUser.name;
+  });
+  savePOCData(list);
+  renderProcesos();
+  showToast(`🩹 ${incoherentes.length} OC(s) corregida(s) a activo. Revisa el reporte en la consola.`,'success');
+  console.log('[Verificar estados] Corregidas:', incoherentes.map(o => o.num));
 }
 function pocEmptyTrash() {
   const trash = getPOCTrash();
