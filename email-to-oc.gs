@@ -199,17 +199,27 @@ function doPost(e) {
     var list = _ghLoadJSON('ordenes.json') || [];
     var numNorm = String(datos.num).trim();
 
-    // 3. Evitar duplicados — comparar TANTO el num literal como una versión "fuerte"
-    // que quita espacios/guiones/puntos/slashes/underscores, para detectar variantes
-    // de Claude como "LM-1389" vs "LM 1389" vs "LM1389".
+    // 3. Evitar duplicados — TRES checks contra variantes que Claude puede generar:
+    //   (a) num literal (lowercase + trim)
+    //   (b) "fuerte": sin espacios/guiones/puntos/slashes/underscores
+    //   (c) núcleo numérico: solo los dígitos si tiene >=6 (detecta "NGEC-2026005442" vs "2026005442")
     var normFuerte = function(s) {
       return String(s||'').toLowerCase().replace(/[\s\-\.\/_]/g,'').trim();
     };
+    var nucleoNum = function(s) {
+      var d = String(s||'').replace(/\D/g,'');
+      return d.length >= 6 ? d : ''; // solo válido si la secuencia numérica es suficientemente larga
+    };
     var numFuerte = normFuerte(numNorm);
+    var numNucleo = nucleoNum(numNorm);
     var existente = list.find(function(o){
       var on = String(o.num||'').toLowerCase().trim();
       var of = normFuerte(o.num);
-      return on === numNorm.toLowerCase() || of === numFuerte;
+      var oc = nucleoNum(o.num);
+      if (on === numNorm.toLowerCase()) return true;
+      if (of === numFuerte) return true;
+      if (numNucleo && oc && numNucleo === oc) return true;
+      return false;
     });
     if (existente) {
       var nota = existente.deleted ? ' (estaba en papelera)' : '';
