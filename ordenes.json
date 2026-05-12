@@ -214,7 +214,7 @@
     "num": 2026005441,
     "cliente": "NEW GRANADA",
     "desc": "Sumisitro",
-    "estado": "completado",
+    "estado": "activo",
     "stages": [
       {
         "s": "done",
@@ -242,15 +242,15 @@
         "n": ""
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "updatedAt": "2026-05-12T20:46:06.383Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777926969044",
     "num": "ODC-00004049",
     "cliente": "SAR ENERGY",
     "desc": "Suministro switch",
-    "estado": "completado",
-    "valor": 0,
+    "estado": "activo",
     "stages": [
       {
         "s": "done",
@@ -278,12 +278,8 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-12T20:29:16.199Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-12T20:29:17.797Z",
-    "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-12T20:29:17.797Z"
+    "updatedAt": "2026-05-12T20:46:06.383Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1392",
@@ -392,11 +388,10 @@
   },
   {
     "id": "poc_1777494029142",
-    "num": "4600007246",
+    "num": 4600007246,
     "cliente": "PBI",
     "desc": "SUMISNITRO MATERIAL",
-    "estado": "completado",
-    "valor": 0,
+    "estado": "activo",
     "stages": [
       {
         "s": "done",
@@ -424,9 +419,7 @@
         "n": "427"
       }
     ],
-    "createdAt": "2026-05-12T20:28:52.121Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-12T20:28:55.676Z",
+    "updatedAt": "2026-05-12T20:46:06.383Z",
     "updatedBy": "andrea"
   },
   {
@@ -777,6 +770,6 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-12T20:28:40.459Z"
+    "updatedAt": "❌ Pendiente"
   }
 ]
