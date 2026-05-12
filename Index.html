@@ -5651,14 +5651,19 @@ function savePoc() {
     createdAt: existingOrder?.createdAt,
     createdBy: existingOrder?.createdBy
   }, !existingOrder);
-  // Auto-completar SOLO si las 4 etapas (compra, entrega, cert, factura) están done o con fecha
+  // Auto-completar SOLO si las 4 etapas (compra, entrega, cert, factura) están done Y con fecha
+  // FIX: antes era "done O fecha" — eso permitía marcar como completada una OC sin Facturación.
   // Normalize stages 2&3: derive s from date
   order.stages = order.stages.map((st,i) => i>=2 ? {...st, s: st.f?'done':'pending'} : st);
   while (order.stages.length < 4) order.stages.push({});
-  const allFourDone = order.stages.slice(0,4).every(st => st.s === 'done' || !!(st.f && String(st.f).trim()));
+  const allFourDone = order.stages.slice(0,4).every(st => st.s === 'done' && !!(st.f && String(st.f).trim()));
   if(allFourDone && order.estado !== 'cancelado') {
     order.estado = 'completado';
-    showToast('✅ Orden completada automáticamente (4 etapas con fecha)', 'success');
+    showToast('✅ Orden completada automáticamente (las 4 etapas hechas)', 'success');
+  } else if (order.estado === 'completado' && !allFourDone) {
+    // Si la OC venía marcada completada pero falta alguna etapa, regresarla a activo
+    order.estado = 'activo';
+    showToast('↩ Estado corregido a activo (faltan etapas)', 'info');
   }
   if(!order.num && !order.cliente){ showToast('Ingresa al menos número o cliente','error'); return; }
   // Liberar el lock al guardar (el editor ya terminó)
@@ -6087,12 +6092,12 @@ function _showHistoricoModal(moduleId, yyyymm, data) {
 
 function cerrarMesOC() {
   const list = getPOC();
-  // Sólo archivar OCs con las 4 etapas completas (done o con fecha) o canceladas.
-  // Esto blinda contra OCs marcadas "completado" por bug de auto-complete.
+  // Sólo archivar OCs con las 4 etapas TODAS done Y con fecha, o canceladas.
+  // FIX: antes era "done O fecha" — eso archivaba OCs sin Facturación real.
   const _todasEtapasDone = (o) => {
     const s = (o.stages || []).slice(0,4);
     while (s.length < 4) s.push({});
-    return s.every(st => st.s === 'done' || !!(st.f && String(st.f).trim()));
+    return s.every(st => st.s === 'done' && !!(st.f && String(st.f).trim()));
   };
   const completadas = list.filter(o => o.estado === 'completado' && _todasEtapasDone(o));
   const canceladas  = list.filter(o => o.estado === 'cancelado');
@@ -7255,7 +7260,8 @@ function tool_marcar_etapa_oc(args) {
   order.updatedAt = new Date().toISOString();
   if (currentUser) order.updatedBy = currentUser.email || currentUser.name;
   // Auto-completar si todas las etapas con datos están done
-  const filledDone = stages.every(s => s.s === 'done' || !!s.f);
+  // FIX: solo completar si las 4 etapas están en done Y tienen fecha (no "o").
+  const filledDone = stages.length === 4 && stages.every(s => s.s === 'done' && !!s.f);
   if (filledDone) order.estado = 'completado';
   savePOCData(list);
   try { renderProcesos(); renderDashboard(); } catch(_) {}
