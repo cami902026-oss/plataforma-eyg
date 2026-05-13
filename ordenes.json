@@ -773,5 +773,44 @@
     "deleted": true,
     "deletedAt": "2026-05-12T21:04:11.876Z",
     "deletedBy": "andrea"
+  },
+  {
+    "id": "poc_1778689688011",
+    "num": "LM1530",
+    "cliente": "PETRORIOS",
+    "desc": "SUMINSITRO MATERIAL MECANICO",
+    "estado": "activo",
+    "valor": 4872000,
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-13",
+        "n": "CODIFER\nBODEGA\nCOLIMPORTADOS"
+      },
+      {
+        "s": "active",
+        "f": "2026-05-13",
+        "n": "VILLETA",
+        "envio": "camion_energy",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-05-13T16:28:08.011Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-13T16:28:08.011Z",
+    "updatedBy": "andrea"
   }
 ]
