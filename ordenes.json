@@ -780,6 +780,7 @@
     "cliente": "PETRORIOS",
     "desc": "SUMINSITRO MATERIAL MECANICO",
     "estado": "activo",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -787,7 +788,7 @@
         "n": "CODIFER\nBODEGA\nCOLIMPORTADOS"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-05-13",
         "n": "VILLETA",
         "envio": "camion_energy",
@@ -797,8 +798,8 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-05-13",
         "n": ""
       },
       {
@@ -807,9 +808,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-13T22:31:49.997Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-13T22:31:49.997Z"
+    "createdAt": "2026-05-13T22:31:59.491Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-13T22:31:59.491Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1778689839411",
