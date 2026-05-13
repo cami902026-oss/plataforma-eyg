@@ -850,6 +850,7 @@
     "cliente": "PETROLEUM GOLD SERVICES SAS",
     "desc": "Flame arrester de 4 ANSI 150",
     "estado": "activo",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -867,9 +868,9 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-13",
+        "n": "ficha tecnica"
       },
       {
         "s": "pending",
@@ -877,8 +878,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-13T23:37:55.499Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-13T23:37:55.499Z"
+    "createdAt": "2026-05-13T23:38:06.360Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-13T23:38:06.360Z",
+    "updatedBy": "andrea"
   }
 ]
