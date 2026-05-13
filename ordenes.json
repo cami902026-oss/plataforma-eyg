@@ -780,7 +780,6 @@
     "cliente": "PETRORIOS",
     "desc": "SUMINSITRO MATERIAL MECANICO",
     "estado": "activo",
-    "valor": 4872000,
     "stages": [
       {
         "s": "done",
@@ -808,9 +807,45 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-13T16:28:08.011Z",
+    "updatedAt": "❌ Pendiente"
+  },
+  {
+    "id": "poc_1778689839411",
+    "num": "080526ZA6181",
+    "cliente": "CIAM",
+    "desc": "SUMINSITROS DE NIPLES",
+    "estado": "activo",
+    "valor": 623000,
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-13",
+        "n": "DISEFER"
+      },
+      {
+        "s": "done",
+        "f": "2026-05-13",
+        "n": "",
+        "envio": "taquilla_bus",
+        "transp": "MACARENA",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-05-13T16:30:39.412Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-05-13T16:28:08.011Z",
+    "updatedAt": "2026-05-13T16:30:39.412Z",
     "updatedBy": "andrea"
   }
 ]
