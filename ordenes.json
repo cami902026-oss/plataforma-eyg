@@ -886,5 +886,45 @@
     "createdBy": "andrea",
     "updatedAt": "2026-05-14T17:18:14.837Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1778781419239",
+    "num": "13080",
+    "cliente": "HIDROCARBUROS DEL CASANARE SAS",
+    "desc": "Válvulas y cheques para reemplazar en recibo y despacho de producto",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-26",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-05-12T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-05-14T17:56:59.239Z",
+    "updatedBy": "Auto (correo)",
+    "origenCorreo": {
+      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
+      "subject": "ORDEN DE COMPRA ENERGY GROUP",
+      "fecha": "2026-05-14T17:56:59.239Z",
+      "fechaCreacionOC": "2026-05-12",
+      "fechaCompra": "2026-05-26"
+    }
   }
 ]
