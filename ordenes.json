@@ -881,20 +881,26 @@
   },
   {
     "id": "poc_1778781419239",
-    "num": 13080,
+    "num": "13080",
     "cliente": "HIDROCARBUROS DEL CASANARE SAS",
     "desc": "Válvulas y cheques para reemplazar en recibo y despacho de producto",
     "estado": "activo",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
-        "f": "2026-05-26",
-        "n": "Auto-creada desde correo"
+        "f": "2026-05-14",
+        "n": "Codifer"
       },
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -907,8 +913,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-14T18:52:34.276Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-14T18:52:34.276Z"
+    "createdAt": "2026-05-14T18:52:47.601Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-14T18:52:47.601Z",
+    "updatedBy": "andrea"
   }
 ]
