@@ -779,7 +779,8 @@
     "num": "LM1530",
     "cliente": "PETRORIOS",
     "desc": "SUMINSITRO MATERIAL MECANICO",
-    "estado": "activo",
+    "estado": "completado",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -802,14 +803,15 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-14",
+        "n": "435"
       }
     ],
-    "updatedAt": "2026-05-14T17:18:36.059Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-14T17:18:36.059Z"
+    "createdAt": "2026-05-14T17:18:51.710Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-14T17:18:51.710Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1778689839411",
