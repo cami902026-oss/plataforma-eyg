@@ -780,7 +780,6 @@
     "cliente": "PETRORIOS",
     "desc": "SUMINSITRO MATERIAL MECANICO",
     "estado": "completado",
-    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -808,10 +807,7 @@
         "n": "435"
       }
     ],
-    "createdAt": "2026-05-14T17:18:51.710Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-14T17:18:55.367Z",
-    "updatedBy": "andrea"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1778689839411",
@@ -854,7 +850,6 @@
     "cliente": "PETROLEUM GOLD SERVICES SAS",
     "desc": "Flame arrester de 4 ANSI 150",
     "estado": "completado",
-    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -882,14 +877,11 @@
         "n": "436"
       }
     ],
-    "createdAt": "2026-05-14T17:17:38.129Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-14T17:18:14.837Z",
-    "updatedBy": "andrea"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1778781419239",
-    "num": "13080",
+    "num": 13080,
     "cliente": "HIDROCARBUROS DEL CASANARE SAS",
     "desc": "Válvulas y cheques para reemplazar en recibo y despacho de producto",
     "estado": "activo",
@@ -915,16 +907,8 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-12T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-05-14T17:56:59.239Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA ENERGY GROUP",
-      "fecha": "2026-05-14T17:56:59.239Z",
-      "fechaCreacionOC": "2026-05-12",
-      "fechaCompra": "2026-05-26"
-    }
+    "updatedAt": "2026-05-14T18:52:34.276Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-14T18:52:34.276Z"
   }
 ]
