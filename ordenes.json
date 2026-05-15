@@ -285,12 +285,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-15T19:31:53.281Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-15T19:31:51.427Z",
-    "deleted": true,
-    "deletedAt": "2026-05-15T19:31:53.281Z",
-    "deletedBy": "andrea"
+    "updatedAt": "2026-05-15T19:31:53.282Z"
   },
   {
     "id": "LM1392",
@@ -748,46 +743,6 @@
     "updatedAt": "✅ Facturado"
   },
   {
-    "id": "poc_1777927194950",
-    "num": 2026005442,
-    "cliente": "NEW GRANADA",
-    "desc": "Suministro material",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "active",
-        "f": "2026-05-04",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-12T21:04:11.876Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-12T21:04:07.544Z",
-    "deleted": true,
-    "deletedAt": "2026-05-12T21:04:11.876Z",
-    "deletedBy": "andrea"
-  },
-  {
     "id": "poc_1778689688011",
     "num": "LM1530",
     "cliente": "PETRORIOS",
@@ -969,5 +924,45 @@
     "createdBy": "andrea",
     "updatedAt": "2026-05-15T19:29:21.488Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1777927194950",
+    "num": 2026005442,
+    "cliente": "NEW GRANADA",
+    "desc": "Suministro material",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-05-04",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-05-12T21:04:11.876Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-12T21:04:07.544Z",
+    "deleted": true,
+    "deletedAt": "2026-05-12T21:04:11.876Z",
+    "deletedBy": "andrea"
   }
 ]
