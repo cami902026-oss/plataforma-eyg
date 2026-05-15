@@ -958,5 +958,45 @@
     "deleted": true,
     "deletedAt": "2026-05-12T21:04:11.876Z",
     "deletedBy": "andrea"
+  },
+  {
+    "id": "poc_1778878196034",
+    "num": "LM1527",
+    "cliente": "CIAM",
+    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-11",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-05-11T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-05-15T20:49:56.034Z",
+    "updatedBy": "Auto (correo)",
+    "origenCorreo": {
+      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
+      "subject": "ORDEN DE COMPRA ENERGY GROUP SAS",
+      "fecha": "2026-05-15T20:49:56.034Z",
+      "fechaCreacionOC": "2026-05-11",
+      "fechaCompra": "2026-05-11"
+    }
   }
 ]
