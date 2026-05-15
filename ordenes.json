@@ -425,7 +425,6 @@
     "cliente": "SAR ENERGY",
     "desc": "SUMINSITRO DE PREOSTATO",
     "estado": "activo",
-    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -448,15 +447,14 @@
         "n": "NO APLICA"
       },
       {
-        "s": "done",
-        "f": "2026-05-14",
-        "n": "438"
+        "s": "pending",
+        "f": "",
+        "n": ""
       }
     ],
-    "createdAt": "2026-05-15T19:39:48.243Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-15T19:39:48.243Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-05-15T19:39:52.577Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-15T19:39:52.577Z"
   },
   {
     "id": "poc_1778002798338",
