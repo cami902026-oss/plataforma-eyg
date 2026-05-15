@@ -144,7 +144,8 @@
     "num": "ODC-4049",
     "cliente": "SAR ENERGY",
     "desc": "SWITCH DE NIVEL LS200N",
-    "estado": "activo",
+    "estado": "completado",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -167,12 +168,15 @@
         "n": "Servidor"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-14",
+        "n": "439"
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "createdAt": "2026-05-15T19:30:34.497Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-15T19:30:34.497Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777675105625",
