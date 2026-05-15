@@ -910,6 +910,46 @@
     "updatedAt": "❌ Pendiente"
   },
   {
+    "id": "poc_1777927194950",
+    "num": 2026005442,
+    "cliente": "NEW GRANADA",
+    "desc": "Suministro material",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-05-04",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-05-12T21:04:11.876Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-12T21:04:07.544Z",
+    "deleted": true,
+    "deletedAt": "2026-05-12T21:04:11.876Z",
+    "deletedBy": "andrea"
+  },
+  {
     "id": "poc_1778878196034",
     "num": "150526Q2480",
     "cliente": "CIAM",
@@ -977,46 +1017,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-15T22:22:32.102Z"
-  },
-  {
-    "id": "poc_1777927194950",
-    "num": 2026005442,
-    "cliente": "NEW GRANADA",
-    "desc": "Suministro material",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "active",
-        "f": "2026-05-04",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-12T21:04:11.876Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-12T21:04:07.544Z",
+    "updatedAt": "2026-05-15T22:21:57.746Z",
     "deleted": true,
-    "deletedAt": "2026-05-12T21:04:11.876Z",
+    "deletedAt": "2026-05-15T22:21:53.782Z",
     "deletedBy": "andrea"
   }
 ]
