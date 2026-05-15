@@ -324,10 +324,11 @@
   },
   {
     "id": "poc_1776469053057",
-    "num": "LM438",
+    "num": "ODC4128",
     "cliente": "SAR ENERGY",
     "desc": "SUMISNITRO MATERIAL MECANICO",
-    "estado": "activo",
+    "estado": "completado",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -350,14 +351,15 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-05",
+        "n": "420"
       }
     ],
-    "updatedAt": "2026-05-15T19:37:18.077Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-15T19:37:18.077Z"
+    "createdAt": "2026-05-15T19:37:39.462Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-15T19:37:45.688Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777493314013",
