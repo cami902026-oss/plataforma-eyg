@@ -250,7 +250,6 @@
     "cliente": "SAR ENERGY",
     "desc": "Suministro switch",
     "estado": "completado",
-    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -278,12 +277,7 @@
         "n": "439"
       }
     ],
-    "createdAt": "2026-05-15T19:40:22.896Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-15T19:40:26.050Z",
-    "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-15T19:40:26.050Z"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "LM1392",
@@ -388,7 +382,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-15T19:41:44.353Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1777494029142",
@@ -431,7 +425,6 @@
     "cliente": "SAR ENERGY",
     "desc": "SUMINSITRO DE PREOSTATO",
     "estado": "activo",
-    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -459,10 +452,7 @@
         "n": "438"
       }
     ],
-    "createdAt": "2026-05-15T19:39:48.243Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-15T19:41:40.899Z",
-    "updatedBy": "andrea"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1778002798338",
@@ -989,7 +979,7 @@
     ],
     "createdAt": "2026-05-11T05:00:00.000Z",
     "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-05-15T20:49:56.034Z",
+    "updatedAt": "2026-05-15T20:50:31.628Z",
     "updatedBy": "Auto (correo)",
     "origenCorreo": {
       "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
@@ -997,6 +987,8 @@
       "fecha": "2026-05-15T20:49:56.034Z",
       "fechaCreacionOC": "2026-05-11",
       "fechaCompra": "2026-05-11"
-    }
+    },
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-15T20:50:31.628Z"
   }
 ]
