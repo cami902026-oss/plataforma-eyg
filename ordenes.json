@@ -249,7 +249,8 @@
     "num": "ODC-00004049",
     "cliente": "SAR ENERGY",
     "desc": "Suministro switch",
-    "estado": "activo",
+    "estado": "completado",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -272,14 +273,15 @@
         "n": "Servidor"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-14",
+        "n": "439"
       }
     ],
-    "updatedAt": "2026-05-15T19:40:14.411Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-15T19:40:14.411Z"
+    "createdAt": "2026-05-15T19:40:22.896Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-15T19:40:26.814Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1392",
