@@ -950,11 +950,12 @@
     "cliente": "MMT",
     "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
     "estado": "activo",
+    "valor": 0,
     "stages": [
       {
         "s": "active",
         "f": "2026-05-15",
-        "n": "CODIFER"
+        "n": "CODIFER\nNIPLES\n"
       },
       {
         "s": "pending",
@@ -977,9 +978,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-15T22:34:59.610Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-15T22:34:59.610Z"
+    "createdAt": "2026-05-15T22:35:09.660Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-15T22:35:09.660Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777927194950",
