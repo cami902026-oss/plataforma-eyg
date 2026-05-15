@@ -955,6 +955,7 @@
     "cliente": "CIAM",
     "desc": "CODOS DE 12 SCH 120 A-234 WPB",
     "estado": "activo",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -962,10 +963,10 @@
         "n": "Codifer "
       },
       {
-        "s": "pending",
+        "s": "active",
         "f": "",
         "n": "",
-        "envio": "",
+        "envio": "flota",
         "transp": "",
         "guia": "",
         "dest": "",
@@ -982,8 +983,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-15T20:55:27.265Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-15T20:55:27.265Z"
+    "createdAt": "2026-05-15T20:55:34.779Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-15T20:55:34.779Z",
+    "updatedBy": "andrea"
   }
 ]
