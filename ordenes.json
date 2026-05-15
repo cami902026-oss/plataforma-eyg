@@ -502,7 +502,8 @@
     "num": "ODC-00004150",
     "cliente": "SAR ENERGY SAS",
     "desc": "Material eléctrico para alistamiento de patín de compresores - Op. Arrow Campo Icaco",
-    "estado": "activo",
+    "estado": "completado",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -525,14 +526,15 @@
         "n": "No aplica"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-14",
+        "n": "440"
       }
     ],
-    "updatedAt": "2026-05-15T19:33:09.384Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-15T19:33:09.384Z"
+    "createdAt": "2026-05-15T19:33:22.321Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-15T19:33:22.321Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1778164140445",
