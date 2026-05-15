@@ -541,7 +541,8 @@
     "num": "ODC-00004182",
     "cliente": "SAR ENERGY S.A.S",
     "desc": "Switches de nivel conexión de 2\" neumáticos (4 und) - Separador 7676",
-    "estado": "activo",
+    "estado": "completado",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -564,14 +565,15 @@
         "n": "Servidor"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-14",
+        "n": "441"
       }
     ],
-    "updatedAt": "2026-05-15T19:33:32.223Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-15T19:33:32.223Z"
+    "createdAt": "2026-05-15T19:33:39.879Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-15T19:33:39.879Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1778168100636",
