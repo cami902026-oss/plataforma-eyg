@@ -955,16 +955,22 @@
     "cliente": "CIAM",
     "desc": "CODOS DE 12 SCH 120 A-234 WPB",
     "estado": "activo",
+    "valor": 2500000,
     "stages": [
       {
         "s": "done",
         "f": "2026-05-11",
-        "n": "Auto-creada desde correo"
+        "n": "Codifer "
       },
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -979,16 +985,7 @@
     ],
     "createdAt": "2026-05-11T05:00:00.000Z",
     "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-05-15T20:50:31.628Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA ENERGY GROUP SAS",
-      "fecha": "2026-05-15T20:49:56.034Z",
-      "fechaCreacionOC": "2026-05-11",
-      "fechaCompra": "2026-05-11"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-15T20:50:31.628Z"
+    "updatedAt": "2026-05-15T20:51:00.183Z",
+    "updatedBy": "andrea"
   }
 ]
