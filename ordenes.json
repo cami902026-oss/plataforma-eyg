@@ -945,6 +945,41 @@
     "updatedAt": "❌ Pendiente"
   },
   {
+    "id": "poc_1778879575105",
+    "num": "LM1551",
+    "cliente": "MMT",
+    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-05-15",
+        "n": "CODIFER"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-05-15T22:22:32.102Z"
+  },
+  {
     "id": "poc_1777927194950",
     "num": 2026005442,
     "cliente": "NEW GRANADA",
@@ -983,40 +1018,5 @@
     "deleted": true,
     "deletedAt": "2026-05-12T21:04:11.876Z",
     "deletedBy": "andrea"
-  },
-  {
-    "id": "poc_1778879575105",
-    "num": "LM1551",
-    "cliente": "MMT",
-    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "active",
-        "f": "2026-05-15",
-        "n": "CODIFER"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-15T22:22:32.102Z"
   }
 ]
