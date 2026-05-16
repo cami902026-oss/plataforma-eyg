@@ -880,6 +880,7 @@
     "cliente": "TOC ENERGÍA",
     "desc": "Cable cobre THHN, terminales, cinta autofundente, varillas y breaker industrial",
     "estado": "activo",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -887,14 +888,14 @@
         "n": "Cameleco\nMarin "
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-05-16",
         "n": "",
         "envio": "camion_energy",
         "transp": "",
         "guia": "",
         "dest": "",
-        "resp": ""
+        "resp": "Andrés barrera"
       },
       {
         "s": "pending",
@@ -907,9 +908,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-16T15:13:27.307Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-16T15:13:27.307Z"
+    "createdAt": "2026-05-16T15:13:51.333Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-16T15:13:51.333Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1778878196034",
