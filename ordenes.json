@@ -775,6 +775,7 @@
     "cliente": "CIAM",
     "desc": "SUMINSITROS DE NIPLES",
     "estado": "activo",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -797,14 +798,15 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-19",
+        "n": "445"
       }
     ],
-    "updatedAt": "2026-05-19T19:03:30.182Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-19T19:03:30.182Z"
+    "createdAt": "2026-05-19T19:04:20.182Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-19T19:04:20.182Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1778691294578",
