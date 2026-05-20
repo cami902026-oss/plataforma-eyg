@@ -914,7 +914,8 @@
     "num": "150526Q2480",
     "cliente": "CIAM",
     "desc": "CODOS DE 12 SCH 120 A-234 WPB",
-    "estado": "activo",
+    "estado": "completado",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -932,9 +933,9 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-20",
+        "n": "SERVIDOR"
       },
       {
         "s": "done",
@@ -942,9 +943,10 @@
         "n": "444"
       }
     ],
-    "updatedAt": "2026-05-20T17:17:56.583Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-20T17:17:56.583Z"
+    "createdAt": "2026-05-20T17:18:06.815Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-20T17:18:06.815Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1778879575105",
