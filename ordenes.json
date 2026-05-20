@@ -915,7 +915,6 @@
     "cliente": "CIAM",
     "desc": "CODOS DE 12 SCH 120 A-234 WPB",
     "estado": "completado",
-    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -943,10 +942,7 @@
         "n": "444"
       }
     ],
-    "createdAt": "2026-05-20T17:18:06.815Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-20T17:18:10.958Z",
-    "updatedBy": "andrea"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1778879575105",
@@ -1025,7 +1021,7 @@
   },
   {
     "id": "poc_1779298736655",
-    "num": "907",
+    "num": 907,
     "cliente": "E&G ENERGY GROUP SAS",
     "desc": "Materiales para obras mecánicas - tuberías, bridas, válvulas y accesorios",
     "estado": "activo",
@@ -1051,16 +1047,8 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-20T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-05-20T17:38:56.654Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA ENERGY",
-      "fecha": "2026-05-20T17:38:56.654Z",
-      "fechaCreacionOC": "2026-05-20",
-      "fechaCompra": "2026-05-20"
-    }
+    "updatedAt": "2026-05-20T17:39:38.312Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-20T17:39:38.312Z"
   }
 ]
