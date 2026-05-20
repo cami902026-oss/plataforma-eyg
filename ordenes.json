@@ -1021,20 +1021,26 @@
   },
   {
     "id": "poc_1779298736655",
-    "num": 907,
-    "cliente": "E&G ENERGY GROUP SAS",
+    "num": "907",
+    "cliente": "EIKOS",
     "desc": "Materiales para obras mecánicas - tuberías, bridas, válvulas y accesorios",
     "estado": "activo",
+    "valor": 5672513,
     "stages": [
       {
-        "s": "done",
+        "s": "active",
         "f": "2026-05-20",
-        "n": "Auto-creada desde correo"
+        "n": "CODIFER\nINDUVACOL\nMUNDIAL\nTECINCOL\nCOLIMPORTADOS"
       },
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1047,8 +1053,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-20T19:18:30.772Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-20T19:18:30.772Z"
+    "createdAt": "2026-05-20T19:19:17.897Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-20T19:19:17.897Z",
+    "updatedBy": "andrea"
   }
 ]
