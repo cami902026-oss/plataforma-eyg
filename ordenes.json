@@ -74,7 +74,8 @@
     "num": "LM1446",
     "cliente": "MAUREL",
     "desc": "MATERIAL MECANICO",
-    "estado": "activo",
+    "estado": "completado",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -97,14 +98,15 @@
         "n": "Servidor"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-21",
+        "n": "448"
       }
     ],
-    "updatedAt": "2026-05-21T22:18:26.625Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-21T22:18:26.625Z"
+    "createdAt": "2026-05-21T22:18:35.041Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-21T22:18:35.041Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1776978416135",
