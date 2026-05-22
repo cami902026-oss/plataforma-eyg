@@ -232,8 +232,8 @@ def build_report_html(ordenes: list, date_str: str) -> str:
     valor_activos     = sum_val(activos)
     valor_completados = sum_val(completados)
 
-    # Órdenes que requieren HE y aún no la tienen
-    pendientes_he = [o for o in activos
+    # Órdenes que requieren HE y aún no la tienen (incluye completadas prematuramente)
+    pendientes_he = [o for o in (activos + completados)
                      if (o.get('hojaEntrada') or {}).get('requerida')
                      and not (o.get('hojaEntrada') or {}).get('fecha')]
 
@@ -267,7 +267,8 @@ def build_report_html(ordenes: list, date_str: str) -> str:
       </div>
     </div>"""
 
-    # Solo mostrar órdenes activas con al menos una etapa pendiente
+    # Mostrar órdenes con al menos una etapa pendiente (activas o completadas-prematuras),
+    # excluyendo solo las canceladas.
     # (done = s=='done' ó tiene fecha, igual que el frontend)
     def _tiene_pendiente(o):
         stages = o.get('stages') or []
@@ -275,7 +276,7 @@ def build_report_html(ordenes: list, date_str: str) -> str:
             stages.append({})
         return any(not is_stage_done(stages[i]) for i in range(4))
 
-    pendientes = [o for o in activos if _tiene_pendiente(o)]
+    pendientes = [o for o in (activos + completados) if _tiene_pendiente(o)]
 
     if not pendientes:
         cuerpo = "<div style='text-align:center;padding:40px;color:#8899bb;'>✅ Todas las órdenes activas están al día.</div>"
