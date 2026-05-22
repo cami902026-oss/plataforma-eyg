@@ -180,7 +180,7 @@ def build_resumen_etapas(activos: list) -> str:
     for idx, st in enumerate(POC_STAGES):
         items = grupos[idx]
         cantidad = len(items)
-        lista_txt = ', '.join(items) if items else '—'
+        lista_txt = ', '.join(str(x) for x in items) if items else '—'
         color_num = '#E8A020' if cantidad > 0 else '#8899bb'
         filas_html += f"""
         <tr style='border-bottom:1px solid #1e3a6e;'>
