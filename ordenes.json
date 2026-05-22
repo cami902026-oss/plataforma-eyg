@@ -1085,6 +1085,36 @@
     "updatedAt": "❌ Pendiente"
   },
   {
+    "id": "poc_1779461488471",
+    "num": "LM7777",
+    "cliente": "TESTING",
+    "desc": "tornillos y empaques",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-22",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente"
+  },
+  {
     "id": "poc_1779461426341",
     "num": "LM1527",
     "cliente": "CIAM",
@@ -1150,6 +1180,36 @@
     "updatedAt": "❌ Pendiente"
   },
   {
+    "id": "poc_1779461532501",
+    "num": "LM1551",
+    "cliente": "MMT",
+    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-15",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente"
+  },
+  {
     "id": "poc_1779461375131",
     "num": "LM1527",
     "cliente": "CIAM",
@@ -1180,29 +1240,65 @@
     "updatedAt": "❌ Pendiente"
   },
   {
-    "id": "poc_1779461488471",
-    "num": "LM7777",
-    "cliente": "BLOQUEADA",
-    "desc": "Entrada bloqueada - duplicado eliminado",
-    "estado": "cancelado",
-    "stages": [],
-    "deleted": true,
-    "deletedAt": "2099-01-01T00:00:00.000Z",
-    "deletedBy": "sistema",
-    "updatedAt": "2099-01-01T00:00:00.000Z",
-    "createdAt": "2099-01-01T00:00:00.000Z"
+    "id": "poc_1779461366604",
+    "num": "LM1551",
+    "cliente": "MMT",
+    "desc": "Bridas, válvulas, codos, espárragos, tés, reducción y niples varios",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-15",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente"
   },
   {
-    "id": "poc_1779461532501",
+    "id": "poc_1779461576086",
     "num": "LM1551",
-    "cliente": "BLOQUEADA",
-    "desc": "Entrada bloqueada - duplicado eliminado",
-    "estado": "cancelado",
-    "stages": [],
-    "deleted": true,
-    "deletedAt": "2099-01-01T00:00:00.000Z",
-    "deletedBy": "sistema",
-    "updatedAt": "2099-01-01T00:00:00.000Z",
-    "createdAt": "2099-01-01T00:00:00.000Z"
+    "cliente": "MMT",
+    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-15",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-05-22T16:16:48.199Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-22T16:16:48.199Z"
   }
 ]
