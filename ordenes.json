@@ -75,7 +75,6 @@
     "cliente": "MAUREL",
     "desc": "MATERIAL MECANICO",
     "estado": "completado",
-    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -103,10 +102,7 @@
         "n": "448"
       }
     ],
-    "createdAt": "2026-05-21T22:18:35.041Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-21T22:18:38.534Z",
-    "updatedBy": "andrea"
+    "updatedAt": "✅ Facturado"
   },
   {
     "id": "poc_1776978416135",
@@ -141,7 +137,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-21T22:18:08.220Z"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1777493972827",
@@ -1056,6 +1052,8 @@
         "n": ""
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "updatedAt": "2026-05-22T14:30:03.070Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-22T14:30:03.070Z"
   }
 ]
