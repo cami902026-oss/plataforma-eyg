@@ -3083,6 +3083,21 @@ async function _loadCompanyConfig() {
     localStorage.setItem('energy_user_modules', JSON.stringify(cfg.userModules));
     try { applyUserModuleVisibility(); } catch(_){}
   }
+  // Sincronizar contraseñas hasheadas del equipo (las del servidor SIEMPRE ganan)
+  if (cfg.passwords && typeof cfg.passwords === 'object') {
+    Object.keys(cfg.passwords).forEach(email => {
+      const remoteVal = cfg.passwords[email];
+      if (remoteVal && typeof remoteVal === 'string' && remoteVal.startsWith('h:')) {
+        localStorage.setItem('eyg_pass_' + email.toLowerCase(), remoteVal);
+      }
+    });
+    console.log('[ENERGY] Contraseñas sincronizadas desde el servidor');
+  }
+  // Sincronizar código de acceso del equipo (el del servidor SIEMPRE gana)
+  if (cfg.accessCode && typeof cfg.accessCode === 'string' && cfg.accessCode.startsWith('h:')) {
+    localStorage.setItem('eyg_access_code', cfg.accessCode);
+    console.log('[ENERGY] Código de acceso sincronizado desde el servidor');
+  }
 }
 async function _saveCompanyConfig(patch) {
   // Permitir escribir si hay PAT O proxy configurado
@@ -3260,20 +3275,39 @@ async function saveAccessCode() {
   const confirm = document.getElementById('confirm-access-code').value.trim().toUpperCase();
   if (!newCode || newCode.length < 4) { showToast('El código debe tener al menos 4 caracteres', 'error'); return; }
   if (newCode !== confirm) { showToast('Los códigos no coinciden', 'error'); return; }
-  localStorage.setItem('eyg_access_code', 'h:' + await _sha256(newCode));
+  const hashed = 'h:' + await _sha256(newCode);
+  localStorage.setItem('eyg_access_code', hashed);
+  // Sincronizar a GitHub para que todos los dispositivos vean el nuevo código
+  try {
+    await _saveCompanyConfig({ accessCode: hashed });
+    showToast('✅ Código sincronizado en todos los dispositivos', 'success');
+  } catch(e) {
+    console.warn('[ENERGY] No se pudo sincronizar accessCode:', e);
+    showToast('⚠️ Guardado localmente pero no se sincronizó', 'info');
+  }
   document.getElementById('new-access-code').value = '';
   document.getElementById('confirm-access-code').value = '';
-  showToast('✅ Código de acceso actualizado (cifrado SHA-256)', 'success');
 }
 async function saveUserPassword(email) {
   const newPass = document.getElementById('pass-' + email).value.trim().toLowerCase();
   const confirm = document.getElementById('pass-confirm-' + email).value.trim().toLowerCase();
   if (!newPass || newPass.length < 4) { showToast('La contraseña debe tener al menos 4 caracteres', 'error'); return; }
   if (newPass !== confirm) { showToast('Las contraseñas no coinciden', 'error'); return; }
-  localStorage.setItem('eyg_pass_' + email, 'h:' + await _sha256(newPass));
+  const hashed = 'h:' + await _sha256(newPass);
+  localStorage.setItem('eyg_pass_' + email, hashed);
+  // Sincronizar a GitHub para que todos los dispositivos vean la nueva clave
+  try {
+    const current = (await _loadDataGH('data/config.json')) || {};
+    const passwords = Object.assign({}, current.passwords || {});
+    passwords[email.toLowerCase()] = hashed;
+    await _saveCompanyConfig({ passwords });
+    showToast('✅ Contraseña de ' + email + ' sincronizada en todos los dispositivos', 'success');
+  } catch(e) {
+    console.warn('[ENERGY] No se pudo sincronizar contraseña:', e);
+    showToast('⚠️ Guardada localmente pero no se sincronizó a GitHub', 'info');
+  }
   document.getElementById('pass-' + email).value = '';
   document.getElementById('pass-confirm-' + email).value = '';
-  showToast('✅ Contraseña de ' + email + ' actualizada (cifrada SHA-256)', 'success');
 }
 function renderUserPasswords() {
   const list = document.getElementById('user-passwords-list');
