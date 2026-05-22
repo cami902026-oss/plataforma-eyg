@@ -211,10 +211,16 @@
   },
   {
     "id": "poc_1777926438588",
-    "num": 2026005441,
+    "num": "2026005441",
     "cliente": "NEW GRANADA",
     "desc": "Sumisitro",
-    "estado": "activo",
+    "estado": "completado",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -242,9 +248,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-22T17:09:04.875Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-22T17:09:04.875Z"
+    "createdAt": "2026-05-22T17:09:06.912Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-22T17:09:06.912Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777926969044",
