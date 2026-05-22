@@ -145,6 +145,41 @@ def he_label(o: dict) -> str:
     return 'Pendiente'
 
 
+def fecha_ingreso(o: dict) -> str:
+    """Devuelve la fecha de ingreso de la OP (fechaIngreso o createdAt)."""
+    f = (o.get('fechaIngreso') or '').strip()
+    if f:
+        return f
+    ca = o.get('createdAt')
+    if ca:
+        try: return str(ca)[:10]
+        except: pass
+    return ''
+
+
+def dias_desde_ingreso(o: dict) -> int:
+    """Calcula días transcurridos desde fecha de ingreso. -1 si no hay fecha."""
+    from datetime import date
+    f = fecha_ingreso(o)
+    if not f:
+        return -1
+    try:
+        y, m, d = f[:10].split('-')
+        d_ingreso = date(int(y), int(m), int(d))
+        return max(0, (date.today() - d_ingreso).days)
+    except Exception:
+        return -1
+
+
+def dias_html(o: dict) -> str:
+    """HTML para mostrar días transcurridos con color según alerta."""
+    d = dias_desde_ingreso(o)
+    if d < 0:
+        return '<span style="color:#8899bb;">—</span>'
+    color = '#86efac' if d <= 15 else ('#fbbf24' if d <= 30 else '#f87171')
+    return f'<span style="color:{color};font-weight:700;">{d} d</span>'
+
+
 def get_etapa_actual(orden: dict) -> int:
     """Devuelve el índice (0-3) de la etapa actual de una orden activa.
     Busca la primera etapa 'active'; si no hay, la primera no-completada."""
@@ -287,6 +322,8 @@ def build_report_html(ordenes: list, date_str: str) -> str:
             while len(stages) < 4:
                 stages.append({})
             dots = ''.join(stage_dot(stages[i], i) for i in range(4))
+            fing = fecha_ingreso(o)
+            fing_fmt = '/'.join(reversed(fing.split('-'))) if fing else '—'
             filas += f"""
             <tr style='border-bottom:1px solid #1e3a6e;'>
               <td style='padding:12px 10px;'>
@@ -296,6 +333,8 @@ def build_report_html(ordenes: list, date_str: str) -> str:
               <td style='padding:12px 10px;color:#d0d9f0;font-size:12px;max-width:200px;'>
                 {(o.get('desc') or '')[:80]}{'…' if len(o.get('desc',''))>80 else ''}
               </td>
+              <td style='padding:12px 6px;text-align:center;color:#cbd5ff;font-size:11px;'>{fing_fmt}</td>
+              <td style='padding:12px 6px;text-align:center;font-size:12px;'>{dias_html(o)}</td>
               <td style='padding:12px 10px;text-align:center;color:#86efac;font-size:12px;font-weight:700;'>{format_money(o.get('valor'))}</td>
               <td style='padding:12px 10px;text-align:center;'>{badge_estado(o.get('estado','activo'))}</td>
               {dots}
@@ -306,9 +345,11 @@ def build_report_html(ordenes: list, date_str: str) -> str:
         <table style='width:100%;border-collapse:collapse;background:#0d1f3c;border-radius:10px;overflow:hidden;'>
           <thead>
             <tr style='background:#0F2B5B;'>
-              <th style='padding:10px;text-align:left;font-size:11px;color:#E8A020;text-transform:uppercase;letter-spacing:1px;' colspan='9'>⚠️ Órdenes con Etapas Pendientes</th></tr><tr style='background:#0F2B5B;'>
+              <th style='padding:10px;text-align:left;font-size:11px;color:#E8A020;text-transform:uppercase;letter-spacing:1px;' colspan='11'>⚠️ Órdenes con Etapas Pendientes ({len(pendientes)})</th></tr><tr style='background:#0F2B5B;'>
               <th style='padding:10px;text-align:left;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>OP / Proyecto</th>
               <th style='padding:10px;text-align:left;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>Descripción</th>
+              <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>📅 Ingreso</th>
+              <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>⏱ Días</th>
               <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>💵 Valor</th>
               <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>Estado</th>
               <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>🛒 Compra</th>
@@ -355,6 +396,52 @@ def build_report_html(ordenes: list, date_str: str) -> str:
     else:
         seccion_he = ''
 
+    # ── Sección "Histórico completo" — TODAS las OCs no eliminadas (agrupadas por estado) ──
+    def _bloque_grupo(titulo, lista, color_titulo):
+        if not lista:
+            return ''
+        filas_hist = ''
+        for o in reversed(lista):
+            fing = fecha_ingreso(o)
+            fing_fmt = '/'.join(reversed(fing.split('-'))) if fing else '—'
+            filas_hist += f"""
+            <tr style='border-bottom:1px solid #1e3a6e;'>
+              <td style='padding:8px 10px;'>
+                <div style='font-weight:700;color:#fff;font-size:12px;'>{o.get('num','—')}</div>
+                <div style='color:#8899bb;font-size:10px;'>{(str(o.get('cliente','')))[:35]}</div>
+              </td>
+              <td style='padding:8px 10px;color:#d0d9f0;font-size:11px;max-width:200px;'>{(o.get('desc') or '')[:60]}{'…' if len(o.get('desc',''))>60 else ''}</td>
+              <td style='padding:8px 6px;text-align:center;color:#cbd5ff;font-size:11px;'>{fing_fmt}</td>
+              <td style='padding:8px 6px;text-align:center;font-size:11px;'>{dias_html(o)}</td>
+              <td style='padding:8px 10px;text-align:center;color:#86efac;font-size:11px;font-weight:700;'>{format_money(o.get('valor'))}</td>
+              <td style='padding:8px 6px;text-align:center;font-size:13px;' title='{he_label(o)}'>{he_icon(o)}</td>
+            </tr>"""
+        return f"""
+        <div style='margin-top:18px;'>
+          <div style='font-size:11px;color:{color_titulo};font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;'>{titulo} ({len(lista)})</div>
+          <table style='width:100%;border-collapse:collapse;background:#0d1f3c;border:1px solid #1e3a6e;border-radius:8px;overflow:hidden;'>
+            <thead>
+              <tr style='background:#0F2B5B;'>
+                <th style='padding:8px;text-align:left;font-size:10px;color:#8899bb;text-transform:uppercase;'>OP / Cliente</th>
+                <th style='padding:8px;text-align:left;font-size:10px;color:#8899bb;text-transform:uppercase;'>Descripción</th>
+                <th style='padding:8px;text-align:center;font-size:10px;color:#8899bb;text-transform:uppercase;'>📅 Ingreso</th>
+                <th style='padding:8px;text-align:center;font-size:10px;color:#8899bb;text-transform:uppercase;'>⏱ Días</th>
+                <th style='padding:8px;text-align:center;font-size:10px;color:#8899bb;text-transform:uppercase;'>💵 Valor</th>
+                <th style='padding:8px;text-align:center;font-size:10px;color:#8899bb;text-transform:uppercase;'>📋 HE</th>
+              </tr>
+            </thead>
+            <tbody>{filas_hist}</tbody>
+          </table>
+        </div>"""
+
+    historico_completo = f"""
+    <div style='margin-top:32px;padding-top:20px;border-top:2px solid #1e3a6e;'>
+      <div style='font-size:13px;color:#E8A020;font-weight:900;text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;'>📊 Histórico Completo de OPs</div>
+      {_bloque_grupo('🟢 Activas', activos, '#2EAA4A')}
+      {_bloque_grupo('🔵 Completadas', completados, '#1a56db')}
+      {_bloque_grupo('🔴 Canceladas', cancelados, '#e53e3e')}
+    </div>"""
+
     return f"""<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -376,6 +463,7 @@ def build_report_html(ordenes: list, date_str: str) -> str:
     {resumen_etapas}
     {seccion_he}
     {cuerpo}
+    {historico_completo}
   </div>
   <div style="background:#071525;padding:14px;border-radius:0 0 12px 12px;text-align:center;margin-top:0;border-top:1px solid #1e3a6e;">
     <p style="margin:3px 0;font-size:11px;color:#8899bb;">⚡ Generado por <strong style="color:#E8A020;">ENERGY — Asistente Administrativo</strong></p>
