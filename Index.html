@@ -1071,9 +1071,15 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                 <option value="cancelado">Cancelado</option>
               </select>
             </div>
-            <div class="form-group" style="margin-top:10px">
-              <label>Valor de la O.P. ($)</label>
-              <input type="number" id="poc-valor" placeholder="0" min="0" step="1000" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--white);font-size:15px;">
+            <div class="form-row" style="margin-top:10px">
+              <div class="form-group">
+                <label>📅 Fecha de ingreso de la O.P. <span style="color:var(--text-muted);font-size:10px;">(para KPIs de tiempos)</span></label>
+                <input type="date" id="poc-fecha-ingreso" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--white);font-size:15px;">
+              </div>
+              <div class="form-group">
+                <label>💵 Valor de la O.P. ($)</label>
+                <input type="number" id="poc-valor" placeholder="0" min="0" step="1000" style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--white);font-size:15px;">
+              </div>
             </div>
             <div style="margin-top:18px;font-weight:600;font-size:14px;margin-bottom:12px">📍 Etapas del Proceso</div>
             <div class="poc-stages">
@@ -4990,6 +4996,21 @@ function renderProcesos() {
       ? `<div style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);border-radius:8px;padding:6px 12px;margin:8px 0;font-size:12px;color:#f6ad55;display:flex;align-items:center;gap:8px;"><span style="font-size:14px;">🔒</span><span><b>${lockInfo.by.split('@')[0]}</b> está editando esta orden (hace ${lockInfo.ageMin} min)</span></div>`
       : '';
     const valorLine = o.valor ? `<div style="font-size:12px;color:#86efac;margin-top:3px;">💵 ${Number(o.valor).toLocaleString('es-CO')} COP</div>` : '';
+    // Fecha de ingreso + días transcurridos (para KPIs de compras/logística)
+    const ingresoLine = (() => {
+      let f = o.fechaIngreso || '';
+      if (!f && o.createdAt) { try { f = new Date(o.createdAt).toISOString().slice(0,10); } catch(_){} }
+      if (!f) return '';
+      let diasTxt = '';
+      try {
+        const ms = new Date().setHours(0,0,0,0) - new Date(f + 'T00:00:00').getTime();
+        const dias = Math.max(0, Math.floor(ms / (1000*60*60*24)));
+        const color = dias > 30 ? '#fbbf24' : dias > 60 ? '#f87171' : '#93c5fd';
+        diasTxt = ` <span style="color:${color};font-weight:700;">· ${dias} día${dias!==1?'s':''}</span>`;
+      } catch(_){}
+      const fechaFmt = f.split('-').reverse().join('/');
+      return `<div style="font-size:11px;color:#cbd5ff;margin-top:3px;">📅 Ingreso: ${fechaFmt}${diasTxt}</div>`;
+    })();
     const heLine = !o.hojaEntrada ? ''
       : o.hojaEntrada.requerida
         ? `<div style="display:inline-block;margin-top:5px;padding:3px 9px;background:rgba(232,160,32,.15);border-radius:5px;font-size:11px;color:#fbbf24;">📋 HE: ${o.hojaEntrada.estado==='recibida'?'✅ Recibida':'⏳ Pendiente'}${o.hojaEntrada.fecha?' · '+o.hojaEntrada.fecha.split('-').reverse().join('/'):''}
@@ -5000,7 +5021,7 @@ function renderProcesos() {
         <div>
           <div class="poc-title">${o.num||'Sin número'} — ${o.cliente||'Sin cliente'}</div>
           <div class="poc-sub">${o.desc?o.desc.substring(0,80)+(o.desc.length>80?'…':''):'Sin descripción'}</div>
-          ${valorLine}${heLine}
+          ${ingresoLine}${valorLine}${heLine}
         </div>
         <span class="poc-badge ${badgeClass}">${badgeTxt}</span>
       </div>
@@ -5120,7 +5141,21 @@ function openPocModal(id) {
   document.getElementById('poc-destinatario').value = stages[1]?.dest||'';
   document.getElementById('poc-responsable-envio').value = stages[1]?.resp||'';
   pocToggleTransp();
-  // Nuevos campos: Valor + Hoja de Entrada
+  // Nuevos campos: Fecha ingreso + Valor + Hoja de Entrada
+  const fechaIngresoInput = document.getElementById('poc-fecha-ingreso');
+  if (fechaIngresoInput) {
+    // Si la OC existe: usar fechaIngreso o derivar de createdAt
+    // Si es nueva: poner fecha de hoy por default
+    if (order) {
+      let f = order.fechaIngreso || '';
+      if (!f && order.createdAt) {
+        try { f = new Date(order.createdAt).toISOString().slice(0,10); } catch(_){}
+      }
+      fechaIngresoInput.value = f;
+    } else {
+      fechaIngresoInput.value = new Date().toISOString().slice(0,10);
+    }
+  }
   document.getElementById('poc-valor').value = order?.valor||'';
   const he = order?.hojaEntrada;
   const heReq = document.getElementById('poc-he-req');
@@ -5165,6 +5200,7 @@ function savePoc() {
     cliente: document.getElementById('poc-cliente').value.trim(),
     desc: document.getElementById('poc-desc').value.trim(),
     estado: document.getElementById('poc-estado').value,
+    fechaIngreso: document.getElementById('poc-fecha-ingreso')?.value || '',
     valor: parseFloat(document.getElementById('poc-valor')?.value)||0,
     hojaEntrada: {
       requerida: !!document.getElementById('poc-he-req')?.checked,
