@@ -109,7 +109,13 @@
     "num": "LM1434",
     "cliente": "NIKOIL ENERGY",
     "desc": "MATERIAL CORDON PLOMAGINADO",
-    "estado": "activo",
+    "estado": "completado",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -132,14 +138,15 @@
         "n": "Servidor"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-15",
+        "n": "443"
       }
     ],
-    "updatedAt": "2026-05-22T17:09:50.963Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-22T17:09:50.963Z"
+    "createdAt": "2026-05-22T17:10:32.702Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-22T17:10:32.702Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1777493972827",
