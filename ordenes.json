@@ -980,46 +980,6 @@
     "updatedAt": "✅ Facturado"
   },
   {
-    "id": "poc_1777927194950",
-    "num": 2026005442,
-    "cliente": "NEW GRANADA",
-    "desc": "Suministro material",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "active",
-        "f": "2026-05-04",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-12T21:04:11.876Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-12T21:04:07.544Z",
-    "deleted": true,
-    "deletedAt": "2026-05-12T21:04:11.876Z",
-    "deletedBy": "andrea"
-  },
-  {
     "id": "poc_1779298736655",
     "num": 907,
     "cliente": "EIKOS",
@@ -1052,7 +1012,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "updatedAt": "2026-05-22T14:51:54.467Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-22T14:51:54.467Z"
   },
   {
     "id": "poc_1779461488471",
@@ -1082,7 +1044,7 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-22T14:51:53.590Z"
+    "updatedAt": "2026-05-22T14:52:24.901Z"
   },
   {
     "id": "poc_1779461337230",
@@ -1128,11 +1090,11 @@
         "n": "Auto-creada desde correo"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-05-24",
         "n": "",
-        "envio": "",
-        "transp": "",
+        "envio": "transportadora",
+        "transp": "INTERRAPIDISIMO",
         "guia": "",
         "dest": "",
         "resp": ""
@@ -1150,8 +1112,53 @@
     ],
     "createdAt": "2026-05-04T05:00:00.000Z",
     "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-05-22T14:50:38.756Z",
+    "updatedAt": "2026-05-22T14:53:41.936Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1779461532501",
+    "num": "LM1551",
+    "cliente": "MMT",
+    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-15",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-05-15T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-05-22T14:52:41.510Z",
+    "updatedBy": "Auto (correo)",
+    "origenCorreo": {
+      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
+      "subject": "ORDEN DE COMPRA ENERGY S",
+      "fecha": "2026-05-22T14:52:12.501Z",
+      "fechaCreacionOC": "2026-05-15",
+      "fechaCompra": "2026-05-15"
+    },
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-22T14:52:39.390Z",
+    "deleted": true,
+    "deletedAt": "2026-05-22T14:52:41.510Z",
+    "deletedBy": "andrea"
   },
   {
     "id": "poc_1779461426341",
@@ -1275,5 +1282,85 @@
     "deleted": true,
     "deletedAt": "2026-05-22T14:49:41.108Z",
     "deletedBy": "andrea"
+  },
+  {
+    "id": "poc_1777927194950",
+    "num": 2026005442,
+    "cliente": "NEW GRANADA",
+    "desc": "Suministro material",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-05-04",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-05-12T21:04:11.876Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-12T21:04:07.544Z",
+    "deleted": true,
+    "deletedAt": "2026-05-12T21:04:11.876Z",
+    "deletedBy": "andrea"
+  },
+  {
+    "id": "poc_1779461576086",
+    "num": "LM1551",
+    "cliente": "MMT",
+    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-15",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-05-15T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-05-22T14:52:56.086Z",
+    "updatedBy": "Auto (correo)",
+    "origenCorreo": {
+      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
+      "subject": "ORDEN DE COMPRA ENERGY S",
+      "fecha": "2026-05-22T14:52:56.086Z",
+      "fechaCreacionOC": "2026-05-15",
+      "fechaCompra": "2026-05-15"
+    }
   }
 ]
