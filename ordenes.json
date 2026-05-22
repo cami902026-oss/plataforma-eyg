@@ -1020,6 +1020,12 @@
     "cliente": "MAUREL & PROM COLOMBIA SOCIEDAD LTD",
     "desc": "Suministro de Material Mecánico Magico 2 - Conexionado MG2",
     "estado": "activo",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "active",
@@ -1047,7 +1053,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "❌ Pendiente"
+    "createdAt": "2026-05-22T16:48:22.563Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-22T16:48:22.563Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1779461405791",
@@ -1070,6 +1079,36 @@
         "guia": "",
         "dest": "",
         "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente"
+  },
+  {
+    "id": "poc_1779461426341",
+    "num": "LM1527",
+    "cliente": "CIAM",
+    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-11",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
       },
       {
         "s": "pending",
@@ -1120,42 +1159,156 @@
     "updatedAt": "❌ Pendiente"
   },
   {
+    "id": "poc_1779461375131",
+    "num": "LM1527",
+    "cliente": "CIAM",
+    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-11",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente"
+  },
+  {
     "id": "poc_1779461488471",
     "num": "LM7777",
-    "cliente": "BLOQUEADA",
-    "desc": "Entrada bloqueada - no recrear",
-    "estado": "cancelado",
-    "stages": [],
-    "deleted": true,
-    "deletedAt": "2099-01-01T00:00:00.000Z",
-    "deletedBy": "sistema",
-    "createdAt": "2099-01-01T00:00:00.000Z",
-    "updatedAt": "2099-01-01T00:00:00.000Z"
+    "cliente": "TESTING",
+    "desc": "tornillos y empaques",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-22",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1779461532501",
     "num": "LM1551",
-    "cliente": "BLOQUEADA",
-    "desc": "Entrada bloqueada - no recrear",
-    "estado": "cancelado",
-    "stages": [],
-    "deleted": true,
-    "deletedAt": "2099-01-01T00:00:00.000Z",
-    "deletedBy": "sistema",
-    "createdAt": "2099-01-01T00:00:00.000Z",
-    "updatedAt": "2099-01-01T00:00:00.000Z"
+    "cliente": "MMT",
+    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-15",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente"
   },
   {
-    "id": "poc_1779461426341",
-    "num": "LM1527",
-    "cliente": "BLOQUEADA",
-    "desc": "Entrada bloqueada - no recrear",
-    "estado": "cancelado",
-    "stages": [],
+    "id": "poc_1779461366604",
+    "num": "LM1551",
+    "cliente": "MMT",
+    "desc": "Bridas, válvulas, codos, espárragos, tés, reducción y niples varios",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-15",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente"
+  },
+  {
+    "id": "poc_1779461576086",
+    "num": "LM1551",
+    "cliente": "MMT",
+    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-15",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-05-22T16:48:30.517Z",
     "deleted": true,
-    "deletedAt": "2099-01-01T00:00:00.000Z",
-    "deletedBy": "sistema",
-    "createdAt": "2099-01-01T00:00:00.000Z",
-    "updatedAt": "2099-01-01T00:00:00.000Z"
+    "deletedAt": "2026-05-22T16:48:30.511Z",
+    "deletedBy": "andrea"
   }
 ]
