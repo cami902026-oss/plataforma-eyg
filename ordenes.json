@@ -1108,12 +1108,18 @@
     "num": "CMC-000034",
     "cliente": "ANDES OPERATING",
     "desc": "VÁLVULAS BOLA Y ACCESORIOS PARA COMBUSTIBLE",
-    "estado": "activo",
+    "estado": "completado",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
         "f": "2026-05-04",
-        "n": "Auto-creada desde correo"
+        "n": "CODIFER"
       },
       {
         "s": "done",
@@ -1136,8 +1142,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-22T20:38:49.318Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-22T20:38:49.318Z"
+    "createdAt": "2026-05-22T20:38:55.909Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-22T20:38:55.909Z",
+    "updatedBy": "andrea"
   }
 ]
