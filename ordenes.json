@@ -599,7 +599,13 @@
     "num": "C_PC000009201-1",
     "cliente": "SERTECPET",
     "desc": "Tees, gaskets espiral/RTJ, válvula bola instrumentación 1/4\" SS",
-    "estado": "activo",
+    "estado": "completado",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "2026-05-21",
+      "estado": "recibida"
+    },
     "stages": [
       {
         "s": "done",
@@ -627,9 +633,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-22T17:08:47.831Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-22T17:08:47.831Z"
+    "createdAt": "2026-05-22T17:08:55.737Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-22T17:08:55.737Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1778255156528",
