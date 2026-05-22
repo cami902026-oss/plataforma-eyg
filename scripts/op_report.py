@@ -12,19 +12,11 @@ Lunes a Viernes a las 5:00 PM Colombia (UTC-5 = 22:00 UTC)
 import json
 import os
 import sys
-import io
 import base64
 import urllib.request
 import urllib.parse
 import urllib.error
 from datetime import datetime
-
-try:
-    import openpyxl
-    from openpyxl.styles import PatternFill, Font, Alignment
-    OPENPYXL_OK = True
-except ImportError:
-    OPENPYXL_OK = False
 
 
 DAYS_ES   = {'Monday':'Lunes','Tuesday':'Martes','Wednesday':'Miércoles',
@@ -56,62 +48,6 @@ def load_config() -> dict:
 
 # ─── 2. DESCARGAR ordenes.json DESDE GITHUB ───────────────────────────────────
 
-def get_ordenes_last_commit(gh_token: str) -> dict:
-    """Devuelve {'iso': str, 'hours_ago': float, 'author': str} del último commit
-    que tocó ordenes.json. Si falla, retorna {} (banner se omite)."""
-    url = (f'https://api.github.com/repos/{GH_OWNER}/{GH_REPO}/commits'
-           f'?path=ordenes.json&per_page=1')
-    req = urllib.request.Request(url, headers={
-        'Authorization': f'Bearer {gh_token}',
-        'Accept': 'application/vnd.github+json',
-        'User-Agent': 'EnergyBot/1.0'
-    })
-    try:
-        with urllib.request.urlopen(req) as resp:
-            arr = json.loads(resp.read())
-            if not arr:
-                return {}
-            iso = arr[0]['commit']['committer']['date']  # e.g. 2026-05-05T18:30:00Z
-            author = arr[0]['commit']['author'].get('name', '—')
-            from datetime import timezone
-            commit_dt = datetime.strptime(iso, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
-            hours = (datetime.now(timezone.utc) - commit_dt).total_seconds() / 3600
-            return {'iso': iso, 'hours_ago': hours, 'author': author}
-    except Exception as ex:
-        print(f'⚠️  No se pudo leer último commit de ordenes.json: {ex}')
-        return {}
-
-
-def build_freshness_banner(commit_info: dict, threshold_hours: float = 4.0) -> str:
-    """Genera un banner HTML solo si los datos llevan > threshold_hours sin actualizarse.
-    Si están al día o no se pudo determinar, retorna ''. """
-    if not commit_info or 'hours_ago' not in commit_info:
-        return ''
-    h = commit_info['hours_ago']
-    if h <= threshold_hours:
-        return ''
-    # Convertir UTC ISO a hora Colombia para mostrar
-    try:
-        from datetime import timezone, timedelta
-        commit_dt_utc = datetime.strptime(commit_info['iso'], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
-        commit_dt_co  = commit_dt_utc.astimezone(timezone(timedelta(hours=-5)))
-        fecha_co = commit_dt_co.strftime('%d/%m/%Y %H:%M')
-    except Exception:
-        fecha_co = commit_info.get('iso', '—')
-    horas_txt = f"{int(h)} h" if h < 24 else f"{int(h/24)} día(s)"
-    return (
-        '<div style="background:#fff3cd;border-left:5px solid #E8A020;'
-        'padding:14px 18px;margin:0 0 14px 0;border-radius:6px;color:#7a5a00;'
-        'font-size:13px;font-weight:600;">'
-        f'⚠️ <strong>Datos posiblemente desactualizados.</strong> '
-        f'La última actualización registrada fue hace <strong>{horas_txt}</strong> '
-        f'({fecha_co} hora Colombia, por {commit_info.get("author","—")}). '
-        'Si hiciste cambios después de esa hora y no se reflejan, revisa que tu sesión '
-        'haya sincronizado a GitHub (token PAT vigente y conexión estable).'
-        '</div>'
-    )
-
-
 def load_ordenes_from_github(gh_token: str) -> list:
     """Descarga ordenes.json del repositorio GitHub via API."""
     url = f'https://api.github.com/repos/{GH_OWNER}/{GH_REPO}/contents/ordenes.json'
@@ -124,12 +60,8 @@ def load_ordenes_from_github(gh_token: str) -> list:
         with urllib.request.urlopen(req) as resp:
             data = json.loads(resp.read())
             content = base64.b64decode(data['content']).decode('utf-8')
-            ordenes_raw = json.loads(content)
-            # FIX: filtrar OCs soft-deleted aquí — antes aparecían en el informe aunque
-            # el usuario las hubiera borrado en la plataforma.
-            ordenes = [o for o in ordenes_raw if not o.get('deleted')]
-            borradas = len(ordenes_raw) - len(ordenes)
-            print(f'✅ ordenes.json descargado: {len(ordenes)} órdenes activas (filtradas {borradas} en papelera).')
+            ordenes = json.loads(content)
+            print(f'✅ ordenes.json descargado: {len(ordenes)} órdenes')
             return ordenes
     except urllib.error.HTTPError as e:
         body = e.read().decode()
@@ -143,82 +75,7 @@ def load_ordenes_from_github(gh_token: str) -> list:
         return []
 
 
-# ─── 3. GENERAR EXCEL ────────────────────────────────────────────────────────
-
-def generate_excel_op(ordenes: list) -> bytes | None:
-    if not OPENPYXL_OK:
-        print("⚠️  openpyxl no disponible — se omite el Excel adjunto")
-        return None
-
-    # FIX: excluir OCs soft-deleted del Excel adjunto
-    ordenes = [o for o in ordenes if not o.get('deleted')]
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = 'Órdenes de Pedido'
-
-    hdr_fill = PatternFill('solid', fgColor='0F2B5B')
-    hdr_font = Font(bold=True, color='FFFFFF', size=10)
-    done_font = Font(color='1E7E34', bold=True)
-    pend_font = Font(color='B7770D')
-
-    headers = ['N° OP', 'Cliente', 'Descripción', 'Estado',
-               'Compra', 'F. Compra', 'Entrega', 'F. Entrega',
-               'Certificado', 'F. Cert.', 'Facturación', 'F. Factura']
-    for col, h in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=col, value=h)
-        cell.fill = hdr_fill
-        cell.font = hdr_font
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-
-    for row_idx, o in enumerate(ordenes, 2):
-        stages = list(o.get('stages') or [])
-        while len(stages) < 4:
-            stages.append({})
-
-        ws.cell(row=row_idx, column=1, value=o.get('num', '—'))
-        ws.cell(row=row_idx, column=2, value=o.get('cliente', ''))
-        ws.cell(row=row_idx, column=3, value=(o.get('desc') or '')[:120])
-        ws.cell(row=row_idx, column=4, value=o.get('estado', 'activo').title())
-
-        for si, st in enumerate(stages[:4]):
-            col_base = 5 + si * 2
-            done = is_stage_done(st)
-            estado_txt = '✓ Hecho' if done else ('▶ Activo' if st.get('s') == 'active' else 'Pendiente')
-            fecha_raw = st.get('f', '')
-            fecha_txt = ''
-            if fecha_raw:
-                try:
-                    p = fecha_raw.split('-')
-                    fecha_txt = f"{p[2]}/{p[1]}/{p[0]}"
-                except Exception:
-                    fecha_txt = fecha_raw
-            c_est = ws.cell(row=row_idx, column=col_base, value=estado_txt)
-            c_est.font = done_font if done else pend_font
-            ws.cell(row=row_idx, column=col_base + 1, value=fecha_txt)
-
-        # Alternar fondo por fila
-        if row_idx % 2 == 0:
-            fill = PatternFill('solid', fgColor='EEF3FF')
-            for col in range(1, len(headers) + 1):
-                ws.cell(row=row_idx, column=col).fill = fill
-
-    col_widths = [12, 22, 42, 12, 12, 12, 12, 12, 14, 12, 14, 12]
-    for i, w in enumerate(col_widths, 1):
-        ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = w
-
-    ws.freeze_panes = 'A2'
-
-    # Autofiltro en los títulos (permite filtrar/ordenar al abrir el Excel)
-    last_col_letter = openpyxl.utils.get_column_letter(len(headers))
-    ws.auto_filter.ref = f"A1:{last_col_letter}{ws.max_row}"
-
-    buf = io.BytesIO()
-    wb.save(buf)
-    return buf.getvalue()
-
-
-# ─── 4. GENERAR HTML DEL REPORTE ──────────────────────────────────────────────
+# ─── 3. GENERAR HTML DEL REPORTE ──────────────────────────────────────────────
 
 def badge_estado(estado: str) -> str:
     colores = {
@@ -255,6 +112,39 @@ def is_stage_done(st: dict) -> bool:
     return st.get('s') == 'done' or bool(st.get('f', '').strip())
 
 
+def format_money(v) -> str:
+    """Formatea un valor monetario en COP. Devuelve '—' si es 0 o vacío."""
+    try:
+        v = float(v or 0)
+    except (TypeError, ValueError):
+        v = 0
+    if v >= 1_000_000:
+        return f'${v/1_000_000:.1f}M'
+    if v >= 1_000:
+        return f'${int(v/1_000)}K'
+    if v > 0:
+        return '$' + f'{int(v):,}'.replace(',', '.')
+    return '—'
+
+
+def he_icon(o: dict) -> str:
+    """Devuelve ícono visual del estado de Hoja de Entrada."""
+    he = o.get('hojaEntrada') or {}
+    if not he.get('requerida'):
+        return '—'
+    return '✅' if he.get('fecha') else '⏳'
+
+
+def he_label(o: dict) -> str:
+    he = o.get('hojaEntrada') or {}
+    if not he.get('requerida'):
+        return 'No requiere'
+    if he.get('fecha'):
+        f = he.get('fecha', '')
+        return f"Recibida {'/'.join(reversed(f.split('-')))}"
+    return 'Pendiente'
+
+
 def get_etapa_actual(orden: dict) -> int:
     """Devuelve el índice (0-3) de la etapa actual de una orden activa.
     Busca la primera etapa 'active'; si no hay, la primera no-completada."""
@@ -273,117 +163,79 @@ def get_etapa_actual(orden: dict) -> int:
     return 3  # todas done → se queda en facturación
 
 
-def clasificar_orden(orden: dict, today) -> tuple:
-    """Clasifica una O.C. activa en su nivel de urgencia REAL.
-    Retorna: (categoria, etapa_idx, fecha_obj_or_None)
-    Categorías: 'vencida', 'sin_fecha', 'solo_cert', 'solo_factura', 'en_proceso'
-    """
-    stages = list(orden.get('stages') or [])
-    while len(stages) < 4:
-        stages.append({})
-    pendientes = [i for i in range(4) if not is_stage_done(stages[i])]
-    if not pendientes:
-        return ('completa', None, None)
-
-    # ¿Alguna etapa pendiente tiene fecha vencida?
-    for i in pendientes:
-        f = (stages[i].get('f') or '').strip()
-        if f:
-            try:
-                fdt = datetime.strptime(f, '%Y-%m-%d').date()
-                if fdt < today:
-                    return ('vencida', i, fdt)
-            except Exception:
-                pass
-
-    # Si solo certificado está pendiente → baja prioridad
-    if pendientes == [2]:
-        return ('solo_cert', 2, None)
-    # Si solo facturación está pendiente → baja prioridad
-    if pendientes == [3]:
-        return ('solo_factura', 3, None)
-
-    # Próxima etapa pendiente
-    next_idx = pendientes[0]
-    next_fecha = (stages[next_idx].get('f') or '').strip()
-    if not next_fecha:
-        return ('sin_fecha', next_idx, None)
-    try:
-        fdt = datetime.strptime(next_fecha, '%Y-%m-%d').date()
-        return ('en_proceso', next_idx, fdt)
-    except Exception:
-        return ('sin_fecha', next_idx, None)
-
-
 def build_resumen_etapas(activos: list) -> str:
-    """Resumen accionable: clasifica cada O.C. activa en UNA categoría según urgencia real."""
-    today = datetime.now().date()
-    cats = {'vencida': [], 'sin_fecha': [], 'solo_cert': [], 'solo_factura': [], 'en_proceso': []}
+    """Genera el bloque HTML de resumen por etapa para órdenes activas.
+    Para cada etapa, cuenta las órdenes que AÚN NO la tienen completada."""
+    grupos = {0: [], 1: [], 2: [], 3: []}
     for o in activos:
-        cat, idx, fecha = clasificar_orden(o, today)
-        if cat in cats:
-            num = o.get('num') or o.get('id', '—')
-            extra = ''
-            if cat == 'vencida' and fecha:
-                dias = (today - fecha).days
-                extra = f' (hace {dias}d)'
-            elif cat == 'en_proceso' and fecha:
-                dias = (fecha - today).days
-                extra = f' (en {dias}d)'
-            cats[cat].append((num, idx, extra))
+        stages = o.get('stages') or []
+        while len(stages) < 4:
+            stages.append({})
+        for i in range(4):
+            # Si esta etapa no está done → la orden aparece en este grupo
+            if not is_stage_done(stages[i]):
+                grupos[i].append(o.get('num') or o.get('id', '—'))
 
-    rows = [
-        ('vencida',      '🚨', 'Vencidas',          '#e53e3e', 'Etapas con fecha pasada — requieren acción inmediata.'),
-        ('sin_fecha',    '⚠️', 'Sin fecha',         '#E8A020', 'Próxima etapa sin fecha planificada.'),
-        ('solo_cert',    '📋', 'Solo Certificado',  '#93c5fd', 'Únicamente falta el Certificado (baja prioridad — usualmente del cliente).'),
-        ('solo_factura', '💰', 'Solo Facturación',  '#93c5fd', 'Únicamente falta la facturación.'),
-        ('en_proceso',   '✅', 'En proceso al día', '#2EAA4A', 'Próxima etapa con fecha futura — todo en orden.'),
-    ]
     filas_html = ''
-    for key, icon, label, color, hint in rows:
-        items = cats[key]
-        cant = len(items)
-        if cant == 0:
-            lista = '—'
-        else:
-            etapa_nombres = ['Compra','Entrega','Certif.','Factura']
-            partes = []
-            for num, idx, extra in items[:20]:
-                etapa = etapa_nombres[idx] if idx is not None else ''
-                partes.append(f"<b>{num}</b>{f' · {etapa}' if etapa else ''}{extra}")
-            lista = '<br>'.join(partes)
-            if cant > 20:
-                lista += f"<br><i>… y {cant-20} más</i>"
+    for idx, st in enumerate(POC_STAGES):
+        items = grupos[idx]
+        cantidad = len(items)
+        lista_txt = ', '.join(items) if items else '—'
+        color_num = '#E8A020' if cantidad > 0 else '#8899bb'
         filas_html += f"""
         <tr style='border-bottom:1px solid #1e3a6e;'>
-          <td style='padding:12px 14px;font-size:22px;text-align:center;width:50px;'>{icon}</td>
-          <td style='padding:12px 8px;'>
-            <div style='font-size:13px;font-weight:700;color:{color};'>{label}</div>
-            <div style='font-size:10px;color:#8899bb;margin-top:2px;'>{hint}</div>
+          <td style='padding:10px 14px;font-size:18px;text-align:center;width:40px;'>{st['icon']}</td>
+          <td style='padding:10px 8px;font-size:13px;font-weight:700;color:#e2e8f0;'>{st['label']}</td>
+          <td style='padding:10px 8px;text-align:center;'>
+            <span style='font-size:22px;font-weight:900;color:{color_num};'>{cantidad}</span>
+            <div style='font-size:10px;color:#8899bb;'>orden{'es' if cantidad != 1 else ''}</div>
           </td>
-          <td style='padding:12px 8px;text-align:center;width:80px;'>
-            <span style='font-size:24px;font-weight:900;color:{color};'>{cant}</span>
-          </td>
-          <td style='padding:12px 14px;font-size:11px;color:#cbd5ff;line-height:1.6;'>{lista}</td>
+          <td style='padding:10px 14px;font-size:11px;color:#93c5fd;'>{lista_txt}</td>
         </tr>"""
 
     return f"""
     <div style='margin-bottom:24px;'>
       <div style='font-size:11px;color:#8899bb;font-weight:700;text-transform:uppercase;
-                  letter-spacing:1px;margin-bottom:10px;'>📊 Estado Real de las Órdenes Activas</div>
+                  letter-spacing:1px;margin-bottom:10px;'>📊 Órdenes Pendientes por Etapa</div>
       <table style='width:100%;border-collapse:collapse;background:#0d1f3c;
                     border:1px solid #1e3a6e;border-radius:10px;overflow:hidden;'>
+        <thead>
+          <tr style='background:#0F2B5B;'>
+            <th style='padding:8px;'></th>
+            <th style='padding:8px;text-align:left;font-size:11px;color:#8899bb;
+                       text-transform:uppercase;letter-spacing:1px;'>Etapa</th>
+            <th style='padding:8px;text-align:center;font-size:11px;color:#8899bb;
+                       text-transform:uppercase;letter-spacing:1px;'>Cantidad</th>
+            <th style='padding:8px;text-align:left;font-size:11px;color:#8899bb;
+                       text-transform:uppercase;letter-spacing:1px;'>Órdenes</th>
+          </tr>
+        </thead>
         <tbody>{filas_html}</tbody>
       </table>
     </div>"""
 
 
-def build_report_html(ordenes: list, date_str: str, freshness_banner: str = '') -> str:
-    # FIX: excluir OCs soft-deleted (estaban apareciendo en el informe aunque el usuario las borró)
-    ordenes      = [o for o in ordenes if not o.get('deleted')]
-    activos      = [o for o in ordenes if o.get('estado') == 'activo']
-    completados  = [o for o in ordenes if o.get('estado') == 'completado']
-    cancelados   = [o for o in ordenes if o.get('estado') == 'cancelado']
+def build_report_html(ordenes: list, date_str: str) -> str:
+    # Excluir entradas eliminadas (soft-delete / guardias del sistema)
+    ordenes = [o for o in ordenes if not o.get('deleted')]
+    activos     = [o for o in ordenes if o.get('estado') == 'activo']
+    completados = [o for o in ordenes if o.get('estado') == 'completado']
+    cancelados  = [o for o in ordenes if o.get('estado') == 'cancelado']
+
+    # Sumar valores totales
+    def sum_val(lista):
+        total = 0.0
+        for o in lista:
+            try: total += float(o.get('valor') or 0)
+            except: pass
+        return total
+    valor_activos     = sum_val(activos)
+    valor_completados = sum_val(completados)
+
+    # Órdenes que requieren HE y aún no la tienen
+    pendientes_he = [o for o in activos
+                     if (o.get('hojaEntrada') or {}).get('requerida')
+                     and not (o.get('hojaEntrada') or {}).get('fecha')]
 
     resumen_etapas = build_resumen_etapas(activos) if activos else ''
 
@@ -405,25 +257,31 @@ def build_report_html(ordenes: list, date_str: str, freshness_banner: str = '') 
         <div style='font-size:28px;font-weight:900;color:#e53e3e;'>{len(cancelados)}</div>
         <div style='font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;margin-top:4px;'>Canceladas</div>
       </div>
+      <div style='flex:1;min-width:140px;background:#0d1f3c;border:1px solid #2EAA4A;border-radius:10px;padding:16px;text-align:center;'>
+        <div style='font-size:22px;font-weight:900;color:#86efac;'>{format_money(valor_activos)}</div>
+        <div style='font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;margin-top:4px;'>💵 Valor Activas</div>
+      </div>
+      <div style='flex:1;min-width:140px;background:#0d1f3c;border:1px solid #1a56db;border-radius:10px;padding:16px;text-align:center;'>
+        <div style='font-size:22px;font-weight:900;color:#93c5fd;'>{format_money(valor_completados)}</div>
+        <div style='font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;margin-top:4px;'>💵 Valor Completadas</div>
+      </div>
     </div>"""
 
-    # Solo mostrar órdenes activas con al menos una etapa pendiente, ordenadas por urgencia
-    today = datetime.now().date()
-    PRIORIDAD = {'vencida':0, 'sin_fecha':1, 'solo_factura':2, 'solo_cert':3, 'en_proceso':4, 'completa':5}
-    pendientes_clasif = []
-    for o in activos:
-        cat, idx, fecha = clasificar_orden(o, today)
-        if cat == 'completa':
-            continue
-        pendientes_clasif.append((PRIORIDAD.get(cat, 9), cat, o))
-    pendientes_clasif.sort(key=lambda x: x[0])
-    pendientes = [p[2] for p in pendientes_clasif]
+    # Solo mostrar órdenes activas con al menos una etapa pendiente
+    # (done = s=='done' ó tiene fecha, igual que el frontend)
+    def _tiene_pendiente(o):
+        stages = o.get('stages') or []
+        while len(stages) < 4:
+            stages.append({})
+        return any(not is_stage_done(stages[i]) for i in range(4))
+
+    pendientes = [o for o in activos if _tiene_pendiente(o)]
 
     if not pendientes:
         cuerpo = "<div style='text-align:center;padding:40px;color:#8899bb;'>✅ Todas las órdenes activas están al día.</div>"
     else:
         filas = ''
-        for o in pendientes:
+        for o in reversed(pendientes):
             stages = o.get('stages', [{},{},{},{}])
             while len(stages) < 4:
                 stages.append({})
@@ -437,26 +295,64 @@ def build_report_html(ordenes: list, date_str: str, freshness_banner: str = '') 
               <td style='padding:12px 10px;color:#d0d9f0;font-size:12px;max-width:200px;'>
                 {(o.get('desc') or '')[:80]}{'…' if len(o.get('desc',''))>80 else ''}
               </td>
+              <td style='padding:12px 10px;text-align:center;color:#86efac;font-size:12px;font-weight:700;'>{format_money(o.get('valor'))}</td>
               <td style='padding:12px 10px;text-align:center;'>{badge_estado(o.get('estado','activo'))}</td>
               {dots}
+              <td style='padding:12px 6px;text-align:center;font-size:14px;' title='{he_label(o)}'>{he_icon(o)}</td>
             </tr>"""
 
         cuerpo = f"""
         <table style='width:100%;border-collapse:collapse;background:#0d1f3c;border-radius:10px;overflow:hidden;'>
           <thead>
             <tr style='background:#0F2B5B;'>
-              <th style='padding:10px;text-align:left;font-size:11px;color:#E8A020;text-transform:uppercase;letter-spacing:1px;' colspan='7'>⚠️ Órdenes con Etapas Pendientes</th></tr><tr style='background:#0F2B5B;'>
+              <th style='padding:10px;text-align:left;font-size:11px;color:#E8A020;text-transform:uppercase;letter-spacing:1px;' colspan='9'>⚠️ Órdenes con Etapas Pendientes</th></tr><tr style='background:#0F2B5B;'>
               <th style='padding:10px;text-align:left;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>OP / Proyecto</th>
               <th style='padding:10px;text-align:left;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>Descripción</th>
+              <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>💵 Valor</th>
               <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>Estado</th>
               <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>🛒 Compra</th>
               <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>🚚 Entrega</th>
               <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>📋 Cert.</th>
               <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>💰 Factura</th>
+              <th style='padding:10px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>📋 HE</th>
             </tr>
           </thead>
           <tbody>{filas}</tbody>
         </table>"""
+
+    # Sección de órdenes pendientes de Hoja de Entrada
+    if pendientes_he:
+        he_rows = ''
+        for o in pendientes_he:
+            he_rows += f"""
+            <tr style='border-bottom:1px solid #1e3a6e;'>
+              <td style='padding:10px 14px;'>
+                <div style='font-weight:700;color:#fff;font-size:13px;'>{o.get('num','—')}</div>
+                <div style='color:#8899bb;font-size:11px;margin-top:2px;'>{o.get('cliente','')}</div>
+              </td>
+              <td style='padding:10px 14px;color:#d0d9f0;font-size:12px;'>
+                {(o.get('desc') or '')[:80]}{'…' if len(o.get('desc',''))>80 else ''}
+              </td>
+              <td style='padding:10px 14px;text-align:center;color:#86efac;font-size:12px;font-weight:700;'>{format_money(o.get('valor'))}</td>
+              <td style='padding:10px 14px;text-align:center;color:#fbbf24;font-size:12px;font-weight:700;'>⏳ Pendiente</td>
+            </tr>"""
+        seccion_he = f"""
+        <div style='margin-top:24px;margin-bottom:24px;'>
+          <div style='font-size:11px;color:#E8A020;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;'>📋 Órdenes Pendientes de Hoja de Entrada ({len(pendientes_he)})</div>
+          <table style='width:100%;border-collapse:collapse;background:#0d1f3c;border:1px solid #E8A020;border-radius:10px;overflow:hidden;'>
+            <thead>
+              <tr style='background:#0F2B5B;'>
+                <th style='padding:10px 14px;text-align:left;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>OP / Proyecto</th>
+                <th style='padding:10px 14px;text-align:left;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>Descripción</th>
+                <th style='padding:10px 14px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>💵 Valor</th>
+                <th style='padding:10px 14px;text-align:center;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:1px;'>Estado HE</th>
+              </tr>
+            </thead>
+            <tbody>{he_rows}</tbody>
+          </table>
+        </div>"""
+    else:
+        seccion_he = ''
 
     return f"""<!DOCTYPE html>
 <html lang="es">
@@ -474,17 +370,10 @@ def build_report_html(ordenes: list, date_str: str, freshness_banner: str = '') 
     <div style="font-size:12px;color:#93c5fd;text-align:right;">{date_str}</div>
   </div>
   <div style="height:3px;background:linear-gradient(90deg,#E8A020,transparent);"></div>
-  <div style="background:#0a1a30;padding:12px 20px;text-align:center;border-bottom:1px solid #1e3a6e;">
-    <a href="https://cami902026-oss.github.io/plataforma-eyg/Index.html" target="_blank"
-       style="display:inline-block;background:#2EAA4A;color:#fff;padding:10px 28px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;letter-spacing:0.5px;">
-      🔍 Ver informe interactivo con búsqueda
-    </a>
-    <div style="font-size:11px;color:#8899bb;margin-top:6px;">Abre la plataforma en tu navegador para buscar y filtrar órdenes</div>
-  </div>
   <div style="background:#071525;padding:20px;border-radius:0 0 0 0;">
-    {freshness_banner}
     {resumen}
     {resumen_etapas}
+    {seccion_he}
     {cuerpo}
   </div>
   <div style="background:#071525;padding:14px;border-radius:0 0 12px 12px;text-align:center;margin-top:0;border-top:1px solid #1e3a6e;">
@@ -519,21 +408,15 @@ def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
 
 # ─── 5. ENVIAR CORREO VIA GRAPH ────────────────────────────────────────────────
 
-def send_email(token: str, sender: str, recipients: list, subject: str, html_body: str,
-               attachment_bytes: bytes = None, attachment_name: str = None):
-    msg = {
-        'subject': subject,
-        'body': {'contentType': 'HTML', 'content': html_body},
-        'toRecipients': [{'emailAddress': {'address': r.strip()}} for r in recipients]
-    }
-    if attachment_bytes and attachment_name:
-        msg['attachments'] = [{
-            '@odata.type': '#microsoft.graph.fileAttachment',
-            'name': attachment_name,
-            'contentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'contentBytes': base64.b64encode(attachment_bytes).decode('utf-8')
-        }]
-    payload = json.dumps({'message': msg, 'saveToSentItems': True}).encode('utf-8')
+def send_email(token: str, sender: str, recipients: list, subject: str, html_body: str):
+    payload = json.dumps({
+        'message': {
+            'subject': subject,
+            'body': {'contentType': 'HTML', 'content': html_body},
+            'toRecipients': [{'emailAddress': {'address': r.strip()}} for r in recipients]
+        },
+        'saveToSentItems': True
+    }).encode('utf-8')
     url = f'https://graph.microsoft.com/v1.0/users/{sender}/sendMail'
     req = urllib.request.Request(url, data=payload, method='POST',
         headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'})
@@ -568,15 +451,6 @@ if __name__ == '__main__':
     # Descargar órdenes desde GitHub
     ordenes = load_ordenes_from_github(gh_token)
 
-    # Verificar frescura de los datos (último commit de ordenes.json)
-    commit_info = get_ordenes_last_commit(gh_token)
-    if commit_info:
-        print(f"🕒 Último cambio en ordenes.json: hace {commit_info['hours_ago']:.1f} h "
-              f"(por {commit_info['author']})")
-    freshness_banner = build_freshness_banner(commit_info, threshold_hours=4.0)
-    if freshness_banner:
-        print("⚠️  Datos > 4h sin actualizar — se incluirá banner de advertencia.")
-
     now      = datetime.now()
     day      = DAYS_ES.get(now.strftime('%A'), now.strftime('%A'))
     month    = MONTHS_ES.get(now.strftime('%B'), now.strftime('%B'))
@@ -584,16 +458,9 @@ if __name__ == '__main__':
     subject  = f"📋 Informe OP Activas E&G — {date_str}"
 
     print(f"📝 Generando informe para {len(ordenes)} órdenes...")
-    email_html = build_report_html(ordenes, date_str, freshness_banner)
-
-    excel_bytes = generate_excel_op(ordenes)
-    excel_name  = f"OP_EyG_{now.strftime('%Y-%m-%d')}.xlsx"
-    if excel_bytes:
-        print(f"📊 Excel generado: {excel_name} ({len(excel_bytes)//1024} KB)")
-    else:
-        print("⚠️  Excel no generado (openpyxl no disponible)")
+    email_html = build_report_html(ordenes, date_str)
 
     token = get_access_token(tenant_id, client_id, client_secret)
     print(f"📧 Enviando a: {', '.join(recipients)}")
-    send_email(token, sender_email, recipients, subject, email_html, excel_bytes, excel_name)
+    send_email(token, sender_email, recipients, subject, email_html)
     print("🎉 Informe OP enviado exitosamente.")
