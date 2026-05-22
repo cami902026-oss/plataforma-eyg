@@ -1021,10 +1021,11 @@
   },
   {
     "id": "poc_1779298736655",
-    "num": 907,
+    "num": "907",
     "cliente": "EIKOS",
     "desc": "Materiales para obras mecánicas - tuberías, bridas, válvulas y accesorios",
     "estado": "activo",
+    "valor": 0,
     "stages": [
       {
         "s": "done",
@@ -1032,7 +1033,7 @@
         "n": "CODIFER\nINDUVACOL\nMUNDIAL\nTECINCOL\nCOLIMPORTADOS"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-05-22",
         "n": "",
         "envio": "",
@@ -1052,8 +1053,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-22T14:30:03.070Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-22T14:30:03.070Z"
+    "createdAt": "2026-05-22T14:30:08.742Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-22T14:30:08.742Z",
+    "updatedBy": "andrea"
   }
 ]
