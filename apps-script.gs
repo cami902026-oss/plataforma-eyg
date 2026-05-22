@@ -35,7 +35,13 @@ const HEADERS = [
   // Extra
   '¿Facturado?',
   'Última Actualización',
-  'Etapas (JSON)'
+  'Etapas (JSON)',
+  // Campos adicionales (preservados desde JSON completo)
+  '💵 Valor',
+  '📋 HE Requerida',
+  '📋 HE Fecha',
+  '📋 HE Estado',
+  'Full JSON'
 ];
 
 const ENVIO_LABELS = {
@@ -61,8 +67,12 @@ function doGet(e) {
       ops = data
         .filter(r => r[0])
         .map(r => {
-          // Reconstruir stages desde columnas individuales (col 22 = JSON completo)
-          const stagesJSON = r[HEADERS.length - 1];
+          // Si hay Full JSON (última columna) usarlo — preserva TODOS los campos
+          const fullJSON = r[HEADERS.length - 1];
+          const full = _parseJSON(fullJSON, null);
+          if (full && typeof full === 'object') return full;
+          // Fallback: reconstruir desde columnas individuales
+          const stagesJSON = r[22]; // antigua col "Etapas (JSON)"
           const stages = _parseJSON(stagesJSON, _buildStagesFromRow(r));
           return {
             id:        r[0],
@@ -71,7 +81,13 @@ function doGet(e) {
             desc:      r[3],
             estado:    r[4],
             stages:    stages,
-            updatedAt: r[21]   // FIX: r[20] era la columna "¿Facturado?" (etiqueta), no el timestamp
+            updatedAt: r[21],
+            valor:     r[23] || 0,
+            hojaEntrada: {
+              requerida: r[24] === 'SÍ',
+              fecha:     r[25] || '',
+              estado:    r[26] || 'pendiente'
+            }
           };
         });
     }
@@ -200,7 +216,13 @@ function _opToRow(op) {
     // Extra
     (s3.s === 'done' || s3.f) ? '✅ Facturado' : '❌ Pendiente',
     op.updatedAt || new Date().toISOString(),
-    JSON.stringify(op.stages || [])
+    JSON.stringify(op.stages || []),
+    // Campos adicionales
+    op.valor || 0,
+    op.hojaEntrada && op.hojaEntrada.requerida ? 'SÍ' : 'NO',
+    (op.hojaEntrada && op.hojaEntrada.fecha) || '',
+    (op.hojaEntrada && op.hojaEntrada.estado) || '',
+    JSON.stringify(op)
   ];
 }
 
