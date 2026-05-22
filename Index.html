@@ -1213,9 +1213,10 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                 <div class="form-group"><label>CORREO</label><input type="email" id="cotiz-correo" placeholder="correo@empresa.com"></div>
               </div>
               <div style="min-width:210px;">
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
                   <span style="color:var(--text-muted);font-size:11px;font-weight:700;">COTIZACIÓN No.</span>
-                  <span class="cotiz-no-val" id="cotiz-numero">LM----</span>
+                  <input type="text" id="cotiz-numero" class="cotiz-no-val" style="background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:6px;padding:4px 10px;width:130px;text-align:center;" placeholder="LM----">
+                  <button type="button" onclick="cotizRegenerarNum()" title="Generar siguiente consecutivo automáticamente" style="background:rgba(46,170,74,.15);color:#86efac;border:1px solid rgba(46,170,74,.4);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">🔄 Auto</button>
                 </div>
                 <div class="form-group" style="margin-bottom:8px;">
                   <label>ESTADO</label>
@@ -5925,6 +5926,28 @@ function cotizGetNextNum() {
   return 'LM' + (Math.max(...nums) + 1);
 }
 
+// Lee el valor del input/span del número de cotización (compat con ambos casos)
+function cotizReadNum() {
+  const el = document.getElementById('cotiz-numero');
+  if (!el) return '';
+  return (el.value !== undefined ? el.value : el.textContent || '').trim();
+}
+
+// Asigna el valor al input/span del número de cotización
+function cotizWriteNum(val) {
+  const el = document.getElementById('cotiz-numero');
+  if (!el) return;
+  if (el.value !== undefined) el.value = val;
+  else el.textContent = val;
+}
+
+// Botón "Auto": rellena el siguiente consecutivo disponible
+function cotizRegenerarNum() {
+  const proximo = cotizGetNextNum();
+  cotizWriteNum(proximo);
+  showToast('Consecutivo asignado: ' + proximo, 'success');
+}
+
 function cotizShowTab(tab) {
   document.querySelectorAll('.cotiz-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.cotiz-tab-content').forEach(t => t.classList.remove('active'));
@@ -6281,7 +6304,7 @@ function cotizNueva() {
   document.getElementById('cotiz-fecha-gen').value = today2;
   const venc = new Date(); venc.setDate(venc.getDate()+8);
   document.getElementById('cotiz-fecha-venc').value = venc.toISOString().split('T')[0];
-  document.getElementById('cotiz-numero').textContent = cotizGetNextNum();
+  cotizWriteNum(cotizGetNextNum());
   cotizRender();
   cotizShowTab('nueva');
   showToast('Nueva cotización lista','success');
@@ -6295,7 +6318,7 @@ function cotizGuardarBD() {
   const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
   const ivaVal = subtotal * iva / 100;
   const total = subtotal + ivaVal;
-  const id = cotizEditId || document.getElementById('cotiz-numero').textContent;
+  const id = cotizEditId || cotizReadNum();
   const bd = getData('bd_cotizaciones', []);
   const idx = bd.findIndex(c => c.id === id);
   const record = {
@@ -6340,7 +6363,7 @@ function cotizGenerarPDF() {
   const cliente = document.getElementById('cotiz-cliente').value || '';
   const contacto = document.getElementById('cotiz-contacto').value || '';
   const correo = document.getElementById('cotiz-correo').value || '';
-  const numCot = document.getElementById('cotiz-numero').textContent;
+  const numCot = cotizReadNum();
   const fechaGen = document.getElementById('cotiz-fecha-gen').value;
   const fechaVenc = document.getElementById('cotiz-fecha-venc').value;
   const iva = parseFloat(document.getElementById('cotiz-iva').value) || 0;
@@ -6583,7 +6606,7 @@ function cotizDownloadExcel() {
   const cliente = document.getElementById('cotiz-cliente').value || 'Cliente';
   const contacto = document.getElementById('cotiz-contacto').value || '';
   const correo = document.getElementById('cotiz-correo').value || '';
-  const numCot = document.getElementById('cotiz-numero').textContent;
+  const numCot = cotizReadNum();
   const estado = document.getElementById('cotiz-estado').value;
   const fechaGen = document.getElementById('cotiz-fecha-gen').value;
   const fechaVenc = document.getElementById('cotiz-fecha-venc').value;
@@ -6722,7 +6745,7 @@ function bdCargar(id) {
   if (!c) return;
   cotizEditId = c.id;
   cotizItems = JSON.parse(JSON.stringify(c.items || []));
-  document.getElementById('cotiz-numero').textContent = c.id;
+  cotizWriteNum(c.id);
   document.getElementById('cotiz-cliente').value = c.cliente || '';
   document.getElementById('cotiz-contacto').value = c.contacto || '';
   document.getElementById('cotiz-correo').value = c.correo || '';
@@ -6762,7 +6785,7 @@ function initCotizaciones() {
   document.getElementById('cotiz-fecha-gen').value = today2;
   document.getElementById('cotiz-fecha-venc').value = venc.toISOString().split('T')[0];
   if (!cotizEditId) {
-    document.getElementById('cotiz-numero').textContent = cotizGetNextNum();
+    cotizWriteNum(cotizGetNextNum());
   }
   if (!cotizItems.length) cotizRender();
 }
