@@ -4905,35 +4905,35 @@ function renderProcesos() {
   el.innerHTML = filtered.slice().reverse().map(o => {
     const stages = o.stages || [{s:'pending',f:'',n:''},{s:'pending',f:'',n:''},{s:'pending',f:'',n:''},{s:'pending',f:'',n:''}];
     const _heReq = !!(o.hojaEntrada?.requerida);
-    const tl = POC_STAGES.map((st,i) => {
-      const sVal = (i>=2) ? (stages[i]?.f?'done':'pending') : (stages[i]?.s||'pending');
-      const cls = sVal==='done'?'done':sVal==='active'?'active':'pending';
-      const lineClass = i<3?(stages[i]?.s==='done'?'done':''):'';
-      const dateVal = stages[i]?.f || '';
-      const dateTxt = dateVal
-        ? `<div class="poc-step-date">📅 ${dateVal.split('-').reverse().join('/')}</div>`
-        : `<div class="poc-step-date empty">sin fecha</div>`;
-      const noteTxt = stages[i]?.n ? `<div class="poc-step-note" title="${stages[i].n.replace(/"/g,"'")}">💬 ${stages[i].n.substring(0,30)}${stages[i].n.length>30?'…':''}</div>` : '';
-      const envioLabels = {moto:'🛵 Moto',camion_energy:'🚛 Camión E&G',camion_externo:'🚚 Camión ext.',transportadora:'📦 Transportadora',flota:'🚌 Flota',taquilla_bus:'🎫 Taquilla Bus',vehiculo_personal:'🚗 Vehículo',recoge_bodega:'🏭 Recoge bod.',entrega_mano:'🤝 En mano'};
-      const envioTxt = (i===1 && stages[i]?.envio) ? `<div class="poc-step-envio">${envioLabels[stages[i].envio]||stages[i].envio}${stages[i].transp?' · '+stages[i].transp:''}</div>` : '';
-      const guiaTxt = (i===1 && stages[i]?.guia) ? `<div class="poc-step-guia">🔖 ${stages[i].guia}</div>` : '';
-      const destTxt = (i===1 && stages[i]?.dest) ? `<div class="poc-step-guia" style="color:#c4b5fd">📬 ${stages[i].dest}</div>` : '';
-      const respTxt = (i===1 && stages[i]?.resp) ? `<div class="poc-step-note">👤 ${stages[i].resp}</div>` : '';
-      const step = `<div class="poc-step ${cls}"><div class="poc-step-circ" title="${st.label}">${st.icon}</div><div class="poc-step-lbl">${st.label}</div>${dateTxt}${envioTxt}${guiaTxt}${destTxt}${respTxt}${noteTxt}</div>`;
-      if (i===2 && _heReq) {
-        const he = o.hojaEntrada;
-        const heDone = !!he?.fecha;
-        const heCls = heDone ? 'done' : 'pending';
-        const heDateTxt = he?.fecha
-          ? `<div class="poc-step-date">📅 ${he.fecha.split('-').reverse().join('/')}</div>`
-          : `<div class="poc-step-date empty">sin fecha</div>`;
-        return step
-          + `<div class="poc-line ${lineClass}"></div>`
-          + `<div class="poc-step ${heCls}"><div class="poc-step-circ" title="Hoja de Entrada">📋</div><div class="poc-step-lbl">Hoja Entrada</div>${heDateTxt}</div>`
+    const _pocStep = (st, i, addLine) => {
+      try {
+        const sVal = (i>=2) ? (stages[i]?.f?'done':'pending') : (stages[i]?.s||'pending');
+        const cls = sVal==='done'?'done':sVal==='active'?'active':'pending';
+        const lc = addLine ? (stages[i]?.s==='done'?'done':'') : '';
+        const dateVal = stages[i]?.f || '';
+        const dateTxt = dateVal ? `<div class="poc-step-date">📅 ${dateVal.split('-').reverse().join('/')}</div>` : `<div class="poc-step-date empty">sin fecha</div>`;
+        const n = stages[i]?.n || '';
+        const noteTxt = n ? `<div class="poc-step-note" title="${n.replace(/"/g,"'")}">💬 ${n.substring(0,30)}${n.length>30?'…':''}</div>` : '';
+        const envioLabels = {moto:'🛵 Moto',camion_energy:'🚛 Camión E&G',camion_externo:'🚚 Camión ext.',transportadora:'📦 Transportadora',flota:'🚌 Flota',taquilla_bus:'🎫 Taquilla Bus',vehiculo_personal:'🚗 Vehículo',recoge_bodega:'🏭 Recoge bod.',entrega_mano:'🤝 En mano'};
+        const envioTxt = (i===1 && stages[i]?.envio) ? `<div class="poc-step-envio">${envioLabels[stages[i].envio]||stages[i].envio}${stages[i].transp?' · '+stages[i].transp:''}</div>` : '';
+        const guiaTxt = (i===1 && stages[i]?.guia) ? `<div class="poc-step-guia">🔖 ${stages[i].guia}</div>` : '';
+        const destTxt = (i===1 && stages[i]?.dest) ? `<div class="poc-step-guia" style="color:#c4b5fd">📬 ${stages[i].dest}</div>` : '';
+        const respTxt = (i===1 && stages[i]?.resp) ? `<div class="poc-step-note">👤 ${stages[i].resp}</div>` : '';
+        return `<div class="poc-step ${cls}"><div class="poc-step-circ" title="${st.label}">${st.icon}</div><div class="poc-step-lbl">${st.label}</div>${dateTxt}${envioTxt}${guiaTxt}${destTxt}${respTxt}${noteTxt}</div>`
+              + (addLine ? `<div class="poc-line ${lc}"></div>` : '');
+      } catch(_) { return ''; }
+    };
+    let tl = _pocStep(POC_STAGES[0],0,true)
+           + _pocStep(POC_STAGES[1],1,true)
+           + _pocStep(POC_STAGES[2],2,true);
+    if (_heReq) {
+      const he = o.hojaEntrada || {};
+      const heDone = !!he.fecha;
+      const heDateTxt = he.fecha ? `<div class="poc-step-date">📅 ${he.fecha.split('-').reverse().join('/')}</div>` : `<div class="poc-step-date empty">sin fecha</div>`;
+      tl += `<div class="poc-step ${heDone?'done':'pending'}"><div class="poc-step-circ" title="Hoja de Entrada">📋</div><div class="poc-step-lbl">Hoja Entrada</div>${heDateTxt}</div>`
           + `<div class="poc-line ${heDone?'done':''}"></div>`;
-      }
-      return step + (i<3?`<div class="poc-line ${lineClass}"></div>`:'');
-    }).join('');
+    }
+    tl += _pocStep(POC_STAGES[3],3,false);
     const badgeClass = {activo:'activo',completado:'completado',cancelado:'cancelado'}[o.estado]||'activo';
     const badgeTxt = {activo:'Activo',completado:'Completado',cancelado:'Cancelado'}[o.estado]||o.estado;
     const auditTooltip = o.createdBy ? `Creada por ${o.createdBy.split('@')[0]}${o.createdAt?' el '+new Date(o.createdAt).toLocaleDateString('es-CO'):''}` : '';
