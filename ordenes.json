@@ -1301,5 +1301,37 @@
     "deleted": true,
     "deletedAt": "2026-05-22T16:08:36.339Z",
     "deletedBy": "andrea"
+  },
+  {
+    "id": "guard_lm7777",
+    "num": "LM7777",
+    "cliente": "TESTING",
+    "desc": "tornillos y empaques",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-22",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "deleted": true,
+    "deletedAt": "2026-05-22T20:00:00.000Z",
+    "deletedBy": "sistema"
   }
 ]
