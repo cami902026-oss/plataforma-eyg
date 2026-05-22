@@ -1012,10 +1012,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="page" id="page-cartera">
         <div style="max-width:760px;margin:0 auto;padding:8px 0 40px;">
           <div style="background:linear-gradient(135deg,rgba(46,170,74,0.12),rgba(15,43,91,0.4));border:1px solid rgba(46,170,74,0.3);border-radius:14px;padding:24px;margin-bottom:18px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:8px;">
-              <h2 style="margin:0;color:#fff;font-size:22px;display:flex;align-items:center;gap:10px;">💰 Aplicativo de Cartera</h2>
-              <span id="cartera-status" style="font-size:12px;padding:4px 10px;border-radius:6px;background:rgba(136,153,187,0.2);color:#cbd5ff;">Verificando…</span>
-            </div>
+            <h2 style="margin:0 0 8px;color:#fff;font-size:22px;display:flex;align-items:center;gap:10px;">💰 Aplicativo de Cartera</h2>
             <p style="color:var(--text-muted);font-size:13px;margin:6px 0 0;line-height:1.5;">
               Acceso al aplicativo de cartera. <b>Visible solo para Andrea y Alberto.</b><br>
               La cartera se actualiza automáticamente cuando guardas un Excel nuevo en
@@ -1025,9 +1022,18 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 
           <div class="card" style="padding:24px;">
             <div class="config-title" style="margin-bottom:14px;">🔗 Abrir aplicativo</div>
-            <p style="color:var(--text-muted);font-size:12px;margin:0 0 16px;">El aplicativo abre en una pestaña nueva. Requiere estar conectado a la WiFi de la oficina (o ser el PC anfitrión).</p>
+            <p style="color:var(--text-muted);font-size:12px;margin:0 0 16px;line-height:1.5;">
+              El aplicativo abre en una pestaña nueva. Requiere:<br>
+              • Estar conectado a la WiFi de la oficina (192.168.20.5:5050), o<br>
+              • Estar usando el PC anfitrión (localhost:5050)
+            </p>
             <button class="btn btn-primary" onclick="abrirCartera()" style="width:auto;font-size:15px;padding:14px 28px;">🚀 Abrir Cartera</button>
-            <button class="btn" onclick="testCarteraConnection()" style="width:auto;font-size:13px;padding:14px 20px;margin-left:10px;background:rgba(255,255,255,0.06);color:#cbd5ff;border:1px solid var(--border);">🔍 Probar conexión</button>
+            <div style="margin-top:14px;padding:12px;background:rgba(232,160,32,0.08);border:1px solid rgba(232,160,32,0.3);border-radius:8px;font-size:12px;color:#fbbf24;line-height:1.5;">
+              ⚠️ Si al hacer clic no abre nada o muestra error de conexión:<br>
+              1. Verifica que el aplicativo de cartera esté corriendo en tu PC<br>
+              2. Verifica que estés en la misma WiFi de la oficina<br>
+              3. Si estás en el PC anfitrión, cambia la URL abajo a <code>http://localhost:5050</code>
+            </div>
           </div>
 
           <div class="card" style="padding:24px;margin-top:16px;">
@@ -3595,7 +3601,7 @@ function navigate(page) {
   const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',configuracion:'Configuración'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
-  if(page==='cartera') { setTimeout(loadCarteraUrlUI, 100); setTimeout(testCarteraConnection, 200); }
+  if(page==='cartera') { setTimeout(loadCarteraUrlUI, 100); }
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
   if(page==='historico') { setTimeout(historicoListMonths, 100); }
   if(page==='procesos') renderProcesos();
