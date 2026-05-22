@@ -841,16 +841,10 @@
   },
   {
     "id": "poc_1778781419239",
-    "num": "13080",
+    "num": 13080,
     "cliente": "HIDROCARBUROS DEL CASANARE SAS",
     "desc": "Válvulas y cheques para reemplazar en recibo y despacho de producto",
     "estado": "completado",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
-    },
     "stages": [
       {
         "s": "done",
@@ -878,10 +872,7 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-22T16:54:44.434Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-22T16:54:46.690Z",
-    "updatedBy": "andrea"
+    "updatedAt": "❌ Pendiente"
   },
   {
     "id": "poc_1778873095177",
@@ -1029,12 +1020,6 @@
     "cliente": "MAUREL & PROM COLOMBIA SOCIEDAD LTD",
     "desc": "Suministro de Material Mecánico Magico 2 - Conexionado MG2",
     "estado": "activo",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
-    },
     "stages": [
       {
         "s": "active",
@@ -1062,10 +1047,9 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-22T16:53:41.370Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-22T16:53:49.706Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-05-22T16:59:32.978Z",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-22T16:59:32.978Z"
   },
   {
     "id": "poc_1779461405791",
