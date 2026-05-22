@@ -1085,36 +1085,6 @@
     "updatedAt": "❌ Pendiente"
   },
   {
-    "id": "poc_1779461426341",
-    "num": "LM1527",
-    "cliente": "CIAM",
-    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "❌ Pendiente"
-  },
-  {
     "id": "poc_1777927194950",
     "num": 2026005442,
     "cliente": "NEW GRANADA",
@@ -1135,36 +1105,6 @@
         "guia": "",
         "dest": "",
         "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "❌ Pendiente"
-  },
-  {
-    "id": "poc_1779461375131",
-    "num": "LM1527",
-    "cliente": "CIAM",
-    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
       },
       {
         "s": "pending",
@@ -1219,6 +1159,66 @@
       {
         "s": "done",
         "f": "2026-05-15",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente"
+  },
+  {
+    "id": "poc_1779461426341",
+    "num": "LM1527",
+    "cliente": "CIAM",
+    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-11",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente"
+  },
+  {
+    "id": "poc_1779461375131",
+    "num": "LM1527",
+    "cliente": "CIAM",
+    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-11",
         "n": "Auto-creada desde correo"
       },
       {
@@ -1297,8 +1297,11 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-22T16:50:23.250Z",
+    "updatedAt": "2026-05-22T16:50:26.258Z",
     "lockedBy": "andrea",
-    "lockedAt": "2026-05-22T16:50:23.250Z"
+    "lockedAt": "2026-05-22T16:50:23.250Z",
+    "deleted": true,
+    "deletedAt": "2026-05-22T16:50:26.258Z",
+    "deletedBy": "andrea"
   }
 ]
