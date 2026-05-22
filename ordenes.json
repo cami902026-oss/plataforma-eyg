@@ -1085,36 +1085,6 @@
     "updatedAt": "❌ Pendiente"
   },
   {
-    "id": "poc_1779461488471",
-    "num": "LM7777",
-    "cliente": "TESTING",
-    "desc": "tornillos y empaques",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-22",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "❌ Pendiente"
-  },
-  {
     "id": "poc_1779461426341",
     "num": "LM1527",
     "cliente": "CIAM",
@@ -1180,15 +1150,15 @@
     "updatedAt": "❌ Pendiente"
   },
   {
-    "id": "poc_1779461532501",
-    "num": "LM1551",
-    "cliente": "MMT",
-    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
+    "id": "poc_1779461375131",
+    "num": "LM1527",
+    "cliente": "CIAM",
+    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
     "estado": "activo",
     "stages": [
       {
         "s": "done",
-        "f": "2026-05-15",
+        "f": "2026-05-11",
         "n": "Auto-creada desde correo"
       },
       {
@@ -1210,15 +1180,45 @@
     "updatedAt": "❌ Pendiente"
   },
   {
-    "id": "poc_1779461375131",
-    "num": "LM1527",
-    "cliente": "CIAM",
-    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
+    "id": "poc_1779461488471",
+    "num": "LM7777",
+    "cliente": "TESTING",
+    "desc": "tornillos y empaques",
     "estado": "activo",
     "stages": [
       {
         "s": "done",
-        "f": "2026-05-11",
+        "f": "2026-05-22",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente"
+  },
+  {
+    "id": "poc_1779461532501",
+    "num": "LM1551",
+    "cliente": "MMT",
+    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-15",
         "n": "Auto-creada desde correo"
       },
       {
@@ -1297,8 +1297,11 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-22T16:16:48.199Z",
+    "updatedAt": "2026-05-22T16:16:51.980Z",
     "lockedBy": "andrea",
-    "lockedAt": "2026-05-22T16:16:48.199Z"
+    "lockedAt": "2026-05-22T16:16:48.199Z",
+    "deleted": true,
+    "deletedAt": "2026-05-22T16:16:51.980Z",
+    "deletedBy": "andrea"
   }
 ]
