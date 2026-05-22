@@ -1020,6 +1020,12 @@
     "cliente": "MAUREL & PROM COLOMBIA SOCIEDAD LTD",
     "desc": "Suministro de Material Mecánico Magico 2 - Conexionado MG2",
     "estado": "activo",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "active",
@@ -1047,9 +1053,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-22T17:02:45.048Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-22T17:02:45.048Z"
+    "createdAt": "2026-05-22T17:02:47.733Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-22T17:02:47.733Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1779461405791",
