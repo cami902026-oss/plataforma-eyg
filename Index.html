@@ -731,6 +731,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="nav-item" onclick="navigate('equipo')"><span class="icon">👥</span>Equipo</div>
       <div class="nav-item" onclick="navigate('inventario')"><span class="icon">📦</span>Inventario</div>
       <div class="nav-item" onclick="navigate('cotizaciones')"><span class="icon">📋</span>Cotizaciones IA</div>
+      <div class="nav-item" onclick="navigate('cartera')"><span class="icon">💰</span>Cartera</div>
       <div class="nav-item" onclick="navigate('procesos')"><span class="icon">🚛</span>Procesos O.C.</div>
       <div class="nav-item" onclick="navigate('visitas')"><span class="icon">🤝</span>Visitas Comerciales</div>
       <div class="nav-item" onclick="navigate('mensajeria')"><span class="icon">📬</span>Mensajería</div>
@@ -1005,6 +1006,44 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <button class="btn btn-primary" id="add-member-btn" onclick="openModal('modal-miembro')" style="width:auto;">+ Agregar Miembro</button>
         </div>
         <div class="team-grid" id="team-grid"></div>
+      </div>
+
+      <!-- CARTERA (solo Andrea y Alberto) -->
+      <div class="page" id="page-cartera">
+        <div style="max-width:760px;margin:0 auto;padding:8px 0 40px;">
+          <div style="background:linear-gradient(135deg,rgba(46,170,74,0.12),rgba(15,43,91,0.4));border:1px solid rgba(46,170,74,0.3);border-radius:14px;padding:24px;margin-bottom:18px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:8px;">
+              <h2 style="margin:0;color:#fff;font-size:22px;display:flex;align-items:center;gap:10px;">💰 Aplicativo de Cartera</h2>
+              <span id="cartera-status" style="font-size:12px;padding:4px 10px;border-radius:6px;background:rgba(136,153,187,0.2);color:#cbd5ff;">Verificando…</span>
+            </div>
+            <p style="color:var(--text-muted);font-size:13px;margin:6px 0 0;line-height:1.5;">
+              Acceso al aplicativo de cartera. <b>Visible solo para Andrea y Alberto.</b><br>
+              La cartera se actualiza automáticamente cuando guardas un Excel nuevo en
+              <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;color:#fbbf24;">C:\Users\Lenovo\Downloads\Cartera\</code>
+            </p>
+          </div>
+
+          <div class="card" style="padding:24px;">
+            <div class="config-title" style="margin-bottom:14px;">🔗 Abrir aplicativo</div>
+            <p style="color:var(--text-muted);font-size:12px;margin:0 0 16px;">El aplicativo abre en una pestaña nueva. Requiere estar conectado a la WiFi de la oficina (o ser el PC anfitrión).</p>
+            <button class="btn btn-primary" onclick="abrirCartera()" style="width:auto;font-size:15px;padding:14px 28px;">🚀 Abrir Cartera</button>
+            <button class="btn" onclick="testCarteraConnection()" style="width:auto;font-size:13px;padding:14px 20px;margin-left:10px;background:rgba(255,255,255,0.06);color:#cbd5ff;border:1px solid var(--border);">🔍 Probar conexión</button>
+          </div>
+
+          <div class="card" style="padding:24px;margin-top:16px;">
+            <div class="config-title" style="margin-bottom:14px;">⚙️ URL del aplicativo</div>
+            <p style="color:var(--text-muted);font-size:12px;margin:0 0 12px;">
+              Por defecto: <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;color:#fbbf24;">http://192.168.20.5:5050</code> (WiFi oficina).<br>
+              Si estás en el PC anfitrión usa: <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;color:#fbbf24;">http://localhost:5050</code>
+            </p>
+            <div class="api-key-row">
+              <div class="form-group" style="flex:1;margin:0;">
+                <input type="text" id="cartera-url-input" placeholder="http://192.168.20.5:5050">
+              </div>
+              <button class="btn btn-primary" onclick="saveCarteraURL()" style="width:auto;white-space:nowrap;">Guardar</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- PROCESOS O.C. (MEJORADO) -->
@@ -2084,6 +2123,7 @@ const ALL_MODULES = [
   { id:'equipo',        label:'👥 Equipo' },
   { id:'inventario',    label:'📦 Inventario' },
   { id:'cotizaciones',  label:'📋 Cotizaciones IA' },
+  { id:'cartera',       label:'💰 Cartera' },
   { id:'procesos',      label:'🚛 Procesos O.C.' },
   { id:'visitas',       label:'🤝 Visitas Comerciales' },
   { id:'mensajeria',    label:'📬 Mensajería' },
@@ -2111,6 +2151,8 @@ function userCanSeeModule(mod) {
   const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'JEFE';
   // Históricos es estrictamente admin/jefe (no se puede destrabar por config)
   if (mod === 'historico') return isAdmin;
+  // Cartera: solo Andrea y Alberto (no se puede destrabar por config)
+  if (mod === 'cartera') return email === 'andrea' || email === 'alberto';
   // Admin/Jefe ve todo el resto siempre
   if (isAdmin) return true;
   const cfg = getUserModules();
@@ -3550,9 +3592,10 @@ function navigate(page) {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
   currentPage = page;
-  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',configuracion:'Configuración'};
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',configuracion:'Configuración'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
+  if(page==='cartera') { setTimeout(loadCarteraUrlUI, 100); setTimeout(testCarteraConnection, 200); }
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
   if(page==='historico') { setTimeout(historicoListMonths, 100); }
   if(page==='procesos') renderProcesos();
@@ -4844,6 +4887,46 @@ function loadProxyUrlUI() {
   const el = document.getElementById('proxy-url-input');
   if(!el) return;
   el.value = localStorage.getItem('energy_proxy_url') || '';
+}
+
+// ===== CARTERA (módulo solo Andrea/Alberto) =====
+function getCarteraURL() {
+  return (localStorage.getItem('cartera_url') || 'http://192.168.20.5:5050').replace(/\/+$/,'');
+}
+function saveCarteraURL() {
+  const raw = (document.getElementById('cartera-url-input').value || '').trim().replace(/\/+$/,'');
+  if (!raw) { showToast('Ingresa una URL','error'); return; }
+  if (!/^https?:\/\//i.test(raw)) { showToast('La URL debe empezar con http:// o https://','error'); return; }
+  localStorage.setItem('cartera_url', raw);
+  showToast('URL de cartera guardada','success');
+  testCarteraConnection();
+}
+function loadCarteraUrlUI() {
+  const el = document.getElementById('cartera-url-input');
+  if (!el) return;
+  el.value = localStorage.getItem('cartera_url') || 'http://192.168.20.5:5050';
+}
+function abrirCartera() {
+  window.open(getCarteraURL(), '_blank', 'noopener');
+}
+async function testCarteraConnection() {
+  const status = document.getElementById('cartera-status');
+  if (!status) return;
+  status.textContent = '🔍 Probando…';
+  status.style.background = 'rgba(136,153,187,0.2)';
+  status.style.color = '#cbd5ff';
+  const url = getCarteraURL();
+  try {
+    // Usa no-cors para evitar bloqueos CORS — solo nos importa si responde
+    await fetch(url + '/', { method: 'GET', mode: 'no-cors', cache: 'no-store', signal: AbortSignal.timeout(4000) });
+    status.textContent = '✅ Conectado';
+    status.style.background = 'rgba(46,170,74,0.2)';
+    status.style.color = '#86efac';
+  } catch(e) {
+    status.textContent = '❌ Sin conexión';
+    status.style.background = 'rgba(239,68,68,0.2)';
+    status.style.color = '#fca5a5';
+  }
 }
 async function saveEvalUrl() {
   const raw = (document.getElementById('eval-url-input').value||'').trim();
