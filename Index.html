@@ -1246,6 +1246,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <!-- TABS -->
         <div class="cotiz-tabs">
           <div class="cotiz-tab active" id="ctab-nueva" onclick="cotizShowTab('nueva')">📝 Nueva Cotización</div>
+          <div class="cotiz-tab" id="ctab-solicitudes" onclick="cotizShowTab('solicitudes')">📩 Solicitudes <span id="sol-badge" style="display:none;background:#ef4444;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></div>
           <div class="cotiz-tab" id="ctab-bd" onclick="cotizShowTab('bd')">📊 Base de Datos</div>
           <div class="cotiz-tab" id="ctab-agente" onclick="cotizShowTab('agente')" style="color:#fbbf24;">📧 Agente</div>
           <div class="cotiz-tab" id="ctab-proveedores" onclick="cotizShowTab('proveedores')">🏭 Proveedores</div>
@@ -1383,12 +1384,43 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             </div>
           </div>
 
+          <!-- Vincular solicitud -->
+          <div id="cotiz-vincular-box" style="display:none;background:rgba(46,170,74,0.08);border:1px solid rgba(46,170,74,0.3);border-radius:10px;padding:12px;margin-bottom:8px;">
+            <div style="font-size:12px;color:#86efac;font-weight:700;margin-bottom:8px;">📩 Vincular a solicitud pendiente</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <select id="cotiz-sol-vincular" style="flex:1;min-width:200px;background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:#fff;font-size:12px;">
+                <option value="">— sin solicitud vinculada —</option>
+              </select>
+              <span style="font-size:11px;color:var(--text-muted);">Al guardar, la solicitud pasará a "En cotización"</span>
+            </div>
+          </div>
+
           <!-- Botones -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
             <button class="btn btn-primary" onclick="cotizGuardarBD()" style="width:auto;font-size:13px;">💾 Guardar en base de datos</button>
             <button class="btn btn-primary" onclick="cotizGenerarPDF()" style="width:auto;font-size:13px;background:rgba(229,62,62,.3);border-color:#e53e3e;">📄 Generar PDF</button>
             <button class="btn btn-primary" onclick="cotizDownloadExcel()" style="width:auto;font-size:13px;background:rgba(46,170,74,.3);border-color:#2eaa4a;">⬇️ Descargar Excel</button>
             <button class="btn btn-secondary" onclick="cotizNueva()" style="width:auto;font-size:13px;">+ Nueva cotización</button>
+          </div>
+        </div>
+
+        <!-- ═══ TAB SOLICITUDES ═══ -->
+        <div class="cotiz-tab-content" id="cotiz-tab-solicitudes">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+            <div style="font-size:13px;color:var(--text-muted);">Solicitudes recibidas en <b style="color:#fff;">info@eygenergygroup.com</b> — tiempo límite de respuesta: <b style="color:var(--gold);">12 horas</b></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="bd-filter-btn active" id="sol-f-todas" onclick="solFilter('todas',this)">Todas</button>
+              <button class="bd-filter-btn" id="sol-f-pendiente" onclick="solFilter('pendiente',this)">⏳ Pendientes</button>
+              <button class="bd-filter-btn" id="sol-f-vencida" onclick="solFilter('vencida',this)">🔴 Vencidas</button>
+              <button class="bd-filter-btn" id="sol-f-en_cotizacion" onclick="solFilter('en_cotizacion',this)">🔵 En cotización</button>
+              <button class="bd-filter-btn" id="sol-f-enviada" onclick="solFilter('enviada',this)">✅ Enviadas</button>
+            </div>
+          </div>
+          <div id="sol-list"></div>
+          <div id="sol-empty" style="display:none;text-align:center;padding:40px;color:var(--text-muted);">
+            <div style="font-size:36px;margin-bottom:8px;">📩</div>
+            <div>No hay solicitudes todavía.</div>
+            <div style="font-size:12px;margin-top:4px;">Llegarán automáticamente cuando Sheila reenvíe correos a info@eygenergygroup.com</div>
           </div>
         </div>
 
@@ -1413,7 +1445,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <thead>
                 <tr>
                   <th>COT. No.</th><th>FECHA</th><th>CLIENTE</th><th>CONTACTO</th>
-                  <th>VENDEDOR</th><th>TOTAL</th><th>VENCE</th><th>ESTADO</th><th>ACCIONES</th>
+                  <th>VENDEDOR</th><th>⏱</th><th>TOTAL</th><th>VENCE</th><th>ESTADO</th><th>ACCIONES</th>
                 </tr>
               </thead>
               <tbody id="bd-tbody"></tbody>
@@ -2747,8 +2779,9 @@ const GH_BACKUP_MAP = {
   minutas:         { file: 'data/minutas.json',         label: '📋 Minutas' },
   team:            { file: 'data/team.json',            label: '👥 Equipo' },
   projects:        { file: 'data/projects.json',        label: '📊 Proyectos' },
-  bd_cotizaciones: { file: 'data/cotizaciones.json',    label: '📄 Cotizaciones' },
-  bd_proveedores:  { file: 'data/proveedores.json',     label: '🏭 Proveedores' },
+  bd_cotizaciones:    { file: 'data/cotizaciones.json',      label: '📄 Cotizaciones' },
+  bd_proveedores:     { file: 'data/proveedores.json',       label: '🏭 Proveedores' },
+  solicitudes_cotiz:  { file: 'data/solicitudes_cotiz.json', label: '📩 Solicitudes' },
 };
 // Alias para código histórico que llamaba saveData() (no estaba definido — bug previo)
 const saveData = setData;
@@ -3088,7 +3121,8 @@ const POLL_TARGETS = [
   { file:'data/minutas.json',      storageKey:'max_minutas',         renderFn: () => { try{ renderMinutas(); }catch(_){} }, mergeBy:'id' },
   { file:'data/projects.json',     storageKey:'max_projects',        renderFn: () => { try{ renderGantt(); }catch(_){} try{ renderDashboard(); }catch(_){} }, mergeBy:'id' },
   { file:'data/team.json',         storageKey:'max_team',            renderFn: () => { try{ renderTeam(); renderTeamMgmt(); populateSelects(); }catch(_){} }, mergeBy:'id' },
-  { file:'data/cotizaciones.json', storageKey:'max_bd_cotizaciones', renderFn: () => { try{ bdRender(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/cotizaciones.json',      storageKey:'max_bd_cotizaciones',   renderFn: () => { try{ bdRender(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/solicitudes_cotiz.json', storageKey:'max_solicitudes_cotiz', renderFn: () => { try{ solRender(); solUpdateBadge(); }catch(_){} }, mergeBy:'id' },
   { file:'data/visitas.json',      storageKey:'energy_visitas',      renderFn: () => { _refreshVisitasIfOpen(); }, mergeBy:'id' },
   { file:'data/mensajeria.json',   storageKey:'energy_mensajeria',   renderFn: () => { _refreshMensajeriaIfOpen(); }, mergeBy:'id' },
   { file:'data/fotos_inv.json',    storageKey:'energy_fotos_inv',    renderFn: () => { try{ if(typeof invRender==='function') invRender(); }catch(_){} }, mergeBy:'__obj__' },
@@ -6657,6 +6691,7 @@ function cotizGuardarBD() {
     vendedor: (document.getElementById('cotiz-vendedor')||{}).value || '',
     realizadaPor: (document.getElementById('cotiz-realiza')||{}).value || '',
     aprobadaPor: (document.getElementById('cotiz-aprueba')||{}).value || '',
+    solicitudId: (document.getElementById('cotiz-sol-vincular')||{}).value || '',
     items: JSON.parse(JSON.stringify(cotizItems)),
     fechaGuardado: new Date().toISOString()
   };
@@ -6671,6 +6706,9 @@ function cotizGuardarBD() {
   }
   saveData('bd_cotizaciones', bd);
   cotizEditId = id;
+  // Si hay solicitud vinculada, marcarla como en_cotizacion
+  const solVinc = (document.getElementById('cotiz-sol-vincular')||{}).value || '';
+  if (solVinc) _solCambiarEstado(solVinc, 'en_cotizacion');
 }
 
 // ===== GENERAR PDF DE COTIZACIÓN =====
@@ -7090,6 +7128,7 @@ function bdRender(filtro) {
       <td style="font-weight:600">${c.cliente||''}</td>
       <td style="color:var(--text-muted)">${c.contacto||''}</td>
       <td style="color:var(--text-muted);font-size:11px">${c.vendedor||''}</td>
+      <td style="text-align:center">${_bdSemaforo(c)}</td>
       <td style="color:var(--gold);font-weight:600">$${(c.total||0).toLocaleString('es-CO',{minimumFractionDigits:0})}</td>
       <td style="color:var(--text-muted)">${c.fechaVenc||''}</td>
       <td><span class="cotiz-estado-badge ${cls}">${c.estado}</span></td>
@@ -7235,6 +7274,135 @@ function provEliminar(id, e) {
   showToast('Proveedor eliminado','success');
 }
 
+// ===== SOLICITUDES DE COTIZACIÓN =====
+
+let _solFiltro = 'todas';
+
+function solFilter(f, btn) {
+  _solFiltro = f;
+  document.querySelectorAll('#cotiz-tab-solicitudes .bd-filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  solRender();
+}
+
+function solUpdateBadge() {
+  const soles = getData('solicitudes_cotiz', []);
+  const now = Date.now();
+  const urgentes = soles.filter(s => {
+    if (s.estado === 'enviada' || s.estado === 'cancelada') return false;
+    const horas = (now - new Date(s.fecha).getTime()) / 3600000;
+    return horas >= 12;
+  }).length;
+  const badge = document.getElementById('sol-badge');
+  if (!badge) return;
+  if (urgentes > 0) { badge.style.display = ''; badge.textContent = urgentes; }
+  else badge.style.display = 'none';
+}
+
+function solRender() {
+  const container = document.getElementById('sol-list');
+  const empty = document.getElementById('sol-empty');
+  if (!container) return;
+  let soles = getData('solicitudes_cotiz', []);
+  if (_solFiltro !== 'todas') soles = soles.filter(s => s.estado === _solFiltro);
+  soles = soles.slice().sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
+  if (!soles.length) {
+    container.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  const now = Date.now();
+  container.innerHTML = soles.map(s => {
+    const horas = (now - new Date(s.fecha).getTime()) / 3600000;
+    const semaforo = s.estado === 'enviada' ? '✅' : horas < 6 ? '🟢' : horas < 12 ? '🟡' : '🔴';
+    const horasStr = horas < 1 ? Math.round(horas*60)+'m' : horas < 24 ? horas.toFixed(1)+'h' : (horas/24).toFixed(1)+'d';
+    const urgColor = s.urgencia === 'alta' ? '#f87171' : s.urgencia === 'media' ? 'var(--gold)' : '#4ade80';
+    const estadoColor = {pendiente:'var(--gold)',en_cotizacion:'#7eb3ff',enviada:'#4ade80',vencida:'#f87171'}[s.estado] || 'var(--text-muted)';
+    const puedeVincular = s.estado === 'pendiente' || s.estado === 'en_cotizacion';
+    return `<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+        <div style="flex:1;min-width:200px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <span style="font-size:18px;">${semaforo}</span>
+            <span style="font-weight:700;font-size:15px;color:#fff;">${(s.cliente||'').replace(/</g,'&lt;')}</span>
+            <span style="font-size:11px;color:${urgColor};font-weight:700;background:${urgColor}22;padding:2px 8px;border-radius:10px;">${s.urgencia||'media'}</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px;">${(s.descripcion||'').replace(/</g,'&lt;')}</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <span style="font-size:11px;color:var(--text-muted);">📅 ${new Date(s.fecha).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
+            <span style="font-size:11px;color:var(--text-muted);">⏱ hace ${horasStr}</span>
+            ${s.cotizacionId ? `<span style="font-size:11px;color:#7eb3ff;">📄 ${s.cotizacionId}</span>` : ''}
+            ${s.contacto ? `<span style="font-size:11px;color:var(--text-muted);">👤 ${s.contacto}</span>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <span style="font-size:12px;font-weight:700;color:${estadoColor};background:${estadoColor}22;padding:3px 10px;border-radius:10px;">${s.estado}</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${puedeVincular ? `<button class="btn-sm bd-btn-edit" onclick="solAbrirCotiz('${s.id}','${s.cliente.replace(/'/g,"\\'")}')">📝 Cotizar</button>` : ''}
+            ${puedeVincular ? `<button class="btn-sm" style="background:rgba(239,68,68,.2);color:#fca5a5;border:1px solid rgba(239,68,68,.3);" onclick="solCancelar('${s.id}')">✕ Cancelar</button>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  solUpdateBadge();
+}
+
+function solAbrirCotiz(solId, cliente) {
+  cotizNueva();
+  document.getElementById('cotiz-cliente').value = cliente || '';
+  const box = document.getElementById('cotiz-vincular-box');
+  if (box) box.style.display = 'block';
+  const sel = document.getElementById('cotiz-sol-vincular');
+  if (sel) {
+    const soles = getData('solicitudes_cotiz', []).filter(s => s.estado === 'pendiente' || s.estado === 'en_cotizacion');
+    sel.innerHTML = '<option value="">— sin solicitud vinculada —</option>' +
+      soles.map(s => `<option value="${s.id}"${s.id===solId?' selected':''}>${s.id} — ${s.cliente}</option>`).join('');
+  }
+  // Marcar en_cotizacion
+  _solCambiarEstado(solId, 'en_cotizacion');
+  cotizShowTab('nueva');
+}
+
+function solCancelar(solId) {
+  if (!confirm('¿Cancelar esta solicitud?')) return;
+  _solCambiarEstado(solId, 'cancelada');
+}
+
+function _solCambiarEstado(solId, nuevoEstado) {
+  const soles = getData('solicitudes_cotiz', []);
+  const idx = soles.findIndex(s => s.id === solId);
+  if (idx < 0) return;
+  soles[idx].estado = nuevoEstado;
+  soles[idx].updatedAt = new Date().toISOString();
+  setData('solicitudes_cotiz', soles);
+  solRender();
+}
+
+function solPopulateVincular() {
+  const box = document.getElementById('cotiz-vincular-box');
+  const sel = document.getElementById('cotiz-sol-vincular');
+  if (!sel) return;
+  const soles = getData('solicitudes_cotiz', []).filter(s => s.estado === 'pendiente' || s.estado === 'en_cotizacion');
+  if (soles.length === 0) { if (box) box.style.display = 'none'; return; }
+  if (box) box.style.display = 'block';
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— sin solicitud vinculada —</option>' +
+    soles.map(s => `<option value="${s.id}"${s.id===cur?' selected':''}>${s.id} — ${s.cliente}</option>`).join('');
+}
+
+// ─── Semáforo para la tabla BD ───────────────────────────────────────────────
+function _bdSemaforo(c) {
+  if (!c.fechaEnvio) return '<span title="Sin fecha de envío" style="color:var(--text-muted);font-size:13px;">—</span>';
+  const horas = (Date.now() - new Date(c.fechaEnvio).getTime()) / 3600000;
+  if (c.estado !== 'Enviada') return '<span title="Respondida" style="font-size:13px;">✅</span>';
+  const color = horas < 6 ? '#4ade80' : horas < 12 ? '#fbbf24' : '#f87171';
+  const label = horas < 1 ? Math.round(horas*60)+'m' : horas < 24 ? horas.toFixed(1)+'h' : (horas/24).toFixed(1)+'d';
+  const emoji = horas < 6 ? '🟢' : horas < 12 ? '🟡' : '🔴';
+  return `<span title="${horas.toFixed(1)}h desde envío" style="font-size:12px;color:${color};white-space:nowrap;">${emoji} ${label}</span>`;
+}
+
 function initCotizaciones() {
   const today2 = new Date().toISOString().split('T')[0];
   const venc = new Date(); venc.setDate(venc.getDate()+8);
@@ -7252,6 +7420,8 @@ function initCotizaciones() {
     );
   }
   if (!cotizItems.length) cotizRender();
+  solPopulateVincular();
+  solUpdateBadge();
 }
 
 function saveGhToken() {
