@@ -1264,6 +1264,23 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                   <div class="form-group"><label>CONTACTO</label><input type="text" id="cotiz-contacto" placeholder="Nombre contacto"></div>
                 </div>
                 <div class="form-group"><label>CORREO</label><input type="email" id="cotiz-correo" placeholder="correo@empresa.com"></div>
+                <div class="form-row" style="margin-top:8px;">
+                  <div class="form-group"><label>VENDEDOR</label>
+                    <select id="cotiz-vendedor" style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
+                      <option value="">— sin asignar —</option>
+                    </select>
+                  </div>
+                  <div class="form-group"><label>REALIZADA POR</label>
+                    <select id="cotiz-realiza" style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
+                      <option value="">— seleccionar —</option>
+                    </select>
+                  </div>
+                  <div class="form-group"><label>APROBADA POR</label>
+                    <select id="cotiz-aprueba" style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
+                      <option value="">— seleccionar —</option>
+                    </select>
+                  </div>
+                </div>
               </div>
               <div style="min-width:210px;">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
@@ -1378,8 +1395,11 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <!-- ═══ TAB BASE DE DATOS ═══ -->
         <div class="cotiz-tab-content" id="cotiz-tab-bd">
           <div class="bd-stats" id="bd-stats-bar"></div>
-          <div style="margin-bottom:12px;">
-            <input type="text" id="bd-search-input" placeholder="🔍 Buscar por cliente, número o contacto..." oninput="bdRender()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:#fff;font-size:13px;">
+          <div style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" id="bd-search-input" placeholder="🔍 Buscar por cliente, número o contacto..." oninput="bdRender()" style="flex:1;min-width:200px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:#fff;font-size:13px;">
+            <select id="bd-filter-vendedor" onchange="bdRender()" style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:#fff;font-size:13px;min-width:160px;">
+              <option value="">👤 Todos los vendedores</option>
+            </select>
           </div>
           <div class="bd-filters">
             <button class="bd-filter-btn active" onclick="bdFilter('todas',this)">Todas</button>
@@ -1393,7 +1413,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <thead>
                 <tr>
                   <th>COT. No.</th><th>FECHA</th><th>CLIENTE</th><th>CONTACTO</th>
-                  <th>TOTAL</th><th>VENCE</th><th>ESTADO</th><th>ACCIONES</th>
+                  <th>VENDEDOR</th><th>TOTAL</th><th>VENCE</th><th>ESTADO</th><th>ACCIONES</th>
                 </tr>
               </thead>
               <tbody id="bd-tbody"></tbody>
@@ -6556,6 +6576,23 @@ function cotizClear() {
   cotizRender();
 }
 
+function cotizGetTeamOptions(selectedVal) {
+  const names = (USERS || []).map(u => u.name).filter(Boolean);
+  return names.map(n => `<option value="${n}"${n===selectedVal?' selected':''}>${n}</option>`).join('');
+}
+
+function cotizPopulateSelects(vendedor, realiza, aprueba) {
+  ['cotiz-vendedor','cotiz-realiza','cotiz-aprueba'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const cur = id==='cotiz-vendedor' ? vendedor : id==='cotiz-realiza' ? realiza : aprueba;
+    el.innerHTML = '<option value="">— seleccionar —</option>' + cotizGetTeamOptions(cur);
+  });
+  // vendedor can be empty
+  const vEl = document.getElementById('cotiz-vendedor');
+  if (vEl) vEl.innerHTML = '<option value="">— sin asignar —</option>' + cotizGetTeamOptions(vendedor);
+}
+
 function cotizNueva() {
   cotizEditId = null;
   cotizItems = [];
@@ -6573,6 +6610,9 @@ function cotizNueva() {
   document.getElementById('cotiz-fecha-gen').value = today2;
   const venc = new Date(); venc.setDate(venc.getDate()+8);
   document.getElementById('cotiz-fecha-venc').value = venc.toISOString().split('T')[0];
+  const cu = window.currentUser || {};
+  const cuName = cu.name || '';
+  cotizPopulateSelects('', cuName, 'Alberto');
   cotizWriteNum(cotizGetNextNum());
   cotizRender();
   cotizShowTab('nueva');
@@ -6607,6 +6647,9 @@ function cotizGuardarBD() {
     sitioEntrega: document.getElementById('cotiz-sitio').value,
     validez: document.getElementById('cotiz-validez').value,
     observaciones: document.getElementById('cotiz-observaciones').value,
+    vendedor: (document.getElementById('cotiz-vendedor')||{}).value || '',
+    realizadaPor: (document.getElementById('cotiz-realiza')||{}).value || '',
+    aprobadaPor: (document.getElementById('cotiz-aprueba')||{}).value || '',
     items: JSON.parse(JSON.stringify(cotizItems)),
     fechaGuardado: new Date().toISOString()
   };
@@ -6641,6 +6684,9 @@ function cotizGenerarPDF() {
   const formaPago = document.getElementById('cotiz-pago').value;
   const sitio = document.getElementById('cotiz-sitio').value;
   const validez = document.getElementById('cotiz-validez').value;
+  const vendedor = (document.getElementById('cotiz-vendedor')||{}).value || '';
+  const realizadaPor = (document.getElementById('cotiz-realiza')||{}).value || '';
+  const aprobadaPor = (document.getElementById('cotiz-aprueba')||{}).value || '';
   const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
   const ivaVal = subtotal * iva / 100;
   const total = subtotal + ivaVal;
@@ -6788,6 +6834,20 @@ function cotizGenerarPDF() {
     <div class="cond-cell">
       <div class="cond-h">VALIDEZ DE ESTA OFERTA</div>
       <div class="cond-v">${validez||''}</div>
+    </div>
+  </div>
+  <div class="cond" style="border-top:1px solid #000;">
+    <div class="cond-cell">
+      <div class="cond-h">VENDEDOR</div>
+      <div class="cond-v">${vendedor||''}</div>
+    </div>
+    <div class="cond-cell">
+      <div class="cond-h">ELABORÓ</div>
+      <div class="cond-v">${realizadaPor||''}</div>
+    </div>
+    <div class="cond-cell">
+      <div class="cond-h">APROBÓ</div>
+      <div class="cond-v">${aprobadaPor||''}</div>
     </div>
   </div>
 </body></html>`;
@@ -6966,6 +7026,14 @@ function bdRender(filtro) {
   const empty = document.getElementById('bd-empty');
   if (!tbody) return;
 
+  // Populate vendedor filter dropdown
+  const vfEl = document.getElementById('bd-filter-vendedor');
+  if (vfEl) {
+    const curVF = vfEl.value;
+    const vendedores = [...new Set(bd.map(c => c.vendedor||'').filter(Boolean))].sort();
+    vfEl.innerHTML = '<option value="">👤 Todos los vendedores</option>' + vendedores.map(v => `<option value="${v}"${v===curVF?' selected':''}>${v}</option>`).join('');
+  }
+
   // Stats
   const stats = {todas:bd.length, Enviada:0, Adjudicada:0, Rechazada:0, Pendiente:0};
   const totales = {Adjudicada:0, Enviada:0};
@@ -6979,8 +7047,10 @@ function bdRender(filtro) {
     <div class="bd-stat"><div class="bd-stat-num" style="color:var(--gold);font-size:13px">$${(totales.Adjudicada/1000000).toFixed(1)}M</div><div class="bd-stat-label">Valor Ganado</div></div>`;
 
   const srch = ((document.getElementById('bd-search-input')||{}).value||'').toLowerCase().trim();
+  const vfVal = ((document.getElementById('bd-filter-vendedor')||{}).value||'').trim();
   let lista = filtro && filtro !== 'todas' ? bd.filter(c => c.estado === filtro) : [...bd];
   if (srch) lista = lista.filter(c => (c.cliente||'').toLowerCase().includes(srch) || (c.id||'').toLowerCase().includes(srch) || (c.contacto||'').toLowerCase().includes(srch));
+  if (vfVal) lista = lista.filter(c => (c.vendedor||'') === vfVal);
   lista.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
 
   if (!lista.length) {
@@ -6997,6 +7067,7 @@ function bdRender(filtro) {
       <td>${c.fecha||''}</td>
       <td style="font-weight:600">${c.cliente||''}</td>
       <td style="color:var(--text-muted)">${c.contacto||''}</td>
+      <td style="color:var(--text-muted);font-size:11px">${c.vendedor||''}</td>
       <td style="color:var(--gold);font-weight:600">$${(c.total||0).toLocaleString('es-CO',{minimumFractionDigits:0})}</td>
       <td style="color:var(--text-muted)">${c.fechaVenc||''}</td>
       <td><span class="cotiz-estado-badge ${cls}">${c.estado}</span></td>
@@ -7029,6 +7100,7 @@ function bdCargar(id) {
   document.getElementById('cotiz-sitio').value = c.sitioEntrega || '';
   document.getElementById('cotiz-validez').value = c.validez || '8 DÍAS';
   document.getElementById('cotiz-observaciones').value = c.observaciones || '';
+  cotizPopulateSelects(c.vendedor||'', c.realizadaPor||'', c.aprobadaPor||'');
   cotizRender();
   cotizShowTab('nueva');
   showToast('Cotización ' + id + ' cargada para editar','success');
@@ -7148,6 +7220,14 @@ function initCotizaciones() {
   document.getElementById('cotiz-fecha-venc').value = venc.toISOString().split('T')[0];
   if (!cotizEditId) {
     cotizWriteNum(cotizGetNextNum());
+    const cu = window.currentUser || {};
+    cotizPopulateSelects('', cu.name||'', 'Alberto');
+  } else {
+    cotizPopulateSelects(
+      (document.getElementById('cotiz-vendedor')||{}).value||'',
+      (document.getElementById('cotiz-realiza')||{}).value||'',
+      (document.getElementById('cotiz-aprueba')||{}).value||''
+    );
   }
   if (!cotizItems.length) cotizRender();
 }
