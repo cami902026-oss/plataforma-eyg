@@ -2898,7 +2898,8 @@ async function _enqueueOrSave(file, data, label) {
   }
 }
 async function _drainSyncQueue() {
-  if (!navigator.onLine || !_ghToken()) return;
+  if (!navigator.onLine) return;
+  if (!_ghToken() && !_ghWriteProxyURL()) return;
   const q = _getSyncQueue();
   if (!q.length) return;
   _setSyncStatus('syncing', 'Subiendo '+q.length+'…');
@@ -2961,8 +2962,8 @@ async function syncNow() {
   const before = _getSyncQueue();
   if (!before.length) { _refreshSyncBadge(); showToast('✅ Todo sincronizado','success'); return; }
   // Diagnóstico antes de drenar
-  if (!_ghToken()) {
-    showToast('⚠️ No tienes token GitHub configurado — los cambios no pueden subir. Configuración → Token GitHub','error',{durationMs:7000});
+  if (!_ghToken() && !_ghWriteProxyURL()) {
+    showToast('⚠️ Sin token GitHub ni proxy configurado — pide a Andrea que guarde la URL del proxy en Configuración','error',{durationMs:7000});
     return;
   }
   await _drainSyncQueue();
