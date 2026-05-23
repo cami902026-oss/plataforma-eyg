@@ -1,1 +1,37 @@
-[]
+[
+  {
+    "id": "LM1001",
+    "fecha": "2026-05-23",
+    "fechaVenc": "2026-05-31",
+    "cliente": "PEPE",
+    "contacto": "PEPITO",
+    "correo": "pepito@eygenergygrimsjd.com",
+    "estado": "Borrador",
+    "iva": 19,
+    "subtotal": 150,
+    "ivaVal": 28.5,
+    "total": 178.5,
+    "formaPago": "30 DÍAS",
+    "sitioEntrega": "chia",
+    "validez": "8 DÍAS",
+    "observaciones": "LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.",
+    "items": [
+      {
+        "id": 1,
+        "desc": "cosas",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 150,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "xf",
+        "proveedor": "codifer"
+      }
+    ],
+    "fechaGuardado": "2026-05-23T00:39:45.078Z",
+    "createdAt": "2026-05-23T00:39:45.078Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-23T00:39:45.078Z",
+    "updatedBy": "andrea"
+  }
+]
