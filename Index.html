@@ -7028,11 +7028,14 @@ function bdRender(filtro) {
 
   const isAdminOrJefe = currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'JEFE');
   const cuName = (currentUser && currentUser.name) || '';
+  // Restrict only users whose team role is 'Comercial' (case-insensitive) — scales to future sales reps
+  const teamMember = (getData('team', TEAM_DEFAULT)||[]).find(m => m.name === cuName);
+  const isComercial = !isAdminOrJefe && teamMember && (teamMember.role||'').toLowerCase().includes('comercial');
 
-  // Vendedor filter: visible only for ADMIN/JEFE; COLABORADORs see only their own
+  // Vendedor filter: visible only for ADMIN/JEFE; Comercial users see only their own
   const vfEl = document.getElementById('bd-filter-vendedor');
   if (vfEl) {
-    if (!isAdminOrJefe) {
+    if (isComercial) {
       vfEl.style.display = 'none';
     } else {
       vfEl.style.display = '';
@@ -7043,7 +7046,7 @@ function bdRender(filtro) {
   }
 
   // Stats (sobre los datos visibles para el usuario)
-  const bdVisible = isAdminOrJefe ? bd : bd.filter(c => (c.vendedor||'') === cuName);
+  const bdVisible = isComercial ? bd.filter(c => (c.vendedor||'') === cuName) : bd;
   const stats = {todas:bdVisible.length, Enviada:0, Adjudicada:0, Rechazada:0, Pendiente:0};
   const totales = {Adjudicada:0, Enviada:0};
   bdVisible.forEach(c => { if(stats[c.estado]!==undefined) stats[c.estado]++; if(totales[c.estado]!==undefined) totales[c.estado]+=c.total||0; });
@@ -7056,10 +7059,10 @@ function bdRender(filtro) {
     <div class="bd-stat"><div class="bd-stat-num" style="color:var(--gold);font-size:13px">$${(totales.Adjudicada/1000000).toFixed(1)}M</div><div class="bd-stat-label">Valor Ganado</div></div>`;
 
   const srch = ((document.getElementById('bd-search-input')||{}).value||'').toLowerCase().trim();
-  const vfVal = isAdminOrJefe ? ((document.getElementById('bd-filter-vendedor')||{}).value||'').trim() : cuName;
+  const vfVal = isComercial ? cuName : ((document.getElementById('bd-filter-vendedor')||{}).value||'').trim();
   let lista = filtro && filtro !== 'todas' ? bdVisible.filter(c => c.estado === filtro) : [...bdVisible];
   if (srch) lista = lista.filter(c => (c.cliente||'').toLowerCase().includes(srch) || (c.id||'').toLowerCase().includes(srch) || (c.contacto||'').toLowerCase().includes(srch));
-  if (isAdminOrJefe && vfVal) lista = lista.filter(c => (c.vendedor||'') === vfVal);
+  if (!isComercial && vfVal) lista = lista.filter(c => (c.vendedor||'') === vfVal);
   lista.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
 
   if (!lista.length) {
