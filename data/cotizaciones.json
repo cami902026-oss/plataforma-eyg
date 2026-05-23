@@ -46,5 +46,53 @@
     "createdBy": "andrea",
     "updatedAt": "2026-05-23T00:41:24.609Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "LM1002",
+    "fecha": "2026-05-23",
+    "fechaVenc": "2026-05-31",
+    "cliente": "Yo",
+    "contacto": "Yotas",
+    "correo": "yotss@toandj.com",
+    "estado": "Borrador",
+    "iva": 19,
+    "subtotal": 29687.857142857145,
+    "ivaVal": 5640.692857142858,
+    "total": 35328.55,
+    "formaPago": "30 DÍAS",
+    "sitioEntrega": "Yopal",
+    "validez": "8 DÍAS",
+    "observaciones": "LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.",
+    "items": [
+      {
+        "id": 1,
+        "desc": "CODO AC NPT 3.000L 3/4\"",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 12447.857142857143,
+        "tiempoEntrega": "1-2 DÍAS HÁBILES",
+        "desvTec": "",
+        "marca": "BOTHWELL",
+        "proveedor": "",
+        "codigo": 15000103
+      },
+      {
+        "id": 2,
+        "desc": "Tet",
+        "udm": "EA",
+        "qty": 5,
+        "precio": 3448,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0
+      }
+    ],
+    "fechaGuardado": "2026-05-23T01:36:30.152Z",
+    "createdAt": "2026-05-23T01:36:30.152Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-23T01:36:30.152Z",
+    "updatedBy": "andrea"
   }
 ]
