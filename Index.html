@@ -6687,6 +6687,9 @@ function cotizGenerarPDF() {
   const vendedor = (document.getElementById('cotiz-vendedor')||{}).value || '';
   const realizadaPor = (document.getElementById('cotiz-realiza')||{}).value || '';
   const aprobadaPor = (document.getElementById('cotiz-aprueba')||{}).value || '';
+  const team = getData('team', TEAM_DEFAULT) || [];
+  const vendedorMember = vendedor ? team.find(m => m.name === vendedor) : null;
+  const vendedorEmail = (vendedorMember && vendedorMember.email) ? vendedorMember.email : 'comercial1@eygenergygroup.com';
   const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
   const ivaVal = subtotal * iva / 100;
   const total = subtotal + ivaVal;
@@ -6767,7 +6770,7 @@ function cotizGenerarPDF() {
     </div>
     <div class="hdr-emp">
       <div class="em-1">E&G ENERGY GROUP SAS · CARRERA 7 # 12-61 CHIA · TELEFONO 320 494 7227</div>
-      <div>CORREO ELECTRONICO comercial1@eygenergygroup.com</div>
+      <div>CORREO ELECTRONICO ${vendedorEmail}</div>
     </div>
     <div class="hdr-cot">
       <div class="cot-lbl">COTIZACION No.</div>
