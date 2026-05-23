@@ -7026,18 +7026,27 @@ function bdRender(filtro) {
   const empty = document.getElementById('bd-empty');
   if (!tbody) return;
 
-  // Populate vendedor filter dropdown
+  const isAdminOrJefe = currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'JEFE');
+  const cuName = (currentUser && currentUser.name) || '';
+
+  // Vendedor filter: visible only for ADMIN/JEFE; COLABORADORs see only their own
   const vfEl = document.getElementById('bd-filter-vendedor');
   if (vfEl) {
-    const curVF = vfEl.value;
-    const vendedores = [...new Set(bd.map(c => c.vendedor||'').filter(Boolean))].sort();
-    vfEl.innerHTML = '<option value="">👤 Todos los vendedores</option>' + vendedores.map(v => `<option value="${v}"${v===curVF?' selected':''}>${v}</option>`).join('');
+    if (!isAdminOrJefe) {
+      vfEl.style.display = 'none';
+    } else {
+      vfEl.style.display = '';
+      const curVF = vfEl.value;
+      const vendedores = [...new Set(bd.map(c => c.vendedor||'').filter(Boolean))].sort();
+      vfEl.innerHTML = '<option value="">👤 Todos los vendedores</option>' + vendedores.map(v => `<option value="${v}"${v===curVF?' selected':''}>${v}</option>`).join('');
+    }
   }
 
-  // Stats
-  const stats = {todas:bd.length, Enviada:0, Adjudicada:0, Rechazada:0, Pendiente:0};
+  // Stats (sobre los datos visibles para el usuario)
+  const bdVisible = isAdminOrJefe ? bd : bd.filter(c => (c.vendedor||'') === cuName);
+  const stats = {todas:bdVisible.length, Enviada:0, Adjudicada:0, Rechazada:0, Pendiente:0};
   const totales = {Adjudicada:0, Enviada:0};
-  bd.forEach(c => { if(stats[c.estado]!==undefined) stats[c.estado]++; if(totales[c.estado]!==undefined) totales[c.estado]+=c.total||0; });
+  bdVisible.forEach(c => { if(stats[c.estado]!==undefined) stats[c.estado]++; if(totales[c.estado]!==undefined) totales[c.estado]+=c.total||0; });
   const sb = document.getElementById('bd-stats-bar');
   if (sb) sb.innerHTML = `
     <div class="bd-stat"><div class="bd-stat-num" style="color:var(--light)">${stats.todas}</div><div class="bd-stat-label">Total</div></div>
@@ -7047,10 +7056,10 @@ function bdRender(filtro) {
     <div class="bd-stat"><div class="bd-stat-num" style="color:var(--gold);font-size:13px">$${(totales.Adjudicada/1000000).toFixed(1)}M</div><div class="bd-stat-label">Valor Ganado</div></div>`;
 
   const srch = ((document.getElementById('bd-search-input')||{}).value||'').toLowerCase().trim();
-  const vfVal = ((document.getElementById('bd-filter-vendedor')||{}).value||'').trim();
-  let lista = filtro && filtro !== 'todas' ? bd.filter(c => c.estado === filtro) : [...bd];
+  const vfVal = isAdminOrJefe ? ((document.getElementById('bd-filter-vendedor')||{}).value||'').trim() : cuName;
+  let lista = filtro && filtro !== 'todas' ? bdVisible.filter(c => c.estado === filtro) : [...bdVisible];
   if (srch) lista = lista.filter(c => (c.cliente||'').toLowerCase().includes(srch) || (c.id||'').toLowerCase().includes(srch) || (c.contacto||'').toLowerCase().includes(srch));
-  if (vfVal) lista = lista.filter(c => (c.vendedor||'') === vfVal);
+  if (isAdminOrJefe && vfVal) lista = lista.filter(c => (c.vendedor||'') === vfVal);
   lista.sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
 
   if (!lista.length) {
