@@ -2890,7 +2890,12 @@ function _refreshSyncBadge() {
 }
 async function _enqueueOrSave(file, data, label) {
   if (!_ghToken() && !_ghWriteProxyURL()) {
-    // Sin token y sin proxy: no podemos escribir, queda solo local
+    // Sin token ni proxy: encolar igualmente para que _pollOne no descarte el item local
+    const q = _getSyncQueue();
+    const filtered = q.filter(item => item.file !== file);
+    filtered.push({ file, data, label, ts: Date.now() });
+    _setSyncQueue(filtered);
+    _refreshSyncBadge();
     return;
   }
   if (!navigator.onLine) {
@@ -3091,6 +3096,8 @@ const POLL_TARGETS = [
 ];
 
 async function _pollOne(target) {
+  // Si hay una escritura pendiente para este archivo, no sobrescribir local hasta confirmar subida
+  if (_getSyncQueue().some(q => q.file === target.file)) return false;
   // FIX CORS: NO usar If-None-Match ni Cache-Control: no-cache → disparan preflight
   // OPTIONS que raw.githubusercontent.com no responde → bloquea todo el polling.
   // En su lugar: GET simple con cache-buster ?t= y comparar contenido contra hash previo.
