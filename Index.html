@@ -3124,12 +3124,13 @@ document.addEventListener('visibilitychange', () => {
 async function _loadCompanyConfig() {
   const cfg = await _loadDataGH('data/config.json');
   if (!cfg) return;
-  // Si el proxy URL no está local, copiarlo desde la config compartida
-  if (cfg.proxyUrl && !localStorage.getItem('energy_proxy_url')) {
+  // Sincronizar URLs de proxy desde la config compartida (servidor SIEMPRE gana)
+  // — antes solo se aplicaba si no había nada local, pero eso impedía propagar a dispositivos nuevos
+  if (cfg.proxyUrl && localStorage.getItem('energy_proxy_url') !== cfg.proxyUrl) {
     localStorage.setItem('energy_proxy_url', cfg.proxyUrl);
     console.log('[ENERGY] Proxy URL (Claude) sincronizada desde config compartida');
   }
-  if (cfg.ghProxyUrl && !localStorage.getItem('energy_gh_proxy_url')) {
+  if (cfg.ghProxyUrl && localStorage.getItem('energy_gh_proxy_url') !== cfg.ghProxyUrl) {
     localStorage.setItem('energy_gh_proxy_url', cfg.ghProxyUrl);
     console.log('[ENERGY] Proxy GitHub sincronizado desde config compartida');
   }
