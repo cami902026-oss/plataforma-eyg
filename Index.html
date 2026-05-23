@@ -1048,6 +1048,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               </div>
               <button class="btn btn-primary" onclick="saveCarteraURL()" style="width:auto;white-space:nowrap;">Guardar</button>
             </div>
+            <div id="cartera-url-updatedAt" style="font-size:11px;color:#86efac;margin-top:8px;"></div>
           </div>
         </div>
       </div>
@@ -4896,23 +4897,54 @@ function loadProxyUrlUI() {
 }
 
 // ===== CARTERA (módulo solo Andrea/Alberto) =====
+// La URL se sincroniza automáticamente desde GitHub (la sube el PC anfitrión al arrancar)
 function getCarteraURL() {
   return (localStorage.getItem('cartera_url') || 'http://192.168.20.5:5050').replace(/\/+$/,'');
+}
+// Lee la URL más reciente desde GitHub (subida por el PC anfitrión)
+async function refreshCarteraURLFromGitHub() {
+  try {
+    const r = await fetch('https://raw.githubusercontent.com/cami902026-oss/plataforma-eyg/main/data/cartera_url.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return null;
+    const d = await r.json();
+    if (d && d.url) {
+      localStorage.setItem('cartera_url', d.url);
+      localStorage.setItem('cartera_url_updatedAt', d.updatedAt || '');
+      return d;
+    }
+  } catch(e) { console.warn('No se pudo leer cartera_url.json:', e); }
+  return null;
 }
 function saveCarteraURL() {
   const raw = (document.getElementById('cartera-url-input').value || '').trim().replace(/\/+$/,'');
   if (!raw) { showToast('Ingresa una URL','error'); return; }
   if (!/^https?:\/\//i.test(raw)) { showToast('La URL debe empezar con http:// o https://','error'); return; }
   localStorage.setItem('cartera_url', raw);
-  showToast('URL de cartera guardada','success');
-  testCarteraConnection();
+  showToast('URL de cartera guardada (override manual)','success');
 }
-function loadCarteraUrlUI() {
+async function loadCarteraUrlUI() {
   const el = document.getElementById('cartera-url-input');
   if (!el) return;
+  // Primero intenta refrescar desde GitHub
+  const remote = await refreshCarteraURLFromGitHub();
   el.value = localStorage.getItem('cartera_url') || 'http://192.168.20.5:5050';
+  // Mostrar última actualización si existe
+  const updEl = document.getElementById('cartera-url-updatedAt');
+  if (updEl) {
+    const ts = localStorage.getItem('cartera_url_updatedAt');
+    if (ts) {
+      try {
+        const d = new Date(ts);
+        updEl.textContent = '🔄 Actualizada automáticamente: ' + d.toLocaleString('es-CO');
+      } catch(_) { updEl.textContent = ''; }
+    } else {
+      updEl.textContent = 'URL manual (no sincronizada desde el PC anfitrión todavía)';
+    }
+  }
 }
-function abrirCartera() {
+async function abrirCartera() {
+  // Refrescar URL desde GitHub antes de abrir (por si el PC anfitrión reinició recién)
+  await refreshCarteraURLFromGitHub();
   window.open(getCarteraURL(), '_blank', 'noopener');
 }
 async function testCarteraConnection() {
