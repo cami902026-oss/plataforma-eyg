@@ -107,20 +107,25 @@ function _extractData(subject, from, bodyText, attachments) {
     'Tu tarea es extraer los datos de la solicitud para crear un registro de seguimiento.';
 
   var promptText =
-    'Analiza este mensaje de la comercial. Puede ser un reenvío de un cliente o una solicitud directa.\n\n' +
+    'Analiza este mensaje. Puede ser un reenvío de un cliente o una solicitud directa de cotización.\n\n' +
     'Asunto: ' + subject + '\n' +
     'De: ' + from + '\n' +
     'Cuerpo:\n' + bodyText.substring(0, 3000) + '\n\n' +
-    'Responde SOLO con JSON válido (sin markdown):\n' +
+    'Responde SOLO con JSON válido (sin markdown, sin explicaciones):\n' +
     '{\n' +
     '  "esSolicitud": true o false,\n' +
     '  "cliente": "nombre de la empresa o persona que necesita los materiales",\n' +
-    '  "descripcion": "qué materiales o equipos piden, máximo 300 caracteres",\n' +
-    '  "urgencia": "alta / media / baja",\n' +
-    '  "contacto": "nombre del contacto del cliente si aparece, sino cadena vacía"\n' +
+    '  "contacto": "nombre del contacto del cliente si aparece, sino cadena vacía",\n' +
+    '  "productos": [\n' +
+    '    { "descripcion": "nombre del producto o material", "cantidad": "cantidad y unidad si aparece, sino cadena vacía" }\n' +
+    '  ],\n' +
+    '  "formaPago": "condición de pago si se menciona (contado, crédito 30 días, etc.), sino cadena vacía",\n' +
+    '  "urgencia": "alta si lo piden urgente o para hoy/mañana, baja si tienen más de una semana, media en cualquier otro caso",\n' +
+    '  "observaciones": "cualquier dato relevante adicional: lugar de entrega, especificaciones técnicas, etc., sino cadena vacía"\n' +
     '}\n\n' +
-    'Es solicitud si piden precios, disponibilidad o cotización de materiales/equipos industriales.\n' +
-    'NO es solicitud si es: spam, factura recibida, confirmación de pago, newsletter, alerta automática.';
+    'Es solicitud si piden precios, disponibilidad o cotización de materiales o equipos industriales.\n' +
+    'NO es solicitud si es: spam, factura recibida, confirmación de pago, newsletter, notificación automática.\n' +
+    'Si hay imagen adjunta, léela para extraer los productos listados en ella.';
 
   // Construir el contenido del mensaje (texto + imágenes si hay)
   var content = [];
@@ -162,7 +167,7 @@ function _extractData(subject, from, bodyText, attachments) {
     },
     payload: JSON.stringify({
       model: MODEL,
-      max_tokens: 400,
+      max_tokens: 800,
       system: systemPrompt,
       messages: [{ role: 'user', content: content }]
     }),
@@ -181,20 +186,31 @@ function _extractData(subject, from, bodyText, attachments) {
   var dateStr = Utilities.formatDate(now, 'America/Bogota', 'yyyyMMdd');
   var rand    = Math.floor(Math.random() * 900 + 100).toString();
 
+  // Construir descripción resumida a partir de los productos extraídos
+  var productos = parsed.productos || [];
+  var descripcion = productos.length > 0
+    ? productos.map(function(p) {
+        return (p.cantidad ? p.cantidad + ' — ' : '') + (p.descripcion || '');
+      }).join(' | ').substring(0, 400)
+    : subject;
+
   return {
-    id:           'SOL-' + dateStr + '-' + rand,
-    fecha:        now.toISOString(),
-    cliente:      parsed.cliente      || 'Sin identificar',
-    descripcion:  parsed.descripcion  || subject,
-    urgencia:     parsed.urgencia     || 'media',
-    contacto:     parsed.contacto     || '',
-    correoOrigen: from,
-    asuntoOrigen: subject,
-    estado:       'pendiente',
-    cotizacionId: null,
-    createdAt:    now.toISOString(),
-    updatedAt:    now.toISOString(),
-    createdBy:    'sistema'
+    id:            'SOL-' + dateStr + '-' + rand,
+    fecha:         now.toISOString(),
+    cliente:       parsed.cliente       || 'Sin identificar',
+    contacto:      parsed.contacto      || '',
+    productos:     productos,
+    descripcion:   descripcion,
+    formaPago:     parsed.formaPago     || '',
+    observaciones: parsed.observaciones || '',
+    urgencia:      parsed.urgencia      || 'media',
+    correoOrigen:  from,
+    asuntoOrigen:  subject,
+    estado:        'pendiente',
+    cotizacionId:  null,
+    createdAt:     now.toISOString(),
+    updatedAt:     now.toISOString(),
+    createdBy:     'sistema'
   };
 }
 
