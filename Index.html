@@ -3594,6 +3594,8 @@ async function checkAccess() {
     sessionStorage.setItem('eyg_access', '1');
     document.getElementById('access-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
+    // Sincronizar contraseñas desde GitHub antes de que el usuario intente entrar
+    try { _loadCompanyConfig(); } catch(_) {}
     // Limpiar campos para evitar autofill del navegador
     document.getElementById('login-email').value = '';
     document.getElementById('login-pass').value = '';
@@ -3618,6 +3620,8 @@ async function doLogin() {
     showToast('Usuario o contraseña incorrectos','error');
     return;
   }
+  // Refrescar contraseñas desde GitHub antes de verificar (por si se cambiaron desde otro dispositivo)
+  try { await _loadCompanyConfig(); } catch(_) {}
   // Verificar contraseña con hash (migra automáticamente si era texto plano)
   const stored = localStorage.getItem('eyg_pass_' + u.email.toLowerCase());
   const ok = await _verifyAndMigrate('eyg_pass_' + u.email.toLowerCase(), stored, 'eyg2026', pass);
