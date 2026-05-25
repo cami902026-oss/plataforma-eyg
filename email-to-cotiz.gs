@@ -174,7 +174,7 @@ function _extractData(subject, from, bodyText, attachments) {
     },
     payload: JSON.stringify({
       model: MODEL,
-      max_tokens: 800,
+      max_tokens: 2000,
       system: systemPrompt,
       messages: [{ role: 'user', content: content }]
     }),
