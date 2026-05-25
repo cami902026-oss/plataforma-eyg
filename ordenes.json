@@ -881,11 +881,12 @@
     "cliente": "HIDROCARBUROS DEL CASANARE SAS",
     "desc": "Válvulas y cheques para reemplazar en recibo y despacho de producto",
     "estado": "completado",
+    "fechaIngreso": "2026-05-22",
     "valor": 0,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-05-25",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -909,17 +910,15 @@
         "n": "servidor"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-05-25",
+        "n": "450"
       }
     ],
     "createdAt": "2026-05-22T17:08:29.063Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-05-25T17:20:35.560Z",
-    "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-25T17:20:35.560Z"
+    "updatedAt": "2026-05-25T17:20:52.680Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1778873095177",
