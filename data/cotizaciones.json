@@ -121,5 +121,45 @@
     "createdBy": "andrea",
     "updatedAt": "2026-05-23T17:58:29.244Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "LM1577",
+    "fecha": "2026-05-25",
+    "fechaVenc": "2026-06-02",
+    "cliente": "Andes Operating",
+    "contacto": "Andres Bernal",
+    "correo": "andres.bernal@andesoperating.com",
+    "estado": "Borrador",
+    "iva": 19,
+    "subtotal": 6500000,
+    "ivaVal": 1235000,
+    "total": 7735000,
+    "formaPago": "CONTADO",
+    "sitioEntrega": "YOPAL",
+    "validez": "8 DÍAS",
+    "observaciones": "LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.",
+    "vendedor": "",
+    "realizadaPor": "Andrea",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "SOL-20260525-221",
+    "items": [
+      {
+        "id": 1,
+        "desc": "bomba ihm 10x16 sm",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 6500000,
+        "tiempoEntrega": "6 DIAS",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": "IHM ",
+        "precioProveedor": 4156000
+      }
+    ],
+    "fechaGuardado": "2026-05-25T15:30:18.871Z",
+    "createdAt": "2026-05-25T15:30:18.871Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-25T15:30:18.871Z",
+    "updatedBy": "andrea"
   }
 ]
