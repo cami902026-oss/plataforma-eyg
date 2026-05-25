@@ -1407,8 +1407,9 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <!-- ═══ TAB SOLICITUDES ═══ -->
         <div class="cotiz-tab-content" id="cotiz-tab-solicitudes">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
-            <div style="font-size:13px;color:var(--text-muted);">Solicitudes recibidas en <b style="color:#fff;">info@eygenergygroup.com</b> — tiempo límite de respuesta: <b style="color:var(--gold);">12 horas</b></div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="font-size:13px;color:var(--text-muted);">Solicitudes de cotización — tiempo límite de respuesta: <b style="color:var(--gold);">12 horas</b></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <button class="btn btn-primary" onclick="solNueva()" style="width:auto;font-size:12px;padding:6px 14px;">+ Nueva solicitud</button>
               <button class="bd-filter-btn active" id="sol-f-todas" onclick="solFilter('todas',this)">Todas</button>
               <button class="bd-filter-btn" id="sol-f-pendiente" onclick="solFilter('pendiente',this)">⏳ Pendientes</button>
               <button class="bd-filter-btn" id="sol-f-vencida" onclick="solFilter('vencida',this)">🔴 Vencidas</button>
@@ -1416,11 +1417,35 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="bd-filter-btn" id="sol-f-enviada" onclick="solFilter('enviada',this)">✅ Enviadas</button>
             </div>
           </div>
+          <!-- Formulario nueva/editar solicitud -->
+          <div class="cotiz-card" id="sol-form-card" style="display:none;margin-bottom:16px;">
+            <h3 id="sol-form-title" style="margin-bottom:12px;">➕ Nueva solicitud</h3>
+            <input type="hidden" id="sol-edit-id">
+            <div class="form-row">
+              <div class="form-group"><label>CLIENTE *</label><input type="text" id="sol-f-cliente" placeholder="Nombre empresa o persona"></div>
+              <div class="form-group"><label>CONTACTO</label><input type="text" id="sol-f-contacto" placeholder="Nombre del contacto"></div>
+            </div>
+            <div class="form-group"><label>DESCRIPCIÓN DE LO QUE SOLICITAN *</label><textarea id="sol-f-descripcion" rows="3" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:8px;color:#fff;font-size:13px;resize:vertical;" placeholder="Ej: 10 válvulas de bola 2 pulgadas acero inoxidable, 5 manómetros rango 0-100 psi..."></textarea></div>
+            <div class="form-row">
+              <div class="form-group"><label>URGENCIA</label>
+                <select id="sol-f-urgencia" style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
+                  <option value="media">🟡 Media</option>
+                  <option value="alta">🔴 Alta</option>
+                  <option value="baja">🟢 Baja</option>
+                </select>
+              </div>
+              <div class="form-group"><label>CORREO DEL CLIENTE</label><input type="text" id="sol-f-correo" placeholder="correo@cliente.com (opcional)"></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+              <button class="btn btn-primary" onclick="solGuardar()" style="width:auto;font-size:13px;">💾 Guardar solicitud</button>
+              <button class="btn btn-secondary" onclick="solCerrarForm()" style="width:auto;font-size:13px;">✕ Cancelar</button>
+            </div>
+          </div>
           <div id="sol-list"></div>
           <div id="sol-empty" style="display:none;text-align:center;padding:40px;color:var(--text-muted);">
             <div style="font-size:36px;margin-bottom:8px;">📩</div>
             <div>No hay solicitudes todavía.</div>
-            <div style="font-size:12px;margin-top:4px;">Llegarán automáticamente cuando Sheila reenvíe correos a info@eygenergygroup.com</div>
+            <div style="font-size:12px;margin-top:4px;">Crea una nueva solicitud con el botón de arriba.</div>
           </div>
         </div>
 
@@ -7339,6 +7364,7 @@ function solRender() {
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
           <span style="font-size:12px;font-weight:700;color:${estadoColor};background:${estadoColor}22;padding:3px 10px;border-radius:10px;">${s.estado}</span>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${puedeVincular ? `<button class="btn-sm bd-btn-edit" onclick="solEditar('${s.id}')">✏️ Editar</button>` : ''}
             ${puedeVincular ? `<button class="btn-sm bd-btn-edit" onclick="solAbrirCotiz('${s.id}','${s.cliente.replace(/'/g,"\\'")}')">📝 Cotizar</button>` : ''}
             ${puedeVincular ? `<button class="btn-sm" style="background:rgba(239,68,68,.2);color:#fca5a5;border:1px solid rgba(239,68,68,.3);" onclick="solCancelar('${s.id}')">✕ Cancelar</button>` : ''}
           </div>
@@ -7390,6 +7416,80 @@ function solPopulateVincular() {
   const cur = sel.value;
   sel.innerHTML = '<option value="">— sin solicitud vinculada —</option>' +
     soles.map(s => `<option value="${s.id}"${s.id===cur?' selected':''}>${s.id} — ${s.cliente}</option>`).join('');
+}
+
+function solEditar(solId) {
+  const s = (getData('solicitudes_cotiz', [])).find(x => x.id === solId);
+  if (!s) return;
+  document.getElementById('sol-edit-id').value = s.id;
+  document.getElementById('sol-f-cliente').value = s.cliente || '';
+  document.getElementById('sol-f-contacto').value = s.contacto || '';
+  document.getElementById('sol-f-descripcion').value = s.descripcion || '';
+  document.getElementById('sol-f-urgencia').value = s.urgencia || 'media';
+  document.getElementById('sol-f-correo').value = s.correoOrigen || '';
+  document.getElementById('sol-form-title').textContent = '✏️ Editar solicitud';
+  document.getElementById('sol-form-card').style.display = 'block';
+  document.getElementById('sol-form-card').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function solNueva() {
+  document.getElementById('sol-edit-id').value = '';
+  document.getElementById('sol-f-cliente').value = '';
+  document.getElementById('sol-f-contacto').value = '';
+  document.getElementById('sol-f-descripcion').value = '';
+  document.getElementById('sol-f-urgencia').value = 'media';
+  document.getElementById('sol-f-correo').value = '';
+  document.getElementById('sol-form-title').textContent = '➕ Nueva solicitud';
+  document.getElementById('sol-form-card').style.display = 'block';
+  document.getElementById('sol-f-cliente').focus();
+}
+
+function solCerrarForm() {
+  document.getElementById('sol-form-card').style.display = 'none';
+}
+
+function solGuardar() {
+  const cliente = (document.getElementById('sol-f-cliente').value || '').trim();
+  const descripcion = (document.getElementById('sol-f-descripcion').value || '').trim();
+  if (!cliente) { alert('El nombre del cliente es obligatorio.'); return; }
+  if (!descripcion) { alert('La descripción es obligatoria.'); return; }
+  const soles = getData('solicitudes_cotiz', []);
+  const editId = (document.getElementById('sol-edit-id').value || '').trim();
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0,10).replace(/-/g,'');
+  const rand = Math.floor(Math.random()*900+100).toString();
+  if (editId) {
+    const idx = soles.findIndex(s => s.id === editId);
+    if (idx >= 0) {
+      soles[idx].cliente     = cliente;
+      soles[idx].descripcion = descripcion;
+      soles[idx].urgencia    = document.getElementById('sol-f-urgencia').value || 'media';
+      soles[idx].contacto    = (document.getElementById('sol-f-contacto').value || '').trim();
+      soles[idx].correoOrigen= (document.getElementById('sol-f-correo').value || '').trim();
+      soles[idx].updatedAt   = now.toISOString();
+    }
+  } else {
+    const cu = window.currentUser || {};
+    soles.push({
+      id:           'SOL-' + dateStr + '-' + rand,
+      fecha:        now.toISOString(),
+      cliente,
+      descripcion,
+      urgencia:     document.getElementById('sol-f-urgencia').value || 'media',
+      contacto:     (document.getElementById('sol-f-contacto').value || '').trim(),
+      correoOrigen: (document.getElementById('sol-f-correo').value || '').trim(),
+      asuntoOrigen: '',
+      estado:       'pendiente',
+      cotizacionId: null,
+      createdAt:    now.toISOString(),
+      updatedAt:    now.toISOString(),
+      createdBy:    cu.name || 'manual'
+    });
+  }
+  setData('solicitudes_cotiz', soles);
+  solCerrarForm();
+  solRender();
+  solUpdateBadge();
 }
 
 // ─── Semáforo para la tabla BD ───────────────────────────────────────────────
