@@ -64,7 +64,7 @@ function checkEmails() {
       var from    = msg.getFrom();
       var subject = msg.getSubject();
       var body    = msg.getPlainBody();
-      var atts    = msg.getAttachments();
+      var atts    = msg.getAttachments({ includeInlineImages: true, includeAttachments: true });
 
       // Saltar mailer-daemon y notificaciones automáticas
       var fromLower = from.toLowerCase();
@@ -103,8 +103,10 @@ function _extractData(subject, from, bodyText, attachments) {
 
   var systemPrompt =
     'Eres el asistente de E&G Energy Group SAS (empresa de suministro industrial). ' +
-    'La comercial reenvía solicitudes de clientes: pueden venir como texto, imagen o PDF adjunto. ' +
-    'Tu tarea es extraer los datos de la solicitud para crear un registro de seguimiento.';
+    'La comercial reenvía solicitudes de clientes que pueden venir como texto, imagen o PDF. ' +
+    'Si hay una imagen adjunta, SIEMPRE léela — puede contener una lista de productos escrita a mano, ' +
+    'una foto de un pedido, una captura de pantalla de WhatsApp o un listado impreso. ' +
+    'Si el cuerpo del correo está vacío pero hay imagen, asume que la imagen contiene la solicitud.';
 
   var promptText =
     'Analiza este mensaje. Puede ser un reenvío de un cliente o una solicitud directa de cotización.\n\n' +
@@ -131,10 +133,13 @@ function _extractData(subject, from, bodyText, attachments) {
   var content = [];
 
   // Agregar imágenes adjuntas para visión de Claude
+  var imagenesAgregadas = 0;
   if (attachments && attachments.length > 0) {
-    for (var i = 0; i < attachments.length && i < 3; i++) {
+    Logger.log('Adjuntos encontrados: ' + attachments.length);
+    for (var i = 0; i < attachments.length && imagenesAgregadas < 3; i++) {
       var att = attachments[i];
       var mime = att.getContentType() || '';
+      Logger.log('Adjunto ' + i + ': ' + mime + ' — ' + att.getName());
       if (mime.indexOf('image/') === 0) {
         try {
           var b64 = Utilities.base64Encode(att.copyBlob().getBytes());
@@ -142,15 +147,17 @@ function _extractData(subject, from, bodyText, attachments) {
             type: 'image',
             source: { type: 'base64', media_type: mime, data: b64 }
           });
+          imagenesAgregadas++;
+          Logger.log('Imagen agregada al contexto de Claude');
         } catch(e) { Logger.log('Error leyendo imagen: ' + e.message); }
       } else if (mime === 'application/pdf') {
-        // Para PDFs, intentar leer como texto (limitado en Apps Script)
         try {
           var pdfText = att.copyBlob().getDataAsString();
           if (pdfText && pdfText.length > 50) {
             promptText += '\n\n[Texto extraído del PDF adjunto]:\n' + pdfText.substring(0, 2000);
+            Logger.log('PDF agregado como texto');
           }
-        } catch(e) { Logger.log('PDF no legible como texto'); }
+        } catch(e) { Logger.log('PDF no legible como texto: ' + e.message); }
       }
     }
   }
