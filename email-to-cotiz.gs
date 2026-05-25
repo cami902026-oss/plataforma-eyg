@@ -182,12 +182,22 @@ function _extractData(subject, from, bodyText, attachments) {
   });
 
   var data = JSON.parse(resp.getContentText());
-  if (!data.content || !data.content[0]) return null;
+  if (!data.content || !data.content[0]) {
+    Logger.log('Claude no devolvio contenido. Respuesta: ' + resp.getContentText().substring(0, 300));
+    return null;
+  }
 
   var text = data.content[0].text.trim().replace(/```json\n?|\n?```/g, '');
+  Logger.log('Claude respondio: ' + text.substring(0, 500));
   var parsed;
-  try { parsed = JSON.parse(text); } catch(_) { return null; }
-  if (!parsed.esSolicitud) return null;
+  try { parsed = JSON.parse(text); } catch(e) {
+    Logger.log('Error parseando JSON: ' + e.message);
+    return null;
+  }
+  if (!parsed.esSolicitud) {
+    Logger.log('Claude determino que NO es solicitud');
+    return null;
+  }
 
   var now     = new Date();
   var dateStr = Utilities.formatDate(now, 'America/Bogota', 'yyyyMMdd');
