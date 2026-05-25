@@ -1,41 +1,47 @@
 /**
- * ===== ENERGY — Email → Solicitud Cotización (Gmail polling) =====
+ * ===== ENERGY — Solicitudes de Cotización (Gmail polling) =====
  *
- * Revisa Gmail cada 1 minuto buscando correos reenviados desde
- * info@eygenergygroup.com. Claude extrae los datos → crea solicitud
- * en GitHub → envía WhatsApp a Alexandra, Alberto y Andrea.
+ * Sheila envía a cotizacionenergy@gmail.com con texto, imagen o PDF.
+ * Claude extrae los datos → crea solicitud en GitHub → aparece en la
+ * plataforma para que Alexandra haga la cotización.
+ * Cuando la cotización se marca "Enviada" → notifica a gerencia.
  *
- * REQUISITO PREVIO: Configurar reenvío automático en Outlook de
- * info@eygenergygroup.com → cami902026@gmail.com
+ * CONFIGURACIÓN (una sola vez):
+ * 1. Crear cuenta Gmail: cotizacionenergy@gmail.com
+ * 2. Pegar este código en un nuevo proyecto Apps Script
+ *    creado con esa cuenta (cotizacionenergy@gmail.com)
+ * 3. Agregar propiedades del script (ver abajo)
+ * 4. Implementar como Web App (acceso: Cualquier usuario)
+ * 5. Ejecutar crearTrigger() una sola vez para activar el polling
  *
- * Cómo activarlo (una sola vez):
- * 1. Pega este código en Apps Script
- * 2. Agrega las propiedades del script (ver abajo)
- * 3. Selecciona la función "crearTrigger" en el menú desplegable
- * 4. Clic en ▶ Ejecutar — esto activa la revisión cada 1 minuto
- *
- * Propiedades del script necesarias:
+ * Propiedades del script:
  *   CLAUDE_API_KEY  = sk-ant-api03-...
  *   GH_TOKEN        = ghp_...
  *   GH_OWNER        = cami902026-oss
  *   GH_REPO         = plataforma-eyg
  *   GH_BRANCH       = main
- *   TWILIO_SID      = (ver config WhatsApp bot)
- *   TWILIO_TOKEN    = (ver config WhatsApp bot)
- *   TWILIO_NUMBER   = whatsapp:+14155238886
+ *   NOTIF_EMAIL     = gerenciageneral@eygenergygroup.com
  */
 
-var PROPS = PropertiesService.getScriptProperties();
-var MODEL = 'claude-haiku-4-5-20251001';
+var PROPS        = PropertiesService.getScriptProperties();
+var MODEL        = 'claude-haiku-4-5-20251001';
 var PROCESSED_KEY = 'cotiz_processed_ids';
+var NOTIF_CC     = 'cotizacionenergy@gmail.com'; // copia en notificaciones
 
-var WA_DESTINOS = [
-  { nombre: 'Alexandra', numero: '+573144858382' },
-  { nombre: 'Alberto',   numero: '+573113134451' },
-  { nombre: 'Andrea',    numero: '+573107574110' }
-];
+// ─── Trigger de 1 minuto (ejecutar una sola vez) ─────────────────────────────
 
-// ─── Función principal — corre cada 1 minuto ─────────────────────────────────
+function crearTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'checkEmails') {
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
+  ScriptApp.newTrigger('checkEmails').timeBased().everyMinutes(1).create();
+  Logger.log('Trigger activado: checkEmails cada 1 minuto');
+}
+
+// ─── Función principal — revisa la bandeja cada 1 minuto ─────────────────────
 
 function checkEmails() {
   var processed = new Set();
@@ -44,7 +50,8 @@ function checkEmails() {
     if (stored) JSON.parse(stored).forEach(function(id) { processed.add(id); });
   } catch(_) {}
 
-  var threads = GmailApp.search('newer_than:2d in:inbox', 0, 20);
+  // Busca todos los correos no procesados de los últimos 7 días
+  var threads = GmailApp.search('newer_than:7d in:inbox -from:me', 0, 20);
   var newProcessed = [];
 
   for (var i = 0; i < threads.length; i++) {
@@ -52,23 +59,24 @@ function checkEmails() {
     for (var j = 0; j < msgs.length; j++) {
       var msg = msgs[j];
       var msgId = msg.getId();
-      if (processed.has(msgId)) { continue; }
+      if (processed.has(msgId)) { newProcessed.push(msgId); continue; }
 
       var from    = msg.getFrom();
       var subject = msg.getSubject();
       var body    = msg.getPlainBody();
+      var atts    = msg.getAttachments();
 
-      // Saltar correos internos
+      // Saltar mailer-daemon y notificaciones automáticas
       var fromLower = from.toLowerCase();
-      if (fromLower.indexOf('eygenergygroup.com') !== -1 ||
-          fromLower.indexOf('cami902026@gmail.com') !== -1 ||
-          fromLower.indexOf('mailer-daemon') !== -1) {
+      if (fromLower.indexOf('mailer-daemon') !== -1 ||
+          fromLower.indexOf('noreply') !== -1 ||
+          fromLower.indexOf('no-reply') !== -1) {
         newProcessed.push(msgId);
         continue;
       }
 
-      // Extraer datos con Claude
-      var sol = _extractData(subject, from, body);
+      // Extraer datos con Claude (texto + imágenes adjuntas)
+      var sol = _extractData(subject, from, body, atts);
       newProcessed.push(msgId);
       if (!sol) continue;
 
@@ -76,56 +84,74 @@ function checkEmails() {
       var saved = _saveGitHub(sol);
       if (!saved) { Logger.log('Error guardando ' + sol.id); continue; }
 
-      // Enviar WhatsApp a los 3 destinatarios
-      _sendWhatsApp(sol);
+      // Notificar a Andrea y Gerencia
+      _enviarEmailSolicitud(sol);
 
-      Logger.log('✅ Solicitud creada: ' + sol.id + ' — ' + sol.cliente);
+      Logger.log('Solicitud creada: ' + sol.id + ' — ' + sol.cliente);
     }
   }
 
-  // Guardar IDs procesados (máximo 500 para no llenar Properties)
   var todos = Array.from(processed).concat(newProcessed).slice(-500);
   PROPS.setProperty(PROCESSED_KEY, JSON.stringify(todos));
 }
 
-// ─── Crear trigger de 1 minuto (ejecutar una sola vez) ───────────────────────
+// ─── Extraer datos con Claude (texto + visión para imágenes) ─────────────────
 
-function crearTrigger() {
-  // Eliminar triggers anteriores de checkEmails para no duplicar
-  var triggers = ScriptApp.getProjectTriggers();
-  for (var i = 0; i < triggers.length; i++) {
-    if (triggers[i].getHandlerFunction() === 'checkEmails') {
-      ScriptApp.deleteTrigger(triggers[i]);
-    }
-  }
-  ScriptApp.newTrigger('checkEmails')
-    .timeBased()
-    .everyMinutes(1)
-    .create();
-  Logger.log('✅ Trigger activado: checkEmails cada 1 minuto');
-}
-
-// ─── Extraer datos con Claude ────────────────────────────────────────────────
-
-function _extractData(subject, from, bodyText) {
+function _extractData(subject, from, bodyText, attachments) {
   var apiKey = PROPS.getProperty('CLAUDE_API_KEY');
   if (!apiKey) throw new Error('CLAUDE_API_KEY no configurada');
 
-  var prompt =
-    'Analiza este correo recibido en info@eygenergygroup.com (empresa de suministro industrial).\n\n' +
+  var systemPrompt =
+    'Eres el asistente de E&G Energy Group SAS (empresa de suministro industrial). ' +
+    'La comercial reenvía solicitudes de clientes: pueden venir como texto, imagen o PDF adjunto. ' +
+    'Tu tarea es extraer los datos de la solicitud para crear un registro de seguimiento.';
+
+  var promptText =
+    'Analiza este mensaje de la comercial. Puede ser un reenvío de un cliente o una solicitud directa.\n\n' +
     'Asunto: ' + subject + '\n' +
     'De: ' + from + '\n' +
-    'Cuerpo:\n' + bodyText.substring(0, 2000) + '\n\n' +
-    'Responde SOLO con JSON válido:\n' +
+    'Cuerpo:\n' + bodyText.substring(0, 3000) + '\n\n' +
+    'Responde SOLO con JSON válido (sin markdown):\n' +
     '{\n' +
-    '  "esSolicitudCotizacion": true o false,\n' +
-    '  "cliente": "nombre de la empresa o persona que solicita",\n' +
-    '  "descripcion": "qué materiales o equipos piden, máx 200 chars",\n' +
+    '  "esSolicitud": true o false,\n' +
+    '  "cliente": "nombre de la empresa o persona que necesita los materiales",\n' +
+    '  "descripcion": "qué materiales o equipos piden, máximo 300 caracteres",\n' +
     '  "urgencia": "alta / media / baja",\n' +
-    '  "contacto": "nombre del contacto si aparece, sino cadena vacía"\n' +
+    '  "contacto": "nombre del contacto del cliente si aparece, sino cadena vacía"\n' +
     '}\n\n' +
     'Es solicitud si piden precios, disponibilidad o cotización de materiales/equipos industriales.\n' +
-    'NO es solicitud si es: spam, factura, confirmación de pago, saludo, newsletter, notificación automática.';
+    'NO es solicitud si es: spam, factura recibida, confirmación de pago, newsletter, alerta automática.';
+
+  // Construir el contenido del mensaje (texto + imágenes si hay)
+  var content = [];
+
+  // Agregar imágenes adjuntas para visión de Claude
+  if (attachments && attachments.length > 0) {
+    for (var i = 0; i < attachments.length && i < 3; i++) {
+      var att = attachments[i];
+      var mime = att.getContentType() || '';
+      if (mime.indexOf('image/') === 0) {
+        try {
+          var b64 = Utilities.base64Encode(att.copyBlob().getBytes());
+          content.push({
+            type: 'image',
+            source: { type: 'base64', media_type: mime, data: b64 }
+          });
+        } catch(e) { Logger.log('Error leyendo imagen: ' + e.message); }
+      } else if (mime === 'application/pdf') {
+        // Para PDFs, intentar leer como texto (limitado en Apps Script)
+        try {
+          var pdfText = att.copyBlob().getDataAsString();
+          if (pdfText && pdfText.length > 50) {
+            promptText += '\n\n[Texto extraído del PDF adjunto]:\n' + pdfText.substring(0, 2000);
+          }
+        } catch(e) { Logger.log('PDF no legible como texto'); }
+      }
+    }
+  }
+
+  // El prompt de texto siempre al final
+  content.push({ type: 'text', text: promptText });
 
   var resp = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -136,8 +162,9 @@ function _extractData(subject, from, bodyText) {
     },
     payload: JSON.stringify({
       model: MODEL,
-      max_tokens: 300,
-      messages: [{ role: 'user', content: prompt }]
+      max_tokens: 400,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: content }]
     }),
     muteHttpExceptions: true
   });
@@ -148,7 +175,7 @@ function _extractData(subject, from, bodyText) {
   var text = data.content[0].text.trim().replace(/```json\n?|\n?```/g, '');
   var parsed;
   try { parsed = JSON.parse(text); } catch(_) { return null; }
-  if (!parsed.esSolicitudCotizacion) return null;
+  if (!parsed.esSolicitud) return null;
 
   var now     = new Date();
   var dateStr = Utilities.formatDate(now, 'America/Bogota', 'yyyyMMdd');
@@ -171,7 +198,7 @@ function _extractData(subject, from, bodyText) {
   };
 }
 
-// ─── Guardar en GitHub ───────────────────────────────────────────────────────
+// ─── Guardar en GitHub ────────────────────────────────────────────────────────
 
 function _saveGitHub(sol) {
   var token  = PROPS.getProperty('GH_TOKEN');
@@ -211,51 +238,14 @@ function _saveGitHub(sol) {
     muteHttpExceptions: true
   });
 
-  var code = r2.getResponseCode();
-  return code === 200 || code === 201;
+  return r2.getResponseCode() === 200 || r2.getResponseCode() === 201;
 }
 
-// ─── Enviar WhatsApp ─────────────────────────────────────────────────────────
+// ─── Web App — notificaciones desde la plataforma ────────────────────────────
 
-function _sendWhatsApp(sol) {
-  var sid    = PROPS.getProperty('TWILIO_SID');
-  var tkn    = PROPS.getProperty('TWILIO_TOKEN');
-  var fromWA = PROPS.getProperty('TWILIO_NUMBER');
-  if (!sid || !tkn || !fromWA) return;
-
-  var urgEmoji = sol.urgencia === 'alta' ? '🔴' : sol.urgencia === 'media' ? '🟡' : '🟢';
-  var fechaFmt = Utilities.formatDate(new Date(sol.fecha), 'America/Bogota', 'dd/MM/yyyy HH:mm');
-  var auth     = 'Basic ' + Utilities.base64Encode(sid + ':' + tkn);
-
-  var msg =
-    '📋 *Nueva solicitud de cotización*\n\n' +
-    '👤 *Cliente:* ' + sol.cliente + '\n' +
-    '📝 *Solicitud:* ' + sol.descripcion + '\n' +
-    urgEmoji + ' *Urgencia:* ' + sol.urgencia + '\n' +
-    '🕐 *Recibida:* ' + fechaFmt + '\n' +
-    (sol.contacto ? '📞 *Contacto:* ' + sol.contacto + '\n' : '') +
-    '\n⏰ Tiempo límite: *12 horas*\n' +
-    '🆔 ' + sol.id;
-
-  for (var i = 0; i < WA_DESTINOS.length; i++) {
-    try {
-      UrlFetchApp.fetch(
-        'https://api.twilio.com/2010-04-01/Accounts/' + sid + '/Messages.json',
-        {
-          method: 'POST',
-          headers: { 'Authorization': auth },
-          payload: { From: fromWA, To: 'whatsapp:' + WA_DESTINOS[i].numero, Body: msg },
-          muteHttpExceptions: true
-        }
-      );
-    } catch(e) { Logger.log('Error WA ' + WA_DESTINOS[i].nombre + ': ' + e.message); }
-  }
-}
-
-// ─── Web App — recibe notificaciones desde la plataforma ─────────────────────
-
-var EMAIL_DESTINOS = [
-  'cotizacionenergy@gmail.com',
+// Destinatarios de todas las notificaciones
+var EMAIL_NOTIF = [
+  'andrea.bernal@eygenergygroup.com',
   'gerenciageneral@eygenergygroup.com'
 ];
 
@@ -263,12 +253,8 @@ function doPost(e) {
   try {
     var params = JSON.parse(e.postData.contents);
     var action = params.action || '';
-    if (action === 'notificar_solicitud') {
-      _enviarEmailSolicitud(params.solicitud);
-      return _json({ ok: true });
-    }
     if (action === 'notificar_cotizacion') {
-      _enviarEmailCotizacion(params.cotizacion);
+      _enviarEmailCotizacion(params.cotizacion, params.tipo || 'creada');
       return _json({ ok: true });
     }
     return _json({ ok: false, error: 'Accion desconocida' });
@@ -282,43 +268,52 @@ function doGet(e) {
 }
 
 function _enviarEmailSolicitud(sol) {
-  var urgEmoji = sol.urgencia === 'alta' ? '🔴' : sol.urgencia === 'media' ? '🟡' : '🟢';
-  var asunto = urgEmoji + ' Nueva solicitud: ' + sol.cliente + ' [' + sol.id + ']';
+  var urgEmoji = sol.urgencia === 'alta' ? '[ALTA]' : sol.urgencia === 'media' ? '[MEDIA]' : '[BAJA]';
+  var asunto = 'Nueva solicitud de cotizacion ' + urgEmoji + ': ' + sol.cliente + ' [' + sol.id + ']';
   var cuerpo =
-    'Nueva solicitud de cotizacion recibida\n\n' +
+    'Llego una nueva solicitud de cotizacion.\n\n' +
     'ID: ' + sol.id + '\n' +
     'Cliente: ' + sol.cliente + '\n' +
-    'Solicitan: ' + sol.descripcion + '\n' +
+    'Solicitan: ' + (sol.descripcion || '') + '\n' +
     'Urgencia: ' + (sol.urgencia || 'media') + '\n' +
-    'Fecha: ' + (sol.fecha ? new Date(sol.fecha).toLocaleString('es-CO') : '') + '\n' +
     (sol.contacto ? 'Contacto: ' + sol.contacto + '\n' : '') +
-    (sol.correoOrigen ? 'Correo cliente: ' + sol.correoOrigen + '\n' : '') +
-    (sol.createdBy ? 'Creada por: ' + sol.createdBy + '\n' : '') +
-    '\nRevisa en: https://cami902026-oss.github.io/plataforma-eyg/Index.html\n' +
-    '(Modulo Cotizaciones → pestana Solicitudes)';
-  for (var i = 0; i < EMAIL_DESTINOS.length; i++) {
-    try { GmailApp.sendEmail(EMAIL_DESTINOS[i], asunto, cuerpo); } catch(e2) {}
+    (sol.correoOrigen ? 'Correo del remitente: ' + sol.correoOrigen + '\n' : '') +
+    '\nVer en la plataforma:\n' +
+    'https://cami902026-oss.github.io/plataforma-eyg/Index.html\n' +
+    '(Cotizaciones → Solicitudes)';
+  for (var i = 0; i < EMAIL_NOTIF.length; i++) {
+    try { GmailApp.sendEmail(EMAIL_NOTIF[i], asunto, cuerpo); } catch(e2) {
+      Logger.log('Error enviando a ' + EMAIL_NOTIF[i] + ': ' + e2.message);
+    }
   }
 }
 
-function _enviarEmailCotizacion(cot) {
+function _enviarEmailCotizacion(cot, tipo) {
   var total = cot.total ? '$' + Number(cot.total).toLocaleString('es-CO') : '';
-  var asunto = '📤 Cotizacion enviada: ' + cot.cliente + ' [' + cot.id + ']';
+  var esEnviada = tipo === 'enviada';
+  var asunto = esEnviada
+    ? 'Cotizacion ENVIADA al cliente: ' + cot.cliente + ' [' + cot.id + ']'
+    : 'Nueva cotizacion creada: ' + cot.cliente + ' [' + cot.id + ']';
   var cuerpo =
-    'Cotizacion enviada al cliente\n\n' +
+    (esEnviada
+      ? 'La asistente envio una cotizacion al cliente.\n\n'
+      : 'Se creo una nueva cotizacion en la plataforma.\n\n') +
     'No.: ' + cot.id + '\n' +
     'Cliente: ' + cot.cliente + '\n' +
     (total ? 'Total: ' + total + '\n' : '') +
     (cot.vendedor ? 'Vendedor: ' + cot.vendedor + '\n' : '') +
     (cot.realizadaPor ? 'Realizada por: ' + cot.realizadaPor + '\n' : '') +
-    '\nRevisa en: https://cami902026-oss.github.io/plataforma-eyg/Index.html\n' +
-    '(Modulo Cotizaciones → Base de Datos)';
-  for (var i = 0; i < EMAIL_DESTINOS.length; i++) {
-    try { GmailApp.sendEmail(EMAIL_DESTINOS[i], asunto, cuerpo); } catch(e2) {}
+    '\nVer en la plataforma:\n' +
+    'https://cami902026-oss.github.io/plataforma-eyg/Index.html\n' +
+    '(Cotizaciones → Base de Datos)';
+  for (var i = 0; i < EMAIL_NOTIF.length; i++) {
+    try { GmailApp.sendEmail(EMAIL_NOTIF[i], asunto, cuerpo); } catch(e2) {
+      Logger.log('Error enviando a ' + EMAIL_NOTIF[i] + ': ' + e2.message);
+    }
   }
 }
 
-// ─── Helper ──────────────────────────────────────────────────────────────────
+// ─── Helper ───────────────────────────────────────────────────────────────────
 
 function _json(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
