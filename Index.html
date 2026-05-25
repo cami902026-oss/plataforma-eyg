@@ -2795,6 +2795,9 @@ async function _saveReunionesGH(arr) {
   } catch(e) { console.warn('GH reuniones save:', e); }
 }
 
+// URL del Apps Script email-to-cotiz.gs (notificaciones de solicitudes y cotizaciones)
+const COTIZ_NOTIF_URL = 'https://script.google.com/macros/s/AKfycbx9x-txkU9Zt2vy_oI6XSi9NpUfCM9oarkU4Xac3hEbUa8hBano0bCMuZrd6JakJrKi7w/exec';
+
 // ── BACKUP GENÉRICO A GITHUB (tareas, minutas, equipo, proyectos, cotizaciones) ──
 // Patrón replicado de _saveOrdenesGH / _saveReunionesGH pero parametrizado.
 // Cada clave de localStorage se respalda en data/{filename}.json del repo.
@@ -6734,6 +6737,8 @@ function cotizGuardarBD() {
   // Si hay solicitud vinculada, marcarla como en_cotizacion
   const solVinc = (document.getElementById('cotiz-sol-vincular')||{}).value || '';
   if (solVinc) _solCambiarEstado(solVinc, 'en_cotizacion');
+  // Notificar cuando la cotización se marca como Enviada
+  if (record.estado === 'Enviada') _notificarCotizacion(record);
 }
 
 // ===== GENERAR PDF DE COTIZACIÓN =====
@@ -7418,6 +7423,26 @@ function solPopulateVincular() {
     soles.map(s => `<option value="${s.id}"${s.id===cur?' selected':''}>${s.id} — ${s.cliente}</option>`).join('');
 }
 
+function _notificarSolicitud(sol) {
+  if (!COTIZ_NOTIF_URL) return;
+  try {
+    fetch(COTIZ_NOTIF_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'notificar_solicitud', solicitud: sol })
+    }).catch(function(){});
+  } catch(_) {}
+}
+
+function _notificarCotizacion(cot) {
+  if (!COTIZ_NOTIF_URL) return;
+  try {
+    fetch(COTIZ_NOTIF_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'notificar_cotizacion', cotizacion: cot })
+    }).catch(function(){});
+  } catch(_) {}
+}
+
 function solEditar(solId) {
   const s = (getData('solicitudes_cotiz', [])).find(x => x.id === solId);
   if (!s) return;
@@ -7490,6 +7515,11 @@ function solGuardar() {
   solCerrarForm();
   solRender();
   solUpdateBadge();
+  // Notificar por correo solo cuando es nueva (no edición)
+  if (!editId) {
+    const nueva = soles[soles.length - 1];
+    _notificarSolicitud(nueva);
+  }
 }
 
 // ─── Semáforo para la tabla BD ───────────────────────────────────────────────
