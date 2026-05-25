@@ -252,6 +252,72 @@ function _sendWhatsApp(sol) {
   }
 }
 
+// ─── Web App — recibe notificaciones desde la plataforma ─────────────────────
+
+var EMAIL_DESTINOS = [
+  'cotizacionenergy@gmail.com',
+  'gerenciageneral@eygenergygroup.com'
+];
+
+function doPost(e) {
+  try {
+    var params = JSON.parse(e.postData.contents);
+    var action = params.action || '';
+    if (action === 'notificar_solicitud') {
+      _enviarEmailSolicitud(params.solicitud);
+      return _json({ ok: true });
+    }
+    if (action === 'notificar_cotizacion') {
+      _enviarEmailCotizacion(params.cotizacion);
+      return _json({ ok: true });
+    }
+    return _json({ ok: false, error: 'Accion desconocida' });
+  } catch(ex) {
+    return _json({ ok: false, error: ex.message });
+  }
+}
+
+function doGet(e) {
+  return _json({ ok: true, msg: 'ENERGY Cotiz Script activo' });
+}
+
+function _enviarEmailSolicitud(sol) {
+  var urgEmoji = sol.urgencia === 'alta' ? '🔴' : sol.urgencia === 'media' ? '🟡' : '🟢';
+  var asunto = urgEmoji + ' Nueva solicitud: ' + sol.cliente + ' [' + sol.id + ']';
+  var cuerpo =
+    'Nueva solicitud de cotizacion recibida\n\n' +
+    'ID: ' + sol.id + '\n' +
+    'Cliente: ' + sol.cliente + '\n' +
+    'Solicitan: ' + sol.descripcion + '\n' +
+    'Urgencia: ' + (sol.urgencia || 'media') + '\n' +
+    'Fecha: ' + (sol.fecha ? new Date(sol.fecha).toLocaleString('es-CO') : '') + '\n' +
+    (sol.contacto ? 'Contacto: ' + sol.contacto + '\n' : '') +
+    (sol.correoOrigen ? 'Correo cliente: ' + sol.correoOrigen + '\n' : '') +
+    (sol.createdBy ? 'Creada por: ' + sol.createdBy + '\n' : '') +
+    '\nRevisa en: https://cami902026-oss.github.io/plataforma-eyg/Index.html\n' +
+    '(Modulo Cotizaciones → pestana Solicitudes)';
+  for (var i = 0; i < EMAIL_DESTINOS.length; i++) {
+    try { GmailApp.sendEmail(EMAIL_DESTINOS[i], asunto, cuerpo); } catch(e2) {}
+  }
+}
+
+function _enviarEmailCotizacion(cot) {
+  var total = cot.total ? '$' + Number(cot.total).toLocaleString('es-CO') : '';
+  var asunto = '📤 Cotizacion enviada: ' + cot.cliente + ' [' + cot.id + ']';
+  var cuerpo =
+    'Cotizacion enviada al cliente\n\n' +
+    'No.: ' + cot.id + '\n' +
+    'Cliente: ' + cot.cliente + '\n' +
+    (total ? 'Total: ' + total + '\n' : '') +
+    (cot.vendedor ? 'Vendedor: ' + cot.vendedor + '\n' : '') +
+    (cot.realizadaPor ? 'Realizada por: ' + cot.realizadaPor + '\n' : '') +
+    '\nRevisa en: https://cami902026-oss.github.io/plataforma-eyg/Index.html\n' +
+    '(Modulo Cotizaciones → Base de Datos)';
+  for (var i = 0; i < EMAIL_DESTINOS.length; i++) {
+    try { GmailApp.sendEmail(EMAIL_DESTINOS[i], asunto, cuerpo); } catch(e2) {}
+  }
+}
+
 // ─── Helper ──────────────────────────────────────────────────────────────────
 
 function _json(obj) {
