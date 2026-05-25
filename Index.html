@@ -2971,7 +2971,10 @@ async function _enqueueOrSave(file, data, label) {
   _setSyncStatus('syncing', 'Sincronizando…');
   try {
     await _saveDataGH(file, data, label);
-    // Si se guardó OK, intenta drenar lo que estaba en cola
+    // Limpiar entrada vieja del mismo archivo antes de drenar la cola
+    // (evita que datos obsoletos de la cola sobreescriban lo recién guardado)
+    const qAfter = _getSyncQueue().filter(item => item.file !== file);
+    _setSyncQueue(qAfter);
     await _drainSyncQueue();
     _refreshSyncBadge();
   } catch(e) {
