@@ -1410,8 +1410,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div style="font-size:13px;color:var(--text-muted);">Solicitudes de cotización — tiempo límite de respuesta: <b style="color:var(--gold);">12 horas</b></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
               <button class="btn btn-primary" onclick="solNueva()" style="width:auto;font-size:12px;padding:6px 14px;">+ Nueva solicitud</button>
-              <button class="bd-filter-btn active" id="sol-f-todas" onclick="solFilter('todas',this)">Todas</button>
-              <button class="bd-filter-btn" id="sol-f-pendiente" onclick="solFilter('pendiente',this)">⏳ Pendientes</button>
+              <button class="bd-filter-btn" id="sol-f-todas" onclick="solFilter('todas',this)">Todas</button>
+              <button class="bd-filter-btn active" id="sol-f-pendiente" onclick="solFilter('pendiente',this)">⏳ Pendientes</button>
               <button class="bd-filter-btn" id="sol-f-vencida" onclick="solFilter('vencida',this)">🔴 Vencidas</button>
               <button class="bd-filter-btn" id="sol-f-en_cotizacion" onclick="solFilter('en_cotizacion',this)">🔵 En cotización</button>
               <button class="bd-filter-btn" id="sol-f-enviada" onclick="solFilter('enviada',this)">✅ Enviadas</button>
@@ -6734,11 +6734,14 @@ function cotizGuardarBD() {
   }
   saveData('bd_cotizaciones', bd);
   cotizEditId = id;
-  // Si hay solicitud vinculada, marcarla como en_cotizacion
+  // Si hay solicitud vinculada: en_cotizacion mientras se trabaja, enviada cuando se envía
   const solVinc = (document.getElementById('cotiz-sol-vincular')||{}).value || '';
-  if (solVinc) _solCambiarEstado(solVinc, 'en_cotizacion');
-  // Notificar cuando la cotización se marca como Enviada
-  if (record.estado === 'Enviada') _notificarCotizacion(record);
+  if (solVinc) {
+    _solCambiarEstado(solVinc, record.estado === 'Enviada' ? 'enviada' : 'en_cotizacion');
+  }
+  // Notificar a Andrea y Gerencia: al crear y al enviar
+  if (idx < 0) _notificarCotizacion(record, 'creada');
+  if (record.estado === 'Enviada') _notificarCotizacion(record, 'enviada');
 }
 
 // ===== GENERAR PDF DE COTIZACIÓN =====
@@ -7306,7 +7309,7 @@ function provEliminar(id, e) {
 
 // ===== SOLICITUDES DE COTIZACIÓN =====
 
-let _solFiltro = 'todas';
+let _solFiltro = 'pendiente';
 
 function solFilter(f, btn) {
   _solFiltro = f;
@@ -7433,12 +7436,12 @@ function _notificarSolicitud(sol) {
   } catch(_) {}
 }
 
-function _notificarCotizacion(cot) {
+function _notificarCotizacion(cot, tipo) {
   if (!COTIZ_NOTIF_URL) return;
   try {
     fetch(COTIZ_NOTIF_URL, {
       method: 'POST',
-      body: JSON.stringify({ action: 'notificar_cotizacion', cotizacion: cot })
+      body: JSON.stringify({ action: 'notificar_cotizacion', cotizacion: cot, tipo: tipo || 'creada' })
     }).catch(function(){});
   } catch(_) {}
 }
