@@ -3286,11 +3286,9 @@ async function _pollOne(target) {
           const prev = seen.get(k);
           if ((item.updatedAt||'') > (prev.updatedAt||'')) seen.set(k, item);
         } else {
-          // Solo en local: ¿es nuevo (post última sync) o eliminado en remoto?
-          if ((item.updatedAt||'') > lastSync) {
-            seen.set(k, item); // edición local fresca, pendiente de push
-          }
-          // si es viejo → se descarta (asume eliminación del servidor)
+          // Solo en local: preservar si tiene updatedAt (fue creado o editado en esta app)
+          // Esto protege items nuevos que aún no llegaron a GitHub (pendiente de push)
+          if (item.updatedAt) seen.set(k, item);
         }
       }
     }
@@ -3703,8 +3701,8 @@ function initApp() {
   // Versión de datos — cambia este número cada vez que actualices datos por defecto
   const DATA_VERSION = '2026.04.09.v2';
   if (localStorage.getItem('energy_data_version') !== DATA_VERSION) {
-    // Solo resetear equipo — los demás datos los carga GitHub
-    setData('team', TEAM_DEFAULT);
+    // Solo inicializar si NO hay datos locales (nunca sobreescribir datos existentes del equipo)
+    if (!localStorage.getItem('max_team'))     setData('team',     TEAM_DEFAULT);
     if (!localStorage.getItem('max_meetings')) setData('meetings', MEETINGS_DEFAULT);
     if (!localStorage.getItem('max_tasks'))    setData('tasks',    TASKS_DEFAULT);
     if (!localStorage.getItem('max_projects')) setData('projects', PROJECTS_DEFAULT);
