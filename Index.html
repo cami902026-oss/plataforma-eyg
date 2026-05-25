@@ -6672,12 +6672,22 @@ function cotizRender() {
       <td><input type="number" value="${it.precio}" min="0" oninput="cotizItems[${i}].precio=parseFloat(this.value)||0;cotizUpdateTotals()" style="width:82px"></td>
       <td style="color:var(--gold);font-weight:600;text-align:right;white-space:nowrap">$${vTotal.toLocaleString('es-CO')}</td>
       <td><input list="prov-dl" value="${(it.proveedor||'').replace(/"/g,'&quot;')}" oninput="cotizItems[${i}].proveedor=this.value" style="width:72px" placeholder="Proveedor"></td>
-      <td><input type="number" value="${pprov||''}" min="0" placeholder="Costo" oninput="cotizItems[${i}].precioProveedor=parseFloat(this.value)||0;cotizRender()" style="width:80px" title="Precio de costo del proveedor (interno)"></td>
-      <td style="text-align:center;font-weight:700;font-size:11px;color:${margenColor};">${margen !== null ? margen+'%' : '—'}</td>
+      <td><input type="number" value="${pprov||''}" min="0" placeholder="Costo" oninput="cotizItems[${i}].precioProveedor=parseFloat(this.value)||0;_cotizUpdateMargen(${i})" style="width:80px" title="Precio de costo del proveedor (interno)"></td>
+      <td id="cotiz-margen-${i}" style="text-align:center;font-weight:700;font-size:11px;color:${margenColor};">${margen !== null ? margen+'%' : '—'}</td>
       <td><button onclick="cotizItems.splice(${i},1);cotizRender()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">×</button></td>
     </tr>`;
   }).join('');
   cotizUpdateTotals();
+}
+
+function _cotizUpdateMargen(i) {
+  const it = cotizItems[i];
+  if (!it) return;
+  const pprov = it.precioProveedor || 0;
+  const margen = it.precio > 0 ? Math.round(((it.precio - pprov) / it.precio) * 100) : (pprov > 0 ? -100 : null);
+  const margenColor = margen === null ? 'var(--text-muted)' : margen >= 20 ? '#4ade80' : margen >= 0 ? 'var(--gold)' : '#f87171';
+  const cell = document.getElementById('cotiz-margen-' + i);
+  if (cell) { cell.style.color = margenColor; cell.textContent = margen !== null ? margen + '%' : '—'; }
 }
 
 function cotizUpdateTotals() {
