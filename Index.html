@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -5156,9 +5156,11 @@ async function loadCarteraUrlUI() {
   }
 }
 async function abrirCartera() {
-  // Refrescar URL desde GitHub antes de abrir (por si el PC anfitrión reinició recién)
+  // Abrir ventana primero (gesto directo) para evitar bloqueo de popups
+  const win = window.open('', '_blank');
   await refreshCarteraURLFromGitHub();
-  window.open(getCarteraURL(), '_blank', 'noopener');
+  const url = getCarteraURL();
+  if (win) { win.location.href = url; } else { window.open(url, '_blank'); }
 }
 async function testCarteraConnection() {
   const status = document.getElementById('cartera-status');
@@ -9881,3 +9883,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
+
