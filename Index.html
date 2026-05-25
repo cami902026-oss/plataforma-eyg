@@ -7361,13 +7361,18 @@ function solRender() {
             <span style="font-weight:700;font-size:15px;color:#fff;">${(s.cliente||'').replace(/</g,'&lt;')}</span>
             <span style="font-size:11px;color:${urgColor};font-weight:700;background:${urgColor}22;padding:2px 8px;border-radius:10px;">${s.urgencia||'media'}</span>
           </div>
-          <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px;">${(s.descripcion||'').replace(/</g,'&lt;')}</div>
+          ${(s.productos && s.productos.length > 0)
+            ? `<div style="margin-bottom:6px;">${s.productos.map(p=>`<div style="font-size:12px;background:rgba(255,255,255,.05);border-radius:6px;padding:3px 8px;margin-bottom:3px;"><span style="color:var(--gold);font-weight:600;">${(p.cantidad||'').replace(/</g,'&lt;')}</span>${p.cantidad?' — ':''}<span style="color:#e2e8f0;">${(p.descripcion||'').replace(/</g,'&lt;')}</span></div>`).join('')}</div>`
+            : `<div style="font-size:13px;color:var(--text-muted);margin-bottom:6px;">${(s.descripcion||'').replace(/</g,'&lt;')}</div>`
+          }
           <div style="display:flex;gap:12px;flex-wrap:wrap;">
             <span style="font-size:11px;color:var(--text-muted);">📅 ${new Date(s.fecha).toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
             <span style="font-size:11px;color:var(--text-muted);">⏱ hace ${horasStr}</span>
-            ${s.cotizacionId ? `<span style="font-size:11px;color:#7eb3ff;">📄 ${s.cotizacionId}</span>` : ''}
             ${s.contacto ? `<span style="font-size:11px;color:var(--text-muted);">👤 ${s.contacto}</span>` : ''}
+            ${s.formaPago ? `<span style="font-size:11px;color:var(--text-muted);">💳 ${s.formaPago}</span>` : ''}
+            ${s.cotizacionId ? `<span style="font-size:11px;color:#7eb3ff;">📄 ${s.cotizacionId}</span>` : ''}
           </div>
+          ${s.observaciones ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;font-style:italic;">${s.observaciones.replace(/</g,'&lt;')}</div>` : ''}
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
           <span style="font-size:12px;font-weight:700;color:${estadoColor};background:${estadoColor}22;padding:3px 10px;border-radius:10px;">${s.estado}</span>
