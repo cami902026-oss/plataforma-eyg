@@ -1376,16 +1376,28 @@
     "cliente": "CIAM",
     "desc": "CODOS SCH 40, UPN 100 Y TRANSPORTE A PUERTO GAITAN",
     "estado": "activo",
+    "fechaIngreso": "2026-05-26",
+    "valor": 1777860,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
         "f": "2026-05-26",
-        "n": "Auto-creada desde correo"
+        "n": "Bodega"
       },
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1398,14 +1410,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-05-26T21:27:17.048Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-26T21:27:17.048Z"
+    "createdAt": "2026-05-26T21:27:50.397Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-26T21:27:50.397Z",
+    "updatedBy": "andrea"
   }
 ]
