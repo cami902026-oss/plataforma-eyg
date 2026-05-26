@@ -1369,5 +1369,45 @@
     "deleted": true,
     "deletedAt": "2026-05-26T17:11:33.171Z",
     "deletedBy": "andrea"
+  },
+  {
+    "id": "poc_1779830815163",
+    "num": "LM1592",
+    "cliente": "CIAM",
+    "desc": "CODOS SCH 40, UPN 100 Y TRANSPORTE A PUERTO GAITAN",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-26",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-05-26T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-05-26T21:26:55.163Z",
+    "updatedBy": "Auto (correo)",
+    "origenCorreo": {
+      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
+      "subject": "Orden de compra ciam",
+      "fecha": "2026-05-26T21:26:55.163Z",
+      "fechaCreacionOC": "2026-05-26",
+      "fechaCompra": "2026-05-26"
+    }
   }
 ]
