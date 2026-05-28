@@ -1272,72 +1272,6 @@
     "deletedBy": "andrea"
   },
   {
-    "id": "poc_1779461426341",
-    "num": "LM1527",
-    "cliente": "CIAM",
-    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-26T17:39:47.118Z",
-    "deleted": true,
-    "deletedAt": "2026-05-26T17:39:47.113Z",
-    "deletedBy": "andrea"
-  },
-  {
-    "id": "poc_1779461532501",
-    "num": "LM1551",
-    "cliente": "MMT",
-    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-15",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-26T17:11:36.103Z",
-    "deleted": true,
-    "deletedAt": "2026-05-26T17:11:36.097Z",
-    "deletedBy": "andrea"
-  },
-  {
     "id": "poc_1779461532501",
     "num": "LM1551",
     "cliente": "MMT",
@@ -1412,74 +1346,10 @@
     ],
     "createdAt": "2026-05-26T21:27:50.397Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-05-27T14:39:14.637Z",
-    "updatedBy": "andrea"
-  },
-  {
-    "id": "poc_1779461426341",
-    "num": "LM1527",
-    "cliente": "CIAM",
-    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-26T17:39:47.118Z",
-    "deleted": true,
-    "deletedAt": "2026-05-26T17:39:47.113Z",
-    "deletedBy": "andrea"
-  },
-  {
-    "id": "poc_1779461532501",
-    "num": "LM1551",
-    "cliente": "MMT",
-    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-15",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-26T17:11:36.103Z",
-    "deleted": true,
-    "deletedAt": "2026-05-26T17:11:36.097Z",
-    "deletedBy": "andrea"
+    "updatedAt": "2026-05-28T21:46:45.991Z",
+    "updatedBy": "andrea",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-28T21:46:45.991Z"
   },
   {
     "id": "poc_1779919021634",
@@ -1509,16 +1379,17 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-03-02T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-05-27T21:57:01.634Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA QCIEN",
-      "fecha": "2026-05-27T21:57:01.634Z",
-      "fechaCreacionOC": "2026-03-02",
-      "fechaCompra": "2026-03-02"
-    }
+    "updatedAt": "2026-05-27T21:57:52.323Z",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-27T21:57:45.873Z",
+    "deleted": true,
+    "deletedAt": "2026-05-27T21:57:52.323Z",
+    "deletedBy": "andrea"
   }
 ]
