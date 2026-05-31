@@ -2109,147 +2109,6 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 </div>
 </div>
 
-    </div><!-- /content -->
-  </div><!-- /main-area -->
-</div><!-- /app -->
-
-<!-- ===== MODALS ===== -->
-<!-- Modal Reunión -->
-<div class="modal-overlay" id="modal-reunion">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">📅 Nueva Reunión</div>
-      <button class="close-btn" onclick="closeModal('modal-reunion')">✕</button>
-    </div>
-    <div class="modal-body">
-    <div class="form-group"><label>Título</label><input type="text" id="r-titulo" placeholder="Ej: Reunión de seguimiento semanal"></div>
-    <div class="form-row">
-      <div class="form-group"><label>Fecha</label><input type="date" id="r-fecha"></div>
-      <div class="form-group"><label>Tipo</label>
-        <select id="r-tipo">
-          <option value="Teams">Teams</option>
-          <option value="Presencial">Presencial</option>
-          <option value="Llamada">Llamada</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label>Hora inicio</label><input type="time" id="r-hora-inicio"></div>
-      <div class="form-group"><label>Hora fin</label><input type="time" id="r-hora-fin"></div>
-    </div>
-    <div class="form-group">
-      <label>Participantes</label>
-      <div class="checkboxes-grid" id="participantes-checkboxes"></div>
-    </div>
-    <div class="form-group"><label>Descripción / Agenda</label><textarea id="r-descripcion" rows="3" placeholder="Puntos a tratar..."></textarea></div>
-    <input type="hidden" id="modal-reunion-editmode" value="">
-    <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="saveReunion()" style="width:auto;flex:1;" id="btn-guardar-reunion">Guardar Reunión</button>
-      <button class="btn btn-secondary" onclick="generateAgenda()" style="width:auto;flex:1;" id="agenda-btn">✨ Generar agenda con ENERGY</button>
-      <button class="btn" onclick="saveReunionAndCreateTeams()" style="width:auto;flex:1;background:#6264A7;color:#fff;" id="btn-teams-reunion">🟣 Crear en Teams</button>
-    </div>
-    <div id="teams-meeting-link" style="display:none;margin-top:12px;padding:12px;background:rgba(98,100,167,0.15);border:1px solid rgba(98,100,167,0.4);border-radius:8px;">
-      <div style="font-size:12px;color:#a5a7e8;font-weight:700;margin-bottom:6px;">🔗 Link de reunión Teams generado:</div>
-      <a id="teams-join-url" href="#" target="_blank" style="color:#6264A7;font-size:13px;word-break:break-all;">—</a>
-      <button onclick="copyTeamsLink()" style="display:block;margin-top:8px;background:rgba(98,100,167,0.3);border:1px solid rgba(98,100,167,0.5);color:#fff;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;">📋 Copiar link</button>
-    </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Tarea -->
-<div class="modal-overlay" id="modal-tarea">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">✅ Nueva Tarea</div>
-      <button class="close-btn" onclick="closeModal('modal-tarea')">✕</button>
-    </div>
-    <div class="modal-body">
-    <div class="form-group"><label>Título</label><input type="text" id="t-titulo" placeholder="Ej: Preparar informe mensual"></div>
-    <div class="form-group"><label>Descripción</label><textarea id="t-desc" rows="2" placeholder="Detalles de la tarea..."></textarea></div>
-    <div class="form-group">
-      <label>Responsables (selecciona uno o más)</label>
-      <div class="checkboxes-grid" id="responsables-checkboxes"></div>
-    </div>
-    <div class="form-group"><label>Fecha límite</label><input type="date" id="t-fecha"></div>
-    <div class="form-row">
-      <div class="form-group"><label>Prioridad</label>
-        <select id="t-prioridad">
-          <option value="Alta">Alta</option>
-          <option value="Media" selected>Media</option>
-          <option value="Baja">Baja</option>
-        </select>
-      </div>
-      <div class="form-group"><label>Estado</label>
-        <select id="t-estado">
-          <option value="Pendiente">Pendiente</option>
-          <option value="En Progreso">En Progreso</option>
-          <option value="Completado">Completado</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group"><label>Proyecto</label><input type="text" id="t-proyecto" placeholder="Ej: Plan Comercial Q2"></div>
-    <input type="hidden" id="modal-tarea-editmode" value="">
-    <button class="btn btn-primary" onclick="saveTarea()" style="margin-top:8px;">Guardar Tarea</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Proyecto -->
-<div class="modal-overlay" id="modal-proyecto">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">📊 Nuevo Proyecto</div>
-      <button class="close-btn" onclick="closeModal('modal-proyecto')">✕</button>
-    </div>
-    <div class="modal-body">
-    <div class="form-group"><label>Nombre del proyecto</label><input type="text" id="p-nombre" placeholder="Ej: Sistema CRM"></div>
-    <div class="form-group"><label>Responsable</label>
-      <select id="p-responsable"></select>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label>Fecha inicio</label><input type="date" id="p-inicio"></div>
-      <div class="form-group"><label>Fecha fin</label><input type="date" id="p-fin"></div>
-    </div>
-    <div class="form-group"><label>Progreso (%)</label><input type="number" id="p-progreso" min="0" max="100" value="0"></div>
-    <div class="form-group"><label>Estado</label>
-      <select id="p-estado">
-        <option value="En curso">En curso</option>
-        <option value="Atrasado">Atrasado</option>
-        <option value="Completado">Completado</option>
-        <option value="Planificado">Planificado</option>
-      </select>
-    </div>
-    <input type="hidden" id="modal-proyecto-editmode" value="">
-    <button class="btn btn-primary" onclick="saveProyecto()" style="margin-top:8px;" id="btn-guardar-proyecto">Guardar Proyecto</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Minuta -->
-<div class="modal-overlay" id="modal-minuta">
-  <div class="modal" style="width:640px;">
-    <div class="modal-header">
-      <div class="modal-title">📋 Nueva Minuta</div>
-      <button class="close-btn" onclick="closeModal('modal-minuta')">✕</button>
-    </div>
-    <div class="modal-body">
-    <div class="form-group"><label>Reunión</label>
-      <select id="m-reunion"></select>
-    </div>
-    <div class="form-group"><label>Notas / Transcripción</label><textarea id="m-notas" rows="6" placeholder="Pega aquí la transcripción o notas de la reunión..."></textarea></div>
-    <div style="display:flex;gap:12px;margin-bottom:20px;">
-      <button class="btn btn-primary" onclick="generateMinuta()" style="width:auto;flex:1;">✨ Generar Minuta con ENERGY</button>
-      <button class="btn btn-ghost" onclick="saveMinutaManual()" style="width:auto;flex:1;">Guardar manual</button>
-    </div>
-    <div id="minuta-preview" class="hidden">
-      <div class="section-header"><span class="section-title">Minuta generada</span><button class="btn btn-ghost" onclick="copyMsg('minuta-output')" style="padding:6px 14px;font-size:12px;">📋 Copiar</button></div>
-      <div class="msg-output" id="minuta-output" style="min-height:160px;"></div>
-      <button class="btn btn-primary" onclick="saveMinutaFromPreview()" style="margin-top:12px;width:auto;">Guardar Minuta</button>
-    </div>
-    </div>
-  </div>
-</div>
 
 <!-- ===== ABASTECIMIENTO ===== -->
 <div class="page" id="page-abastecimiento">
@@ -2433,6 +2292,147 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   </div>
 </div>
 
+    </div><!-- /content -->
+  </div><!-- /main-area -->
+</div><!-- /app -->
+
+<!-- ===== MODALS ===== -->
+<!-- Modal Reunión -->
+<div class="modal-overlay" id="modal-reunion">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📅 Nueva Reunión</div>
+      <button class="close-btn" onclick="closeModal('modal-reunion')">✕</button>
+    </div>
+    <div class="modal-body">
+    <div class="form-group"><label>Título</label><input type="text" id="r-titulo" placeholder="Ej: Reunión de seguimiento semanal"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha</label><input type="date" id="r-fecha"></div>
+      <div class="form-group"><label>Tipo</label>
+        <select id="r-tipo">
+          <option value="Teams">Teams</option>
+          <option value="Presencial">Presencial</option>
+          <option value="Llamada">Llamada</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Hora inicio</label><input type="time" id="r-hora-inicio"></div>
+      <div class="form-group"><label>Hora fin</label><input type="time" id="r-hora-fin"></div>
+    </div>
+    <div class="form-group">
+      <label>Participantes</label>
+      <div class="checkboxes-grid" id="participantes-checkboxes"></div>
+    </div>
+    <div class="form-group"><label>Descripción / Agenda</label><textarea id="r-descripcion" rows="3" placeholder="Puntos a tratar..."></textarea></div>
+    <input type="hidden" id="modal-reunion-editmode" value="">
+    <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="saveReunion()" style="width:auto;flex:1;" id="btn-guardar-reunion">Guardar Reunión</button>
+      <button class="btn btn-secondary" onclick="generateAgenda()" style="width:auto;flex:1;" id="agenda-btn">✨ Generar agenda con ENERGY</button>
+      <button class="btn" onclick="saveReunionAndCreateTeams()" style="width:auto;flex:1;background:#6264A7;color:#fff;" id="btn-teams-reunion">🟣 Crear en Teams</button>
+    </div>
+    <div id="teams-meeting-link" style="display:none;margin-top:12px;padding:12px;background:rgba(98,100,167,0.15);border:1px solid rgba(98,100,167,0.4);border-radius:8px;">
+      <div style="font-size:12px;color:#a5a7e8;font-weight:700;margin-bottom:6px;">🔗 Link de reunión Teams generado:</div>
+      <a id="teams-join-url" href="#" target="_blank" style="color:#6264A7;font-size:13px;word-break:break-all;">—</a>
+      <button onclick="copyTeamsLink()" style="display:block;margin-top:8px;background:rgba(98,100,167,0.3);border:1px solid rgba(98,100,167,0.5);color:#fff;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;">📋 Copiar link</button>
+    </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tarea -->
+<div class="modal-overlay" id="modal-tarea">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✅ Nueva Tarea</div>
+      <button class="close-btn" onclick="closeModal('modal-tarea')">✕</button>
+    </div>
+    <div class="modal-body">
+    <div class="form-group"><label>Título</label><input type="text" id="t-titulo" placeholder="Ej: Preparar informe mensual"></div>
+    <div class="form-group"><label>Descripción</label><textarea id="t-desc" rows="2" placeholder="Detalles de la tarea..."></textarea></div>
+    <div class="form-group">
+      <label>Responsables (selecciona uno o más)</label>
+      <div class="checkboxes-grid" id="responsables-checkboxes"></div>
+    </div>
+    <div class="form-group"><label>Fecha límite</label><input type="date" id="t-fecha"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Prioridad</label>
+        <select id="t-prioridad">
+          <option value="Alta">Alta</option>
+          <option value="Media" selected>Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Estado</label>
+        <select id="t-estado">
+          <option value="Pendiente">Pendiente</option>
+          <option value="En Progreso">En Progreso</option>
+          <option value="Completado">Completado</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Proyecto</label><input type="text" id="t-proyecto" placeholder="Ej: Plan Comercial Q2"></div>
+    <input type="hidden" id="modal-tarea-editmode" value="">
+    <button class="btn btn-primary" onclick="saveTarea()" style="margin-top:8px;">Guardar Tarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Proyecto -->
+<div class="modal-overlay" id="modal-proyecto">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📊 Nuevo Proyecto</div>
+      <button class="close-btn" onclick="closeModal('modal-proyecto')">✕</button>
+    </div>
+    <div class="modal-body">
+    <div class="form-group"><label>Nombre del proyecto</label><input type="text" id="p-nombre" placeholder="Ej: Sistema CRM"></div>
+    <div class="form-group"><label>Responsable</label>
+      <select id="p-responsable"></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Fecha inicio</label><input type="date" id="p-inicio"></div>
+      <div class="form-group"><label>Fecha fin</label><input type="date" id="p-fin"></div>
+    </div>
+    <div class="form-group"><label>Progreso (%)</label><input type="number" id="p-progreso" min="0" max="100" value="0"></div>
+    <div class="form-group"><label>Estado</label>
+      <select id="p-estado">
+        <option value="En curso">En curso</option>
+        <option value="Atrasado">Atrasado</option>
+        <option value="Completado">Completado</option>
+        <option value="Planificado">Planificado</option>
+      </select>
+    </div>
+    <input type="hidden" id="modal-proyecto-editmode" value="">
+    <button class="btn btn-primary" onclick="saveProyecto()" style="margin-top:8px;" id="btn-guardar-proyecto">Guardar Proyecto</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Minuta -->
+<div class="modal-overlay" id="modal-minuta">
+  <div class="modal" style="width:640px;">
+    <div class="modal-header">
+      <div class="modal-title">📋 Nueva Minuta</div>
+      <button class="close-btn" onclick="closeModal('modal-minuta')">✕</button>
+    </div>
+    <div class="modal-body">
+    <div class="form-group"><label>Reunión</label>
+      <select id="m-reunion"></select>
+    </div>
+    <div class="form-group"><label>Notas / Transcripción</label><textarea id="m-notas" rows="6" placeholder="Pega aquí la transcripción o notas de la reunión..."></textarea></div>
+    <div style="display:flex;gap:12px;margin-bottom:20px;">
+      <button class="btn btn-primary" onclick="generateMinuta()" style="width:auto;flex:1;">✨ Generar Minuta con ENERGY</button>
+      <button class="btn btn-ghost" onclick="saveMinutaManual()" style="width:auto;flex:1;">Guardar manual</button>
+    </div>
+    <div id="minuta-preview" class="hidden">
+      <div class="section-header"><span class="section-title">Minuta generada</span><button class="btn btn-ghost" onclick="copyMsg('minuta-output')" style="padding:6px 14px;font-size:12px;">📋 Copiar</button></div>
+      <div class="msg-output" id="minuta-output" style="min-height:160px;"></div>
+      <button class="btn btn-primary" onclick="saveMinutaFromPreview()" style="margin-top:12px;width:auto;">Guardar Minuta</button>
+    </div>
+    </div>
+  </div>
+</div>
 <!-- Modal Miembro -->
 <div class="modal-overlay" id="modal-miembro">
   <div class="modal">
