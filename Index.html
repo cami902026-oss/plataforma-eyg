@@ -2153,23 +2153,40 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 
   <!-- MOVIMIENTOS -->
   <div id="abs-tab-movimiento" class="abs-panel" style="display:none">
-    <div class="abs-mov-form">
-      <div class="abs-mov-tipo-selector">
-        <button id="abs-btn-entrada" onclick="absSelectTipo('ENTRADA')" class="abs-tipo-btn entrada">➕ ENTRADA</button>
-        <button id="abs-btn-salida"  onclick="absSelectTipo('SALIDA')"  class="abs-tipo-btn salida">➖ SALIDA</button>
-      </div>
-      <div id="abs-mov-fields" style="display:none">
-        <div class="form-group" style="position:relative">
-          <label>Buscar Producto</label>
-          <input type="text" id="abs-mov-search" placeholder="Código o descripción..." oninput="absMovSearch()" autocomplete="off">
+    <div class="abs-mov-form" style="margin-bottom:16px;">
+
+      <!-- PASO 1: Buscar producto -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">1. Busca el producto</div>
+        <div style="position:relative;">
+          <input type="text" id="abs-mov-search"
+            placeholder="Escribe el nombre o codigo del producto..."
+            oninput="absMovSearch()" autocomplete="off"
+            style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:#fff;font-size:14px;font-family:'Open Sans',sans-serif;">
           <div id="abs-mov-suggestions" class="abs-suggestions" style="display:none"></div>
         </div>
-        <div id="abs-mov-selected" style="display:none;margin-bottom:16px;">
-          <div class="abs-product-selected">
-            <div class="abs-product-info"></div>
-            <button onclick="absMovClearProduct()" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;">✕</button>
-          </div>
+      </div>
+
+      <!-- Producto seleccionado -->
+      <div id="abs-mov-selected" style="display:none;margin-bottom:16px;">
+        <div class="abs-product-selected">
+          <div class="abs-product-info"></div>
+          <button onclick="absMovClearProduct()" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;">&#10005;</button>
         </div>
+      </div>
+
+      <!-- PASO 2: Elegir tipo -->
+      <div id="abs-mov-tipo-section" style="display:none;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">2. Tipo de movimiento</div>
+        <div class="abs-mov-tipo-selector">
+          <button id="abs-btn-entrada" onclick="absSelectTipo('ENTRADA')" class="abs-tipo-btn entrada">+ ENTRADA</button>
+          <button id="abs-btn-salida"  onclick="absSelectTipo('SALIDA')"  class="abs-tipo-btn salida">- SALIDA</button>
+        </div>
+      </div>
+
+      <!-- PASO 3: Campos del movimiento -->
+      <div id="abs-mov-fields" style="display:none;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">3. Completa los datos</div>
         <div class="form-row">
           <div class="form-group">
             <label>Cantidad <span style="color:var(--red)">*</span></label>
@@ -2177,31 +2194,32 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           </div>
           <div id="abs-mov-lote-group" class="form-group" style="display:none">
             <label>Lote <span style="color:var(--red)">*</span></label>
-            <input type="text" id="abs-mov-lote" placeholder="Número de lote">
+            <input type="text" id="abs-mov-lote" placeholder="Numero de lote">
           </div>
           <div id="abs-mov-colada-group" class="form-group" style="display:none">
             <label>Colada <span style="color:var(--red)">*</span></label>
-            <input type="text" id="abs-mov-colada" placeholder="Número de colada">
+            <input type="text" id="abs-mov-colada" placeholder="Numero de colada">
           </div>
           <div id="abs-mov-remision-group" class="form-group" style="display:none">
-            <label>Remisión <span style="color:var(--red)">*</span></label>
-            <input type="text" id="abs-mov-remision" placeholder="Número de remisión o cliente">
+            <label>Remision <span style="color:var(--red)">*</span></label>
+            <input type="text" id="abs-mov-remision" placeholder="N.o de remision o cliente">
           </div>
         </div>
         <div class="form-group">
           <label>Notas (opcional)</label>
           <input type="text" id="abs-mov-notas" placeholder="Observaciones...">
         </div>
-        <button class="btn btn-primary" onclick="absGuardarMovimiento()" style="width:auto;min-width:200px;">✅ Registrar Movimiento</button>
+        <button class="btn btn-primary" onclick="absGuardarMovimiento()" style="width:auto;min-width:220px;">Registrar Movimiento</button>
       </div>
     </div>
-    <div style="margin-top:24px;">
-      <div class="section-header"><span class="section-title">Últimos movimientos de hoy</span></div>
-      <div id="abs-mov-hoy"><p style="color:var(--text-muted);font-size:13px">Selecciona un tipo de movimiento para comenzar</p></div>
+
+    <div>
+      <div class="section-header"><span class="section-title">Ultimos movimientos de hoy</span></div>
+      <div id="abs-mov-hoy"><p style="color:var(--text-muted);font-size:13px">Busca un producto para comenzar</p></div>
     </div>
   </div>
 
-  <!-- KARDEX -->
+<!-- KARDEX -->
   <div id="abs-tab-kardex" class="abs-panel" style="display:none">
     <div class="abs-toolbar">
       <input type="text" id="abs-kardex-search" placeholder="Buscar código o descripción..." oninput="absRenderKardex()" style="flex:1;min-width:180px;">
@@ -10209,14 +10227,32 @@ function absMovSelectProduct(codigo) {
   abs_mov_producto=p;
   document.getElementById('abs-mov-search').value='';
   document.getElementById('abs-mov-suggestions').style.display='none';
+  // Mostrar producto seleccionado
   const sel=document.getElementById('abs-mov-selected'); sel.style.display='';
-  sel.querySelector('.abs-product-info').innerHTML=`<strong style="color:var(--gold)">${p.codigo}</strong> — ${p.descripcion}<br>
-    <span style="font-size:12px;color:var(--text-muted)">Stock actual: <strong style="color:${p.stock_actual>0?'var(--green)':'var(--red)'}">${p.stock_actual}</strong></span>`;
+  sel.querySelector('.abs-product-info').innerHTML=
+    '<strong style="color:var(--gold)">'+p.codigo+'</strong> — '+p.descripcion+'<br>'+
+    '<span style="font-size:12px;color:var(--text-muted)">Stock actual: <strong style="color:'+(p.stock_actual>0?'var(--green)':'var(--red)')+'">'+p.stock_actual+'</strong></span>';
+  // Mostrar sección de tipo de movimiento
+  const tipoSec=document.getElementById('abs-mov-tipo-section'); if(tipoSec) tipoSec.style.display='';
+  // Aplicar permisos en los botones
+  const btnE=document.getElementById('abs-btn-entrada');
+  const btnS=document.getElementById('abs-btn-salida');
+  if(btnE) btnE.style.display=abs_canEntrada()?'':'none';
+  if(btnS) btnS.style.display=abs_canSalida()?'':'none';
+  // Resetear tipo si habia uno anterior
+  abs_mov_tipo=null;
+  document.getElementById('abs-mov-fields').style.display='none';
+  if(btnE) btnE.classList.remove('active');
+  if(btnS) btnS.classList.remove('active');
 }
 function absMovClearProduct() {
-  abs_mov_producto=null;
+  abs_mov_producto=null; abs_mov_tipo=null;
   const sel=document.getElementById('abs-mov-selected'); if(sel) sel.style.display='none';
   const inp=document.getElementById('abs-mov-search'); if(inp) inp.value='';
+  const tipoSec=document.getElementById('abs-mov-tipo-section'); if(tipoSec) tipoSec.style.display='none';
+  const fields=document.getElementById('abs-mov-fields'); if(fields) fields.style.display='none';
+  const btnE=document.getElementById('abs-btn-entrada'); if(btnE) btnE.classList.remove('active');
+  const btnS=document.getElementById('abs-btn-salida');  if(btnS) btnS.classList.remove('active');
   ['abs-mov-cantidad','abs-mov-lote','abs-mov-colada','abs-mov-remision','abs-mov-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 }
 async function absGuardarMovimiento() {
