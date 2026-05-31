@@ -4060,7 +4060,7 @@ function navigate(page) {
   if(page==='historico') { setTimeout(historicoListMonths, 100); }
   if(page==='procesos') renderProcesos();
   if(page==='inventario') { setTimeout(async()=>{ try { const t = await getToken(); if(t) msLoadInventoryFromOneDrive(); } catch(e){} }, 500); }
-  if(page==='abastecimiento') { document.querySelector('.main-area').scrollTop=0; window.scrollTo(0,0); setTimeout(()=>{ absCargar(); absApplyPermisos(); }, 200); }
+  if(page==='abastecimiento') { const _ma=document.querySelector('.main-area'); if(_ma)_ma.scrollTop=0; window.scrollTo(0,0); setTimeout(()=>{ absCargar(); absApplyPermisos(); }, 200); }
 }
 function getNavLabel(page) {
   const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'cronograma',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',cotizaciones:'cotizaciones',ordenes:'procesos',fotoinv:'fotoinv',visitas:'visitas',mensajeria:'mensajeria',configuracion:'configuraci'};
@@ -10151,6 +10151,7 @@ function absApplyPermisos() {
 }
 
 function absTab(tab) {
+  const ma=document.querySelector('.main-area'); if(ma) ma.scrollTop=0; window.scrollTo(0,0);
   document.querySelectorAll('.abs-tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.abs-panel').forEach(p=>p.style.display='none');
   const el=document.getElementById('abs-tab-'+tab); if(el) el.style.display='';
