@@ -1576,20 +1576,32 @@
   },
   {
     "id": "poc_1780341835166",
-    "num": 4900006720,
+    "num": "4900006720",
     "cliente": "E&G ENERGY GROUP SAS",
     "desc": "Canecas de 5 galones de grasa Bestolife 2000 para tubing",
     "estado": "activo",
+    "fechaIngreso": "2026-06-01",
+    "valor": 4974200,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
-        "s": "pending",
-        "f": "",
+        "s": "active",
+        "f": "2026-06-01",
         "n": ""
       },
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1602,14 +1614,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-01T20:00:57.747Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-01T20:00:57.747Z"
+    "createdAt": "2026-06-01T20:01:37.378Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-01T20:01:37.378Z",
+    "updatedBy": "andrea"
   }
 ]
