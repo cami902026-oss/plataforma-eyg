@@ -1,0 +1,150 @@
+name: ⚠️ Alertas de Stock Crítico
+
+on:
+  schedule:
+    # Cada 15 minutos, L-V 7AM-7PM Colombia (12:00-00:00 UTC)
+    - cron: '*/15 12-23 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  check-alerts:
+    runs-on: ubuntu-latest
+    name: 📧 Verificar y enviar alertas stock
+
+    steps:
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: ⚠️ Revisar alertas y notificar
+        env:
+          MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          SENDER_EMAIL:     ${{ secrets.SENDER_EMAIL }}
+          SUPABASE_URL:     ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:     ${{ secrets.SUPABASE_KEY }}
+        run: |
+          python - <<'EOF'
+          import json, urllib.request, urllib.parse, os, sys
+          from datetime import datetime
+
+          supa_url = os.environ.get('SUPABASE_URL','').strip()
+          supa_key = os.environ.get('SUPABASE_KEY','').strip()
+          if not supa_url or not supa_key:
+              print('SUPABASE_URL/KEY no configurados'); sys.exit(0)
+
+          hdrs_supa = {'apikey': supa_key, 'Authorization': 'Bearer ' + supa_key, 'Content-Type': 'application/json'}
+
+          # 1. Buscar alertas no enviadas
+          req = urllib.request.Request(
+              supa_url + '/rest/v1/alertas_stock?enviado=eq.false&order=created_at.asc',
+              headers=hdrs_supa)
+          with urllib.request.urlopen(req) as r:
+              alertas = json.loads(r.read())
+
+          if not alertas:
+              print('Sin alertas pendientes'); sys.exit(0)
+
+          print(f'{len(alertas)} alerta(s) pendiente(s)')
+
+          # 2. Obtener token Microsoft
+          tenant_id     = os.environ['MS_TENANT_ID'].strip()
+          client_id     = os.environ['MS_CLIENT_ID'].strip()
+          client_secret = os.environ['MS_CLIENT_SECRET'].strip()
+          sender        = os.environ['SENDER_EMAIL'].strip()
+          recipients    = ['gerenciageneral@eygenergygroup.com', 'andrea.bernal@eygenergygroup.com']
+
+          data = urllib.parse.urlencode({
+              'grant_type': 'client_credentials', 'client_id': client_id,
+              'client_secret': client_secret, 'scope': 'https://graph.microsoft.com/.default'
+          }).encode()
+          req2 = urllib.request.Request(
+              f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token',
+              data=data, method='POST')
+          with urllib.request.urlopen(req2) as r:
+              token = json.loads(r.read())['access_token']
+
+          # 3. Construir correo
+          now = datetime.now()
+          hora = now.strftime('%H:%M')
+
+          filas = ''
+          for a in alertas:
+              filas += (
+                  f"<tr>"
+                  f"<td style='font-family:monospace;font-size:11px;padding:8px 10px;border-bottom:1px solid #eef1f8;'>{a.get('codigo_producto','')}</td>"
+                  f"<td style='font-size:13px;padding:8px 10px;border-bottom:1px solid #eef1f8;font-weight:600;'>{a.get('descripcion','')}</td>"
+                  f"<td style='text-align:center;padding:8px 10px;border-bottom:1px solid #eef1f8;'>"
+                  f"<span style='background:#fce8e6;color:#c0392b;padding:3px 10px;border-radius:10px;font-weight:700;font-size:13px;'>{a.get('stock_actual',0)}</span></td>"
+                  f"<td style='font-size:12px;padding:8px 10px;border-bottom:1px solid #eef1f8;color:#666;'>{a.get('responsable','')}</td>"
+                  f"<td style='font-size:11px;padding:8px 10px;border-bottom:1px solid #eef1f8;color:#888;'>{str(a.get('created_at',''))[:16].replace('T',' ')}</td>"
+                  f"</tr>"
+              )
+
+          html = f"""<!DOCTYPE html>
+          <html><head><meta charset="UTF-8"></head>
+          <body style="font-family:'Segoe UI',Arial,sans-serif;background:#f0f4ff;margin:0;padding:16px;">
+          <div style="max-width:700px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1);">
+            <div style="background:#c0392b;padding:20px 24px;display:flex;align-items:center;gap:14px;">
+              <span style="font-size:32px;">⚠️</span>
+              <div>
+                <div style="font-size:18px;font-weight:900;color:#fff;font-family:Montserrat,Arial;">Stock Crítico — Acción Requerida</div>
+                <div style="font-size:12px;color:#fca5a5;margin-top:3px;">E&G Energy Group · Alerta automática · {hora} Colombia</div>
+              </div>
+            </div>
+            <div style="height:3px;background:linear-gradient(90deg,#E8A020,transparent);"></div>
+            <div style="padding:24px;">
+              <p style="color:#555;font-size:14px;margin:0 0 16px;">
+                Los siguientes productos tienen <strong style="color:#c0392b;">menos de 5 unidades</strong> en inventario y requieren reabastecimiento:
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:13px;margin-bottom:20px;">
+                <thead>
+                  <tr style="background:#0F2B5B;">
+                    <th style="color:#fff;padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Código</th>
+                    <th style="color:#fff;padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Producto</th>
+                    <th style="color:#fff;padding:9px 10px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Stock actual</th>
+                    <th style="color:#fff;padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Registrado por</th>
+                    <th style="color:#fff;padding:9px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;">Hora</th>
+                  </tr>
+                </thead>
+                <tbody>{filas}</tbody>
+              </table>
+              <div style="background:#fff8e1;border-left:4px solid #E8A020;border-radius:8px;padding:12px 16px;font-size:13px;color:#7d5a00;">
+                💡 <strong>Acción sugerida:</strong> Verificar disponibilidad con proveedores y programar orden de compra.
+              </div>
+            </div>
+            <div style="background:#071525;padding:14px;text-align:center;">
+              <p style="margin:0;font-size:11px;color:#8899bb;">⚡ <strong style="color:#E8A020;">ENERGY — Asistente Administrativo</strong> · Alerta automática cada 15 min L–V</p>
+            </div>
+          </div>
+          </body></html>"""
+
+          payload = json.dumps({
+              'message': {
+                  'subject': f'⚠️ Stock Crítico — {len(alertas)} producto(s) bajo umbral · {hora} Colombia',
+                  'body': {'contentType': 'HTML', 'content': html},
+                  'toRecipients': [{'emailAddress': {'address': r}} for r in recipients]
+              },
+              'saveToSentItems': True
+          }).encode('utf-8')
+
+          req3 = urllib.request.Request(
+              f'https://graph.microsoft.com/v1.0/users/{sender}/sendMail',
+              data=payload, method='POST',
+              headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'})
+          with urllib.request.urlopen(req3) as r:
+              print(f'Correo enviado a: {", ".join(recipients)}')
+
+          # 4. Marcar alertas como enviadas
+          ids = [a['id'] for a in alertas]
+          for aid in ids:
+              req4 = urllib.request.Request(
+                  supa_url + f'/rest/v1/alertas_stock?id=eq.{aid}',
+                  data=json.dumps({'enviado': True}).encode(),
+                  method='PATCH',
+                  headers={**hdrs_supa, 'Prefer': 'return=minimal'})
+              urllib.request.urlopen(req4).close()
+          print(f'{len(ids)} alerta(s) marcada(s) como enviadas')
+          EOF
