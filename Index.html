@@ -2169,62 +2169,54 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   <div id="abs-tab-movimiento" class="abs-panel" style="display:none">
     <div class="abs-mov-form" style="margin-bottom:16px;">
 
-      <!-- PASO 1: Buscar producto -->
+      <!-- PASO 1: Tipo de movimiento (aplica a todo el carrito) -->
       <div style="margin-bottom:14px;">
-        <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">1. Busca el producto</div>
-        <div style="position:relative;">
-          <input type="text" id="abs-mov-search"
-            placeholder="Escribe el nombre o codigo del producto..."
-            oninput="absMovSearch()" autocomplete="off"
-            style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:#fff;font-size:14px;font-family:'Open Sans',sans-serif;">
-          <div id="abs-mov-suggestions" class="abs-suggestions" style="display:none"></div>
-        </div>
-      </div>
-
-      <!-- Producto seleccionado -->
-      <div id="abs-mov-selected" style="display:none;margin-bottom:16px;">
-        <div class="abs-product-selected">
-          <div class="abs-product-info"></div>
-          <button onclick="absMovClearProduct()" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;">&#10005;</button>
-        </div>
-      </div>
-
-      <!-- PASO 2: Elegir tipo -->
-      <div id="abs-mov-tipo-section" style="display:none;margin-bottom:16px;">
-        <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">2. Tipo de movimiento</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">1. Tipo de movimiento</div>
         <div class="abs-mov-tipo-selector">
-          <button id="abs-btn-entrada" onclick="absSelectTipo('ENTRADA')" class="abs-tipo-btn entrada">+ ENTRADA</button>
-          <button id="abs-btn-salida"  onclick="absSelectTipo('SALIDA')"  class="abs-tipo-btn salida">- SALIDA</button>
+          <button id="abs-cart-btn-entrada" onclick="absCartTipo('ENTRADA')" class="abs-tipo-btn entrada">+ ENTRADA</button>
+          <button id="abs-cart-btn-salida"  onclick="absCartTipo('SALIDA')"  class="abs-tipo-btn salida">- SALIDA</button>
         </div>
       </div>
 
-      <!-- PASO 3: Campos del movimiento -->
-      <div id="abs-mov-fields" style="display:none;">
-        <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">3. Completa los datos</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Cantidad <span style="color:var(--red)">*</span></label>
-            <input type="number" id="abs-mov-cantidad" min="0.01" step="0.01" placeholder="0">
-          </div>
-          <div id="abs-mov-lote-group" class="form-group" style="display:none">
-            <label>Lote <span style="color:var(--red)">*</span></label>
-            <input type="text" id="abs-mov-lote" placeholder="Numero de lote">
-          </div>
-          <div id="abs-mov-colada-group" class="form-group" style="display:none">
-            <label>Colada <span style="color:var(--red)">*</span></label>
-            <input type="text" id="abs-mov-colada" placeholder="Numero de colada">
-          </div>
-          <div id="abs-mov-remision-group" class="form-group" style="display:none">
-            <label>Remision <span style="color:var(--red)">*</span></label>
-            <input type="text" id="abs-mov-remision" placeholder="N.o de remision o cliente">
-          </div>
+      <!-- PASO 2: Buscar y agregar productos al carrito -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">2. Agrega productos al carrito</div>
+        <div style="position:relative;">
+          <input type="text" id="abs-cart-search"
+            placeholder="Escribe nombre o codigo y haz clic para agregarlo..."
+            oninput="absCartSearch()" autocomplete="off"
+            style="width:100%;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:#fff;font-size:14px;font-family:'Open Sans',sans-serif;">
+          <div id="abs-cart-suggestions" class="abs-suggestions" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- PASO 3: Carrito tipo Excel -->
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">3. Carrito <span id="abs-cart-count" style="color:var(--gold);font-weight:700"></span></div>
+          <button class="btn btn-ghost" onclick="absCartVaciar()" style="padding:6px 12px;font-size:12px;">&#128465; Vaciar</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="abs-table" id="abs-cart-table"><thead><tr>
+            <th>Codigo</th><th>Descripcion</th><th>Stock</th><th>Cantidad</th>
+            <th id="abs-cart-th-extra">Colada</th><th></th>
+          </tr></thead><tbody id="abs-cart-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- Campos comunes + registrar -->
+      <div class="form-row">
+        <div id="abs-cart-remision-group" class="form-group" style="display:none">
+          <label>Remision / Cliente</label>
+          <input type="text" id="abs-cart-remision" placeholder="N.o de remision o cliente">
         </div>
         <div class="form-group">
-          <label>Notas (opcional)</label>
-          <input type="text" id="abs-mov-notas" placeholder="Observaciones...">
+          <label>Notas (opcional, aplica a todo)</label>
+          <input type="text" id="abs-cart-notas" placeholder="Observaciones...">
         </div>
-        <button class="btn btn-primary" onclick="absGuardarMovimiento()" style="width:auto;min-width:220px;">Registrar Movimiento</button>
       </div>
+      <button class="btn btn-primary" id="abs-cart-registrar" onclick="absCartGuardar()" style="width:auto;min-width:240px;">Registrar movimientos</button>
+      <div id="abs-cart-progreso" style="margin-top:10px;font-size:13px;color:var(--text-muted)"></div>
     </div>
 
     <div>
@@ -10186,7 +10178,7 @@ function absTab(tab) {
   if(tab==='rotacion'&&abs_loaded) absCalcularRotacion();
   if(tab==='dashboard'&&abs_loaded) absRenderDashboard();
   if(tab==='kardex'&&abs_loaded) absRenderKardex();
-  if(tab==='movimiento') absRenderMovHoy();
+  if(tab==='movimiento'){ absRenderMovHoy(); absCartInit(); }
 }
 
 // ─── STOCK ───────────────────────────────────────────────────────
@@ -10235,7 +10227,8 @@ function absSelectTipo(tipo) {
   document.getElementById('abs-mov-lote-group').style.display    =tipo==='ENTRADA'?'':'none';
   document.getElementById('abs-mov-colada-group').style.display  =tipo==='SALIDA'?'':'none';
   document.getElementById('abs-mov-remision-group').style.display=tipo==='SALIDA'?'':'none';
-  absMovClearProduct();
+  // Limpiar solo los VALORES de los campos al cambiar de tipo (sin deseleccionar el producto ni el tipo)
+  ['abs-mov-cantidad','abs-mov-lote','abs-mov-colada','abs-mov-remision','abs-mov-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 }
 function absMovSearch() {
   const q=(document.getElementById('abs-mov-search')?.value||'').toLowerCase();
@@ -10340,6 +10333,141 @@ function absRenderMovHoy() {
     <td style="font-weight:700">${m.cantidad}</td>
     <td style="font-size:12px;color:var(--text-muted)">${m.responsable}</td>
   </tr>`).join('')}</tbody></table>`;
+}
+
+// ─── CARRITO DE MOVIMIENTOS (tipo Excel) ─────────────────────────
+let abs_cart = [], abs_cart_tipo = null;
+
+function absCartInit() {
+  const be=document.getElementById('abs-cart-btn-entrada');
+  const bs=document.getElementById('abs-cart-btn-salida');
+  if(be) be.style.display=abs_canEntrada()?'':'none';
+  if(bs) bs.style.display=abs_canSalida()?'':'none';
+  if(!abs_cart_tipo){
+    if(abs_canSalida())      absCartTipo('SALIDA');
+    else if(abs_canEntrada())absCartTipo('ENTRADA');
+    else absCartRender();
+  } else absCartRender();
+}
+
+function absCartTipo(tipo) {
+  if(tipo==='ENTRADA'&&!abs_canEntrada()) return showToast('Solo Andrea y Alberto pueden registrar entradas','error');
+  if(tipo==='SALIDA' &&!abs_canSalida())  return showToast('No tienes permiso para registrar salidas','error');
+  abs_cart_tipo=tipo;
+  const be=document.getElementById('abs-cart-btn-entrada');
+  const bs=document.getElementById('abs-cart-btn-salida');
+  if(be) be.classList.toggle('active',tipo==='ENTRADA');
+  if(bs) bs.classList.toggle('active',tipo==='SALIDA');
+  const th=document.getElementById('abs-cart-th-extra'); if(th) th.textContent=tipo==='ENTRADA'?'Lote':'Colada';
+  const rg=document.getElementById('abs-cart-remision-group'); if(rg) rg.style.display=tipo==='SALIDA'?'':'none';
+  absCartRender();
+}
+
+function absCartSearch() {
+  const q=(document.getElementById('abs-cart-search')?.value||'').toLowerCase();
+  const sug=document.getElementById('abs-cart-suggestions'); if(!sug) return;
+  if(!q||q.length<2){sug.innerHTML='';sug.style.display='none';return;}
+  const ms=abs_productos.filter(p=>(p.codigo||'').toLowerCase().includes(q)||(p.descripcion||'').toLowerCase().includes(q)).slice(0,8);
+  if(!ms.length){sug.innerHTML='';sug.style.display='none';return;}
+  sug.style.display='';
+  sug.innerHTML=ms.map(p=>`<div class="abs-sug-item" onclick="absCartAdd('${p.codigo}')">
+    <span style="color:var(--gold);font-size:12px;min-width:90px">${p.codigo}</span>
+    <span style="font-size:13px;flex:1">${p.descripcion}</span>
+    <span style="font-size:12px;color:${p.stock_actual>0?'var(--green)':'var(--red)'}">Stock: ${p.stock_actual}</span>
+  </div>`).join('');
+}
+
+function absCartAdd(codigo) {
+  if(!abs_cart_tipo) return showToast('Primero elige ENTRADA o SALIDA','error');
+  const p=abs_productos.find(x=>x.codigo===codigo); if(!p) return;
+  if(abs_cart.find(x=>x.codigo===codigo)){ showToast('Ese producto ya esta en el carrito','info'); }
+  else abs_cart.push({codigo:p.codigo,descripcion:p.descripcion,stock_actual:p.stock_actual,costo_compra:p.costo_compra||0,cantidad:1,lote:'',colada:''});
+  const inp=document.getElementById('abs-cart-search'); if(inp) inp.value='';
+  const sug=document.getElementById('abs-cart-suggestions'); if(sug){sug.innerHTML='';sug.style.display='none';}
+  absCartRender();
+}
+
+function absCartSet(codigo,campo,valor) {
+  const it=abs_cart.find(x=>x.codigo===codigo); if(!it) return;
+  if(campo==='cantidad') it.cantidad=parseFloat(valor)||0;
+  else it[campo]=valor;
+}
+function absCartRemove(codigo){ abs_cart=abs_cart.filter(x=>x.codigo!==codigo); absCartRender(); }
+function absCartVaciar(){ abs_cart=[]; absCartRender(); }
+
+function absCartRender() {
+  const tb=document.getElementById('abs-cart-tbody'); if(!tb) return;
+  const cnt=document.getElementById('abs-cart-count');
+  if(cnt) cnt.textContent=abs_cart.length?('('+abs_cart.length+' producto'+(abs_cart.length>1?'s':'')+')'):'';
+  const esSalida=abs_cart_tipo==='SALIDA';
+  if(!abs_cart.length){
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">'+(abs_cart_tipo?'Busca y agrega productos arriba &uarr;':'Elige ENTRADA o SALIDA para empezar')+'</td></tr>';
+    return;
+  }
+  tb.innerHTML=abs_cart.map(it=>{
+    const insuf=esSalida&&it.cantidad>it.stock_actual;
+    const sc=it.stock_actual<=0?'var(--red)':it.stock_actual<=5?'var(--yellow)':'var(--green)';
+    const extraVal=esSalida?it.colada:it.lote;
+    const extraCampo=esSalida?'colada':'lote';
+    return `<tr>
+      <td><code style="font-size:11px;color:var(--gold)">${it.codigo}</code></td>
+      <td style="font-size:13px">${it.descripcion}</td>
+      <td style="color:${sc};font-weight:700">${it.stock_actual}</td>
+      <td><input type="number" min="0.01" step="0.01" value="${it.cantidad}" onchange="absCartSet('${it.codigo}','cantidad',this.value);absCartRender()" style="width:90px;padding:6px 8px;background:rgba(15,43,91,0.5);border:1px solid ${insuf?'var(--red)':'var(--border)'};border-radius:6px;color:#fff;font-size:13px">${insuf?'<div style="color:var(--red);font-size:10px;margin-top:2px">Supera stock</div>':''}</td>
+      <td><input type="text" value="${(extraVal||'').replace(/"/g,'&quot;')}" placeholder="${esSalida?'Colada':'Lote'}" onchange="absCartSet('${it.codigo}','${extraCampo}',this.value)" style="width:120px;padding:6px 8px;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:6px;color:#fff;font-size:13px"></td>
+      <td><button onclick="absCartRemove('${it.codigo}')" title="Quitar" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:16px">&#10005;</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function absCartGuardar() {
+  if(!abs_cart_tipo) return showToast('Elige ENTRADA o SALIDA','error');
+  if(abs_cart_tipo==='ENTRADA'&&!abs_canEntrada()) return showToast('No tienes permiso para registrar entradas','error');
+  if(abs_cart_tipo==='SALIDA' &&!abs_canSalida())  return showToast('No tienes permiso para registrar salidas','error');
+  if(!abs_cart.length) return showToast('El carrito esta vacio','error');
+  for(const it of abs_cart){
+    if(!it.cantidad||it.cantidad<=0) return showToast('Cantidad invalida en '+it.codigo,'error');
+    if(abs_cart_tipo==='SALIDA'&&it.cantidad>it.stock_actual) return showToast('Stock insuficiente en '+it.codigo+' (disp: '+it.stock_actual+')','error');
+  }
+  const remision=abs_cart_tipo==='SALIDA'?(document.getElementById('abs-cart-remision')?.value?.trim()||''):'';
+  const notas=document.getElementById('abs-cart-notas')?.value?.trim()||'';
+  const btn=document.getElementById('abs-cart-registrar'); if(btn) btn.disabled=true;
+  const prog=document.getElementById('abs-cart-progreso');
+  const total=abs_cart.length, fecha=new Date().toISOString().split('T')[0];
+  let ok=0; const fallos=[], okCodigos=[];
+  for(let i=0;i<abs_cart.length;i++){
+    const it=abs_cart[i];
+    if(prog) prog.textContent='Registrando '+(i+1)+'/'+total+': '+it.codigo+'...';
+    try{
+      const prod=abs_productos.find(x=>x.codigo===it.codigo)||it;
+      const nuevo_stock=abs_cart_tipo==='ENTRADA'?(prod.stock_actual+it.cantidad):(prod.stock_actual-it.cantidad);
+      const mov={
+        fecha, hora:new Date().toTimeString().split(' ')[0],
+        codigo_producto:it.codigo, descripcion_producto:it.descripcion,
+        tipo:abs_cart_tipo, cantidad:it.cantidad, stock_resultante:nuevo_stock,
+        costo:prod.costo_compra||0, responsable:currentUser?.name||'SISTEMA',
+        lote:abs_cart_tipo==='ENTRADA'?(it.lote||''):'', colada:abs_cart_tipo==='SALIDA'?(it.colada||''):'',
+        remision, notas
+      };
+      await absFetch('kardex',{method:'POST',body:JSON.stringify(mov)});
+      const upd=abs_cart_tipo==='ENTRADA'
+        ?{stock_actual:nuevo_stock,entradas:(prod.entradas||0)+it.cantidad,updated_at:new Date().toISOString()}
+        :{stock_actual:nuevo_stock,salidas:(prod.salidas||0)+it.cantidad,updated_at:new Date().toISOString()};
+      await absFetch('productos?codigo=eq.'+encodeURIComponent(it.codigo),{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify(upd)});
+      prod.stock_actual=nuevo_stock;
+      if(abs_cart_tipo==='ENTRADA') prod.entradas=(prod.entradas||0)+it.cantidad; else prod.salidas=(prod.salidas||0)+it.cantidad;
+      abs_kardex.unshift({...mov,id:Date.now()+i});
+      ok++; okCodigos.push(it.codigo);
+    }catch(e){ fallos.push(it.codigo); }
+  }
+  if(btn) btn.disabled=false;
+  if(prog) prog.textContent='';
+  // Quitar del carrito solo los que se registraron bien (los fallidos quedan para reintentar)
+  abs_cart=abs_cart.filter(it=>!okCodigos.includes(it.codigo));
+  if(fallos.length) showToast(ok+' registrado(s) - '+fallos.length+' con error: '+fallos.join(', '),'error');
+  else { showToast(ok+' movimiento(s) registrado(s) ✓','ok'); const r=document.getElementById('abs-cart-remision'); if(r)r.value=''; const n=document.getElementById('abs-cart-notas'); if(n)n.value=''; }
+  absCartRender(); absRenderMovHoy(); absRenderStock(); absRenderDashboard();
+  if(typeof absCheckStockCritico==='function') absCheckStockCritico();
 }
 
 // ─── KARDEX ──────────────────────────────────────────────────────
