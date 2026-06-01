@@ -626,7 +626,8 @@
     "num": "C_PC000009201-1",
     "cliente": "SERTECPET",
     "desc": "Tees, gaskets espiral/RTJ, válvula bola instrumentación 1/4\" SS",
-    "estado": "completado",
+    "estado": "activo",
+    "fechaIngreso": "2026-05-22",
     "valor": 0,
     "hojaEntrada": {
       "requerida": true,
@@ -655,14 +656,14 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-01",
+        "n": "456"
       }
     ],
     "createdAt": "2026-05-22T17:08:55.737Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-05-22T17:08:55.737Z",
+    "updatedAt": "2026-06-01T15:30:25.640Z",
     "updatedBy": "andrea"
   },
   {
@@ -1093,16 +1094,16 @@
     },
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-05-23",
         "n": "codifer\ndisefer\niNDUVACOL\nGRANADA\n"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-09-05",
         "n": "",
-        "envio": "",
-        "transp": "",
+        "envio": "transportadora",
+        "transp": "tcc y camion externo",
         "guia": "",
         "dest": "",
         "resp": ""
@@ -1120,8 +1121,8 @@
     ],
     "createdAt": "2026-05-22T17:02:47.733Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-05-26T21:42:26.775Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-05-29T22:49:42.686Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "poc_1779461405791",
@@ -1164,8 +1165,10 @@
     ],
     "createdAt": "2026-05-22T20:38:55.909Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-05-22T21:24:58.210Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-06-01T18:20:18.783Z",
+    "updatedBy": "andrea",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-06-01T18:20:18.783Z"
   },
   {
     "id": "poc_1779461488471",
@@ -1324,11 +1327,11 @@
         "n": "Bodega\n\nFERRETERIA IMPERIAL"
       },
       {
-        "s": "pending",
+        "s": "done",
         "f": "",
         "n": "",
-        "envio": "",
-        "transp": "",
+        "envio": "transportadora",
+        "transp": "YOPAL EXPRESS",
         "guia": "",
         "dest": "",
         "resp": ""
@@ -1339,17 +1342,15 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-02-05",
+        "n": "451'452"
       }
     ],
     "createdAt": "2026-05-26T21:27:50.397Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-05-28T21:46:45.991Z",
-    "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-28T21:46:45.991Z"
+    "updatedAt": "2026-05-29T22:48:48.763Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "poc_1779919021634",
@@ -1395,19 +1396,31 @@
   {
     "id": "poc_1780065847891",
     "num": "ODC-AA-MEC-SKID-469-24-531",
-    "cliente": "E&G ENERGY GROUP SAS",
+    "cliente": "SKID EXPERT",
     "desc": "Acoples, válvulas, accesorios filtración y tanque agua pozo",
     "estado": "activo",
+    "fechaIngreso": "2026-05-29",
+    "valor": 3856548,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
         "f": "2026-05-28",
-        "n": "Auto-creada desde correo"
+        "n": "INDUVACOL\nCODIFER\nHIDROLING\nSEGEFER\nMUNDIAL\nCODIFER\n"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "active",
+        "f": "2026-01-06",
+        "n": "",
+        "envio": "moto",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1420,29 +1433,39 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-04-20T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-05-29T14:44:07.890Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "Orden de compra",
-      "fecha": "2026-05-29T14:44:07.890Z",
-      "fechaCreacionOC": "2026-04-20",
-      "fechaCompra": "2026-05-28"
-    }
+    "createdAt": "2026-05-29T15:27:15.070Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-29T22:47:10.391Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "poc_1780068534688",
     "num": "280526U3517",
-    "cliente": "FRONTERA",
+    "cliente": "CIAM",
     "desc": "Reducciones IMC, conectores HUB, chazos metálicos y conectores puesta a tierra",
     "estado": "activo",
+    "fechaIngreso": "2026-05-29",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
         "f": "2026-05-28",
-        "n": "Auto-creada desde correo"
+        "n": "Marin"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "139000",
+        "envio": "transportadora",
+        "transp": "Macarena",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1450,26 +1473,14 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-01",
+        "n": "453"
       }
     ],
-    "createdAt": "2026-05-28T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-05-29T15:28:54.688Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "Orden de compra energy group",
-      "fecha": "2026-05-29T15:28:54.688Z",
-      "fechaCreacionOC": "2026-05-28",
-      "fechaCompra": "2026-05-28"
-    }
+    "createdAt": "2026-05-29T22:46:37.361Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-06-01T15:32:11.634Z",
+    "updatedBy": "andrea"
   }
 ]
