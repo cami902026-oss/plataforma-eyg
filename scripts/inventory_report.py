@@ -558,7 +558,7 @@ def _build_index(grupos: dict) -> str:
     )
 
 
-def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, kardex_html: str = '', stock_critico_html: str = '') -> str:
+def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, kardex_html: str = '') -> str:
     # ── Auto-clasificar productos que no tengan CATEGORIA/FAMILIA en el Excel ──
     for p in inv:
         cat_excel = str(p.get('CATEGORIA', '') or '').lower().strip()
@@ -766,8 +766,6 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, karde
     {alert_box}
 
     {kardex_html}
-
-    {stock_critico_html}
 
     <div class="sec-title">&#128230; Inventario por Categor&iacute;a &mdash; {stats['total']} productos</div>
     {index_block}
@@ -1237,12 +1235,6 @@ if __name__ == '__main__':
     print("🔑 Obteniendo token Microsoft...")
     token = get_access_token(tenant_id, client_id, client_secret)
 
-    # Obtener stock crítico desde Supabase
-    stock_critico_html = ''
-    if supabase_url and supabase_key:
-        criticos = fetch_stock_critico(supabase_url, supabase_key, umbral=5)
-        stock_critico_html = _build_stock_critico_section(criticos, umbral=5)
-
     # Obtener kardex de hoy: primero Supabase, si falla → OneDrive
     kardex_html = ''
     supabase_url = os.environ.get('SUPABASE_URL', '').strip()
@@ -1258,7 +1250,7 @@ if __name__ == '__main__':
     except Exception as ex:
         print("Kardex omitido por error: " + str(ex))
 
-    html_body = generate_html(inv, stats, date_str, rot, kardex_html, stock_critico_html)
+    html_body = generate_html(inv, stats, date_str, rot, kardex_html)
     subject   = "📦 Reporte Inventario E&G — " + date_str
 
     excel_bytes = generate_excel_inv(inv)
