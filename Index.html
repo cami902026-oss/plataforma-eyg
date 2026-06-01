@@ -10117,7 +10117,8 @@ async function absFetch(endpoint, opts={}) {
   });
   if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
   if (res.status===204) return null;
-  return res.json();
+  const _txt = await res.text();        // POST/PATCH pueden devolver 201 con cuerpo vacío
+  return _txt ? JSON.parse(_txt) : null; // evitar que res.json() truene con body vacío
 }
 
 function abs_canEntrada(){ return currentUser && ['andrea','alberto'].includes(currentUser.email); }
