@@ -2136,6 +2136,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <option value="out">Agotados</option>
       </select>
       <button class="btn btn-ghost" onclick="absCargar()" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
+      <button class="btn btn-secondary" onclick="absDescargarExcel()" style="padding:8px 14px;font-size:12px;background:#1e7e34;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ Descargar Excel</button>
     </div>
     <div id="abs-stock-count" class="abs-count"></div>
     <div class="abs-table-wrap">
@@ -10514,6 +10515,76 @@ function absImprimirFormato(){
   <tbody>${rows}</tbody></table>
   <script>window.print();<\/script></body></html>`);
   win.document.close();
+}
+// ─── DESCARGA EXCEL BACKUP ────────────────────────────────────────────────────
+async function absDescargarExcel() {
+  if (!abs_loaded || !abs_productos.length) {
+    showToast('Carga el inventario primero (🔄 Recargar)','error'); return;
+  }
+  showToast('Generando Excel...','info');
+  try {
+    // Cargar kardex completo para el backup
+    let kardexCompleto = abs_kardex;
+    if (kardexCompleto.length < 600) {
+      try {
+        kardexCompleto = await absFetch('kardex?order=fecha.desc,hora.desc&limit=2000') || abs_kardex;
+      } catch(e) { kardexCompleto = abs_kardex; }
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    // ── Hoja STOCK ──────────────────────────────────────────────────────────
+    const stockRows = [
+      ['ITEM','CODIGO PRODUCTO','DESCRIPCION','MARCA','# COLADA','LOTE','FECHA DE INGRESO',
+       'ENTRADAS','SALIDAS','STOCK ACTUAL','COSTO COMPRA','PROVEEDOR','UBICACION','PRECIO VENTA']
+    ];
+    abs_productos.forEach((p,i) => {
+      const fam = abs_familias.find(f=>f.id===p.familia_id);
+      stockRows.push([
+        i+1,
+        p.codigo, p.descripcion, p.marca||'',
+        p.colada||'', p.lote||'',
+        p.fecha_ingreso||'',
+        p.entradas||0, p.salidas||0, p.stock_actual||0,
+        p.costo_compra||0, p.proveedor||'', p.ubicacion||'', p.precio_venta||0
+      ]);
+    });
+    const wsStock = XLSX.utils.aoa_to_sheet(stockRows);
+    // Anchos de columna
+    wsStock['!cols'] = [4,14,45,16,12,14,16,10,10,12,14,18,14,14].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, wsStock, 'STOCK');
+
+    // ── Hoja KARDEX ─────────────────────────────────────────────────────────
+    const kardexRows = [
+      ['ID','FECHA','HORA','PRODUCTO','DESCRIPCION','TIPO','CANT','STOCK RESULTADO',
+       'COSTO','RESPONSABLE','REMISION','LOTE','COLADA']
+    ];
+    kardexCompleto.forEach((k,i) => {
+      kardexRows.push([
+        i+1,
+        k.fecha||'', k.hora||'',
+        k.codigo_producto||'', k.descripcion_producto||'',
+        k.tipo||'', k.cantidad||0, k.stock_resultante||0,
+        k.costo||0, k.responsable||'',
+        k.remision||'', k.lote||'', k.colada||''
+      ]);
+    });
+    const wsKardex = XLSX.utils.aoa_to_sheet(kardexRows);
+    wsKardex['!cols'] = [6,12,8,14,40,10,8,14,10,18,14,12,12].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, wsKardex, 'KARDEX');
+
+    // ── Hoja FAMILIAS ───────────────────────────────────────────────────────
+    const famRows = [['ID','NOMBRE','PREFIJO']];
+    abs_familias.forEach(f => famRows.push([f.id, f.nombre, f.prefijo]));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(famRows), 'FAMILIAS');
+
+    // Nombre con fecha
+    const fecha = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, 'Inventario_EyG_Backup_' + fecha + '.xlsx');
+    showToast('Excel descargado correctamente','ok');
+  } catch(e) {
+    showToast('Error generando Excel: '+e.message,'error');
+  }
 }
 
 </script>
