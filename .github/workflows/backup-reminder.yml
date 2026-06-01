@@ -1,0 +1,106 @@
+name: 💾 Recordatorio Backup Inventario (Viernes)
+
+on:
+  schedule:
+    # Viernes 4:45 PM Colombia (UTC-5 = 21:45 UTC)
+    - cron: '45 21 * * 5'
+  workflow_dispatch:
+
+jobs:
+  send-reminder:
+    runs-on: ubuntu-latest
+    name: 📧 Enviar recordatorio backup
+
+    steps:
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📧 Enviar recordatorio
+        env:
+          MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          SENDER_EMAIL:     ${{ secrets.SENDER_EMAIL }}
+          RECIPIENT_EMAILS: ${{ secrets.RECIPIENT_EMAILS }}
+        run: |
+          python - <<'EOF'
+          import json, urllib.request, urllib.parse, urllib.error, os, sys
+          from datetime import datetime
+
+          tenant_id     = os.environ['MS_TENANT_ID'].strip()
+          client_id     = os.environ['MS_CLIENT_ID'].strip()
+          client_secret = os.environ['MS_CLIENT_SECRET'].strip()
+          sender        = os.environ['SENDER_EMAIL'].strip()
+          recipients    = [r.strip() for r in os.environ['RECIPIENT_EMAILS'].split(',')]
+
+          # Token
+          data = urllib.parse.urlencode({
+              'grant_type': 'client_credentials', 'client_id': client_id,
+              'client_secret': client_secret, 'scope': 'https://graph.microsoft.com/.default'
+          }).encode()
+          req = urllib.request.Request(
+              f'https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token',
+              data=data, method='POST')
+          with urllib.request.urlopen(req) as r:
+              token = json.loads(r.read())['access_token']
+
+          now = datetime.now()
+          fecha = f"{now.day} de {'enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre'.split()[now.month-1]} de {now.year}"
+
+          html = f"""<!DOCTYPE html>
+          <html><head><meta charset="UTF-8"></head>
+          <body style="font-family:'Segoe UI',Arial,sans-serif;background:#f0f4ff;margin:0;padding:16px;">
+          <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1);">
+            <div style="background:#0F2B5B;padding:24px;text-align:center;">
+              <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:2px;">⚡ ENERGY</div>
+              <div style="font-size:12px;color:#93c5fd;margin-top:4px;">Recordatorio Automático — Viernes {fecha}</div>
+            </div>
+            <div style="height:3px;background:linear-gradient(90deg,#2EAA4A,transparent);"></div>
+            <div style="padding:28px;">
+              <div style="font-size:28px;text-align:center;margin-bottom:16px;">💾</div>
+              <h2 style="font-family:Montserrat,Arial;color:#0F2B5B;margin:0 0 12px;text-align:center;">¡Es viernes! Descarga el backup del inventario</h2>
+              <p style="color:#555;font-size:14px;line-height:1.6;margin-bottom:20px;">
+                Cada viernes es importante guardar una copia del inventario actualizado.
+                Esto protege toda la información de entradas, salidas y kardex de la semana.
+              </p>
+              <div style="background:#f0fdf4;border-left:4px solid #2EAA4A;border-radius:8px;padding:16px;margin-bottom:20px;">
+                <div style="font-weight:700;color:#1e7e34;margin-bottom:8px;">Cómo descargar el backup:</div>
+                <ol style="color:#555;font-size:13px;margin:0;padding-left:20px;line-height:2;">
+                  <li>Abre la plataforma ENERGY</li>
+                  <li>Ve a <strong>Abastecimiento</strong> en el menú lateral</li>
+                  <li>Pestaña <strong>📦 Stock</strong></li>
+                  <li>Clic en el botón verde <strong>⬇️ Descargar Excel</strong></li>
+                  <li>Guarda el archivo en tu carpeta de backups</li>
+                </ol>
+              </div>
+              <div style="text-align:center;">
+                <a href="https://cami902026-oss.github.io/plataforma-eyg/Index.html"
+                   style="display:inline-block;background:#2EAA4A;color:#fff;padding:12px 32px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;">
+                  🚀 Abrir plataforma ENERGY
+                </a>
+              </div>
+            </div>
+            <div style="background:#071525;padding:14px;text-align:center;">
+              <p style="margin:0;font-size:11px;color:#8899bb;">⚡ <strong style="color:#E8A020;">ENERGY — Asistente Administrativo</strong> · Recordatorio automático cada viernes</p>
+            </div>
+          </div>
+          </body></html>"""
+
+          payload = json.dumps({
+              'message': {
+                  'subject': f'💾 Recordatorio: Backup inventario — Viernes {fecha}',
+                  'body': {'contentType': 'HTML', 'content': html},
+                  'toRecipients': [{'emailAddress': {'address': r}} for r in recipients]
+              },
+              'saveToSentItems': True
+          }).encode('utf-8')
+
+          req2 = urllib.request.Request(
+              f'https://graph.microsoft.com/v1.0/users/{sender}/sendMail',
+              data=payload, method='POST',
+              headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'})
+          with urllib.request.urlopen(req2) as r:
+              print(f'Recordatorio enviado a: {", ".join(recipients)}')
+          EOF
