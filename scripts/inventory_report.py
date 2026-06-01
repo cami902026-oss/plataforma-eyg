@@ -10,21 +10,12 @@ Lunes a Viernes a las 5:00 PM Colombia (UTC-5 = 22:00 UTC)
 
 import json
 import re
-import io
 import os
 import sys
-import base64
 import urllib.request
 import urllib.parse
 import urllib.error
 from datetime import datetime
-
-try:
-    import openpyxl
-    from openpyxl.styles import PatternFill, Font, Alignment
-    OPENPYXL_OK = True
-except ImportError:
-    OPENPYXL_OK = False
 
 
 # ─── CONFIGURACIÓN ─────────────────────────────────────────────────────────────
@@ -34,10 +25,6 @@ DAYS_ES    = {'Monday':'Lunes','Tuesday':'Martes','Wednesday':'Miércoles',
 MONTHS_ES  = {'January':'enero','February':'febrero','March':'marzo','April':'abril',
                'May':'mayo','June':'junio','July':'julio','August':'agosto',
                'September':'septiembre','October':'octubre','November':'noviembre','December':'diciembre'}
-
-# Path del libro maestro en OneDrive de Andrea (mismo que sync_inventory.py usa)
-ONEDRIVE_KARDEX_PATH  = 'LOGISTICA/Inventario definitivo_2026.xlsm'
-ONEDRIVE_KARDEX_USER  = 'andrea.bernal@eygenergygroup.com'
 
 
 # ─── 1. EXTRAE INVENTARIO DESDE Buscador_Inventario_2026.html ────────────────
@@ -69,134 +56,7 @@ def extract_inv_from_html(html_path: str) -> list:
         return []
 
 
-# ─── 2. GENERA EXCEL ─────────────────────────────────────────────────────────
-
-def generate_excel_inv(inv: list) -> bytes | None:
-    if not OPENPYXL_OK:
-        print("⚠️  openpyxl no disponible — se omite el Excel adjunto")
-        return None
-
-    wb = openpyxl.Workbook()
-    ws = wb.active
-    ws.title = 'Inventario'
-
-    hdr_fill  = PatternFill('solid', fgColor='0F2B5B')
-    hdr_font  = Font(bold=True, color='FFFFFF', size=10)
-    ok_fill   = PatternFill('solid', fgColor='E6F4EA')
-    low_fill  = PatternFill('solid', fgColor='FFF8E1')
-    zero_fill = PatternFill('solid', fgColor='FCE8E6')
-
-    headers = ['Código', 'Descripción', 'Marca', 'Ubicación', 'Categoría', 'Familia', 'Stock Actual']
-    for col, h in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=col, value=h)
-        cell.fill = hdr_fill
-        cell.font = hdr_font
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-
-    for row_idx, p in enumerate(inv, 2):
-        stock = int(p.get('STOCK ACTUAL') or 0)
-        cat, fam = _auto_classify(p)
-        ws.cell(row=row_idx, column=1, value=str(p.get('CODIGO PRODUCTO', '')))
-        ws.cell(row=row_idx, column=2, value=str(p.get('DESCRIPCION', '')))
-        ws.cell(row=row_idx, column=3, value=str(p.get('MARCA', '')))
-        ws.cell(row=row_idx, column=4, value=str(p.get('UBICACIÓN') or p.get('UBICACION', '')))
-        ws.cell(row=row_idx, column=5, value=_cat_label(cat))
-        ws.cell(row=row_idx, column=6, value=fam)
-        ws.cell(row=row_idx, column=7, value=stock)
-
-        if stock == 0:
-            row_fill = zero_fill
-        elif stock <= 3:
-            row_fill = low_fill
-        else:
-            row_fill = ok_fill if row_idx % 2 == 0 else None
-
-        if row_fill:
-            for col in range(1, len(headers) + 1):
-                ws.cell(row=row_idx, column=col).fill = row_fill
-
-    col_widths = [14, 45, 18, 14, 20, 28, 13]
-    for i, w in enumerate(col_widths, 1):
-        ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = w
-
-    ws.freeze_panes = 'A2'
-
-    # Autofiltro en los títulos de la pestaña principal
-    last_col_letter = openpyxl.utils.get_column_letter(len(headers))
-    ws.auto_filter.ref = f"A1:{last_col_letter}{ws.max_row}"
-
-    # ── Pestaña 2: Resumen por Categoría ──────────────────────────────────────
-    ws2 = wb.create_sheet('Resumen por Categoría')
-    ws2_headers = ['Categoría', 'Total Productos', 'Con Stock', 'Agotados', 'Stock Total (unidades)']
-    for col, h in enumerate(ws2_headers, 1):
-        cell = ws2.cell(row=1, column=col, value=h)
-        cell.fill = hdr_fill
-        cell.font = hdr_font
-        cell.alignment = Alignment(horizontal='center', vertical='center')
-
-    cat_acc = {}
-    for p in inv:
-        cat_raw = str(p.get('CATEGORIA', '') or '').lower().strip()
-        cat_norm = cat_raw.replace('á', 'a').replace('é', 'e').replace('ó', 'o')
-        if cat_norm not in ('mecanico', 'electrico', 'instrumentacion'):
-            cat_norm = 'otros'
-        s = int(p.get('STOCK ACTUAL') or 0)
-        bucket = cat_acc.setdefault(cat_norm, {'total': 0, 'con_stock': 0, 'agotados': 0, 'stock_total': 0})
-        bucket['total'] += 1
-        if s > 0:
-            bucket['con_stock'] += 1
-            bucket['stock_total'] += s
-        else:
-            bucket['agotados'] += 1
-
-    cat_order = ['mecanico', 'electrico', 'instrumentacion', 'otros']
-    cat_label_xls = {'mecanico': 'Material Mecánico', 'electrico': 'Material Eléctrico',
-                     'instrumentacion': 'Instrumentación', 'otros': 'Otros'}
-    cat_color_xls = {'mecanico': '0F2B5B', 'electrico': '7B3F00',
-                     'instrumentacion': '1B5E20', 'otros': '37474F'}
-    row_idx = 2
-    for c in cat_order:
-        if c not in cat_acc:
-            continue
-        b = cat_acc[c]
-        cell_cat = ws2.cell(row=row_idx, column=1, value=cat_label_xls[c])
-        cell_cat.fill = PatternFill('solid', fgColor=cat_color_xls[c])
-        cell_cat.font = Font(bold=True, color='FFFFFF', size=11)
-        cell_cat.alignment = Alignment(horizontal='left', vertical='center', indent=1)
-        ws2.cell(row=row_idx, column=2, value=b['total']).alignment = Alignment(horizontal='center')
-        ws2.cell(row=row_idx, column=3, value=b['con_stock']).alignment = Alignment(horizontal='center')
-        ws2.cell(row=row_idx, column=4, value=b['agotados']).alignment = Alignment(horizontal='center')
-        ws2.cell(row=row_idx, column=5, value=b['stock_total']).alignment = Alignment(horizontal='center')
-        row_idx += 1
-
-    # Fila de totales
-    total_row = row_idx
-    cell_total = ws2.cell(row=total_row, column=1, value='TOTAL GENERAL')
-    cell_total.fill = PatternFill('solid', fgColor='E8A020')
-    cell_total.font = Font(bold=True, color='FFFFFF', size=11)
-    cell_total.alignment = Alignment(horizontal='left', vertical='center', indent=1)
-    ws2.cell(row=total_row, column=2, value=sum(b['total'] for b in cat_acc.values())).alignment = Alignment(horizontal='center')
-    ws2.cell(row=total_row, column=3, value=sum(b['con_stock'] for b in cat_acc.values())).alignment = Alignment(horizontal='center')
-    ws2.cell(row=total_row, column=4, value=sum(b['agotados'] for b in cat_acc.values())).alignment = Alignment(horizontal='center')
-    ws2.cell(row=total_row, column=5, value=sum(b['stock_total'] for b in cat_acc.values())).alignment = Alignment(horizontal='center')
-    for col in range(1, len(ws2_headers) + 1):
-        c = ws2.cell(row=total_row, column=col)
-        if col > 1:
-            c.font = Font(bold=True, size=11)
-
-    ws2.column_dimensions['A'].width = 24
-    ws2.column_dimensions['B'].width = 18
-    ws2.column_dimensions['C'].width = 14
-    ws2.column_dimensions['D'].width = 14
-    ws2.column_dimensions['E'].width = 22
-    ws2.freeze_panes = 'A2'
-
-    buf = io.BytesIO()
-    wb.save(buf)
-    return buf.getvalue()
-
-
-# ─── 3. CALCULA ESTADÍSTICAS ──────────────────────────────────────────────────
+# ─── 2. CALCULA ESTADÍSTICAS ──────────────────────────────────────────────────
 
 def calculate_stats(inv: list) -> dict:
     total     = len(inv)
@@ -558,7 +418,93 @@ def _build_index(grupos: dict) -> str:
     )
 
 
-def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, kardex_html: str = '') -> str:
+# ─── KARDEX DEL DÍA — consulta Supabase ──────────────────────────────────────
+
+def fetch_kardex_today(supabase_url: str, supabase_key: str) -> list:
+    today = datetime.now().strftime('%Y-%m-%d')
+    url   = (supabase_url + '/rest/v1/kardex'
+             '?fecha=eq.' + today +
+             '&order=hora.asc'
+             '&select=hora,codigo_producto,descripcion_producto,tipo,cantidad,responsable')
+    req = urllib.request.Request(url, headers={
+        'apikey':        supabase_key,
+        'Authorization': 'Bearer ' + supabase_key
+    })
+    try:
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read())
+            print('📋 Kardex hoy: ' + str(len(data)) + ' movimientos')
+            return data
+    except Exception as e:
+        print('⚠️  No se pudo obtener kardex de Supabase: ' + str(e))
+        return []
+
+
+def _build_kardex_section(kardex_hoy: list) -> str:
+    total_e = sum(float(k.get('cantidad') or 0) for k in kardex_hoy if k.get('tipo') == 'ENTRADA')
+    total_s = sum(float(k.get('cantidad') or 0) for k in kardex_hoy if k.get('tipo') == 'SALIDA')
+
+    if not kardex_hoy:
+        cuerpo = ("<div style='background:#f8f9ff;border-radius:8px;padding:12px 16px;"
+                  "font-size:13px;color:#888;border-left:3px solid #c5d0e8;'>"
+                  "Sin movimientos registrados hoy.</div>")
+    else:
+        filas = ''.join(
+            "<tr>"
+            "<td style='font-size:11px;color:#555;white-space:nowrap;'>" + str(k.get('hora',''))[:5] + "</td>"
+            "<td style='font-family:monospace;font-size:11px;color:#555;'>" + str(k.get('codigo_producto','')) + "</td>"
+            "<td style='font-size:12px;'>" + str(k.get('descripcion_producto','')) + "</td>"
+            "<td style='text-align:center;'>" +
+              ("<span style='background:#e6f4ea;color:#1e7e34;padding:2px 8px;border-radius:10px;"
+               "font-size:10px;font-weight:700;'>ENTRADA</span>"
+               if k.get('tipo') == 'ENTRADA' else
+               "<span style='background:#fce8e6;color:#c0392b;padding:2px 8px;border-radius:10px;"
+               "font-size:10px;font-weight:700;'>SALIDA</span>") +
+            "</td>"
+            "<td style='text-align:center;font-weight:700;font-size:12px;'>" + str(k.get('cantidad','')) + "</td>"
+            "<td style='font-size:11px;color:#666;'>" + str(k.get('responsable','')) + "</td>"
+            "</tr>"
+            for k in kardex_hoy
+        )
+        resumen = (
+            "<div style='display:table;width:100%;border-spacing:8px;margin-bottom:12px;'>"
+            "<div style='display:table-cell;background:#e6f4ea;border-left:3px solid #2EAA4A;"
+            "border-radius:8px;padding:10px;text-align:center;'>"
+            "<div style='font-size:20px;font-weight:900;color:#2EAA4A;'>+" + str(int(total_e)) + "</div>"
+            "<div style='font-size:10px;color:#666;'>Unidades ingresadas</div></div>"
+            "<div style='display:table-cell;background:#fff8e1;border-left:3px solid #E8A020;"
+            "border-radius:8px;padding:10px;text-align:center;'>"
+            "<div style='font-size:20px;font-weight:900;color:#E8A020;'>-" + str(int(total_s)) + "</div>"
+            "<div style='font-size:10px;color:#666;'>Unidades despachadas</div></div>"
+            "<div style='display:table-cell;background:#e8f0fe;border-left:3px solid #1A3A8F;"
+            "border-radius:8px;padding:10px;text-align:center;'>"
+            "<div style='font-size:20px;font-weight:900;color:#1A3A8F;'>" + str(len(kardex_hoy)) + "</div>"
+            "<div style='font-size:10px;color:#666;'>Movimientos totales</div></div>"
+            "</div>"
+        )
+        cuerpo = (
+            resumen +
+            "<table width='100%' cellpadding='0' cellspacing='0' style='border-collapse:collapse;font-size:12px;'>"
+            "<thead><tr>"
+            "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Hora</th>"
+            "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>C&oacute;digo</th>"
+            "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Descripci&oacute;n</th>"
+            "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Tipo</th>"
+            "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:center;font-size:10px;text-transform:uppercase;'>Cantidad</th>"
+            "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;'>Responsable</th>"
+            "</tr></thead>"
+            "<tbody>" + filas + "</tbody></table>"
+        )
+
+    return (
+        "<div style='margin-top:28px;'>"
+        "<div class='sec-title'>&#128203; Kardex del D&iacute;a &mdash; Movimientos registrados</div>"
+        + cuerpo +
+        "</div>"
+    )
+
+
+def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, kardex_hoy: list = None) -> str:
     # ── Auto-clasificar productos que no tengan CATEGORIA/FAMILIA en el Excel ──
     for p in inv:
         cat_excel = str(p.get('CATEGORIA', '') or '').lower().strip()
@@ -570,10 +516,14 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, karde
             if not fam_excel:
                 p['FAMILIA'] = auto_fam
 
-    # Agrupar por categoría
+    # Separar productos con stock > 0 de los agotados
+    inv_con_stock = [p for p in inv if _stock(p) > 0]
+    inv_agotados  = [p for p in inv if _stock(p) == 0]
+
+    # Agrupar por categoría — SOLO los que tienen stock
     CAT_ORDER = ['mecanico', 'electrico', 'instrumentacion', 'otros']
     grupos = {}
-    for p in inv:
+    for p in inv_con_stock:
         cat = str(p.get('CATEGORIA', '') or '').lower().strip()
         if cat not in ('mecanico','electrico','instrumentacion','instrumentación'):
             cat = 'otros'
@@ -588,7 +538,7 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, karde
         if cat in grupos and grupos[cat]:
             cat_sections += _build_category_section(cat, grupos[cat])
 
-    # Filas de productos agotados (todas las categorías)
+    # Filas de productos agotados — usa inv_agotados (ya separados)
     agotados_rows = ''.join(
         "<tr>"
         "<td style='font-family:monospace;font-size:11px;'>" + str(p.get('CODIGO PRODUCTO','')) + "</td>"
@@ -597,9 +547,9 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, karde
         "<td>" + str(p.get('UBICACIÓN') or p.get('UBICACION','-')) + "</td>"
         "<td style='color:#888;font-size:11px;'>" + _cat_label(p.get('CATEGORIA','')) + "</td>"
         "</tr>"
-        for p in inv if _stock(p) == 0
+        for p in inv_agotados
     )
-    agotados_count = stats['agotados']
+    agotados_count = len(inv_agotados)
 
     # Pre-calcular condicionales (no pueden ir dentro de {} en f-strings — Python < 3.12)
     pct_agot   = stats['agotados'] / max(stats['total'], 1)
@@ -620,38 +570,7 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, karde
         agotados_section = '<div class="meta">&#9989; No hay productos agotados en este momento.</div>'
 
     rotation_section = _build_rotation_section(rot) if rot else ''
-
-    # Cuadros de resumen por categoría (Mecánico / Eléctrico / Instrumentación / Otros)
-    CAT_ORDER_HTML = ['mecanico', 'electrico', 'instrumentacion', 'otros']
-    CAT_HTML_CFG = {
-        'mecanico':       ('🔧', 'Mecánico',         '#0F2B5B', '#1A3A8F', '#e8f0fe'),
-        'electrico':      ('⚡', 'Eléctrico',        '#7B3F00', '#C0641E', '#fff1e0'),
-        'instrumentacion':('🎯', 'Instrumentación',  '#1B5E20', '#2E7D32', '#e8f5e9'),
-        'otros':          ('📦', 'Otros',            '#37474F', '#546E7A', '#eceff1'),
-    }
-    cat_count_html = {c: 0 for c in CAT_ORDER_HTML}
-    for p in inv:
-        c_raw = str(p.get('CATEGORIA', '') or '').lower().strip().replace('á','a').replace('é','e').replace('ó','o')
-        if c_raw not in ('mecanico','electrico','instrumentacion'):
-            c_raw = 'otros'
-        cat_count_html[c_raw] += 1
-
-    cat_cards_cells = ''
-    for c in CAT_ORDER_HTML:
-        icon, label, hdr_c, acc_c, bg_c = CAT_HTML_CFG[c]
-        n = cat_count_html.get(c, 0)
-        cat_cards_cells += (
-            f'<td width="25%" bgcolor="{bg_c}" style="background:{bg_c};border-left:4px solid {acc_c};padding:14px 6px;text-align:center;">'
-            f'<div style="font-size:18px;line-height:1;">{icon}</div>'
-            f'<div style="font-size:28px;font-weight:900;color:{hdr_c};line-height:1;margin-top:4px;">{n}</div>'
-            f'<div style="font-size:10px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;">{label}</div>'
-            f'</td>'
-        )
-    categoria_resumen_block = (
-        '<div class="sec-title">&#127919; Distribuci&oacute;n por Categor&iacute;a</div>'
-        '<table width="100%" cellpadding="6" cellspacing="6" style="margin:10px 0;">'
-        f'<tr>{cat_cards_cells}</tr></table>'
-    )
+    kardex_section   = _build_kardex_section(kardex_hoy or [])
 
     return f"""<!DOCTYPE html>
 <html lang="es">
@@ -711,13 +630,6 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, karde
     <p>Reporte Diario de Inventario &mdash; {date_str}</p>
   </div>
   <div class="gold"></div>
-  <div style="background:#0a1a30;padding:12px 20px;text-align:center;border-bottom:1px solid #1e3a6e;">
-    <a href="https://cami902026-oss.github.io/plataforma-eyg/Buscador_Inventario_2026.html" target="_blank"
-       style="display:inline-block;background:#2EAA4A;color:#fff;padding:10px 28px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;letter-spacing:0.5px;">
-      &#128269; Ver inventario interactivo con b&uacute;squeda
-    </a>
-    <div style="font-size:11px;color:#8899bb;margin-top:6px;">Abre el buscador en tu navegador para filtrar y buscar productos</div>
-  </div>
   <div class="body">
 
     <div class="sec-title">&#128230; Resumen General</div>
@@ -737,8 +649,6 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, karde
         </td>
       </tr>
     </table>
-
-    {categoria_resumen_block}
 
     <div class="sec-title">&#128202; Movimientos Acumulados</div>
     <table width="100%" cellpadding="8" cellspacing="6" style="margin:10px 0;">
@@ -761,8 +671,6 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, karde
 
     {alert_box}
 
-    {kardex_html}
-
     <div class="sec-title">&#128230; Inventario por Categor&iacute;a &mdash; {stats['total']} productos</div>
     {index_block}
     <div class="search-wrap">
@@ -776,6 +684,8 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, karde
     {cat_sections}
 
     {agotados_section}
+
+    {kardex_section}
 
     {rotation_section}
 
@@ -814,220 +724,6 @@ function filtrarInventario(term) {{
 </html>"""
 
 
-# ─── 3.5 KARDEX — DESCARGA Y LEE MOVIMIENTOS DEL DÍA ──────────────────────────
-
-def _download_kardex_xlsx(token: str) -> bytes | None:
-    """Descarga el libro maestro de inventario desde OneDrive de Andrea."""
-    encoded = urllib.parse.quote(ONEDRIVE_KARDEX_PATH, safe='/')
-    url = ('https://graph.microsoft.com/v1.0/users/' + ONEDRIVE_KARDEX_USER +
-           '/drive/root:/' + encoded + ':/content')
-    req = urllib.request.Request(url, headers={'Authorization': 'Bearer ' + token})
-    try:
-        with urllib.request.urlopen(req) as resp:
-            data = resp.read()
-            print('📥 Libro inventario descargado (' + str(len(data)//1024) + ' KB)')
-            return data
-    except Exception as ex:
-        print('⚠️  No se pudo descargar libro de inventario para Kardex: ' + str(ex))
-        return None
-
-
-def _today_co_date():
-    """Devuelve la fecha de HOY en hora Colombia (UTC-5) como objeto date."""
-    from datetime import timezone, timedelta
-    co = datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=-5)))
-    return co.date()
-
-
-def _normalize_header(h):
-    return str(h or '').strip().upper().replace('Á','A').replace('É','E').replace('Í','I').replace('Ó','O').replace('Ú','U')
-
-
-def read_kardex_today(xlsx_bytes: bytes) -> list:
-    """Lee la pestaña 'Kardex' del libro y retorna SOLO los movimientos de HOY (Colombia).
-    Mapea columnas por nombre (no por posición) para resistir reordenamientos."""
-    if not xlsx_bytes or not OPENPYXL_OK:
-        return []
-    try:
-        wb = openpyxl.load_workbook(io.BytesIO(xlsx_bytes), data_only=True, read_only=True)
-    except Exception as ex:
-        print('⚠️  No se pudo abrir el libro: ' + str(ex))
-        return []
-
-    # Buscar hoja "Kardex" (case-insensitive, contiene)
-    sheet = None
-    for name in wb.sheetnames:
-        if 'kardex' in name.lower():
-            sheet = wb[name]
-            print('📋 Hoja Kardex encontrada: "' + name + '"')
-            break
-    if sheet is None:
-        print('⚠️  No se encontró hoja "Kardex" en el libro. Hojas: ' + ', '.join(wb.sheetnames))
-        return []
-
-    # Leer headers (fila 1) y mapear nombre normalizado → índice
-    headers = {}
-    first_row = next(sheet.iter_rows(min_row=1, max_row=1, values_only=True), None)
-    if not first_row:
-        return []
-    for idx, h in enumerate(first_row):
-        if h is None: continue
-        headers[_normalize_header(h)] = idx
-    print('   Columnas detectadas: ' + ', '.join(list(headers.keys())[:14]))
-
-    # Resolver índices de las columnas que nos interesan (con fallbacks de nombres)
-    def col(*names):
-        for n in names:
-            n_norm = _normalize_header(n)
-            if n_norm in headers:
-                return headers[n_norm]
-        return None
-
-    i_fecha     = col('FECHA')
-    i_hora      = col('HORA')
-    i_producto  = col('PRODUCTO', 'CODIGO PRODUCTO', 'CODIGO')
-    i_descrip   = col('DESCRIPCION', 'DESCRIPCIÓN')
-    i_tipo      = col('TIPO', 'MOVIMIENTO', 'TIPO_NOI')
-    i_cant      = col('CANT', 'CANTIDAD', 'CANT.')
-    i_stock     = col('STOCK', 'STOCK ACTUAL', 'SALDO')
-    i_costo     = col('COSTO', 'VALOR', 'COSTO UNITARIO')
-    i_resp      = col('RESPONSABLE', 'USUARIO')
-    i_remision  = col('REMISION', 'REMISIÓN', 'NUMERO', 'NÚMERO')
-    i_lote      = col('ID LOTE', 'LOTE')
-    i_colada    = col('COLADA')
-
-    if i_fecha is None:
-        print('⚠️  No se encontró columna FECHA en Kardex.')
-        return []
-
-    today = _today_co_date()
-    movs = []
-    for row in sheet.iter_rows(min_row=2, values_only=True):
-        if not row or all(c is None for c in row):
-            continue
-        f = row[i_fecha] if i_fecha < len(row) else None
-        if f is None:
-            continue
-        # Soportar datetime real, string DD/MM/YYYY o YYYY-MM-DD
-        row_date = None
-        if isinstance(f, datetime):
-            row_date = f.date()
-        else:
-            s = str(f).strip().split(' ')[0]
-            for fmt in ('%d/%m/%Y','%Y-%m-%d','%d-%m-%Y','%m/%d/%Y'):
-                try:
-                    row_date = datetime.strptime(s, fmt).date()
-                    break
-                except Exception:
-                    continue
-        if row_date != today:
-            continue
-
-        def safe(i):
-            if i is None or i >= len(row): return ''
-            v = row[i]
-            return '' if v is None else v
-
-        # Hora puede venir como datetime/time o string
-        h_raw = safe(i_hora)
-        if hasattr(h_raw, 'strftime'):
-            try: h_raw = h_raw.strftime('%H:%M')
-            except Exception: h_raw = str(h_raw)
-        movs.append({
-            'fecha':    str(f) if not isinstance(f, datetime) else f.strftime('%d/%m/%Y'),
-            'hora':     str(h_raw)[:8],
-            'producto': str(safe(i_producto)),
-            'desc':     str(safe(i_descrip)),
-            'tipo':     str(safe(i_tipo)).upper(),
-            'cant':     safe(i_cant),
-            'stock':    safe(i_stock),
-            'costo':    safe(i_costo),
-            'resp':     str(safe(i_resp)),
-            'remision': str(safe(i_remision)),
-            'lote':     str(safe(i_lote)),
-            'colada':   str(safe(i_colada)),
-        })
-
-    print('📊 Kardex de hoy: ' + str(len(movs)) + ' movimientos')
-    return movs
-
-
-def build_kardex_html(movs: list, date_str: str) -> str:
-    """Genera la sección HTML del Kardex del día. Si no hay movimientos, retorna ''."""
-    if not movs:
-        return ''
-    # Resumen rápido: entradas vs salidas
-    entradas = [m for m in movs if 'ENTRADA' in m['tipo']]
-    salidas  = [m for m in movs if 'SALIDA' in m['tipo']]
-
-    def fmt_num(v):
-        try: return str(int(float(v)))
-        except Exception: return str(v) if v != '' else '—'
-
-    def cell(v, mono=False, w=None):
-        s = '' if v in (None,'') else str(v)
-        s = s.replace('&','&amp;').replace('<','&lt;').replace('>','&gt;')
-        sty = "padding:6px 8px;border-bottom:1px solid #e8eef9;font-size:12px;color:#1e293b;"
-        if mono: sty += "font-family:'Courier New',monospace;"
-        if w:    sty += f"width:{w};"
-        return "<td style=\"" + sty + "\">" + s + "</td>"
-
-    rows = ''
-    for m in movs:
-        is_in = 'ENTRADA' in m['tipo']
-        tipo_color = '#15803d' if is_in else '#c0392b'
-        tipo_bg    = '#dcfce7' if is_in else '#fee2e2'
-        tipo_icon  = '⬆️' if is_in else '⬇️'
-        tipo_html  = ('<span style="display:inline-block;background:' + tipo_bg +
-                      ';color:' + tipo_color + ';padding:2px 8px;border-radius:10px;'
-                      'font-size:10px;font-weight:700;">' + tipo_icon + ' ' + m['tipo'] + '</span>')
-        rows += ("<tr>"
-                 + cell(m['hora'])
-                 + cell(m['producto'], mono=True)
-                 + cell(m['desc'])
-                 + "<td style=\"padding:6px 8px;border-bottom:1px solid #e8eef9;\">" + tipo_html + "</td>"
-                 + cell(fmt_num(m['cant']))
-                 + cell(fmt_num(m['stock']))
-                 + cell(m['resp'])
-                 + cell(m['remision'])
-                 + cell(m['lote'])
-                 + "</tr>")
-
-    return ("""
-    <div style="margin:24px 0;background:white;border-radius:10px;overflow:hidden;border:1px solid #d8e1f0;">
-      <div style="background:linear-gradient(135deg,#0F2B5B,#1A3A8F);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="color:white;font-size:15px;font-weight:700;font-family:Montserrat,Arial,sans-serif;">📊 Kardex de hoy</div>
-          <div style="color:#93c5fd;font-size:11px;margin-top:2px;">Movimientos registrados el """ + date_str + """</div>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <span style="background:rgba(46,170,74,.25);color:#86efac;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;">⬆️ """ + str(len(entradas)) + """ entradas</span>
-          <span style="background:rgba(229,62,62,.25);color:#fca5a5;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;">⬇️ """ + str(len(salidas)) + """ salidas</span>
-          <span style="background:rgba(255,255,255,.15);color:white;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;">""" + str(len(movs)) + """ total</span>
-        </div>
-      </div>
-      <div style="overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;font-family:'Open Sans',Arial,sans-serif;">
-        <thead>
-          <tr style="background:#f1f5f9;">
-            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Hora</th>
-            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Código</th>
-            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Producto</th>
-            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Tipo</th>
-            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Cant.</th>
-            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Stock</th>
-            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Responsable</th>
-            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Remisión</th>
-            <th style="padding:8px;text-align:left;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Lote</th>
-          </tr>
-        </thead>
-        <tbody>""" + rows + """</tbody>
-      </table>
-      </div>
-    </div>
-    """)
-
-
 # ─── 4. AUTENTICACIÓN MICROSOFT GRAPH ─────────────────────────────────────────
 
 def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
@@ -1060,21 +756,15 @@ def get_access_token(tenant_id: str, client_id: str, client_secret: str) -> str:
 
 # ─── 5. ENVÍA EL CORREO VIA GRAPH ─────────────────────────────────────────────
 
-def send_email(token: str, sender: str, recipients: list, subject: str, html_body: str,
-               attachment_bytes: bytes = None, attachment_name: str = None):
-    msg = {
-        'subject': subject,
-        'body': {'contentType': 'HTML', 'content': html_body},
-        'toRecipients': [{'emailAddress': {'address': r.strip()}} for r in recipients]
-    }
-    if attachment_bytes and attachment_name:
-        msg['attachments'] = [{
-            '@odata.type': '#microsoft.graph.fileAttachment',
-            'name': attachment_name,
-            'contentType': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'contentBytes': base64.b64encode(attachment_bytes).decode('utf-8')
-        }]
-    payload = json.dumps({'message': msg, 'saveToSentItems': True}).encode('utf-8')
+def send_email(token: str, sender: str, recipients: list, subject: str, html_body: str):
+    payload = json.dumps({
+        'message': {
+            'subject': subject,
+            'body': {'contentType': 'HTML', 'content': html_body},
+            'toRecipients': [{'emailAddress': {'address': r.strip()}} for r in recipients]
+        },
+        'saveToSentItems': True
+    }).encode('utf-8')
     url = 'https://graph.microsoft.com/v1.0/users/' + sender + '/sendMail'
     req = urllib.request.Request(url, data=payload, method='POST',
         headers={'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'})
@@ -1120,6 +810,15 @@ if __name__ == '__main__':
     rot = extract_rot_from_html(html_path)
     print("📈 " + str(len(rot)) + " registros de rotación cargados")
 
+    # ── Kardex del día desde Supabase ──────────────────────────────────────────
+    supabase_url = os.environ.get('SUPABASE_URL', '').strip()
+    supabase_key = os.environ.get('SUPABASE_KEY', '').strip()
+    kardex_hoy = []
+    if supabase_url and supabase_key:
+        kardex_hoy = fetch_kardex_today(supabase_url, supabase_key)
+    else:
+        print("⚠️  SUPABASE_URL / SUPABASE_KEY no configurados — kardex omitido")
+
     stats = calculate_stats(inv)
     print("📊 Stats: Total=" + str(stats['total']) + " | Con stock=" + str(stats['con_stock']) + " | Agotados=" + str(stats['agotados']))
 
@@ -1128,29 +827,12 @@ if __name__ == '__main__':
     month    = MONTHS_ES.get(now.strftime('%B'), now.strftime('%B'))
     date_str = day + " " + str(now.day) + " de " + month + " de " + str(now.year)
 
-    # Obtener token PRIMERO para poder descargar el libro y leer Kardex
+    html_body = generate_html(inv, stats, date_str, rot, kardex_hoy)
+    subject   = "📦 Reporte Inventario E&G — " + date_str
+
     print("🔑 Obteniendo token Microsoft...")
     token = get_access_token(tenant_id, client_id, client_secret)
 
-    # Descargar libro y leer Kardex de hoy (si falla, el correo sigue sin Kardex)
-    kardex_html = ''
-    try:
-        xlsx_bytes = _download_kardex_xlsx(token)
-        movs = read_kardex_today(xlsx_bytes) if xlsx_bytes else []
-        kardex_html = build_kardex_html(movs, date_str)
-    except Exception as ex:
-        print("⚠️  Kardex omitido por error: " + str(ex))
-
-    html_body = generate_html(inv, stats, date_str, rot, kardex_html)
-    subject   = "📦 Reporte Inventario E&G — " + date_str
-
-    excel_bytes = generate_excel_inv(inv)
-    excel_name  = "Inventario_EyG_" + now.strftime('%Y-%m-%d') + ".xlsx"
-    if excel_bytes:
-        print("📊 Excel generado: " + excel_name + " (" + str(len(excel_bytes)//1024) + " KB)")
-    else:
-        print("⚠️  Excel no generado (openpyxl no disponible)")
-
     print("📧 Enviando correo a: " + ', '.join(recipients))
-    send_email(token, sender_email, recipients, subject, html_body, excel_bytes, excel_name)
+    send_email(token, sender_email, recipients, subject, html_body)
     print("🎉 Reporte enviado exitosamente.")
