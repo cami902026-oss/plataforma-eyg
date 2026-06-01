@@ -1490,16 +1490,28 @@
     "cliente": "Q CIEN",
     "desc": "Bridas y copas AC para tuberías de 10 pulgadas",
     "estado": "activo",
+    "fechaIngreso": "2026-01-06",
+    "valor": 1504160,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-01",
+        "n": "CODIFER\nBODEGA"
       },
       {
-        "s": "pending",
+        "s": "active",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1512,15 +1524,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-01T18:48:04.248Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-01T18:48:04.248Z"
+    "createdAt": "2026-06-01T18:49:58.100Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-01T18:49:58.100Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1780339680449",
