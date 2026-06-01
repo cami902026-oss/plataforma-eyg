@@ -1489,7 +1489,6 @@
     "num": "LM1618-2",
     "cliente": "Q CIEN",
     "desc": "Bridas y copas AC para tuberías de 10 pulgadas",
-    "valor": 1504160,
     "estado": "activo",
     "stages": [
       {
@@ -1513,16 +1512,57 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-06-01T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
     "updatedAt": "2026-06-01T18:43:54.252Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "Orden de compra energy",
-      "fecha": "2026-06-01T18:43:54.252Z",
-      "fechaCreacionOC": "2026-06-01",
-      "fechaCompra": "2026-06-09"
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
     }
+  },
+  {
+    "id": "poc_1780339680449",
+    "num": "68226DPO00330",
+    "cliente": "MAUREL & PROM COLOMBIA SOCIEDAD LTD",
+    "desc": "UMINSITRO MATERIAL",
+    "estado": "activo",
+    "fechaIngreso": "2026-12-05",
+    "valor": 4460398,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-12",
+        "n": "CODIFER\nDISEFER\nINDUVACOL"
+      },
+      {
+        "s": "done",
+        "f": "2026-05-29",
+        "n": "",
+        "envio": "camion_externo",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-01",
+        "n": "SERVIDOR"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-06-01T18:48:00.449Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-01T18:48:00.449Z",
+    "updatedBy": "andrea"
   }
 ]
