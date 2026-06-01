@@ -669,6 +669,8 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, karde
       {health_msg}
     </div>
 
+    {kardex_section}
+
     {alert_box}
 
     <div class="sec-title">&#128230; Inventario por Categor&iacute;a &mdash; {stats['total']} productos</div>
@@ -684,8 +686,6 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, karde
     {cat_sections}
 
     {agotados_section}
-
-    {kardex_section}
 
     {rotation_section}
 
