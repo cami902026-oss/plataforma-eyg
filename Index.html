@@ -2159,6 +2159,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <th>Stock</th><th>Ubicación</th>
           <th id="abs-th-costo" style="display:none">Costo Compra</th>
           <th id="abs-th-precio" style="display:none">Precio Venta</th>
+          <th id="abs-th-ajuste" style="display:none">Ajuste</th>
         </tr></thead>
         <tbody id="abs-stock-tbody"><tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px">Cargando...</td></tr></tbody>
       </table>
@@ -10124,6 +10125,7 @@ async function absFetch(endpoint, opts={}) {
 function abs_canEntrada(){ return currentUser && ['andrea','alberto'].includes(currentUser.email); }
 function abs_canSalida(){  return currentUser && ['andrea','alberto','yesid'].includes(currentUser.email); }
 function abs_canPDF(){     return currentUser && currentUser.email==='alberto'; }
+function abs_canAjuste(){   return currentUser && ['andrea','alberto'].includes(currentUser.email); }
 function abs_showCosto(){  return currentUser && ['andrea','alberto'].includes(currentUser.email); }
 function abs_showPrecio(){ return currentUser && currentUser.email==='alberto'; }
 
@@ -10166,6 +10168,8 @@ function absApplyPermisos() {
   const thP=document.getElementById('abs-th-precio');
   if(thC) thC.style.display=abs_showCosto()?'':'none';
   if(thP) thP.style.display=abs_showPrecio()?'':'none';
+  const thAj=document.getElementById('abs-th-ajuste');
+  if(thAj) thAj.style.display=abs_canAjuste()?'':'none';
   const btnPdf=document.getElementById('abs-conteo-imprimir-btn');
   if(btnPdf) btnPdf.style.display=abs_canPDF()?'':'none';
 }
@@ -10192,7 +10196,7 @@ function absRenderStock() {
   const q=(document.getElementById('abs-search')?.value||'').toLowerCase();
   const fam=document.getElementById('abs-familia-filter')?.value||'';
   const sf=document.getElementById('abs-stock-filter')?.value||'';
-  const showC=abs_showCosto(), showP=abs_showPrecio();
+  const showC=abs_showCosto(), showP=abs_showPrecio(), showAj=abs_canAjuste();
   let rows=abs_productos.filter(p=>{
     if(q&&![p.codigo,p.descripcion,p.marca,p.proveedor].some(v=>(v||'').toLowerCase().includes(q))) return false;
     if(fam&&String(p.familia_id)!==fam) return false;
@@ -10213,8 +10217,29 @@ function absRenderStock() {
       <td style="font-size:11px;color:var(--text-muted)">${p.ubicacion||'—'}</td>
       ${showC?`<td style="font-size:12px">${p.costo_compra?'$'+Number(p.costo_compra).toLocaleString('es-CO'):'—'}</td>`:''}
       ${showP?`<td style="font-size:12px">${p.precio_venta?'$'+Number(p.precio_venta).toLocaleString('es-CO'):'—'}</td>`:''}
+      ${showAj?`<td><button onclick="absAjustarStock('${p.codigo}')" title="Ajustar inventario físico" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:var(--gold);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;white-space:nowrap">✏️ Ajustar</button></td>`:''}
     </tr>`;
   }).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px">Sin resultados</td></tr>';
+}
+
+// ─── AJUSTE RÁPIDO DE INVENTARIO (conteo físico) ─────────────────
+async function absAjustarStock(codigo) {
+  if(!abs_canAjuste()) return showToast('Solo Andrea y Alberto pueden ajustar inventario','error');
+  const p=abs_productos.find(x=>x.codigo===codigo); if(!p) return;
+  const actual=p.stock_actual;
+  const entrada=prompt('AJUSTE DE INVENTARIO FÍSICO\n\n'+p.codigo+'  —  '+p.descripcion+'\nStock en sistema: '+actual+'\n\nEscribe la cantidad REAL contada:', actual);
+  if(entrada===null) return; // canceló
+  const nuevo=parseFloat(String(entrada).replace(',','.'));
+  if(isNaN(nuevo)||nuevo<0) return showToast('Cantidad inválida','error');
+  if(nuevo===actual) return showToast('Sin cambios (igual al sistema)','info');
+  try{
+    await absFetch('productos?codigo=eq.'+encodeURIComponent(codigo),{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({stock_actual:nuevo,updated_at:new Date().toISOString()})});
+    p.stock_actual=nuevo;
+    const dif=nuevo-actual;
+    showToast('Stock de '+p.codigo+' ajustado: '+actual+' → '+nuevo+' ('+(dif>0?'+':'')+dif+') ✓','ok');
+    absRenderStock(); absRenderDashboard();
+    if(typeof absCheckStockCritico==='function') absCheckStockCritico();
+  }catch(e){ showToast('Error: '+e.message,'error'); }
 }
 
 // ─── MOVIMIENTOS ─────────────────────────────────────────────────
