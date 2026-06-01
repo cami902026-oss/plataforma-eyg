@@ -558,7 +558,7 @@ def _build_index(grupos: dict) -> str:
     )
 
 
-def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, kardex_html: str = '') -> str:
+def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, kardex_html: str = '', stock_critico_html: str = '') -> str:
     # ── Auto-clasificar productos que no tengan CATEGORIA/FAMILIA en el Excel ──
     for p in inv:
         cat_excel = str(p.get('CATEGORIA', '') or '').lower().strip()
@@ -766,6 +766,8 @@ def generate_html(inv: list, stats: dict, date_str: str, rot: list = None, karde
     {alert_box}
 
     {kardex_html}
+
+    {stock_critico_html}
 
     <div class="sec-title">&#128230; Inventario por Categor&iacute;a &mdash; {stats['total']} productos</div>
     {index_block}
@@ -1033,6 +1035,64 @@ def build_kardex_html(movs: list, date_str: str) -> str:
 
 
 
+
+# ─── SECCIÓN STOCK CRÍTICO (< 5 unidades) ────────────────────────────────────
+
+def fetch_stock_critico(supabase_url: str, supabase_key: str, umbral: int = 5) -> list:
+    """Lee productos con stock entre 1 y umbral-1 desde Supabase."""
+    url = (supabase_url + '/rest/v1/productos'
+           '?stock_actual=gte.1&stock_actual=lt.' + str(umbral) +
+           '&activo=eq.true&order=stock_actual.asc'
+           '&select=codigo,descripcion,stock_actual,ubicacion,proveedor')
+    req = urllib.request.Request(url, headers={
+        'apikey': supabase_key, 'Authorization': 'Bearer ' + supabase_key
+    })
+    try:
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read())
+            print('Stock crítico (<' + str(umbral) + '): ' + str(len(data)) + ' productos')
+            return data
+    except Exception as e:
+        print('Error stock crítico: ' + str(e))
+        return []
+
+
+def _build_stock_critico_section(criticos: list, umbral: int = 5) -> str:
+    if not criticos:
+        return ''
+    filas = ''.join(
+        "<tr>"
+        "<td style='font-family:monospace;font-size:11px;padding:7px 10px;border-bottom:1px solid #eef1f8;'>" + str(p.get('codigo','')) + "</td>"
+        "<td style='font-size:12px;font-weight:600;padding:7px 10px;border-bottom:1px solid #eef1f8;'>" + str(p.get('descripcion','')) + "</td>"
+        "<td style='text-align:center;padding:7px 10px;border-bottom:1px solid #eef1f8;'>"
+        "<span style='background:#fce8e6;color:#c0392b;padding:2px 10px;border-radius:10px;font-weight:700;font-size:13px;'>"
+        + str(p.get('stock_actual','')) + "</span></td>"
+        "<td style='font-size:11px;color:#666;padding:7px 10px;border-bottom:1px solid #eef1f8;'>" + str(p.get('proveedor','—')) + "</td>"
+        "<td style='font-size:11px;color:#888;padding:7px 10px;border-bottom:1px solid #eef1f8;'>" + str(p.get('ubicacion','—')) + "</td>"
+        "</tr>"
+        for p in criticos
+    )
+    return (
+        "<div style='margin:20px 0;background:#fff;border-radius:10px;overflow:hidden;border:2px solid #c0392b;'>"
+        "<div style='background:#c0392b;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;'>"
+        "<div style='color:#fff;font-weight:700;font-size:14px;'>⚠️ Stock Crítico — Requieren reabastecimiento</div>"
+        "<span style='background:rgba(255,255,255,.2);color:#fff;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;'>"
+        + str(len(criticos)) + " producto" + ("s" if len(criticos)>1 else "") + " &lt; " + str(umbral) + " unidades</span>"
+        "</div>"
+        "<table width='100%' cellpadding='0' cellspacing='0' style='border-collapse:collapse;font-size:12px;'>"
+        "<thead><tr style='background:#fce8e6;'>"
+        "<th style='padding:8px 10px;text-align:left;font-size:10px;color:#c0392b;text-transform:uppercase;letter-spacing:.5px;'>Código</th>"
+        "<th style='padding:8px 10px;text-align:left;font-size:10px;color:#c0392b;text-transform:uppercase;letter-spacing:.5px;'>Producto</th>"
+        "<th style='padding:8px 10px;text-align:center;font-size:10px;color:#c0392b;text-transform:uppercase;letter-spacing:.5px;'>Stock</th>"
+        "<th style='padding:8px 10px;text-align:left;font-size:10px;color:#c0392b;text-transform:uppercase;letter-spacing:.5px;'>Proveedor</th>"
+        "<th style='padding:8px 10px;text-align:left;font-size:10px;color:#c0392b;text-transform:uppercase;letter-spacing:.5px;'>Ubicación</th>"
+        "</tr></thead>"
+        "<tbody>" + filas + "</tbody></table>"
+        "<div style='background:#fff8e1;padding:10px 16px;font-size:12px;color:#7d5a00;border-top:1px solid #fce8e6;'>"
+        "💡 Verificar disponibilidad con proveedores y programar reposición."
+        "</div></div>"
+    )
+
 # ─── KARDEX DESDE SUPABASE (nuevo) ────────────────────────────────────────────
 
 def fetch_kardex_today_supabase(supabase_url: str, supabase_key: str) -> list:
@@ -1177,6 +1237,12 @@ if __name__ == '__main__':
     print("🔑 Obteniendo token Microsoft...")
     token = get_access_token(tenant_id, client_id, client_secret)
 
+    # Obtener stock crítico desde Supabase
+    stock_critico_html = ''
+    if supabase_url and supabase_key:
+        criticos = fetch_stock_critico(supabase_url, supabase_key, umbral=5)
+        stock_critico_html = _build_stock_critico_section(criticos, umbral=5)
+
     # Obtener kardex de hoy: primero Supabase, si falla → OneDrive
     kardex_html = ''
     supabase_url = os.environ.get('SUPABASE_URL', '').strip()
@@ -1192,7 +1258,7 @@ if __name__ == '__main__':
     except Exception as ex:
         print("Kardex omitido por error: " + str(ex))
 
-    html_body = generate_html(inv, stats, date_str, rot, kardex_html)
+    html_body = generate_html(inv, stats, date_str, rot, kardex_html, stock_critico_html)
     subject   = "📦 Reporte Inventario E&G — " + date_str
 
     excel_bytes = generate_excel_inv(inv)
