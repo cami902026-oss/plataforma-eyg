@@ -10546,28 +10546,11 @@ function absImprimirFormato(){
 const ABS_STOCK_UMBRAL = 5;
 
 async function absRegistrarAlertaStock(codigo, descripcion, stock_actual, responsable) {
-  try {
-    // 1. Guardar en Supabase para que el workflow envíe el correo
-    await absFetch('alertas_stock', {
-      method: 'POST',
-      headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({
-        codigo_producto: codigo,
-        descripcion: descripcion,
-        stock_actual: stock_actual,
-        stock_umbral: ABS_STOCK_UMBRAL,
-        responsable: responsable,
-        tipo_movimiento: 'SALIDA',
-        enviado: false
-      })
-    });
-  } catch(e) { console.warn('No se pudo guardar alerta stock:', e.message); }
-
-  // 2. Notificación visual inmediata en el campanazo
+  // Notificación visual inmediata en el campanazo
   _absAddBellNotif(codigo, descripcion, stock_actual);
-
-  // 3. Banner rojo en el módulo
+  // Banner rojo en el módulo
   _absShowStockAlert(codigo, descripcion, stock_actual);
+  // El correo lo envía el workflow automático a las 9AM y 2PM
 }
 
 function _absAddBellNotif(codigo, descripcion, stock) {
