@@ -1,24 +1,42 @@
-name: Reporte Diario de Inventario
+name: 📦 Reporte Diario de Inventario
+
 on:
   schedule:
-    - cron: '10 19 * * 1-5'
+    # Lunes a Viernes a las 5:00 PM Colombia (UTC-5 = 22:00 UTC)
+    - cron: '0 22 * * 1-5'
+
+  # Permite ejecutar manualmente desde GitHub para pruebas
   workflow_dispatch:
+    inputs:
+      test_run:
+        description: 'Ejecutar en modo prueba'
+        required: false
+        default: 'false'
+
 jobs:
   send-inventory-report:
     runs-on: ubuntu-latest
+    name: 📧 Enviar reporte de inventario
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: 📥 Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Instalar dependencias
-        run: pip install openpyxl
 
-      - name: Enviar reporte
+      - name: 📦 Generar y enviar reporte
         env:
-          MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
-          MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
-          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
-          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
-          RECIPIENT_EMAILS: ${{ secrets.RECIPIENT_EMAILS }}
+          MS_TENANT_ID:      ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:      ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET:  ${{ secrets.MS_CLIENT_SECRET }}
+          SENDER_EMAIL:      ${{ secrets.SENDER_EMAIL }}
+          RECIPIENT_EMAILS:  ${{ secrets.RECIPIENT_EMAILS }}
+          SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:      ${{ secrets.SUPABASE_KEY }}
         run: python scripts/inventory_report.py
+
+      - name: ✅ Confirmar envío
+        run: echo "Reporte de inventario enviado exitosamente — $(date +'%Y-%m-%d %H:%M UTC')"
