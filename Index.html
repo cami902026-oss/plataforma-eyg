@@ -10159,7 +10159,7 @@ async function absCargar() {
     abs_loaded=true;
     absRenderFamiliaFilter(); absRenderStock(); absRenderKardex();
     absRenderDashboard(); absCargarConteoHistorial(); absApplyPermisos();
-    absRenderMovHoy();
+    absRenderMovHoy(); absCheckStockCritico();
     showToast('Inventario cargado ✓','ok');
   } catch(e){ showToast('Error: '+e.message,'error'); }
 }
@@ -10542,6 +10542,83 @@ function absImprimirFormato(){
   <script>window.print();<\/script></body></html>`);
   win.document.close();
 }
+// ─── ALERTAS DE STOCK MÍNIMO ─────────────────────────────────────────────────
+const ABS_STOCK_UMBRAL = 5;
+
+async function absRegistrarAlertaStock(codigo, descripcion, stock_actual, responsable) {
+  try {
+    // 1. Guardar en Supabase para que el workflow envíe el correo
+    await absFetch('alertas_stock', {
+      method: 'POST',
+      headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        codigo_producto: codigo,
+        descripcion: descripcion,
+        stock_actual: stock_actual,
+        stock_umbral: ABS_STOCK_UMBRAL,
+        responsable: responsable,
+        tipo_movimiento: 'SALIDA',
+        enviado: false
+      })
+    });
+  } catch(e) { console.warn('No se pudo guardar alerta stock:', e.message); }
+
+  // 2. Notificación visual inmediata en el campanazo
+  _absAddBellNotif(codigo, descripcion, stock_actual);
+
+  // 3. Banner rojo en el módulo
+  _absShowStockAlert(codigo, descripcion, stock_actual);
+}
+
+function _absAddBellNotif(codigo, descripcion, stock) {
+  try {
+    const badge = document.getElementById('notif-badge');
+    const panel = document.getElementById('notif-panel');
+    if (!panel) return;
+    const item = document.createElement('div');
+    item.style.cssText = 'padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;';
+    item.innerHTML = '<span style="font-size:18px;flex-shrink:0">⚠️</span><div><div style="font-size:13px;font-weight:600;color:#fff">Stock crítico: '+descripcion+'</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Código '+codigo+' — quedan <strong style="color:var(--red)">'+stock+' unidades</strong></div><div style="font-size:10px;color:var(--text-muted);margin-top:2px;">'+new Date().toLocaleTimeString('es-CO')+'</div></div>';
+    panel.insertBefore(item, panel.firstChild);
+    if (badge) {
+      badge.style.display = '';
+      badge.textContent = String((parseInt(badge.textContent)||0)+1);
+    }
+  } catch(e) {}
+}
+
+function _absShowStockAlert(codigo, descripcion, stock) {
+  let container = document.getElementById('abs-alertas-stock');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'abs-alertas-stock';
+    container.style.cssText = 'margin-bottom:16px;';
+    const panel = document.getElementById('abs-tab-movimiento');
+    if (panel) panel.insertBefore(container, panel.firstChild);
+  }
+  const alert = document.createElement('div');
+  alert.style.cssText = 'background:rgba(229,62,62,0.12);border:1px solid var(--red);border-radius:10px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;';
+  alert.innerHTML = '<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:20px;">🔴</span><div><div style="font-weight:700;color:var(--red);font-size:13px;">Stock crítico — '+descripcion+'</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Código <code style="color:var(--gold)">'+codigo+'</code> — quedan <strong style="color:var(--red)">'+stock+' unidades</strong> (umbral: '+ABS_STOCK_UMBRAL+')</div><div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Se notificó a Alberto y Andrea por correo</div></div></div><button onclick="this.parentElement.remove()" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;flex-shrink:0;">✕</button>';
+  container.appendChild(alert);
+}
+
+// Verificar productos con stock crítico al cargar el módulo
+function absCheckStockCritico() {
+  const criticos = abs_productos.filter(p => p.stock_actual > 0 && p.stock_actual < ABS_STOCK_UMBRAL);
+  if (!criticos.length) return;
+  let container = document.getElementById('abs-alertas-stock-banner');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'abs-alertas-stock-banner';
+    container.style.cssText = 'margin-bottom:16px;';
+    const stock_panel = document.getElementById('abs-tab-stock');
+    if (stock_panel) stock_panel.insertBefore(container, stock_panel.firstChild);
+  }
+  container.innerHTML = '<div style="background:rgba(214,158,46,0.12);border:1px solid var(--yellow);border-radius:10px;padding:12px 16px;">'
+    + '<div style="font-weight:700;color:var(--yellow);margin-bottom:8px;">⚠️ '+criticos.length+' producto'+(criticos.length>1?'s':'')+' con stock crítico (< '+ABS_STOCK_UMBRAL+' unidades)</div>'
+    + criticos.map(p=>'<div style="font-size:12px;color:var(--text-muted);margin:2px 0;"><code style="color:var(--gold)">'+p.codigo+'</code> — '+p.descripcion+' → <strong style="color:var(--yellow)">'+p.stock_actual+' uds</strong></div>').join('')
+    + '</div>';
+}
+
 // ─── DESCARGA EXCEL BACKUP ────────────────────────────────────────────────────
 async function absDescargarExcel() {
   if (!abs_loaded || !abs_productos.length) {
