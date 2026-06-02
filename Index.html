@@ -2159,6 +2159,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       </select>
       <button class="btn btn-ghost" onclick="absCargar()" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
       <button class="btn btn-secondary" onclick="absDescargarExcel()" style="padding:8px 14px;font-size:12px;background:#1e7e34;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ Descargar Excel</button>
+      <button class="btn btn-secondary" onclick="absSyncExcelPick()" style="padding:8px 14px;font-size:12px;background:#1a3a8f;color:#fff;border:none;border-radius:8px;cursor:pointer;">📊 Sincronizar con Excel</button>
+      <input type="file" id="abs-sync-file" accept=".xlsm,.xlsx,.xls" style="display:none" onchange="absSyncExcelFile(this)">
     </div>
     <div id="abs-stock-count" class="abs-count"></div>
     <div class="abs-table-wrap">
@@ -11238,6 +11240,146 @@ async function absDescargarExcel() {
   } catch(e) {
     showToast('Error generando Excel: '+e.message,'error');
   }
+}
+
+// ═══ SINCRONIZAR ABASTECIMIENTO CON EXCEL ═══════════════════════════════════
+// Lee la hoja STOCK de un Excel (.xlsm/.xlsx), compara las cantidades contra
+// Supabase (abs_productos) y permite igualar/agregar tras revisar y editar.
+let _absSyncData = null;
+
+function absSyncExcelPick() {
+  if (!abs_canSalida()) return showToast('Solo el equipo de abastecimiento puede sincronizar','error');
+  if (!abs_loaded || !abs_productos.length) return showToast('Carga el inventario primero (🔄 Recargar)','error');
+  const inp = document.getElementById('abs-sync-file');
+  if (inp) { inp.value=''; inp.click(); }
+}
+
+async function absSyncExcelFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  showToast('Leyendo Excel…','info');
+  try {
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array'});
+    const sheetName = wb.SheetNames.find(n => String(n).toUpperCase()==='STOCK') || wb.SheetNames[0];
+    const ws = wb.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+    // localizar fila de encabezados (busca CODIGO PRODUCTO + STOCK)
+    let hr = -1;
+    for (let i=0; i<Math.min(rows.length,15); i++) {
+      const up = (rows[i]||[]).map(c => String(c).trim().toUpperCase());
+      if (up.includes('CODIGO PRODUCTO') && (up.includes('STOCK ACTUAL')||up.includes('STOCK'))) { hr=i; break; }
+    }
+    if (hr<0) return showToast('No encontré la hoja STOCK con columnas CODIGO PRODUCTO y STOCK','error');
+    const H = rows[hr].map(c => String(c).trim().toUpperCase());
+    const ix = n => H.indexOf(n);
+    const ci=ix('CODIGO PRODUCTO'), si=(ix('STOCK ACTUAL')>=0?ix('STOCK ACTUAL'):ix('STOCK'));
+    const di=ix('DESCRIPCION'), mi=ix('MARCA'), pi=ix('PROVEEDOR');
+    const ui=(ix('UBICACIÓN')>=0?ix('UBICACIÓN'):ix('UBICACION'));
+    const li=ix('LOTE'), coi=ix('# COLADA'), cci=ix('COSTO COMPRA');
+    const g = (row,i) => i>=0 ? String(row[i]==null?'':row[i]).trim() : '';
+    const excel = {};
+    for (let r=hr+1; r<rows.length; r++) {
+      const row = rows[r]||[];
+      const cod = g(row,ci);
+      if (!cod) continue;
+      const st = parseFloat(row[si]);
+      excel[cod] = { codigo:cod, stock:isNaN(st)?0:st, desc:g(row,di), marca:g(row,mi),
+        prov:g(row,pi), ubic:g(row,ui), lote:g(row,li), colada:g(row,coi),
+        costo:(cci>=0?(parseFloat(row[cci])||0):0) };
+    }
+    const supByCode = {};
+    abs_productos.forEach(p => supByCode[String(p.codigo).trim()] = p);
+    const difs = [], nuevos = [];
+    Object.values(excel).forEach(e => {
+      const s = supByCode[e.codigo];
+      if (!s) { nuevos.push(e); return; }
+      const ss = Number(s.stock_actual||0);
+      if (Math.abs(ss - e.stock) > 0.001) difs.push({...e, supStock:ss, target:e.stock});
+    });
+    if (!difs.length && !nuevos.length) return showToast('✅ Todo coincide: sin diferencias con el Excel','ok');
+    _absSyncData = {difs, nuevos};
+    _absSyncRenderModal();
+  } catch(e) {
+    showToast('Error leyendo Excel: '+e.message,'error');
+  }
+}
+
+function _absSyncRenderModal() {
+  const {difs, nuevos} = _absSyncData;
+  const difRows = difs.map((d,i) => `<tr style="border-bottom:1px solid rgba(255,255,255,.06)">
+    <td style="padding:5px;text-align:center"><input type="checkbox" class="abs-sync-chk" data-t="dif" data-i="${i}" checked></td>
+    <td style="padding:5px"><code style="color:var(--gold);font-size:11px">${d.codigo}</code></td>
+    <td style="padding:5px;font-size:12px">${(d.desc||'').slice(0,38)}</td>
+    <td style="padding:5px;text-align:center;color:#fca5a5">${d.supStock}</td>
+    <td style="padding:5px;text-align:center"><input type="number" step="0.01" value="${d.target}" data-i="${i}" class="abs-sync-val" style="width:70px;padding:4px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:5px;color:#fff;text-align:center"></td>
+  </tr>`).join('');
+  const nuevoRows = nuevos.map((n,i) => `<tr style="border-bottom:1px solid rgba(255,255,255,.06)">
+    <td style="padding:5px;text-align:center"><input type="checkbox" class="abs-sync-chk" data-t="new" data-i="${i}" checked></td>
+    <td style="padding:5px"><code style="color:#86efac;font-size:11px">${n.codigo}</code></td>
+    <td style="padding:5px;font-size:12px" colspan="2">${(n.desc||'').slice(0,46)}</td>
+    <td style="padding:5px;text-align:center;color:#86efac">${n.stock}</td>
+  </tr>`).join('');
+  const ex = document.getElementById('abs-sync-modal'); if (ex) ex.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'abs-sync-modal';
+  overlay.className = 'modal-overlay open';
+  overlay.style.zIndex = '9999';
+  overlay.innerHTML = `<div class="modal-content" style="max-width:720px;max-height:85vh;overflow:auto;background:#0F1A2E;border:1px solid rgba(46,170,74,.4);">
+    <div style="padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0;color:#fff;font-family:Montserrat,sans-serif;">📊 Sincronizar con Excel</h3>
+      <button onclick="absSyncClose()" style="background:transparent;border:none;color:#8899bb;font-size:22px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+    <div style="padding:14px 18px;">
+      <p style="color:#cbd5ff;font-size:13px;margin:0 0 12px;">Revisa las diferencias. Puedes <b>editar la cantidad final</b> antes de aplicar. Solo se cambian los productos marcados.</p>
+      ${difs.length?`<div style="font-weight:700;color:#fbd38d;font-size:13px;margin:6px 0;">⚖️ Diferencias de stock (${difs.length})</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="background:rgba(15,43,91,.5);color:#8899bb;font-size:10px;text-transform:uppercase;">
+          <th style="padding:6px"></th><th style="padding:6px;text-align:left">Código</th><th style="padding:6px;text-align:left">Descripción</th><th style="padding:6px">Supabase</th><th style="padding:6px">Excel / Final</th></tr></thead>
+        <tbody>${difRows}</tbody></table>`:''}
+      ${nuevos.length?`<div style="font-weight:700;color:#86efac;font-size:13px;margin:14px 0 6px;">🆕 Productos nuevos del Excel (${nuevos.length})</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr style="background:rgba(15,43,91,.5);color:#8899bb;font-size:10px;text-transform:uppercase;">
+          <th style="padding:6px"></th><th style="padding:6px;text-align:left">Código</th><th style="padding:6px;text-align:left" colspan="2">Descripción</th><th style="padding:6px">Stock</th></tr></thead>
+        <tbody>${nuevoRows}</tbody></table>`:''}
+      <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;">
+        <button onclick="absSyncClose()" style="background:transparent;border:1px solid var(--border);color:#cbd5ff;padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer;">Cancelar</button>
+        <button onclick="absSyncApply()" style="background:rgba(46,170,74,.3);color:#86efac;border:1px solid rgba(46,170,74,.5);padding:8px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">✅ Aplicar cambios</button>
+      </div>
+    </div>
+  </div>`;
+  overlay.onclick = (e) => { if (e.target===overlay) absSyncClose(); };
+  document.body.appendChild(overlay);
+}
+
+function absSyncClose(){ const m=document.getElementById('abs-sync-modal'); if(m) m.remove(); _absSyncData=null; }
+
+async function absSyncApply() {
+  if (!_absSyncData) return;
+  const {difs, nuevos} = _absSyncData;
+  const chks = {};
+  document.querySelectorAll('.abs-sync-chk').forEach(c => chks[c.dataset.t+':'+c.dataset.i] = c.checked);
+  document.querySelectorAll('.abs-sync-val').forEach(v => { const i=v.dataset.i; if (difs[i]) difs[i].target = parseFloat(v.value)||0; });
+  showToast('Aplicando cambios…','info');
+  let okN=0, errN=0;
+  for (let i=0;i<difs.length;i++) {
+    if (!chks['dif:'+i]) continue;
+    try {
+      await absFetch('productos?codigo=eq.'+encodeURIComponent(difs[i].codigo), {method:'PATCH', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({stock_actual:difs[i].target})});
+      okN++;
+    } catch(e){ errN++; console.warn('sync patch', difs[i].codigo, e); }
+  }
+  for (let i=0;i<nuevos.length;i++) {
+    if (!chks['new:'+i]) continue;
+    const n = nuevos[i];
+    try {
+      await absFetch('productos', {method:'POST', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({codigo:n.codigo, descripcion:n.desc, marca:n.marca, proveedor:n.prov, ubicacion:n.ubic, lote:n.lote||'-', colada:n.colada, stock_actual:n.stock, costo_compra:n.costo, activo:true})});
+      okN++;
+    } catch(e){ errN++; console.warn('sync post', n.codigo, e); }
+  }
+  absSyncClose();
+  showToast('Sincronizado: '+okN+' cambio(s)'+(errN?' · '+errN+' con error':''), errN?'error':'ok');
+  try { await absCargar(); } catch(_){}
 }
 
 </script>
