@@ -10798,9 +10798,8 @@ function remiPDF(){
     *{box-sizing:border-box} html,body{margin:0;padding:0}
     body{font-family:Arial,Helvetica,sans-serif;color:#15202e;font-size:11.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .mono{font-family:'Consolas','Courier New',monospace}
-    .page{padding:0 24px 20px}
-    .stripe{height:9px;background:repeating-linear-gradient(45deg,#0F2B5B 0 13px,#E8A020 13px 26px)}
-    .hd{display:flex;justify-content:space-between;align-items:stretch;border:2px solid #0F2B5B;border-top:none}
+    .page{padding:18px 24px 20px}
+    .hd{display:flex;justify-content:space-between;align-items:stretch;border:2px solid #0F2B5B}
     .brand{display:flex;align-items:center;gap:12px;padding:10px 14px;flex:1}
     .brand img{width:60px;height:60px;object-fit:contain}
     .nm{font-weight:800;font-size:17px;color:#0F2B5B;letter-spacing:.3px;line-height:1.05}
@@ -10831,7 +10830,6 @@ function remiPDF(){
     .foot{margin-top:14px;border-top:3px solid #E8A020;padding-top:6px;font-size:8.5px;color:#5b6b85;display:flex;justify-content:space-between}
     @media print{.noprint{display:none}}
   </style></head><body>
-  <div class="stripe"></div>
   <div class="page">
     <div class="hd">
       <div class="brand"><img src="${logo}" alt="logo"><div>
@@ -10917,7 +10915,16 @@ async function descargarRespaldo(){
       try{ backup.tablas[t]=await absFetch(t+'?select=*&limit=100000')||[]; }
       catch(e){ backup.tablas[t]={error:e.message}; }
     }
-    const resumen=tablas.map(t=>t+': '+(Array.isArray(backup.tablas[t])?backup.tablas[t].length:'error')).join(' · ');
+    // También incluir los datos guardados en GitHub (OCs, cotizaciones, solicitudes, equipo, reuniones)
+    const ghFiles=['ordenes.json','reuniones.json','data/cotizaciones.json','data/solicitudes_cotiz.json','data/team.json'];
+    backup.github={};
+    for(const gf of ghFiles){
+      if(st) st.textContent='Respaldando '+gf+'...';
+      try{ const r=await fetch('https://raw.githubusercontent.com/cami902026-oss/plataforma-eyg/main/'+gf+'?t='+Date.now()); backup.github[gf]= r.ok ? await r.json() : {error:'HTTP '+r.status}; }
+      catch(e){ backup.github[gf]={error:e.message}; }
+    }
+    const cnt=v=>Array.isArray(v)?v.length:'—';
+    const resumen=tablas.map(t=>t+': '+cnt(backup.tablas[t])).join(' · ')+' | OCs: '+cnt(backup.github['ordenes.json'])+' · cotiz: '+cnt(backup.github['data/cotizaciones.json']);
     const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
     a.download='respaldo_energy_'+new Date().toISOString().split('T')[0]+'.json';
