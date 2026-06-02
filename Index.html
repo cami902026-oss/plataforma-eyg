@@ -3533,8 +3533,13 @@ const POLL_TARGETS = [
 ];
 
 async function _pollOne(target) {
-  // Si hay una escritura pendiente para este archivo, no sobrescribir local hasta confirmar subida
-  if (_getSyncQueue().some(q => q.file === target.file)) return false;
+  // FIX SYNC: antes, si había una escritura pendiente para este archivo se hacía
+  // `return false` y se dejaba de DESCARGAR. Eso provocaba que un cambio atascado
+  // (p.ej. en un dispositivo sin permiso de escritura) bloqueara para siempre la
+  // llegada de items nuevos creados por otros (caso reportado: solicitudes que a
+  // unos sí aparecían y a otros no). Ya NO bloqueamos la lectura: descargamos y
+  // mergeamos siempre. El merge de abajo preserva los items locales con updatedAt
+  // (cambios aún sin subir) y a la vez incorpora lo nuevo del servidor.
   // FIX CORS: NO usar If-None-Match ni Cache-Control: no-cache → disparan preflight
   // OPTIONS que raw.githubusercontent.com no responde → bloquea todo el polling.
   // En su lugar: GET simple con cache-buster ?t= y comparar contenido contra hash previo.
