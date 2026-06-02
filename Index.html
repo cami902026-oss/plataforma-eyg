@@ -10794,73 +10794,66 @@ function remiPDF(){
   const items=c.items.filter(it=>String(it.descripcion||'').trim()!=='');
   const filas=items.map((it,i)=>`<tr><td style="text-align:center">${i+1}</td><td style="text-align:center">${_remiEsc(it.cantidad)}</td><td>${_remiEsc(it.descripcion)}</td><td>${_remiEsc(it.marca)}</td><td>${_remiEsc(it.colada)}</td><td>${_remiEsc(it.desviacion)}</td></tr>`).join('');
   const logo='https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png';
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Remision ${_remiEsc(c.remision)}</title><style>
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Remisión ${_remiEsc(c.remision)}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><style>
     *{box-sizing:border-box} html,body{margin:0;padding:0}
-    body{font-family:Arial,Helvetica,sans-serif;color:#15202e;font-size:11.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .mono{font-family:'Consolas','Courier New',monospace}
-    .page{padding:18px 24px 20px}
-    .hd{display:flex;justify-content:space-between;align-items:stretch;border:2px solid #0F2B5B}
-    .brand{display:flex;align-items:center;gap:12px;padding:10px 14px;flex:1}
-    .brand img{width:60px;height:60px;object-fit:contain}
-    .nm{font-weight:800;font-size:17px;color:#0F2B5B;letter-spacing:.3px;line-height:1.05}
-    .sl{font-size:9.5px;color:#2EAA4A;font-weight:700;margin-top:3px;text-transform:uppercase;letter-spacing:.6px}
-    .ad{font-size:9.5px;color:#555;margin-top:3px}
-    .ctrl{display:grid;grid-template-columns:auto auto;min-width:240px}
-    .ctrl div{border-bottom:1px solid #0F2B5B;border-left:2px solid #0F2B5B;padding:4px 10px;display:flex;flex-direction:column;justify-content:center}
-    .ctrl .k{color:#5b6b85;text-transform:uppercase;letter-spacing:.6px;font-weight:700;font-size:8px}
-    .ctrl .vv{font-size:13px;font-weight:800;color:#0F2B5B}
-    .titlebar{background:#0F2B5B;color:#fff;text-align:center;font-weight:800;letter-spacing:3px;font-size:14px;padding:7px;text-transform:uppercase}
-    .titlebar small{color:#E8A020;letter-spacing:2px;font-size:10px}
+    body{font-family:'Inter',Arial,Helvetica,sans-serif;color:#1f2a37;font-size:11.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .page{padding:34px 38px}
+    .hd{display:flex;justify-content:space-between;align-items:flex-start}
+    .brand{display:flex;align-items:center;gap:14px}
+    .brand img{width:66px;height:66px;object-fit:contain}
+    .nm{font-family:'Montserrat',sans-serif;font-weight:800;font-size:18px;color:#0F2B5B;letter-spacing:.2px;line-height:1.1}
+    .sl{font-size:9px;color:#2EAA4A;font-weight:600;margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+    .ad{font-size:9.5px;color:#6b7785;margin-top:5px;line-height:1.55}
+    .doc{text-align:right}
+    .doc .t{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;color:#0F2B5B;letter-spacing:3px;text-transform:uppercase}
+    .doc .n{font-family:'Montserrat',sans-serif;font-size:30px;font-weight:800;color:#0F2B5B;line-height:1;margin-top:3px}
+    .doc .f{font-size:10px;color:#6b7785;margin-top:7px}
+    .rule{height:3px;background:#0F2B5B;margin:16px 0 2px;position:relative}
+    .rule:before{content:'';position:absolute;left:0;top:0;height:3px;width:72px;background:#E8A020}
+    .info{display:grid;grid-template-columns:1fr 1fr;gap:8px 30px;margin:18px 0 6px}
+    .fld .l{font-size:8px;font-weight:700;color:#9aa6b4;text-transform:uppercase;letter-spacing:1px}
+    .fld .v{font-size:12.5px;font-weight:600;color:#1f2a37;border-bottom:1px solid #e6ebf2;padding:3px 0 7px}
+    .sec{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;color:#0F2B5B;text-transform:uppercase;letter-spacing:1.5px;margin:20px 0 7px}
     table{border-collapse:collapse;width:100%}
-    .data{border:2px solid #0F2B5B;border-top:none}
-    .data td{border:1px solid #9fb0c9;padding:5px 9px;font-size:11px;vertical-align:top}
-    .data .k{background:#e9edf3;color:#0F2B5B;font-weight:700;text-transform:uppercase;font-size:8.5px;letter-spacing:.5px;width:135px;white-space:nowrap}
-    .sechd{background:#37445c;color:#fff;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:4px 10px;margin-top:12px}
-    table.it{border:2px solid #0F2B5B}
-    table.it th{background:#0F2B5B;color:#fff;font-size:9px;text-transform:uppercase;letter-spacing:.5px;padding:6px 5px;border:1px solid #28406e}
-    table.it td{border:1px solid #9fb0c9;padding:5px 6px;font-size:11px}
-    table.it tbody tr:nth-child(even){background:#eef2f8}
-    .obs{border:2px solid #0F2B5B;border-top:none;padding:7px 10px;font-size:10.5px;min-height:30px}
-    .firma{display:flex;margin-top:18px}
-    .firma .box{flex:1;border:1.5px solid #0F2B5B;padding:8px 10px}
-    .firma .box+.box{border-left:none}
-    .firma .ttl{font-size:8.5px;font-weight:800;color:#0F2B5B;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #9fb0c9;padding-bottom:4px}
-    .firma .ln{font-size:8.5px;color:#5b6b85;border-top:1px solid #333;margin-top:30px;padding-top:3px}
-    .firma .ln2{font-size:8.5px;color:#5b6b85;border-top:1px solid #333;margin-top:16px;padding-top:3px}
-    .foot{margin-top:14px;border-top:3px solid #E8A020;padding-top:6px;font-size:8.5px;color:#5b6b85;display:flex;justify-content:space-between}
+    table.it th{background:#0F2B5B;color:#fff;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;padding:9px 8px;text-align:left}
+    table.it td{padding:8px;font-size:11px;border-bottom:1px solid #e6ebf2}
+    table.it tbody tr:nth-child(even){background:#f7f9fc}
+    .obs{font-size:11px;color:#3a4654;border:1px solid #e6ebf2;border-radius:6px;padding:9px 12px;min-height:30px}
+    .firma{display:flex;gap:50px;margin-top:52px}
+    .firma div{flex:1;border-top:1.5px solid #1f2a37;padding-top:6px;font-size:10px;color:#1f2a37;font-weight:600}
+    .firma span{display:block;font-size:8.5px;color:#9aa6b4;font-weight:400;margin-top:3px}
+    .foot{margin-top:26px;border-top:1px solid #e6ebf2;padding-top:9px;text-align:center;font-size:8.5px;color:#9aa6b4;letter-spacing:.3px}
     @media print{.noprint{display:none}}
-  </style></head><body>
-  <div class="page">
+  </style></head><body><div class="page">
     <div class="hd">
       <div class="brand"><img src="${logo}" alt="logo"><div>
         <div class="nm">E&amp;G ENERGY GROUP S.A.S</div>
         <div class="sl">Suministro Industrial &middot; Sector Petrolero</div>
-        <div class="ad">Carrera 7 # 12-61, Chía, Cundinamarca, Colombia &middot; +57 320 494 7227</div></div></div>
-      <div class="ctrl">
-        <div><span class="k">Documento</span><span class="vv">REMISIÓN</span></div>
-        <div><span class="k">N°</span><span class="vv mono">${_remiEsc(c.remision)}</span></div>
-        <div><span class="k">Fecha</span><span class="mono" style="font-size:12px;font-weight:700">${_remiEsc(c.fecha?c.fecha.split('-').reverse().join('/'):'—')}</span></div>
-        <div><span class="k">Página</span><span class="mono" style="font-size:12px;font-weight:700">1 / 1</span></div>
-      </div>
+        <div class="ad">Carrera 7 # 12-61, Chía, Cundinamarca, Colombia<br>+57 320 494 7227 &middot; comercial1@eygenergygroup.com</div></div></div>
+      <div class="doc"><div class="t">Remisión de Entrega</div><div class="n">${_remiEsc(c.remision)}</div>
+        <div class="f">Fecha: ${_remiEsc(c.fecha?c.fecha.split('-').reverse().join('/'):'—')}</div></div>
     </div>
-    <div class="titlebar">REMISIÓN DE ENTREGA <small>&middot; DELIVERY NOTE</small></div>
-    <table class="data">
-      <tr><td class="k">Cliente / Recibido por</td><td>${_remiEsc(c.cliente)||'—'}</td><td class="k"># Orden de compra</td><td class="mono">${_remiEsc(c.oc)||'—'}</td></tr>
-      <tr><td class="k">Lugar / Dirección</td><td colspan="3">${_remiEsc(c.lugar)||'—'}</td></tr>
-      <tr><td class="k">Contiene</td><td colspan="3">${_remiEsc(c.contiene)||'—'}</td></tr>
-    </table>
-    <div class="sechd">Elementos entregados</div>
-    <table class="it"><thead><tr><th style="width:34px">Ítem</th><th style="width:46px">Cant.</th><th>Descripción</th><th style="width:84px">Marca</th><th style="width:72px"># Colada</th><th style="width:84px">Desviación</th></tr></thead><tbody>${filas}</tbody></table>
-    <div class="sechd">Observaciones</div>
+    <div class="rule"></div>
+    <div class="info">
+      <div class="fld"><div class="l">Cliente / Recibido por</div><div class="v">${_remiEsc(c.cliente)||'—'}</div></div>
+      <div class="fld"><div class="l"># Orden de compra</div><div class="v">${_remiEsc(c.oc)||'—'}</div></div>
+      <div class="fld"><div class="l">Lugar / Dirección</div><div class="v">${_remiEsc(c.lugar)||'—'}</div></div>
+      <div class="fld"><div class="l">Contiene</div><div class="v">${_remiEsc(c.contiene)||'—'}</div></div>
+    </div>
+    <div class="sec">Elementos entregados</div>
+    <table class="it"><thead><tr><th style="width:36px;text-align:center">Ítem</th><th style="width:48px;text-align:center">Cant.</th><th>Descripción</th><th style="width:90px">Marca</th><th style="width:76px;text-align:center"># Colada</th><th style="width:92px">Desviación</th></tr></thead><tbody>${filas}</tbody></table>
+    <div class="sec">Observaciones</div>
     <div class="obs">${_remiEsc(c.observaciones)||'—'}</div>
     <div class="firma">
-      <div class="box"><div class="ttl">Entregado por &mdash; E&amp;G Energy Group</div><div class="ln">Nombre y firma</div><div class="ln2">Fecha</div></div>
-      <div class="box"><div class="ttl">Recibido por &mdash; Cliente</div><div class="ln">Nombre / C.C.</div><div class="ln2">Firma y sello</div></div>
+      <div>Entregado por<span>E&amp;G Energy Group &mdash; Nombre, firma y fecha</span></div>
+      <div>Recibido por<span>Nombre / C.C. / Firma y sello</span></div>
     </div>
-    <div class="foot"><span>Documento generado por la plataforma ENERGY</span><span>comercial1@eygenergygroup.com &middot; www.eygenergygroup.com</span></div>
-    <button class="noprint" onclick="window.print()" style="margin-top:16px;padding:9px 18px;background:#0F2B5B;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px">🖨️ Imprimir / Guardar PDF</button>
+    <div class="foot">E&amp;G ENERGY GROUP S.A.S &middot; Carrera 7 # 12-61, Chía, Cundinamarca &middot; +57 320 494 7227 &middot; www.eygenergygroup.com</div>
+    <button class="noprint" onclick="window.print()" style="margin-top:20px;padding:9px 18px;background:#0F2B5B;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px">🖨️ Imprimir / Guardar PDF</button>
   </div>
-  <script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script></body></html>`;
+  <script>window.onload=function(){setTimeout(function(){window.print();},700);}<\/script></body></html>`;
   const w=window.open('','_blank'); if(!w){showToast('Permite ventanas emergentes para el PDF','error');return;}
   w.document.write(html); w.document.close();
 }
@@ -10878,27 +10871,38 @@ function remiExcel(){
 
 function remiRotulo(){
   if(!remi_current) return; remiSyncHeader(); const c=remi_current;
+  let n=parseInt(prompt('¿Cuántos rótulos quieres en la hoja? (1, 2 o 3)','1'),10);
+  if(isNaN(n)||n<1) n=1; if(n>3) n=3;
   const logo='https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png';
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rotulo ${_remiEsc(c.remision)}</title><style>
-    body{font-family:'Segoe UI',Arial,sans-serif;margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .rot{width:90%;max-width:560px;margin:28px auto;border:3px solid #0F2B5B;border-radius:14px;overflow:hidden}
-    .rhead{background:#0F2B5B;color:#fff;display:flex;align-items:center;gap:14px;padding:16px 22px}
-    .rhead img{width:58px;height:58px;object-fit:contain;background:#fff;border-radius:8px;padding:4px}
-    .rhead .nm{font-family:'Montserrat',Arial,sans-serif;font-size:18px;font-weight:800;line-height:1.1}
-    .rhead .de{font-size:11px;color:#cdd8ef;margin-top:3px}
-    .rbody{padding:24px}
-    .para{margin-top:4px} .lbl{font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px}
-    .val{font-size:26px;font-weight:bold;color:#111} .ref{margin-top:18px;font-size:19px;color:#E8A020;font-weight:bold;background:#fff8ec;border:1px solid #E8A020;border-radius:8px;padding:8px 12px;display:inline-block}
-    @media print{.noprint{display:none}}</style></head><body>
-    <div class="rot"><div class="rhead"><img src="${logo}" alt="logo"><div>
+  const card=`<div class="rot">
+      <div class="rhead"><img src="${logo}" alt="logo"><div>
         <div class="nm">E&amp;G ENERGY GROUP S.A.S</div>
-        <div class="de">DE: Carrera 7 # 12-61, Chía &middot; +57 320 494 7227 &middot; comercial1@eygenergygroup.com</div></div></div>
+        <div class="de">DE: Carrera 7 # 12-61, Chía &middot; +57 320 494 7227</div></div></div>
       <div class="rbody">
-      <div class="para"><div class="lbl">PARA:</div><div class="val">${_remiEsc(c.cliente)||'—'}</div>
-        <div class="lbl" style="margin-top:12px">DIRECCIÓN / LUGAR:</div><div class="val" style="font-size:17px">${_remiEsc(c.lugar)||'—'}</div>
-        <div class="ref">REF: REMISIÓN ${_remiEsc(c.remision)}${c.oc?' &middot; OC '+_remiEsc(c.oc):''}</div></div></div></div>
-    <button class="noprint" onclick="window.print()" style="display:block;margin:20px auto 0;padding:9px 18px;background:#0F2B5B;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨️ Imprimir</button>
-    <script>window.onload=function(){setTimeout(function(){window.print();},300);}<\/script></body></html>`;
+        <div class="lbl">PARA</div><div class="val">${_remiEsc(c.cliente)||'—'}</div>
+        <div class="lbl" style="margin-top:9px">DIRECCIÓN / LUGAR</div><div class="val2">${_remiEsc(c.lugar)||'—'}</div>
+        <div class="ref">REF: REMISIÓN ${_remiEsc(c.remision)}${c.oc?' &middot; OC '+_remiEsc(c.oc):''}</div>
+      </div></div>`;
+  let blocks=''; for(let i=0;i<n;i++) blocks+=card;
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rótulos ${_remiEsc(c.remision)}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet"><style>
+    *{box-sizing:border-box} html,body{margin:0;padding:0}
+    body{font-family:'Inter',Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:9mm}
+    .rot{border:2.5px solid #0F2B5B;border-radius:10px;overflow:hidden;margin:0 auto 8mm;max-width:178mm;page-break-inside:avoid}
+    .rhead{background:#0F2B5B;color:#fff;display:flex;align-items:center;gap:12px;padding:9px 16px}
+    .rhead img{width:44px;height:44px;object-fit:contain;background:#fff;border-radius:6px;padding:3px}
+    .rhead .nm{font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;line-height:1.1}
+    .rhead .de{font-size:9.5px;color:#cdd8ef;margin-top:2px}
+    .rbody{padding:13px 18px 16px}
+    .lbl{font-size:8.5px;color:#9aa6b4;text-transform:uppercase;letter-spacing:1.5px;font-weight:700}
+    .val{font-size:23px;font-weight:800;color:#15202e;line-height:1.12}
+    .val2{font-size:14px;font-weight:600;color:#15202e;margin-top:1px}
+    .ref{margin-top:11px;font-family:'Montserrat',sans-serif;font-size:15px;color:#0F2B5B;font-weight:800;background:#fff8ec;border:1.5px solid #E8A020;border-radius:8px;padding:7px 12px;display:inline-block}
+    @media print{.noprint{display:none}}
+  </style></head><body>
+  ${blocks}
+  <button class="noprint" onclick="window.print()" style="display:block;margin:6mm auto 0;padding:9px 18px;background:#0F2B5B;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨️ Imprimir ${n>1?('('+n+' rótulos)'):''}</button>
+  <script>window.onload=function(){setTimeout(function(){window.print();},600);}<\/script></body></html>`;
   const w=window.open('','_blank'); if(!w){showToast('Permite ventanas emergentes','error');return;}
   w.document.write(html); w.document.close();
 }
