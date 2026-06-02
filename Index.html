@@ -1730,6 +1730,14 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">Token personal de GitHub con permiso <b>workflow</b>. Se guarda localmente en tu navegador.</p>
         </div>
 
+        <!-- ===== RESPALDO DE SEGURIDAD ===== -->
+        <div class="config-section" style="border-left:3px solid #2EAA4A;">
+          <div class="config-title">🔒 Respaldo de seguridad (Supabase)</div>
+          <p style="font-size:12px;color:var(--text-muted);margin:6px 0 12px;">Descarga una copia completa de <b>inventario, kardex, remisiones y conteos</b> en un archivo. Además, el sistema guarda un respaldo automático diario en GitHub con historial.</p>
+          <button class="btn btn-primary" onclick="descargarRespaldo()" style="width:auto;">⬇️ Descargar respaldo ahora</button>
+          <div id="respaldo-status" style="font-size:12px;color:var(--text-muted);margin-top:10px;"></div>
+        </div>
+
         <!-- ===== MICROSOFT TEAMS CONFIG ===== -->
         <div class="config-section" style="border-left:3px solid #6264A7;">
           <div class="config-title">🟣 Microsoft Teams — Integración Azure AD</div>
@@ -10788,52 +10796,71 @@ function remiPDF(){
   const logo='https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png';
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Remision ${_remiEsc(c.remision)}</title><style>
     *{box-sizing:border-box} html,body{margin:0;padding:0}
-    body{font-family:'Segoe UI',Arial,sans-serif;color:#1a1a1a;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .page{padding:26px 32px}
-    .top{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid #E8A020;padding-bottom:14px}
-    .brand{display:flex;align-items:center;gap:14px}
-    .brand img{width:72px;height:72px;object-fit:contain}
-    .brand .nm{font-family:'Montserrat',Arial,sans-serif;font-size:19px;font-weight:800;color:#0F2B5B;line-height:1.1}
-    .brand .sl{font-size:11px;color:#2EAA4A;font-weight:600;margin-top:3px}
-    .brand .ad{font-size:10px;color:#666;margin-top:4px}
-    .docbox{background:#0F2B5B;color:#fff;border-radius:10px;padding:13px 22px;text-align:center;min-width:165px}
-    .docbox .t{font-family:'Montserrat',Arial,sans-serif;font-size:15px;font-weight:800;letter-spacing:2px}
-    .docbox .n{font-size:22px;font-weight:800;color:#E8A020;margin-top:2px}
-    .docbox .f{font-size:10px;color:#cdd8ef;margin-top:4px}
-    .meta{display:flex;flex-wrap:wrap;gap:9px;margin:16px 0}
-    .mcard{flex:1;min-width:200px;background:#f4f7fc;border-left:4px solid #1A3A8F;border-radius:6px;padding:7px 12px}
-    .mcard .l{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#1A3A8F;font-weight:700}
-    .mcard .v{font-size:13px;font-weight:600;color:#111;margin-top:2px}
-    table.it{width:100%;border-collapse:collapse;margin-top:6px}
-    table.it th{background:#0F2B5B;color:#fff;font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:8px 6px;border:1px solid #0F2B5B}
-    table.it td{border:1px solid #d6deea;padding:6px 7px;font-size:11px}
-    table.it tbody tr:nth-child(even){background:#f4f7fc}
-    .obs{margin-top:12px;background:#fff8ec;border:1px solid #E8A020;border-radius:6px;padding:8px 12px;font-size:11px}
-    .firma{margin-top:46px;display:flex;justify-content:space-between;gap:40px}
-    .firma div{flex:1;border-top:1.5px solid #333;text-align:center;padding-top:5px;font-size:11px;color:#444}
-    .foot{margin-top:24px;background:#0F2B5B;color:#cdd8ef;text-align:center;padding:9px;font-size:10px;border-radius:8px}
-    .foot b{color:#fff}
-    @media print{.noprint{display:none} .page{padding:12px 16px}}
-  </style></head><body><div class="page">
-    <div class="top">
+    body{font-family:Arial,Helvetica,sans-serif;color:#15202e;font-size:11.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .mono{font-family:'Consolas','Courier New',monospace}
+    .page{padding:0 24px 20px}
+    .stripe{height:9px;background:repeating-linear-gradient(45deg,#0F2B5B 0 13px,#E8A020 13px 26px)}
+    .hd{display:flex;justify-content:space-between;align-items:stretch;border:2px solid #0F2B5B;border-top:none}
+    .brand{display:flex;align-items:center;gap:12px;padding:10px 14px;flex:1}
+    .brand img{width:60px;height:60px;object-fit:contain}
+    .nm{font-weight:800;font-size:17px;color:#0F2B5B;letter-spacing:.3px;line-height:1.05}
+    .sl{font-size:9.5px;color:#2EAA4A;font-weight:700;margin-top:3px;text-transform:uppercase;letter-spacing:.6px}
+    .ad{font-size:9.5px;color:#555;margin-top:3px}
+    .ctrl{display:grid;grid-template-columns:auto auto;min-width:240px}
+    .ctrl div{border-bottom:1px solid #0F2B5B;border-left:2px solid #0F2B5B;padding:4px 10px;display:flex;flex-direction:column;justify-content:center}
+    .ctrl .k{color:#5b6b85;text-transform:uppercase;letter-spacing:.6px;font-weight:700;font-size:8px}
+    .ctrl .vv{font-size:13px;font-weight:800;color:#0F2B5B}
+    .titlebar{background:#0F2B5B;color:#fff;text-align:center;font-weight:800;letter-spacing:3px;font-size:14px;padding:7px;text-transform:uppercase}
+    .titlebar small{color:#E8A020;letter-spacing:2px;font-size:10px}
+    table{border-collapse:collapse;width:100%}
+    .data{border:2px solid #0F2B5B;border-top:none}
+    .data td{border:1px solid #9fb0c9;padding:5px 9px;font-size:11px;vertical-align:top}
+    .data .k{background:#e9edf3;color:#0F2B5B;font-weight:700;text-transform:uppercase;font-size:8.5px;letter-spacing:.5px;width:135px;white-space:nowrap}
+    .sechd{background:#37445c;color:#fff;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:4px 10px;margin-top:12px}
+    table.it{border:2px solid #0F2B5B}
+    table.it th{background:#0F2B5B;color:#fff;font-size:9px;text-transform:uppercase;letter-spacing:.5px;padding:6px 5px;border:1px solid #28406e}
+    table.it td{border:1px solid #9fb0c9;padding:5px 6px;font-size:11px}
+    table.it tbody tr:nth-child(even){background:#eef2f8}
+    .obs{border:2px solid #0F2B5B;border-top:none;padding:7px 10px;font-size:10.5px;min-height:30px}
+    .firma{display:flex;margin-top:18px}
+    .firma .box{flex:1;border:1.5px solid #0F2B5B;padding:8px 10px}
+    .firma .box+.box{border-left:none}
+    .firma .ttl{font-size:8.5px;font-weight:800;color:#0F2B5B;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #9fb0c9;padding-bottom:4px}
+    .firma .ln{font-size:8.5px;color:#5b6b85;border-top:1px solid #333;margin-top:30px;padding-top:3px}
+    .firma .ln2{font-size:8.5px;color:#5b6b85;border-top:1px solid #333;margin-top:16px;padding-top:3px}
+    .foot{margin-top:14px;border-top:3px solid #E8A020;padding-top:6px;font-size:8.5px;color:#5b6b85;display:flex;justify-content:space-between}
+    @media print{.noprint{display:none}}
+  </style></head><body>
+  <div class="stripe"></div>
+  <div class="page">
+    <div class="hd">
       <div class="brand"><img src="${logo}" alt="logo"><div>
         <div class="nm">E&amp;G ENERGY GROUP S.A.S</div>
-        <div class="sl">Tu aliado técnico en suministro industrial</div>
-        <div class="ad">Carrera 7 # 12-61, Chía, Cundinamarca, Colombia</div></div></div>
-      <div class="docbox"><div class="t">REMISIÓN</div><div class="n">N° ${_remiEsc(c.remision)}</div>
-        <div class="f">${_remiEsc(c.fecha?c.fecha.split('-').reverse().join('/'):'')}</div></div>
+        <div class="sl">Suministro Industrial &middot; Sector Petrolero</div>
+        <div class="ad">Carrera 7 # 12-61, Chía, Cundinamarca, Colombia &middot; +57 320 494 7227</div></div></div>
+      <div class="ctrl">
+        <div><span class="k">Documento</span><span class="vv">REMISIÓN</span></div>
+        <div><span class="k">N°</span><span class="vv mono">${_remiEsc(c.remision)}</span></div>
+        <div><span class="k">Fecha</span><span class="mono" style="font-size:12px;font-weight:700">${_remiEsc(c.fecha?c.fecha.split('-').reverse().join('/'):'—')}</span></div>
+        <div><span class="k">Página</span><span class="mono" style="font-size:12px;font-weight:700">1 / 1</span></div>
+      </div>
     </div>
-    <div class="meta">
-      <div class="mcard"><div class="l">Cliente / Recibido por</div><div class="v">${_remiEsc(c.cliente)||'—'}</div></div>
-      <div class="mcard"><div class="l">Lugar / Dirección</div><div class="v">${_remiEsc(c.lugar)||'—'}</div></div>
-      <div class="mcard"><div class="l"># Orden de compra</div><div class="v">${_remiEsc(c.oc)||'—'}</div></div>
-      <div class="mcard"><div class="l">Contiene</div><div class="v">${_remiEsc(c.contiene)||'—'}</div></div>
+    <div class="titlebar">REMISIÓN DE ENTREGA <small>&middot; DELIVERY NOTE</small></div>
+    <table class="data">
+      <tr><td class="k">Cliente / Recibido por</td><td>${_remiEsc(c.cliente)||'—'}</td><td class="k"># Orden de compra</td><td class="mono">${_remiEsc(c.oc)||'—'}</td></tr>
+      <tr><td class="k">Lugar / Dirección</td><td colspan="3">${_remiEsc(c.lugar)||'—'}</td></tr>
+      <tr><td class="k">Contiene</td><td colspan="3">${_remiEsc(c.contiene)||'—'}</td></tr>
+    </table>
+    <div class="sechd">Elementos entregados</div>
+    <table class="it"><thead><tr><th style="width:34px">Ítem</th><th style="width:46px">Cant.</th><th>Descripción</th><th style="width:84px">Marca</th><th style="width:72px"># Colada</th><th style="width:84px">Desviación</th></tr></thead><tbody>${filas}</tbody></table>
+    <div class="sechd">Observaciones</div>
+    <div class="obs">${_remiEsc(c.observaciones)||'—'}</div>
+    <div class="firma">
+      <div class="box"><div class="ttl">Entregado por &mdash; E&amp;G Energy Group</div><div class="ln">Nombre y firma</div><div class="ln2">Fecha</div></div>
+      <div class="box"><div class="ttl">Recibido por &mdash; Cliente</div><div class="ln">Nombre / C.C.</div><div class="ln2">Firma y sello</div></div>
     </div>
-    <table class="it"><thead><tr><th style="width:32px">#</th><th style="width:48px">Cant.</th><th>Descripción</th><th style="width:88px">Marca</th><th style="width:78px">Colada</th><th style="width:88px">Desviación</th></tr></thead><tbody>${filas}</tbody></table>
-    ${c.observaciones?`<div class="obs"><b>Observaciones:</b> ${_remiEsc(c.observaciones)}</div>`:''}
-    <div class="firma"><div>Entregado por<br><span style="font-size:9px;color:#999">E&amp;G Energy Group</span></div><div>Recibido por<br><span style="font-size:9px;color:#999">${_remiEsc(c.cliente)||''}</span></div></div>
-    <div class="foot"><b>E&amp;G ENERGY GROUP S.A.S</b> &middot; Carrera 7 # 12-61, Chía &middot; +57 320 494 7227 &middot; comercial1@eygenergygroup.com &middot; www.eygenergygroup.com</div>
-    <button class="noprint" onclick="window.print()" style="margin-top:18px;padding:9px 18px;background:#0F2B5B;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px">🖨️ Imprimir / Guardar PDF</button>
+    <div class="foot"><span>Documento generado por la plataforma ENERGY</span><span>comercial1@eygenergygroup.com &middot; www.eygenergygroup.com</span></div>
+    <button class="noprint" onclick="window.print()" style="margin-top:16px;padding:9px 18px;background:#0F2B5B;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px">🖨️ Imprimir / Guardar PDF</button>
   </div>
   <script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script></body></html>`;
   const w=window.open('','_blank'); if(!w){showToast('Permite ventanas emergentes para el PDF','error');return;}
@@ -10876,6 +10903,28 @@ function remiRotulo(){
     <script>window.onload=function(){setTimeout(function(){window.print();},300);}<\/script></body></html>`;
   const w=window.open('','_blank'); if(!w){showToast('Permite ventanas emergentes','error');return;}
   w.document.write(html); w.document.close();
+}
+
+// ═══ RESPALDO DE SEGURIDAD (descarga manual) ════════════════════
+async function descargarRespaldo(){
+  if(!abs_canAjuste()) return showToast('Solo Andrea y Alberto pueden descargar respaldos','error');
+  const st=document.getElementById('respaldo-status');
+  const tablas=['productos','kardex','familias','conteos','conteo_items','remisiones'];
+  try{
+    const backup={ generado:new Date().toISOString(), por:currentUser?.name||'', tablas:{} };
+    for(const t of tablas){
+      if(st) st.textContent='Respaldando '+t+'...';
+      try{ backup.tablas[t]=await absFetch(t+'?select=*&limit=100000')||[]; }
+      catch(e){ backup.tablas[t]={error:e.message}; }
+    }
+    const resumen=tablas.map(t=>t+': '+(Array.isArray(backup.tablas[t])?backup.tablas[t].length:'error')).join(' · ');
+    const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='respaldo_energy_'+new Date().toISOString().split('T')[0]+'.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    if(st) st.textContent='✓ Respaldo descargado — '+resumen;
+    showToast('Respaldo descargado ✓','ok');
+  }catch(e){ if(st) st.textContent='Error: '+e.message; showToast('Error: '+e.message,'error'); }
 }
 
 function absCalcularRotacion() {
