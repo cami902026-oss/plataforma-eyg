@@ -10474,7 +10474,7 @@ function absCartSearch() {
   sug.style.display='';
   sug.innerHTML=ms.map(p=>`<div class="abs-sug-item" onclick="absCartAdd('${p.codigo}')">
     <span style="color:var(--gold);font-size:12px;min-width:90px">${p.codigo}</span>
-    <span style="font-size:13px;flex:1">${p.descripcion}</span>
+    <span style="font-size:13px;flex:1">${p.descripcion}${(p.marca||p.proveedor)?`<br><span style="font-size:11px;color:var(--text-muted)">${p.marca||'—'}${p.proveedor?' · '+p.proveedor:''}</span>`:''}</span>
     <span style="font-size:12px;color:${p.stock_actual>0?'var(--green)':'var(--red)'}">Stock: ${p.stock_actual}</span>
   </div>`).join('');
 }
@@ -10483,7 +10483,7 @@ function absCartAdd(codigo) {
   if(!abs_cart_tipo) return showToast('Primero elige ENTRADA o SALIDA','error');
   const p=abs_productos.find(x=>x.codigo===codigo); if(!p) return;
   if(abs_cart.find(x=>x.codigo===codigo)){ showToast('Ese producto ya esta en el carrito','info'); }
-  else abs_cart.push({codigo:p.codigo,descripcion:p.descripcion,stock_actual:p.stock_actual,costo_compra:p.costo_compra||0,cantidad:1,lote:'',colada:''});
+  else abs_cart.push({codigo:p.codigo,descripcion:p.descripcion,stock_actual:p.stock_actual,costo_compra:p.costo_compra||0,marca:p.marca||'',proveedor:p.proveedor||'',cantidad:1,lote:'',colada:''});
   const inp=document.getElementById('abs-cart-search'); if(inp) inp.value='';
   const sug=document.getElementById('abs-cart-suggestions'); if(sug){sug.innerHTML='';sug.style.display='none';}
   absCartRender();
@@ -10513,7 +10513,7 @@ function absCartRender() {
     const extraCampo=esSalida?'colada':'lote';
     return `<tr>
       <td><code style="font-size:11px;color:var(--gold)">${it.codigo}</code></td>
-      <td style="font-size:13px">${it.descripcion}</td>
+      <td style="font-size:13px">${it.descripcion}${(it.marca||it.proveedor)?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${it.marca||'—'}${it.proveedor?' · '+it.proveedor:''}</div>`:''}</td>
       <td style="color:${sc};font-weight:700">${it.stock_actual}</td>
       <td><input type="number" min="0.01" step="0.01" value="${it.cantidad}" onchange="absCartSet('${it.codigo}','cantidad',this.value);absCartRender()" style="width:90px;padding:6px 8px;background:rgba(15,43,91,0.5);border:1px solid ${insuf?'var(--red)':'var(--border)'};border-radius:6px;color:#fff;font-size:13px">${insuf?'<div style="color:var(--red);font-size:10px;margin-top:2px">Supera stock</div>':''}</td>
       <td><input type="text" value="${(extraVal||'').replace(/"/g,'&quot;')}" placeholder="${esSalida?'Colada':'Lote'}" onchange="absCartSet('${it.codigo}','${extraCampo}',this.value)" style="width:120px;padding:6px 8px;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:6px;color:#fff;font-size:13px"></td>
