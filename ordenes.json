@@ -993,6 +993,13 @@
     "cliente": "SAR ENERGY S.A.S",
     "desc": "FLAME ARRESTOR 4\" ANSI 150 - TUBERIA Y VALVULAS MARIPOSA FLOW BACK",
     "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "pending",
@@ -1002,7 +1009,12 @@
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1015,14 +1027,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-03T14:49:00.063Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-03T14:49:00.063Z"
+    "createdAt": "2026-06-03T14:49:11.139Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-03T14:49:11.139Z",
+    "updatedBy": "andrea"
   }
 ]
