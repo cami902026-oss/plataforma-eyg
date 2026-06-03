@@ -10612,6 +10612,7 @@ async function absCartGuardar() {
   if(fallos.length) showToast(ok+' registrado(s) - '+fallos.length+' con error: '+fallos.join(', '),'error');
   else { showToast(ok+' movimiento(s) registrado(s) ✓','ok'); const r=document.getElementById('abs-cart-remision'); if(r)r.value=''; const n=document.getElementById('abs-cart-notas'); if(n)n.value=''; }
   absCartRender(); absRenderMovHoy(); absRenderStock(); absRenderDashboard();
+  if(typeof absRenderKardex==='function') absRenderKardex();
   if(typeof absCheckStockCritico==='function') absCheckStockCritico();
 }
 
