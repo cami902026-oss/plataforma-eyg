@@ -3950,6 +3950,7 @@ async function doLogin() {
     return;
   }
   currentUser = u;
+  try { localStorage.setItem('eyg_last_activity', String(Date.now())); } catch(_) {}
   if (document.getElementById('remember').checked) localStorage.setItem('max_session', JSON.stringify(u));
   // Aviso a Gerencia: usuario conectado
   try {
@@ -3983,7 +3984,47 @@ function doLogout() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='none';
 }
+// ===== CIERRE DE SESIÓN POR INACTIVIDAD (8 horas sin uso) =====
+const INACTIVIDAD_MS = 8 * 60 * 60 * 1000; // 8 horas
+function _marcarActividad() {
+  try {
+    const now = Date.now();
+    const last = parseInt(localStorage.getItem('eyg_last_activity') || '0', 10);
+    if (now - last > 30000) localStorage.setItem('eyg_last_activity', String(now)); // throttle 30s
+  } catch(_) {}
+}
+function _inactividadExcedida() {
+  try {
+    const last = parseInt(localStorage.getItem('eyg_last_activity') || '0', 10);
+    return last > 0 && (Date.now() - last) > INACTIVIDAD_MS;
+  } catch(_) { return false; }
+}
+function _cerrarPorInactividad() {
+  try { localStorage.removeItem('max_session'); } catch(_) {}
+  currentUser = null;
+  const a = document.getElementById('access-screen');
+  const l = document.getElementById('login-screen');
+  const ap = document.getElementById('app');
+  if (ap) ap.style.display = 'none';
+  if (sessionStorage.getItem('eyg_access') === '1') {
+    if (l) l.style.display = 'flex';
+    if (a) a.style.display = 'none';
+  } else {
+    if (a) a.style.display = 'flex';
+    if (l) l.style.display = 'none';
+  }
+  try { showToast('🔒 Sesión cerrada por inactividad. Ingresa de nuevo.', 'info', { durationMs: 6000 }); } catch(_) {}
+}
+['click','keydown','mousemove','touchstart','scroll'].forEach(function(ev) {
+  document.addEventListener(ev, _marcarActividad, { passive: true });
+});
+setInterval(function() {
+  if (currentUser && _inactividadExcedida()) _cerrarPorInactividad();
+}, 60000);
+
 function checkSession() {
+  // Cierre por inactividad: si pasaron >8h sin uso, no auto-iniciar la sesión guardada
+  if (_inactividadExcedida()) { try { localStorage.removeItem('max_session'); } catch(_) {} }
   // Limpiar sesiones viejas de versiones anteriores
   const s = localStorage.getItem('max_session');
   if (s) {
