@@ -806,8 +806,10 @@
     ],
     "createdAt": "2026-06-01T20:01:37.378Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-02T02:18:39.649Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-06-03T15:04:34.288Z",
+    "updatedBy": "andrea",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-06-03T15:04:34.287Z"
   },
   {
     "id": "poc_1779461488471",
@@ -986,6 +988,51 @@
     "deleted": true,
     "deletedAt": "2026-05-27T21:57:52.323Z",
     "deletedBy": "andrea"
+  },
+  {
+    "id": "poc_1780498017972",
+    "num": "ODC-00004329",
+    "cliente": "SAR ENERGY S.A.S",
+    "desc": "FLAME ARRESTOR 4\" ANSI 150 - TUBERIA Y VALVULAS MARIPOSA FLOW BACK",
+    "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-06-03T14:49:11.139Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-03T14:49:11.139Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1780498255267",
