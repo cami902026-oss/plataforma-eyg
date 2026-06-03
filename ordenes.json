@@ -988,18 +988,12 @@
     "deletedBy": "andrea"
   },
   {
-    "id": "poc_1780498017972",
-    "num": "ODC-00004329",
+    "id": "poc_1780498255267",
+    "num": "ODC-00004325",
     "cliente": "SAR ENERGY S.A.S",
-    "desc": "FLAME ARRESTOR 4\" ANSI 150 - TUBERIA Y VALVULAS MARIPOSA FLOW BACK",
+    "desc": "VALV BOLA 3/4\" NPT H X H X 1000 PSI - INSTRUMENTACION MARIPOSA FLOW BACK",
+    "valor": 285588,
     "estado": "activo",
-    "fechaIngreso": "",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
-    },
     "stages": [
       {
         "s": "pending",
@@ -1009,12 +1003,7 @@
       {
         "s": "pending",
         "f": "",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
+        "n": ""
       },
       {
         "s": "pending",
@@ -1027,9 +1016,16 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-06-03T14:49:11.139Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-03T14:49:11.139Z",
-    "updatedBy": "andrea"
+    "createdAt": "2026-05-27T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-06-03T14:50:55.267Z",
+    "updatedBy": "Auto (correo)",
+    "origenCorreo": {
+      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
+      "subject": "RV: ORDEN DE COMPRA SAR -ENERGY GROUP",
+      "fecha": "2026-06-03T14:50:55.267Z",
+      "fechaCreacionOC": "2026-05-27",
+      "fechaCompra": "2026-05-27"
+    }
   }
 ]
