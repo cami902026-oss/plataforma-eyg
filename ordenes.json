@@ -1079,10 +1079,9 @@
   },
   {
     "id": "poc_1780670634997",
-    "num": "1011",
+    "num": 1011,
     "cliente": "CONSORCIO CONSTRUMONTAJES",
     "desc": "Accesorios hidráulicos en acero inoxidable SS-316 y A-105",
-    "valor": 4106447,
     "estado": "activo",
     "stages": [
       {
@@ -1106,24 +1105,19 @@
         "n": ""
       }
     ],
-    "createdAt": "2024-10-12T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
     "updatedAt": "2026-06-05T14:43:54.997Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA CONSTRUMONTAJES - ENERGY GROUP",
-      "fecha": "2026-06-05T14:43:54.997Z",
-      "fechaCreacionOC": "2024-10-12",
-      "fechaCompra": "2024-10-12"
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
     }
   },
   {
     "id": "poc_1780678134260",
-    "num": "13134",
+    "num": 13134,
     "cliente": "E&G ENERGY GROUP SAS",
     "desc": "Conector tipo GAR 3\" y Spiral Wnd Gkt - Consumibles de mantenimiento",
-    "valor": 694359,
     "estado": "activo",
     "stages": [
       {
@@ -1147,24 +1141,21 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-06-01T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-06-05T16:48:54.257Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA  HIDROCASANARE - ENERGY GROUP",
-      "fecha": "2026-06-05T16:48:54.257Z",
-      "fechaCreacionOC": "2026-06-01",
-      "fechaCompra": "2026-06-01"
-    }
+    "updatedAt": "2026-06-05T21:31:44.224Z",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "lockedBy": "andrea",
+    "lockedAt": "2026-06-05T21:31:44.224Z"
   },
   {
     "id": "poc_1780685275512",
     "num": "ODC-AA-MEC-SKID-469-24-549",
     "cliente": "E&G ENERGY GROUP SAS",
     "desc": "Tubería acero inoxidable SMLS y accesorios filtros",
-    "valor": 2654209,
     "estado": "activo",
     "stages": [
       {
@@ -1188,16 +1179,12 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-04-20T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
     "updatedAt": "2026-06-05T18:47:55.512Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "Orden de compra skid experts - energy group",
-      "fecha": "2026-06-05T18:47:55.512Z",
-      "fechaCreacionOC": "2026-04-20",
-      "fechaCompra": "2026-06-05"
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
     }
   }
 ]
