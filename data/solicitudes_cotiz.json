@@ -284,10 +284,10 @@
     "urgencia": "media",
     "correoOrigen": "Asistente Administrativo <asistente.administrativo@eygenergygroup.com>",
     "asuntoOrigen": "Cotización consorcio milenio",
-    "estado": "en_cotizacion",
+    "estado": "cancelada",
     "cotizacionId": null,
     "createdAt": "2026-06-02T15:59:43.652Z",
-    "updatedAt": "2026-06-02T16:01:41.720Z",
+    "updatedAt": "2026-06-03T21:30:58.332Z",
     "createdBy": "sistema"
   },
   {
@@ -578,62 +578,7 @@
     "estado": "en_cotizacion",
     "cotizacionId": null,
     "createdAt": "2026-06-04T20:49:40.909Z",
-    "updatedAt": "2026-06-05T13:11:10.933Z",
-    "createdBy": "sistema"
-  },
-  {
-    "id": "SOL-20260605-433",
-    "fecha": "2026-06-05T16:43:39.555Z",
-    "cliente": "Cliente PME",
-    "contacto": "Juan David",
-    "productos": [
-      {
-        "descripcion": "Válvula Bola 1\" RF, Bridada x 150",
-        "cantidad": "1 und"
-      },
-      {
-        "descripcion": "Válvula Bola 3/4\" RF, Bridada x 150",
-        "cantidad": "1 und"
-      },
-      {
-        "descripcion": "Brida 1\" SW, SCH 80, RF, x150",
-        "cantidad": "2 und"
-      },
-      {
-        "descripcion": "Brida 3/4\" SW, SCH 80, RF, x150",
-        "cantidad": "2 und"
-      },
-      {
-        "descripcion": "Tee 3/4\" SW",
-        "cantidad": "1 und"
-      },
-      {
-        "descripcion": "Codo 90° 1\" SW",
-        "cantidad": "1 und"
-      },
-      {
-        "descripcion": "Espirometalicos 1\"x150",
-        "cantidad": "2 und"
-      },
-      {
-        "descripcion": "Espirometalicos 3/4\"x150",
-        "cantidad": "2 und"
-      },
-      {
-        "descripcion": "Espiral 1/2\" x 2,5\" long",
-        "cantidad": "8 und"
-      }
-    ],
-    "descripcion": "1 und — Válvula Bola 1\" RF, Bridada x 150 | 1 und — Válvula Bola 3/4\" RF, Bridada x 150 | 2 und — Brida 1\" SW, SCH 80, RF, x150 | 2 und — Brida 3/4\" SW, SCH 80, RF, x150 | 1 und — Tee 3/4\" SW | 1 und — Codo 90° 1\" SW | 2 und — Espirometalicos 1\"x150 | 2 und — Espirometalicos 3/4\"x150 | 8 und — Espiral 1/2\" x 2,5\" long",
-    "formaPago": "Contado",
-    "observaciones": "Lugar de entrega: Monterrey. Asunto indica 'COTIZACIÓN ENERGY GROUP'. Correo enviado desde iPhone por Andrea Bernal (correo interno de E&G Energy Group).",
-    "urgencia": "media",
-    "correoOrigen": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-    "asuntoOrigen": "COTIZACIÓN ENERGY GROUP ",
-    "estado": "pendiente",
-    "cotizacionId": null,
-    "createdAt": "2026-06-05T16:43:39.555Z",
-    "updatedAt": "2026-06-05T16:43:39.555Z",
+    "updatedAt": "2026-06-05T16:44:32.498Z",
     "createdBy": "sistema"
   }
 ]
