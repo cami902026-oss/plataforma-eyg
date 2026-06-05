@@ -1173,6 +1173,13 @@
     "cliente": "E&G ENERGY GROUP SAS",
     "desc": "Tubería acero inoxidable SMLS y accesorios filtros",
     "estado": "activo",
+    "fechaIngreso": "2026-06-05",
+    "valor": 2654209,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "pending",
@@ -1182,7 +1189,12 @@
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1195,14 +1207,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-05T21:37:01.977Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-05T21:37:01.977Z"
+    "createdAt": "2026-06-05T21:37:33.462Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-05T21:37:33.462Z",
+    "updatedBy": "andrea"
   }
 ]
