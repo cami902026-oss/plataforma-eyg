@@ -1079,20 +1079,32 @@
   },
   {
     "id": "poc_1780670634997",
-    "num": 1011,
+    "num": "1011",
     "cliente": "CONSORCIO CONSTRUMONTAJES",
     "desc": "Accesorios hidráulicos en acero inoxidable SS-316 y A-105",
     "estado": "activo",
+    "fechaIngreso": "2026-06-05",
+    "valor": 4106447,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-05",
+        "n": "BODEGA\nCODIFER\nFERREINSTRUMENTACION\nSOLVALFER\n"
       },
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1105,15 +1117,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-05T21:32:24.361Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-05T21:32:24.361Z"
+    "createdAt": "2026-06-05T21:33:05.408Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-05T21:33:05.408Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1780678134260",
