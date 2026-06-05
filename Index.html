@@ -2338,6 +2338,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <input type="date" id="remi-desde" onchange="remiRenderLista()" title="Desde">
             <input type="date" id="remi-hasta" onchange="remiRenderLista()" title="Hasta">
             <button class="btn btn-ghost" onclick="remiCargar()" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
+            <button class="btn btn-ghost" id="remi-btn-import" onclick="document.getElementById('remi-file-excel').click()" style="padding:8px 14px;font-size:12px;display:none;">📥 Importar Excel</button>
+            <input type="file" id="remi-file-excel" accept=".xlsx,.xlsm,.xls" style="display:none" onchange="remiImportarExcel(this)">
             <button class="btn btn-primary" id="remi-btn-nueva" onclick="remiNueva()" style="padding:8px 16px;font-size:13px;">➕ Nueva remisión</button>
           </div>
           <div id="remi-lista-count" class="abs-count"></div>
@@ -2380,6 +2382,26 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="btn btn-secondary" onclick="remiPDF()" style="width:auto;">📄 Descargar PDF</button>
               <button class="btn btn-secondary" onclick="remiExcel()" style="width:auto;">📊 Descargar Excel</button>
               <button class="btn btn-secondary" onclick="remiRotulo()" style="width:auto;">🏷️ Rótulo</button>
+            </div>
+          </div>
+        </div>
+        <!-- MODAL IMPORTAR EXCEL -->
+        <div id="remi-import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
+          <div style="background:var(--card-bg,#0f1d33);border:1px solid rgba(255,255,255,.12);border-radius:14px;max-width:860px;width:100%;max-height:85vh;display:flex;flex-direction:column;padding:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <h3 style="margin:0;font-family:'Montserrat',sans-serif;color:#fff;">📥 Importar remisiones desde Excel</h3>
+              <button onclick="remiImportCerrar()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer">×</button>
+            </div>
+            <div id="remi-import-resumen" style="font-size:13px;color:var(--text-muted);margin-bottom:10px;"></div>
+            <div style="overflow-y:auto;flex:1;border:1px solid rgba(255,255,255,.08);border-radius:8px;">
+              <table class="abs-table" style="margin:0">
+                <thead><tr><th style="width:34px"><input type="checkbox" id="remi-import-todas" onchange="remiImportToggleTodas(this.checked)"></th><th>N° Remisión</th><th>Fecha</th><th>Cliente</th><th>Ítems</th><th>Estado</th></tr></thead>
+                <tbody id="remi-import-tbody"></tbody>
+              </table>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
+              <button class="btn btn-ghost" onclick="remiImportCerrar()" style="width:auto;padding:8px 16px;">Cancelar</button>
+              <button class="btn btn-primary" id="remi-import-btn-subir" onclick="remiImportConfirmar()" style="width:auto;padding:8px 18px;">⬆️ Subir seleccionadas a la base de datos</button>
             </div>
           </div>
         </div>
@@ -10699,6 +10721,7 @@ function _remiEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(
 
 async function remiInit(){
   const nb=document.getElementById('remi-btn-nueva'); if(nb) nb.style.display=remiCanUse()?'':'none';
+  const ib=document.getElementById('remi-btn-import'); if(ib) ib.style.display=remiCanImport()?'':'none';
   remiVolver();
   if(!remi_rows.length) await remiCargar(); else remiRenderLista();
 }
@@ -10723,7 +10746,9 @@ function remiRenderLista(){
   const grupos=remiGrupos();
   let lista=Object.keys(grupos).map(n=>{
     const its=grupos[n]; const h=its[0];
-    return {remision:n, fecha:h.fecha||'', cliente:h.cliente||'', oc:h.oc||'', items:its.length,
+    // Consulta rápida: si la búsqueda coincide con descripciones, mostrar esos ítems debajo
+    const matches=(q.length>=3)?its.filter(x=>String(x.descripcion||'').toLowerCase().includes(q)).slice(0,4):[];
+    return {remision:n, fecha:h.fecha||'', cliente:h.cliente||'', oc:h.oc||'', items:its.length, _match:matches,
       _txt:(n+' '+(h.cliente||'')+' '+(h.oc||'')+' '+its.map(x=>x.descripcion||'').join(' ')).toLowerCase()};
   });
   lista=lista.filter(r=>{
@@ -10744,7 +10769,7 @@ function remiRenderLista(){
       <button onclick="remiAbrir('${_remiEsc(r.remision)}')" style="background:rgba(26,58,143,.4);border:1px solid rgba(26,58,143,.6);color:#90cdf4;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">👁 Ver</button>
       <button onclick="remiAbrir('${_remiEsc(r.remision)}',true)" title="Descargar PDF" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:var(--gold);padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">📄</button>
     </td>
-  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Sin remisiones</td></tr>';
+  </tr>${(r._match&&r._match.length)?`<tr><td></td><td colspan="5" style="padding:2px 8px 10px;font-size:11.5px;color:var(--text-muted);border-top:none">${r._match.map(it=>`↳ ${it.cantidad!=null?('<b style="color:var(--gold)">'+_remiEsc(it.cantidad)+'</b> × '):''}${_remiEsc(it.descripcion)}${it.marca?(' · <i>'+_remiEsc(it.marca)+'</i>'):''}`).join('<br>')}</td></tr>`:''}`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Sin remisiones</td></tr>';
 }
 function remiVolver(){
   remi_current=null;
@@ -10752,7 +10777,8 @@ function remiVolver(){
   const e=document.getElementById('remi-view-editor'); if(e) e.style.display='none';
 }
 function remiNextNum(){
-  let mx=0; remi_rows.forEach(r=>{ const n=parseInt(String(r.remision).replace(/\D/g,'')); if(!isNaN(n)&&n>mx) mx=n; });
+  // Solo la parte ANTES del guion: "26135-1" cuenta como 26135 (no 261351)
+  let mx=0; remi_rows.forEach(r=>{ const n=parseInt(String(r.remision).split('-')[0].replace(/\D/g,'')); if(!isNaN(n)&&n>mx) mx=n; });
   return mx>0 ? String(mx+1) : '26150';
 }
 function remiNueva(){
@@ -10954,6 +10980,143 @@ function remiRotulo(){
   <script>window.onload=function(){setTimeout(function(){window.print();},600);}<\/script></body></html>`;
   const w=window.open('','_blank'); if(!w){showToast('Permite ventanas emergentes','error');return;}
   w.document.write(html); w.document.close();
+}
+
+// ═══ REMISIONES: IMPORTAR EXCEL Y COMPARAR CON LA BASE DE DATOS ═══
+let remi_import = null; // { grupos:{num:{fecha,cliente,lugar,oc,observaciones,items:[]}}, estados:{num:'nueva'|'difiere'|'igual'} }
+function remiCanImport(){ return currentUser && ['andrea','alberto'].includes((currentUser.email||'').toLowerCase()); }
+function _remiNormTxt(s){ return String(s==null?'':s).replace(/[\s \t]+/g,' ').trim(); }
+function _remiFechaExcel(v){
+  if(v==null||v==='') return null;
+  if(v instanceof Date) return v.getFullYear()+'-'+String(v.getMonth()+1).padStart(2,'0')+'-'+String(v.getDate()).padStart(2,'0');
+  if(typeof v==='number'){ const d=new Date(Math.round((v-25569)*86400000)); return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0'); }
+  const s=String(v).trim(); const m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if(m){ const y=m[3].length===2?'20'+m[3]:m[3]; return y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0'); }
+  return s.slice(0,10);
+}
+function _remiFirma(items){ // firma para detectar diferencias (descripciones + cantidades, normalizadas)
+  return items.map(it=>_remiNormTxt(it.descripcion).toLowerCase()+'|'+(it.cantidad==null||it.cantidad===''?'':parseFloat(it.cantidad))).sort().join('~');
+}
+async function remiImportarExcel(input){
+  const file=input.files&&input.files[0]; input.value='';
+  if(!file) return;
+  if(!remiCanImport()) return showToast('Solo Andrea y Alberto pueden importar','error');
+  try{
+    showToast('Leyendo Excel...','info');
+    if(!remi_rows.length) await remiCargar();
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+    // Buscar la hoja BD_REMISIONES (o la primera cuyo encabezado tenga REMISION + DESCRIPCION)
+    let ws=wb.Sheets['BD_REMISIONES'], wsName='BD_REMISIONES';
+    if(!ws){
+      for(const n of wb.SheetNames){
+        const head=(XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,range:0,raw:true})[0]||[]).map(h=>_remiNormTxt(h).toUpperCase());
+        if(head.some(h=>h.startsWith('REMISION'))&&head.some(h=>h.startsWith('DESCRIPCION'))){ ws=wb.Sheets[n]; wsName=n; break; }
+      }
+    }
+    if(!ws) return showToast('No encontré la hoja BD_REMISIONES en el archivo','error');
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
+    const head=rows[0].map(h=>_remiNormTxt(h).toUpperCase().replace(/^#\s*/,''));
+    const col={}; ['REMISION','FECHA','CLIENTE','LUGAR','OC','ITEM','DESCRIPCION','CANTIDAD','MARCA','COLADA','DESVIACION','OBSERVACIONES'].forEach(c=>{
+      col[c]=head.findIndex(h=>h.startsWith(c));
+    });
+    if(col.REMISION<0||col.DESCRIPCION<0) return showToast('La hoja "'+wsName+'" no tiene columnas REMISION/DESCRIPCION','error');
+    const grupos={};
+    for(let i=1;i<rows.length;i++){
+      const r=rows[i];
+      const num=_remiNormTxt(r[col.REMISION]); if(!num) continue;
+      const desc=_remiNormTxt(r[col.DESCRIPCION]); if(!desc) continue;
+      const g=grupos[num]=grupos[num]||{ remision:num, fecha:_remiFechaExcel(r[col.FECHA]), cliente:_remiNormTxt(r[col.CLIENTE]),
+        lugar:_remiNormTxt(col.LUGAR>=0?r[col.LUGAR]:''), oc:_remiNormTxt(col.OC>=0?r[col.OC]:''),
+        observaciones:_remiNormTxt(col.OBSERVACIONES>=0?r[col.OBSERVACIONES]:''), items:[] };
+      const cant=col.CANTIDAD>=0?r[col.CANTIDAD]:'';
+      // Dedupe: el Excel a veces tiene la misma remisión pegada dos veces (mismo # ítem + descripción + cantidad)
+      const dk=(col.ITEM>=0?_remiNormTxt(r[col.ITEM]):'')+'|'+desc.toLowerCase()+'|'+cant;
+      g._keys=g._keys||{}; if(g._keys[dk]) continue; g._keys[dk]=1;
+      g.items.push({ descripcion:desc, cantidad:(cant===''||cant==null)?null:parseFloat(cant),
+        marca:_remiNormTxt(col.MARCA>=0?r[col.MARCA]:''), colada:_remiNormTxt(col.COLADA>=0?r[col.COLADA]:''),
+        desviacion:_remiNormTxt(col.DESVIACION>=0?r[col.DESVIACION]:'') });
+      if(!g.observaciones&&col.OBSERVACIONES>=0) g.observaciones=_remiNormTxt(r[col.OBSERVACIONES]);
+    }
+    const enBD=remiGrupos();
+    const estados={};
+    Object.keys(grupos).forEach(n=>{
+      const bd=enBD[n];
+      if(!bd){ estados[n]='nueva'; return; }
+      const fBD=_remiFirma(bd), fEx=_remiFirma(grupos[n].items);
+      estados[n]=(fBD===fEx)?'igual':'difiere';
+    });
+    remi_import={ grupos, estados };
+    remiImportRender();
+  }catch(e){ console.error(e); showToast('Error leyendo el Excel: '+e.message,'error'); }
+}
+function remiImportRender(){
+  if(!remi_import) return;
+  const { grupos, estados }=remi_import;
+  const nums=Object.keys(grupos).sort((a,b)=>(parseInt(String(b).split('-')[0])||0)-(parseInt(String(a).split('-')[0])||0));
+  const nNueva=nums.filter(n=>estados[n]==='nueva').length;
+  const nDif=nums.filter(n=>estados[n]==='difiere').length;
+  const nIgual=nums.filter(n=>estados[n]==='igual').length;
+  const soloBD=Object.keys(remiGrupos()).filter(n=>!grupos[n]).length;
+  const res=document.getElementById('remi-import-resumen');
+  if(res) res.innerHTML=`El Excel tiene <b style="color:#fff">${nums.length}</b> remisiones: `+
+    `<b style="color:var(--green,#2EAA4A)">${nNueva} nuevas</b> (no están en la plataforma) · `+
+    `<b style="color:var(--gold)">${nDif} con diferencias</b> · `+
+    `<b>${nIgual} iguales</b>. Hay <b>${soloBD}</b> remisiones que solo existen en la plataforma (no se tocan).<br>`+
+    `Marca las que quieras subir — las nuevas se agregan; las que difieren se <b>reemplazan</b> con lo del Excel.`;
+  const badge={ nueva:'<span style="color:var(--green,#2EAA4A);font-weight:700">✦ Nueva</span>',
+    difiere:'<span style="color:var(--gold);font-weight:700">≠ Difiere</span>',
+    igual:'<span style="color:var(--text-muted)">= Igual</span>' };
+  const tb=document.getElementById('remi-import-tbody');
+  if(tb) tb.innerHTML=nums.map(n=>{ const g=grupos[n]; const st=estados[n];
+    return `<tr>
+      <td><input type="checkbox" class="remi-import-chk" value="${_remiEsc(n)}" ${st==='nueva'?'checked':''} ${st==='igual'?'disabled':''}></td>
+      <td><strong style="color:var(--gold)">${_remiEsc(n)}</strong></td>
+      <td style="font-size:12px">${g.fecha?g.fecha.split('-').reverse().join('/'):'—'}</td>
+      <td style="font-size:12px">${_remiEsc(g.cliente)||'—'}</td>
+      <td style="text-align:center">${g.items.length}</td>
+      <td style="font-size:12px">${badge[st]}</td>
+    </tr>`; }).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">El Excel no tiene remisiones válidas</td></tr>';
+  const todas=document.getElementById('remi-import-todas'); if(todas) todas.checked=false;
+  const m=document.getElementById('remi-import-modal'); if(m) m.style.display='flex';
+}
+function remiImportToggleTodas(on){
+  document.querySelectorAll('.remi-import-chk:not(:disabled)').forEach(c=>c.checked=on);
+}
+function remiImportCerrar(){ remi_import=null; const m=document.getElementById('remi-import-modal'); if(m) m.style.display='none'; }
+async function remiImportConfirmar(){
+  if(!remi_import) return;
+  if(!remiCanImport()) return showToast('No tienes permiso','error');
+  const sel=[...document.querySelectorAll('.remi-import-chk:checked')].map(c=>c.value);
+  if(!sel.length) return showToast('Marca al menos una remisión','error');
+  const { grupos, estados }=remi_import;
+  if(estados&&sel.some(n=>estados[n]==='difiere')){
+    if(!confirm('Las remisiones marcadas como "Difiere" se REEMPLAZARÁN con lo que dice el Excel. ¿Continuar?')) return;
+  }
+  const btn=document.getElementById('remi-import-btn-subir'); if(btn){ btn.disabled=true; btn.textContent='Subiendo...'; }
+  let ok=0, fail=0;
+  for(const n of sel){
+    const g=grupos[n]; if(!g) continue;
+    try{
+      if(estados[n]!=='nueva'){
+        await absFetch('remisiones?remision=eq.'+encodeURIComponent(n),{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+      }
+      const body=g.items.map((it,idx)=>({
+        remision:String(n), fecha:g.fecha||null, cliente:g.cliente, lugar:g.lugar, oc:g.oc,
+        item:idx+1, descripcion:it.descripcion, cantidad:it.cantidad,
+        marca:it.marca||'', colada:String(it.colada||''), desviacion:it.desviacion||'',
+        observaciones:g.observaciones||'', contiene:'', recibido_por:g.cliente,
+        created_by:(currentUser?.name||'—')+' (Excel)'
+      }));
+      await absFetch('remisiones',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify(body)});
+      ok++;
+      if(btn) btn.textContent=`Subiendo... ${ok}/${sel.length}`;
+    }catch(e){ console.error('import',n,e); fail++; }
+  }
+  if(btn){ btn.disabled=false; btn.textContent='⬆️ Subir seleccionadas a la base de datos'; }
+  showToast(`Importación: ${ok} remisiones subidas${fail?(' · '+fail+' con error'):''}`, fail?'error':'ok');
+  remiImportCerrar();
+  await remiCargar();
 }
 
 // ═══ RESPALDO DE SEGURIDAD (descarga manual) ════════════════════
