@@ -1115,20 +1115,32 @@
   },
   {
     "id": "poc_1780678134260",
-    "num": 13134,
-    "cliente": "E&G ENERGY GROUP SAS",
+    "num": "13134",
+    "cliente": "HIDROCASANARE",
     "desc": "Conector tipo GAR 3\" y Spiral Wnd Gkt - Consumibles de mantenimiento",
     "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-05",
+        "n": "MARIN\nBODEGA"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "active",
+        "f": "2026-06-06",
+        "n": "",
+        "envio": "entrega_mano",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1141,15 +1153,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-05T21:31:44.224Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-05T21:31:44.224Z"
+    "createdAt": "2026-06-05T21:32:19.250Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-05T21:32:19.250Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1780685275512",
