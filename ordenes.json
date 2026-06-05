@@ -724,13 +724,13 @@
     "num": "68226DPO00330",
     "cliente": "MAUREL & PROM COLOMBIA SOCIEDAD LTD",
     "desc": "UMINSITRO MATERIAL",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-12-05",
     "valor": 4460398,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-06-03",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -761,10 +761,8 @@
     ],
     "createdAt": "2026-06-01T18:48:00.449Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-05T21:34:22.912Z",
-    "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-05T21:34:22.912Z"
+    "updatedAt": "2026-06-05T21:34:32.068Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1780341835166",
