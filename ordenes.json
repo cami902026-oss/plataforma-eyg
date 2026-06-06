@@ -1218,16 +1218,28 @@
     "cliente": "COPCOL",
     "desc": "Caps, nipples y accesorios de tubería SCH 80 NPT",
     "estado": "activo",
+    "fechaIngreso": "2026-06-06",
+    "valor": 680680,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-06",
+        "n": "CODIFER\nINSTRUGASES"
       },
       {
-        "s": "pending",
+        "s": "active",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1240,14 +1252,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-06T15:30:29.474Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-06T15:30:29.474Z"
+    "createdAt": "2026-06-06T15:30:56.719Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-06T15:30:56.719Z",
+    "updatedBy": "andrea"
   }
 ]
