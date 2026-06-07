@@ -1,0 +1,41 @@
+name: 📊 Informe Comercial Diario (7 PM)
+
+on:
+  schedule:
+    # Lunes a Viernes a las 7:00 PM Colombia (UTC-5 = 00:00 UTC del día siguiente)
+    - cron: '0 0 * * 2-6'
+
+  # Permite ejecutar manualmente desde GitHub para pruebas
+  workflow_dispatch:
+
+jobs:
+  send-business-report:
+    runs-on: ubuntu-latest
+    name: 📧 Enviar informe comercial a Andrea
+
+    steps:
+      - name: 📥 Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Instalar dependencias
+        run: pip install openpyxl
+
+      - name: 📊 Generar y enviar informe
+        env:
+          MS_TENANT_ID:      ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:      ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET:  ${{ secrets.MS_CLIENT_SECRET }}
+          SENDER_EMAIL:      ${{ secrets.SENDER_EMAIL }}
+          # Solo Andrea recibe este informe
+          RECIPIENT_EMAILS:  'andrea.bernal@eygenergygroup.com'
+          SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:      ${{ secrets.SUPABASE_KEY }}
+        run: python scripts/business_report.py
+
+      - name: ✅ Confirmar envío
+        run: echo "Informe comercial enviado — $(date +'%Y-%m-%d %H:%M UTC')"
