@@ -7529,20 +7529,7 @@ function cotizGenerarPDF() {
       <div class="cond-v">${validez||''}</div>
     </div>
   </div>
-  <div class="cond" style="border-top:1px solid #000;">
-    <div class="cond-cell">
-      <div class="cond-h">VENDEDOR</div>
-      <div class="cond-v">${vendedor||''}</div>
-    </div>
-    <div class="cond-cell">
-      <div class="cond-h">ELABORÓ</div>
-      <div class="cond-v">${realizadaPor||''}</div>
-    </div>
-    <div class="cond-cell">
-      <div class="cond-h">APROBÓ</div>
-      <div class="cond-v">${aprobadaPor||''}</div>
-    </div>
-  </div>
+  <!-- VENDEDOR / ELABORÓ / APROBÓ quedan guardados internamente (BD) pero NO se imprimen al cliente -->
 </body></html>`;
   const w = window.open('', '_blank');
   if (!w) { showToast('Permite las ventanas emergentes para generar el PDF','error'); return; }
