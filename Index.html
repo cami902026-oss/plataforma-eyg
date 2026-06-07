@@ -3354,6 +3354,11 @@ async function _saveDataGH(filename, data, label) {
   if (filename === 'data/solicitudes_cotiz.json' && Array.isArray(data)) {
     data = await _solMergeConRemoto(data);
   }
+  // Mismo blindaje para cotizaciones: si dos equipos guardan a la vez, unir
+  // con lo que ya está en GitHub para no pisar cotizaciones de otros equipos.
+  if (filename === 'data/cotizaciones.json' && Array.isArray(data)) {
+    data = await _cotizMergeConRemoto(data);
+  }
   // Estrategia 1: si el dispositivo tiene PAT local, usarlo
   if (_ghToken()) return _saveDataGH_directPAT(filename, data, label);
   // Estrategia 2: si hay proxy de escritura configurado, enviar por ahí
@@ -3443,6 +3448,26 @@ async function _solMergeConRemoto(local) {
     });
     const unidas = Object.values(porId).sort((a, b) => String(a.fecha || '').localeCompare(String(b.fecha || '')));
     try { localStorage.setItem('max_solicitudes_cotiz', JSON.stringify(unidas)); } catch(_) {}
+    return unidas;
+  } catch(_) { return local; }
+}
+// Une las cotizaciones locales con las del repo por id (gana la de updatedAt
+// más reciente). Evita que el guardado desde un equipo borre cotizaciones
+// creadas/actualizadas en otro equipo que este aún no había sincronizado.
+async function _cotizMergeConRemoto(local) {
+  try {
+    const remoto = await _loadDataGH('data/cotizaciones.json');
+    if (!Array.isArray(remoto)) return local;
+    const porId = {};
+    remoto.forEach(c => { if (c && c.id) porId[c.id] = c; });
+    (local || []).forEach(c => {
+      if (!c || !c.id) return;
+      const rem = porId[c.id];
+      if (!rem || String(c.updatedAt || '') >= String(rem.updatedAt || '')) porId[c.id] = c;
+    });
+    const unidas = Object.values(porId).sort((a, b) =>
+      String(a.fecha || '').localeCompare(String(b.fecha || '')) || String(a.id || '').localeCompare(String(b.id || '')));
+    try { localStorage.setItem('max_bd_cotizaciones', JSON.stringify(unidas)); } catch(_) {}
     return unidas;
   } catch(_) { return local; }
 }
