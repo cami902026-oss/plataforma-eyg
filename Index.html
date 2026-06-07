@@ -772,6 +772,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="nav-item" id="nav-abastecimiento" onclick="navigate('abastecimiento')"><span class="icon">🏭</span>Abastecimiento</div>
       <div class="nav-item" onclick="navigate('remisiones')"><span class="icon">🧾</span>Remisiones</div>
       <div class="nav-item" onclick="navigate('compras')"><span class="icon">🛒</span>Plan de Compras</div>
+      <div class="nav-item" onclick="navigate('ayuda')"><span class="icon">❓</span>Ayuda</div>
       <div class="nav-item" onclick="navigate('configuracion')"><span class="icon">⚙️</span>Configuración</div>
     </nav>
     <div class="sidebar-footer">
@@ -2431,6 +2432,11 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- ===== AYUDA (manual según el usuario) ===== -->
+      <div class="page" id="page-ayuda">
+        <div id="ayuda-content" style="max-width:880px;"></div>
       </div>
 
       <!-- ===== PLAN DE COMPRAS ===== -->
@@ -4145,7 +4151,9 @@ async function doLogin() {
   }
   currentUser = u;
   try { localStorage.setItem('eyg_last_activity', String(Date.now())); } catch(_) {}
-  if (document.getElementById('remember').checked) localStorage.setItem('max_session', JSON.stringify(u));
+  try { localStorage.setItem('eyg_session_day', _hoyLocal()); } catch(_) {}
+  // La sesión se guarda SIEMPRE: la clave se pide una sola vez al día por equipo
+  localStorage.setItem('max_session', JSON.stringify(u));
   // Aviso a Gerencia: usuario conectado
   try {
     const hora = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
@@ -4178,8 +4186,10 @@ function doLogout() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='none';
 }
-// ===== CIERRE DE SESIÓN POR INACTIVIDAD (8 horas sin uso) =====
-const INACTIVIDAD_MS = 8 * 60 * 60 * 1000; // 8 horas
+// ===== CLAVE UNA SOLA VEZ AL DÍA POR EQUIPO =====
+// La sesión vale por el día calendario: la PRIMERA vez que se abre en el día
+// pide la clave; el resto del día ese mismo equipo no la vuelve a pedir.
+function _hoyLocal(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function _marcarActividad() {
   try {
     const now = Date.now();
@@ -4188,9 +4198,10 @@ function _marcarActividad() {
   } catch(_) {}
 }
 function _inactividadExcedida() {
+  // Expira solo cuando cambia el día calendario (antes era 8h de inactividad)
   try {
-    const last = parseInt(localStorage.getItem('eyg_last_activity') || '0', 10);
-    return last > 0 && (Date.now() - last) > INACTIVIDAD_MS;
+    const dia = localStorage.getItem('eyg_session_day') || '';
+    return dia !== '' && dia !== _hoyLocal();
   } catch(_) { return false; }
 }
 function _cerrarPorInactividad() {
@@ -4207,7 +4218,7 @@ function _cerrarPorInactividad() {
     if (a) a.style.display = 'flex';
     if (l) l.style.display = 'none';
   }
-  try { showToast('🔒 Sesión cerrada por inactividad. Ingresa de nuevo.', 'info', { durationMs: 6000 }); } catch(_) {}
+  try { showToast('🔒 Nuevo día — ingresa tu clave para continuar.', 'info', { durationMs: 6000 }); } catch(_) {}
 }
 ['click','keydown','mousemove','touchstart','scroll'].forEach(function(ev) {
   document.addEventListener(ev, _marcarActividad, { passive: true });
@@ -4217,7 +4228,7 @@ setInterval(function() {
 }, 60000);
 
 function checkSession() {
-  // Cierre por inactividad: si pasaron >8h sin uso, no auto-iniciar la sesión guardada
+  // Si cambió el día calendario, pedir la clave de nuevo (una vez al día por equipo)
   if (_inactividadExcedida()) { try { localStorage.removeItem('max_session'); } catch(_) {} }
   // Limpiar sesiones viejas de versiones anteriores
   const s = localStorage.getItem('max_session');
@@ -4228,6 +4239,8 @@ function checkSession() {
       const valid = USERS.find(u => u.email === saved.email && getUserPassword(u.email) === saved.password);
       if (valid) {
         currentUser = valid;
+        // Sesiones anteriores a este cambio: marcar el día de hoy
+        try { if(!localStorage.getItem('eyg_session_day')) localStorage.setItem('eyg_session_day', _hoyLocal()); } catch(_) {}
         document.getElementById('access-screen').style.display = 'none';
         document.getElementById('login-screen').style.display = 'none';
         initApp();
@@ -4369,11 +4382,12 @@ function navigate(page) {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
   currentPage = page;
-  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras'};
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',ayuda:'Ayuda'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
   if(page==='remisiones') remiInit();
   if(page==='compras') pcomInit();
+  if(page==='ayuda') ayudaRender();
   if(page==='cartera') { setTimeout(loadCarteraUrlUI, 100); }
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
   if(page==='historico') { setTimeout(historicoListMonths, 100); }
@@ -11885,6 +11899,80 @@ function pcomLogistico(){
   </body></html>`;
   const w = window.open('','_blank'); if(!w) return showToast('Permite ventanas emergentes para imprimir','error');
   w.document.write(html); w.document.close();
+}
+
+// ═══ MÓDULO AYUDA — manual integrado según el usuario ═══════════
+function ayudaRender(){
+  const el=document.getElementById('ayuda-content'); if(!el) return;
+  const u=currentUser||{}; const nombre=(u.name||'').split(' ')[0]||'';
+  const can=m=>{ try{ return userCanSeeModule(m); }catch(_){ return true; } };
+  const esAdmin=u.role==='ADMIN'||u.role==='JEFE';
+  const dS='background:rgba(15,29,51,.7);border:1px solid rgba(255,255,255,.1);border-radius:12px;margin-bottom:10px;overflow:hidden';
+  const sS='padding:13px 16px;cursor:pointer;font-weight:700;font-size:14px;color:#fff;list-style:none;display:flex;align-items:center;gap:10px';
+  const bS='padding:0 18px 14px;font-size:13px;color:#cdd6ec;line-height:1.7';
+  const paso=(n,txt)=>`<div style="display:flex;gap:10px;margin:6px 0;"><span style="background:var(--gold);color:#071525;font-weight:800;font-size:11px;min-width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-top:2px;">${n}</span><span>${txt}</span></div>`;
+  const tip=t=>`<div style="background:rgba(232,160,32,.12);border-left:3px solid var(--gold);border-radius:6px;padding:7px 11px;margin:8px 0;font-size:12px;">💡 ${t}</div>`;
+  const S=[];
+
+  if(can('cotizaciones')) S.push({t:'📋 Hacer una cotización', h:
+    paso(1,'Menú <b>Cotizaciones IA</b> → nueva cotización (o ábrela desde una solicitud que llegó por correo).')+
+    paso(2,'Llena cliente, contacto y correo. Agrega los ítems: descripción, cantidad, precio. Puedes buscar productos del inventario.')+
+    paso(3,'Guarda. El consecutivo LM sale solo.')+
+    paso(4,'Genera el <b>PDF para el cliente</b> — desde junio/2026 ya NO muestra vendedor, elaboró ni aprobó (eso queda guardado internamente).')+
+    paso(5,'Cuando el cliente decida, cambia el <b>estado</b>: Enviada → Aprobada / Facturada (pide # de factura) / Rechazada.')+
+    tip('Mantener el estado al día es lo que alimenta el informe de conversión que le llega a gerencia a las 7 PM.')});
+
+  if(can('remisiones')) S.push({t:'🧾 Hacer una remisión de despacho', h:
+    paso(1,'Menú <b>Remisiones</b> → <b>➕ Nueva remisión</b> (el número sale solo).')+
+    paso(2,'Lo más rápido: <b>📋 Traer de cotización</b> → busca por número o cliente → marca con ✓ los ítems que van → ajusta cantidades si es entrega parcial. El cliente se llena solo.')+
+    paso(3,'O agrega ítems manuales con <b>➕ Agregar ítem</b>.')+
+    paso(4,'Completa lugar, # OC del cliente y "Contiene" → <b>💾 Guardar</b>.')+
+    paso(5,'Imprime: <b>📄 PDF</b> (el cliente firma) y <b>🏷️ Rótulo</b> (se pega al paquete).')+
+    tip('En la lista, escribe 3+ letras de un material y te muestra en qué remisiones está, sin abrirlas.')});
+
+  if(can('compras')) S.push({t:'🛒 Plan de compras, OCs y ruta logística', h:
+    paso(1,'Menú <b>Plan de Compras</b> → <b>🛒 Nuevo plan</b> → elige la cotización. Se copian los ítems con proveedor y costo (la cotización NO se modifica).')+
+    paso(2,'Edita libre: ✂️ divide una línea entre dos proveedores, cambia cantidades, agrega líneas.')+
+    paso(3,'El resumen calcula solo IVA 19% y retefuente 2,5% (si la compra al proveedor ≥ $1.414.098 y no es autoretenedor).')+
+    paso(4,'<b>🧾 Generar OC</b> por proveedor (formato E6-FC-01, consecutivo automático) — y si un proveedor no la necesita, márcalo con <b>🚫</b>.')+
+    paso(5,'<b>🚚 Plan Logístico</b> imprime la orden de recogida para el conductor. El pago se marca PENDIENTE/PAGADO por proveedor.')});
+
+  if(can('abastecimiento')) S.push({t:'🏭 Inventario: stock, salidas, kardex y conteo', h:
+    paso(1,'<b>📦 Stock</b>: busca por código/descripción/marca. Verde = hay, rojo = agotado.')+
+    paso(2,'<b>➕➖ Movimientos</b>: busca el producto (2+ letras) → tócalo → ENTRADA o SALIDA → cantidad, colada, # remisión → 💾 Guardar. El stock se actualiza solo.')+
+    paso(3,'<b>📋 Kardex</b>: historial completo — quién, cuándo, cuánto y para qué remisión.')+
+    paso(4,'<b>🔢 Conteo Físico</b>: Iniciar conteo → digita lo contado → las diferencias se colorean → guardar.')+
+    tip('Entradas y ajustes: solo Andrea y Alberto. Salidas: también Yesid.')});
+
+  if(can('cartera')) S.push({t:'💰 Cartera', h:
+    paso(1,'Menú <b>Cartera</b> — se conecta al Agente de Cartera (el PC del agente debe estar encendido).')+
+    paso(2,'Verás los clientes con saldo pendiente ordenados por urgencia de mora.')+
+    paso(3,'Desde ahí se generan los correos de cobro con IA y se abre Outlook con el borrador listo.')});
+
+  if(can('procesos')) S.push({t:'🚛 Procesos O.C. (órdenes de clientes)', h:
+    paso(1,'Las OCs que llegan por correo se registran solas (robot cada hora, L-V).')+
+    paso(2,'En <b>Procesos O.C.</b> haz seguimiento del estado de cada orden hasta completarla.')});
+
+  S.push({t:'🔎 Trucos que sirven a todos', h:
+    paso(1,'<b>Ctrl + K</b>: búsqueda global — encuentra cotizaciones, tareas, OCs y más desde cualquier pantalla.')+
+    paso(2,'<b>Instalar como app</b>: en el celular Chrome → ⋮ → "Agregar a pantalla principal". En PC: ícono de instalar en la barra de direcciones.')+
+    paso(3,'La clave se pide <b>una sola vez al día</b> por equipo.')+
+    paso(4,'¿La plataforma se ve "vieja"? <b>Ctrl + Shift + R</b> (PC) o cerrar y abrir la app (celular).')});
+
+  S.push({t:'🆘 Solución de problemas', h:
+    paso(1,'<b>"No tienes permiso"</b>: esa acción es de otro rol (ej. entradas de inventario = Andrea/Alberto). Pídela a quien corresponde.')+
+    paso(2,'<b>"Cargando..." eterno</b>: revisa internet y toca 🔄 Recargar.')+
+    paso(3,'<b>Guardé algo mal</b>: en inventario, pide el ajuste a Andrea. En remisiones/planes, ábrelo, corrígelo y guarda de nuevo.')+
+    paso(4,'<b>"Cambios atascados"</b> en sincronización: avisa a Andrea (token de GitHub vencido — se renueva en 2 minutos).')+
+    paso(5,'<b>Olvidé mi clave</b>: Andrea o Alberto la restablecen en Configuración.')});
+
+  el.innerHTML=`
+    <div style="background:linear-gradient(135deg,#071525,#0F2B5B);border-radius:14px;padding:22px 24px;margin-bottom:16px;border:1px solid rgba(255,255,255,.1);">
+      <div style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:20px;color:#fff;">❓ Centro de Ayuda${nombre?(' — '+nombre):''}</div>
+      <div style="font-size:13px;color:#8fa3c8;margin-top:4px;">Guías paso a paso de <b style="color:var(--gold)">tus</b> módulos${u.role?(' · '+u.role):''}. Toca cada tema para abrirlo.</div>
+    </div>
+    ${S.map((s,i)=>`<details style="${dS}" ${i===0?'open':''}><summary style="${sS}">${s.t}</summary><div style="${bS}">${s.h}</div></details>`).join('')}
+    <div style="font-size:11px;color:var(--text-muted);margin-top:14px;text-align:center;">Manual integrado · se actualiza con la plataforma · E&G Energy Group S.A.S</div>`;
 }
 
 // ═══ RESPALDO DE SEGURIDAD (descarga manual) ════════════════════

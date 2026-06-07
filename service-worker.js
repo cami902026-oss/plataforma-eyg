@@ -1,8 +1,8 @@
-// ===== ENERGY PWA Service Worker =====
+﻿// ===== ENERGY PWA Service Worker =====
 // Estrategia: network-first para HTML/JS (siempre intenta traer la última versión),
 // cache fallback cuando no hay internet → la app sigue abriendo del cache offline.
 
-const CACHE_NAME = 'energy-v35';
+const CACHE_NAME = 'energy-v36';
 const ASSETS = [
   './Index.html',
   './manifest.json',
