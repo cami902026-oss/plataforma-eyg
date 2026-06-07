@@ -639,6 +639,15 @@ if __name__ == '__main__':
     print('📥 Cargando datos...')
     hist  = load_json('data/cotizaciones_historicas.json')
     plat  = load_json('data/cotizaciones.json')
+    # Cotizaciones archivadas por "Cerrar Mes" (data/historico/cotizaciones-YYYY-MM.json)
+    hist_dir = os.path.join(REPO_ROOT, 'data', 'historico')
+    if os.path.isdir(hist_dir):
+        for fn in sorted(os.listdir(hist_dir)):
+            if fn.startswith('cotizaciones') and fn.endswith('.json'):
+                archivadas = load_json('data/historico/' + fn)
+                ids_activas = {str(c.get('id')) for c in plat}
+                plat = plat + [c for c in archivadas if str(c.get('id')) not in ids_activas]
+                print(f'   + {fn}: {len(archivadas)} archivadas')
     sols  = load_json('data/solicitudes_cotiz.json')
     print(f'   Histórico: {len(hist)} líneas · Plataforma: {len(plat)} cotizaciones · Solicitudes: {len(sols)}')
     remis  = fetch_supabase('remisiones', '&order=remision.desc')
