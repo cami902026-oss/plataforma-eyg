@@ -3226,6 +3226,12 @@ function _ghWriteProxyURL() {
   return stored || '';
 }
 async function _saveDataGH(filename, data, label) {
+  // Las solicitudes las escriben DOS robots a la vez (el correo y la plataforma).
+  // Antes de subir, unir con lo que ya está en GitHub para no pisar solicitudes
+  // nuevas que este equipo aún no había descargado (causa de las "perdidas" jun/2026).
+  if (filename === 'data/solicitudes_cotiz.json' && Array.isArray(data)) {
+    data = await _solMergeConRemoto(data);
+  }
   // Estrategia 1: si el dispositivo tiene PAT local, usarlo
   if (_ghToken()) return _saveDataGH_directPAT(filename, data, label);
   // Estrategia 2: si hay proxy de escritura configurado, enviar por ahí
@@ -3298,6 +3304,25 @@ async function _loadDataGH(filename) {
     if (r.ok) return await r.json();
   } catch(e) { console.warn('GH raw load', filename, e); }
   return null;
+}
+// Une las solicitudes locales con las del repo por id (gana la de updatedAt más reciente).
+// Evita que un guardado de la plataforma borre solicitudes que el robot del correo
+// acababa de crear y este dispositivo todavía no había sincronizado.
+async function _solMergeConRemoto(local) {
+  try {
+    const remoto = await _loadDataGH('data/solicitudes_cotiz.json');
+    if (!Array.isArray(remoto)) return local;
+    const porId = {};
+    remoto.forEach(s => { if (s && s.id) porId[s.id] = s; });
+    (local || []).forEach(s => {
+      if (!s || !s.id) return;
+      const rem = porId[s.id];
+      if (!rem || String(s.updatedAt || '') >= String(rem.updatedAt || '')) porId[s.id] = s;
+    });
+    const unidas = Object.values(porId).sort((a, b) => String(a.fecha || '').localeCompare(String(b.fecha || '')));
+    try { localStorage.setItem('max_solicitudes_cotiz', JSON.stringify(unidas)); } catch(_) {}
+    return unidas;
+  } catch(_) { return local; }
 }
 const _ghBackupTimers = {};
 function _scheduleBackupGH(key, val) {
