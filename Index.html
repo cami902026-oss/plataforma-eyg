@@ -771,6 +771,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="nav-section">Abastecimiento</div>
       <div class="nav-item" id="nav-abastecimiento" onclick="navigate('abastecimiento')"><span class="icon">🏭</span>Abastecimiento</div>
       <div class="nav-item" onclick="navigate('remisiones')"><span class="icon">🧾</span>Remisiones</div>
+      <div class="nav-item" onclick="navigate('compras')"><span class="icon">🛒</span>Plan de Compras</div>
       <div class="nav-item" onclick="navigate('configuracion')"><span class="icon">⚙️</span>Configuración</div>
     </nav>
     <div class="sidebar-footer">
@@ -2432,6 +2433,100 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         </div>
       </div>
 
+      <!-- ===== PLAN DE COMPRAS ===== -->
+      <div class="page" id="page-compras">
+        <!-- VISTA LISTA -->
+        <div id="pcom-view-lista">
+          <div class="abs-toolbar">
+            <input type="text" id="pcom-search" placeholder="Buscar CC, cotización, cliente, proveedor..." oninput="pcomRenderLista()" style="flex:1;min-width:200px;">
+            <button class="btn btn-ghost" onclick="pcomCargar()" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
+            <button class="btn btn-primary" id="pcom-btn-nuevo" onclick="pcomNuevo()" style="padding:8px 16px;font-size:13px;">🛒 Nuevo plan de compras</button>
+          </div>
+          <div id="pcom-lista-count" class="abs-count"></div>
+          <div class="abs-table-wrap">
+            <table class="abs-table">
+              <thead><tr><th>Centro de Costos</th><th>Fecha</th><th>Cliente</th><th>Líneas</th><th>Total a pagar</th><th>Pagos</th><th>Acciones</th></tr></thead>
+              <tbody id="pcom-lista-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">Cargando...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- VISTA EDITOR -->
+        <div id="pcom-view-editor" style="display:none">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <button class="btn btn-ghost" onclick="pcomVolver()" style="padding:8px 14px;font-size:12px;">← Volver</button>
+            <h3 id="pcom-editor-titulo" style="margin:0;font-family:'Montserrat',sans-serif;color:#fff;">Plan de compras</h3>
+          </div>
+          <div class="abs-mov-form" style="margin-bottom:16px;">
+            <div class="form-row">
+              <div class="form-group"><label>Centro de Costos</label><input type="text" id="pcom-cc" readonly style="font-weight:700;color:var(--gold)"></div>
+              <div class="form-group"><label>Cotización</label><input type="text" id="pcom-cotiz" readonly></div>
+              <div class="form-group"><label>Fecha</label><input type="date" id="pcom-fecha"></div>
+              <div class="form-group"><label>Cliente / Proyecto</label><input type="text" id="pcom-cliente" placeholder="Cliente"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px;flex-wrap:wrap;gap:8px;">
+              <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Líneas de compra <span id="pcom-item-count" style="color:var(--gold)"></span></div>
+              <button class="btn btn-secondary" onclick="pcomAddItem()" style="padding:6px 14px;font-size:12px;">➕ Agregar línea</button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="abs-table" id="pcom-items-table"><thead><tr>
+                <th style="width:34px">#</th><th>Descripción</th><th style="width:64px">UDM</th><th style="width:70px">Cant.</th><th style="width:150px">Proveedor</th><th style="width:110px">Costo Unit.</th><th style="width:110px">Subtotal</th><th style="width:64px"></th>
+              </tr></thead><tbody id="pcom-items-tbody"></tbody></table>
+            </div>
+            <datalist id="pcom-prov-datalist"></datalist>
+            <div style="margin-top:18px;">
+              <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Resumen por proveedor <span style="font-size:11px;font-weight:400;text-transform:none">(IVA 19% · Retefuente 2,5% si la compra ≥ $1.414.098 y no es autoretenedor)</span></div>
+              <div style="overflow-x:auto;">
+                <table class="abs-table"><thead><tr>
+                  <th>Proveedor</th><th style="width:110px">Subtotal</th><th style="width:100px">IVA 19%</th><th style="width:100px">Retefuente</th><th style="width:120px">Total a pagar</th><th style="width:110px">Pago</th><th style="width:110px">Orden de compra</th>
+                </tr></thead><tbody id="pcom-resumen-tbody"></tbody></table>
+              </div>
+            </div>
+            <div id="pcom-ocs-wrap" style="margin-top:18px;display:none;">
+              <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">OCs generadas de este plan</div>
+              <div style="overflow-x:auto;">
+                <table class="abs-table"><thead><tr><th style="width:80px"># OC</th><th>Proveedor</th><th style="width:100px">Fecha</th><th style="width:120px">Total</th><th style="width:90px"></th></tr></thead><tbody id="pcom-ocs-tbody"></tbody></table>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+              <button class="btn btn-primary" onclick="pcomGuardar()" style="width:auto;min-width:170px;">💾 Guardar plan</button>
+              <button class="btn btn-secondary" onclick="pcomPDF()" style="width:auto;">📄 PDF Plan de Compras</button>
+              <button class="btn btn-secondary" onclick="pcomLogistico()" style="width:auto;">🚚 Plan Logístico</button>
+            </div>
+          </div>
+        </div>
+        <!-- MODAL ELEGIR COTIZACIÓN -->
+        <div id="pcom-cotiz-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
+          <div style="background:var(--card-bg,#0f1d33);border:1px solid rgba(255,255,255,.12);border-radius:14px;max-width:760px;width:100%;max-height:85vh;display:flex;flex-direction:column;padding:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <h3 style="margin:0;font-family:'Montserrat',sans-serif;color:#fff;">🛒 Nuevo plan desde una cotización</h3>
+              <button onclick="pcomCotizCerrar()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer">×</button>
+            </div>
+            <input type="text" id="pcom-cotiz-search" placeholder="Buscar por N° de cotización o cliente..." oninput="pcomCotizBuscar()" style="padding:9px 12px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:13px;margin-bottom:10px;">
+            <div id="pcom-cotiz-lista" style="overflow-y:auto;flex:1;max-height:380px;border:1px solid rgba(255,255,255,.08);border-radius:8px;"></div>
+            <div style="display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:14px;">
+              <button class="btn btn-ghost" onclick="pcomCrearVacio()" style="width:auto;padding:8px 16px;font-size:12px;">➕ Empezar plan vacío (sin cotización)</button>
+              <button class="btn btn-ghost" onclick="pcomCotizCerrar()" style="width:auto;padding:8px 16px;">Cancelar</button>
+            </div>
+          </div>
+        </div>
+        <!-- MODAL CONDICIONES OC -->
+        <div id="pcom-oc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
+          <div style="background:var(--card-bg,#0f1d33);border:1px solid rgba(255,255,255,.12);border-radius:14px;max-width:520px;width:100%;padding:20px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <h3 style="margin:0;font-family:'Montserrat',sans-serif;color:#fff;font-size:16px;">🧾 Orden de compra — <span id="pcom-oc-prov-titulo" style="color:var(--gold)"></span></h3>
+              <button onclick="pcomOCCerrar()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer">×</button>
+            </div>
+            <div class="form-group" style="margin-bottom:10px;"><label>Plazo de pago</label><input type="text" id="pcom-oc-plazo" placeholder="Ej: Contado / 30 días" value="Contado"></div>
+            <div class="form-group" style="margin-bottom:10px;"><label>Fecha de entrega</label><input type="text" id="pcom-oc-entrega" placeholder="Ej: 10 DE JUNIO DE 2026"></div>
+            <div class="form-group" style="margin-bottom:10px;"><label>Lugar de entrega</label><input type="text" id="pcom-oc-lugar" placeholder="Ej: BODEGA E&G CHÍA" value="CHIA - BODEGA E&G"></div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
+              <button class="btn btn-ghost" onclick="pcomOCCerrar()" style="width:auto;padding:8px 16px;">Cancelar</button>
+              <button class="btn btn-primary" id="pcom-oc-btn" onclick="pcomOCConfirmar()" style="width:auto;padding:8px 18px;">🧾 Generar e imprimir OC</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /content -->
   </div><!-- /main-area -->
 </div><!-- /app -->
@@ -2709,6 +2804,8 @@ function userCanSeeModule(mod) {
   if (mod === 'abastecimiento') return email === 'andrea' || email === 'alberto' || email === 'yesid';
   // Remisiones: todo el equipo MENOS Nelsy
   if (mod === 'remisiones') return email !== 'nelsy';
+  // Plan de Compras: todo el equipo MENOS Nelsy
+  if (mod === 'compras') return email !== 'nelsy';
   // Admin/Jefe ve todo el resto siempre
   if (isAdmin) return true;
   const cfg = getUserModules();
@@ -4247,10 +4344,11 @@ function navigate(page) {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
   currentPage = page;
-  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones'};
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
   if(page==='remisiones') remiInit();
+  if(page==='compras') pcomInit();
   if(page==='cartera') { setTimeout(loadCarteraUrlUI, 100); }
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
   if(page==='historico') { setTimeout(historicoListMonths, 100); }
@@ -11245,6 +11343,522 @@ function remiCotizAgregar(){
   remiRenderItems();
   remiCotizCerrar();
   showToast(nuevos.length+' ítem(s) de la cotización '+c.id+' agregados ✓','ok');
+}
+
+// ═══ MÓDULO PLAN DE COMPRAS (Supabase) ══════════════════════════
+// Copia editable e independiente de la cotización: dividir proveedores,
+// cambiar cantidades y agregar líneas SIN tocar la cotización original.
+const PCOM_UVT = 52374;                      // UVT 2026 (DIAN). Actualizar cada año.
+const PCOM_BASE_RETE = 27 * PCOM_UVT;        // Base mínima retefuente compras = 27 UVT = $1.414.098
+const PCOM_TASA_RETE = 0.025;                // 2,5% compras a declarantes
+const PCOM_TASA_IVA = 0.19;
+const PCOM_OC_INICIO = 26026;                // el consecutivo de OC arranca en 26027
+let pcom_rows = [], pcom_ocs = [], pcom_prov = [], pcom_current = null;
+
+function pcomCanUse(){ return currentUser && (currentUser.email||'').toLowerCase() !== 'nelsy'; }
+function _pcomMoney(n){ n = Math.round(parseFloat(n)||0); return '$ ' + n.toLocaleString('es-CO'); }
+
+async function pcomInit(){
+  const nb = document.getElementById('pcom-btn-nuevo'); if(nb) nb.style.display = pcomCanUse()?'':'none';
+  pcomVolver();
+  if(!pcom_rows.length) await pcomCargar(); else pcomRenderLista();
+}
+async function pcomCargar(){
+  try{
+    showToast('Cargando planes de compra...','info');
+    const [rows, ocs, provs] = await Promise.all([
+      absFetch('plan_compras?order=cc.desc,item.asc&limit=8000'),
+      absFetch('oc_compras?order=oc.desc&limit=2000'),
+      absFetch('proveedores?order=nombre.asc&limit=500')
+    ]);
+    pcom_rows = rows||[]; pcom_ocs = ocs||[]; pcom_prov = provs||[];
+    const dl = document.getElementById('pcom-prov-datalist');
+    if(dl) dl.innerHTML = pcom_prov.map(p=>`<option value="${_remiEsc(p.nombre)}">`).join('');
+    pcomRenderLista();
+    showToast('Planes cargados ✓','ok');
+  }catch(e){ showToast('Error: '+e.message,'error'); }
+}
+function pcomGrupos(){
+  const m = {};
+  pcom_rows.forEach(r=>{ const k = String(r.cc); (m[k]=m[k]||[]).push(r); });
+  return m;
+}
+function pcomProvInfo(nombre){
+  const n = String(nombre||'').trim().toUpperCase();
+  return pcom_prov.find(p=>String(p.nombre||'').trim().toUpperCase()===n) || null;
+}
+function pcomEsAutoRet(nombre){
+  const p = pcomProvInfo(nombre);
+  return !!(p && String(p.autoretenedor||'').trim().toUpperCase()==='SI');
+}
+// Cálculo por proveedor sobre cualquier lista de líneas {cantidad, costo_unit, proveedor, pago}
+function pcomCalcRows(items){
+  const provs = {};
+  (items||[]).forEach(it=>{
+    const sub = (parseFloat(it.cantidad)||0) * (parseFloat(it.costo_unit)||0);
+    const p = (String(it.proveedor||'').trim().toUpperCase()) || '(SIN PROVEEDOR)';
+    if(!provs[p]) provs[p] = { subtotal:0, pago:'PAGADO' };
+    provs[p].subtotal += sub;
+    if(String(it.pago||'PENDIENTE').toUpperCase()!=='PAGADO') provs[p].pago = 'PENDIENTE';
+  });
+  let tot = { subtotal:0, iva:0, rete:0, total:0 };
+  Object.keys(provs).forEach(p=>{
+    const x = provs[p];
+    x.iva = x.subtotal * PCOM_TASA_IVA;
+    x.autoret = pcomEsAutoRet(p);
+    x.aplicaRete = (x.subtotal >= PCOM_BASE_RETE && !x.autoret && p!=='(SIN PROVEEDOR)');
+    x.rete = x.aplicaRete ? x.subtotal * PCOM_TASA_RETE : 0;
+    x.total = x.subtotal + x.iva - x.rete;
+    tot.subtotal += x.subtotal; tot.iva += x.iva; tot.rete += x.rete; tot.total += x.total;
+  });
+  return { provs, tot };
+}
+function pcomRenderLista(){
+  const tb = document.getElementById('pcom-lista-tbody'); if(!tb) return;
+  const q = (document.getElementById('pcom-search')?.value||'').toLowerCase();
+  const grupos = pcomGrupos();
+  let lista = Object.keys(grupos).map(cc=>{
+    const its = grupos[cc]; const h = its[0];
+    const calc = pcomCalcRows(its);
+    const provKeys = Object.keys(calc.provs);
+    const pagados = provKeys.filter(p=>calc.provs[p].pago==='PAGADO').length;
+    return { cc, fecha:h.fecha||'', cliente:h.cliente||'', cotizacion:h.cotizacion||'', lineas:its.length,
+      total:calc.tot.total, provs:provKeys.length, pagados,
+      _txt:(cc+' '+(h.cotizacion||'')+' '+(h.cliente||'')+' '+its.map(x=>(x.descripcion||'')+' '+(x.proveedor||'')).join(' ')).toLowerCase() };
+  });
+  if(q) lista = lista.filter(r=>r._txt.includes(q));
+  lista.sort((a,b)=>(b.fecha||'').localeCompare(a.fecha||'') || b.cc.localeCompare(a.cc));
+  const cnt = document.getElementById('pcom-lista-count'); if(cnt) cnt.textContent = lista.length+' planes de compra';
+  tb.innerHTML = lista.map(r=>`<tr>
+    <td><strong style="color:var(--gold)">${_remiEsc(r.cc)}</strong></td>
+    <td style="font-size:12px">${r.fecha?r.fecha.split('-').reverse().join('/'):'—'}</td>
+    <td style="font-size:13px">${_remiEsc(r.cliente)||'—'}</td>
+    <td style="text-align:center">${r.lineas}</td>
+    <td style="font-size:12.5px;white-space:nowrap">${_pcomMoney(r.total)}</td>
+    <td style="font-size:11.5px;white-space:nowrap"><span style="color:${r.pagados===r.provs?'#68d391':'var(--gold)'}">${r.pagados}/${r.provs} pagados</span></td>
+    <td><button onclick="pcomAbrir('${_remiEsc(r.cc)}')" style="background:rgba(26,58,143,.4);border:1px solid rgba(26,58,143,.6);color:#90cdf4;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">✏️ Abrir</button></td>
+  </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">Sin planes de compra. Crea el primero con "🛒 Nuevo plan".</td></tr>';
+}
+function pcomVolver(){
+  pcom_current = null;
+  const l = document.getElementById('pcom-view-lista'); if(l) l.style.display='';
+  const e = document.getElementById('pcom-view-editor'); if(e) e.style.display='none';
+}
+function pcomCC(cotizId, cliente){
+  const cli = String(cliente||'').replace(/\s/g,'');
+  return 'CC-'+cotizId+'-'+(cli.length>=3?cli.substring(0,3).toUpperCase():'GEN');
+}
+// ── Nuevo plan desde cotización ──
+function pcomNuevo(){
+  if(!pcomCanUse()) return showToast('No tienes permiso','error');
+  const m = document.getElementById('pcom-cotiz-modal'); if(!m) return;
+  m.style.display='flex';
+  const s = document.getElementById('pcom-cotiz-search'); if(s) s.value='';
+  pcomCotizBuscar();
+  setTimeout(()=>{ try{ s.focus(); }catch(_){} },60);
+}
+function pcomCotizCerrar(){ const m=document.getElementById('pcom-cotiz-modal'); if(m) m.style.display='none'; }
+function pcomCotizBuscar(){
+  const q = (document.getElementById('pcom-cotiz-search')?.value||'').trim().toLowerCase();
+  const cont = document.getElementById('pcom-cotiz-lista'); if(!cont) return;
+  let lista = (typeof remiCotizData==='function'?remiCotizData():[]).filter(c=>c&&c.id&&Array.isArray(c.items)&&c.items.length);
+  if(q) lista = lista.filter(c=>(String(c.id)+' '+String(c.cliente||'')).toLowerCase().includes(q));
+  lista.sort((a,b)=>String(b.fecha||'').localeCompare(String(a.fecha||''))||String(b.id).localeCompare(String(a.id)));
+  lista = lista.slice(0,30);
+  cont.innerHTML = lista.map(c=>{
+    const tieneYa = pcom_rows.some(r=>String(r.cotizacion)===String(c.id));
+    return `<div onclick="pcomCotizElegir('${_remiEsc(c.id)}')" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer" onmouseover="this.style.background='rgba(26,58,143,.25)'" onmouseout="this.style.background=''">
+      <div><b style="color:var(--gold)">${_remiEsc(c.id)}</b> <span style="font-size:13px">· ${_remiEsc(c.cliente)||'—'}</span>${tieneYa?' <span style="font-size:10px;background:rgba(232,160,32,.2);color:var(--gold);padding:1px 6px;border-radius:8px">ya tiene plan</span>':''}</div>
+      <div style="font-size:11.5px;color:var(--text-muted);white-space:nowrap">${c.fecha?_remiEsc(String(c.fecha).split('-').reverse().join('/')):''} · ${c.items.length} ítem(s)${c.estado?(' · '+_remiEsc(c.estado)):''}</div>
+    </div>`;
+  }).join('')||'<div style="text-align:center;color:var(--text-muted);padding:22px;font-size:13px">Sin cotizaciones que coincidan</div>';
+}
+function pcomCotizElegir(id){
+  const c = (typeof remiCotizData==='function'?remiCotizData():[]).find(x=>String(x.id)===String(id));
+  if(!c) return;
+  if(pcom_rows.some(r=>String(r.cotizacion)===String(id))){
+    if(!confirm('La cotización '+id+' ya tiene un plan de compras. ¿Crear OTRO plan para la misma cotización?')) return;
+  }
+  pcom_current = { nueva:true, cc:pcomCC(c.id, c.cliente), cotizacion:String(c.id), cliente:c.cliente||'',
+    fecha:new Date().toISOString().split('T')[0],
+    items:(c.items||[]).filter(it=>String(it.desc||'').trim()).map(it=>({
+      descripcion:String(it.desc||'').trim(), udm:it.udm||'EA', cantidad:(it.qty==null?'':it.qty),
+      proveedor:it.proveedor||'', costo_unit:(it.precioProveedor==null?'':it.precioProveedor), pago:'PENDIENTE'
+    })) };
+  if(!pcom_current.items.length) pcom_current.items.push({descripcion:'',udm:'EA',cantidad:'',proveedor:'',costo_unit:'',pago:'PENDIENTE'});
+  pcomCotizCerrar();
+  pcomAbrirEditor('Plan de compras — '+pcom_current.cc+' (nuevo)');
+}
+function pcomCrearVacio(){
+  pcom_current = { nueva:true, cc:'CC-MANUAL-'+Date.now().toString().slice(-5), cotizacion:'', cliente:'',
+    fecha:new Date().toISOString().split('T')[0],
+    items:[{descripcion:'',udm:'EA',cantidad:'',proveedor:'',costo_unit:'',pago:'PENDIENTE'}] };
+  pcomCotizCerrar();
+  pcomAbrirEditor('Plan de compras manual (nuevo)');
+}
+function pcomAbrir(cc){
+  const its = pcomGrupos()[String(cc)]; if(!its||!its.length) return showToast('Plan no encontrado','error');
+  const h = its[0];
+  pcom_current = { nueva:false, cc:String(cc), cotizacion:h.cotizacion||'', cliente:h.cliente||'', fecha:h.fecha||'',
+    items: its.slice().sort((a,b)=>(a.item||0)-(b.item||0)).map(r=>({
+      descripcion:r.descripcion||'', udm:r.udm||'', cantidad:(r.cantidad==null?'':r.cantidad),
+      proveedor:r.proveedor||'', costo_unit:(r.costo_unit==null?'':r.costo_unit), pago:r.pago||'PENDIENTE'
+    })) };
+  pcomAbrirEditor('Plan de compras — '+cc);
+}
+function pcomAbrirEditor(titulo){
+  document.getElementById('pcom-view-lista').style.display='none';
+  document.getElementById('pcom-view-editor').style.display='';
+  document.getElementById('pcom-editor-titulo').textContent = titulo;
+  const c = pcom_current;
+  document.getElementById('pcom-cc').value = c.cc;
+  document.getElementById('pcom-cotiz').value = c.cotizacion||'—';
+  document.getElementById('pcom-fecha').value = c.fecha;
+  document.getElementById('pcom-cliente').value = c.cliente;
+  pcomRenderItems();
+}
+function pcomSyncHeader(){
+  const c = pcom_current; if(!c) return;
+  c.fecha = document.getElementById('pcom-fecha').value;
+  c.cliente = document.getElementById('pcom-cliente').value.trim();
+}
+function pcomUpd(i, campo, valor){
+  if(!pcom_current||!pcom_current.items[i]) return;
+  pcom_current.items[i][campo] = valor;
+  pcomRenderResumen();
+  const sub = document.getElementById('pcom-sub-'+i);
+  if(sub){ const it = pcom_current.items[i]; sub.textContent = _pcomMoney((parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0)); }
+}
+function pcomRenderItems(){
+  const tb = document.getElementById('pcom-items-tbody'); if(!tb||!pcom_current) return;
+  const cnt = document.getElementById('pcom-item-count'); if(cnt) cnt.textContent = pcom_current.items.length?('('+pcom_current.items.length+')'):'';
+  const inS = 'padding:5px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:5px;color:#fff;font-size:12px';
+  tb.innerHTML = pcom_current.items.map((it,i)=>{
+    const sub = (parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0);
+    return `<tr>
+    <td style="text-align:center;color:var(--text-muted);font-size:11px">${i+1}</td>
+    <td><input type="text" value="${_remiEsc(it.descripcion).replace(/"/g,'&quot;')}" onchange="pcomUpd(${i},'descripcion',this.value)" style="width:100%;min-width:220px;${inS}"></td>
+    <td><input type="text" value="${_remiEsc(it.udm).replace(/"/g,'&quot;')}" onchange="pcomUpd(${i},'udm',this.value)" style="width:52px;${inS}"></td>
+    <td><input type="number" min="0" step="any" value="${_remiEsc(it.cantidad)}" onchange="pcomUpd(${i},'cantidad',this.value)" style="width:62px;${inS}"></td>
+    <td><input type="text" list="pcom-prov-datalist" value="${_remiEsc(it.proveedor).replace(/"/g,'&quot;')}" onchange="pcomUpd(${i},'proveedor',this.value)" style="width:140px;${inS}"></td>
+    <td><input type="number" min="0" step="any" value="${_remiEsc(it.costo_unit)}" onchange="pcomUpd(${i},'costo_unit',this.value)" style="width:100px;${inS}"></td>
+    <td id="pcom-sub-${i}" style="font-size:12px;white-space:nowrap">${_pcomMoney(sub)}</td>
+    <td style="white-space:nowrap">
+      <button onclick="pcomDividir(${i})" title="Dividir línea en otro proveedor" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:13px">✂️</button>
+      <button onclick="pcomDelItem(${i})" title="Quitar" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px">×</button>
+    </td>
+  </tr>`;}).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:16px">Agrega líneas con el botón de arriba ↑</td></tr>';
+  pcomRenderResumen();
+  pcomRenderOCs();
+}
+function pcomAddItem(){ if(!pcom_current)return; pcom_current.items.push({descripcion:'',udm:'EA',cantidad:'',proveedor:'',costo_unit:'',pago:'PENDIENTE'}); pcomRenderItems(); }
+function pcomDelItem(i){ if(!pcom_current)return; pcom_current.items.splice(i,1); pcomRenderItems(); }
+function pcomDividir(i){
+  if(!pcom_current)return;
+  const it = pcom_current.items[i]; if(!it) return;
+  pcom_current.items.splice(i+1, 0, { descripcion:it.descripcion, udm:it.udm, cantidad:'', proveedor:'', costo_unit:'', pago:'PENDIENTE' });
+  pcomRenderItems();
+  showToast('Línea dividida: pon la cantidad y el proveedor de la nueva parte (y baja la cantidad de la original)','info');
+}
+function pcomRenderResumen(){
+  const tb = document.getElementById('pcom-resumen-tbody'); if(!tb||!pcom_current) return;
+  const calc = pcomCalcRows(pcom_current.items);
+  const provs = Object.keys(calc.provs).sort();
+  tb.innerHTML = provs.map(p=>{
+    const x = calc.provs[p];
+    const ocPrev = pcom_ocs.find(o=>String(o.cc)===String(pcom_current.cc)&&String(o.proveedor||'').trim().toUpperCase()===p);
+    return `<tr>
+    <td style="font-size:12.5px"><b>${_remiEsc(p)}</b>${x.autoret?' <span style="font-size:9.5px;background:rgba(46,170,74,.18);color:#68d391;padding:1px 6px;border-radius:8px">autoretenedor</span>':''}</td>
+    <td style="font-size:12px;white-space:nowrap">${_pcomMoney(x.subtotal)}</td>
+    <td style="font-size:12px;white-space:nowrap">${_pcomMoney(x.iva)}</td>
+    <td style="font-size:12px;white-space:nowrap;color:${x.aplicaRete?'#fc8181':'var(--text-muted)'}">${x.aplicaRete?('-'+_pcomMoney(x.rete)):'—'}</td>
+    <td style="font-size:12.5px;white-space:nowrap"><b style="color:var(--gold)">${_pcomMoney(x.total)}</b></td>
+    <td><button onclick="pcomTogglePago('${_remiEsc(p).replace(/'/g,"\\'")}')" style="background:${x.pago==='PAGADO'?'rgba(46,170,74,.25)':'rgba(232,160,32,.15)'};border:1px solid ${x.pago==='PAGADO'?'rgba(46,170,74,.6)':'rgba(232,160,32,.4)'};color:${x.pago==='PAGADO'?'#68d391':'var(--gold)'};padding:4px 10px;border-radius:6px;font-size:10.5px;cursor:pointer;font-weight:700">${x.pago==='PAGADO'?'✓ PAGADO':'PENDIENTE'}</button></td>
+    <td>${p==='(SIN PROVEEDOR)'?'—':`<button onclick="pcomOCModal('${_remiEsc(p).replace(/'/g,"\\'")}')" style="background:rgba(26,58,143,.4);border:1px solid rgba(26,58,143,.6);color:#90cdf4;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">🧾 ${ocPrev?'Otra OC':'Generar OC'}</button>`}</td>
+  </tr>`;}).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:14px">Sin líneas con proveedor todavía</td></tr>';
+  // Fila de totales generales
+  if(provs.length){
+    tb.innerHTML += `<tr style="border-top:2px solid rgba(232,160,32,.5)">
+      <td style="font-size:12px;font-weight:800;color:var(--gold)">TOTAL PLAN</td>
+      <td style="font-size:12px;font-weight:700;white-space:nowrap">${_pcomMoney(calc.tot.subtotal)}</td>
+      <td style="font-size:12px;font-weight:700;white-space:nowrap">${_pcomMoney(calc.tot.iva)}</td>
+      <td style="font-size:12px;font-weight:700;white-space:nowrap;color:#fc8181">${calc.tot.rete?('-'+_pcomMoney(calc.tot.rete)):'—'}</td>
+      <td style="font-size:13px;font-weight:800;white-space:nowrap;color:var(--gold)">${_pcomMoney(calc.tot.total)}</td>
+      <td></td><td></td></tr>`;
+  }
+}
+async function pcomTogglePago(prov){
+  if(!pcom_current) return;
+  const p = String(prov).trim().toUpperCase();
+  const lineas = pcom_current.items.filter(it=>((String(it.proveedor||'').trim().toUpperCase())||'(SIN PROVEEDOR)')===p);
+  if(!lineas.length) return;
+  const nuevo = String(lineas[0].pago||'PENDIENTE').toUpperCase()==='PAGADO' ? 'PENDIENTE' : 'PAGADO';
+  lineas.forEach(it=>it.pago=nuevo);
+  pcomRenderResumen();
+  if(!pcom_current.nueva){ await pcomGuardar(true); }
+  showToast(prov+' marcado como '+nuevo+(pcom_current.nueva?' (recuerda guardar el plan)':' ✓'),'ok');
+}
+function pcomRenderOCs(){
+  const wrap = document.getElementById('pcom-ocs-wrap'); const tb = document.getElementById('pcom-ocs-tbody');
+  if(!wrap||!tb||!pcom_current) return;
+  const ocs = pcom_ocs.filter(o=>String(o.cc)===String(pcom_current.cc));
+  wrap.style.display = ocs.length?'':'none';
+  tb.innerHTML = ocs.map(o=>`<tr>
+    <td><b style="color:var(--gold)">${_remiEsc(o.oc)}</b></td>
+    <td style="font-size:12.5px">${_remiEsc(o.proveedor)}</td>
+    <td style="font-size:12px">${o.fecha?String(o.fecha).split('-').reverse().join('/'):'—'}</td>
+    <td style="font-size:12px;white-space:nowrap">${_pcomMoney(o.total)}</td>
+    <td><button onclick="pcomOCReimprimir(${o.id})" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:var(--gold);padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">🖨 Imprimir</button></td>
+  </tr>`).join('');
+}
+async function pcomGuardar(silencioso){
+  if(!pcomCanUse()) return showToast('No tienes permiso','error');
+  if(!pcom_current) return;
+  pcomSyncHeader();
+  const c = pcom_current;
+  if(!c.cliente && !silencioso) return showToast('Ingresa el cliente / proyecto','error');
+  const items = c.items.filter(it=>String(it.descripcion||'').trim()!=='');
+  if(!items.length) return showToast('Agrega al menos una línea con descripción','error');
+  try{
+    if(!c.nueva){
+      await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc),{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+    }
+    const rows = items.map((it,idx)=>({
+      cc:c.cc, cotizacion:c.cotizacion||'', cliente:c.cliente, fecha:c.fecha||null,
+      item:idx+1, descripcion:String(it.descripcion).trim(), udm:it.udm||'',
+      cantidad:(it.cantidad===''||it.cantidad==null)?null:parseFloat(it.cantidad),
+      proveedor:String(it.proveedor||'').trim(),
+      costo_unit:(it.costo_unit===''||it.costo_unit==null)?null:parseFloat(it.costo_unit),
+      pago:it.pago||'PENDIENTE',
+      created_by: currentUser?.name||'—'
+    }));
+    await absFetch('plan_compras',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify(rows)});
+    c.nueva = false;
+    // refrescar memoria local sin perder la edición abierta
+    pcom_rows = pcom_rows.filter(r=>String(r.cc)!==String(c.cc)).concat(rows);
+    if(!silencioso){ showToast('Plan '+c.cc+' guardado ✓','ok'); pcomRenderLista(); }
+  }catch(e){ showToast('Error guardando: '+e.message,'error'); }
+}
+// ── Órdenes de compra ──
+let pcom_oc_prov = null;
+function pcomNextOC(){
+  let mx = PCOM_OC_INICIO;
+  pcom_ocs.forEach(o=>{ const n=parseInt(o.oc); if(!isNaN(n)&&n>mx) mx=n; });
+  return mx+1;
+}
+function pcomOCModal(prov){
+  if(!pcom_current) return;
+  pcom_oc_prov = prov;
+  document.getElementById('pcom-oc-prov-titulo').textContent = prov+' · OC #'+pcomNextOC();
+  const m = document.getElementById('pcom-oc-modal'); if(m) m.style.display='flex';
+}
+function pcomOCCerrar(){ pcom_oc_prov=null; const m=document.getElementById('pcom-oc-modal'); if(m) m.style.display='none'; }
+async function pcomOCConfirmar(){
+  if(!pcom_current||!pcom_oc_prov) return;
+  pcomSyncHeader();
+  const p = String(pcom_oc_prov).trim().toUpperCase();
+  const lineas = pcom_current.items.filter(it=>String(it.proveedor||'').trim().toUpperCase()===p && String(it.descripcion||'').trim());
+  if(!lineas.length) return showToast('Este proveedor no tiene líneas','error');
+  const btn = document.getElementById('pcom-oc-btn'); if(btn){ btn.disabled=true; btn.textContent='Generando...'; }
+  try{
+    if(pcom_current.nueva) await pcomGuardar(true);
+    const calc = pcomCalcRows(pcom_current.items);
+    const x = calc.provs[p] || {subtotal:0,iva:0,rete:0,total:0,aplicaRete:false};
+    const oc = {
+      oc: pcomNextOC(), cc: pcom_current.cc, cotizacion: pcom_current.cotizacion||'',
+      proveedor: pcom_oc_prov, fecha: new Date().toISOString().split('T')[0],
+      condiciones: {
+        plazo: document.getElementById('pcom-oc-plazo').value.trim(),
+        entrega: document.getElementById('pcom-oc-entrega').value.trim(),
+        lugar: document.getElementById('pcom-oc-lugar').value.trim()
+      },
+      items: lineas.map(it=>({ descripcion:it.descripcion, udm:it.udm||'EA', cantidad:parseFloat(it.cantidad)||0,
+        costo_unit:parseFloat(it.costo_unit)||0, subtotal:(parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0) })),
+      subtotal:x.subtotal, iva:x.iva, retencion:x.rete, total:x.total,
+      created_by: currentUser?.name||'—'
+    };
+    const saved = await absFetch('oc_compras',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify([oc])});
+    const ocRow = (saved&&saved[0])||oc;
+    pcom_ocs.unshift(ocRow);
+    pcomOCCerrar();
+    pcomRenderResumen(); pcomRenderOCs();
+    showToast('OC #'+ocRow.oc+' generada ✓','ok');
+    pcomOCPrint(ocRow);
+  }catch(e){ showToast('Error: '+e.message,'error'); }
+  if(btn){ btn.disabled=false; btn.textContent='🧾 Generar e imprimir OC'; }
+}
+function pcomOCReimprimir(id){
+  const o = pcom_ocs.find(x=>x.id===id); if(!o) return showToast('OC no encontrada','error');
+  pcomOCPrint(o);
+}
+// Impresión OC — clon del formato Excel E6-FC-01
+function pcomOCPrint(o){
+  const pv = pcomProvInfo(o.proveedor) || {};
+  const cond = o.condiciones||{};
+  const logo = 'https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png';
+  const fechaFmt = o.fecha?String(o.fecha).split('-').reverse().join('/'):'';
+  const filas = (o.items||[]).map((it,i)=>`<tr>
+    <td style="text-align:center">${i+1}</td><td>${_remiEsc(it.descripcion)}</td><td></td>
+    <td style="text-align:center">${_remiEsc(it.udm)}</td><td style="text-align:center">${_remiEsc(it.cantidad)}</td>
+    <td style="text-align:right">${_pcomMoney(it.costo_unit)}</td><td style="text-align:right">${_pcomMoney(it.subtotal)}</td>
+  </tr>`).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>OC ${_remiEsc(o.oc)} — ${_remiEsc(o.proveedor)}</title><style>
+    *{box-sizing:border-box} body{font-family:Calibri,Arial,sans-serif;font-size:11px;color:#000;margin:0;padding:28px 32px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    table{border-collapse:collapse;width:100%}
+    .b td,.b th{border:1px solid #000;padding:4px 6px}
+    .hd td{border:1px solid #000;padding:3px 6px}
+    .t1{font-size:14px;font-weight:700;text-align:center}
+    .t2{font-size:13px;font-weight:700;text-align:center}
+    .sec{background:#d9d9d9;font-weight:700;text-align:center;border:1px solid #000;padding:4px}
+    .lbl{font-weight:700;white-space:nowrap}
+    .tot td{border:1px solid #000;padding:4px 6px}
+    .foot{text-align:center;font-size:10px;margin-top:18px;line-height:1.5}
+    @media print{.noprint{display:none}}
+  </style></head><body>
+  <table class="hd"><tr>
+    <td rowspan="2" style="width:120px;text-align:center"><img src="${logo}" style="width:84px;height:84px;object-fit:contain"></td>
+    <td rowspan="1" class="t1">PROCESO DE COMPRAS</td>
+    <td class="lbl" style="width:70px">CODIGO</td><td style="width:70px;text-align:center">E6-FC-01</td>
+    <td class="lbl" style="width:70px">VERSION</td><td style="width:55px;text-align:center">01</td>
+  </tr><tr>
+    <td class="t2">ORDEN DE COMPRA O SERVICIO</td>
+    <td class="lbl">REVISION</td><td style="text-align:center">00</td>
+    <td class="lbl">VIGENCIA</td><td style="text-align:center">DIC-2017</td>
+  </tr></table>
+  <table class="hd" style="margin-top:6px"><tr>
+    <td class="lbl" style="width:60px">CIUDAD</td><td style="width:90px">Chía</td>
+    <td class="lbl" style="width:55px">FECHA</td><td style="width:90px">${fechaFmt}</td>
+    <td class="lbl" style="width:75px"># OC</td><td style="width:75px;font-weight:700;color:#c00">${_remiEsc(o.oc)}</td>
+    <td class="lbl" style="width:100px"># COTIZACION</td><td style="width:80px">${_remiEsc(o.cotizacion)||'n.a.'}</td>
+    <td class="lbl" style="width:60px">CC</td><td>${_remiEsc(o.cc)||''}</td>
+  </tr></table>
+  <div class="sec" style="margin-top:8px">DATOS DEL PROVEEDOR</div>
+  <table class="b"><tr><td class="lbl" style="width:110px">Razón Social:</td><td>${_remiEsc(o.proveedor)}</td><td class="lbl" style="width:60px">NIT:</td><td style="width:140px">${_remiEsc(pv.nit)||''}</td></tr>
+  <tr><td class="lbl">Dirección:</td><td>${_remiEsc(pv.direccion)||''}</td><td class="lbl">Ciudad:</td><td>${_remiEsc(pv.ciudad)||''}</td></tr>
+  <tr><td class="lbl">Teléfono:</td><td>${_remiEsc(pv.telefono)||''}</td><td class="lbl">Contacto:</td><td>${_remiEsc(pv.contacto)||''}</td></tr></table>
+  <table class="b" style="margin-top:8px"><thead><tr style="background:#d9d9d9">
+    <th style="width:30px">No</th><th>Descripción del producto o servicio</th><th style="width:150px">Referencia, Especificaciones o datos de ingeniería</th>
+    <th style="width:38px">Und.</th><th style="width:55px">Cantidad</th><th style="width:80px">Precio Unitario</th><th style="width:85px">Vr Parcial</th>
+  </tr></thead><tbody>${filas}</tbody></table>
+  <table style="margin-top:8px"><tr>
+    <td style="vertical-align:top;width:38%;padding-right:8px">
+      <table class="b"><tr><td colspan="2" style="background:#d9d9d9;font-weight:700;text-align:center">CONDICIONES COMERCIALES</td></tr>
+      <tr><td class="lbl">Plazo de Pago:</td><td>${_remiEsc(cond.plazo)||''}</td></tr>
+      <tr><td class="lbl">Fecha de Entrega:</td><td>${_remiEsc(cond.entrega)||''}</td></tr>
+      <tr><td class="lbl">Lugar de entrega:</td><td>${_remiEsc(cond.lugar)||''}</td></tr></table>
+    </td>
+    <td style="vertical-align:top;width:32%;padding-right:8px">
+      <table class="b"><tr><td colspan="2" style="font-weight:700;font-size:9.5px;text-align:center">INFORME EN SU FACTURA<br>LA CALIDAD DE CONTRIBUYENTE</td></tr>
+      <tr><td style="font-size:9.5px">Actividad de ICA</td><td style="width:46px"></td></tr>
+      <tr><td style="font-size:9.5px">Régimen Común o Simplificado</td><td></td></tr>
+      <tr><td style="font-size:9.5px">Autoretenedor</td><td style="text-align:center;font-weight:700">${pcomEsAutoRet(o.proveedor)?'SI':'NO'}</td></tr>
+      <tr><td style="font-size:9.5px">Gran Contribuyente</td><td></td></tr>
+      <tr><td style="font-size:9.5px">Autorización Facturación DIAN</td><td></td></tr></table>
+    </td>
+    <td style="vertical-align:top;width:30%">
+      <table class="tot"><tr><td class="lbl">SUBTOTAL</td><td style="text-align:right">${_pcomMoney(o.subtotal)}</td></tr>
+      <tr><td class="lbl">IVA 19%</td><td style="text-align:right">${_pcomMoney(o.iva)}</td></tr>
+      <tr><td class="lbl">RETE 2,5%</td><td style="text-align:right">${o.retencion?('-'+_pcomMoney(o.retencion)):'$ 0'}</td></tr>
+      <tr style="background:#d9d9d9"><td class="lbl">TOTAL</td><td style="text-align:right;font-weight:700">${_pcomMoney(o.total)}</td></tr></table>
+    </td>
+  </tr></table>
+  <table class="b" style="margin-top:8px"><tr><td class="lbl" style="text-align:right;width:70%">Total de la Compra y/o Servicio:</td><td style="text-align:right;font-weight:700">${_pcomMoney(o.total)}</td></tr></table>
+  <table style="margin-top:34px"><tr>
+    <td style="width:45%;text-align:center;border-top:1px solid #000;padding-top:4px"><b>Elaboró</b><br>${_remiEsc(o.created_by||'')}<br><span style="font-size:9.5px;color:#444">ALMACEN-COMPRA</span></td>
+    <td style="width:10%"></td>
+    <td style="width:45%;text-align:center;border-top:1px solid #000;padding-top:4px"><b>VB Aprobación</b><br>ANDREA BERNAL<br><span style="font-size:9.5px;color:#444">Proyectos</span></td>
+  </tr></table>
+  <div class="foot"><b>E &amp; G ENERGY GROUP SAS</b><br>Cra 7 # 12 - 61<br>CHIA CUNDINAMARCA</div>
+  <div class="noprint" style="text-align:center;margin-top:16px"><button onclick="window.print()" style="padding:8px 22px;font-size:13px;cursor:pointer">🖨 Imprimir / PDF</button></div>
+  </body></html>`;
+  const w = window.open('','_blank'); if(!w) return showToast('Permite ventanas emergentes para imprimir','error');
+  w.document.write(html); w.document.close();
+}
+// Impresión Plan de Compras — clon del formato Excel
+function pcomPDF(){
+  if(!pcom_current) return; pcomSyncHeader();
+  const c = pcom_current;
+  const calc = pcomCalcRows(c.items);
+  const items = c.items.filter(it=>String(it.descripcion||'').trim());
+  const filas = items.map((it,i)=>{
+    const p = (String(it.proveedor||'').trim().toUpperCase())||'(SIN PROVEEDOR)';
+    const x = calc.provs[p]||{};
+    const sub = (parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0);
+    const iva = sub*PCOM_TASA_IVA;
+    const rete = x.aplicaRete ? sub*PCOM_TASA_RETE : 0;
+    return `<tr><td style="text-align:center">${i+1}</td><td>${_remiEsc(it.descripcion)}</td><td>${_remiEsc(it.proveedor)||'—'}</td>
+    <td style="text-align:center">${_remiEsc(it.cantidad)}</td><td style="text-align:center">${_remiEsc(it.udm)}</td>
+    <td style="text-align:right">${_pcomMoney(it.costo_unit)}</td><td style="text-align:right">${_pcomMoney(sub)}</td>
+    <td style="text-align:right">${_pcomMoney(iva)}</td><td style="text-align:right">${rete?('-'+_pcomMoney(rete)):'—'}</td>
+    <td style="text-align:right">${_pcomMoney(sub+iva-rete)}</td><td style="text-align:center">${x.aplicaRete?'SI':'NO'}</td></tr>`;
+  }).join('');
+  const provs = Object.keys(calc.provs).sort();
+  const filasResumen = provs.map(p=>{const x=calc.provs[p];return `<tr><td>${_remiEsc(p)}</td><td style="text-align:right">${_pcomMoney(x.subtotal)}</td><td style="text-align:right">${_pcomMoney(x.total)}</td><td style="text-align:center;font-weight:700;color:${x.pago==='PAGADO'?'#2EAA4A':'#c00'}">${x.pago}</td></tr>`;}).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Plan de Compras ${_remiEsc(c.cc)}</title><style>
+    *{box-sizing:border-box} body{font-family:Calibri,Arial,sans-serif;font-size:10.5px;color:#000;margin:0;padding:24px 28px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    table{border-collapse:collapse;width:100%} .b td,.b th{border:1px solid #000;padding:4px 5px}
+    @page{size:landscape} @media print{.noprint{display:none}}
+  </style></head><body>
+  <table style="margin-bottom:8px"><tr>
+    <td style="font-size:15px;font-weight:800">E&amp;G ENERGY GROUP<br><span style="font-size:12px;font-weight:700">PLAN DE COMPRAS - ${_remiEsc(c.cliente)||''}</span></td>
+    <td style="width:230px"><table class="b" style="background:#dce6f1"><tr><th>SUBTOTAL</th><th>IVA (19%)</th><th>RETENCION</th><th>NETO PAGAR</th></tr>
+      <tr><td style="text-align:right">${_pcomMoney(calc.tot.subtotal)}</td><td style="text-align:right">${_pcomMoney(calc.tot.iva)}</td><td style="text-align:right">${_pcomMoney(calc.tot.rete)}</td><td style="text-align:right;font-weight:700">${_pcomMoney(calc.tot.total)}</td></tr></table></td>
+    <td style="width:170px;padding-left:8px"><table class="b" style="background:#ffffcc"><tr><td style="font-weight:700">CENTRO DE COSTOS:</td></tr><tr><td style="font-weight:700">${_remiEsc(c.cc)}</td></tr></table></td>
+  </tr></table>
+  <table class="b"><thead><tr style="background:#d9d9d9;font-weight:700">
+    <th style="width:32px">ITEM</th><th>DESCRIPCION</th><th style="width:110px">PROVEEDOR</th><th style="width:42px">CANT</th><th style="width:40px">UDM</th>
+    <th style="width:75px">COSTO UNIT</th><th style="width:80px">SUBTOTAL</th><th style="width:75px">IVA (19%)</th><th style="width:75px">RETENCION</th><th style="width:85px">TOTAL PAGAR</th><th style="width:42px">¿RETE?</th>
+  </tr></thead><tbody>${filas}</tbody></table>
+  <div style="margin-top:16px;width:430px">
+    <table class="b"><tr style="background:#003366;color:#fff;font-weight:700;text-align:center"><td>PROVEEDOR</td><td style="width:110px">VALOR SIN IVA</td><td style="width:110px">TOTAL A PAGAR</td><td style="width:80px">PAGO</td></tr>${filasResumen}</table>
+  </div>
+  <div style="margin-top:14px;font-size:9px;color:#555">Retefuente 2,5% aplica si la compra al proveedor ≥ $ ${PCOM_BASE_RETE.toLocaleString('es-CO')} (27 UVT ${new Date().getFullYear()}) y no es autoretenedor. Cotización: ${_remiEsc(c.cotizacion)||'n.a.'} · Fecha: ${c.fecha?c.fecha.split('-').reverse().join('/'):''}</div>
+  <div class="noprint" style="text-align:center;margin-top:16px"><button onclick="window.print()" style="padding:8px 22px;font-size:13px;cursor:pointer">🖨 Imprimir / PDF</button></div>
+  </body></html>`;
+  const w = window.open('','_blank'); if(!w) return showToast('Permite ventanas emergentes para imprimir','error');
+  w.document.write(html); w.document.close();
+}
+// Impresión Plan Logístico — clon del formato Excel (sin precios)
+function pcomLogistico(){
+  if(!pcom_current) return; pcomSyncHeader();
+  const c = pcom_current;
+  const porProv = {};
+  c.items.forEach(it=>{
+    const p = String(it.proveedor||'').trim().toUpperCase();
+    if(!p||!String(it.descripcion||'').trim()) return;
+    (porProv[p]=porProv[p]||[]).push(it);
+  });
+  const provs = Object.keys(porProv).sort();
+  if(!provs.length) return showToast('No hay líneas con proveedor para la ruta','error');
+  const bloques = provs.map(p=>{
+    const pv = pcomProvInfo(p)||{};
+    const dir = [pv.direccion, pv.ciudad].filter(Boolean).join(' · ');
+    const filas = porProv[p].map(it=>`<tr>
+      <td style="text-align:center;border-bottom:1px dotted #888">${_remiEsc(it.cantidad)}</td>
+      <td style="border-bottom:1px dotted #888">${_remiEsc(it.descripcion)}</td>
+      <td style="border:1px solid #000;width:50px"></td></tr>`).join('');
+    return `<table style="margin-top:14px;border-collapse:collapse;width:100%">
+      <tr><td colspan="3" style="background:#003366;color:#fff;font-weight:700;padding:5px 9px">PROVEEDOR: ${_remiEsc(p)}</td></tr>
+      <tr><td colspan="3" style="font-weight:700;color:#505050;padding:6px 4px">SEDE / DIRECCIÓN DE RECOGIDA: ${dir?_remiEsc(dir):'__________________________________________________'}</td></tr>
+      <tr style="background:#dce6f1;font-weight:700;text-align:center"><td style="border:1px solid #000;width:55px;padding:4px">CANT</td><td style="border:1px solid #000;padding:4px">DESCRIPCIÓN DEL MATERIAL</td><td style="border:1px solid #000;width:50px;padding:4px">CHECK</td></tr>
+      ${filas}
+      <tr><td colspan="3" style="font-size:9px;border-bottom:1px solid #000;padding:8px 4px 2px">Notas: </td></tr>
+    </table>`;
+  }).join('');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ruta logística ${_remiEsc(c.cc)}</title><style>
+    body{font-family:Calibri,Arial,sans-serif;font-size:11px;color:#000;margin:0;padding:26px 30px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    @media print{.noprint{display:none}}
+  </style></head><body>
+  <div style="background:#f2f2f2;border:1px solid #000;padding:8px 12px">
+    <div style="font-size:15px;font-weight:800">ORDEN DE RECOGIDA / RUTA LOGÍSTICA</div>
+    <div style="margin-top:3px">CLIENTE / PROYECTO: ${_remiEsc(c.cliente)||''}</div>
+    <div>REF: ${_remiEsc(c.cotizacion||c.cc)}  |  FECHA: ${c.fecha?c.fecha.split('-').reverse().join('/'):''}</div>
+  </div>
+  ${bloques}
+  <div class="noprint" style="text-align:center;margin-top:16px"><button onclick="window.print()" style="padding:8px 22px;font-size:13px;cursor:pointer">🖨 Imprimir / PDF</button></div>
+  </body></html>`;
+  const w = window.open('','_blank'); if(!w) return showToast('Permite ventanas emergentes para imprimir','error');
+  w.document.write(html); w.document.close();
 }
 
 // ═══ RESPALDO DE SEGURIDAD (descarga manual) ════════════════════
