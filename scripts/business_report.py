@@ -17,7 +17,7 @@ import base64
 import urllib.request
 import urllib.parse
 import urllib.error
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date
 from collections import defaultdict
 
 try:
@@ -81,6 +81,25 @@ def fetch_supabase(table, params=''):
     except Exception as e:
         print(f'⚠️  Supabase {table} error: {e}')
         return []
+
+
+def fetch_cartera_facturacion():
+    """Lee TODAS las facturas (pagadas y pendientes) del libro de cartera,
+    a través del túnel del Agente de Cartera (data/cartera_url.json)."""
+    try:
+        with open(os.path.join(REPO_ROOT, 'data', 'cartera_url.json'), encoding='utf-8') as f:
+            url = (json.load(f).get('url') or '').rstrip('/')
+        if not url:
+            return None
+        req = urllib.request.Request(url + '/api/facturacion', headers={'User-Agent': 'EYG-Report'})
+        with urllib.request.urlopen(req, timeout=45) as resp:
+            d = json.loads(resp.read())
+            if d.get('ok'):
+                print(f'   Cartera (libro): {len(d["data"])} facturas')
+                return d['data']
+    except Exception as e:
+        print(f'⚠️  Libro de cartera no disponible: {e}')
+    return None
 
 
 def unify_cotizaciones(historicas, plataforma):
@@ -177,6 +196,72 @@ def top_clientes(cots, year, top=5):
     return lista[:top]
 
 
+def _monday(d):
+    return d - timedelta(days=d.weekday())
+
+
+def serie_semanal(cots, facturas):
+    """Semana a semana desde mayo 2026 (pedido de gerencia): cotizado, facturado, recaudado."""
+    hoy = now_co().date()
+    inicio = date(2026, 5, 1)
+    # tope de seguridad: si pasa mucho tiempo, mostrar máximo 16 semanas
+    if (hoy - inicio).days > 16 * 7:
+        inicio = hoy - timedelta(weeks=16)
+    w = _monday(inicio)
+    out = []
+    while w <= hoy:
+        w_end = w + timedelta(days=6)
+
+        def in_w(s):
+            try:
+                d = datetime.strptime(str(s)[:10], '%Y-%m-%d').date()
+                return w <= d <= w_end
+            except Exception:
+                return False
+
+        cotizado = sum(c['total'] for c in cots if in_w(c['fecha']))
+        n_cot = sum(1 for c in cots if in_w(c['fecha']))
+        fact = rec = 0.0
+        n_fact = 0
+        for f in (facturas or []):
+            if in_w(f.get('fecha_facturacion')):
+                fact += f.get('monto_total') or 0
+                n_fact += 1
+            if in_w(f.get('fecha_pago')):
+                rec += f.get('valor_recibido') or 0
+        out.append({'ini': w, 'fin': w_end, 'cotizado': cotizado, 'n_cot': n_cot,
+                    'facturado': fact, 'n_fact': n_fact, 'recaudado': rec})
+        w += timedelta(weeks=1)
+    return out
+
+
+def kpis_cartera(facturas):
+    hoy = now_co().date().isoformat()
+    pend = [f for f in facturas if (f.get('saldo') or 0) > 0]
+    venc = [f for f in pend if f.get('fecha_vencimiento') and str(f['fecha_vencimiento'])[:10] < hoy]
+    por_emp = defaultdict(float)
+    for f in pend:
+        por_emp[(f.get('empresa') or '—').strip()] += f.get('saldo') or 0
+    top = sorted(por_emp.items(), key=lambda kv: -kv[1])[:5]
+    return {'total': sum(f['saldo'] for f in pend), 'vencida': sum(f['saldo'] for f in venc),
+            'n_pend': len(pend), 'n_venc': len(venc), 'top': top}
+
+
+def fact_por_vendedor(facturas, ym):
+    acc = defaultdict(float)
+    for f in (facturas or []):
+        if str(f.get('fecha_facturacion') or '')[:7] == ym:
+            acc[(f.get('vendedor') or 'SIN VENDEDOR').strip().upper() or 'SIN VENDEDOR'] += f.get('monto_total') or 0
+    return sorted(acc.items(), key=lambda kv: -kv[1])
+
+
+def totales_mes(cots, facturas, ym):
+    cot = sum(c['total'] for c in cots if (c['fecha'] or '')[:7] == ym)
+    fa = sum((f.get('monto_total') or 0) for f in (facturas or []) if str(f.get('fecha_facturacion') or '')[:7] == ym)
+    re_ = sum((f.get('valor_recibido') or 0) for f in (facturas or []) if str(f.get('fecha_pago') or '')[:7] == ym)
+    return {'cotizado': cot, 'facturado': fa, 'recaudado': re_}
+
+
 def hoy_actividad(cots_plataforma, remisiones, planes, ocs, solicitudes):
     hoy = now_co().date().isoformat()
     act = {}
@@ -214,7 +299,7 @@ def _sheet_from_rows(wb, title, headers, rows):
     return ws
 
 
-def generate_excel(cots, lineas_hist, cots_plataforma, remisiones, planes, ocs, proveedores, solicitudes, serie):
+def generate_excel(cots, lineas_hist, cots_plataforma, remisiones, planes, ocs, proveedores, solicitudes, serie, facturas=None, semanas=None):
     if not OPENPYXL_OK:
         return None
     global HDR_FILL, HDR_FONT
@@ -287,6 +372,21 @@ def generate_excel(cots, lineas_hist, cots_plataforma, remisiones, planes, ocs, 
         [[s.get('id'), str(s.get('fecha') or s.get('createdAt') or '')[:10],
           s.get('cliente') or s.get('empresa'), s.get('estado'), s.get('cotizacionId') or ''] for s in solicitudes])
 
+    if facturas:
+        _sheet_from_rows(wb, 'Facturacion',
+            ['Empresa', 'NIT', 'Fecha factura', '# Factura', '# OC', 'Vence', 'Fecha pago',
+             'Monto total', 'Valor recibido', 'Saldo', 'Estado', 'Vendedor'],
+            [[f.get('empresa'), f.get('nit'), f.get('fecha_facturacion'), f.get('factura'),
+              f.get('oc'), f.get('fecha_vencimiento'), f.get('fecha_pago'), f.get('monto_total'),
+              f.get('valor_recibido'), f.get('saldo'), f.get('estado_financiero') or f.get('estado'),
+              f.get('vendedor')] for f in facturas])
+
+    if semanas:
+        _sheet_from_rows(wb, 'Semanas',
+            ['Semana inicio', 'Semana fin', '# Cotizaciones', '$ Cotizado', '# Facturas', '$ Facturado', '$ Recaudado'],
+            [[s['ini'].isoformat(), s['fin'].isoformat(), s['n_cot'], round(s['cotizado']),
+              s['n_fact'], round(s['facturado']), round(s['recaudado'])] for s in semanas])
+
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()
@@ -301,7 +401,92 @@ def _card(num, lbl, bg, border, color):
             f"<div style='font-size:10px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;'>{lbl}</div></td>")
 
 
-def generate_html(date_str, act, k_mes, serie, tops, margen_mes, totales):
+def _flecha(act, ant):
+    if ant <= 0:
+        return ''
+    delta = (act - ant) / ant * 100
+    if delta >= 2:
+        return f" <span style='color:#1B5E20;font-weight:700;'>&#9650; {delta:+.0f}%</span>"
+    if delta <= -2:
+        return f" <span style='color:#c0392b;font-weight:700;'>&#9660; {delta:+.0f}%</span>"
+    return f" <span style='color:#888;'>&#8776; {delta:+.0f}%</span>"
+
+
+def build_gerencia_html(ger):
+    """Secciones pedidas por gerencia: semana a semana, cartera, vendedores, comparativa."""
+    if not ger:
+        return ''
+    html = ''
+    # ── Semana a semana ──
+    if ger.get('semanas'):
+        filas = ''
+        for s in ger['semanas']:
+            lbl = s['ini'].strftime('%d/%m') + ' – ' + s['fin'].strftime('%d/%m')
+            filas += (f"<tr><td style='padding:6px 10px;border-bottom:1px solid #eef1f8;font-weight:700;color:#0F2B5B;white-space:nowrap;'>{lbl}</td>"
+                      f"<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:center;'>{s['n_cot']}</td>"
+                      f"<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:right;'>{money(s['cotizado'])}</td>"
+                      f"<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:center;'>{s['n_fact']}</td>"
+                      f"<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:right;'>{money(s['facturado'])}</td>"
+                      f"<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:right;color:#1B5E20;font-weight:700;'>{money(s['recaudado'])}</td></tr>")
+        html += ("<div class='sec'>&#128198; Semana a semana (desde mayo)</div>"
+                 "<table width='100%' cellpadding='0' cellspacing='0' style='font-size:12px;'>"
+                 "<thead><tr>"
+                 "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:left;font-size:10px;'>SEMANA</th>"
+                 "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:center;font-size:10px;'># COT</th>"
+                 "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:right;font-size:10px;'>$ COTIZADO</th>"
+                 "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:center;font-size:10px;'># FACT</th>"
+                 "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:right;font-size:10px;'>$ FACTURADO</th>"
+                 "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:right;font-size:10px;'>$ RECAUDADO</th>"
+                 f"</tr></thead><tbody>{filas}</tbody></table>")
+    # ── Comparativa mes actual vs anterior ──
+    if ger.get('mes_act') is not None:
+        a, p = ger['mes_act'], ger['mes_ant']
+        html += ("<div class='sec'>&#9878;&#65039; Mes actual vs mes anterior</div>"
+                 "<table width='100%' cellpadding='0' cellspacing='0' style='font-size:12.5px;'>"
+                 "<thead><tr><th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:left;font-size:10px;'>CONCEPTO</th>"
+                 f"<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:right;font-size:10px;'>{ger['ym_ant']}</th>"
+                 f"<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:right;font-size:10px;'>{ger['ym_act']}</th>"
+                 "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:right;font-size:10px;'>VARIACIÓN</th></tr></thead><tbody>")
+        for key, lbl in [('cotizado', '&#128203; Cotizado'), ('facturado', '&#129534; Facturado'), ('recaudado', '&#128181; Recaudado')]:
+            html += (f"<tr><td style='padding:7px 10px;border-bottom:1px solid #eef1f8;'>{lbl}</td>"
+                     f"<td style='padding:7px 10px;border-bottom:1px solid #eef1f8;text-align:right;color:#888;'>{money(p[key])}</td>"
+                     f"<td style='padding:7px 10px;border-bottom:1px solid #eef1f8;text-align:right;font-weight:700;'>{money(a[key])}</td>"
+                     f"<td style='padding:7px 10px;border-bottom:1px solid #eef1f8;text-align:right;'>{_flecha(a[key], p[key]) or '—'}</td></tr>")
+        html += "</tbody></table>"
+    # ── Cartera ──
+    if ger.get('cartera'):
+        k = ger['cartera']
+        top_rows = ''.join(
+            f"<tr><td style='padding:6px 10px;border-bottom:1px solid #eef1f8;'><b>{i+1}. {emp}</b></td>"
+            f"<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:right;color:#c0392b;font-weight:700;'>{money(s)}</td></tr>"
+            for i, (emp, s) in enumerate(k['top']))
+        html += ("<div class='sec'>&#128188; Cartera</div>"
+                 "<table width='100%' cellpadding='6' cellspacing='6'><tr>"
+                 + _card(money(k['total']), f"Cartera total ({k['n_pend']} fact.)", '#fff8e1', '#E8A020', '#b7770d')
+                 + _card(money(k['vencida']), f"Vencida ({k['n_venc']} fact.)", '#fce8e6', '#e53e3e', '#c0392b')
+                 + "</tr></table>"
+                 "<table width='100%' cellpadding='0' cellspacing='0' style='font-size:12px;margin-top:4px;'>"
+                 "<thead><tr><th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:left;font-size:10px;'>TOP 5 DEUDORES</th>"
+                 "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:right;font-size:10px;'>SALDO PENDIENTE</th></tr></thead>"
+                 f"<tbody>{top_rows}</tbody></table>")
+    # ── Facturado por vendedor ──
+    if ger.get('vendedores'):
+        v_rows = ''.join(
+            f"<tr><td style='padding:6px 10px;border-bottom:1px solid #eef1f8;'><b>{v.title()}</b></td>"
+            f"<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:right;'>{money(m)}</td></tr>"
+            for v, m in ger['vendedores'])
+        html += ("<div class='sec'>&#128100; Facturado por vendedor (mes actual)</div>"
+                 "<table width='100%' cellpadding='0' cellspacing='0' style='font-size:12px;'>"
+                 "<thead><tr><th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:left;font-size:10px;'>VENDEDOR</th>"
+                 "<th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:right;font-size:10px;'>$ FACTURADO</th></tr></thead>"
+                 f"<tbody>{v_rows}</tbody></table>")
+    if ger.get('aviso'):
+        html += (f"<div style='background:#fff3cd;border-left:4px solid #e8a020;border-radius:6px;"
+                 f"padding:10px 14px;font-size:12px;color:#7d5a00;margin:14px 0 0;'>&#9888;&#65039; {ger['aviso']}</div>")
+    return html
+
+
+def generate_html(date_str, act, k_mes, serie, tops, margen_mes, totales, ger=None):
     # Actividad de hoy
     cot_rows = ''.join(
         f"<tr><td style='padding:6px 10px;border-bottom:1px solid #eef1f8;'><b style='color:#0F2B5B'>{c.get('id')}</b></td>"
@@ -376,6 +561,7 @@ def generate_html(date_str, act, k_mes, serie, tops, margen_mes, totales):
       {_card(money(k_mes['pipeline']), 'Pipeline abierto', '#fff8e1', '#E8A020', '#b7770d')}
     </tr></table>
     {margen_html}
+    {build_gerencia_html(ger)}
     <div class="sec">&#128197; Tasa de conversi&oacute;n &mdash; &uacute;ltimos 6 meses</div>
     <table width='100%' cellpadding='0' cellspacing='0' style='font-size:12px;'>
       <thead><tr>
@@ -448,7 +634,7 @@ if __name__ == '__main__':
     client_secret = os.environ.get('MS_CLIENT_SECRET', '').strip()
     sender_email  = os.environ.get('SENDER_EMAIL', '').strip()
     recipients    = [r.strip() for r in os.environ.get('RECIPIENT_EMAILS',
-                     'andrea.bernal@eygenergygroup.com').split(',')]
+                     'andrea.bernal@eygenergygroup.com,gerenciageneral@eygenergygroup.com').split(',')]
 
     print('📥 Cargando datos...')
     hist  = load_json('data/cotizaciones_historicas.json')
@@ -459,6 +645,7 @@ if __name__ == '__main__':
     planes = fetch_supabase('plan_compras', '&order=cc.desc')
     ocs    = fetch_supabase('oc_compras', '&order=oc.desc')
     provs  = fetch_supabase('proveedores', '&order=nombre.asc')
+    facturas = fetch_cartera_facturacion()
 
     cots = unify_cotizaciones(hist, plat)
     print(f'📊 Cotizaciones unificadas: {len(cots)}')
@@ -483,10 +670,24 @@ if __name__ == '__main__':
     month    = MONTHS_ES.get(now.strftime('%B'), now.strftime('%B'))
     date_str = f'{day} {now.day} de {month} de {now.year}'
 
-    totales = {'cots': len(cots), 'remis': len(remis), 'planes': len(planes), 'ocs': len(ocs)}
-    html_body = generate_html(date_str, act, k_mes, serie, tops, margen_mes, totales)
+    # ── Secciones para gerencia ──
+    ym_ant_dt = (now.replace(day=1) - timedelta(days=1))
+    ym_ant = ym_ant_dt.strftime('%Y-%m')
+    semanas = serie_semanal(cots, facturas)
+    ger = {
+        'semanas': semanas,
+        'ym_act': ym, 'ym_ant': ym_ant,
+        'mes_act': totales_mes(cots, facturas, ym),
+        'mes_ant': totales_mes(cots, facturas, ym_ant),
+        'cartera': kpis_cartera(facturas) if facturas else None,
+        'vendedores': fact_por_vendedor(facturas, ym) if facturas else None,
+        'aviso': None if facturas else 'No se pudo leer el libro de cartera (¿PC del agente apagado?) — las cifras de facturado/recaudado/cartera no están en este informe.'
+    }
 
-    excel_bytes = generate_excel(cots, hist, plat, remis, planes, ocs, provs, sols, serie)
+    totales = {'cots': len(cots), 'remis': len(remis), 'planes': len(planes), 'ocs': len(ocs)}
+    html_body = generate_html(date_str, act, k_mes, serie, tops, margen_mes, totales, ger)
+
+    excel_bytes = generate_excel(cots, hist, plat, remis, planes, ocs, provs, sols, serie, facturas, semanas)
     excel_name  = 'Datos_EYG_' + now.strftime('%Y-%m-%d') + '.xlsx'
     if excel_bytes:
         print(f'📊 Excel generado: {excel_name} ({len(excel_bytes)//1024} KB)')

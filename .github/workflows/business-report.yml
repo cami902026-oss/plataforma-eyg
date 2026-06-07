@@ -31,8 +31,8 @@ jobs:
           MS_CLIENT_ID:      ${{ secrets.MS_CLIENT_ID }}
           MS_CLIENT_SECRET:  ${{ secrets.MS_CLIENT_SECRET }}
           SENDER_EMAIL:      ${{ secrets.SENDER_EMAIL }}
-          # Solo Andrea recibe este informe
-          RECIPIENT_EMAILS:  'andrea.bernal@eygenergygroup.com'
+          # Destinatarios: Andrea + Gerencia General
+          RECIPIENT_EMAILS:  'andrea.bernal@eygenergygroup.com,gerenciageneral@eygenergygroup.com'
           SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY:      ${{ secrets.SUPABASE_KEY }}
         run: python scripts/business_report.py
