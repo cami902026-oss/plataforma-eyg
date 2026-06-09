@@ -7443,9 +7443,10 @@ function cotizGenerarPDF() {
 <meta charset="UTF-8">
 <title>Cotización ${numCot} — E&G Energy Group</title>
 <style>
-  @page { size: letter landscape; margin: 12mm; }
+  @page { size: letter landscape; margin: 0; }
   * { box-sizing: border-box; }
-  body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #000; font-size: 10px; }
+  html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 12mm; color: #000; font-size: 10px; }
   .hdr { display:flex; align-items:center; border:1px solid #000; }
   .hdr-logo { width:120px; padding:8px; text-align:center; border-right:1px solid #000; }
   .hdr-logo img { max-width:100px; max-height:50px; }
@@ -7485,7 +7486,7 @@ function cotizGenerarPDF() {
   .print-controls button { padding:8px 16px; margin-left:8px; cursor:pointer; border:none; border-radius:6px; font-weight:700; }
   .btn-print { background:#1a3a8f; color:#fff; }
   .btn-close { background:#ddd; color:#333; }
-  @media print { .print-controls { display:none; } body { font-size:9px; } }
+  @media print { .print-controls { display:none; } }
 </style>
 </head>
 <body>
