@@ -2,7 +2,7 @@
 // Estrategia: network-first para HTML/JS (siempre intenta traer la última versión),
 // cache fallback cuando no hay internet → la app sigue abriendo del cache offline.
 
-const CACHE_NAME = 'energy-v36';
+const CACHE_NAME = 'energy-v37';
 const ASSETS = [
   './Index.html',
   './manifest.json',
@@ -36,10 +36,15 @@ self.addEventListener('fetch', (event) => {
   if (url.host.includes('api.anthropic.com')) return;
   if (url.host.includes('netlify.app') && url.pathname.startsWith('/.netlify/')) return;
 
+  // Para los archivos propios (HTML/JS de la app) pedir SIEMPRE fresco, sin caché del
+  // navegador. Antes `fetch(req)` respetaba el caché HTTP de GitHub Pages (~10 min), así
+  // que aunque se desplegara un arreglo, los equipos seguían viendo la versión vieja al
+  // recargar. Con cache:'no-store' la recarga normal ya trae la última versión.
+  const sameOrigin = url.origin === location.origin;
   event.respondWith(
-    fetch(req)
+    fetch(req, sameOrigin ? { cache: 'no-store' } : undefined)
       .then((res) => {
-        if (res.ok && url.origin === location.origin) {
+        if (res.ok && sameOrigin) {
           const copy = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
         }
