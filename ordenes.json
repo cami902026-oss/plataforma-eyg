@@ -829,7 +829,7 @@
         "n": "BODEGA\nCODIFER\nFERREINSTRUMENTACION\nSOLVALFER\n"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-06-06",
         "n": "",
         "envio": "entrega_mano",
@@ -851,7 +851,7 @@
     ],
     "createdAt": "2026-06-05T21:33:05.408Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-05T21:33:54.584Z",
+    "updatedAt": "2026-06-10T15:46:55.685Z",
     "updatedBy": "andrea"
   },
   {
@@ -874,7 +874,7 @@
         "n": "MARIN\nBODEGA"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-06-06",
         "n": "",
         "envio": "entrega_mano",
@@ -896,7 +896,7 @@
     ],
     "createdAt": "2026-06-05T21:32:19.250Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-06T15:31:05.587Z",
+    "updatedAt": "2026-06-10T15:46:46.191Z",
     "updatedBy": "andrea"
   },
   {
@@ -914,23 +914,23 @@
     },
     "stages": [
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-09",
+        "n": "CODIFER\nPETRORIENTE"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-10",
         "n": "",
-        "envio": "",
+        "envio": "camion_energy",
         "transp": "",
         "guia": "",
         "dest": "",
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-10",
         "n": ""
       },
       {
@@ -941,10 +941,8 @@
     ],
     "createdAt": "2026-06-05T21:37:33.462Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-10T15:45:50.770Z",
-    "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-10T15:45:50.770Z"
+    "updatedAt": "2026-06-10T15:46:28.646Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1780759794347",
