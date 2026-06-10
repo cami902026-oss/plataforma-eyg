@@ -1353,7 +1353,7 @@
     "cliente": "CIAM",
     "desc": "Viga HEA, Perfil UPN 100 X 6 MTR y Flete para Diálisis de Crudo",
     "estado": "activo",
-    "fechaIngreso": "",
+    "fechaIngreso": "2026-06-10",
     "valor": 4758067,
     "hojaEntrada": {
       "requerida": false,
@@ -1365,6 +1365,51 @@
         "s": "done",
         "f": "2026-06-10",
         "n": "imperial"
+      },
+      {
+        "s": "active",
+        "f": "2026-06-11",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "Yopal cargo",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-06-10T18:39:13.914Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-10T21:20:02.810Z",
+    "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1781126215905",
+    "num": "17824",
+    "cliente": "CONSORCIO SKF - OMIA",
+    "desc": "Suministro de Materiales y Accesorios para Estación Cartagena",
+    "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
       },
       {
         "s": "pending",
@@ -1387,50 +1432,9 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-06-10T18:39:13.914Z",
+    "createdAt": "2026-06-10T21:19:27.539Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-10T18:39:13.914Z",
+    "updatedAt": "2026-06-10T21:19:27.539Z",
     "updatedBy": "andrea"
-  },
-  {
-    "id": "poc_1781126395450",
-    "num": "17824",
-    "cliente": "CONSORCIO SKF - OMIA",
-    "desc": "Codo y Brida para tuberías - Materiales acero al carbono",
-    "valor": 714595,
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "createdAt": "2026-06-09T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-06-10T21:19:55.450Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA EYG ENERGY GROIP",
-      "fecha": "2026-06-10T21:19:55.450Z",
-      "fechaCreacionOC": "2026-06-09",
-      "fechaCompra": "2026-06-09"
-    }
   }
 ]
