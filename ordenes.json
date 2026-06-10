@@ -1394,10 +1394,9 @@
   },
   {
     "id": "poc_1781126215905",
-    "num": "17824",
+    "num": 17824,
     "cliente": "CONSORCIO SKF - OMIA",
     "desc": "Suministro de Materiales y Accesorios para Estación Cartagena",
-    "valor": 714595,
     "estado": "activo",
     "stages": [
       {
@@ -1421,16 +1420,14 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-06-09T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-06-10T21:16:55.904Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA EYG ENERGY GROIP",
-      "fecha": "2026-06-10T21:16:55.904Z",
-      "fechaCreacionOC": "2026-06-09",
-      "fechaCompra": "2026-06-09"
-    }
+    "updatedAt": "2026-06-10T21:19:23.113Z",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "lockedBy": "andrea",
+    "lockedAt": "2026-06-10T21:19:23.113Z"
   }
 ]
