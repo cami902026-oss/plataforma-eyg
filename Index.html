@@ -577,8 +577,15 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .cotiz-table{width:100%;border-collapse:collapse;font-size:11px;}
 .cotiz-table th{background:rgba(15,43,91,.9);padding:7px 5px;color:var(--text-muted);text-align:left;font-weight:700;font-size:10px;white-space:nowrap;}
 .cotiz-table td{padding:4px 5px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;}
-.cotiz-table td input,.cotiz-table td select{background:transparent;border:1px solid transparent;border-radius:3px;padding:3px 4px;color:#fff;width:100%;font-size:11px;min-width:40px;}
-.cotiz-table td input:focus,.cotiz-table td select:focus{border-color:var(--blue);outline:none;background:rgba(26,58,143,.2);}
+.cotiz-table td input,.cotiz-table td select,.cotiz-table td textarea{background:transparent;border:1px solid transparent;border-radius:3px;padding:3px 4px;color:#fff;width:100%;font-size:11px;min-width:40px;}
+.cotiz-table td input:focus,.cotiz-table td select:focus,.cotiz-table td textarea:focus{border-color:var(--blue);outline:none;background:rgba(26,58,143,.2);}
+.cotiz-table td.desc-cell{vertical-align:top;}
+.cotiz-table td textarea{font-family:inherit;line-height:1.35;resize:vertical;overflow:hidden;min-height:24px;display:block;}
+.cotiz-foto-ctrl{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;}
+.cotiz-foto-ctrl button.foto-btn{background:rgba(26,58,143,.4);border:1px solid var(--border);color:#cbd5e1;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;width:auto;min-width:0;}
+.cotiz-foto-thumb{width:34px;height:34px;object-fit:cover;border-radius:4px;border:1px solid var(--border);cursor:zoom-in;}
+.cotiz-foto-ctrl label{font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:3px;cursor:pointer;}
+.cotiz-foto-ctrl .foto-del{background:none;border:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;width:auto;min-width:0;}
 .cotiz-totals-box{display:flex;flex-direction:column;align-items:flex-end;gap:3px;margin-top:10px;}
 .cotiz-tot-row{display:flex;gap:16px;min-width:240px;justify-content:space-between;font-size:13px;padding:2px 0;}
 .cotiz-tot-row.grand{font-size:15px;font-weight:700;color:var(--gold);border-top:1px solid rgba(255,255,255,.15);padding-top:8px;margin-top:4px;}
@@ -3364,6 +3371,14 @@ async function _saveDataGH(filename, data, label) {
   // con lo que ya está en GitHub para no pisar cotizaciones de otros equipos.
   if (filename === 'data/cotizaciones.json' && Array.isArray(data)) {
     data = await _cotizMergeConRemoto(data);
+  }
+  // Fotos de cotización: unir con lo del servidor por clave (las locales ganan) para
+  // que dos usuarias agregando fotos al tiempo no se borren entre sí.
+  if (filename === 'data/cotiz_fotos.json' && data && typeof data === 'object' && !Array.isArray(data)) {
+    try {
+      const rem = await _loadDataGH(filename);
+      if (rem && typeof rem === 'object' && !Array.isArray(rem)) data = Object.assign({}, rem, data);
+    } catch(_) {}
   }
   const proxy = _ghWriteProxyURL();
   // Estrategia 1: si el dispositivo tiene PAT local, usarlo
@@ -7257,7 +7272,13 @@ function cotizRender() {
       <td style="color:var(--text-muted);text-align:center">${i+1}</td>
       <td><input value="${it.udm||'EA'}" oninput="cotizItems[${i}].udm=this.value" style="width:44px"></td>
       <td><input type="number" value="${it.qty}" min="0" oninput="cotizItems[${i}].qty=parseFloat(this.value)||0;cotizUpdateTotals()" style="width:50px"></td>
-      <td><input value="${it.desc.replace(/"/g,'&quot;')}" oninput="cotizItems[${i}].desc=this.value" style="width:100%;min-width:160px"></td>
+      <td class="desc-cell"><textarea rows="1" oninput="cotizItems[${i}].desc=this.value;_cotizAutoGrow(this)" style="min-width:170px" placeholder="Descripción del producto">${(it.desc||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+        <div class="cotiz-foto-ctrl">
+          <button type="button" class="foto-btn" onclick="_cotizPickFoto(${i})">📷 Foto</button>
+          ${it.fotoId ? `<img class="cotiz-foto-thumb" src="${(_cotizFotos[it.fotoId]||'')}" onclick="_cotizVerFoto(${i})" title="Ver foto">
+            <label title="Incluir esta foto en el PDF que va al cliente"><input type="checkbox" ${it.fotoEnPDF!==false?'checked':''} onchange="cotizItems[${i}].fotoEnPDF=this.checked"> PDF</label>
+            <button type="button" class="foto-del" onclick="_cotizQuitarFoto(${i})" title="Quitar foto">🗑</button>` : ''}
+        </div></td>
       <td><input value="${it.tiempoEntrega||''}" oninput="cotizItems[${i}].tiempoEntrega=this.value" style="width:80px"></td>
       <td><input value="${it.desvTec||''}" oninput="cotizItems[${i}].desvTec=this.value" style="width:120px"></td>
       <td><input value="${it.marca||''}" oninput="cotizItems[${i}].marca=this.value" style="width:62px"></td>
@@ -7269,7 +7290,90 @@ function cotizRender() {
       <td><button onclick="cotizItems.splice(${i},1);cotizRender()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">×</button></td>
     </tr>`;
   }).join('');
+  // Ajustar el alto de cada descripción para que se vea el renglón completo
+  tbody.querySelectorAll('textarea').forEach(_cotizAutoGrow);
+  // Cargar las fotos (archivo aparte) la primera vez y re-renderizar para mostrar miniaturas
+  if (!_cotizFotosLoaded) { _cotizFotosEnsure().then(() => { try { cotizRender(); } catch(_){} }); }
   cotizUpdateTotals();
+}
+
+// ===== Descripción que crece de alto (renglón completo) =====
+function _cotizAutoGrow(el) {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = (el.scrollHeight + 2) + 'px';
+}
+
+// ===== Fotos de producto por ítem (guardadas en archivo APARTE para no pesar el sync) =====
+let _cotizFotos = {};          // fotoId -> base64 (en memoria)
+let _cotizFotosLoaded = false;
+async function _cotizFotosEnsure() {
+  if (_cotizFotosLoaded) return;
+  _cotizFotosLoaded = true;
+  try {
+    const remoto = await _loadDataGH('data/cotiz_fotos.json');
+    if (remoto && typeof remoto === 'object' && !Array.isArray(remoto)) _cotizFotos = Object.assign({}, remoto, _cotizFotos);
+  } catch(_) {}
+  try { const l = JSON.parse(localStorage.getItem('energy_cotiz_fotos') || '{}'); _cotizFotos = Object.assign({}, _cotizFotos, l); } catch(_) {}
+}
+function _cotizFotosPersistLocal() { try { localStorage.setItem('energy_cotiz_fotos', JSON.stringify(_cotizFotos)); } catch(_) {} }
+
+// Comprime la imagen a JPEG (máx. lado largo + calidad) para que pese poco
+function _compressImage(file, maxDim, quality) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+        else if (h >= w && h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject; img.src = fr.result;
+    };
+    fr.onerror = reject; fr.readAsDataURL(file);
+  });
+}
+
+function _cotizPickFoto(i) {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment';
+  inp.onchange = async () => {
+    const f = inp.files && inp.files[0];
+    if (!f) return;
+    showToast('Procesando foto…', 'info');
+    try {
+      const b64 = await _compressImage(f, 1000, 0.55);
+      await _cotizFotosEnsure();
+      const fid = 'F' + Date.now() + Math.floor(Math.random() * 1000);
+      _cotizFotos[fid] = b64;
+      _cotizFotosPersistLocal();
+      cotizItems[i].fotoId = fid;
+      cotizItems[i].fotoEnPDF = true;
+      // Guardar el archivo de fotos APARTE (no pesa el sync de cotizaciones)
+      _saveDataGH('data/cotiz_fotos.json', _cotizFotos, '📷 Fotos cotización').catch(() => {});
+      cotizRender();
+      showToast('Foto agregada', 'success');
+    } catch (e) { showToast('No se pudo procesar la foto', 'error'); }
+  };
+  inp.click();
+}
+function _cotizQuitarFoto(i) {
+  if (!cotizItems[i]) return;
+  cotizItems[i].fotoId = null;
+  cotizRender();
+}
+function _cotizVerFoto(i) {
+  const fid = cotizItems[i] && cotizItems[i].fotoId; if (!fid) return;
+  const src = _cotizFotos[fid]; if (!src) return;
+  const o = document.createElement('div');
+  o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:3000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+  o.onclick = () => o.remove();
+  o.innerHTML = `<img src="${src}" style="max-width:92%;max-height:92%;border-radius:8px;">`;
+  document.body.appendChild(o);
 }
 
 function _cotizUpdateMargen(i) {
@@ -7418,8 +7522,13 @@ function cotizGuardarBD() {
 // - Encabezado: logo + datos empresa + COTIZACION No.
 // - Banda azul · Tabla cliente/fecha · Banda verde · Tabla ítems
 // - Footer: Observaciones + SubTotal/IVA/Total · Condiciones comerciales
-function cotizGenerarPDF() {
+async function cotizGenerarPDF() {
   if (!cotizItems.length) { showToast('Agrega ítems primero','error'); return; }
+  // Asegurar que las fotos marcadas para PDF estén cargadas (se guardan en archivo aparte)
+  if (cotizItems.some(it => it && it.fotoId && it.fotoEnPDF !== false)) {
+    if (cotizItems.some(it => it && it.fotoId && it.fotoEnPDF !== false && !_cotizFotos[it.fotoId])) _cotizFotosLoaded = false;
+    await _cotizFotosEnsure();
+  }
   const cliente = document.getElementById('cotiz-cliente').value || '';
   const contacto = document.getElementById('cotiz-contacto').value || '';
   const correo = document.getElementById('cotiz-correo').value || '';
@@ -7448,7 +7557,7 @@ function cotizGenerarPDF() {
       <td class="c">${i+1}</td>
       <td class="c">${it.udm||'EA'}</td>
       <td class="c">${it.qty||0}</td>
-      <td class="l">${(it.desc||'').replace(/</g,'&lt;')}</td>
+      <td class="l">${(it.desc||'').replace(/</g,'&lt;')}${(it.fotoId && it.fotoEnPDF !== false && _cotizFotos[it.fotoId]) ? `<br><img src="${_cotizFotos[it.fotoId]}" style="max-height:90px;max-width:140px;margin-top:3px;border:1px solid #ccc;border-radius:3px;">` : ''}</td>
       <td class="c">${it.tiempoEntrega||''}</td>
       <td class="c">${it.desvTec||''}</td>
       <td class="c">${it.marca||''}</td>
@@ -7839,6 +7948,12 @@ function bdCargar(id) {
   if (!c) return;
   cotizEditId = c.id;
   cotizItems = JSON.parse(JSON.stringify(c.items || []));
+  // Si esta cotización referencia fotos que no tenemos en memoria (agregadas en otro
+  // equipo), volver a descargar el archivo de fotos para mostrarlas.
+  if (cotizItems.some(it => it && it.fotoId && !_cotizFotos[it.fotoId])) {
+    _cotizFotosLoaded = false;
+    _cotizFotosEnsure().then(() => { try { cotizRender(); } catch(_){} });
+  }
   cotizWriteNum(c.id);
   document.getElementById('cotiz-cliente').value = c.cliente || '';
   document.getElementById('cotiz-contacto').value = c.contacto || '';
