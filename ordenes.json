@@ -1389,24 +1389,16 @@
     ],
     "createdAt": "2026-06-10T18:39:13.914Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-10T21:19:33.421Z",
-    "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-10T21:19:33.421Z"
+    "updatedAt": "2026-06-10T18:39:13.914Z",
+    "updatedBy": "andrea"
   },
   {
-    "id": "poc_1781126215905",
+    "id": "poc_1781126395450",
     "num": "17824",
     "cliente": "CONSORCIO SKF - OMIA",
-    "desc": "Suministro de Materiales y Accesorios para Estación Cartagena",
+    "desc": "Codo y Brida para tuberías - Materiales acero al carbono",
+    "valor": 714595,
     "estado": "activo",
-    "fechaIngreso": "",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
-    },
     "stages": [
       {
         "s": "pending",
@@ -1416,12 +1408,7 @@
       {
         "s": "pending",
         "f": "",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
+        "n": ""
       },
       {
         "s": "pending",
@@ -1434,9 +1421,16 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-06-10T21:19:27.539Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-10T21:19:27.539Z",
-    "updatedBy": "andrea"
+    "createdAt": "2026-06-09T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-06-10T21:19:55.450Z",
+    "updatedBy": "Auto (correo)",
+    "origenCorreo": {
+      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
+      "subject": "ORDEN DE COMPRA EYG ENERGY GROIP",
+      "fecha": "2026-06-10T21:19:55.450Z",
+      "fechaCreacionOC": "2026-06-09",
+      "fechaCompra": "2026-06-09"
+    }
   }
 ]
