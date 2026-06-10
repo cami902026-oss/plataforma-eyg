@@ -3365,10 +3365,17 @@ async function _saveDataGH(filename, data, label) {
   if (filename === 'data/cotizaciones.json' && Array.isArray(data)) {
     data = await _cotizMergeConRemoto(data);
   }
-  // Estrategia 1: si el dispositivo tiene PAT local, usarlo
-  if (_ghToken()) return _saveDataGH_directPAT(filename, data, label);
-  // Estrategia 2: si hay proxy de escritura configurado, enviar por ahí
   const proxy = _ghWriteProxyURL();
+  // Estrategia 1: si el dispositivo tiene PAT local, usarlo
+  if (_ghToken()) {
+    const okPAT = await _saveDataGH_directPAT(filename, data, label);
+    if (okPAT) return okPAT;
+    // El PAT falló (típicamente VENCIDO o inválido). Si hay proxy, usarlo como
+    // respaldo para que el equipo NO quede bloqueado cuando se le vence el token.
+    if (proxy) { console.warn('PAT falló (¿vencido?), usando proxy de respaldo para', filename); return _saveDataGH_viaProxy(proxy, filename, data, label); }
+    throw new Error('El token de GitHub falló (¿vencido?) y no hay proxy configurado');
+  }
+  // Estrategia 2: si hay proxy de escritura configurado, enviar por ahí
   if (proxy) return _saveDataGH_viaProxy(proxy, filename, data, label);
   // Sin token y sin proxy: imposible escribir
   throw new Error('Sin GitHub Token ni proxy configurado para escribir');
@@ -3407,9 +3414,10 @@ async function _saveDataGH_directPAT(filename, data, label) {
         );
       }
     }
-    if (r.ok) { const res = await r.json(); _ghShaCache[filename] = res.content.sha; }
-    else console.warn('GH save', filename, 'error:', await r.text());
-  } catch(e) { console.warn('GH save', filename, e); }
+    if (r.ok) { const res = await r.json(); _ghShaCache[filename] = res.content.sha; return true; }
+    console.warn('GH save', filename, 'error:', r.status, await r.text());
+    return false; // deja que _saveDataGH intente el proxy de respaldo
+  } catch(e) { console.warn('GH save', filename, e); return false; }
 }
 async function _loadDataGH(filename) {
   // Si hay token: usar la API (devuelve también el sha para poder escribir después)
