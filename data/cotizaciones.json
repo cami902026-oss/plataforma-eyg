@@ -1035,7 +1035,7 @@
     "cliente": "JE JAIMES",
     "contacto": "LUIS GARZON",
     "correo": "contacto@jejaimes.com.co",
-    "estado": "Enviada",
+    "estado": "Borrador",
     "iva": 19,
     "subtotal": 120384000,
     "ivaVal": 22872960,
@@ -1062,10 +1062,10 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-06-10T20:01:05.992Z",
+    "fechaGuardado": "2026-06-09T13:57:18.092Z",
     "createdAt": "2026-06-09T13:53:25.087Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-06-10T20:01:05.992Z",
+    "updatedAt": "2026-06-09T13:57:18.092Z",
     "updatedBy": "alexandra"
   },
   {
@@ -2123,11 +2123,11 @@
         "udm": "UNIDAD",
         "qty": 6,
         "precio": 0,
-        "tiempoEntrega": "",
-        "desvTec": "",
+        "tiempoEntrega": "1-2 DIAS HABILES",
+        "desvTec": "SELLO CORTAFUEGO 3/4 H-H ELECTRIC",
         "marca": "",
-        "proveedor": "",
-        "precioProveedor": 0
+        "proveedor": "MARIN",
+        "precioProveedor": 28000
       },
       {
         "id": 16,
@@ -2195,11 +2195,11 @@
         "udm": "UNIDAD",
         "qty": 30,
         "precio": 0,
-        "tiempoEntrega": "",
-        "desvTec": "",
+        "tiempoEntrega": "1-2 DIAS HABILES ",
+        "desvTec": "TERMINAL ESTAÑADA 1/0 UN OJO AWG",
         "marca": "",
-        "proveedor": "",
-        "precioProveedor": 0
+        "proveedor": "MARIN ",
+        "precioProveedor": 2800
       },
       {
         "id": 22,
@@ -2255,7 +2255,7 @@
         "udm": "UNIDAD",
         "qty": 1,
         "precio": 0,
-        "tiempoEntrega": "1-2 DIAS HABILES ",
+        "tiempoEntrega": "",
         "desvTec": "",
         "marca": "",
         "proveedor": "",
@@ -2279,11 +2279,11 @@
         "udm": "UNIDAD",
         "qty": 9,
         "precio": 0,
-        "tiempoEntrega": "",
-        "desvTec": "",
+        "tiempoEntrega": "1-2 DIAS HABILES",
+        "desvTec": "BLOQUE DISTRIBUCION 1 BARRA 15 POLOS 125AMP VOLTIO",
         "marca": "",
-        "proveedor": "",
-        "precioProveedor": 0
+        "proveedor": "MARIN ",
+        "precioProveedor": 37815
       },
       {
         "id": 29,
@@ -2291,11 +2291,11 @@
         "udm": "UNIDAD",
         "qty": 3,
         "precio": 0,
-        "tiempoEntrega": "",
-        "desvTec": "",
+        "tiempoEntrega": "1-2 DIAS HABILES ",
+        "desvTec": "BLOQUE DISTRIBUCION 4 BARRA 15 POLOS 125AMP CON TAPA VOLTIO",
         "marca": "",
-        "proveedor": "",
-        "precioProveedor": 0
+        "proveedor": "MARIN",
+        "precioProveedor": 42856
       },
       {
         "id": 30,
@@ -2303,17 +2303,29 @@
         "udm": "UNIDAD",
         "qty": 4,
         "precio": 0,
-        "tiempoEntrega": "",
-        "desvTec": "",
+        "tiempoEntrega": "1-2 DIAS HABILES ",
+        "desvTec": "CONTACTOR 32AMP A 110V CHINT",
         "marca": "",
-        "proveedor": "",
-        "precioProveedor": 0
+        "proveedor": "MARIN ",
+        "precioProveedor": 65126
+      },
+      {
+        "id": 31,
+        "desc": "Contactor 32 Amp Chint - 220v",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS HABILES ",
+        "desvTec": "CONTACTOR 32AMP A 220V CHINT",
+        "marca": "",
+        "proveedor": "MARIN ",
+        "precioProveedor": 65126
       }
     ],
-    "fechaGuardado": "2026-06-10T17:59:55.280Z",
+    "fechaGuardado": "2026-06-10T20:02:19.497Z",
     "createdAt": "2026-06-10T14:36:16.885Z",
     "createdBy": "lina",
-    "updatedAt": "2026-06-10T17:59:55.280Z",
+    "updatedAt": "2026-06-10T20:02:19.497Z",
     "updatedBy": "lina"
   },
   {
@@ -2577,9 +2589,9 @@
     "correo": "lrojas@sarenergy.com",
     "estado": "Enviada",
     "iva": 19,
-    "subtotal": 4538571.99,
-    "ivaVal": 862328.6781,
-    "total": 5400900.6681,
+    "subtotal": 99998,
+    "ivaVal": 18999.62,
+    "total": 118997.62,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "YOPAL",
     "validez": "8 DÍAS",
@@ -2606,180 +2618,180 @@
         "desc": " REDUCC CONCENT 2\" X 1 1/2\" SCH 40 A 234  ",
         "udm": "EA",
         "qty": 10,
-        "precio": 23.999,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "INOX",
         "marca": "XF",
-        "proveedor": "CODIFER",
-        "precioProveedor": 22720
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 3,
         "desc": "GRATA TIPO COPA ESCOBILLA 3\" X 5/8\" ",
         "udm": "EA",
         "qty": 5,
-        "precio": 59900,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "GRATA DE COPA ENTORCHADA ROSCA 5/8 X 3\"",
         "marca": "MAKITA / VARIAS",
-        "proveedor": "HOME CENTER",
-        "precioProveedor": 34900
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 4,
         "desc": "GRATA 4 1/2\" X 5/8\" CIRCULAR TRENZADA    ",
         "udm": "EA",
         "qty": 15,
-        "precio": 39999,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "GRATA ALAMBRE ANGULAR TRENZADO 4-1/2\" ROSCA DE 5/8\"",
         "marca": "",
-        "proveedor": "HOME CENTER",
-        "precioProveedor": 27900
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 5,
         "desc": "GRATA BROCHA TRENZADA 1\" X 1/4\" ",
         "udm": "EA",
         "qty": 15,
-        "precio": 28999,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "BAUKER / VARIAS ",
-        "proveedor": "HOME CENTER",
-        "precioProveedor": 19900
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 6,
         "desc": " BRIDA 6\" WN RF 150 SCH 40                ",
         "udm": "EA",
         "qty": 6,
-        "precio": 75655,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "XF",
-        "proveedor": "CODIFER",
-        "precioProveedor": 75655
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 7,
         "desc": " BRIDA 4\" WN RF 150 SCH 40                ",
         "udm": "EA",
         "qty": 10,
-        "precio": 48041,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "XF",
-        "proveedor": "CODIFER",
-        "precioProveedor": 48041
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 8,
         "desc": " BRIDA 3\" WN RF 150 SCH 40                ",
         "udm": "EA",
         "qty": 10,
-        "precio": 33451,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "XF",
-        "proveedor": "CODIFER",
-        "precioProveedor": 33451
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 9,
         "desc": " ESPIROMETALICO 6\" X 150 CG GRAFITO       ",
         "udm": "EA",
         "qty": 16,
-        "precio": 11999,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "SPIRA PACK",
-        "proveedor": "COLIMPORTADOS",
-        "precioProveedor": 8530
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 10,
         "desc": " ESPIROMETALICO 4\" X 150 CG GRAFITO       ",
         "udm": "EA",
         "qty": 14,
-        "precio": 9490,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "SPIRA PACK",
-        "proveedor": "COLIMPORTADOS",
-        "precioProveedor": 6983
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 11,
         "desc": " ESPIROMETALICO 3\" X 150 CG GRAFITO       ",
         "udm": "EA",
         "qty": 18,
-        "precio": 6410,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "SPIRA PACK",
-        "proveedor": "COLIMPORTADOS",
-        "precioProveedor": 4630
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 12,
         "desc": " ESPARRAGO 5/8\" X 4\" ASTM A 193 GR B7     ",
         "udm": "EA",
         "qty": 50,
-        "precio": 2999,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "JDF",
-        "proveedor": "MUNDIAL",
-        "precioProveedor": 1943
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 13,
         "desc": " ESPARRAGO 5/8\" X 3.5\"ASTM A 193 GR B7    ",
         "udm": "EA",
         "qty": 120,
-        "precio": 2599,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "JDF",
-        "proveedor": "MUNDIAL",
-        "precioProveedor": 1802
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 14,
         "desc": "DISCO TRONZADORA 14\" X 3/32\" X 1\"        ",
         "udm": "EA",
         "qty": 20,
-        "precio": 28999,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "DEWALT",
-        "proveedor": "UNIVERSAL DE TORNILLOS",
-        "precioProveedor": 18600
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 15,
         "desc": "DISCO DESBASTE METAL 4 1/2\" X 1/8\"       ",
         "udm": "EA",
         "qty": 20,
-        "precio": 6999,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "DEWALT",
-        "proveedor": "HOME CENTER",
-        "precioProveedor": 4400
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 16,
         "desc": "DISCO CORTE METAL 4 1/2\" X 1/16\"         ",
         "udm": "EA",
         "qty": 20,
-        "precio": 7300,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "BOSCH",
-        "proveedor": "HOME CENTER",
-        "precioProveedor": 4300
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 17,
@@ -2798,12 +2810,12 @@
         "desc": "BROCHA PINTURA 2\"                        ",
         "udm": "EA",
         "qty": 5,
-        "precio": 13400,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS HABILES",
         "desvTec": "",
         "marca": "GOYA",
-        "proveedor": "HOME CENTER",
-        "precioProveedor": 8900
+        "proveedor": "",
+        "precioProveedor": 0
       },
       {
         "id": 19,
@@ -2818,10 +2830,10 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-06-10T20:00:24.567Z",
+    "fechaGuardado": "2026-06-10T18:27:41.697Z",
     "createdAt": "2026-06-10T18:27:31.458Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-06-10T20:00:24.567Z",
+    "updatedAt": "2026-06-10T18:27:41.697Z",
     "updatedBy": "alexandra"
   },
   {
