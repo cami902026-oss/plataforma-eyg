@@ -997,37 +997,44 @@
     "cliente": "WILLER",
     "desc": "ESPARRAGO DE 1/2 X 5\" INOX CON DOBLE TUERCA",
     "estado": "activo",
-    "stages": [
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-06-10T15:43:19.498Z",
-    "valor": 0,
+    "fechaIngreso": "2026-06-09",
+    "valor": 159936,
     "hojaEntrada": {
       "requerida": false,
       "fecha": "",
       "estado": "pendiente"
     },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-10T15:43:19.498Z"
+    "stages": [
+      {
+        "s": "done",
+        "f": "2029-06-10",
+        "n": "MUNDIAL"
+      },
+      {
+        "s": "active",
+        "f": "",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-10",
+        "n": "472"
+      }
+    ],
+    "createdAt": "2026-06-10T15:44:11.916Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-10T15:44:11.916Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1781024695284",
