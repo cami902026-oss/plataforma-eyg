@@ -1,9 +1,10 @@
-name: 📊 Informe Comercial Diario (7 PM)
+name: 📊 Informe Comercial Diario (5:13 PM)
 
 on:
   schedule:
-    # Lunes a Viernes a las 7:00 PM Colombia (UTC-5 = 00:00 UTC del día siguiente)
-    - cron: '0 0 * * 2-6'
+    # Lunes a Viernes a las 5:13 PM Colombia (UTC-5 = 22:13 UTC mismo día)
+    # Hora adelantada + minuto "no en punto" para reducir el retraso de GitHub Actions
+    - cron: '13 22 * * 1-5'
 
   # Permite ejecutar manualmente desde GitHub para pruebas
   workflow_dispatch:
