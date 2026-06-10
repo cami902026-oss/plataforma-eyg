@@ -8240,7 +8240,10 @@ function solRender() {
   const container = document.getElementById('sol-list');
   const empty = document.getElementById('sol-empty');
   if (!container) return;
-  let soles = getData('solicitudes_cotiz', []);
+  // Las canceladas NO se muestran en ninguna vista (ni en "Todas"). Quedan marcadas
+  // como 'cancelada' por dentro (no se borran del archivo) para que la sincronización
+  // no las resucite, pero desaparecen de la lista.
+  let soles = getData('solicitudes_cotiz', []).filter(s => s && s.estado !== 'cancelada');
   if (_solFiltro !== 'todas') soles = soles.filter(s => s.estado === _solFiltro);
   soles = soles.slice().sort((a,b) => (b.fecha||'').localeCompare(a.fecha||''));
   if (!soles.length) {
