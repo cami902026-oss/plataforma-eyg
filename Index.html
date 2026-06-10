@@ -3723,7 +3723,7 @@ setInterval(() => {
 // Cada 30s consulta los archivos más cambiantes en raw.githubusercontent.com.
 // Usa ETag (If-None-Match) → 304 si no hay cambios → no descarga ni re-renderiza.
 // Si hay cambios: hace merge inteligente y re-renderiza el módulo afectado.
-const POLL_INTERVAL_MS = 30000;
+const POLL_INTERVAL_MS = 10000;
 const _pollEtags = {}; // file -> last seen ETag
 const POLL_TARGETS = [
   // Cada uno define cómo aplicar el remoto: storage key + función de re-render
@@ -3742,6 +3742,15 @@ const POLL_TARGETS = [
   { file:'data/config.json',       storageKey:null,                  renderFn: () => {}, mergeBy:null },
 ];
 
+// Hash barato (djb2) de TODO el contenido para detectar cualquier cambio de forma
+// confiable. Antes se usaba solo `length + primeros 80 chars`, que NO detectaba
+// ediciones del medio del archivo cuando el tamaño coincidía → la versión nueva no
+// se descargaba y un usuario pisaba el cambio de otro al guardar sobre datos viejos.
+function _cheapHash(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) { h = ((h << 5) + h + str.charCodeAt(i)) | 0; }
+  return h >>> 0;
+}
 async function _pollOne(target) {
   // FIX SYNC: antes, si había una escritura pendiente para este archivo se hacía
   // `return false` y se dejaba de DESCARGAR. Eso provocaba que un cambio atascado
@@ -3759,10 +3768,11 @@ async function _pollOne(target) {
     if (!r.ok) return false;
     const text = await r.text();
     if (!text) return false;
-    // Hash barato del body para detectar cambios sin parsear cada vez
+    // Hash barato del body completo para detectar cambios sin parsear cada vez
+    const sig = text.length + ':' + _cheapHash(text);
     const lastSig = _pollEtags[target.file];
-    if (lastSig === text.length+':'+text.slice(0,80)) return false; // sin cambios
-    _pollEtags[target.file] = text.length+':'+text.slice(0,80);
+    if (lastSig === sig) return false; // sin cambios
+    _pollEtags[target.file] = sig;
     let remote;
     try { remote = JSON.parse(text); } catch(_) { return false; }
     // Caso especial: config.json (objeto, no array) — solo aplica proxyUrl
