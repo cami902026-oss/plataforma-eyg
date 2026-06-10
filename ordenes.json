@@ -450,51 +450,6 @@
     "updatedAt": "✅ Facturado"
   },
   {
-    "id": "poc_1779461337230",
-    "num": "68226DPO00320",
-    "cliente": "MAUREL & PROM COLOMBIA SOCIEDAD LTD",
-    "desc": "Suministro de Material Mecánico Magico 2 - Conexionado MG2",
-    "estado": "completado",
-    "fechaIngreso": "2026-05-22",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "2026-06-03",
-      "estado": "recibida"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-23",
-        "n": "codifer\ndisefer\niNDUVACOL\nGRANADA\n"
-      },
-      {
-        "s": "done",
-        "f": "2026-09-05",
-        "n": "",
-        "envio": "transportadora",
-        "transp": "tcc y camion externo",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-01-06",
-        "n": "SERVIDOR"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-03",
-        "n": "464"
-      }
-    ],
-    "createdAt": "2026-05-22T17:02:47.733Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-05T21:34:53.546Z",
-    "updatedBy": "andrea"
-  },
-  {
     "id": "poc_1779461405791",
     "num": "CMC-000034",
     "cliente": "ANDES OPERATING",
@@ -720,51 +675,6 @@
     "updatedBy": "andrea"
   },
   {
-    "id": "poc_1780339680449",
-    "num": "68226DPO00330",
-    "cliente": "MAUREL & PROM COLOMBIA SOCIEDAD LTD",
-    "desc": "UMINSITRO MATERIAL",
-    "estado": "completado",
-    "fechaIngreso": "2026-12-05",
-    "valor": 4460398,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "2026-06-03",
-      "estado": "recibida"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-12",
-        "n": "CODIFER\nDISEFER\nINDUVACOL"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-29",
-        "n": "",
-        "envio": "camion_externo",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-01",
-        "n": "SERVIDOR"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-03",
-        "n": "463"
-      }
-    ],
-    "createdAt": "2026-06-01T18:48:00.449Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-05T21:34:32.068Z",
-    "updatedBy": "andrea"
-  },
-  {
     "id": "poc_1780341835166",
     "num": "4900006720",
     "cliente": "NIKOIL ENERGY",
@@ -808,184 +718,6 @@
     "createdBy": "andrea",
     "updatedAt": "2026-06-04T21:31:02.135Z",
     "updatedBy": "andrea"
-  },
-  {
-    "id": "poc_1779461488471",
-    "num": "LM7777",
-    "cliente": "TESTING",
-    "desc": "tornillos y empaques",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-22",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-25T23:23:25.372Z",
-    "deleted": true,
-    "deletedAt": "2026-05-25T23:23:25.367Z",
-    "deletedBy": "alexandra"
-  },
-  {
-    "id": "poc_1779461426341",
-    "num": "LM1527",
-    "cliente": "CIAM",
-    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-26T17:39:47.118Z",
-    "deleted": true,
-    "deletedAt": "2026-05-26T17:39:47.113Z",
-    "deletedBy": "andrea"
-  },
-  {
-    "id": "poc_1777927194950",
-    "num": 2026005442,
-    "cliente": "NEW GRANADA",
-    "desc": "Suministro material",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "active",
-        "f": "2026-05-04",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-26T17:11:44.901Z",
-    "deleted": true,
-    "deletedAt": "2026-05-26T17:11:44.896Z",
-    "deletedBy": "andrea"
-  },
-  {
-    "id": "poc_1779461532501",
-    "num": "LM1551",
-    "cliente": "MMT",
-    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-15",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-26T17:11:36.103Z",
-    "deleted": true,
-    "deletedAt": "2026-05-26T17:11:36.097Z",
-    "deletedBy": "andrea"
-  },
-  {
-    "id": "poc_1779919021634",
-    "num": "004-2026",
-    "cliente": "E&G ENERGY GROUP SAS",
-    "desc": "Caps y threadolets diversos (XF y Bothwell)",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-03-02",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-05-27T21:57:52.323Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-05-27T21:57:45.873Z",
-    "deleted": true,
-    "deletedAt": "2026-05-27T21:57:52.323Z",
-    "deletedBy": "andrea"
   },
   {
     "id": "poc_1780498017972",
@@ -1209,7 +941,7 @@
     ],
     "createdAt": "2026-06-05T21:37:33.462Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-06T15:28:15.335Z",
+    "updatedAt": "2026-06-10T14:44:57.163Z",
     "updatedBy": "andrea"
   },
   {
@@ -1337,112 +1069,7 @@
     "cliente": "SERVICIOS Y TRANSPORTES MORRISON SAS",
     "desc": "JUNTA DE EXPANSION 6\" ANSI 150 - JUNTA DE CAUCHO ANTIVIBRATORIA",
     "estado": "activo",
-    "stages": [
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-06-09T19:46:55.013Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    }
-  },
-  {
-    "id": "LM1320",
-    "num": "LM1320",
-    "cliente": "PETRORIOS",
-    "desc": "SUMINISTRO MATERIAL MECANICO",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-10",
-        "n": "BETEL, CODIFER"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-10",
-        "n": "",
-        "envio": "transportadora",
-        "transp": "",
-        "guia": "226311",
-        "dest": "ORITO Q-CIEN",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-05-09",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-05-08",
-        "n": "426"
-      }
-    ],
-    "updatedAt": "✅ Facturado"
-  },
-  {
-    "id": "poc_1776978339802",
-    "num": "LM1446",
-    "cliente": "MAUREL",
-    "desc": "MATERIAL MECANICO",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-22",
-        "n": "CODIFER\nFABRICACION WELDOLET pendiente"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Enviado Tcc\nEnvío camion",
-        "envio": "entrega_mano",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Servidor"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-21",
-        "n": "448"
-      }
-    ],
-    "updatedAt": "✅ Facturado"
-  },
-  {
-    "id": "poc_1776978416135",
-    "num": "LM1434",
-    "cliente": "NIKOIL ENERGY",
-    "desc": "MATERIAL CORDON PLOMAGINADO",
-    "estado": "completado",
+    "fechaIngreso": "",
     "valor": 0,
     "hojaEntrada": {
       "requerida": false,
@@ -1452,297 +1079,118 @@
     "stages": [
       {
         "s": "done",
-        "f": "2026-04-23",
-        "n": "EMPAQUETAS Y EMPAQUETADURAS"
+        "f": "2026-06-09",
+        "n": "CODIFER"
       },
       {
-        "s": "done",
+        "s": "active",
         "f": "",
         "n": "",
-        "envio": "transportadora",
-        "transp": "SERVIENTREGA",
-        "guia": "",
-        "dest": "",
-        "resp": "Alexandra Fernandez"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Servidor"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-15",
-        "n": "443"
-      }
-    ],
-    "createdAt": "2026-05-22T17:10:32.702Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-22T17:10:32.702Z",
-    "updatedBy": "andrea"
-  },
-  {
-    "id": "poc_1777493972827",
-    "num": "ODC-4049",
-    "cliente": "SAR ENERGY",
-    "desc": "SWITCH DE NIVEL LS200N",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-29",
-        "n": "TALLECTRO"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-07",
-        "n": "",
-        "envio": "",
-        "transp": "",
+        "envio": "taquilla_bus",
+        "transp": "BRASILIA",
         "guia": "",
         "dest": "",
         "resp": ""
       },
       {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Servidor"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-14",
-        "n": "439"
-      }
-    ],
-    "updatedAt": "✅ Facturado"
-  },
-  {
-    "id": "poc_1777926969044",
-    "num": "ODC-00004049",
-    "cliente": "SAR ENERGY",
-    "desc": "Suministro switch",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-04",
-        "n": "Tallectro"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-07",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Servidor"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-14",
-        "n": "439"
-      }
-    ],
-    "updatedAt": "✅ Facturado"
-  },
-  {
-    "id": "LM1392",
-    "num": "LM1392",
-    "cliente": "HIDROCASANARE",
-    "desc": "SUMINISTRO DE MATERIAL",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-06",
-        "n": "SEGEFER, COLIMP"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-07",
-        "n": "ENREGADO A SATI",
-        "envio": "camion_energy",
-        "transp": "",
-        "guia": "",
-        "dest": "HIDROCASANARE",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-14",
-        "n": "COMPLETOS EN LA CARPETA\n"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-07",
-        "n": "422"
-      }
-    ],
-    "updatedAt": "✅ Facturado"
-  },
-  {
-    "id": "poc_1776469053057",
-    "num": "ODC4128",
-    "cliente": "SAR ENERGY",
-    "desc": "SUMISNITRO MATERIAL MECANICO",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-17",
-        "n": "CODIFER\nMUNDIAL\nBODEGA"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-18",
-        "n": "",
-        "envio": "flota",
-        "transp": "LIEBRTADORES",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-19",
+        "s": "pending",
+        "f": "",
         "n": ""
       },
       {
-        "s": "done",
-        "f": "2026-05-05",
-        "n": "420"
+        "s": "pending",
+        "f": "",
+        "n": ""
       }
     ],
-    "updatedAt": "✅ Facturado"
+    "createdAt": "2026-06-10T14:47:16.582Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-06-10T14:47:16.582Z",
+    "updatedBy": "alexandra"
   },
   {
-    "id": "poc_1778080923849",
-    "num": "ODC-00004150",
-    "cliente": "SAR ENERGY SAS",
-    "desc": "Material eléctrico para alistamiento de patín de compresores - Op. Arrow Campo Icaco",
-    "estado": "completado",
+    "id": "poc_1779461488471",
+    "num": "LM7777",
+    "cliente": "TESTING",
+    "desc": "tornillos y empaques",
+    "estado": "activo",
     "stages": [
       {
         "s": "done",
-        "f": "2026-04-27",
+        "f": "2026-05-22",
         "n": "Auto-creada desde correo"
       },
       {
-        "s": "done",
-        "f": "2026-05-07",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
+        "s": "pending",
+        "f": "",
+        "n": ""
       },
       {
-        "s": "done",
-        "f": "2026-05-07",
-        "n": "No aplica"
+        "s": "pending",
+        "f": "",
+        "n": ""
       },
       {
-        "s": "done",
-        "f": "2026-05-14",
-        "n": "440"
+        "s": "pending",
+        "f": "",
+        "n": ""
       }
     ],
-    "updatedAt": "✅ Facturado"
+    "updatedAt": "2026-05-25T23:23:25.372Z",
+    "deleted": true,
+    "deletedAt": "2026-05-25T23:23:25.367Z",
+    "deletedBy": "alexandra"
   },
   {
-    "id": "poc_1778164140445",
-    "num": "ODC-00004182",
-    "cliente": "SAR ENERGY S.A.S",
-    "desc": "Switches de nivel conexión de 2\" neumáticos (4 und) - Separador 7676",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-28",
-        "n": "Tallectro"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-07",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Servidor"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-14",
-        "n": "441"
-      }
-    ],
-    "updatedAt": "2026-05-22T21:56:25.580Z"
-  },
-  {
-    "id": "poc_1778258217718",
-    "num": "02CMP-9777",
-    "cliente": "PETROSERVICIOS INDUSTRIALES",
-    "desc": "Ring Gasket BX-152 (x2) y Ring Gasket BX-156 (x2)",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-07",
-        "n": "Colimportados\nFlexilatina\n"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-08",
-        "n": "",
-        "envio": "moto",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Servidor"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-08",
-        "n": "425"
-      }
-    ],
-    "updatedAt": "✅ Facturado"
-  },
-  {
-    "id": "poc_1778337238517",
-    "num": "080526A6181",
+    "id": "poc_1779461426341",
+    "num": "LM1527",
     "cliente": "CIAM",
-    "desc": "Niples roscados en acero al carbón 3/4 x 4\" SCH 80 y SCH 160",
-    "estado": "cancelado",
+    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
+    "estado": "activo",
     "stages": [
       {
         "s": "done",
-        "f": "2026-05-08",
-        "n": "Instrugases"
+        "f": "2026-05-11",
+        "n": "Auto-creada desde correo"
       },
       {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Taquilla macarena",
-        "envio": "transportadora",
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-05-26T17:39:47.118Z",
+    "deleted": true,
+    "deletedAt": "2026-05-26T17:39:47.113Z",
+    "deletedBy": "andrea"
+  },
+  {
+    "id": "poc_1777927194950",
+    "num": 2026005442,
+    "cliente": "NEW GRANADA",
+    "desc": "Suministro material",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-05-04",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
         "transp": "",
         "guia": "",
         "dest": "",
@@ -1754,249 +1202,88 @@
         "n": ""
       },
       {
-        "s": "done",
-        "f": "2026-05-09",
-        "n": "428"
-      }
-    ],
-    "updatedAt": "✅ Facturado"
-  },
-  {
-    "id": "poc_1778689688011",
-    "num": "LM1530",
-    "cliente": "PETRORIOS",
-    "desc": "SUMINSITRO MATERIAL MECANICO",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-13",
-        "n": "CODIFER\nBODEGA\nCOLIMPORTADOS"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-13",
-        "n": "VILLETA",
-        "envio": "camion_energy",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-05-13",
+        "s": "pending",
+        "f": "",
         "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-05-14",
-        "n": "435"
       }
     ],
-    "updatedAt": "✅ Facturado"
+    "updatedAt": "2026-05-26T17:11:44.901Z",
+    "deleted": true,
+    "deletedAt": "2026-05-26T17:11:44.896Z",
+    "deletedBy": "andrea"
   },
   {
-    "id": "poc_1778691294578",
-    "num": "260-26",
-    "cliente": "PETROLEUM GOLD SERVICES SAS",
-    "desc": "Flame arrester de 4 ANSI 150",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-12",
-        "n": "Miguel"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-14",
-        "n": "",
-        "envio": "entrega_mano",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-05-13",
-        "n": "ficha tecnica"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-14",
-        "n": "436"
-      }
-    ],
-    "updatedAt": "✅ Facturado"
-  },
-  {
-    "id": "poc_1778781419239",
-    "num": "13080",
-    "cliente": "HIDROCARBUROS DEL CASANARE SAS",
-    "desc": "Válvulas y cheques para reemplazar en recibo y despacho de producto",
-    "estado": "completado",
-    "fechaIngreso": "2026-05-22",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "2026-05-25",
-      "estado": "recibida"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-14",
-        "n": "Codifer"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-14",
-        "n": "",
-        "envio": "camion_energy",
-        "transp": "",
-        "guia": "",
-        "dest": "HIDROCASANANRE",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-05-22",
-        "n": "servidor"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-25",
-        "n": "450"
-      }
-    ],
-    "createdAt": "2026-05-22T17:08:29.063Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-25T17:20:52.680Z",
-    "updatedBy": "andrea"
-  },
-  {
-    "id": "poc_1778873095177",
-    "num": "LM1485-2",
-    "cliente": "TOC ENERGÍA",
-    "desc": "Cable cobre THHN, terminales, cinta autofundente, varillas y breaker industrial",
-    "estado": "completado",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-22",
-        "n": "Cameleco\nMarin "
-      },
-      {
-        "s": "done",
-        "f": "2026-05-16",
-        "n": "",
-        "envio": "camion_energy",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": "Andrés barrera"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-22",
-        "n": "SERVIDOR"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-19",
-        "n": "446"
-      }
-    ],
-    "createdAt": "2026-05-22T21:50:54.203Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-22T21:50:54.203Z",
-    "updatedBy": "andrea"
-  },
-  {
-    "id": "poc_1778878196034",
-    "num": "150526Q2480",
-    "cliente": "CIAM",
-    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
-    "estado": "completado",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-11",
-        "n": "Codifer "
-      },
-      {
-        "s": "done",
-        "f": "2026-05-16",
-        "n": "",
-        "envio": "flota",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-05-20",
-        "n": "SERVIDOR"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-19",
-        "n": "444"
-      }
-    ],
-    "updatedAt": "✅ Facturado"
-  },
-  {
-    "id": "poc_1778879575105",
-    "num": "OC 86",
+    "id": "poc_1779461532501",
+    "num": "LM1551",
     "cliente": "MMT",
     "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
-    "estado": "completado",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
+    "estado": "activo",
     "stages": [
       {
         "s": "done",
         "f": "2026-05-15",
-        "n": "CODIFER\nNIPLES\nINDUVACOL\n"
+        "n": "Auto-creada desde correo"
       },
       {
-        "s": "done",
-        "f": "2026-05-20",
-        "n": "",
-        "envio": "entrega_mano",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
+        "s": "pending",
+        "f": "",
+        "n": ""
       },
       {
-        "s": "done",
-        "f": "2026-05-22",
-        "n": "SERVDOR"
+        "s": "pending",
+        "f": "",
+        "n": ""
       },
       {
-        "s": "done",
-        "f": "2026-05-20",
-        "n": "447"
+        "s": "pending",
+        "f": "",
+        "n": ""
       }
     ],
-    "createdAt": "2026-05-22T21:46:16.368Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-22T21:46:16.368Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-05-26T17:11:36.103Z",
+    "deleted": true,
+    "deletedAt": "2026-05-26T17:11:36.097Z",
+    "deletedBy": "andrea"
+  },
+  {
+    "id": "poc_1779919021634",
+    "num": "004-2026",
+    "cliente": "E&G ENERGY GROUP SAS",
+    "desc": "Caps y threadolets diversos (XF y Bothwell)",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-03-02",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-05-27T21:57:52.323Z",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "lockedBy": "andrea",
+    "lockedAt": "2026-05-27T21:57:45.873Z",
+    "deleted": true,
+    "deletedAt": "2026-05-27T21:57:52.323Z",
+    "deletedBy": "andrea"
   }
 ]
