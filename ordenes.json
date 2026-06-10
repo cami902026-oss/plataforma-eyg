@@ -1130,7 +1130,7 @@
     "cliente": "MORRISON",
     "desc": "TE DE 6 SCH 80 A-234 WPB (2 unidades)",
     "estado": "activo",
-    "fechaIngreso": "",
+    "fechaIngreso": "2026-06-10",
     "valor": 0,
     "hojaEntrada": {
       "requerida": false,
@@ -1139,12 +1139,12 @@
     },
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-06-10",
         "n": "Codifer"
       },
       {
-        "s": "pending",
+        "s": "active",
         "f": "",
         "n": "",
         "envio": "",
@@ -1166,10 +1166,8 @@
     ],
     "createdAt": "2026-06-10T17:07:00.390Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-10T21:20:08.228Z",
-    "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-10T21:20:08.228Z"
+    "updatedAt": "2026-06-10T21:20:28.387Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1779461488471",
