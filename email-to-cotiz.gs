@@ -82,6 +82,7 @@ function checkEmails() {
 
       // Guardar en GitHub
       var saved = _saveGitHub(sol);
+      if (saved === 'dup') { Logger.log('Solicitud DUPLICADA omitida: ' + sol.cliente); continue; }
       if (!saved) { Logger.log('Error guardando ' + sol.id); continue; }
 
       // Notificar a Andrea y Gerencia
@@ -254,6 +255,19 @@ function _saveGitHub(sol) {
       );
     }
   } catch(_) {}
+
+  // ── Anti-duplicados: si ya hay una solicitud reciente (<24h) del mismo cliente con
+  //    una descripción casi idéntica, NO crear otra (evita reenvíos/repeticiones).
+  var _norm = function(s){ return (s || '').toString().toLowerCase().replace(/\s+/g, ' ').trim(); };
+  var solCli  = _norm(sol.cliente);
+  var solDesc = _norm(sol.descripcion).substring(0, 120);
+  var solTime = new Date(sol.fecha).getTime();
+  var dup = existing.some(function(e){
+    if (!e || _norm(e.cliente) !== solCli || e.estado === 'cancelada') return false;
+    if (_norm(e.descripcion).substring(0, 120) !== solDesc) return false;
+    return Math.abs(solTime - new Date(e.fecha).getTime()) < 24 * 3600 * 1000;
+  });
+  if (dup) { Logger.log('Duplicada (mismo cliente+descripcion <24h): ' + sol.cliente); return 'dup'; }
 
   existing.push(sol);
 
