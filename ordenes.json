@@ -1042,16 +1042,28 @@
     "cliente": "WILLER",
     "desc": "Tramo de tubería de 3\" x 50 cm SCH 160 A-106",
     "estado": "activo",
+    "fechaIngreso": "2026-06-10",
+    "valor": 255850,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-10",
+        "n": "TODO TUBOS"
       },
       {
-        "s": "pending",
+        "s": "active",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1064,15 +1076,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-10T15:44:19.260Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-10T15:44:19.260Z"
+    "createdAt": "2026-06-10T15:45:03.699Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-10T15:45:03.699Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1781034415013",
