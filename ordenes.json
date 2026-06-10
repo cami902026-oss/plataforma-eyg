@@ -1352,7 +1352,6 @@
     "num": "090626E4379",
     "cliente": "FRONTERA",
     "desc": "Viga HEA, Perfil UPN 100 X 6 MTR y Flete para Diálisis de Crudo",
-    "valor": 5662100,
     "estado": "activo",
     "stages": [
       {
@@ -1376,16 +1375,14 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-06-09T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-06-10T18:37:59.153Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA ENERGY GROUP",
-      "fecha": "2026-06-10T18:37:59.153Z",
-      "fechaCreacionOC": "2026-06-09",
-      "fechaCompra": "2026-06-09"
-    }
+    "updatedAt": "2026-06-10T18:38:19.523Z",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "lockedBy": "andrea",
+    "lockedAt": "2026-06-10T18:38:19.523Z"
   }
 ]
