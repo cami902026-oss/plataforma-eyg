@@ -6950,7 +6950,7 @@ function cotizShowTab(tab) {
 function cotizRenderAgente() {
   const el = document.getElementById('cotiz-agente-content');
   if (!el) return;
-  const bd = getData('bd_cotizaciones', []);
+  const bd = getData('bd_cotizaciones', []).filter(c => c && !c.deleted);
   const today = new Date().toISOString().split('T')[0];
   const todayMs = new Date().setHours(0,0,0,0);
 
@@ -7749,7 +7749,7 @@ function bdFilter(estado, btn) {
 }
 
 function bdRender(filtro) {
-  const bd = getData('bd_cotizaciones', []);
+  const bd = getData('bd_cotizaciones', []).filter(c => c && !c.deleted);
   const tbody = document.getElementById('bd-tbody');
   const empty = document.getElementById('bd-empty');
   if (!tbody) return;
@@ -7858,7 +7858,18 @@ function bdDescargar(id) {
 function bdEliminar(id, e) {
   if (e) e.stopPropagation();
   if (!confirm('¿Eliminar cotización ' + id + '?')) return;
-  const bd = getData('bd_cotizaciones', []).filter(c => c.id !== id);
+  // Borrado LÓGICO: marcar como eliminada en vez de quitarla del array.
+  // La protección anti-pérdida (_cotizMergeConRemoto) une lo local con el servidor
+  // por id; si solo la quitáramos del array, la unión la traería de vuelta del
+  // servidor y "no se borraría". Marcándola deleted con updatedAt nuevo, la unión
+  // conserva la versión borrada y deja de aparecer en todas las vistas/reportes.
+  const bd = getData('bd_cotizaciones', []);
+  const idx = bd.findIndex(c => c.id === id);
+  if (idx < 0) { showToast('No se encontró la cotización','error'); return; }
+  const now = new Date().toISOString();
+  bd[idx].deleted   = true;
+  bd[idx].deletedAt = now;
+  bd[idx].updatedAt = now;
   saveData('bd_cotizaciones', bd);
   bdRender();
   showToast('Cotización eliminada','success');
@@ -10334,6 +10345,7 @@ function _gsearchRender(q) {
     if (!Array.isArray(arr) || !arr.length) continue;
     const matches = [];
     for (const item of arr) {
+      if (item && item.deleted) continue; // no mostrar registros borrados (cotizaciones, etc.)
       const sc = _gsearchScore(item, qLower, src);
       if (sc > 0) matches.push({ item, sc });
     }
@@ -11306,7 +11318,7 @@ async function remiImportConfirmar(){
 // Lee las cotizaciones ya sincronizadas en el equipo (mismo origen del módulo Cotizaciones).
 let remi_cotiz_sel=null;
 function remiCotizData(){
-  try{ const a=JSON.parse(localStorage.getItem('max_bd_cotizaciones')||'[]'); return Array.isArray(a)?a:[]; }catch(_){ return []; }
+  try{ const a=JSON.parse(localStorage.getItem('max_bd_cotizaciones')||'[]'); return Array.isArray(a)?a.filter(c=>c&&!c.deleted):[]; }catch(_){ return []; }
 }
 async function remiCotizAbrir(){
   if(!remi_current) return showToast('Abre primero una remisión','error');
