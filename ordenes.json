@@ -1350,19 +1350,31 @@
   {
     "id": "poc_1781116679153",
     "num": "090626E4379",
-    "cliente": "FRONTERA",
+    "cliente": "CIAM",
     "desc": "Viga HEA, Perfil UPN 100 X 6 MTR y Flete para Diálisis de Crudo",
     "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 4758067,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-10",
+        "n": "imperial"
       },
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1375,14 +1387,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-10T18:38:27.352Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-10T18:38:27.351Z"
+    "createdAt": "2026-06-10T18:39:13.914Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-10T18:39:13.914Z",
+    "updatedBy": "andrea"
   }
 ]
