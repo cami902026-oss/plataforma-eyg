@@ -3461,12 +3461,23 @@ async function _loadDataGH(filename) {
   } catch(e) { console.warn('GH raw load', filename, e); }
   return null;
 }
+// Lectura SIEMPRE fresca desde raw (con cache-buster). La API de contents de GitHub
+// puede devolver una versión vieja (eventual-consistency) y eso hacía que un guardado
+// de la plataforma PISARA solicitudes/cotizaciones recién creadas por el robot del
+// correo u otra usuaria. raw con ?t= trae lo último y evita ese atasco.
+async function _loadDataGHRaw(filename) {
+  try {
+    const r = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${filename}?t=${Date.now()}`, { cache: 'no-store' });
+    if (r.ok) return await r.json();
+  } catch(_) {}
+  return _loadDataGH(filename); // respaldo si raw falla
+}
 // Une las solicitudes locales con las del repo por id (gana la de updatedAt más reciente).
 // Evita que un guardado de la plataforma borre solicitudes que el robot del correo
 // acababa de crear y este dispositivo todavía no había sincronizado.
 async function _solMergeConRemoto(local) {
   try {
-    const remoto = await _loadDataGH('data/solicitudes_cotiz.json');
+    const remoto = await _loadDataGHRaw('data/solicitudes_cotiz.json');
     if (!Array.isArray(remoto)) return local;
     const porId = {};
     remoto.forEach(s => { if (s && s.id) porId[s.id] = s; });
@@ -3485,7 +3496,7 @@ async function _solMergeConRemoto(local) {
 // creadas/actualizadas en otro equipo que este aún no había sincronizado.
 async function _cotizMergeConRemoto(local) {
   try {
-    const remoto = await _loadDataGH('data/cotizaciones.json');
+    const remoto = await _loadDataGHRaw('data/cotizaciones.json');
     if (!Array.isArray(remoto)) return local;
     const porId = {};
     remoto.forEach(c => { if (c && c.id) porId[c.id] = c; });
@@ -3839,7 +3850,11 @@ async function _pollOne(target) {
         if (remoteIds.has(k)) {
           // Existe en ambos: ganador por updatedAt
           const prev = seen.get(k);
-          if ((item.updatedAt||'') > (prev.updatedAt||'')) seen.set(k, item);
+          // Un borrado del servidor es "pegajoso": si el remoto está marcado deleted,
+          // NO dejar que una versión local sin borrar lo resucite (cotizaciones borradas,
+          // solicitudes canceladas, etc. deben quedarse borradas para todos).
+          if (prev && prev.deleted && item && !item.deleted) { /* conservar el borrado remoto */ }
+          else if ((item.updatedAt||'') > (prev.updatedAt||'')) seen.set(k, item);
         } else {
           // Solo en local: preservar si tiene updatedAt (fue creado o editado en esta app)
           // Esto protege items nuevos que aún no llegaron a GitHub (pendiente de push)
@@ -4268,8 +4283,12 @@ function checkSession() {
   if (s) {
     try {
       const saved = JSON.parse(s);
-      // Verificar que el usuario guardado existe en USERS actual
-      const valid = USERS.find(u => u.email === saved.email && getUserPassword(u.email) === saved.password);
+      // Sesión del DÍA: si el usuario guardado existe y NO ha cambiado el día calendario,
+      // restaurar la sesión SIN re-validar el hash de la contraseña. Antes se comparaba
+      // getUserPassword(...) === saved.password, pero ese hash cambia al sincronizarse
+      // entre equipos y hacía que pidiera la clave de nuevo durante el día (sobre todo al
+      // recargar). La clave se pide una sola vez al día (al cambiar la fecha se limpia).
+      const valid = USERS.find(u => u.email === saved.email);
       if (valid) {
         currentUser = valid;
         // Sesiones anteriores a este cambio: marcar el día de hoy
@@ -7507,10 +7526,11 @@ function cotizGuardarBD() {
   }
   saveData('bd_cotizaciones', bd);
   cotizEditId = id;
-  // Si hay solicitud vinculada: en_cotizacion mientras se trabaja, enviada cuando se envía
+  // Si hay solicitud vinculada: en_cotizacion mientras se trabaja, enviada cuando se envía,
+  // y se le ASIGNA el número de cotización (para el "policía" que evita cotizar 2 veces).
   const solVinc = (document.getElementById('cotiz-sol-vincular')||{}).value || '';
   if (solVinc) {
-    _solCambiarEstado(solVinc, record.estado === 'Enviada' ? 'enviada' : 'en_cotizacion');
+    _solVincularCotizacion(solVinc, id, record.estado === 'Enviada' ? 'enviada' : 'en_cotizacion');
   }
   // Notificar a Andrea y Gerencia: al crear y al enviar
   if (idx < 0) _notificarCotizacion(record, 'creada');
@@ -8306,9 +8326,13 @@ function _parseCantidad(cantStr) {
 }
 
 function solAbrirCotiz(solId, cliente) {
-  cotizNueva();
   // Buscar la solicitud completa
   const sol = (getData('solicitudes_cotiz', []) || []).find(s => s.id === solId);
+  // POLICÍA: si la solicitud YA tiene una cotización asignada, no crear otra sin confirmar.
+  if (sol && sol.cotizacionId) {
+    if (!confirm('⚠️ Esta solicitud YA tiene la cotización ' + sol.cotizacionId + ' asignada.\n\n¿Crear OTRA cotización para la misma solicitud? Normalmente NO es necesario.\n(Para ver la existente, dale Cancelar y búscala en Base de Datos.)')) return;
+  }
+  cotizNueva();
   const nombreCliente = (sol ? sol.cliente : cliente) || '';
   document.getElementById('cotiz-cliente').value = nombreCliente;
 
@@ -8357,6 +8381,18 @@ function _solCambiarEstado(solId, nuevoEstado) {
   const idx = soles.findIndex(s => s.id === solId);
   if (idx < 0) return;
   soles[idx].estado = nuevoEstado;
+  soles[idx].updatedAt = new Date().toISOString();
+  setData('solicitudes_cotiz', soles);
+  solRender();
+}
+
+// Vincula el número de cotización a la solicitud (para el policía y la trazabilidad).
+function _solVincularCotizacion(solId, cotizId, nuevoEstado) {
+  const soles = getData('solicitudes_cotiz', []);
+  const idx = soles.findIndex(s => s.id === solId);
+  if (idx < 0) return;
+  if (nuevoEstado) soles[idx].estado = nuevoEstado;
+  if (cotizId) soles[idx].cotizacionId = cotizId;
   soles[idx].updatedAt = new Date().toISOString();
   setData('solicitudes_cotiz', soles);
   solRender();
