@@ -7456,7 +7456,7 @@ function cotizPopulateSelects(vendedor, realiza, aprueba) {
   if (vEl) vEl.innerHTML = '<option value="">— sin asignar —</option>' + cotizGetTeamOptions(vendedor);
 }
 
-function cotizNueva() {
+function cotizNueva(silent) {
   cotizEditId = null;
   cotizItems = [];
   cotizImgBase64 = null;
@@ -7479,7 +7479,7 @@ function cotizNueva() {
   cotizWriteNum(cotizGetNextNum());
   cotizRender();
   cotizShowTab('nueva');
-  showToast('Nueva cotización lista','success');
+  if (!silent) showToast('Nueva cotización lista','success');
 }
 
 function cotizGuardarBD() {
@@ -7526,7 +7526,7 @@ function cotizGuardarBD() {
     showToast('Cotización ' + id + ' actualizada','success');
   } else {
     bd.push(_audit(record, true));
-    showToast('Cotización ' + id + ' guardada en base de datos','success');
+    showToast('Cotización ' + id + ' guardada — formulario listo para la siguiente','success');
   }
   saveData('bd_cotizaciones', bd);
   cotizEditId = id;
@@ -7539,6 +7539,9 @@ function cotizGuardarBD() {
   // Notificar a Andrea y Gerencia: al crear y al enviar
   if (idx < 0) _notificarCotizacion(record, 'creada');
   if (record.estado === 'Enviada') _notificarCotizacion(record, 'enviada');
+  // Tras CREAR una cotización nueva, limpiar el formulario para la siguiente
+  // (queda con el número que sigue). Para el PDF de una ya guardada, reábrela con ✏️ Editar.
+  if (idx < 0) cotizNueva(true);
 }
 
 // ===== GENERAR PDF DE COTIZACIÓN =====
