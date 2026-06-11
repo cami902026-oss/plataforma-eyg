@@ -16,12 +16,15 @@
  *      TWILIO_SID      = AC...   (tu Account SID de Twilio Console)
  *      TWILIO_TOKEN    = ...     (tu Auth Token de Twilio Console)
  *      TWILIO_NUMBER   = whatsapp:+14155238886
+ *      WHATSAPP_WEBHOOK_TOKEN = (un token secreto inventado, p.ej. eyg_wa_a1b2c3...)
  * 4. Implementar → Nueva implementación → Aplicación web
  *      - Ejecutar como: Tu cuenta
  *      - Acceso: Cualquier usuario, incluso anónimo
  * 5. Copia la URL /exec
  * 6. Ve a https://console.twilio.com → Messaging → Try it out → Sandbox settings
- *    En "When a message comes in" pega la URL /exec → Save
+ *    En "When a message comes in" pega la URL /exec AÑADIENDO al final
+ *    ?token=EL_MISMO_WHATSAPP_WEBHOOK_TOKEN  → Save
+ *    (así solo Twilio conoce la URL con el token; sin él, las peticiones se rechazan)
  *
  * Uso:
  * Cualquier usuario autorizado (Alberto, Andrea, Sheila, Alexandra, Lina)
@@ -52,6 +55,17 @@ const DENIED = {
 function doPost(e) {
   try {
     const params = e.parameter || {};
+
+    // Seguridad: token secreto en la URL del webhook (Apps Script no puede leer el
+    // header X-Twilio-Signature, así que validamos un token que solo Twilio conoce).
+    // La URL en Twilio debe terminar en ?token=...  Si WHATSAPP_WEBHOOK_TOKEN no está
+    // configurado, se permite todo (modo compatibilidad para no romper el despliegue).
+    const tokenEsperado = PROPS.getProperty('WHATSAPP_WEBHOOK_TOKEN');
+    if (tokenEsperado && String(params.token || '') !== tokenEsperado) {
+      Logger.log('WhatsApp: token de webhook inválido — petición rechazada');
+      return _twiml('');
+    }
+
     const from = (params.From || '').replace('whatsapp:','').trim();
     const body = (params.Body || '').trim();
 

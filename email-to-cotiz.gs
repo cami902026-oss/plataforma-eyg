@@ -77,17 +77,26 @@ function checkEmails() {
 
       // Extraer datos con Claude (texto + imágenes adjuntas)
       var sol = _extractData(subject, from, body, atts);
-      newProcessed.push(msgId);
-      if (!sol) continue;
+      // No es una solicitud de cotización → marcar como procesado (no reintentar)
+      if (!sol) { newProcessed.push(msgId); continue; }
 
       // Guardar en GitHub
       var saved = _saveGitHub(sol);
-      if (saved === 'dup') { Logger.log('Solicitud DUPLICADA omitida: ' + sol.cliente); continue; }
-      if (!saved) { Logger.log('Error guardando ' + sol.id); continue; }
+      if (saved === 'dup') {
+        Logger.log('Solicitud DUPLICADA omitida: ' + sol.cliente);
+        newProcessed.push(msgId);   // ya existe → marcar para no repetir
+        continue;
+      }
+      if (!saved) {
+        // Fallo real de guardado (red/SHA): NO marcar como procesado para
+        // que el próximo ciclo lo reintente y NO se pierda la solicitud.
+        Logger.log('Error guardando ' + sol.id + ' — se reintentará en el próximo ciclo');
+        continue;
+      }
 
-      // Notificar a Andrea y Gerencia
+      // Éxito → notificar y marcar como procesado
       _enviarEmailSolicitud(sol);
-
+      newProcessed.push(msgId);
       Logger.log('Solicitud creada: ' + sol.id + ' — ' + sol.cliente);
     }
   }
