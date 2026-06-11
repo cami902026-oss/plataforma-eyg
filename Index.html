@@ -1502,6 +1502,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <select id="bd-filter-vendedor" onchange="bdRender()" style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:#fff;font-size:13px;min-width:160px;">
               <option value="">👤 Todos los vendedores</option>
             </select>
+            <button onclick="exportCotizExcel()" title="Exportar cotizaciones a Excel para análisis (1 fila por cotización)" style="background:rgba(46,170,74,.3);border:1px solid #2EAA4A;border-radius:8px;padding:9px 14px;color:#86efac;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">⬇ Excel análisis</button>
           </div>
           <div class="bd-filters">
             <button class="bd-filter-btn active" onclick="bdFilter('todas',this)">Todas</button>
@@ -7905,6 +7906,64 @@ function bdFilter(estado, btn) {
   document.querySelectorAll('.bd-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   bdRender(estado);
+}
+
+function exportCotizExcel(){
+  const bd = getData('bd_cotizaciones', []).filter(c => c && !c.deleted);
+  if(!bd.length){ showToast('No hay cotizaciones para exportar','info'); return; }
+  const hoy = new Date().toISOString().substring(0,10);
+  const ini = new Date().getFullYear() + '-01-01';
+  const desde = prompt('Exportar cotizaciones DESDE (formato AAAA-MM-DD):', ini);
+  if(desde===null) return;
+  const hasta = prompt('HASTA (formato AAAA-MM-DD):', hoy);
+  if(hasta===null) return;
+  const d=(desde||'').trim(), h=(hasta||'').trim();
+  const GANADA={APROBADA:1,FACTURADA:1,ADJUDICADA:1,ACEPTADA:1};
+  const PERDIDA={RECHAZADA:1,VENCIDA:1,ANULADA:1,CERRADA:1};
+  const clasif=(e)=>{ const u=String(e||'').toUpperCase(); if(u==='BORRADOR')return'Borrador'; if(GANADA[u])return'Ganada'; if(PERDIDA[u])return'Perdida'; return'Abierta'; };
+  const lista = bd.filter(c => { const f=(c.fecha||'').substring(0,10); return f>=d && f<=h; })
+                  .sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||''));
+  if(!lista.length){ showToast('No hay cotizaciones en ese rango de fechas','info'); return; }
+  const rows = lista.map(c => {
+    let venta=0, costo=0;
+    (c.items||[]).forEach(it=>{ const q=+it.qty||0; venta+=q*(+it.precio||0); costo+=q*(+it.precioProveedor||0); });
+    const margen = venta>0 ? Math.round((1 - costo/venta)*1000)/10 : '';
+    let dias='';
+    if(c.createdAt && c.updatedAt){ dias = Math.round((new Date(c.updatedAt)-new Date(c.createdAt))/86400000); }
+    return {
+      '# Cotización': c.id||'',
+      'Fecha': c.fecha||'',
+      'Mes': (c.fecha||'').substring(0,7),
+      'Cliente': c.cliente||'',
+      'Contacto': c.contacto||'',
+      'Estado': c.estado||'',
+      'Clasificación': clasif(c.estado),
+      'Ítems': (c.items||[]).length,
+      'Subtotal': Math.round(c.subtotal||0),
+      'IVA': Math.round(c.ivaVal||0),
+      'Total': Math.round(c.total||0),
+      'Venta': Math.round(venta),
+      'Costo': Math.round(costo),
+      'Margen %': margen,
+      'Realizó': c.realizadaPor||'',
+      'Vendedor': c.vendedor||'',
+      'Aprobó': c.aprobadaPor||'',
+      'Forma Pago': c.formaPago||'',
+      'Validez': c.validez||'',
+      'Vence': c.fechaVenc||'',
+      'Creada': c.createdAt ? c.createdAt.substring(0,10) : '',
+      'Últ. cambio': c.updatedAt ? c.updatedAt.substring(0,10) : '',
+      'Días (creada→cambio)': dias
+    };
+  });
+  try {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = Object.keys(rows[0]).map(k=>({wch:Math.max(k.length,11)}));
+    XLSX.utils.book_append_sheet(wb, ws, 'Cotizaciones');
+    XLSX.writeFile(wb, `Cotizaciones_${d}_a_${h}.xlsx`);
+    showToast(`✅ ${rows.length} cotizaciones exportadas a Excel`,'success');
+  } catch(err){ showToast('Error al exportar: '+(err&&err.message||err),'error'); }
 }
 
 function bdRender(filtro) {
