@@ -3395,12 +3395,16 @@ async function _saveDataGH(filename, data, label) {
   // Sin token y sin proxy: imposible escribir
   throw new Error('Sin GitHub Token ni proxy configurado para escribir');
 }
+// Token compartido con el proxy (energy-proxy.gs). El proxy lo valida para frenar
+// el abuso de la cuota de Claude y la escritura no autorizada en GitHub.
+function _proxySecret() { return 'eyg_prx_c70613f89a19d97c73d8800612029462'; }
+
 async function _saveDataGH_viaProxy(proxyURL, filename, data, label) {
   // Apps Script: usar text/plain para evitar preflight CORS
   const resp = await fetch(proxyURL, {
     method:'POST',
     headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-    body: JSON.stringify({ file: filename, content: data, label: label }),
+    body: JSON.stringify({ file: filename, content: data, label: label, secret: _proxySecret() }),
     redirect:'follow'
   });
   const j = await resp.json();
@@ -7248,7 +7252,7 @@ async function cotizExtract() {
     const resp = await fetch(url, {
       method:'POST',
       headers:{ 'Content-Type': isAppsScript ? 'text/plain;charset=utf-8' : 'application/json' },
-      body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:2000, messages }),
+      body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:2000, messages, secret: _proxySecret() }),
       redirect:'follow'
     });
     const data = await resp.json();
@@ -9029,7 +9033,8 @@ ${systemContext||''}`;
         max_tokens: 1500,
         system: systemPrompt,
         messages,
-        tools: ENERGY_TOOLS
+        tools: ENERGY_TOOLS,
+        secret: _proxySecret()
       };
       const resp = await fetch(url, {
         method:'POST',

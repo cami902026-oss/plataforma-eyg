@@ -16,6 +16,12 @@
  *      GH_OWNER       = cami902026-oss
  *      GH_REPO        = plataforma-eyg
  *      GH_BRANCH      = main
+ *      SHARED_SECRET  = eyg_prx_...        (token de seguridad; el MISMO que está en Index.html)
+ *      RATE_LIMIT_PER_MIN = 90             (opcional; máximo de peticiones por minuto)
+ *
+ *   IMPORTANTE: agrega SHARED_SECRET SOLO cuando el Index.html que ya manda el token
+ *   esté publicado (Ctrl+F5). Mientras la propiedad no exista, el proxy acepta todo
+ *   (modo compatibilidad) — así no se cae el servicio durante el despliegue.
  * 4. Implementar → Nueva implementación → Aplicación web
  *      - Ejecutar como: Tu cuenta
  *      - Acceso: Cualquier usuario, incluso anónimo
@@ -32,9 +38,51 @@ const PROPS = PropertiesService.getScriptProperties();
 const MODEL_DEFAULT  = 'claude-haiku-4-5-20251001';
 const MAX_TOKENS_CAP = 4096;
 
+// ─── Seguridad ────────────────────────────────────────────────────────────────
+// Modelos permitidos a través de este proxy (evita que alguien gaste tu cuota en
+// modelos caros). Cualquier otro modelo solicitado se degrada a MODEL_DEFAULT.
+const MODELOS_PERMITIDOS = ['claude-haiku-4-5-20251001', 'claude-sonnet-4-6'];
+// Límite de peticiones por minuto (global, todas las llamadas al proxy juntas).
+// Configurable con la propiedad RATE_LIMIT_PER_MIN. Protege la factura ante abuso.
+const RATE_LIMIT_DEFAULT = 90;
+
+/**
+ * Capa 1 — Token compartido. Devuelve true si la petición está autorizada.
+ * Si la propiedad SHARED_SECRET NO está configurada, se permite todo
+ * (modo compatibilidad, para no romper nada antes de terminar el despliegue).
+ */
+function _autorizado(body) {
+  const secret = PROPS.getProperty('SHARED_SECRET');
+  if (!secret) return true;                 // aún no configurado → no exige token
+  return String(body && body.secret || '') === secret;
+}
+
+/**
+ * Capa 2 — Límite de peticiones por minuto (CacheService, ventana de 60s).
+ * Devuelve true si la petición está dentro del límite.
+ */
+function _dentroDelLimite() {
+  const cache = CacheService.getScriptCache();
+  const limite = parseInt(PROPS.getProperty('RATE_LIMIT_PER_MIN')) || RATE_LIMIT_DEFAULT;
+  const ventana = 'rl_' + Math.floor(Date.now() / 60000);   // clave por minuto
+  const actual = parseInt(cache.get(ventana)) || 0;
+  if (actual >= limite) return false;
+  cache.put(ventana, String(actual + 1), 120);              // expira en 2 min
+  return true;
+}
+
 function doPost(e) {
   try {
     const body = JSON.parse(e.postData.contents || '{}');
+
+    // Capa 1: token
+    if (!_autorizado(body)) {
+      return _json({ error: 'No autorizado' });
+    }
+    // Capa 2: límite por minuto
+    if (!_dentroDelLimite()) {
+      return _json({ error: 'Límite de peticiones excedido, intenta en un momento' });
+    }
 
     // Detección por contenido
     if (Array.isArray(body.messages)) {
@@ -66,8 +114,12 @@ function _handleClaude(body) {
     return _json({ error: 'CLAUDE_API_KEY no configurada en Propiedades del script' });
   }
 
+  // Capa 3: solo se permiten modelos de la lista blanca (evita gasto en modelos caros)
+  const modeloPedido = body.model || MODEL_DEFAULT;
+  const modelo = MODELOS_PERMITIDOS.indexOf(modeloPedido) >= 0 ? modeloPedido : MODEL_DEFAULT;
+
   const payload = {
-    model:      body.model      || MODEL_DEFAULT,
+    model:      modelo,
     max_tokens: Math.min(parseInt(body.max_tokens) || 1024, MAX_TOKENS_CAP),
     system:     body.system     || '',
     messages:   body.messages
