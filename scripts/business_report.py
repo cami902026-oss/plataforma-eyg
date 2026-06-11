@@ -161,10 +161,16 @@ def kpis_mes(cots, ym):
     mes = [c for c in cots if (c['fecha'] or '')[:7] == ym]
     ganadas = [c for c in mes if clasifica(c['estado']) == 'GANADA']
     abiertas = [c for c in mes if clasifica(c['estado']) == 'ABIERTA']
+    # Borradores: cotizaciones "no enviadas al cliente" → NO son oportunidades reales,
+    # se excluyen del denominador de conversión. Emitidas = todo lo que sí salió al cliente.
+    borradores = [c for c in mes if str(c['estado'] or '').strip().upper() == 'BORRADOR']
+    emitidas = len(mes) - len(borradores)
     return {
         'n': len(mes), 'monto': sum(c['total'] for c in mes),
         'n_ganadas': len(ganadas), 'monto_ganado': sum(c['total'] for c in ganadas),
-        'conv': (len(ganadas) / len(mes) * 100) if mes else 0,
+        'n_borradores': len(borradores), 'n_emitidas': emitidas,
+        # Conversión = ganadas / emitidas (excluye borradores no enviados)
+        'conv': (len(ganadas) / emitidas * 100) if emitidas else 0,
         'pipeline': sum(c['total'] for c in abiertas),
     }
 
@@ -313,14 +319,14 @@ def generate_excel(cots, lineas_hist, cots_plataforma, remisiones, planes, ocs, 
     ws['A1'] = 'E&G ENERGY GROUP — Datos al ' + now_co().strftime('%Y-%m-%d %H:%M')
     ws['A1'].font = Font(bold=True, size=13, color='0F2B5B')
     ws.append([])
-    ws.append(['Mes', 'Cotizaciones', 'Monto cotizado', 'Ganadas', 'Monto ganado', '% Conversión', 'Pipeline abierto'])
+    ws.append(['Mes', 'Cotizaciones', 'Borradores', 'Emitidas', 'Monto cotizado', 'Ganadas', 'Monto ganado', '% Conversión', 'Pipeline abierto'])
     for c in ws[3]:
         c.fill = HDR_FILL; c.font = HDR_FONT
     for ym, k in serie:
-        ws.append([ym, k['n'], round(k['monto']), k['n_ganadas'], round(k['monto_ganado']),
-                   round(k['conv'], 1), round(k['pipeline'])])
-    for col in 'ABCDEFG':
-        ws.column_dimensions[col].width = 17
+        ws.append([ym, k['n'], k['n_borradores'], k['n_emitidas'], round(k['monto']), k['n_ganadas'],
+                   round(k['monto_ganado']), round(k['conv'], 1), round(k['pipeline'])])
+    for col in 'ABCDEFGHI':
+        ws.column_dimensions[col].width = 16
 
     # Cotizaciones (1 fila por cotización, ambas fuentes)
     _sheet_from_rows(wb, 'Cotizaciones',
@@ -513,7 +519,9 @@ def generate_html(date_str, act, k_mes, serie, tops, margen_mes, totales, ger=No
     # Serie 6 meses
     serie_rows = ''.join(
         f"<tr><td style='padding:6px 10px;border-bottom:1px solid #eef1f8;font-weight:700;color:#0F2B5B;'>{ym}</td>"
-        f"<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:center;'>{k['n']}</td>"
+        f"<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:center;'>{k['n_emitidas']}"
+        + (f"<span style='color:#aaa;font-size:10px;'> (+{k['n_borradores']} borr.)</span>" if k['n_borradores'] else "")
+        + "</td>"
         f"<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:right;'>{money(k['monto'])}</td>"
         f"<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:center;'>{k['n_ganadas']}</td>"
         f"<td style='padding:6px 10px;border-bottom:1px solid #eef1f8;text-align:right;'>{money(k['monto_ganado'])}</td>"
@@ -566,12 +574,17 @@ def generate_html(date_str, act, k_mes, serie, tops, margen_mes, totales, ger=No
     <table width='100%' cellpadding='0' cellspacing='0' style='font-size:12px;'>
       <thead><tr>
         <th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:left;font-size:10px;'>MES</th>
-        <th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:center;font-size:10px;'>COTIZADAS</th>
+        <th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:center;font-size:10px;'>EMITIDAS</th>
         <th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:right;font-size:10px;'>$ COTIZADO</th>
         <th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:center;font-size:10px;'>GANADAS</th>
         <th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:right;font-size:10px;'>$ GANADO</th>
         <th style='background:#0F2B5B;color:#fff;padding:7px 10px;text-align:center;font-size:10px;'>% CONV</th>
       </tr></thead><tbody>{serie_rows}</tbody></table>
+    <div style='font-size:11px;color:#888;margin:6px 2px 0;'>
+      &#8505;&#65039; <b>Conversi&oacute;n = Ganadas &divide; Emitidas.</b> &laquo;Emitidas&raquo; son las cotizaciones enviadas al cliente
+      (Enviada, Pendiente, Adjudicada, Facturada, Rechazada, Vencida); <b>excluye los borradores</b> no enviados.
+      Ganadas = Adjudicada o Facturada. El mes en curso a&uacute;n tiene cotizaciones abiertas, por eso su % sube al cerrarse.
+    </div>
     <div class="sec">&#127942; Top clientes del a&ntilde;o (por $ ganado)</div>
     <table width='100%' cellpadding='0' cellspacing='0' style='font-size:12px;'>
       <thead><tr>
