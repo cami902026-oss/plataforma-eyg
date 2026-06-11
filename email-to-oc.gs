@@ -20,6 +20,8 @@
  *      GH_BRANCH       = main
  *      GS_SCRIPT_URL   = https://script.google.com/macros/s/AKfy.../exec
  *                        (URL del Apps Script de Google Sheets, mismo que usa Index.html)
+ *      WEBHOOK_TOKEN   = eyg_oc_...  (token de seguridad; el MISMO que se pone en
+ *                        la URI de Power Automate como ?token=...). Evita OCs falsas.
  * 4. Implementar → Nueva implementación → Aplicación web
  *      - Ejecutar como: Tu cuenta
  *      - Acceso: Cualquier usuario, incluso anónimo
@@ -32,7 +34,7 @@
  *     - Include Attachments: Yes
  * - Action: HTTP
  *     - Method: POST
- *     - URI: <URL del /exec>
+ *     - URI: <URL del /exec>?token=eyg_oc_...   ← agrega ?token= con el WEBHOOK_TOKEN
  *     - Headers: Content-Type = application/json
  *     - Body:
  *       {
@@ -180,6 +182,16 @@ function instalarTriggerCorreo() {
 
 function doPost(e) {
   try {
+    // Seguridad: token secreto en la URL (Power Automate lo envía en ?token=...).
+    // Evita que cualquiera cree OCs falsas con un POST anónimo. Si WEBHOOK_TOKEN
+    // no está configurado, se permite todo (modo compatibilidad para el despliegue).
+    var tokenEsperado = PROPS.getProperty('WEBHOOK_TOKEN');
+    var tokenRecibido = (e && e.parameter && e.parameter.token) || '';
+    if (tokenEsperado && String(tokenRecibido) !== tokenEsperado) {
+      Logger.log('Email→OC: token inválido — petición rechazada');
+      return _json({ ok:false, error:'No autorizado' });
+    }
+
     var body = {};
     try { body = JSON.parse(e.postData.contents || '{}'); } catch(_) {}
     var subject     = body.subject     || '';
