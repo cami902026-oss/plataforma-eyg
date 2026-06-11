@@ -3153,6 +3153,12 @@ async function _loadOrdenesGH() {
 }
 async function _saveOrdenesGH(arr) {
   try {
+    // Si este equipo NO tiene PAT local pero sí hay proxy, guardar por el proxy
+    // (su token vive en el servidor y no caduca como el PAT del navegador).
+    if (!_ghToken() && _ghWriteProxyURL()) {
+      try { await _saveDataGH_viaProxy(_ghWriteProxyURL(), 'ordenes.json', arr, 'Órdenes'); return; }
+      catch(e) { _enqueueOrdenesPendiente(arr, 'proxy:'+(e&&e.message||e)); return; }
+    }
     // FIX 422: si no tenemos SHA en memoria, obtenerlo de GitHub antes de guardar
     if (!_ordenesFileSHA) {
       try {
@@ -3194,6 +3200,13 @@ async function _saveOrdenesGH(arr) {
     if (r.ok) { const res = await r.json(); _ordenesFileSHA = res.content.sha; }
     else {
       const txt = await r.text();
+      // Si el PAT falló por autenticación (401/403, típicamente VENCIDO), reintentar por el
+      // proxy de respaldo (token server-side que no caduca). ordenes.json está permitido por el proxy.
+      const _pxy = _ghWriteProxyURL();
+      if ((r.status === 401 || r.status === 403) && _pxy) {
+        try { await _saveDataGH_viaProxy(_pxy, 'ordenes.json', arr, 'Órdenes'); return; }
+        catch(_) {}
+      }
       console.warn('GH save error:', txt);
       // FIX SYNC: encolar para reintento periódico (no perder cambios silenciosamente)
       _enqueueOrdenesPendiente(arr, 'PUT '+r.status);
