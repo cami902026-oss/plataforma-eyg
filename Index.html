@@ -1515,7 +1515,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <thead>
                 <tr>
                   <th>COT. No.</th><th>FECHA</th><th>CLIENTE</th><th>CONTACTO</th>
-                  <th>VENDEDOR</th><th>⏱</th><th>TOTAL</th><th>VENCE</th><th>ESTADO</th><th>ACCIONES</th>
+                  <th>REALIZÓ</th><th>⏱</th><th>TOTAL</th><th>VENCE</th><th>ESTADO</th><th>ACCIONES</th>
                 </tr>
               </thead>
               <tbody id="bd-tbody"></tbody>
@@ -7463,7 +7463,7 @@ function cotizNueva(silent) {
   document.getElementById('cotiz-cliente').value = '';
   document.getElementById('cotiz-contacto').value = '';
   document.getElementById('cotiz-correo').value = '';
-  document.getElementById('cotiz-estado').value = 'Enviada';
+  document.getElementById('cotiz-estado').value = 'Borrador';
   document.getElementById('cotiz-iva').value = '19';
   document.getElementById('cotiz-pago').value = '30 DÍAS';
   document.getElementById('cotiz-sitio').value = '';
@@ -7953,7 +7953,7 @@ function bdRender(filtro) {
       <td>${c.fecha||''}</td>
       <td style="font-weight:600">${c.cliente||''}</td>
       <td style="color:var(--text-muted)">${c.contacto||''}</td>
-      <td style="color:var(--text-muted);font-size:11px">${c.vendedor||''}</td>
+      <td style="color:var(--text-muted);font-size:11px">${c.realizadaPor||''}</td>
       <td style="text-align:center">${_bdSemaforo(c)}</td>
       <td style="color:var(--gold);font-weight:600">$${(c.total||0).toLocaleString('es-CO',{minimumFractionDigits:0})}</td>
       <td style="color:var(--text-muted)">${c.fechaVenc||''}</td>
