@@ -1443,16 +1443,28 @@
     "cliente": "BOBINADOS",
     "desc": "VALVULA MARIPOSA DSS304 EDPM 150 3\" ENGRANAJE",
     "estado": "activo",
+    "fechaIngreso": "2026-06-10",
+    "valor": 345100,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
         "f": "2026-06-10",
-        "n": "Auto-creada desde correo"
+        "n": "CODIFER"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "active",
+        "f": "2026-06-12",
+        "n": "",
+        "envio": "taquilla_bus",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -1467,16 +1479,9 @@
     ],
     "createdAt": "2026-06-10T05:00:00.000Z",
     "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-06-11T20:15:20.902Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA ENERGY GROUP",
-      "fecha": "2026-06-11T20:11:54.339Z",
-      "fechaCreacionOC": "2026-06-10",
-      "fechaCompra": "2026-06-10"
-    },
+    "updatedAt": "2026-06-11T20:25:28.981Z",
+    "updatedBy": "andrea",
     "lockedBy": "andrea",
-    "lockedAt": "2026-06-11T20:15:20.902Z"
+    "lockedAt": "2026-06-11T20:25:28.981Z"
   }
 ]
