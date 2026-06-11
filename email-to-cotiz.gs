@@ -82,14 +82,9 @@ function checkEmails() {
 
       // Guardar en GitHub
       var saved = _saveGitHub(sol);
-      if (saved === 'dup') {
-        Logger.log('Solicitud DUPLICADA omitida: ' + sol.cliente);
-        newProcessed.push(msgId);   // ya existe → marcar para no repetir
-        continue;
-      }
       if (!saved) {
-        // Fallo real de guardado (red/SHA): NO marcar como procesado para
-        // que el próximo ciclo lo reintente y NO se pierda la solicitud.
+        // Fallo real de guardado (red/SHA): NO marcar como procesado para que el
+        // próximo ciclo lo reintente y NO se pierda la solicitud del cliente.
         Logger.log('Error guardando ' + sol.id + ' — se reintentará en el próximo ciclo');
         continue;
       }
@@ -143,31 +138,48 @@ function _extractData(subject, from, bodyText, attachments) {
   var content = [];
 
   // Agregar imágenes adjuntas para visión de Claude
-  var imagenesAgregadas = 0;
+  var adjuntosAgregados = 0;
   if (attachments && attachments.length > 0) {
     Logger.log('Adjuntos encontrados: ' + attachments.length);
-    for (var i = 0; i < attachments.length && imagenesAgregadas < 3; i++) {
-      var att = attachments[i];
+    for (var i = 0; i < attachments.length && adjuntosAgregados < 5; i++) {
+      var att  = attachments[i];
       var mime = att.getContentType() || '';
-      Logger.log('Adjunto ' + i + ': ' + mime + ' — ' + att.getName());
+      var nom  = att.getName() || '';
+      Logger.log('Adjunto ' + i + ': ' + mime + ' — ' + nom);
+
+      // IMÁGENES → visión de Claude
       if (mime.indexOf('image/') === 0) {
         try {
           var b64 = Utilities.base64Encode(att.copyBlob().getBytes());
-          content.push({
-            type: 'image',
-            source: { type: 'base64', media_type: mime, data: b64 }
-          });
-          imagenesAgregadas++;
+          content.push({ type: 'image', source: { type: 'base64', media_type: mime, data: b64 } });
+          adjuntosAgregados++;
           Logger.log('Imagen agregada al contexto de Claude');
         } catch(e) { Logger.log('Error leyendo imagen: ' + e.message); }
-      } else if (mime === 'application/pdf') {
+
+      // PDF → documento NATIVO de Claude (lee el PDF real, no texto plano)
+      } else if (mime === 'application/pdf' || /\.pdf$/i.test(nom)) {
         try {
-          var pdfText = att.copyBlob().getDataAsString();
-          if (pdfText && pdfText.length > 50) {
-            promptText += '\n\n[Texto extraído del PDF adjunto]:\n' + pdfText.substring(0, 2000);
-            Logger.log('PDF agregado como texto');
+          var pbytes = att.copyBlob().getBytes();
+          if (pbytes.length > 9 * 1024 * 1024) {
+            Logger.log('PDF muy grande (>9MB), ignorado');
+          } else {
+            content.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: Utilities.base64Encode(pbytes) } });
+            adjuntosAgregados++;
+            Logger.log('PDF agregado como documento');
           }
-        } catch(e) { Logger.log('PDF no legible como texto: ' + e.message); }
+        } catch(e) { Logger.log('Error leyendo PDF: ' + e.message); }
+
+      // EXCEL / CSV → convertir a texto y agregarlo al prompt
+      } else if (/\.(xlsx|xlsm|xls|csv)$/i.test(nom) ||
+                 mime.indexOf('spreadsheet') >= 0 || mime.indexOf('excel') >= 0 || mime === 'text/csv') {
+        try {
+          var tablaTxt = _archivoTablaATexto(att);
+          if (tablaTxt && tablaTxt.length > 0) {
+            promptText += '\n\n[Datos del archivo "' + nom + '"]:\n' + tablaTxt.substring(0, 5000);
+            adjuntosAgregados++;
+            Logger.log('Excel/CSV agregado como texto (' + tablaTxt.length + ' chars)');
+          }
+        } catch(e) { Logger.log('Error leyendo Excel/CSV: ' + e.message + ' (¿falta habilitar el servicio Drive API?)'); }
       }
     }
   }
@@ -241,6 +253,125 @@ function _extractData(subject, from, bodyText, attachments) {
   };
 }
 
+// ─── Convertir Excel/CSV adjunto a texto (SIN depender de la Drive API) ──────
+// CSV: lectura directa. Excel moderno (.xlsx/.xlsm) = archivo ZIP con XML
+// adentro → se lee con Utilities.unzip + XmlService (servicios estándar,
+// SIEMPRE disponibles, no hay que habilitar nada). El .xls antiguo (binario)
+// intenta Drive API solo como último recurso.
+function _archivoTablaATexto(att) {
+  var nom  = att.getName() || '';
+  var mime = att.getContentType() || '';
+
+  // CSV → directo
+  if (/\.csv$/i.test(nom) || mime === 'text/csv') {
+    return att.copyBlob().getDataAsString();
+  }
+
+  // Excel moderno (.xlsx / .xlsm) → leer el ZIP interno (sin Drive API)
+  if (/\.(xlsx|xlsm)$/i.test(nom) ||
+      mime.indexOf('openxmlformats') >= 0 || mime.indexOf('spreadsheetml') >= 0) {
+    try {
+      var txt = _xlsxATexto(att.copyBlob());
+      if (txt) return txt;
+    } catch (e) {
+      Logger.log('Error leyendo xlsx por ZIP: ' + e.message);
+    }
+  }
+
+  // .xls antiguo (binario) o fallback → Drive API si estuviera disponible
+  try {
+    var tmp = Drive.Files.insert(
+      { title: 'tmp_cotiz_' + Date.now(), mimeType: MimeType.GOOGLE_SHEETS },
+      att.copyBlob(),
+      { convert: true }
+    );
+    var out = [];
+    try {
+      var sheets = SpreadsheetApp.openById(tmp.id).getSheets();
+      for (var s = 0; s < sheets.length; s++) {
+        var vals = sheets[s].getDataRange().getValues();
+        for (var r = 0; r < vals.length; r++) {
+          var fila = vals[r].join('\t').trim();
+          if (fila) out.push(fila);
+        }
+      }
+    } finally {
+      try { Drive.Files.remove(tmp.id); } catch(_) {}
+    }
+    return out.join('\n');
+  } catch (e) {
+    Logger.log('Drive API no disponible para .xls: ' + e.message);
+    return '';
+  }
+}
+
+// ─── Lee un .xlsx/.xlsm (ZIP de XML) y lo vuelve texto, sin servicios avanzados.
+function _xlsxATexto(blob) {
+  blob.setContentType('application/zip');
+  var files = Utilities.unzip(blob);
+  var map = {};
+  for (var i = 0; i < files.length; i++) { map[files[i].getName()] = files[i]; }
+
+  // 1) Tabla de textos compartidos (sharedStrings.xml)
+  var shared = [];
+  if (map['xl/sharedStrings.xml']) {
+    var ssRoot = XmlService.parse(map['xl/sharedStrings.xml'].getDataAsString()).getRootElement();
+    var ssNs   = ssRoot.getNamespace();
+    var sis    = ssRoot.getChildren('si', ssNs);
+    for (var s = 0; s < sis.length; s++) { shared.push(_xlsxTextoNodo(sis[s], ssNs)); }
+  }
+
+  // 2) Recorrer cada hoja (worksheets/sheetN.xml)
+  var out = [];
+  var hojas = Object.keys(map)
+    .filter(function (n) { return /^xl\/worksheets\/sheet\d+\.xml$/.test(n); })
+    .sort();
+  for (var h = 0; h < hojas.length; h++) {
+    var wsRoot = XmlService.parse(map[hojas[h]].getDataAsString()).getRootElement();
+    var wns    = wsRoot.getNamespace();
+    var data   = wsRoot.getChild('sheetData', wns);
+    if (!data) continue;
+    var rows = data.getChildren('row', wns);
+    for (var r = 0; r < rows.length; r++) {
+      var cells = rows[r].getChildren('c', wns);
+      var fila = [];
+      for (var c = 0; c < cells.length; c++) {
+        var cell  = cells[c];
+        var tAttr = cell.getAttribute('t');
+        var tipo  = tAttr ? tAttr.getValue() : '';
+        var valor = '';
+        if (tipo === 's') {                       // texto compartido
+          var v = cell.getChild('v', wns);
+          if (v) { var idx = parseInt(v.getText(), 10); valor = shared[idx] || ''; }
+        } else if (tipo === 'inlineStr') {        // texto en línea
+          var is = cell.getChild('is', wns);
+          if (is) valor = _xlsxTextoNodo(is, wns);
+        } else {                                  // número / fecha / fórmula
+          var v2 = cell.getChild('v', wns);
+          if (v2) valor = v2.getText();
+        }
+        if (valor !== '') fila.push(valor);
+      }
+      var filaTxt = fila.join('\t').trim();
+      if (filaTxt) out.push(filaTxt);
+    }
+  }
+  return out.join('\n');
+}
+
+// Extrae el texto de un nodo <si>/<is> (puede ser <t> directo o varios <r><t>)
+function _xlsxTextoNodo(node, ns) {
+  var t = node.getChild('t', ns);
+  if (t) return t.getText();
+  var partes = [];
+  var rs = node.getChildren('r', ns);
+  for (var i = 0; i < rs.length; i++) {
+    var rt = rs[i].getChild('t', ns);
+    if (rt) partes.push(rt.getText());
+  }
+  return partes.join('');
+}
+
 // ─── Guardar en GitHub ────────────────────────────────────────────────────────
 
 function _saveGitHub(sol) {
@@ -264,19 +395,6 @@ function _saveGitHub(sol) {
       );
     }
   } catch(_) {}
-
-  // ── Anti-duplicados: si ya hay una solicitud reciente (<24h) del mismo cliente con
-  //    una descripción casi idéntica, NO crear otra (evita reenvíos/repeticiones).
-  var _norm = function(s){ return (s || '').toString().toLowerCase().replace(/\s+/g, ' ').trim(); };
-  var solCli  = _norm(sol.cliente);
-  var solDesc = _norm(sol.descripcion).substring(0, 120);
-  var solTime = new Date(sol.fecha).getTime();
-  var dup = existing.some(function(e){
-    if (!e || _norm(e.cliente) !== solCli || e.estado === 'cancelada') return false;
-    if (_norm(e.descripcion).substring(0, 120) !== solDesc) return false;
-    return Math.abs(solTime - new Date(e.fecha).getTime()) < 24 * 3600 * 1000;
-  });
-  if (dup) { Logger.log('Duplicada (mismo cliente+descripcion <24h): ' + sol.cliente); return 'dup'; }
 
   existing.push(sol);
 
