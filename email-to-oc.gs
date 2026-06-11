@@ -132,8 +132,14 @@ function procesarCorreosNuevos() {
           attachments: attachments
         };
 
-        // Reusar el mismo pipeline del doPost
-        var fakeEvent = { postData: { contents: JSON.stringify(body) } };
+        // Reusar el mismo pipeline del doPost. Esta es una llamada INTERNA y confiable
+        // (la dispara nuestro propio trigger de Gmail), así que le pasamos el token
+        // de seguridad para que pase la validación del doPost. Las peticiones externas
+        // anónimas siguen obligadas a traer el token en la URL (?token=...).
+        var fakeEvent = {
+          parameter: { token: PROPS.getProperty('WEBHOOK_TOKEN') || '' },
+          postData: { contents: JSON.stringify(body) }
+        };
         var resp = doPost(fakeEvent);
         var content = resp.getContent ? resp.getContent() : '';
         Logger.log('  Resultado doPost: ' + content);
