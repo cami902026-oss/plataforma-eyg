@@ -7316,7 +7316,7 @@ function cotizRender() {
             <button type="button" class="foto-del" onclick="_cotizQuitarFoto(${i})" title="Quitar foto">🗑</button>` : ''}
         </div></td>
       <td><input value="${it.tiempoEntrega||''}" oninput="cotizItems[${i}].tiempoEntrega=this.value" style="width:80px"></td>
-      <td><input value="${it.desvTec||''}" oninput="cotizItems[${i}].desvTec=this.value" style="width:120px"></td>
+      <td><textarea rows="1" oninput="cotizItems[${i}].desvTec=this.value;_cotizAutoGrow(this)" style="min-width:150px" placeholder="Desviación técnica">${(it.desvTec||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea></td>
       <td><input value="${it.marca||''}" oninput="cotizItems[${i}].marca=this.value" style="width:62px"></td>
       <td><input type="number" value="${it.precio}" min="0" oninput="cotizItems[${i}].precio=parseFloat(this.value)||0;cotizUpdateTotals()" style="width:82px"></td>
       <td style="color:var(--gold);font-weight:600;text-align:right;white-space:nowrap">$${vTotal.toLocaleString('es-CO')}</td>
@@ -7703,7 +7703,7 @@ async function cotizGenerarPDF() {
       <th style="width:50px;">CANTIDAD</th>
       <th>DESCRIPCION</th>
       <th style="width:80px;">TIEMPO DE ENTREGA</th>
-      <th style="width:90px;">DESVIACION TECNICA</th>
+      <th style="width:150px;">DESVIACION TECNICA</th>
       <th style="width:80px;">MARCA</th>
       <th style="width:80px;">VALOR UNITARIO</th>
       <th style="width:90px;">VALOR TOTAL</th>
