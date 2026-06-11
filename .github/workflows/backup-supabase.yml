@@ -1,0 +1,42 @@
+name: 💾 Backup diario de Supabase (1:37 AM)
+
+on:
+  schedule:
+    # Todos los días a la 1:37 AM Colombia (UTC-5 = 06:37 UTC)
+    # Hora de madrugada (sin actividad) + minuto "no en punto" para reducir el retraso de GitHub Actions
+    - cron: '37 6 * * *'
+
+  # Permite ejecutar manualmente desde GitHub para pruebas
+  workflow_dispatch:
+
+permissions:
+  contents: write   # necesario para commitear los backups al repo
+
+jobs:
+  backup-supabase:
+    runs-on: ubuntu-latest
+    name: 💾 Respaldar tablas de Supabase
+
+    steps:
+      - name: 📥 Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 💾 Descargar y guardar respaldo
+        run: python scripts/backup_supabase.py
+
+      - name: 📤 Commit del respaldo (solo si hay cambios)
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add backups/
+          if git diff --staged --quiet; then
+            echo "Sin cambios en el respaldo — no se hace commit."
+          else
+            git commit -m "💾 Backup Supabase — $(TZ='America/Bogota' date +'%Y-%m-%d %H:%M')"
+            git push
+          fi
