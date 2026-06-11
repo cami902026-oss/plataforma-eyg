@@ -2107,7 +2107,7 @@
     "cliente": "PETROLEUM BLENDING INTERNATIONAL SAS -",
     "contacto": "\t Karen Valeria García Baron",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Borrador",
     "iva": 19,
     "subtotal": 14994000,
     "ivaVal": 2848860,
@@ -2134,11 +2134,11 @@
         "precioProveedor": 1400000
       }
     ],
-    "fechaGuardado": "2026-06-11T21:58:19.488Z",
+    "fechaGuardado": "2026-06-10T22:26:59.362Z",
     "createdAt": "2026-06-10T14:36:16.885Z",
     "createdBy": "lina",
-    "updatedAt": "2026-06-11T21:58:19.488Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-06-10T22:26:59.362Z",
+    "updatedBy": "lina"
   },
   {
     "id": "LM1652",
@@ -2649,6 +2649,100 @@
     "updatedBy": "alexandra"
   },
   {
+    "id": "LM1659",
+    "fecha": "2026-06-10",
+    "fechaVenc": "2026-06-18",
+    "cliente": "WATTLE",
+    "contacto": "TOMAS PERNETT - Coordinador de Mantenimiento",
+    "correo": "",
+    "estado": "Borrador",
+    "iva": 19,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
+    "formaPago": "CONTADO ",
+    "sitioEntrega": "AGUACHICA CESAR",
+    "validez": "8 DÍAS",
+    "observaciones": "LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Lina Cifuentes",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "items": [
+      {
+        "id": 1,
+        "desc": "BALL VALVE, Floating, ASME B16.34, 150#, Socket Welded Ends w/2 niggles, Standard Port, Bolted Stem, Bolted Op, ASTM A105, Lower Os, SS 410 Seal, RPTFE Seats Inserts, RPTFE Seals API 607 Ball valve",
+        "udm": "UND",
+        "qty": 0.5,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "NINGUNA",
+        "proveedor": ""
+      },
+      {
+        "id": 2,
+        "desc": "BALL VALVE, Floating, cast weldge, API 602, 150#, Socket Welded Ends, Standard Port , D&J Rising Stem , Bolted End, ASTM A105, Handwheel Op, API Trim II, Renewable Seats , Flexible Graphite Packing VALVE GATE",
+        "udm": "UND",
+        "qty": 1,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "NINGUNA",
+        "proveedor": ""
+      },
+      {
+        "id": 3,
+        "desc": "CHECK VALVE, Swing, Flanged Ends, ASME B16.34, 150#, Bolted Bonnet, Ductile Iron Body, Grade B, Inin Long, Seamless SXXX",
+        "udm": "UND",
+        "qty": 7,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "NINGUNA",
+        "proveedor": ""
+      },
+      {
+        "id": 4,
+        "desc": "316 STAINLESS STEEL 2-PC CARBON STEEL, 2-PC CAP ASTM A 105 DIMENSION AS PER ASME B16.11 FEMALE THREADED ENDS AS PER ASME B 20.1 NPT FACE FTH RATING 6000 0",
+        "udm": "UND",
+        "qty": 5,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "NINGUNA",
+        "proveedor": ""
+      },
+      {
+        "id": 5,
+        "desc": "316131-3931 CARBON STEEL, SOCKET, ASTM A 105, 6000#, 2N-2N ASME B16.11, BE AS PER ASME B 20.1 NPT FACE FTH RATING 6000 0",
+        "udm": "UND",
+        "qty": 2,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "NINGUNA",
+        "proveedor": ""
+      },
+      {
+        "id": 6,
+        "desc": "316131-4262 CARBON STEEL, NIPPLE, SEAMLESS PIPE, PE, SCH 160, ASTM A-106 GR. B, DIMENSIONS AS PER ASME B36.10, PLAIN ENDS, FOR L=100 mm, 3/4'', SCH 160",
+        "udm": "UND",
+        "qty": 10,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "NINGUNA",
+        "proveedor": ""
+      }
+    ],
+    "fechaGuardado": "2026-06-11T20:26:21.035Z",
+    "createdAt": "2026-06-10T22:15:56.807Z",
+    "createdBy": "lina",
+    "updatedAt": "2026-06-11T20:26:21.036Z",
+    "updatedBy": "lina"
+  },
+  {
     "id": "LM1660",
     "fecha": "2026-06-10",
     "fechaVenc": "2026-06-18",
@@ -2985,6 +3079,56 @@
     "updatedBy": "lina"
   },
   {
+    "id": "LM1668",
+    "fecha": "2026-06-10",
+    "fechaVenc": "2026-06-18",
+    "cliente": "PETROLABIN",
+    "contacto": "MARIA PAILA MORENO JARAMILLO ",
+    "correo": "",
+    "estado": "Enviada",
+    "iva": 19,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
+    "formaPago": "30 DÍAS",
+    "sitioEntrega": "",
+    "validez": "8 DÍAS",
+    "observaciones": "LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Lina Cifuentes",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "items": [
+      {
+        "id": 1,
+        "desc": "Tubería de acero al carbono API 5L Grado B, Diámetro 2 pulgadas (2\"), espesor de pared 0.154\", conexiones roscadas, External Coaing System According to CSA Z245.20. Two Layer FBE132-34. Milli|Thermowetting Anticorrosion|14-16 Milli+ARO|18-20 Milli, SSC-SP10, Anchor Profile: 2-4 Mik",
+        "udm": "EA",
+        "qty": 100,
+        "precio": 0,
+        "tiempoEntrega": "",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": ""
+      },
+      {
+        "id": 2,
+        "desc": "Tubería de acero al carbono API 5L Grado B, Diámetro 1 pulgada (1\"), espesor de pared 0.113\", conexiones roscadas, External Coating System According to CSA Z215.20. Two Layer FBE132-34. Milli|Thermowetting Anticorrosion|14-16 Milli+ARO|18-20 Milli, SSC-SP10, Anchor Profile: 2-4 Mik",
+        "udm": "EA",
+        "qty": 132,
+        "precio": 0,
+        "tiempoEntrega": "",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": ""
+      }
+    ],
+    "fechaGuardado": "2026-06-11T21:58:59.775Z",
+    "createdAt": "2026-06-11T21:58:59.775Z",
+    "createdBy": "lina",
+    "updatedAt": "2026-06-11T21:58:59.775Z",
+    "updatedBy": "lina"
+  },
+  {
     "id": "LM1654",
     "fecha": "2026-06-11",
     "fechaVenc": "2026-06-19",
@@ -3022,100 +3166,6 @@
     "createdAt": "2026-06-11T16:57:26.880Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-06-11T17:10:40.063Z",
-    "updatedBy": "alexandra"
-  },
-  {
-    "id": "LM1659",
-    "fecha": "2026-06-11",
-    "fechaVenc": "2026-06-19",
-    "cliente": "WATTLE",
-    "contacto": "TOMAS PERNETT - Coordinador de Mantenimiento",
-    "correo": "",
-    "estado": "Borrador",
-    "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
-    "formaPago": "CONTADO ",
-    "sitioEntrega": "AGUACHICA CESAR",
-    "validez": "8 DÍAS",
-    "observaciones": "LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.",
-    "vendedor": "Sheila Baron",
-    "realizadaPor": "Lina Cifuentes",
-    "aprobadaPor": "Alberto",
-    "solicitudId": "",
-    "items": [
-      {
-        "id": 1,
-        "desc": "BALL VALVE, Floating, ASME B16.34, 150#, Socket Welded Ends w/2 niggles, Standard Port, Bolted Stem, Bolted Op, ASTM A105, Lower Os, SS 410 Seal, RPTFE Seats Inserts, RPTFE Seals API 607 Ball valve",
-        "udm": "UND",
-        "qty": 0.5,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "NINGUNA",
-        "proveedor": ""
-      },
-      {
-        "id": 2,
-        "desc": "BALL VALVE, Floating, cast weldge, API 602, 150#, Socket Welded Ends, Standard Port , D&J Rising Stem , Bolted End, ASTM A105, Handwheel Op, API Trim II, Renewable Seats , Flexible Graphite Packing VALVE GATE",
-        "udm": "UND",
-        "qty": 1,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "NINGUNA",
-        "proveedor": ""
-      },
-      {
-        "id": 3,
-        "desc": "CHECK VALVE, Swing, Flanged Ends, ASME B16.34, 150#, Bolted Bonnet, Ductile Iron Body, Grade B, Inin Long, Seamless SXXX",
-        "udm": "UND",
-        "qty": 7,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "NINGUNA",
-        "proveedor": ""
-      },
-      {
-        "id": 4,
-        "desc": "316 STAINLESS STEEL 2-PC CARBON STEEL, 2-PC CAP ASTM A 105 DIMENSION AS PER ASME B16.11 FEMALE THREADED ENDS AS PER ASME B 20.1 NPT FACE FTH RATING 6000 0",
-        "udm": "UND",
-        "qty": 5,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "NINGUNA",
-        "proveedor": ""
-      },
-      {
-        "id": 5,
-        "desc": "316131-3931 CARBON STEEL, SOCKET, ASTM A 105, 6000#, 2N-2N ASME B16.11, BE AS PER ASME B 20.1 NPT FACE FTH RATING 6000 0",
-        "udm": "UND",
-        "qty": 2,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "NINGUNA",
-        "proveedor": ""
-      },
-      {
-        "id": 6,
-        "desc": "316131-4262 CARBON STEEL, NIPPLE, SEAMLESS PIPE, PE, SCH 160, ASTM A-106 GR. B, DIMENSIONS AS PER ASME B36.10, PLAIN ENDS, FOR L=100 mm, 3/4'', SCH 160",
-        "udm": "UND",
-        "qty": 10,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "NINGUNA",
-        "proveedor": ""
-      }
-    ],
-    "fechaGuardado": "2026-06-11T21:58:52.041Z",
-    "createdAt": "2026-06-10T22:15:56.807Z",
-    "createdBy": "lina",
-    "updatedAt": "2026-06-11T21:58:52.041Z",
     "updatedBy": "alexandra"
   },
   {
