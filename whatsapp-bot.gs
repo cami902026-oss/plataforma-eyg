@@ -69,8 +69,17 @@ function doPost(e) {
     const from = (params.From || '').replace('whatsapp:','').trim();
     const body = (params.Body || '').trim();
 
+    // Adjuntos de WhatsApp (Twilio): fotos / PDF de solicitudes de cotización
+    const media = [];
+    const numMedia = parseInt(params.NumMedia || '0', 10) || 0;
+    for (var mi = 0; mi < numMedia; mi++) {
+      var murl = params['MediaUrl' + mi];
+      var mct  = params['MediaContentType' + mi] || '';
+      if (murl) media.push({ url: murl, ctype: mct });
+    }
+
     if (!from) return _twiml('Error: no recibí tu número.');
-    if (!body) return _twiml('Hola — escríbeme algo y te ayudo.');
+    if (!body && !media.length) return _twiml('Hola — escríbeme algo (o envía la foto/PDF de la solicitud) y te ayudo.');
 
     if (DENIED[from]) {
       return _twiml(`Hola ${DENIED[from]}, este bot no está habilitado para tu rol. Usa la plataforma web: https://cami902026-oss.github.io/plataforma-eyg/Index.html`);
@@ -80,8 +89,8 @@ function doPost(e) {
       return _twiml(`Tu número (${from}) no está autorizado para usar el bot ENERGY. Si crees que es un error, contacta a Andrea.`);
     }
 
-    // Llamar a Claude con tools
-    const reply = chatWithClaude(body, user, from);
+    // Llamar a Claude con tools (texto + adjuntos)
+    const reply = chatWithClaude(body, user, from, media);
     return _twiml(reply);
 
   } catch (err) {
@@ -168,11 +177,27 @@ const TOOLS = [
       },
       required: ['num','cliente']
     }
+  },
+  {
+    name: 'crear_solicitud_cotizacion',
+    description: 'Registra una SOLICITUD DE COTIZACIÓN de un cliente para que el equipo de cotización (Alexandra/Lina) la trabaje. Úsala cuando la comercial envíe una lista de productos, una foto de un pedido o un PDF pidiendo precios/cotización. Extrae los productos de la imagen/PDF si viene adjunto.',
+    input_schema: {
+      type:'object',
+      properties: {
+        cliente:       { type:'string', description:'Empresa o persona que necesita los materiales' },
+        contacto:      { type:'string', description:'Nombre del contacto del cliente si aparece' },
+        productos:     { type:'array', description:'Productos solicitados', items:{ type:'object', properties:{ descripcion:{type:'string'}, cantidad:{type:'string'} } } },
+        formaPago:     { type:'string', description:'Condición de pago si se menciona' },
+        urgencia:      { type:'string', enum:['alta','media','baja'], description:'alta si es urgente/hoy-mañana, baja si más de una semana, media en otro caso' },
+        observaciones: { type:'string', description:'Dato adicional: lugar de entrega, especificaciones, etc.' }
+      },
+      required: ['cliente','productos']
+    }
   }
 ];
 
 // ─── LOOP AGÉNTICO CON CLAUDE ─────────────────────────────────────────────
-function chatWithClaude(prompt, user, from) {
+function chatWithClaude(prompt, user, from, media) {
   const apiKey = PROPS.getProperty('CLAUDE_API_KEY');
   if (!apiKey) return 'Error: CLAUDE_API_KEY no configurada en el script.';
 
@@ -181,9 +206,24 @@ function chatWithClaude(prompt, user, from) {
     'Usuario actual: ' + user.name + ' (' + user.role + '). ' +
     'Sé MUY BREVE — máximo 2-3 frases en cada respuesta. Sin listas largas. ' +
     'Cuando el usuario pida hacer algo (crear tarea, marcar O.C., etc.), USA las herramientas. ' +
+    'Si te envían una lista de productos, una foto de un pedido o un PDF pidiendo precios/cotización ' +
+    '(típicamente de la comercial), usa la herramienta crear_solicitud_cotizacion para registrar la ' +
+    'solicitud — la tomarán Alexandra o Lina. Lee bien la imagen/PDF para extraer los productos. ' +
     'Después de ejecutar, confirma brevemente. Sin emojis excesivos.';
 
-  const messages = [{ role:'user', content: prompt }];
+  // Primer mensaje: si vienen adjuntos (fotos/PDF), pasarlos a la visión de Claude
+  var primerContenido;
+  if (media && media.length) {
+    primerContenido = [];
+    for (var k = 0; k < media.length && k < 5; k++) {
+      var bloque = _mediaABloqueClaude(media[k]);
+      if (bloque) primerContenido.push(bloque);
+    }
+    primerContenido.push({ type:'text', text: prompt || 'Procesa la solicitud de cotización de la imagen/PDF adjunto.' });
+  } else {
+    primerContenido = prompt;
+  }
+  const messages = [{ role:'user', content: primerContenido }];
 
   for (let i = 0; i < 5; i++) {
     const payload = {
@@ -244,7 +284,65 @@ function executeTool(name, args, user) {
   if (name === 'listar_oc_pendientes')    return tool_listar_oc_pendientes(args);
   if (name === 'listar_tareas_pendientes') return tool_listar_tareas_pendientes(args);
   if (name === 'crear_oc')                return tool_crear_oc(args, user);
+  if (name === 'crear_solicitud_cotizacion') return tool_crear_solicitud_cotizacion(args, user);
   return { ok: false, mensaje: 'Herramienta desconocida: ' + name };
+}
+
+// Crea una solicitud de cotización en data/solicitudes_cotiz.json (mismo formato que
+// el robot de correo email-to-cotiz), para que la tome el equipo de cotización.
+function tool_crear_solicitud_cotizacion(args, user) {
+  var sols = _ghLoadJSON('data/solicitudes_cotiz.json') || [];
+  var now = new Date();
+  var dateStr = Utilities.formatDate(now, 'America/Bogota', 'yyyyMMdd');
+  var rand = Math.floor(Math.random() * 900 + 100).toString();
+  var productos = args.productos || [];
+  var descripcion = productos.length
+    ? productos.map(function(p){ return (p.cantidad ? p.cantidad + ' — ' : '') + (p.descripcion || ''); }).join(' | ').substring(0, 400)
+    : (args.cliente || 'Solicitud');
+  var sol = {
+    id: 'SOL-' + dateStr + '-' + rand,
+    fecha: now.toISOString(),
+    cliente: args.cliente || 'Sin identificar',
+    contacto: args.contacto || '',
+    productos: productos,
+    descripcion: descripcion,
+    formaPago: args.formaPago || '',
+    observaciones: args.observaciones || '',
+    urgencia: args.urgencia || 'media',
+    correoOrigen: 'WhatsApp: ' + user.name,
+    asuntoOrigen: 'Solicitud por WhatsApp',
+    estado: 'pendiente',
+    cotizacionId: null,
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
+    createdBy: user.name + ' (vía WhatsApp)'
+  };
+  sols.push(sol);
+  _ghSaveJSON('data/solicitudes_cotiz.json', sols, '📩 Solicitud (WA): ' + sol.cliente);
+  return { ok: true, mensaje: 'Solicitud ' + sol.id + ' creada para ' + sol.cliente + '. La verá el equipo de cotización (Alexandra/Lina).' };
+}
+
+// Descarga un adjunto de Twilio (requiere auth Basic con SID/TOKEN) y lo convierte
+// en un bloque de contenido para la API de Claude (imagen o documento PDF).
+function _mediaABloqueClaude(m) {
+  try {
+    var sid = PROPS.getProperty('TWILIO_SID');
+    var tok = PROPS.getProperty('TWILIO_TOKEN');
+    var opts = { muteHttpExceptions: true, followRedirects: true };
+    if (sid && tok) opts.headers = { Authorization: 'Basic ' + Utilities.base64Encode(sid + ':' + tok) };
+    var resp = UrlFetchApp.fetch(m.url, opts);
+    if (resp.getResponseCode() >= 300) { Logger.log('Media fetch HTTP ' + resp.getResponseCode()); return null; }
+    var b64 = Utilities.base64Encode(resp.getBlob().getBytes());
+    var ct = (m.ctype || '').toLowerCase();
+    if (ct.indexOf('image/') === 0) {
+      return { type:'image', source:{ type:'base64', media_type: ct, data: b64 } };
+    }
+    if (ct.indexOf('pdf') >= 0) {
+      return { type:'document', source:{ type:'base64', media_type:'application/pdf', data: b64 } };
+    }
+    Logger.log('Tipo de adjunto no soportado: ' + ct);
+    return null;
+  } catch (e) { Logger.log('Media error: ' + e); return null; }
 }
 
 function tool_crear_tarea(args, user) {
