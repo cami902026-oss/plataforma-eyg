@@ -2207,39 +2207,46 @@
   {
     "id": "poc_1781279696156",
     "num": "110626M9881",
-    "cliente": "FRONTERA",
+    "cliente": "CIAM",
     "desc": "Niple galvanizado CROUSE HINDS 1/2x 2 Pulgadas (15 unidades)",
     "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-11",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-06-12T21:05:04.252Z",
-    "valor": 0,
+    "fechaIngreso": "2026-06-12",
+    "valor": 255987,
     "hojaEntrada": {
       "requerida": false,
       "fecha": "",
       "estado": "pendiente"
     },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-12T21:05:04.252Z"
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-11",
+        "n": "Marin"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-12",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-12",
+        "n": "480"
+      }
+    ],
+    "createdAt": "2026-06-12T21:07:00.160Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-12T21:07:00.160Z",
+    "updatedBy": "andrea"
   }
 ]
