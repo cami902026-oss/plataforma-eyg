@@ -111,7 +111,12 @@ function _extractData(subject, from, bodyText, attachments) {
     'La comercial reenvía solicitudes de clientes que pueden venir como texto, imagen o PDF. ' +
     'Si hay una imagen adjunta, SIEMPRE léela — puede contener una lista de productos escrita a mano, ' +
     'una foto de un pedido, una captura de pantalla de WhatsApp o un listado impreso. ' +
-    'Si el cuerpo del correo está vacío pero hay imagen, asume que la imagen contiene la solicitud.';
+    'Si el cuerpo del correo está vacío pero hay imagen, asume que la imagen contiene la solicitud.\n\n' +
+    'REGLA CRÍTICA — TRANSCRIPCIÓN LITERAL: copia los productos, cantidades y descripciones ' +
+    'EXACTAMENTE como aparecen en el mensaje original (texto, imagen o PDF). NO traduzcas, NO corrijas ' +
+    'ortografía, NO cambies ni conviertas unidades, NO normalices ni reformules, NO abrevies ni completes ' +
+    'palabras. Si el cliente escribe en inglés, déjalo en inglés tal cual. Respeta mayúsculas, minúsculas, ' +
+    'símbolos, números, códigos y referencias EXACTAMENTE como están escritos.';
 
   var promptText =
     'Analiza este mensaje. Puede ser un reenvío de un cliente o una solicitud directa de cotización.\n\n' +
@@ -124,7 +129,7 @@ function _extractData(subject, from, bodyText, attachments) {
     '  "cliente": "nombre de la empresa o persona que necesita los materiales",\n' +
     '  "contacto": "nombre del contacto del cliente si aparece, sino cadena vacía",\n' +
     '  "productos": [\n' +
-    '    { "descripcion": "nombre del producto o material", "cantidad": "cantidad y unidad si aparece, sino cadena vacía" }\n' +
+    '    { "descripcion": "el producto o material EXACTAMENTE como está escrito en el original, sin traducir ni modificar nada", "cantidad": "la cantidad y unidad EXACTAMENTE como aparece, sin convertir ni cambiar, sino cadena vacía" }\n' +
     '  ],\n' +
     '  "formaPago": "condición de pago si se menciona (contado, crédito 30 días, etc.), sino cadena vacía",\n' +
     '  "urgencia": "alta si lo piden urgente o para hoy/mañana, baja si tienen más de una semana, media en cualquier otro caso",\n' +
@@ -132,7 +137,8 @@ function _extractData(subject, from, bodyText, attachments) {
     '}\n\n' +
     'Es solicitud si piden precios, disponibilidad o cotización de materiales o equipos industriales.\n' +
     'NO es solicitud si es: spam, factura recibida, confirmación de pago, newsletter, notificación automática.\n' +
-    'Si hay imagen adjunta, léela para extraer los productos listados en ella.';
+    'Si hay imagen adjunta, léela para extraer los productos listados en ella.\n' +
+    'RECUERDA: transcribe los productos, cantidades y descripciones TAL CUAL aparecen, sin traducir ni cambiar nada.';
 
   // Construir el contenido del mensaje (texto + imágenes si hay)
   var content = [];
