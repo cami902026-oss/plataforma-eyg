@@ -8405,6 +8405,7 @@ function solRender() {
     const urgColor = s.urgencia === 'alta' ? '#f87171' : s.urgencia === 'media' ? 'var(--gold)' : '#4ade80';
     const estadoColor = {pendiente:'var(--gold)',en_cotizacion:'#7eb3ff',enviada:'#4ade80',vencida:'#f87171'}[s.estado] || 'var(--text-muted)';
     const puedeVincular = s.estado === 'pendiente' || s.estado === 'en_cotizacion';
+    const yaCotizada = !!s.cotizacionId;
     return `<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
         <div style="flex:1;min-width:200px;">
@@ -8430,7 +8431,8 @@ function solRender() {
           <span style="font-size:12px;font-weight:700;color:${estadoColor};background:${estadoColor}22;padding:3px 10px;border-radius:10px;">${s.estado}</span>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
             ${puedeVincular ? `<button class="btn-sm bd-btn-edit" onclick="solEditar('${s.id}')">✏️ Editar</button>` : ''}
-            ${puedeVincular ? `<button class="btn-sm bd-btn-edit" onclick="solAbrirCotiz('${s.id}','${s.cliente.replace(/'/g,"\\'")}')">📝 Cotizar</button>` : ''}
+            ${puedeVincular && !yaCotizada ? `<button class="btn-sm bd-btn-edit" onclick="solAbrirCotiz('${s.id}','${s.cliente.replace(/'/g,"\\'")}')">📝 Cotizar</button>` : ''}
+            ${yaCotizada ? `<button class="btn-sm" style="background:rgba(126,179,255,.18);color:#7eb3ff;border:1px solid rgba(126,179,255,.35);" onclick="solVerCotizacion('${s.cotizacionId}')">📄 Ver cotización</button>` : ''}
             ${puedeVincular ? `<button class="btn-sm" style="background:rgba(239,68,68,.2);color:#fca5a5;border:1px solid rgba(239,68,68,.3);" onclick="solCancelar('${s.id}')">✕ Cancelar</button>` : ''}
           </div>
         </div>
@@ -8448,6 +8450,17 @@ function _parseCantidad(cantStr) {
     return { qty: parseFloat(m[1].replace(',','.')) || 1, udm: udmRaw || 'EA' };
   }
   return { qty: 1, udm: 'EA' };
+}
+
+// Abre la cotización ya vinculada a una solicitud (botón "Ver cotización").
+function solVerCotizacion(cotizId) {
+  if (!cotizId) return;
+  const c = getData('bd_cotizaciones', []).find(x => x && x.id === cotizId && !x.deleted);
+  if (!c) {
+    showToast('La cotización ' + cotizId + ' ya no existe (pudo haberse eliminado)', 'info');
+    return;
+  }
+  bdCargar(cotizId);
 }
 
 function solAbrirCotiz(solId, cliente) {
