@@ -2260,5 +2260,50 @@
     "updatedBy": "andrea",
     "lockedBy": "lina",
     "lockedAt": "2026-06-12T21:12:01.056Z"
+  },
+  {
+    "id": "poc_1781300058074",
+    "num": "LM1671",
+    "cliente": "PGS",
+    "desc": "MATERIAL MECANICO",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-12",
+    "valor": 799630,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-12",
+        "n": "HIDROLING"
+      },
+      {
+        "s": "active",
+        "f": "2026-06-13",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-12",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-12",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-06-12T21:34:18.075Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-12T21:34:18.075Z",
+    "updatedBy": "andrea"
   }
 ]
