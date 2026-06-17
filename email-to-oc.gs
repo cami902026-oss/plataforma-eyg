@@ -100,8 +100,7 @@ function procesarCorreosNuevos() {
       // "ENERGY" presentes, pero NO consecutivos, para aceptar variantes como
       // "ORDEN DE COMPRA CIAM ENERGY GROUP".
       var subj = msg.getSubject() || '';
-      var subjU = subj.toUpperCase();
-      if (subjU.indexOf('ORDEN DE COMPRA') < 0 || subjU.indexOf('ENERGY') < 0) continue;
+      if (subj.toUpperCase().indexOf('ORDEN DE COMPRA') < 0 || subj.toUpperCase().indexOf('ENERGY') < 0) continue;
 
       try {
         Logger.log('Procesando msg: "' + subj + '" de ' + msg.getFrom());
