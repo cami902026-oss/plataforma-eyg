@@ -1462,6 +1462,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="bd-filter-btn" id="sol-f-vencida" onclick="solFilter('vencida',this)">🔴 Vencidas</button>
               <button class="bd-filter-btn" id="sol-f-en_cotizacion" onclick="solFilter('en_cotizacion',this)">🔵 En cotización</button>
               <button class="bd-filter-btn" id="sol-f-enviada" onclick="solFilter('enviada',this)">✅ Enviadas</button>
+              <button onclick="solRecargar(this)" title="Traer las solicitudes nuevas que llegaron por el correo cotizacionenergy26 (sin recargar la página)" style="background:rgba(26,58,143,.35);border:1px solid rgba(96,165,250,.5);border-radius:20px;padding:5px 14px;color:#90cdf4;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">🔄 Actualizar</button>
               <button onclick="exportSolicitudesExcel()" title="Exportar a Excel las solicitudes del filtro de estado seleccionado" style="background:rgba(46,170,74,.3);border:1px solid #2EAA4A;border-radius:20px;padding:5px 14px;color:#86efac;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">⬇ Excel</button>
             </div>
           </div>
@@ -8327,6 +8328,28 @@ function solFilter(f, btn) {
   document.querySelectorAll('#cotiz-tab-solicitudes .bd-filter-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   solRender();
+}
+
+// Trae al instante las solicitudes más recientes de GitHub (incluidas las que el
+// robot del correo cotizacionenergy26 acaba de crear) sin recargar la página.
+// Usa _solMergeConRemoto → mergea por id sin pisar lo local (blindaje anti-pisadas).
+async function solRecargar(btn) {
+  const prev = btn ? btn.innerHTML : null;
+  try {
+    if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Actualizando…'; }
+    const local = getData('solicitudes_cotiz', []) || [];
+    const antes = local.length;
+    const unidas = await _solMergeConRemoto(local);
+    solRender();
+    if (typeof solUpdateBadge === 'function') solUpdateBadge();
+    const despues = Array.isArray(unidas) ? unidas.length : antes;
+    const nuevas = despues - antes;
+    showToast(nuevas > 0 ? ('Actualizado ✓ — '+nuevas+' solicitud(es) nueva(s)') : 'Solicitudes al día ✓', 'ok');
+  } catch (e) {
+    showToast('No se pudo actualizar: ' + e.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = prev; }
+  }
 }
 
 // Exporta a Excel las solicitudes según el filtro de estado activo (mismo
