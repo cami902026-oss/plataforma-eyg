@@ -2312,6 +2312,13 @@
     "cliente": "METAL INDUSTRIALES",
     "desc": "THREADOLET DE 2 X 6000 A-105 NPT",
     "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -2319,9 +2326,14 @@
         "n": "Auto-creada desde correo"
       },
       {
-        "s": "pending",
+        "s": "done",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2334,14 +2346,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-17T22:33:16.767Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "alexandra",
-    "lockedAt": "2026-06-17T22:33:16.767Z"
+    "createdAt": "2026-06-17T22:33:24.576Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-06-17T22:33:24.576Z",
+    "updatedBy": "alexandra"
   }
 ]
