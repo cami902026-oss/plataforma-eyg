@@ -2174,6 +2174,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <button class="btn btn-ghost" onclick="absCargar()" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
       <button class="btn btn-secondary" onclick="absDescargarExcel()" style="padding:8px 14px;font-size:12px;background:#1e7e34;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ Descargar Excel</button>
       <button class="btn btn-secondary" onclick="absSyncExcelPick()" style="padding:8px 14px;font-size:12px;background:#1a3a8f;color:#fff;border:none;border-radius:8px;cursor:pointer;">📊 Sincronizar con Excel</button>
+      <button id="abs-btn-nuevo-prod" onclick="absNuevoProductoModal()" style="display:none;padding:8px 14px;font-size:12px;background:#2EAA4A;color:#fff;border:none;border-radius:8px;cursor:pointer;">➕ Nuevo producto</button>
+      <button id="abs-btn-nueva-fam" onclick="absNuevaFamiliaModal()" style="display:none;padding:8px 14px;font-size:12px;background:rgba(232,160,32,.15);color:var(--gold);border:1px solid rgba(232,160,32,.4);border-radius:8px;cursor:pointer;">📁 Nueva familia</button>
       <input type="file" id="abs-sync-file" accept=".xlsm,.xlsx,.xls" style="display:none" onchange="absSyncExcelFile(this)">
     </div>
     <div id="abs-stock-count" class="abs-count"></div>
@@ -10811,6 +10813,10 @@ function absApplyPermisos() {
   if(thKe) thKe.style.display=abs_canAjuste()?'':'none';
   const btnPdf=document.getElementById('abs-conteo-imprimir-btn');
   if(btnPdf) btnPdf.style.display=abs_canPDF()?'':'none';
+  const btnNP=document.getElementById('abs-btn-nuevo-prod');
+  if(btnNP) btnNP.style.display=abs_canSalida()?'':'none';
+  const btnNF=document.getElementById('abs-btn-nueva-fam');
+  if(btnNF) btnNF.style.display=abs_canSalida()?'':'none';
 }
 
 function absTab(tab) {
@@ -12766,6 +12772,103 @@ async function absSyncApply() {
   absSyncClose();
   showToast('Sincronizado: '+okN+' cambio(s)'+(errN?' · '+errN+' con error':''), errN?'error':'ok');
   try { await absCargar(); } catch(_){}
+}
+
+// ─── CREAR FAMILIA / PRODUCTO MANUALMENTE ────────────────────────
+async function absNuevaFamiliaModal() {
+  if (!abs_canSalida()) return showToast('Solo el equipo de abastecimiento puede crear familias','error');
+  const nombre = prompt('NUEVA FAMILIA\n\nEscribe el nombre de la familia (ej. Válvulas, Bridas, Tubería):');
+  if (nombre===null) return; // canceló
+  const n = nombre.trim();
+  if (!n) return showToast('Nombre vacío','error');
+  if (abs_familias.some(f=>(f.nombre||'').toLowerCase()===n.toLowerCase())) return showToast('Esa familia ya existe','error');
+  try {
+    await absFetch('familias', {method:'POST', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({nombre:n})});
+    showToast('Familia "'+n+'" creada ✓','ok');
+    await absCargar();
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+}
+
+function absNuevoProductoModal() {
+  if (!abs_canSalida()) return showToast('Solo el equipo de abastecimiento puede crear productos','error');
+  const ex = document.getElementById('abs-nuevo-modal'); if (ex) ex.remove();
+  const famOpts = '<option value="">— Sin familia —</option>' +
+    abs_familias.map(f=>`<option value="${f.id}">${f.nombre}</option>`).join('');
+  const codSug = 'NP-' + String(Date.now()).slice(-6);
+  const fld = (label,id,extra='') => `<div style="margin-bottom:10px;">
+    <label style="display:block;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">${label}</label>
+    <input id="${id}" ${extra} style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:#fff;font-size:13px;font-family:'Open Sans',sans-serif;"></div>`;
+  const overlay = document.createElement('div');
+  overlay.id = 'abs-nuevo-modal';
+  overlay.className = 'modal-overlay open';
+  overlay.style.zIndex = '9999';
+  overlay.innerHTML = `<div class="modal-content" style="max-width:560px;max-height:88vh;overflow:auto;background:#0F1A2E;border:1px solid rgba(46,170,74,.4);">
+    <div style="padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;">
+      <h3 style="margin:0;color:#fff;font-family:Montserrat,sans-serif;">➕ Nuevo producto</h3>
+      <button onclick="absNuevoClose()" style="background:transparent;border:none;color:#8899bb;font-size:22px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+    <div style="padding:16px 18px;">
+      ${fld('Descripción *','abs-np-desc','placeholder="Ej. Válvula bola 3/4 acero inox"')}
+      <div style="margin-bottom:10px;">
+        <label style="display:block;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Familia</label>
+        <select id="abs-np-familia" style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:#fff;font-size:13px;">${famOpts}</select>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1">${fld('Código','abs-np-codigo',`value="${codSug}"`)}</div>
+        <div style="flex:1">${fld('Stock inicial','abs-np-stock','type="number" step="0.01" value="0"')}</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1">${fld('Marca','abs-np-marca')}</div>
+        <div style="flex:1">${fld('Proveedor','abs-np-prov')}</div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1">${fld('Ubicación','abs-np-ubic','placeholder="Ej. Estante A-3"')}</div>
+        <div style="flex:1">${fld('Costo compra','abs-np-costo','type="number" step="0.01" placeholder="opcional"')}</div>
+      </div>
+      ${fld('Precio venta','abs-np-precio','type="number" step="0.01" placeholder="opcional"')}
+      <p style="color:#8899bb;font-size:11px;margin:4px 0 0;">El stock inicial se registra directo. Las entradas/salidas posteriores se hacen en la pestaña Movimientos.</p>
+      <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end;">
+        <button onclick="absNuevoClose()" style="background:transparent;border:1px solid var(--border);color:#cbd5ff;padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer;">Cancelar</button>
+        <button onclick="absGuardarNuevoProducto()" style="background:rgba(46,170,74,.3);color:#86efac;border:1px solid rgba(46,170,74,.5);padding:8px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;">✅ Crear producto</button>
+      </div>
+    </div>
+  </div>`;
+  overlay.onclick = (e) => { if (e.target===overlay) absNuevoClose(); };
+  document.body.appendChild(overlay);
+  setTimeout(()=>{ const d=document.getElementById('abs-np-desc'); if(d) d.focus(); }, 50);
+}
+
+function absNuevoClose(){ const m=document.getElementById('abs-nuevo-modal'); if(m) m.remove(); }
+
+async function absGuardarNuevoProducto() {
+  if (!abs_canSalida()) return showToast('Sin permiso','error');
+  const val = id => (document.getElementById(id)?.value||'').trim();
+  const num = id => { const v=val(id); if(v==='') return null; const n=parseFloat(v.replace(',','.')); return isNaN(n)?null:n; };
+  const desc = val('abs-np-desc');
+  if (!desc) return showToast('La descripción es obligatoria','error');
+  let codigo = val('abs-np-codigo') || ('NP-'+String(Date.now()).slice(-6));
+  if (abs_productos.some(p=>(p.codigo||'').toLowerCase()===codigo.toLowerCase()))
+    return showToast('Ya existe un producto con el código '+codigo,'error');
+  const famId = val('abs-np-familia');
+  const body = {
+    codigo,
+    descripcion: desc,
+    familia_id: famId ? Number(famId) : null,
+    marca: val('abs-np-marca') || null,
+    proveedor: val('abs-np-prov') || null,
+    ubicacion: val('abs-np-ubic') || null,
+    stock_actual: num('abs-np-stock') || 0,
+    costo_compra: num('abs-np-costo'),
+    precio_venta: num('abs-np-precio'),
+    activo: true
+  };
+  try {
+    showToast('Creando producto…','info');
+    await absFetch('productos', {method:'POST', headers:{'Prefer':'return=minimal'}, body:JSON.stringify(body)});
+    absNuevoClose();
+    showToast('Producto "'+desc+'" creado ✓','ok');
+    await absCargar();
+  } catch(e){ showToast('Error: '+e.message,'error'); }
 }
 
 </script>
