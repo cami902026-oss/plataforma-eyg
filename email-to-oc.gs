@@ -68,7 +68,11 @@ function doGet() {
 function procesarCorreosNuevos() {
   // FIX: en vez de buscar "is:unread", buscamos correos sin el label de procesado.
   // Esto evita que un correo abierto manualmente (que pasa a "leído") deje de procesarse.
-  var query = 'subject:"ORDEN DE COMPRA ENERGY" -label:ENERGY-OC-Procesado newer_than:14d';
+  // Antes: subject:"ORDEN DE COMPRA ENERGY" exigía las palabras pegadas y NO encontraba
+  // asuntos con algo en medio, p.ej. "ORDEN DE COMPRA CIAM ENERGY GROUP". Ahora buscamos
+  // solo "ORDEN DE COMPRA" y el filtro de ENERGY se hace abajo (subj.indexOf), sin exigir
+  // que estén consecutivas.
+  var query = 'subject:"ORDEN DE COMPRA" -label:ENERGY-OC-Procesado newer_than:14d';
   var threads = GmailApp.search(query, 0, 20);
   if (!threads.length) {
     Logger.log('No hay correos nuevos.');
@@ -92,9 +96,12 @@ function procesarCorreosNuevos() {
     }
     for (var m = 0; m < msgs.length; m++) {
       var msg = msgs[m];
-      // Verificar de nuevo el asunto (search es laxo)
+      // Verificar de nuevo el asunto (search es laxo). Exigimos "ORDEN DE COMPRA" Y
+      // "ENERGY" presentes, pero NO consecutivos, para aceptar variantes como
+      // "ORDEN DE COMPRA CIAM ENERGY GROUP".
       var subj = msg.getSubject() || '';
-      if (subj.toUpperCase().indexOf('ORDEN DE COMPRA ENERGY') < 0) continue;
+      var subjU = subj.toUpperCase();
+      if (subjU.indexOf('ORDEN DE COMPRA') < 0 || subjU.indexOf('ENERGY') < 0) continue;
 
       try {
         Logger.log('Procesando msg: "' + subj + '" de ' + msg.getFrom());
