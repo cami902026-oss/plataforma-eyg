@@ -66,41 +66,40 @@ function doGet() {
 // extrae datos con Claude y crea la OC. Marca el correo como leído + label
 // "ENERGY-OC-Procesado" para no procesarlo dos veces.
 function procesarCorreosNuevos() {
-  // FIX: en vez de buscar "is:unread", buscamos correos sin el label de procesado.
-  // Esto evita que un correo abierto manualmente (que pasa a "leído") deje de procesarse.
-  // Antes: subject:"ORDEN DE COMPRA ENERGY" exigía las palabras pegadas y NO encontraba
-  // asuntos con algo en medio, p.ej. "ORDEN DE COMPRA CIAM ENERGY GROUP". Ahora buscamos
-  // solo "ORDEN DE COMPRA" y el filtro de ENERGY se hace abajo (subj.indexOf), sin exigir
-  // que estén consecutivas.
-  var query = 'subject:"ORDEN DE COMPRA" -label:ENERGY-OC-Procesado newer_than:14d';
-  var threads = GmailApp.search(query, 0, 20);
+  // Buscamos por ASUNTO + ventana de tiempo, NO por label de hilo. Motivo: cuando llega
+  // una orden nueva con el MISMO asunto que una vieja ("ORDEN DE COMPRA ENERGY GROUP"),
+  // Gmail la agrupa en el mismo HILO que ya tenía el label de procesado, y el filtro
+  // -label:ENERGY-OC-Procesado la escondía → la orden nueva nunca se procesaba.
+  // Ahora deduplicamos por ID de MENSAJE individual (set en Propiedades del script),
+  // así un mensaje nuevo dentro de un hilo viejo SÍ se procesa, y nunca se repite.
+  var query = 'subject:"ORDEN DE COMPRA" newer_than:7d';
+  var threads = GmailApp.search(query, 0, 30);
   if (!threads.length) {
     Logger.log('No hay correos nuevos.');
     return;
   }
   Logger.log('Hilos encontrados: ' + threads.length);
 
-  // Asegurar label de procesados
+  // Label visual de procesados (solo informativo; ya no se usa para saltar)
   var labelName = 'ENERGY-OC-Procesado';
   var label = GmailApp.getUserLabelByName(labelName);
   if (!label) label = GmailApp.createLabel(labelName);
 
+  // IDs de mensajes ya procesados (para no repetir ni re-llamar a Claude cada minuto)
+  var procesados = _getMsgIdsProcesados();
+
   for (var t = 0; t < threads.length; t++) {
     var thread = threads[t];
     var msgs = thread.getMessages();
-    // Saltar hilos que ya tienen el label de procesado (defensa adicional)
-    var threadLabels = thread.getLabels().map(function(l){ return l.getName(); });
-    if (threadLabels.indexOf(labelName) >= 0) {
-      Logger.log('Hilo ya procesado (tiene label), saltando.');
-      continue;
-    }
     for (var m = 0; m < msgs.length; m++) {
       var msg = msgs[m];
-      // Verificar de nuevo el asunto (search es laxo). Exigimos "ORDEN DE COMPRA" Y
-      // "ENERGY" presentes, pero NO consecutivos, para aceptar variantes como
-      // "ORDEN DE COMPRA CIAM ENERGY GROUP".
+      // Exigimos "ORDEN DE COMPRA" Y "ENERGY" en el asunto, no necesariamente pegadas.
       var subj = msg.getSubject() || '';
       if (subj.toUpperCase().indexOf('ORDEN DE COMPRA') < 0 || subj.toUpperCase().indexOf('ENERGY') < 0) continue;
+
+      // Dedup por mensaje: si este mensaje ya se procesó antes, saltarlo.
+      var msgId = msg.getId();
+      if (procesados.indexOf(msgId) >= 0) continue;
 
       try {
         Logger.log('Procesando msg: "' + subj + '" de ' + msg.getFrom());
@@ -150,10 +149,8 @@ function procesarCorreosNuevos() {
         var content = resp.getContent ? resp.getContent() : '';
         Logger.log('  Resultado doPost: ' + content);
 
-        // Decisión de marcar leído:
-        // - Si OC fue creada (ok:true) → marcar leído + label
-        // - Si OC ya existe (duplicado) → marcar leído + label
-        // - Si fue cualquier otro error → DEJAR NO LEÍDO para reintentar
+        // Si la OC se creó (ok:true) o ya existía (duplicado) → marcar mensaje como
+        // procesado para no repetirlo. Cualquier otro error → dejarlo para reintentar.
         var parsed = {};
         try { parsed = JSON.parse(content); } catch(_) {}
         var debeMarcarse = (parsed.ok === true) ||
@@ -161,16 +158,29 @@ function procesarCorreosNuevos() {
         if (debeMarcarse) {
           msg.markRead();
           thread.addLabel(label);
-          Logger.log('  ✅ Marcado leído + label');
+          procesados.push(msgId);
+          _setMsgIdsProcesados(procesados);
+          Logger.log('  ✅ Procesado (msgId ' + msgId + ')');
         } else {
-          Logger.log('  ⚠️ NO marcado leído (reintentará en próximo trigger)');
+          Logger.log('  ⚠️ NO procesado (reintentará en próximo trigger)');
         }
       } catch (err) {
         Logger.log('  ❌ ERROR procesando msg: ' + err + (err.stack ? '\n' + err.stack : ''));
-        // No marcamos como leído para que reintente la próxima vez
+        // No lo marcamos como procesado para que reintente la próxima vez
       }
     }
   }
+}
+
+// Set de IDs de mensajes de Gmail ya convertidos en OC (dedup por mensaje, no por hilo).
+function _getMsgIdsProcesados() {
+  try { return JSON.parse(PROPS.getProperty('OC_MSGIDS_PROCESADOS') || '[]') || []; }
+  catch(_) { return []; }
+}
+function _setMsgIdsProcesados(arr) {
+  // Mantener solo los últimos 500 para que la propiedad no crezca sin límite.
+  if (arr.length > 500) arr = arr.slice(arr.length - 500);
+  PROPS.setProperty('OC_MSGIDS_PROCESADOS', JSON.stringify(arr));
 }
 
 // ─── INSTALADOR DEL TRIGGER (correrlo UNA SOLA VEZ a mano) ─────────────────
