@@ -2536,9 +2536,16 @@
   {
     "id": "poc_1781804395600",
     "num": "ODC-AA-MEC-SKID-469-24-558",
-    "cliente": "E&G ENERGY GROUP SAS",
+    "cliente": "SKID EXPERTS",
     "desc": "Tubo inoxidable y bridas para mezcladores estáticos",
     "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -2548,7 +2555,12 @@
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2561,14 +2573,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-18T17:40:18.657Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-18T17:40:18.657Z"
+    "createdAt": "2026-06-18T17:40:32.020Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-18T17:40:32.020Z",
+    "updatedBy": "andrea"
   }
 ]
