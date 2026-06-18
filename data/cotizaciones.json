@@ -4823,5 +4823,69 @@
     "updatedBy": "alexandra",
     "deleted": true,
     "deletedAt": "2026-06-17T19:44:29.764Z"
+  },
+  {
+    "id": "LM1673",
+    "fecha": "2026-06-18",
+    "fechaVenc": "2026-06-26",
+    "cliente": "CIAM",
+    "contacto": "DALADIER",
+    "correo": "",
+    "estado": "Adjudicada",
+    "iva": 19,
+    "subtotal": 74690,
+    "ivaVal": 14191.1,
+    "total": 88881.1,
+    "formaPago": "30 DÍAS",
+    "sitioEntrega": "PUERTO GAITAN META",
+    "validez": "8 DÍAS",
+    "observaciones": "LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Alexandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "items": [
+      {
+        "id": 1,
+        "desc": "ESPARRAGO ZINCADO DIAMETRO 3/4\" X 7-1/2\" CON DOBLE TUERCAS ZINCADAS",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 23400,
+        "tiempoEntrega": "4-5 DIAS HABILES",
+        "desvTec": "INCLUYE PROCESO DE GALVANIZADO ",
+        "marca": "JDF",
+        "proveedor": "MUNDIAL",
+        "precioProveedor": 5640
+      },
+      {
+        "id": 2,
+        "desc": "ESPARRAGO ZINCADO DIAMETRO7/8\" X 5\" DE LARGO CON DOBLE TUERCA ZINCADA",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 27890,
+        "tiempoEntrega": "4-5 DIAS HABILES",
+        "desvTec": "INCLUYE PROCESO DE GALVANIZADO ",
+        "marca": "JDF",
+        "proveedor": "MUNDIAL",
+        "precioProveedor": 6058
+      },
+      {
+        "id": 3,
+        "desc": "ESPARRAGO ZINCADO DIAMETRO 3/4\" X 7-1/2\" CON DOBLE TUERCAS ZINCADAS (UNIDAD) ",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 23400,
+        "tiempoEntrega": "4-5 DIAS HABILES",
+        "desvTec": "INCLUYE PROCESO DE GALVANIZADO ",
+        "marca": "JDF",
+        "proveedor": "MUNDIAL",
+        "precioProveedor": 5650
+      }
+    ],
+    "fechaGuardado": "2026-06-18T18:50:59.230Z",
+    "createdAt": "2026-06-18T18:50:59.231Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-06-18T18:50:59.231Z",
+    "updatedBy": "alexandra"
   }
 ]
