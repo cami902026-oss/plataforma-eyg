@@ -2354,9 +2354,16 @@
   {
     "id": "poc_1781740932503",
     "num": "160626G0445",
-    "cliente": "FRONTERA",
+    "cliente": "CIAM",
     "desc": "Esparrago zincado de diámetro 7/8\" x 5\" de largo con doble tuerca",
     "estado": "activo",
+    "fechaIngreso": "2026-06-16",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -2366,7 +2373,12 @@
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2381,16 +2393,7 @@
     ],
     "createdAt": "2026-06-16T05:00:00.000Z",
     "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-06-18T02:02:03.328Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA CIAM ENERGY GROUP",
-      "fecha": "2026-06-18T00:02:12.503Z",
-      "fechaCreacionOC": "2026-06-16",
-      "fechaCompra": "2026-06-16"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-18T02:02:03.328Z"
+    "updatedAt": "2026-06-18T02:02:09.950Z",
+    "updatedBy": "andrea"
   }
 ]
