@@ -2402,6 +2402,13 @@
     "cliente": "E&G ENERGY GROUP SAS",
     "desc": "UNION COUPLING DE 1 X 3000 INOX 304",
     "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -2411,7 +2418,12 @@
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2424,14 +2436,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-18T02:09:25.602Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-18T02:09:25.602Z"
+    "createdAt": "2026-06-18T02:09:30.622Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-18T02:09:30.622Z",
+    "updatedBy": "andrea"
   }
 ]
