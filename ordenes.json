@@ -2446,9 +2446,16 @@
   {
     "id": "poc_1781749319612",
     "num": "160626S5553",
-    "cliente": "FRONTERA",
+    "cliente": "CIAM",
     "desc": "Esparrago zincado diámetro 3/4\" x 7-1/2\" con doble tuerca",
     "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -2458,7 +2465,12 @@
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2471,15 +2483,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-18T02:25:16.237Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-18T02:25:16.237Z"
+    "createdAt": "2026-06-18T02:25:23.596Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-18T02:25:23.596Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1781749399665",
