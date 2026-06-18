@@ -93,9 +93,10 @@ function procesarCorreosNuevos() {
     var msgs = thread.getMessages();
     for (var m = 0; m < msgs.length; m++) {
       var msg = msgs[m];
-      // Exigimos "ORDEN DE COMPRA" Y "ENERGY" en el asunto, no necesariamente pegadas.
+      // Dispara con solo ver "ORDEN DE COMPRA" en el asunto. NO exigimos "ENERGY"
+      // porque a veces viene mal escrito ("ENEEGY") o sin esa palabra, y se perdían.
       var subj = msg.getSubject() || '';
-      if (subj.toUpperCase().indexOf('ORDEN DE COMPRA') < 0 || subj.toUpperCase().indexOf('ENERGY') < 0) continue;
+      if (subj.toUpperCase().indexOf('ORDEN DE COMPRA') < 0) continue;
 
       // Dedup por mensaje: si este mensaje ya se procesó antes, saltarlo.
       var msgId = msg.getId();

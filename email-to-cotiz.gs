@@ -75,6 +75,13 @@ function checkEmails() {
         continue;
       }
 
+      // Las "ORDEN DE COMPRA" NO son cotizaciones: las maneja el robot de OC.
+      // Se ignoran aquí para no convertir órdenes de compra en solicitudes.
+      if ((subject || '').toUpperCase().indexOf('ORDEN DE COMPRA') !== -1) {
+        newProcessed.push(msgId);
+        continue;
+      }
+
       // Extraer datos con Claude (texto + imágenes adjuntas)
       var sol = _extractData(subject, from, body, atts);
       // No es una solicitud de cotización → marcar como procesado (no reintentar)
