@@ -2393,8 +2393,10 @@
     ],
     "createdAt": "2026-06-16T05:00:00.000Z",
     "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-06-18T02:02:09.950Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-06-18T02:23:54.015Z",
+    "updatedBy": "andrea",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-06-18T02:23:54.015Z"
   },
   {
     "id": "poc_1781748545065",
@@ -2469,16 +2471,12 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-06-16T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
     "updatedAt": "2026-06-18T02:21:59.611Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA CIAM ENERGY GROUP",
-      "fecha": "2026-06-18T02:21:59.611Z",
-      "fechaCreacionOC": "2026-06-16",
-      "fechaCompra": "2026-06-16"
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
     }
   },
   {
@@ -2509,16 +2507,12 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-06-16T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
     "updatedAt": "2026-06-18T02:23:19.664Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA CIAM 2 ENERGY GROUP",
-      "fecha": "2026-06-18T02:23:19.664Z",
-      "fechaCreacionOC": "2026-06-16",
-      "fechaCompra": "2026-06-16"
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
     }
   }
 ]
