@@ -5812,9 +5812,14 @@ async function loadCarteraUrlUI() {
   }
 }
 async function abrirCartera() {
-  // Refrescar URL desde GitHub antes de abrir (por si el PC anfitrión reinició recién)
+  // Abrir la pestaña YA (dentro del clic) para que el navegador NO bloquee el popup.
+  // Si esperamos (await) antes de window.open, el navegador lo bloquea y no abre nada.
+  const win = window.open('about:blank', '_blank');
+  // Refrescar URL desde GitHub (por si el PC anfitrión reinició recién)
   await refreshCarteraURLFromGitHub();
-  window.open(getCarteraURL(), '_blank', 'noopener');
+  const url = getCarteraURL();
+  if (win && !win.closed) { win.location.href = url; }
+  else { window.open(url, '_blank', 'noopener'); }
 }
 async function testCarteraConnection() {
   const status = document.getElementById('cartera-status');
