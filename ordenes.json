@@ -2660,23 +2660,35 @@
   {
     "id": "poc_1781891276346",
     "num": "13160",
-    "cliente": "E&G ENERGY GROUP SAS",
+    "cliente": "HIDROCASANARE",
     "desc": "SPIRAL WND GKT, GRAPH.FILLER+SS EXT.CNTR RING",
     "estado": "activo",
+    "fechaIngreso": "2026-06-11",
+    "valor": 453152,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
         "f": "2026-06-11",
-        "n": "Auto-creada desde correo"
+        "n": "Colimportados"
       },
       {
-        "s": "pending",
+        "s": "active",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "recoge_bodega",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-19",
         "n": ""
       },
       {
@@ -2687,16 +2699,7 @@
     ],
     "createdAt": "2026-06-11T05:00:00.000Z",
     "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-06-19T17:49:44.592Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA ENERGY GROUP HIDRO",
-      "fecha": "2026-06-19T17:47:56.346Z",
-      "fechaCreacionOC": "2026-06-11",
-      "fechaCompra": "2026-06-11"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-19T17:49:44.592Z"
+    "updatedAt": "2026-06-19T17:50:52.816Z",
+    "updatedBy": "andrea"
   }
 ]
