@@ -2627,16 +2627,28 @@
     "cliente": "CIAM",
     "desc": "Discos lámina y esparragos para estructuras metálicas",
     "estado": "activo",
+    "fechaIngreso": "2026-06-19",
+    "valor": 2395974,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
-        "f": "2026-06-18",
-        "n": "Auto-creada desde correo"
+        "f": "2026-06-19",
+        "n": "Mundial\nCampiña\n"
       },
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2649,15 +2661,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-19T17:51:02.587Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-19T17:51:02.587Z"
+    "createdAt": "2026-06-19T17:51:43.302Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-19T17:51:43.302Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1781891276346",
