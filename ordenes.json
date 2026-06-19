@@ -2582,16 +2582,28 @@
     "cliente": "SERVICIOS DE INGENIERIA CIVIL S.A.",
     "desc": "PASTA ANTIADHERENTE DUPONT MOLYKOTE 1000 X 1KG",
     "estado": "activo",
+    "fechaIngreso": "2026-06-17",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
         "f": "2026-06-17",
-        "n": "Auto-creada desde correo"
+        "n": ""
       },
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2606,16 +2618,7 @@
     ],
     "createdAt": "2026-06-17T05:00:00.000Z",
     "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-06-19T01:44:13.649Z",
-    "updatedBy": "Auto (correo)",
-    "origenCorreo": {
-      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
-      "subject": "ORDEN DE COMPRA ENERGY",
-      "fecha": "2026-06-18T22:51:56.739Z",
-      "fechaCreacionOC": "2026-06-17",
-      "fechaCompra": "2026-06-17"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-19T01:44:13.649Z"
+    "updatedAt": "2026-06-19T01:47:34.131Z",
+    "updatedBy": "andrea"
   }
 ]
