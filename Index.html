@@ -2540,6 +2540,11 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div class="form-group" style="margin-bottom:10px;"><label>Plazo de pago</label><input type="text" id="pcom-oc-plazo" placeholder="Ej: Contado / 30 días" value="Contado"></div>
             <div class="form-group" style="margin-bottom:10px;"><label>Fecha de entrega</label><input type="text" id="pcom-oc-entrega" placeholder="Ej: 10 DE JUNIO DE 2026"></div>
             <div class="form-group" style="margin-bottom:10px;"><label>Lugar de entrega</label><input type="text" id="pcom-oc-lugar" placeholder="Ej: BODEGA E&G CHÍA" value="CHIA - BODEGA E&G"></div>
+            <div style="border-top:1px solid rgba(255,255,255,.1);margin:8px 0 10px;padding-top:10px;font-size:12px;font-weight:700;color:var(--gold);">DATOS DEL PROVEEDOR</div>
+            <div style="display:flex;gap:8px;"><div class="form-group" style="flex:1;margin-bottom:10px;"><label>NIT</label><input type="text" id="pcom-oc-nit" placeholder="Ej: 900.123.456-7"></div><div class="form-group" style="flex:1;margin-bottom:10px;"><label>Ciudad</label><input type="text" id="pcom-oc-ciudad" placeholder="Ej: Bogotá"></div></div>
+            <div class="form-group" style="margin-bottom:10px;"><label>Dirección</label><input type="text" id="pcom-oc-direccion" placeholder="Dirección del proveedor"></div>
+            <div style="display:flex;gap:8px;"><div class="form-group" style="flex:1;margin-bottom:6px;"><label>Teléfono</label><input type="text" id="pcom-oc-telefono" placeholder="Teléfono"></div><div class="form-group" style="flex:1;margin-bottom:6px;"><label>Contacto</label><input type="text" id="pcom-oc-contacto" placeholder="Nombre del contacto"></div></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">💡 Se guardan con el proveedor; la próxima OC se llenan solos.</div>
             <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
               <button class="btn btn-ghost" onclick="pcomOCCerrar()" style="width:auto;padding:8px 16px;">Cancelar</button>
               <button class="btn btn-primary" id="pcom-oc-btn" onclick="pcomOCConfirmar()" style="width:auto;padding:8px 18px;">🧾 Generar e imprimir OC</button>
@@ -12043,15 +12048,35 @@ function pcomOCModal(prov){
   if(!pcom_current) return;
   pcom_oc_prov = prov;
   document.getElementById('pcom-oc-prov-titulo').textContent = prov+' · OC #'+pcomNextOC();
+  // Pre-llenar datos del proveedor si ya están guardados (NIT, dirección, etc.)
+  const pv = pcomProvInfo(prov) || {};
+  const setv=(id,v)=>{const e=document.getElementById(id); if(e) e.value=v||'';};
+  setv('pcom-oc-nit', pv.nit); setv('pcom-oc-ciudad', pv.ciudad); setv('pcom-oc-direccion', pv.direccion);
+  setv('pcom-oc-telefono', pv.telefono); setv('pcom-oc-contacto', pv.contacto);
   const m = document.getElementById('pcom-oc-modal'); if(m) m.style.display='flex';
 }
 function pcomOCCerrar(){ pcom_oc_prov=null; const m=document.getElementById('pcom-oc-modal'); if(m) m.style.display='none'; }
+// Guarda/actualiza los datos del proveedor en la base, para que la próxima OC se llene sola.
+function _pcomGuardarDatosProv(nombre){
+  if(!nombre) return;
+  const g=id=>{const e=document.getElementById(id); return e?e.value.trim():'';};
+  const datos={ nit:g('pcom-oc-nit'), direccion:g('pcom-oc-direccion'), ciudad:g('pcom-oc-ciudad'), telefono:g('pcom-oc-telefono'), contacto:g('pcom-oc-contacto') };
+  if(!(datos.nit||datos.direccion||datos.ciudad||datos.telefono||datos.contacto)) return;
+  const bd = getData('bd_proveedores', []) || [];
+  const n = String(nombre).trim().toUpperCase();
+  let idx = bd.findIndex(p=>String(p.nombre||'').trim().toUpperCase()===n);
+  if(idx>=0){ bd[idx]=Object.assign({}, bd[idx], datos, {updatedAt:new Date().toISOString()}); }
+  else { bd.push(Object.assign({id:'prov_'+Date.now(), nombre:nombre, categoria:'', correo:'', notas:'', createdAt:new Date().toISOString()}, datos)); idx=bd.length-1; }
+  saveData('bd_proveedores', bd);
+  try { const ni=pcom_prov.findIndex(p=>String(p.nombre||'').trim().toUpperCase()===n); if(ni>=0) pcom_prov[ni]=bd[idx]; else pcom_prov.push(bd[idx]); } catch(_){}
+}
 async function pcomOCConfirmar(){
   if(!pcom_current||!pcom_oc_prov) return;
   pcomSyncHeader();
   const p = String(pcom_oc_prov).trim().toUpperCase();
   const lineas = pcom_current.items.filter(it=>String(it.proveedor||'').trim().toUpperCase()===p && String(it.descripcion||'').trim());
   if(!lineas.length) return showToast('Este proveedor no tiene líneas','error');
+  _pcomGuardarDatosProv(pcom_oc_prov);   // guarda NIT/dirección/etc. para la próxima vez
   const btn = document.getElementById('pcom-oc-btn'); if(btn){ btn.disabled=true; btn.textContent='Generando...'; }
   try{
     if(pcom_current.nueva) await pcomGuardar(true);
