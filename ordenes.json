@@ -2656,5 +2656,45 @@
       "fecha": "",
       "estado": "pendiente"
     }
+  },
+  {
+    "id": "poc_1781891276346",
+    "num": "13160",
+    "cliente": "E&G ENERGY GROUP SAS",
+    "desc": "SPIRAL WND GKT, GRAPH.FILLER+SS EXT.CNTR RING",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-11",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-06-11T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-06-19T17:47:56.346Z",
+    "updatedBy": "Auto (correo)",
+    "origenCorreo": {
+      "from": "Andrea Bernal <andrea.bernal@eygenergygroup.com>",
+      "subject": "ORDEN DE COMPRA ENERGY GROUP HIDRO",
+      "fecha": "2026-06-19T17:47:56.346Z",
+      "fechaCreacionOC": "2026-06-11",
+      "fechaCompra": "2026-06-11"
+    }
   }
 ]
