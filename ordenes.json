@@ -2710,5 +2710,50 @@
     "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
     "updatedAt": "2026-06-19T17:50:52.816Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1781892389551",
+    "num": "LM1658",
+    "cliente": "SAR ENERGY",
+    "desc": "Material mecánico",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-17",
+    "valor": 2834269,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-17",
+        "n": "Bodega\nCodifer\nJose montenegro"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-18",
+        "n": "",
+        "envio": "camion_energy",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-18",
+        "n": "Sevidor"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-06-19T18:06:29.551Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-19T18:06:29.551Z",
+    "updatedBy": "andrea"
   }
 ]
