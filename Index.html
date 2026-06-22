@@ -1507,6 +1507,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <option value="">👤 Todos los vendedores</option>
             </select>
             <button onclick="exportCotizExcel()" title="Exportar cotizaciones a Excel para análisis (1 fila por cotización)" style="background:rgba(46,170,74,.3);border:1px solid #2EAA4A;border-radius:8px;padding:9px 14px;color:#86efac;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">⬇ Excel análisis</button>
+            <button id="cotiz-btn-bdcompleta" onclick="exportCotizBDCompleta()" title="Descargar TODA la base de datos de cotizaciones (histórico completo, una fila por ítem)" style="display:none;background:rgba(26,58,143,.35);border:1px solid #1A3A8F;border-radius:8px;padding:9px 14px;color:#90cdf4;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">⬇️ BD completa (histórico)</button>
           </div>
           <div class="bd-filters">
             <button class="bd-filter-btn active" onclick="bdFilter('todas',this)">Todas</button>
@@ -2355,6 +2356,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <input type="date" id="remi-desde" onchange="remiRenderLista()" title="Desde">
             <input type="date" id="remi-hasta" onchange="remiRenderLista()" title="Hasta">
             <button class="btn btn-ghost" onclick="remiCargar()" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
+            <button class="btn btn-secondary" onclick="remiExportExcel()" style="padding:8px 14px;font-size:12px;background:#1e7e34;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ Exportar Excel</button>
+            <button class="btn btn-secondary" id="remi-btn-bdcompleta" onclick="remiExportBDCompleta()" title="Descargar TODA la base de datos de remisiones (todo el histórico, sin filtros)" style="display:none;padding:8px 14px;font-size:12px;background:#1A3A8F;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ BD completa (todo)</button>
             <button class="btn btn-ghost" id="remi-btn-import" onclick="document.getElementById('remi-file-excel').click()" style="padding:8px 14px;font-size:12px;display:none;">📥 Importar Excel</button>
             <input type="file" id="remi-file-excel" accept=".xlsx,.xlsm,.xls" style="display:none" onchange="remiImportarExcel(this)">
             <button class="btn btn-primary" id="remi-btn-nueva" onclick="remiNueva()" style="padding:8px 16px;font-size:13px;">➕ Nueva remisión</button>
@@ -7984,7 +7987,91 @@ function exportCotizExcel(){
   } catch(err){ showToast('Error al exportar: '+(err&&err.message||err),'error'); }
 }
 
+// ─── BD COMPLETA: todo el histórico de cotizaciones a nivel de ítem (solo Andrea/Alberto) ───
+async function exportCotizBDCompleta(){
+  if(!abs_canAjuste()){ showToast('Solo Andrea y Alberto pueden descargar la base completa','error'); return; }
+  showToast('Generando base completa de cotizaciones…','info');
+  // 1) Histórico item-level (data/cotizaciones_historicas.json) — relativo, con fallback a GitHub raw
+  let hist=[];
+  try{
+    const r=await fetch('data/cotizaciones_historicas.json?t='+Date.now());
+    if(r.ok) hist=await r.json(); else throw new Error('rel');
+  }catch(_){
+    try{
+      const r2=await fetch('https://raw.githubusercontent.com/cami902026-oss/plataforma-eyg/main/data/cotizaciones_historicas.json?t='+Date.now());
+      if(r2.ok) hist=await r2.json();
+    }catch(__){}
+  }
+  if(!Array.isArray(hist)) hist=[];
+  // 2) Cotizaciones activas (cabecera + items[]) — se expanden a nivel de ítem
+  const activas=getData('bd_cotizaciones',[]).filter(c=>c&&!c.deleted);
+  const idsActivas=new Set(activas.map(c=>String(c.id||'').trim()));
+  const rows=[];
+  // Históricas (omitir las que ya estén entre las activas para no duplicar)
+  hist.forEach(h=>{
+    if(!h) return;
+    if(idsActivas.has(String(h.id||'').trim())) return;
+    rows.push({
+      '# Cotización': h.id||'',
+      'Fecha': h.fecha||'',
+      'Cliente': h.cliente||'',
+      'Estado': h.estado||'',
+      'Item': h.item!=null?h.item:'',
+      'Descripción': h.desc||'',
+      'UDM': h.udm||'',
+      'Cantidad': h.qty!=null?h.qty:'',
+      'Precio Unitario': h.v_unit!=null?Math.round(h.v_unit):'',
+      'Precio Total': h.v_total!=null?Math.round(h.v_total):'',
+      'Marca': '',
+      'Proveedor': h.proveedor||'',
+      'Subtotal Cotización': h.subtotal!=null?Math.round(h.subtotal):'',
+      'Total Cotización': h.total!=null?Math.round(h.total):'',
+      'Forma Pago': h.forma_pago||'',
+      'Factura': h.factura||'',
+      'Clasificación': h.clasificacion||'',
+      'Origen': 'Histórico'
+    });
+  });
+  // Activas
+  activas.forEach(c=>{
+    (c.items||[]).forEach((it,i)=>{
+      const q=+it.qty||0, pu=+it.precio||0;
+      rows.push({
+        '# Cotización': c.id||'',
+        'Fecha': c.fecha||'',
+        'Cliente': c.cliente||'',
+        'Estado': c.estado||'',
+        'Item': i+1,
+        'Descripción': it.desc||'',
+        'UDM': it.udm||'',
+        'Cantidad': it.qty!=null?it.qty:'',
+        'Precio Unitario': Math.round(pu),
+        'Precio Total': Math.round(q*pu),
+        'Marca': it.marca||'',
+        'Proveedor': it.proveedor||'',
+        'Subtotal Cotización': Math.round(c.subtotal||0),
+        'Total Cotización': Math.round(c.total||0),
+        'Forma Pago': c.formaPago||'',
+        'Factura': '',
+        'Clasificación': '',
+        'Origen': 'Activa'
+      });
+    });
+  });
+  if(!rows.length){ showToast('No hay datos para exportar','info'); return; }
+  rows.sort((a,b)=>String(a.Fecha).localeCompare(String(b.Fecha)));
+  try{
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.json_to_sheet(rows);
+    ws['!cols']=[{wch:13},{wch:11},{wch:26},{wch:13},{wch:6},{wch:50},{wch:7},{wch:9},{wch:14},{wch:15},{wch:10},{wch:16},{wch:18},{wch:18},{wch:12},{wch:12},{wch:13},{wch:9}];
+    XLSX.utils.book_append_sheet(wb,ws,'Cotizaciones');
+    XLSX.writeFile(wb,'BD_Cotizaciones_Completa_'+new Date().toISOString().substring(0,10)+'.xlsx');
+    showToast('✅ '+rows.length+' líneas exportadas (histórico completo)','success');
+  }catch(err){ showToast('Error al exportar: '+(err&&err.message||err),'error'); }
+}
+
 function bdRender(filtro) {
+  const _bdc=document.getElementById('cotiz-btn-bdcompleta'); if(_bdc) _bdc.style.display=(typeof abs_canAjuste==='function'&&abs_canAjuste())?'':'none';
   const bd = getData('bd_cotizaciones', []).filter(c => c && !c.deleted);
   const tbody = document.getElementById('bd-tbody');
   const empty = document.getElementById('bd-empty');
@@ -11259,6 +11346,7 @@ function _remiEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(
 async function remiInit(){
   const nb=document.getElementById('remi-btn-nueva'); if(nb) nb.style.display=remiCanUse()?'':'none';
   const ib=document.getElementById('remi-btn-import'); if(ib) ib.style.display=remiCanImport()?'':'none';
+  const bc=document.getElementById('remi-btn-bdcompleta'); if(bc) bc.style.display=(typeof abs_canAjuste==='function'&&abs_canAjuste())?'':'none';
   remiVolver();
   if(!remi_rows.length) await remiCargar(); else remiRenderLista();
 }
@@ -11307,6 +11395,90 @@ function remiRenderLista(){
       <button onclick="remiAbrir('${_remiEsc(r.remision)}',true)" title="Descargar PDF" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:var(--gold);padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">📄</button>
     </td>
   </tr>${(r._match&&r._match.length)?`<tr><td></td><td colspan="5" style="padding:2px 8px 10px;font-size:11.5px;color:var(--text-muted);border-top:none">${r._match.map(it=>`↳ ${it.cantidad!=null?('<b style="color:var(--gold)">'+_remiEsc(it.cantidad)+'</b> × '):''}${_remiEsc(it.descripcion)}${it.marca?(' · <i>'+_remiEsc(it.marca)+'</i>'):''}`).join('<br>')}</td></tr>`:''}`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Sin remisiones</td></tr>';
+}
+async function remiExportExcel(){
+  if (!remi_rows.length) await remiCargar();
+  if (!remi_rows.length) { showToast('No hay remisiones para exportar','info'); return; }
+  const q=(document.getElementById('remi-search')?.value||'').toLowerCase();
+  const desde=document.getElementById('remi-desde')?.value||'';
+  const hasta=document.getElementById('remi-hasta')?.value||'';
+  const grupos=remiGrupos();
+  const lista=Object.keys(grupos).map(n=>{
+    const its=grupos[n]; const h=its[0];
+    return { remision:n, fecha:h.fecha||'', cliente:h.cliente||'', oc:h.oc||'', contiene:h.contiene||'', observaciones:h.observaciones||'', items:its };
+  }).filter(r=>{
+    if(q){
+      const txt=(r.remision+' '+r.cliente+' '+r.oc+' '+r.contiene+' '+r.observaciones+' '+r.items.map(it=>it.descripcion||'').join(' ')).toLowerCase();
+      if(!txt.includes(q)) return false;
+    }
+    if(desde&&r.fecha<desde) return false;
+    if(hasta&&r.fecha>hasta) return false;
+    return true;
+  });
+  if(!lista.length){ showToast('No hay remisiones para exportar con ese filtro','info'); return; }
+  const rows=[];
+  lista.forEach(r=>{
+    r.items.forEach((it,i)=>{
+      rows.push({
+        'Remisión': r.remision,
+        'Fecha': r.fecha,
+        'Cliente': r.cliente,
+        'OC': r.oc,
+        'Contiene': r.contiene,
+        'Observaciones': r.observaciones,
+        'Item': i+1,
+        'Descripción': it.descripcion||'',
+        'Cantidad': it.cantidad||'',
+        'Marca': it.marca||'',
+        'Colada': it.colada||'',
+        'Desviación': it.desviacion||''
+      });
+    });
+  });
+  try {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [ {wch:12},{wch:12},{wch:28},{wch:18},{wch:18},{wch:30},{wch:8},{wch:48},{wch:10},{wch:14},{wch:12},{wch:16} ];
+    XLSX.utils.book_append_sheet(wb, ws, 'Remisiones');
+    const fileName = `Remisiones_${desde||'todo'}_a_${hasta||'todo'}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+    showToast(`✅ ${rows.length} filas exportadas a Excel`,'success');
+  } catch(e){ showToast('Error al exportar remisiones: '+(e&&e.message||e),'error'); }
+}
+// ─── BD COMPLETA: todo el histórico de remisiones, sin filtros (solo Andrea/Alberto) ───
+async function remiExportBDCompleta(){
+  if(!abs_canAjuste()){ showToast('Solo Andrea y Alberto pueden descargar la base completa','error'); return; }
+  showToast('Generando base completa de remisiones…','info');
+  if(!remi_rows.length) await remiCargar();
+  if(!remi_rows.length){ showToast('No hay remisiones para exportar','info'); return; }
+  const rows=remi_rows.slice().sort((a,b)=>{
+    const r=String(b.remision||'').localeCompare(String(a.remision||''));
+    return r!==0?r:((a.item||0)-(b.item||0));
+  }).map(it=>({
+    'Remisión': it.remision||'',
+    'Fecha': it.fecha||'',
+    'Cliente': it.cliente||'',
+    'Lugar': it.lugar||'',
+    'OC': it.oc||'',
+    'Item': it.item!=null?it.item:'',
+    'Descripción': it.descripcion||'',
+    'Cantidad': it.cantidad!=null?it.cantidad:'',
+    'Marca': it.marca||'',
+    'Colada': it.colada||'',
+    'Desviación': it.desviacion||'',
+    'Contiene': it.contiene||'',
+    'Observaciones': it.observaciones||'',
+    'Creada': it.created_at?String(it.created_at).substring(0,10):'',
+    'Creada por': it.created_by||''
+  }));
+  try{
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.json_to_sheet(rows);
+    ws['!cols']=[{wch:11},{wch:11},{wch:26},{wch:22},{wch:16},{wch:6},{wch:48},{wch:10},{wch:14},{wch:12},{wch:24},{wch:18},{wch:24},{wch:11},{wch:12}];
+    XLSX.utils.book_append_sheet(wb,ws,'Remisiones');
+    XLSX.writeFile(wb,'BD_Remisiones_Completa_'+new Date().toISOString().substring(0,10)+'.xlsx');
+    showToast('✅ '+rows.length+' líneas de remisión exportadas (todo el histórico)','success');
+  }catch(e){ showToast('Error al exportar remisiones: '+(e&&e.message||e),'error'); }
 }
 function remiVolver(){
   remi_current=null;
