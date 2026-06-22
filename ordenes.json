@@ -730,7 +730,7 @@
     "hojaEntrada": {
       "requerida": true,
       "fecha": "",
-      "estado": "pendiente"
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -754,17 +754,15 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-22",
+        "n": "491"
       }
     ],
     "createdAt": "2026-06-03T14:49:11.139Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-22T22:18:17.432Z",
-    "updatedBy": "andrea",
-    "lockedBy": "lina",
-    "lockedAt": "2026-06-22T22:18:17.432Z"
+    "updatedAt": "2026-06-22T22:19:30.673Z",
+    "updatedBy": "lina"
   },
   {
     "id": "poc_1780498255267",
