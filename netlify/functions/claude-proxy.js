@@ -10,7 +10,7 @@
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 const ALLOWED_ORIGINS = (process.env.ENERGY_ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
 const MODEL_DEFAULT  = 'claude-haiku-4-5-20251001';
-const MAX_TOKENS_CAP = 4096;
+const MAX_TOKENS_CAP = 16000;
 
 function corsHeaders(origin) {
   // Si hay lista blanca, validar; si no, permitir cualquier origen (modo desarrollo)

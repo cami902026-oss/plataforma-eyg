@@ -36,7 +36,7 @@
 
 const PROPS = PropertiesService.getScriptProperties();
 const MODEL_DEFAULT  = 'claude-haiku-4-5-20251001';
-const MAX_TOKENS_CAP = 4096;
+const MAX_TOKENS_CAP = 16000;
 
 // ─── Seguridad ────────────────────────────────────────────────────────────────
 // Modelos permitidos a través de este proxy (evita que alguien gaste tu cuota en

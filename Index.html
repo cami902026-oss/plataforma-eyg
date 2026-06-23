@@ -7287,13 +7287,23 @@ async function cotizExtract() {
     const resp = await fetch(url, {
       method:'POST',
       headers:{ 'Content-Type': isAppsScript ? 'text/plain;charset=utf-8' : 'application/json' },
-      body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:2000, messages, secret: _proxySecret() }),
+      body: JSON.stringify({ model:'claude-haiku-4-5-20251001', max_tokens:8000, messages, secret: _proxySecret() }),
       redirect:'follow'
     });
     const data = await resp.json();
     const raw = data.content?.[0]?.text || '[]';
     const cleaned = raw.replace(/```json|```/g,'').trim();
-    const items = JSON.parse(cleaned);
+    let items;
+    try {
+      items = JSON.parse(cleaned);
+    } catch(parseErr) {
+      // Respuesta cortada (cotización muy larga): rescatar todos los objetos completos {...}
+      const trozos = cleaned.match(/\{[^{}]*\}/g) || [];
+      items = [];
+      for (const t of trozos) { try { items.push(JSON.parse(t)); } catch(_) {} }
+      if (!items.length) throw parseErr;
+      showToast('⚠️ La lista era muy larga; se recuperaron '+items.length+' ítems. Revisa que estén todos.','info');
+    }
     cotizItems = items.map((it,i) => ({
       id: i+1,
       desc: it.desc || '',

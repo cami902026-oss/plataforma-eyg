@@ -18,7 +18,7 @@
  */
 
 const MODEL_DEFAULT  = 'claude-haiku-4-5-20251001';
-const MAX_TOKENS_CAP = 4096;
+const MAX_TOKENS_CAP = 16000;
 
 function doPost(e) {
   try {
