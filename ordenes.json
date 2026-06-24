@@ -2833,9 +2833,16 @@
   {
     "id": "poc_1782232616140",
     "num": "ODC-AA-MEC-SKID-647-25-563",
-    "cliente": "E&G ENERGY GROUP SAS",
+    "cliente": "SKID EXPERTS",
     "desc": "Tubing 1/2\" OD 316 SS X 0.035\" de espesor nominal de pared A269-TP316",
     "estado": "activo",
+    "fechaIngreso": "2026-06-23",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -2845,7 +2852,12 @@
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2858,20 +2870,24 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-23T16:36:56.140Z",
+    "createdAt": "2026-06-24T01:01:01.638Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-24T01:01:01.638Z",
+    "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1782241629019",
+    "num": "ODC-AA-MEC-SKID-469-24-566",
+    "cliente": "SKID EXPERTS",
+    "desc": "Flanges NPS 2\" y 3\" acero inoxidable clase 150",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-23",
     "valor": 0,
     "hojaEntrada": {
       "requerida": false,
       "fecha": "",
       "estado": "pendiente"
-    }
-  },
-  {
-    "id": "poc_1782241629019",
-    "num": "ODC-AA-MEC-SKID-469-24-566",
-    "cliente": "E&G ENERGY GROUP SAS",
-    "desc": "Flanges NPS 2\" y 3\" acero inoxidable clase 150",
-    "estado": "activo",
+    },
     "stages": [
       {
         "s": "done",
@@ -2881,7 +2897,12 @@
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2894,14 +2915,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-24T00:59:37.175Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-24T00:59:37.175Z"
+    "createdAt": "2026-06-24T00:59:49.457Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-24T00:59:49.457Z",
+    "updatedBy": "andrea"
   }
 ]
