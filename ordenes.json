@@ -2759,9 +2759,16 @@
   {
     "id": "poc_1782231414655",
     "num": "02CMP9947",
-    "cliente": "E&G ENERGY GROUP SAS",
+    "cliente": "PSI",
     "desc": "ESPARRAGO 1 3/8-8 UNX 11.250 LONG CON DOBLE TUERCA",
     "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -2771,7 +2778,12 @@
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2784,15 +2796,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-24T01:57:40.346Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-24T01:57:40.346Z"
+    "createdAt": "2026-06-24T01:57:52.394Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-24T01:57:52.394Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1782232555872",
