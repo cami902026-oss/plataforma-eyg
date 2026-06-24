@@ -2822,20 +2822,29 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-23T16:35:55.872Z",
+    "updatedAt": "2026-06-24T01:57:22.552Z",
     "valor": 0,
     "hojaEntrada": {
       "requerida": false,
       "fecha": "",
       "estado": "pendiente"
-    }
+    },
+    "lockedBy": "andrea",
+    "lockedAt": "2026-06-24T01:57:22.552Z"
   },
   {
     "id": "poc_1782232616140",
     "num": "ODC-AA-MEC-SKID-647-25-563",
-    "cliente": "E&G ENERGY GROUP SAS",
+    "cliente": "SKID EXPERTS",
     "desc": "Tubing 1/2\" OD 316 SS X 0.035\" de espesor nominal de pared A269-TP316",
     "estado": "activo",
+    "fechaIngreso": "2026-06-23",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -2845,7 +2854,12 @@
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2858,15 +2872,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-24T01:00:09.093Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-24T01:00:09.093Z"
+    "createdAt": "2026-06-24T01:01:01.638Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-24T01:01:01.638Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1782241629019",
