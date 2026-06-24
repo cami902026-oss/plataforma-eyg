@@ -2797,9 +2797,16 @@
   {
     "id": "poc_1782232555872",
     "num": "ODC-AA-ELEC-SKID-675-25-565",
-    "cliente": "E&G ENERGY GROUP SAS",
+    "cliente": "SKID EXPERTS",
     "desc": "TUBING SIN COSTURA, S.S. 316, BRILLANTE 1/2\" OD 0,35",
     "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -2809,7 +2816,12 @@
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2822,15 +2834,10 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-24T01:57:22.552Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-24T01:57:22.552Z"
+    "createdAt": "2026-06-24T01:57:34.730Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-24T01:57:34.730Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1782232616140",
