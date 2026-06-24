@@ -2869,9 +2869,16 @@
   {
     "id": "poc_1782241629019",
     "num": "ODC-AA-MEC-SKID-469-24-566",
-    "cliente": "E&G ENERGY GROUP SAS",
+    "cliente": "SKID EXPERTS",
     "desc": "Flanges NPS 2\" y 3\" acero inoxidable clase 150",
     "estado": "activo",
+    "fechaIngreso": "2026-06-23",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -2881,7 +2888,12 @@
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2894,14 +2906,9 @@
         "n": ""
       }
     ],
-    "updatedAt": "2026-06-24T00:59:18.907Z",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "lockedBy": "andrea",
-    "lockedAt": "2026-06-24T00:59:18.907Z"
+    "createdAt": "2026-06-24T00:59:49.457Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-24T00:59:49.457Z",
+    "updatedBy": "andrea"
   }
 ]
