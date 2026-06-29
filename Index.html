@@ -7581,9 +7581,13 @@ function cotizGuardarBD() {
   if (solVinc) {
     _solVincularCotizacion(solVinc, id, record.estado === 'Enviada' ? 'enviada' : 'en_cotizacion');
   }
-  // Notificar a Andrea y Gerencia: al crear y al enviar
-  if (idx < 0) _notificarCotizacion(record, 'creada');
-  if (record.estado === 'Enviada') _notificarCotizacion(record, 'enviada');
+  // Notificar a Andrea y Gerencia: al crear y al enviar.
+  // Excepción: si es una cotización ADOPTADA del LIBRO (histórica), no notificar
+  // como nueva/enviada — es data vieja que solo se trae a la plataforma.
+  const _adoptada = (window._bdAdoptId && window._bdAdoptId === id);
+  if (idx < 0 && !_adoptada) _notificarCotizacion(record, 'creada');
+  if (record.estado === 'Enviada' && !_adoptada) _notificarCotizacion(record, 'enviada');
+  if (_adoptada) window._bdAdoptId = null;
   // Tras CREAR una cotización nueva, limpiar el formulario para la siguiente
   // (queda con el número que sigue). Para el PDF de una ya guardada, reábrela con ✏️ Editar.
   if (idx < 0) cotizNueva(true);
@@ -8229,12 +8233,15 @@ function bdRender(filtro) {
   tbody.innerHTML = lista.map(c => {
     const cls = COTIZ_ESTADOS_COLOR[c.estado] || 'cotiz-estado-pendiente';
     const _h = c._hist;
-    const onRow = _h ? `bdVerHistorico('${c.id}')` : `bdCargar('${c.id}')`;
+    const onRow = _h ? `bdEditarHistorico('${c.id}')` : `bdCargar('${c.id}')`;
     const idCell = _h
       ? `${c.id} <span style="font-size:9px;background:rgba(144,205,244,.2);color:#90cdf4;border-radius:4px;padding:1px 4px;vertical-align:middle;">📚 LIBRO</span>`
       : c.id;
     const acciones = _h
-      ? `<button class="btn-sm bd-btn-edit" onclick="bdVerHistorico('${c.id}')">👁 Ver</button>`
+      ? `<div style="display:flex;gap:4px;">
+          <button class="btn-sm bd-btn-edit" onclick="bdEditarHistorico('${c.id}')">✏️ Editar</button>
+          <button class="btn-sm bd-btn-xl" onclick="bdVerHistorico('${c.id}')">👁 Ver</button>
+        </div>`
       : `<div style="display:flex;gap:4px;">
           <button class="btn-sm bd-btn-edit" onclick="bdCargar('${c.id}')">✏️ Editar</button>
           <button class="btn-sm bd-btn-xl" onclick="bdDescargar('${c.id}')">⬇️ XLS</button>
@@ -8255,10 +8262,12 @@ function bdRender(filtro) {
   }).join('');
 }
 
-function bdCargar(id) {
-  const bd = getData('bd_cotizaciones', []);
-  const c = bd.find(x => x.id === id);
-  if (!c) return;
+// Carga un objeto cotización (shape local) en el editor. Reutilizado por bdCargar
+// (locales) y bdEditarHistorico (del LIBRO/Supabase, que al guardar se "adoptan").
+function _bdLoadIntoEditor(c, msg, adopted) {
+  // Bandera de adopción: si viene del LIBRO, al guardar NO se notifica como "nueva"
+  // (es una cotización vieja que se está trayendo a la plataforma, no una creación real).
+  window._bdAdoptId = adopted ? c.id : null;
   cotizEditId = c.id;
   cotizItems = JSON.parse(JSON.stringify(c.items || []));
   // Si esta cotización referencia fotos que no tenemos en memoria (agregadas en otro
@@ -8282,7 +8291,44 @@ function bdCargar(id) {
   cotizPopulateSelects(c.vendedor||'', c.realizadaPor||'', c.aprobadaPor||'');
   cotizRender();
   cotizShowTab('nueva');
-  showToast('Cotización ' + id + ' cargada para editar','success');
+  showToast(msg, 'success');
+}
+
+function bdCargar(id) {
+  const bd = getData('bd_cotizaciones', []);
+  const c = bd.find(x => x.id === id);
+  if (!c) return;
+  _bdLoadIntoEditor(c, 'Cotización ' + id + ' cargada para editar');
+}
+
+// Editar una cotización del LIBRO (Supabase): se trae completa, se carga en el editor
+// y al GUARDAR se vuelve una cotización normal de la plataforma (queda en bd_cotizaciones,
+// editable como las creadas en el asistente). Las que no toques siguen solo en Supabase.
+async function bdEditarHistorico(id) {
+  try {
+    showToast('Cargando ' + id + ' del LIBRO…', 'info');
+    const cab = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id) + '&limit=1')) || [];
+    const h = cab[0];
+    if (!h) { showToast('No se encontró ' + id, 'error'); return; }
+    const its = (await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(id) + '&order=item.asc&limit=2000')) || [];
+    const c = {
+      id: h.id, cliente: h.cliente || '', contacto: h.contacto || '', correo: h.correo || '',
+      estado: h.estado || 'Enviada', fecha: h.fecha || '', fechaVenc: h.fecha_venc || '',
+      iva: (h.iva != null ? h.iva : 19), formaPago: h.forma_pago || '30 DÍAS',
+      sitioEntrega: h.sitio_entrega || '', validez: h.validez || '8 DÍAS',
+      observaciones: h.observaciones || '', vendedor: h.vendedor || '',
+      realizadaPor: h.realizada_por || '', aprobadaPor: h.aprobada_por || '',
+      items: (its || []).map(it => ({
+        desc: it.descripcion || '', udm: it.udm || '', qty: +it.qty || 0, precio: +it.v_unit || 0,
+        marca: it.marca || '', proveedor: it.proveedor || '',
+        precioProveedor: (it.precio_proveedor != null ? +it.precio_proveedor : null),
+        tiempoEntrega: it.tiempo_entrega || '', desvTec: it.desviacion_tecnica || ''
+      }))
+    };
+    _bdLoadIntoEditor(c, 'Cotización ' + id + ' del LIBRO cargada — al guardar quedará en la plataforma', true);
+  } catch (e) {
+    showToast('Error al abrir ' + id + ': ' + (e && e.message || e), 'error');
+  }
 }
 
 function bdDescargar(id) {
