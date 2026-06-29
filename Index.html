@@ -7585,6 +7585,8 @@ function cotizGuardarBD() {
     showToast('Cotización ' + id + ' guardada — formulario listo para la siguiente','success');
   }
   saveData('bd_cotizaciones', bd);
+  // Doble escritura: replicar a Supabase (no bloquea ni rompe si falla/offline)
+  try { _cotizSyncSupabase(record); } catch(_){}
   cotizEditId = id;
   // Si hay solicitud vinculada: en_cotizacion mientras se trabaja, enviada cuando se envía,
   // y se le ASIGNA el número de cotización (para el "policía" que evita cotizar 2 veces).
@@ -8183,6 +8185,63 @@ async function bdVerHistorico(id) {
   }
 }
 
+// ─── DOBLE ESCRITURA A SUPABASE (Etapa 1 de "todo en Supabase") ───
+// Al guardar/editar una cotización local se replica a Supabase. NO bloquea ni
+// rompe el guardado local: si Supabase falla (o estás offline), solo se registra
+// en consola y la plataforma sigue igual. La fuente operativa sigue siendo local.
+async function _cotizSyncSupabase(record) {
+  if (!record || !record.id) return false;
+  try {
+    const cab = {
+      id: record.id, fecha: record.fecha || null, fecha_venc: record.fechaVenc || null,
+      cliente: record.cliente || null, contacto: record.contacto || null, correo: record.correo || null,
+      estado: record.estado || null, subtotal: (record.subtotal != null ? record.subtotal : null),
+      iva: (record.iva != null ? record.iva : null), total: (record.total != null ? record.total : null),
+      forma_pago: record.formaPago || null, sitio_entrega: record.sitioEntrega || null,
+      validez: record.validez || null, observaciones: record.observaciones || null,
+      vendedor: record.vendedor || null, realizada_por: record.realizadaPor || null,
+      aprobada_por: record.aprobadaPor || null, fuente: 'Plataforma'
+    };
+    // Upsert cabecera (merge por PK id)
+    await absFetch('cotizaciones', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(cab) });
+    // Reemplazar ítems: borrar los de esta cotización y reinsertar
+    await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(record.id), { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+    const items = (record.items || []).map((it, n) => ({
+      cotizacion_id: record.id, item: n + 1, descripcion: it.desc || null, udm: it.udm || null,
+      qty: (it.qty != null && it.qty !== '' ? +it.qty : null), v_unit: (it.precio != null ? +it.precio : null),
+      v_total: ((+it.qty || 0) * (+it.precio || 0)) || null, marca: it.marca || null, proveedor: it.proveedor || null,
+      precio_proveedor: (it.precioProveedor != null ? +it.precioProveedor : null),
+      tiempo_entrega: it.tiempoEntrega || null, desviacion_tecnica: it.desvTec || null
+    }));
+    if (items.length) await absFetch('cotizacion_items', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(items) });
+    // Refrescar caché para que la BD lo muestre al instante
+    if (Array.isArray(_bdHistCache)) {
+      const mapped = { id: record.id, fecha: record.fecha || '', cliente: record.cliente || '', contacto: record.contacto || '', total: +record.total || 0, fechaVenc: record.fechaVenc || '', estado: record.estado || '', vendedor: record.vendedor || '', realizadaPor: record.realizadaPor || '', _hist: true };
+      const k = String(record.id).toUpperCase();
+      const idx = _bdHistCache.findIndex(h => String(h.id).toUpperCase() === k);
+      if (idx >= 0) _bdHistCache[idx] = mapped; else _bdHistCache.push(mapped);
+    }
+    return true;
+  } catch (e) {
+    console.warn('[cotiz→Supabase] no se pudo sincronizar', record.id, e && e.message);
+    return false;
+  }
+}
+
+// Borrado en Supabase (cascade quita los ítems). No bloquea el borrado local.
+async function _cotizDeleteSupabase(id) {
+  if (!id) return;
+  try {
+    await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id), { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+    if (Array.isArray(_bdHistCache)) {
+      const k = String(id).toUpperCase();
+      _bdHistCache = _bdHistCache.filter(h => String(h.id).toUpperCase() !== k);
+    }
+  } catch (e) {
+    console.warn('[cotiz delete→Supabase]', id, e && e.message);
+  }
+}
+
 // Estado de ordenamiento de la tabla BD (encabezados clicables)
 let _bdSort = { key: 'fecha', dir: 'desc' };
 
@@ -8420,6 +8479,8 @@ function bdEliminar(id, e) {
   bd[idx].deletedAt = now;
   bd[idx].updatedAt = now;
   saveData('bd_cotizaciones', bd);
+  // Doble escritura: quitar también de Supabase (cascade borra los ítems)
+  try { _cotizDeleteSupabase(id); } catch(_){}
   bdRender();
   showToast('Cotización eliminada','success');
 }
