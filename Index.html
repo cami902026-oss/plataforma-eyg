@@ -7023,7 +7023,7 @@ function cotizShowTab(tab) {
   document.querySelectorAll('.cotiz-tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById('ctab-' + tab).classList.add('active');
   document.getElementById('cotiz-tab-' + tab).classList.add('active');
-  if (tab === 'bd') bdRender();
+  if (tab === 'bd') { bdRender(); if (!_bdHistCache) bdLoadHistorico().then(() => bdRender()); }
   if (tab === 'agente') cotizRenderAgente();
   if (tab === 'proveedores') provRender();
   if (tab === 'clientes') cliRender();
@@ -8080,9 +8080,101 @@ async function exportCotizBDCompleta(){
   }catch(err){ showToast('Error al exportar: '+(err&&err.message||err),'error'); }
 }
 
+// ─── BLOQUE 2: histórico de cotizaciones desde Supabase (incluye LIBRO) ───
+// ADITIVO y solo-lectura: el tab "Base de Datos" muestra tanto las cotizaciones
+// de la plataforma (locales) como las del LIBRO ya cargadas en Supabase.
+// Si Supabase no responde, el histórico simplemente no aparece y lo local sigue igual.
+let _bdHistCache = null;      // array mapeado al shape de bdRender, o null si aún no cargó
+let _bdHistLoading = false;
+
+async function bdLoadHistorico(force) {
+  if (_bdHistCache && !force) return _bdHistCache;
+  if (_bdHistLoading) return _bdHistCache || [];
+  _bdHistLoading = true;
+  try {
+    const rows = await absFetch('cotizaciones?select=id,fecha,cliente,contacto,total,fecha_venc,estado,vendedor,realizada_por,fuente&order=fecha.desc.nullslast&limit=5000');
+    _bdHistCache = (rows || []).map(r => ({
+      id: r.id, fecha: r.fecha || '', cliente: r.cliente || '', contacto: r.contacto || '',
+      total: +r.total || 0, fechaVenc: r.fecha_venc || '', estado: r.estado || 'Histórico',
+      vendedor: r.vendedor || '', realizadaPor: r.realizada_por || '', _hist: true
+    }));
+  } catch (e) {
+    _bdHistCache = _bdHistCache || [];
+  } finally {
+    _bdHistLoading = false;
+  }
+  return _bdHistCache;
+}
+
+// Visor de solo lectura para una cotización histórica (cabecera + ítems desde Supabase)
+async function bdVerHistorico(id) {
+  const prev = document.getElementById('bd-hist-modal'); if (prev) prev.remove();
+  try {
+    showToast('Cargando cotización ' + id + '…', 'info');
+    const cab = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id) + '&limit=1')) || [];
+    const c = cab[0];
+    if (!c) { showToast('No se encontró ' + id, 'error'); return; }
+    const its = (await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(id) + '&order=item.asc&limit=2000')) || [];
+    const money = n => '$' + (+n || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 });
+    const filas = its.map(it => `<tr style="border-bottom:1px solid var(--border,#234);">
+        <td style="padding:5px 6px;">${it.item ?? ''}</td>
+        <td style="padding:5px 6px;">${it.descripcion || ''}</td>
+        <td style="padding:5px 6px;color:#90cdf4;">${it.marca || ''}</td>
+        <td style="padding:5px 6px;text-align:center;">${it.udm || ''}</td>
+        <td style="padding:5px 6px;text-align:right;">${it.qty ?? ''}</td>
+        <td style="padding:5px 6px;text-align:right;">${money(it.v_unit)}</td>
+        <td style="padding:5px 6px;text-align:right;color:var(--gold);">${money(it.v_total)}</td>
+        <td style="padding:5px 6px;font-size:11px;color:var(--text-muted);">${it.tiempo_entrega || ''}</td>
+      </tr>`).join('');
+    const info = (lbl, val) => val ? `<div><span style="color:var(--text-muted);font-size:11px;">${lbl}:</span> <b>${val}</b></div>` : '';
+    const ov = document.createElement('div');
+    ov.id = 'bd-hist-modal';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;';
+    ov.onclick = ev => { if (ev.target === ov) ov.remove(); };
+    ov.innerHTML = `<div style="background:var(--dark,#071525);border:1px solid var(--border,#234);border-radius:12px;max-width:960px;width:100%;max-height:90vh;overflow:auto;padding:22px;color:#fff;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;">
+          <div>
+            <span style="color:var(--gold);font-weight:800;font-size:20px;">${c.id}</span>
+            <span style="font-size:11px;background:rgba(144,205,244,.2);color:#90cdf4;border-radius:4px;padding:2px 7px;margin-left:6px;">📚 LIBRO / histórico · solo lectura</span>
+            <div style="font-size:16px;font-weight:700;margin-top:6px;">${c.cliente || ''}</div>
+          </div>
+          <button onclick="document.getElementById('bd-hist-modal').remove()" style="background:rgba(255,255,255,.08);border:1px solid var(--border,#234);border-radius:8px;color:#fff;font-size:18px;width:34px;height:34px;cursor:pointer;flex-shrink:0;">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:14px;background:rgba(255,255,255,.03);border:1px solid var(--border,#234);border-radius:8px;padding:12px;">
+          ${info('Contacto', c.contacto)}${info('Correo', c.correo)}
+          ${info('Fecha', c.fecha)}${info('Vence', c.fecha_venc)}
+          ${info('Forma de pago', c.forma_pago)}${info('Sitio de entrega', c.sitio_entrega)}
+          ${info('Validez', c.validez)}${info('Estado', c.estado)}
+        </div>
+        ${c.observaciones ? `<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;"><b style="color:#fff;">Observaciones:</b> ${c.observaciones}</div>` : ''}
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="border-bottom:2px solid var(--border,#234);color:var(--text-muted);text-align:left;">
+              <th style="padding:6px;">#</th><th style="padding:6px;">DESCRIPCIÓN</th><th style="padding:6px;">MARCA</th>
+              <th style="padding:6px;">UDM</th><th style="padding:6px;text-align:right;">CANT</th>
+              <th style="padding:6px;text-align:right;">V. UNIT</th><th style="padding:6px;text-align:right;">V. TOTAL</th><th style="padding:6px;">ENTREGA</th>
+            </tr></thead>
+            <tbody>${filas || '<tr><td colspan="8" style="padding:14px;text-align:center;color:var(--text-muted);">Sin ítems registrados</td></tr>'}</tbody>
+          </table>
+        </div>
+        <div style="text-align:right;margin-top:14px;font-size:16px;">
+          ${c.subtotal ? `<div style="color:var(--text-muted);font-size:13px;">Subtotal: ${money(c.subtotal)}</div>` : ''}
+          <div style="font-weight:800;color:var(--gold);">TOTAL: ${money(c.total)}</div>
+        </div>
+      </div>`;
+    document.body.appendChild(ov);
+  } catch (e) {
+    showToast('Error al abrir ' + id + ': ' + (e && e.message || e), 'error');
+  }
+}
+
 function bdRender(filtro) {
   const _bdc=document.getElementById('cotiz-btn-bdcompleta'); if(_bdc) _bdc.style.display=(typeof abs_canAjuste==='function'&&abs_canAjuste())?'':'none';
   const bd = getData('bd_cotizaciones', []).filter(c => c && !c.deleted);
+  // Fusionar histórico de Supabase (LIBRO) que no esté ya en local (gana lo local por id)
+  const _localIds = new Set(bd.map(c => String(c.id||'').trim().toUpperCase()));
+  const _histExtra = (_bdHistCache || []).filter(h => h && !_localIds.has(String(h.id||'').trim().toUpperCase()));
+  const bdAll = bd.concat(_histExtra);
   const tbody = document.getElementById('bd-tbody');
   const empty = document.getElementById('bd-empty');
   if (!tbody) return;
@@ -8101,13 +8193,13 @@ function bdRender(filtro) {
     } else {
       vfEl.style.display = '';
       const curVF = vfEl.value;
-      const vendedores = [...new Set(bd.map(c => c.vendedor||'').filter(Boolean))].sort();
+      const vendedores = [...new Set(bdAll.map(c => c.vendedor||'').filter(Boolean))].sort();
       vfEl.innerHTML = '<option value="">👤 Todos los vendedores</option>' + vendedores.map(v => `<option value="${v}"${v===curVF?' selected':''}>${v}</option>`).join('');
     }
   }
 
   // Stats (sobre los datos visibles para el usuario)
-  const bdVisible = isComercial ? bd.filter(c => (c.vendedor||'') === cuName) : bd;
+  const bdVisible = isComercial ? bdAll.filter(c => (c.vendedor||'') === cuName) : bdAll;
   const stats = {todas:bdVisible.length, 'Revisión gerencia':0, Enviada:0, Adjudicada:0, Rechazada:0, Pendiente:0};
   const totales = {Adjudicada:0, Enviada:0};
   bdVisible.forEach(c => { if(stats[c.estado]!==undefined) stats[c.estado]++; if(totales[c.estado]!==undefined) totales[c.estado]+=c.total||0; });
@@ -8136,23 +8228,29 @@ function bdRender(filtro) {
 
   tbody.innerHTML = lista.map(c => {
     const cls = COTIZ_ESTADOS_COLOR[c.estado] || 'cotiz-estado-pendiente';
-    return `<tr onclick="bdCargar('${c.id}')">
-      <td style="color:var(--gold);font-weight:700">${c.id}</td>
+    const _h = c._hist;
+    const onRow = _h ? `bdVerHistorico('${c.id}')` : `bdCargar('${c.id}')`;
+    const idCell = _h
+      ? `${c.id} <span style="font-size:9px;background:rgba(144,205,244,.2);color:#90cdf4;border-radius:4px;padding:1px 4px;vertical-align:middle;">📚 LIBRO</span>`
+      : c.id;
+    const acciones = _h
+      ? `<button class="btn-sm bd-btn-edit" onclick="bdVerHistorico('${c.id}')">👁 Ver</button>`
+      : `<div style="display:flex;gap:4px;">
+          <button class="btn-sm bd-btn-edit" onclick="bdCargar('${c.id}')">✏️ Editar</button>
+          <button class="btn-sm bd-btn-xl" onclick="bdDescargar('${c.id}')">⬇️ XLS</button>
+          <button class="btn-sm bd-btn-del" onclick="bdEliminar('${c.id}',event)">🗑</button>
+        </div>`;
+    return `<tr onclick="${onRow}">
+      <td style="color:var(--gold);font-weight:700">${idCell}</td>
       <td>${c.fecha||''}</td>
       <td style="font-weight:600">${c.cliente||''}</td>
       <td style="color:var(--text-muted)">${c.contacto||''}</td>
       <td style="color:var(--text-muted);font-size:11px">${c.realizadaPor||''}</td>
-      <td style="text-align:center">${_bdSemaforo(c)}</td>
+      <td style="text-align:center">${_h?'':_bdSemaforo(c)}</td>
       <td style="color:var(--gold);font-weight:600">$${(c.total||0).toLocaleString('es-CO',{minimumFractionDigits:0})}</td>
       <td style="color:var(--text-muted)">${c.fechaVenc||''}</td>
       <td><span class="cotiz-estado-badge ${cls}">${c.estado}</span></td>
-      <td onclick="event.stopPropagation()">
-        <div style="display:flex;gap:4px;">
-          <button class="btn-sm bd-btn-edit" onclick="bdCargar('${c.id}')">✏️ Editar</button>
-          <button class="btn-sm bd-btn-xl" onclick="bdDescargar('${c.id}')">⬇️ XLS</button>
-          <button class="btn-sm bd-btn-del" onclick="bdEliminar('${c.id}',event)">🗑</button>
-        </div>
-      </td>
+      <td onclick="event.stopPropagation()">${acciones}</td>
     </tr>`;
   }).join('');
 }
