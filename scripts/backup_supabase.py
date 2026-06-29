@@ -16,7 +16,7 @@ import urllib.request
 BASE = "https://juprjevxkcitqpsnemto.supabase.co/rest/v1"
 # Clave pública (anon) — la misma que ya usa la plataforma en el navegador (solo lectura aquí)
 KEY = "sb_publishable_zZrmpmvqbz4AJCGHRHQ8Xw_8tnf5ObM"
-TABLES = ["productos", "kardex", "familias", "conteos", "conteo_items", "remisiones"]
+TABLES = ["productos", "kardex", "familias", "conteos", "conteo_items", "remisiones", "cotizaciones", "cotizacion_items"]
 
 os.makedirs("backups", exist_ok=True)
 
