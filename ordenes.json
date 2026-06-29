@@ -531,13 +531,13 @@
       {
         "s": "done",
         "f": "2026-02-05",
-        "n": "451'452"
+        "n": "451'452N/C 454'455"
       }
     ],
     "createdAt": "2026-05-26T21:27:50.397Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-05-29T22:48:48.763Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-06-25T16:27:42.137Z",
+    "updatedBy": "lina"
   },
   {
     "id": "poc_1780065847891",
@@ -730,7 +730,7 @@
     "hojaEntrada": {
       "requerida": true,
       "fecha": "",
-      "estado": "pendiente"
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -754,15 +754,15 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-22",
+        "n": "491"
       }
     ],
     "createdAt": "2026-06-03T14:49:11.139Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-03T15:10:15.783Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-06-22T22:19:30.673Z",
+    "updatedBy": "lina"
   },
   {
     "id": "poc_1780498255267",
@@ -1206,13 +1206,13 @@
       {
         "s": "done",
         "f": "2026-06-11",
-        "n": "477"
+        "n": "477N/C. 494'493"
       }
     ],
     "createdAt": "2026-06-10T18:39:13.914Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-12T15:51:29.181Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-06-25T16:32:08.263Z",
+    "updatedBy": "lina"
   },
   {
     "id": "poc_1781126215905",
@@ -1759,6 +1759,13 @@
     "cliente": "CIAM",
     "desc": "Niples roscados en acero al carbón 3/4 x 4\" SCH 80 y SCH 160",
     "estado": "cancelado",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -1783,10 +1790,13 @@
       {
         "s": "done",
         "f": "2026-05-09",
-        "n": "428"
+        "n": "428N/C 445"
       }
     ],
-    "updatedAt": "✅ Facturado"
+    "createdAt": "2026-06-25T16:24:09.266Z",
+    "createdBy": "lina",
+    "updatedAt": "2026-06-25T16:24:09.266Z",
+    "updatedBy": "lina"
   },
   {
     "id": "poc_1778689688011",
@@ -2228,8 +2238,8 @@
     "valor": 0,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-06-25",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -2253,15 +2263,15 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-25",
+        "n": "495"
       }
     ],
     "createdAt": "2026-06-18T02:09:30.622Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-19T17:42:17.938Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-06-25T19:57:24.949Z",
+    "updatedBy": "lina"
   },
   {
     "id": "poc_1781749319612",
@@ -2358,7 +2368,7 @@
     "num": "ODC-AA-MEC-SKID-469-24-558",
     "cliente": "SKID EXPERTS",
     "desc": "Tubo inoxidable y bridas para mezcladores estáticos",
-    "estado": "activo",
+    "estado": "cancelado",
     "fechaIngreso": "2026-06-18",
     "valor": 0,
     "hojaEntrada": {
@@ -2395,8 +2405,8 @@
     ],
     "createdAt": "2026-06-18T17:40:32.020Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-19T17:38:26.599Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-06-24T02:00:01.409Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1781823116739",
@@ -2535,16 +2545,16 @@
   },
   {
     "id": "poc_1781892389551",
-    "num": "LM1658",
+    "num": "4426",
     "cliente": "SAR ENERGY",
     "desc": "Material mecánico",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-17",
-    "valor": 2834269,
+    "valor": 2383869,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-06-22",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -2568,14 +2578,194 @@
         "n": "Sevidor"
       },
       {
+        "s": "done",
+        "f": "2026-06-22",
+        "n": "490"
+      }
+    ],
+    "createdAt": "2026-06-19T18:06:29.551Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-22T21:20:50.056Z",
+    "updatedBy": "lina"
+  },
+  {
+    "id": "poc_1782231414655",
+    "num": "02CMP9947",
+    "cliente": "PSI",
+    "desc": "ESPARRAGO 1 3/8-8 UNX 11.250 LONG CON DOBLE TUERCA",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-24",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": "",
+        "envio": "moto",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": "492"
+      }
+    ],
+    "createdAt": "2026-06-24T01:57:52.394Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-24T01:58:40.044Z",
+    "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1782232555872",
+    "num": "ODC-AA-ELEC-SKID-675-25-565",
+    "cliente": "SKID EXPERTS",
+    "desc": "TUBING SIN COSTURA, S.S. 316, BRILLANTE 1/2\" OD 0,35",
+    "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-17",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
         "s": "pending",
         "f": "",
         "n": ""
       }
     ],
-    "createdAt": "2026-06-19T18:06:29.551Z",
+    "createdAt": "2026-06-24T01:57:34.730Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-19T18:06:36.844Z",
+    "updatedAt": "2026-06-24T01:57:34.730Z",
+    "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1782232616140",
+    "num": "ODC-AA-MEC-SKID-647-25-563",
+    "cliente": "SKID EXPERTS",
+    "desc": "Tubing 1/2\" OD 316 SS X 0.035\" de espesor nominal de pared A269-TP316",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-23",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-20",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-06-24T01:01:01.638Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-24T01:01:01.638Z",
+    "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1782241629019",
+    "num": "ODC-AA-MEC-SKID-469-24-566",
+    "cliente": "SKID EXPERTS",
+    "desc": "Flanges NPS 2\" y 3\" acero inoxidable clase 150",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-23",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "createdAt": "2026-06-24T00:59:49.457Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-25T20:54:12.012Z",
     "updatedBy": "andrea"
   }
 ]
