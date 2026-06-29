@@ -12068,6 +12068,8 @@ async function remiCotizAbrir(){
       if(Array.isArray(d)&&d.length) localStorage.setItem('max_bd_cotizaciones',JSON.stringify(d));
     }catch(_){}
   }
+  // Traer también el histórico del LIBRO (Supabase) para que salgan TODAS
+  try{ if(typeof bdLoadHistorico==='function') await bdLoadHistorico(); }catch(_){}
   remiCotizBuscar();
   setTimeout(()=>{ try{ s.focus(); }catch(_){} },60);
 }
@@ -12075,17 +12077,33 @@ function remiCotizCerrar(){ remi_cotiz_sel=null; const m=document.getElementById
 function remiCotizBuscar(){
   const q=(document.getElementById('remi-cotiz-search')?.value||'').trim().toLowerCase();
   const cont=document.getElementById('remi-cotiz-lista'); if(!cont) return;
-  let lista=remiCotizData().filter(c=>c&&c.id&&Array.isArray(c.items)&&c.items.length);
+  // Locales (con ítems) + histórico del LIBRO (Supabase), dedupe por id (gana local)
+  const local=remiCotizData().filter(c=>c&&c.id&&Array.isArray(c.items)&&c.items.length);
+  const localIds=new Set(local.map(c=>String(c.id||'').trim().toUpperCase()));
+  const hist=(_bdHistCache||[]).filter(h=>h&&h.id&&!localIds.has(String(h.id).trim().toUpperCase()))
+    .map(h=>({id:h.id,cliente:h.cliente,fecha:h.fecha,estado:h.estado,_hist:true}));
+  let lista=local.concat(hist);
   if(q) lista=lista.filter(c=>(String(c.id)+' '+String(c.cliente||'')).toLowerCase().includes(q));
   lista.sort((a,b)=>String(b.fecha||'').localeCompare(String(a.fecha||''))||String(b.id).localeCompare(String(a.id)));
-  lista=lista.slice(0,30);
+  lista=lista.slice(0, q?400:50);   // con búsqueda muestra hasta 400; sin búsqueda, las 50 más recientes
   cont.innerHTML=lista.map(c=>`<div onclick="remiCotizElegir('${_remiEsc(c.id)}')" style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer;${remi_cotiz_sel&&String(remi_cotiz_sel.id)===String(c.id)?'background:rgba(232,160,32,.12);':''}" onmouseover="this.style.background='rgba(26,58,143,.25)'" onmouseout="this.style.background='${remi_cotiz_sel&&String(remi_cotiz_sel.id)===String(c.id)?'rgba(232,160,32,.12)':''}'">
     <div><b style="color:var(--gold)">${_remiEsc(c.id)}</b> <span style="font-size:13px">· ${_remiEsc(c.cliente)||'—'}</span></div>
-    <div style="font-size:11.5px;color:var(--text-muted);white-space:nowrap">${c.fecha?_remiEsc(String(c.fecha).split('-').reverse().join('/')):''} · ${c.items.length} ítem(s)${c.estado?(' · '+_remiEsc(c.estado)):''}</div>
+    <div style="font-size:11.5px;color:var(--text-muted);white-space:nowrap">${c.fecha?_remiEsc(String(c.fecha).split('-').reverse().join('/')):''} · ${c._hist?'📚 LIBRO':(c.items.length+' ítem(s)')}${c.estado?(' · '+_remiEsc(c.estado)):''}</div>
   </div>`).join('')||'<div style="text-align:center;color:var(--text-muted);padding:22px;font-size:13px">Sin cotizaciones que coincidan</div>';
 }
-function remiCotizElegir(id){
-  const c=remiCotizData().find(x=>String(x.id)===String(id)); if(!c) return;
+async function remiCotizElegir(id){
+  let c=remiCotizData().find(x=>String(x.id)===String(id));
+  if(!c){
+    // Histórica del LIBRO: traer cabecera (de caché) + ítems desde Supabase
+    const h=(_bdHistCache||[]).find(x=>String(x.id)===String(id));
+    if(!h) return;
+    try{
+      showToast('Cargando ítems de '+id+'…','info');
+      const its=(await absFetch('cotizacion_items?cotizacion_id=eq.'+encodeURIComponent(id)+'&order=item.asc&limit=2000'))||[];
+      c={ id:h.id, cliente:h.cliente, fecha:h.fecha, estado:h.estado,
+          items:its.map(it=>({ desc:it.descripcion||'', marca:it.marca||'', desvTec:it.desviacion_tecnica||'', qty:(it.qty==null?'':it.qty) })) };
+    }catch(e){ return showToast('Error al cargar ítems de '+id+': '+(e&&e.message||e),'error'); }
+  }
   remi_cotiz_sel=c;
   remiCotizBuscar(); // refresca la lista para resaltar la elegida
   const tb=document.getElementById('remi-cotiz-items-tbody'); if(!tb) return;
