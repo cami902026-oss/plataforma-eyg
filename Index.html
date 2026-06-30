@@ -12479,7 +12479,7 @@ function pcomRenderResumen(){
     const x = calc.provs[p];
     const ocPrev = pcom_ocs.find(o=>String(o.cc)===String(pcom_current.cc)&&String(o.proveedor||'').trim().toUpperCase()===p);
     return `<tr>
-    <td style="font-size:12.5px"><b>${_remiEsc(p)}</b>${x.autoret?' <span style="font-size:9.5px;background:rgba(46,170,74,.18);color:#68d391;padding:1px 6px;border-radius:8px">autoretenedor</span>':''}</td>
+    <td style="font-size:12.5px"><b>${_remiEsc(p)}</b>${p==='(SIN PROVEEDOR)'?'':`<br><button onclick="pcomToggleAutoret('${_remiEsc(p).replace(/'/g,"\\'")}')" title="Clic para cambiar si retiene o no retefuente (tema de impuestos)" style="margin-top:4px;font-size:9.5px;background:${x.autoret?'rgba(46,170,74,.18)':'rgba(252,129,129,.12)'};color:${x.autoret?'#68d391':'#fc8181'};border:1px solid ${x.autoret?'rgba(46,170,74,.45)':'rgba(252,129,129,.4)'};padding:1px 7px;border-radius:8px;cursor:pointer;font-weight:700">${x.autoret?'autoretenedor':'aplica retefuente'} ✎</button>`}</td>
     <td style="font-size:12px;white-space:nowrap">${_pcomMoney(x.subtotal)}</td>
     <td style="font-size:12px;white-space:nowrap">${_pcomMoney(x.iva)}</td>
     <td style="font-size:12px;white-space:nowrap;color:${x.aplicaRete?'#fc8181':'var(--text-muted)'}">${x.aplicaRete?('-'+_pcomMoney(x.rete)):'—'}</td>
@@ -12510,6 +12510,31 @@ async function pcomToggleSinOC(prov){
   pcomRenderResumen();
   if(!pcom_current.nueva){ await pcomGuardar(true); }
   showToast(prov+(nuevo?' marcado como NO requiere OC':' vuelve a permitir OC')+(pcom_current.nueva?' (recuerda guardar el plan)':' ✓'),'ok');
+}
+// Cambia si un proveedor RETIENE retefuente o es AUTORETENEDOR (afecta el cálculo de impuestos).
+// Guarda en la tabla Supabase `proveedores` y recalcula el resumen.
+async function pcomToggleAutoret(prov){
+  const nombre = String(prov||'').trim();
+  if(!nombre || nombre==='(SIN PROVEEDOR)') return;
+  const p = pcomProvInfo(nombre);
+  const eraAuto = !!(p && String(p.autoretenedor||'').trim().toUpperCase()==='SI');
+  const nuevo = eraAuto ? 'NO' : 'SI';
+  const msg = nuevo==='SI'
+    ? `¿Marcar a "${nombre}" como AUTORETENEDOR?\n\nNO se le aplicará retefuente (2,5%) en las órdenes de compra.`
+    : `¿Marcar a "${nombre}" como retenedor normal?\n\nSe le aplicará retefuente 2,5% cuando la compra sea ≥ $${PCOM_BASE_RETE.toLocaleString('es-CO')}.`;
+  if(!confirm(msg)) return;
+  try{
+    if(p && p.id!=null){
+      await absFetch('proveedores?id=eq.'+encodeURIComponent(p.id),{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({autoretenedor:nuevo})});
+      p.autoretenedor = nuevo;
+    } else {
+      // El proveedor no estaba en la tabla: se crea con el dato tributario.
+      const res = await absFetch('proveedores',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify({nombre:nombre, autoretenedor:nuevo})});
+      if(Array.isArray(res)&&res[0]) pcom_prov.push(res[0]); else pcom_prov.push({nombre:nombre, autoretenedor:nuevo});
+    }
+    pcomRenderResumen();
+    showToast(`"${nombre}" ahora ${nuevo==='SI'?'es AUTORETENEDOR (sin retefuente)':'RETIENE retefuente 2,5%'} ✓`,'ok');
+  }catch(e){ showToast('Error al actualizar proveedor: '+(e&&e.message||e),'error'); }
 }
 async function pcomTogglePago(prov){
   if(!pcom_current) return;
