@@ -8412,12 +8412,17 @@ function bdRender(filtro) {
     const idCell = _h
       ? `${c.id} <span style="font-size:9px;background:rgba(144,205,244,.2);color:#90cdf4;border-radius:4px;padding:1px 4px;vertical-align:middle;">📚 LIBRO</span>`
       : c.id;
+    const ocBtn = (c.estado === 'Adjudicada')
+      ? `<button class="btn-sm" onclick="event.stopPropagation();cotizCrearOC('${c.id}')" title="Crear Orden de Compra (Procesos OC) desde esta cotización adjudicada" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700">🧾 Crear OC</button>`
+      : '';
     const acciones = _h
-      ? `<div style="display:flex;gap:4px;">
+      ? `<div style="display:flex;gap:4px;flex-wrap:wrap;">
+          ${ocBtn}
           <button class="btn-sm bd-btn-edit" onclick="bdEditarHistorico('${c.id}')">✏️ Editar</button>
           <button class="btn-sm bd-btn-xl" onclick="bdVerHistorico('${c.id}')">👁 Ver</button>
         </div>`
-      : `<div style="display:flex;gap:4px;">
+      : `<div style="display:flex;gap:4px;flex-wrap:wrap;">
+          ${ocBtn}
           <button class="btn-sm bd-btn-edit" onclick="bdCargar('${c.id}')">✏️ Editar</button>
           <button class="btn-sm bd-btn-xl" onclick="bdDescargar('${c.id}')">⬇️ XLS</button>
           <button class="btn-sm bd-btn-del" onclick="bdEliminar('${c.id}',event)">🗑</button>
@@ -8504,6 +8509,29 @@ async function bdEditarHistorico(id) {
   } catch (e) {
     showToast('Error al abrir ' + id + ': ' + (e && e.message || e), 'error');
   }
+}
+
+// Crear una Orden de Compra (módulo Procesos OC) desde una cotización ADJUDICADA.
+// Abre el modal de Procesos OC en blanco, pre-llenado con cliente, descripción y valor
+// de la cotización; el usuario escribe el N° de OC (del cliente) y guarda.
+// No modifica la cotización. Sirve para locales y para las del LIBRO (Supabase).
+function cotizCrearOC(id) {
+  let c = getData('bd_cotizaciones', []).find(x => x && x.id === id && !x.deleted);
+  if (!c) {
+    const h = (_bdHistCache || []).find(x => String(x.id) === String(id));
+    if (h) c = { id: h.id, cliente: h.cliente, total: h.total, estado: h.estado, items: [] };
+  }
+  if (!c) { showToast('No encontré la cotización ' + id, 'error'); return; }
+  if (typeof openPocModal !== 'function') { showToast('Módulo de Órdenes no disponible', 'error'); return; }
+  openPocModal();   // modal en blanco: "Nueva Orden de Compra"
+  const set = (eid, val) => { const e = document.getElementById(eid); if (e) e.value = val; };
+  set('poc-cliente', c.cliente || '');
+  const nItems = (c.items && c.items.length) ? (' · ' + c.items.length + ' ítems') : '';
+  set('poc-desc', 'Cotización ' + c.id + nItems);
+  set('poc-valor', c.total || '');
+  const num = document.getElementById('poc-num');
+  if (num) { num.value = ''; setTimeout(() => { try { num.focus(); } catch (_) {} }, 100); }
+  showToast('Nueva OC desde ' + c.id + ': escribe el N° de OC del cliente y verifica el valor', 'info');
 }
 
 function bdDescargar(id) {
