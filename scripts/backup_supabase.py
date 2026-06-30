@@ -22,11 +22,24 @@ os.makedirs("backups", exist_ok=True)
 
 
 def fetch(table):
-    req = urllib.request.Request(f"{BASE}/{table}?select=*&limit=100000")
-    req.add_header("apikey", KEY)
-    req.add_header("Authorization", "Bearer " + KEY)
-    with urllib.request.urlopen(req, timeout=180) as r:
-        return json.loads(r.read().decode("utf-8"))
+    # Supabase topa cada request a 1000 filas -> paginar de a 1000 (cotizacion_items
+    # tiene ~7k, kardex puede crecer). Sin paginar el respaldo saldria truncado.
+    out = []
+    offset = 0
+    page = 1000
+    while True:
+        req = urllib.request.Request(f"{BASE}/{table}?select=*&limit={page}&offset={offset}")
+        req.add_header("apikey", KEY)
+        req.add_header("Authorization", "Bearer " + KEY)
+        with urllib.request.urlopen(req, timeout=180) as r:
+            chunk = json.loads(r.read().decode("utf-8"))
+        if not isinstance(chunk, list) or not chunk:
+            break
+        out.extend(chunk)
+        if len(chunk) < page:
+            break
+        offset += page
+    return out
 
 
 summary = {}

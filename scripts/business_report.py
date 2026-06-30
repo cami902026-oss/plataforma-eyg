@@ -83,6 +83,56 @@ def fetch_supabase(table, params=''):
         return []
 
 
+def fetch_supabase_paged(table, params=''):
+    """Como fetch_supabase pero paginando de a 1000 (Supabase topa cada request a
+    1000 filas). Necesario para cotizacion_items (~7k filas)."""
+    url_base = os.environ.get('SUPABASE_URL', SUPABASE_URL_DEFAULT).strip().rstrip('/')
+    key = os.environ.get('SUPABASE_KEY', SUPABASE_KEY_DEFAULT).strip()
+    out = []
+    offset = 0
+    page = 1000
+    while True:
+        url = f'{url_base}/rest/v1/{table}?limit={page}&offset={offset}{params}'
+        req = urllib.request.Request(url, headers={'apikey': key, 'Authorization': 'Bearer ' + key})
+        try:
+            with urllib.request.urlopen(req) as resp:
+                chunk = json.loads(resp.read())
+        except Exception as e:
+            print(f'⚠️  Supabase {table} (offset {offset}) error: {e}')
+            break
+        if not isinstance(chunk, list) or not chunk:
+            break
+        out.extend(chunk)
+        if len(chunk) < page:
+            break
+        offset += page
+    print(f'   Supabase {table}: {len(out)} filas (paginado)')
+    return out
+
+
+def load_cotizaciones_supabase():
+    """Etapa 2: cotizaciones desde Supabase (fuente principal) en shape 'plataforma'
+    (id, fecha, cliente, estado, total, items[{qty,precio,precioProveedor}])."""
+    cabs = fetch_supabase_paged('cotizaciones', '&select=*')
+    items = fetch_supabase_paged('cotizacion_items', '&select=cotizacion_id,qty,v_unit,precio_proveedor')
+    by = defaultdict(list)
+    for it in items:
+        by[it.get('cotizacion_id')].append({
+            'qty': it.get('qty'), 'precio': it.get('v_unit'),
+            'precioProveedor': it.get('precio_proveedor'),
+        })
+    out = []
+    for c in cabs:
+        cid = c.get('id')
+        out.append({
+            'id': cid, 'fecha': c.get('fecha') or '', 'cliente': c.get('cliente') or '',
+            'estado': c.get('estado') or '', 'total': c.get('total') or 0,
+            'items': by.get(cid, []),
+            'updatedAt': c.get('updated_at') or '', 'createdAt': c.get('created_at') or '',
+        })
+    return out
+
+
 def fetch_cartera_facturacion():
     """Lee TODAS las facturas (pagadas y pendientes) del libro de cartera,
     a través del túnel del Agente de Cartera (data/cartera_url.json)."""
@@ -669,7 +719,22 @@ if __name__ == '__main__':
     provs  = fetch_supabase('proveedores', '&order=nombre.asc')
     facturas = fetch_cartera_facturacion()
 
-    cots = unify_cotizaciones(hist, plat)
+    # Etapa 2: Supabase es la FUENTE PRINCIPAL de cotizaciones para los KPIs.
+    # El JSON local queda como respaldo (rellena ids que aún no estén en Supabase).
+    # OJO: `plat` se conserva tal cual para hoy_actividad() (sus createdAt son reales;
+    # los created_at de Supabase son del día de carga y falsearían la "actividad de hoy").
+    plat_sb = load_cotizaciones_supabase()
+    if plat_sb:
+        by_id = {str(c.get('id') or '').strip(): c for c in plat if c}
+        for c in plat_sb:
+            by_id[str(c.get('id') or '').strip()] = c   # Supabase pisa al JSON
+        plat_unify = list(by_id.values())
+        print(f'   Cotizaciones Supabase (principal): {len(plat_sb)} · unificadas con JSON: {len(plat_unify)}')
+    else:
+        plat_unify = plat
+        print('   ⚠️  Supabase sin cotizaciones; uso JSON local como fuente')
+
+    cots = unify_cotizaciones(hist, plat_unify)
     print(f'📊 Cotizaciones unificadas: {len(cots)}')
 
     now = now_co()
