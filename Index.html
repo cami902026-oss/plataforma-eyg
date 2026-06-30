@@ -7629,6 +7629,14 @@ function cotizGuardarBD() {
     items: JSON.parse(JSON.stringify(cotizItems)),
     fechaGuardado: new Date().toISOString()
   };
+  // Sello de fecha de adjudicación (para contar adjudicadas por día/mes en el informe comercial).
+  // Se pone la primera vez que pasa a 'Adjudicada' y se conserva después.
+  const _prevAdj = (idx >= 0 && bd[idx]) ? bd[idx].adjudicadaAt : null;
+  if (record.estado === 'Adjudicada') {
+    record.adjudicadaAt = _prevAdj || new Date().toISOString().slice(0, 10);
+  } else if (_prevAdj) {
+    record.adjudicadaAt = _prevAdj;   // conservar el histórico aunque cambie de estado
+  }
   if (idx >= 0) {
     record.createdAt = bd[idx].createdAt;
     record.createdBy = bd[idx].createdBy;

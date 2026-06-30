@@ -457,6 +457,34 @@ def _card(num, lbl, bg, border, color):
             f"<div style='font-size:10px;color:#666;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;'>{lbl}</div></td>")
 
 
+def build_resumen_html(r):
+    """Bloque pedido por gerencia: Cotizado / Adjudicado / Facturado, HOY y MES (conteo + $)."""
+    if not r:
+        return ''
+    def card(n, monto, lbl, bg, border, color):
+        return (f"<td bgcolor='{bg}' style='background:{bg};border-left:4px solid {border};"
+                f"padding:12px 6px;text-align:center;'>"
+                f"<div style='font-size:24px;font-weight:900;color:{color};line-height:1;'>{n}</div>"
+                f"<div style='font-size:10px;color:#666;margin-top:3px;text-transform:uppercase;letter-spacing:.5px;'>{lbl}</div>"
+                f"<div style='font-size:12px;font-weight:700;color:{color};margin-top:3px;'>{money(monto)}</div></td>")
+    B = ('#e8f0fe', '#1A3A8F', '#0F2B5B'); G = ('#e6f4ea', '#2EAA4A', '#1B5E20'); A = ('#fff8e1', '#E8A020', '#b7770d')
+    return (
+        "<div class='sec'>&#128202; Cotizado &middot; Adjudicado &middot; Facturado</div>"
+        "<div style='font-size:11px;font-weight:700;color:#0F2B5B;margin:2px 2px 4px;'>HOY</div>"
+        "<table width='100%' cellpadding='0' cellspacing='6'><tr>"
+        + card(r['cot_hoy_n'], r['cot_hoy_m'], 'Cotizadas', *B)
+        + card(r['adj_hoy_n'], r['adj_hoy_m'], 'Adjudicadas', *G)
+        + card(r['fac_hoy_n'], r['fac_hoy_m'], 'Facturadas', *A)
+        + "</tr></table>"
+        "<div style='font-size:11px;font-weight:700;color:#0F2B5B;margin:10px 2px 4px;'>ESTE MES (a la fecha)</div>"
+        "<table width='100%' cellpadding='0' cellspacing='6'><tr>"
+        + card(r['cot_mes_n'], r['cot_mes_m'], 'Cotizadas', *B)
+        + card(r['adj_mes_n'], r['adj_mes_m'], 'Adjudicadas', *G)
+        + card(r['fac_mes_n'], r['fac_mes_m'], 'Facturadas', *A)
+        + "</tr></table>"
+    )
+
+
 def _flecha(act, ant):
     if ant <= 0:
         return ''
@@ -542,7 +570,7 @@ def build_gerencia_html(ger):
     return html
 
 
-def generate_html(date_str, act, k_mes, serie, tops, margen_mes, totales, ger=None):
+def generate_html(date_str, act, k_mes, serie, tops, margen_mes, totales, ger=None, resumen=None):
     # Actividad de hoy
     cot_rows = ''.join(
         f"<tr><td style='padding:6px 10px;border-bottom:1px solid #eef1f8;'><b style='color:#0F2B5B'>{c.get('id')}</b></td>"
@@ -611,6 +639,7 @@ def generate_html(date_str, act, k_mes, serie, tops, margen_mes, totales, ger=No
   <div class="body">
     <div class="sec">&#9889; Actividad de hoy</div>
     {hoy_html}
+    {build_resumen_html(resumen)}
     <div class="sec">&#128200; Mes actual</div>
     <table width='100%' cellpadding='6' cellspacing='6'><tr>
       {_card(k_mes['n'], 'Cotizaciones', '#e8f0fe', '#1A3A8F', '#0F2B5B')}
@@ -771,8 +800,38 @@ if __name__ == '__main__':
         'aviso': None if facturas else 'No se pudo leer el libro de cartera (¿PC del agente apagado?) — las cifras de facturado/recaudado/cartera no están en este informe.'
     }
 
+    # ── Resumen Cotizado / Adjudicado / Facturado (HOY y MES) pedido por gerencia ──
+    hoy_str = now.strftime('%Y-%m-%d')
+    def _dia(f): return str(f or '')[:10] == hoy_str
+    def _mes(f): return str(f or '')[:7] == ym
+    # Cotizadas: por fecha de cotización (set unificado)
+    cot_hoy = [c for c in cots if _dia(c.get('fecha'))]
+    cot_mes = [c for c in cots if _mes(c.get('fecha'))]
+    # Adjudicadas: por adjudicadaAt (sello que pone la plataforma; vive en el JSON local `plat`)
+    adj_hoy = [c for c in plat if _dia(c.get('adjudicadaAt'))]
+    adj_mes = [c for c in plat if _mes(c.get('adjudicadaAt'))]
+    # Facturadas: por fecha de la etapa de Facturación de la OC (ordenes.json / Procesos OC)
+    ordenes = [o for o in load_json('ordenes.json') if o and not o.get('deleted')]
+    def _oc_fact(o):
+        st = o.get('stages') or []
+        return str((st[3] or {}).get('f') or '')[:10] if len(st) >= 4 else ''
+    fac_hoy = [o for o in ordenes if _oc_fact(o) == hoy_str]
+    fac_mes = [o for o in ordenes if _oc_fact(o)[:7] == ym]
+    def _suma(lst, k):
+        return sum(float(x.get(k) or 0) for x in lst)
+    resumen = {
+        'cot_hoy_n': len(cot_hoy), 'cot_hoy_m': _suma(cot_hoy, 'total'),
+        'cot_mes_n': len(cot_mes), 'cot_mes_m': _suma(cot_mes, 'total'),
+        'adj_hoy_n': len(adj_hoy), 'adj_hoy_m': _suma(adj_hoy, 'total'),
+        'adj_mes_n': len(adj_mes), 'adj_mes_m': _suma(adj_mes, 'total'),
+        'fac_hoy_n': len(fac_hoy), 'fac_hoy_m': _suma(fac_hoy, 'valor'),
+        'fac_mes_n': len(fac_mes), 'fac_mes_m': _suma(fac_mes, 'valor'),
+    }
+    print(f"   Resumen HOY: cot={resumen['cot_hoy_n']} adj={resumen['adj_hoy_n']} fac={resumen['fac_hoy_n']} | "
+          f"MES: cot={resumen['cot_mes_n']} adj={resumen['adj_mes_n']} fac={resumen['fac_mes_n']}")
+
     totales = {'cots': len(cots), 'remis': len(remis), 'planes': len(planes), 'ocs': len(ocs)}
-    html_body = generate_html(date_str, act, k_mes, serie, tops, margen_mes, totales, ger)
+    html_body = generate_html(date_str, act, k_mes, serie, tops, margen_mes, totales, ger, resumen)
 
     excel_bytes = generate_excel(cots, hist, plat, remis, planes, ocs, provs, sols, serie, facturas, semanas)
     excel_name  = 'Datos_EYG_' + now.strftime('%Y-%m-%d') + '.xlsx'
