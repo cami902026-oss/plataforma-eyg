@@ -1139,6 +1139,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <h3 class="modal-title" id="poc-modal-title">Nueva Orden de Compra</h3>
             <button class="close-btn" onclick="closePocModal()">✕</button>
           </div>
+          <div id="poc-cotiz-link" style="margin:-4px 0 6px;"></div>
           <div class="modal-body">
             <div class="poc-form-2">
               <div class="form-group">
@@ -6131,6 +6132,14 @@ function openPocModal(id) {
   }
 
   document.getElementById('poc-modal-title').textContent = order ? 'Editar Orden de Compra' : 'Nueva Orden de Compra';
+  // Trazabilidad: si la OC nació de una cotización, mostrar enlace para verla
+  const _cl = document.getElementById('poc-cotiz-link');
+  if (_cl) {
+    const _cid = order && order.cotizacionId;
+    _cl.innerHTML = _cid
+      ? `<button onclick="pocVerCotizacion('${String(_cid).replace(/'/g,"\\'")}')" title="Ver la cotización de la que salió esta OC" style="background:rgba(126,179,255,.16);border:1px solid rgba(126,179,255,.4);color:#7eb3ff;padding:3px 9px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">📄 Ver cotización ${String(_cid).replace(/</g,'&lt;')}</button>`
+      : '';
+  }
   document.getElementById('poc-del-btn').style.display = order ? 'inline-flex' : 'none';
   document.getElementById('poc-num').value = order?.num||'';
   document.getElementById('poc-cliente').value = order?.cliente||'';
@@ -9002,6 +9011,18 @@ function solVerCotizacion(cotizId) {
     return;
   }
   bdCargar(cotizId);
+}
+
+// Desde una OC: abrir la cotización ligada (local → editor; histórica del LIBRO → visor)
+function pocVerCotizacion(cotizId) {
+  if (!cotizId) return;
+  try { closePocModal(); } catch (_) {}
+  const local = getData('bd_cotizaciones', []).find(x => x && x.id === cotizId && !x.deleted);
+  if (local) { bdCargar(cotizId); return; }
+  if (typeof bdVerHistorico === 'function' && (_bdHistCache || []).some(h => String(h.id) === String(cotizId))) {
+    bdVerHistorico(cotizId); return;
+  }
+  showToast('La cotización ' + cotizId + ' no está disponible en este equipo', 'info');
 }
 
 function solAbrirCotiz(solId, cliente) {
