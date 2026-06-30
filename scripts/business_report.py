@@ -807,9 +807,16 @@ if __name__ == '__main__':
     # Cotizadas: por fecha de cotización (set unificado)
     cot_hoy = [c for c in cots if _dia(c.get('fecha'))]
     cot_mes = [c for c in cots if _mes(c.get('fecha'))]
-    # Adjudicadas: por adjudicadaAt (sello que pone la plataforma; vive en el JSON local `plat`)
-    adj_hoy = [c for c in plat if _dia(c.get('adjudicadaAt'))]
-    adj_mes = [c for c in plat if _mes(c.get('adjudicadaAt'))]
+    # Adjudicadas (ganadas: estado Adjudicada o Facturada). TRANSPARENTE = cuenta TODAS:
+    # fecha = adjudicadaAt (sello nuevo y exacto) o, si aún no lo tiene, la fecha de la
+    # cotización. Así las ya adjudicadas también aparecen, y las nuevas quedan más exactas.
+    _adjat = {str(c.get('id') or '').strip(): c.get('adjudicadaAt') for c in plat if c.get('adjudicadaAt')}
+    _GAN = {'ADJUDICADA', 'FACTURADA'}
+    def _adj_date(c):
+        return _adjat.get(str(c.get('id') or '').strip()) or c.get('fecha')
+    _adjlist = [c for c in cots if str(c.get('estado') or '').strip().upper() in _GAN]
+    adj_hoy = [c for c in _adjlist if _dia(_adj_date(c))]
+    adj_mes = [c for c in _adjlist if _mes(_adj_date(c))]
     # Facturadas: por fecha de la etapa de Facturación de la OC (ordenes.json / Procesos OC)
     ordenes = [o for o in load_json('ordenes.json') if o and not o.get('deleted')]
     def _oc_fact(o):
