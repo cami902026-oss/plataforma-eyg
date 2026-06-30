@@ -187,6 +187,8 @@ def main():
     sin_parse = 0
     total_hojas = 0
 
+    # ---- PASO 1: parsear TODAS las hojas (guardando la fecha cruda, aunque sea basura) ----
+    parsed = []
     for name in wb.sheetnames:
         if name.strip().upper() in SALTAR:
             continue
@@ -194,12 +196,40 @@ def main():
         try:
             ws = wb[name]
             q = parse_sheet(name, ws)
-        except Exception as e:
+        except Exception:
             sin_parse += 1
             continue
         if q is None:
             sin_parse += 1
             continue
+        parsed.append(q)
+
+    # ---- PASO 2: inferir fecha de las cotizaciones SIN fecha de generacion ----
+    # El LIBRO deja la fecha en 1900 cuando la celda "FECHA DE GENERACION" esta vacia
+    # (ej. LM1733). Se deduce de la cotizacion VALIDA con numero LM mas cercano, porque
+    # los consecutivos van en orden cronologico. Asi no se pierden cotizaciones reales.
+    def lm_num(s):
+        m = re.search(r"(\d+)", str(s or ""))
+        return int(m.group(1)) if m else None
+    MIN_VALIDA = datetime.date(2020, 1, 1)
+    validas = sorted(
+        [(lm_num(q["id"]), q["fecha"]) for q in parsed
+         if q["fecha"] >= MIN_VALIDA and lm_num(q["id"]) is not None],
+        key=lambda x: x[0])
+    inferidas = 0
+    for q in parsed:
+        if q["fecha"] >= MIN_VALIDA:
+            continue
+        n = lm_num(q["id"])
+        if n is None or not validas:
+            continue
+        mejor = min(validas, key=lambda x: abs(x[0] - n))   # vecina LM mas cercana
+        q["fecha"] = mejor[1]
+        q["fecha_inferida"] = True
+        inferidas += 1
+
+    # ---- PASO 3: filtros (ventana movil + ya esta en la web) ----
+    for q in parsed:
         if not (CUTOFF <= q["fecha"] <= HOY):
             fuera_ventana += 1
             continue
@@ -207,6 +237,7 @@ def main():
             saltadas_web += 1
             continue
         extraidas.append(q)
+    print(f"   (fechas inferidas por vecino LM: {inferidas})")
 
     # construir lineas nuevas: 17 campos originales (mismo orden) + 3 aditivos
     def make_line(q, fstr, it):
