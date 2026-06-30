@@ -1406,6 +1406,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                     <th style="width:90px">V. TOTAL</th>
                     <th style="width:80px">PROVEEDOR</th>
                     <th style="width:84px">P. PROVEEDOR</th>
+                    <th style="width:62px;display:none" id="cotiz-th-factor" title="Divisor 0.5–0.9 — V. Unitario = P. Proveedor ÷ Factor (solo gerencia)">FACTOR</th>
                     <th style="width:54px">MARGEN</th>
                     <th style="width:22px"></th>
                   </tr>
@@ -7346,6 +7347,8 @@ function cotizRender() {
     const pprov = it.precioProveedor || 0;
     const margen = it.precio > 0 ? Math.round(((it.precio - pprov) / it.precio) * 100) : (pprov > 0 ? -100 : null);
     const margenColor = margen === null ? 'var(--text-muted)' : margen >= 20 ? '#4ade80' : margen >= 0 ? 'var(--gold)' : '#f87171';
+    // FACTOR = P.Proveedor ÷ V.Unitario (derivado; al escribirlo recalcula el V.Unitario). Solo gerencia.
+    const factorVal = (pprov > 0 && it.precio > 0) ? Math.round((pprov / it.precio) * 1000) / 1000 : '';
     return `
     <tr>
       <td style="color:var(--text-muted);text-align:center">${i+1}</td>
@@ -7361,10 +7364,11 @@ function cotizRender() {
       <td><input value="${it.tiempoEntrega||''}" oninput="cotizItems[${i}].tiempoEntrega=this.value" style="width:80px"></td>
       <td><textarea rows="1" oninput="cotizItems[${i}].desvTec=this.value;_cotizAutoGrow(this)" style="min-width:150px" placeholder="Desviación técnica">${(it.desvTec||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea></td>
       <td><input value="${it.marca||''}" oninput="cotizItems[${i}].marca=this.value" style="width:62px"></td>
-      <td><input type="number" value="${it.precio}" min="0" oninput="cotizItems[${i}].precio=parseFloat(this.value)||0;cotizUpdateTotals()" style="width:82px"></td>
-      <td style="color:var(--gold);font-weight:600;text-align:right;white-space:nowrap">$${vTotal.toLocaleString('es-CO')}</td>
+      <td><input type="number" id="cotiz-precio-${i}" value="${it.precio}" min="0" oninput="cotizItems[${i}].precio=parseFloat(this.value)||0;_cotizRecalcRow(${i})" style="width:82px"></td>
+      <td id="cotiz-vtotal-${i}" style="color:var(--gold);font-weight:600;text-align:right;white-space:nowrap">$${vTotal.toLocaleString('es-CO')}</td>
       <td><input list="prov-dl" value="${(it.proveedor||'').replace(/"/g,'&quot;')}" oninput="cotizItems[${i}].proveedor=this.value" style="width:72px" placeholder="Proveedor"></td>
-      <td><input type="number" value="${pprov||''}" min="0" placeholder="Costo" oninput="cotizItems[${i}].precioProveedor=parseFloat(this.value)||0;_cotizUpdateMargen(${i})" style="width:80px" title="Precio de costo del proveedor (interno)"></td>
+      <td><input type="number" value="${pprov||''}" min="0" placeholder="Costo" oninput="cotizItems[${i}].precioProveedor=parseFloat(this.value)||0;_cotizRecalcRow(${i})" style="width:80px" title="Precio de costo del proveedor (interno)"></td>
+      <td class="cotiz-col-factor"><input type="number" id="cotiz-factor-${i}" value="${factorVal}" step="0.01" min="0.3" max="0.99" placeholder="0.5–0.9" oninput="_cotizSetFactor(${i},this.value)" style="width:58px" title="V. Unitario = P. Proveedor ÷ Factor"></td>
       <td id="cotiz-margen-${i}" style="text-align:center;font-weight:700;font-size:11px;color:${margenColor};">${margen !== null ? margen+'%' : '—'}</td>
       <td><button onclick="cotizItems.splice(${i},1);cotizRender()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">×</button></td>
     </tr>`;
@@ -7373,6 +7377,7 @@ function cotizRender() {
   tbody.querySelectorAll('textarea').forEach(_cotizAutoGrow);
   // Cargar las fotos (archivo aparte) la primera vez y re-renderizar para mostrar miniaturas
   if (!_cotizFotosLoaded) { _cotizFotosEnsure().then(() => { try { cotizRender(); } catch(_){} }); }
+  _cotizAplicarVisibilidadFactor();
   cotizUpdateTotals();
 }
 
@@ -7463,6 +7468,52 @@ function _cotizUpdateMargen(i) {
   const margenColor = margen === null ? 'var(--text-muted)' : margen >= 20 ? '#4ade80' : margen >= 0 ? 'var(--gold)' : '#f87171';
   const cell = document.getElementById('cotiz-margen-' + i);
   if (cell) { cell.style.color = margenColor; cell.textContent = margen !== null ? margen + '%' : '—'; }
+}
+
+// ¿Quién ve/edita la columna FACTOR? Solo gerencia (Alberto y Andrea).
+function cotiz_showFactor() {
+  return currentUser && ['alberto', 'andrea'].includes(currentUser.email);
+}
+
+// Muestra u oculta la columna FACTOR según el usuario (encabezado + todas las celdas).
+function _cotizAplicarVisibilidadFactor() {
+  const show = cotiz_showFactor();
+  const th = document.getElementById('cotiz-th-factor');
+  if (th) th.style.display = show ? '' : 'none';
+  document.querySelectorAll('.cotiz-col-factor').forEach(td => { td.style.display = show ? '' : 'none'; });
+}
+
+// El gerente escribe el FACTOR (0.5–0.9) → recalcula V. Unitario = P. Proveedor ÷ Factor.
+function _cotizSetFactor(i, v) {
+  const it = cotizItems[i];
+  if (!it) return;
+  const f = parseFloat(v);
+  if (f > 0 && (it.precioProveedor || 0) > 0) {
+    it.precio = Math.round((it.precioProveedor || 0) / f);
+  }
+  _cotizRecalcRow(i, true);   // skipFactor: no pisar lo que el usuario está escribiendo
+}
+
+// Recalcula en vivo V. Total, Margen, Factor (derivado) y refleja el V. Unitario de la fila i.
+function _cotizRecalcRow(i, skipFactor) {
+  const it = cotizItems[i];
+  if (!it) return;
+  const pprov = it.precioProveedor || 0;
+  // V. Unitario (por si lo cambió el factor)
+  const pEl = document.getElementById('cotiz-precio-' + i);
+  if (pEl && document.activeElement !== pEl) pEl.value = it.precio || '';
+  // V. Total
+  const vtEl = document.getElementById('cotiz-vtotal-' + i);
+  if (vtEl) vtEl.textContent = '$' + ((it.qty || 0) * (it.precio || 0)).toLocaleString('es-CO');
+  // Factor derivado = costo ÷ precio (no se pisa si el usuario lo está escribiendo)
+  if (!skipFactor) {
+    const fEl = document.getElementById('cotiz-factor-' + i);
+    if (fEl && document.activeElement !== fEl) {
+      fEl.value = (pprov > 0 && it.precio > 0) ? Math.round((pprov / it.precio) * 1000) / 1000 : '';
+    }
+  }
+  _cotizUpdateMargen(i);
+  cotizUpdateTotals();
 }
 
 function cotizUpdateTotals() {
