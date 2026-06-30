@@ -6111,6 +6111,7 @@ async function _pocReleaseLock(orderId) {
 
 function openPocModal(id) {
   pocEditId = id || null;
+  window._cotizOCsource = null;   // se setea solo si se abre desde cotizCrearOC (enlace de vuelta)
   let order = id ? getPOC().find(o => o.id === id || o.id === String(id)) : null;
   // Respaldo: buscar por num si no encontró por id (cubre casos donde id === num)
   if (!order && id) order = getPOC().find(o => o.num === id || o.num === String(id));
@@ -6218,6 +6219,8 @@ function savePoc() {
       estado: document.getElementById('poc-he-estado')?.value||'pendiente'
     },
     stages,
+    // Enlace de vuelta a la cotización (si la OC se creó desde una cotización adjudicada)
+    cotizacionId: existingOrder?.cotizacionId || window._cotizOCsource || '',
     createdAt: existingOrder?.createdAt,
     createdBy: existingOrder?.createdBy
   }, !existingOrder);
@@ -8334,6 +8337,9 @@ function bdRender(filtro) {
   const _localIds = new Set(bd.map(c => String(c.id||'').trim().toUpperCase()));
   const _histExtra = (_bdHistCache || []).filter(h => h && !_localIds.has(String(h.id||'').trim().toUpperCase()));
   const bdAll = bd.concat(_histExtra);
+  // Enlace de vuelta: mapa cotización -> Orden de Compra (Procesos OC) ligada
+  const _ocByCotiz = {};
+  try { (typeof getPOC==='function'?getPOC():[]).forEach(o=>{ if(o&&o.cotizacionId) _ocByCotiz[String(o.cotizacionId)]=o; }); } catch(_){}
   const tbody = document.getElementById('bd-tbody');
   const empty = document.getElementById('bd-empty');
   if (!tbody) return;
@@ -8412,9 +8418,13 @@ function bdRender(filtro) {
     const idCell = _h
       ? `${c.id} <span style="font-size:9px;background:rgba(144,205,244,.2);color:#90cdf4;border-radius:4px;padding:1px 4px;vertical-align:middle;">📚 LIBRO</span>`
       : c.id;
-    const ocBtn = (c.estado === 'Adjudicada')
-      ? `<button class="btn-sm" onclick="event.stopPropagation();cotizCrearOC('${c.id}')" title="Crear Orden de Compra (Procesos OC) desde esta cotización adjudicada" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700">🧾 Crear OC</button>`
-      : '';
+    const _oc = _ocByCotiz[String(c.id)];
+    const _ocNum = _oc ? String(_oc.num||_oc.id).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+    const ocBtn = _oc
+      ? `<button class="btn-sm" onclick="event.stopPropagation();openPocModal('${_oc.id}')" title="Ver la Orden de Compra ${_ocNum} ligada a esta cotización" style="background:rgba(26,58,143,.35);border:1px solid #1A3A8F;color:#90cdf4;font-weight:700">🧾 OC ${_ocNum||'✓'}</button>`
+      : (c.estado === 'Adjudicada'
+        ? `<button class="btn-sm" onclick="event.stopPropagation();cotizCrearOC('${c.id}')" title="Crear Orden de Compra (Procesos OC) desde esta cotización adjudicada" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700">🧾 Crear OC</button>`
+        : '');
     const acciones = _h
       ? `<div style="display:flex;gap:4px;flex-wrap:wrap;">
           ${ocBtn}
@@ -8529,6 +8539,7 @@ function cotizCrearOC(id) {
   const nItems = (c.items && c.items.length) ? (' · ' + c.items.length + ' ítems') : '';
   set('poc-desc', 'Cotización ' + c.id + nItems);
   set('poc-valor', c.total || '');
+  window._cotizOCsource = c.id;   // enlace de vuelta: al guardar, la orden queda ligada a esta cotización
   const num = document.getElementById('poc-num');
   if (num) { num.value = ''; setTimeout(() => { try { num.focus(); } catch (_) {} }, 100); }
   showToast('Nueva OC desde ' + c.id + ': escribe el N° de OC del cliente y verifica el valor', 'info');
