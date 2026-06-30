@@ -1759,6 +1759,13 @@
     "cliente": "CIAM",
     "desc": "Niples roscados en acero al carbón 3/4 x 4\" SCH 80 y SCH 160",
     "estado": "cancelado",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -1783,10 +1790,13 @@
       {
         "s": "done",
         "f": "2026-05-09",
-        "n": "428"
+        "n": "428N/C 445"
       }
     ],
-    "updatedAt": "✅ Facturado"
+    "createdAt": "2026-06-25T16:24:09.266Z",
+    "createdBy": "lina",
+    "updatedAt": "2026-06-25T16:24:09.266Z",
+    "updatedBy": "lina"
   },
   {
     "id": "poc_1778689688011",
