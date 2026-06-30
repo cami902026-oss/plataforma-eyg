@@ -1448,7 +1448,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <button class="btn btn-primary" onclick="cotizGuardarBD()" style="width:auto;font-size:13px;">💾 Guardar en base de datos</button>
             <button class="btn btn-primary" onclick="cotizGenerarPDF()" style="width:auto;font-size:13px;background:rgba(229,62,62,.3);border-color:#e53e3e;">📄 Generar PDF</button>
             <button class="btn btn-primary" onclick="cotizDownloadExcel()" style="width:auto;font-size:13px;background:rgba(46,170,74,.3);border-color:#2eaa4a;">⬇️ Descargar Excel</button>
-            <button class="btn btn-secondary" onclick="cotizNueva()" style="width:auto;font-size:13px;">+ Nueva cotización</button>
+            <button class="btn btn-secondary" onclick="cotizNuevaConfirm()" style="width:auto;font-size:13px;">+ Nueva cotización</button>
           </div>
         </div>
 
@@ -7564,6 +7564,47 @@ function cotizPopulateSelects(vendedor, realiza, aprueba) {
   // vendedor can be empty
   const vEl = document.getElementById('cotiz-vendedor');
   if (vEl) vEl.innerHTML = '<option value="">— sin asignar —</option>' + cotizGetTeamOptions(vendedor);
+}
+
+// ¿Hay una cotización con contenido en el formulario (cliente o ítems con descripción)?
+function _cotizHasContent() {
+  const cli = ((document.getElementById('cotiz-cliente') || {}).value || '').trim();
+  return cli !== '' || (Array.isArray(cotizItems) && cotizItems.some(it => it && (it.desc || '').trim() !== ''));
+}
+
+// Botón "+ Nueva cotización": si hay algo sin guardar, pregunta antes de borrar (evita perder por error).
+function cotizNuevaConfirm() {
+  if (_cotizHasContent()) { _cotizConfirmNuevaModal(); return; }
+  cotizNueva();
+}
+
+function _cotizConfirmNuevaModal() {
+  const prev = document.getElementById('cotiz-nueva-modal'); if (prev) prev.remove();
+  const ov = document.createElement('div');
+  ov.id = 'cotiz-nueva-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;';
+  ov.onclick = ev => { if (ev.target === ov) ov.remove(); };
+  ov.innerHTML = `<div style="background:var(--dark,#071525);border:1px solid var(--border,#234);border-radius:12px;max-width:420px;width:100%;padding:22px;color:#fff;text-align:center;">
+      <div style="font-size:34px;margin-bottom:6px;">⚠️</div>
+      <div style="font-weight:800;font-size:17px;margin-bottom:6px;">Cotización sin guardar</div>
+      <div style="font-size:13px;color:var(--text-muted,#9fb3c8);margin-bottom:18px;">Tienes una cotización escrita que no has guardado. ¿Qué deseas hacer?</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button onclick="document.getElementById('cotiz-nueva-modal').remove();_cotizGuardarYNueva()" style="background:rgba(46,170,74,.3);border:1px solid #2EAA4A;color:#86efac;padding:11px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">💾 Guardar y empezar nueva</button>
+        <button onclick="document.getElementById('cotiz-nueva-modal').remove();cotizNueva()" style="background:rgba(248,113,113,.18);border:1px solid rgba(248,113,113,.5);color:#fca5a5;padding:11px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">🗑 Descartar y limpiar</button>
+        <button onclick="document.getElementById('cotiz-nueva-modal').remove()" style="background:rgba(255,255,255,.08);border:1px solid var(--border,#234);color:#fff;padding:11px;border-radius:8px;cursor:pointer;font-size:14px;">✖ Cancelar (seguir editando)</button>
+      </div></div>`;
+  document.body.appendChild(ov);
+}
+
+function _cotizGuardarYNueva() {
+  const cli = ((document.getElementById('cotiz-cliente') || {}).value || '').trim();
+  if (!cli || !(Array.isArray(cotizItems) && cotizItems.length)) {
+    showToast('Faltan datos para guardar (cliente e ítems). Complétalos o usa Descartar.', 'error');
+    return;
+  }
+  cotizGuardarBD();
+  // Las nuevas: cotizGuardarBD ya limpia el formulario. Las existentes: limpiar aquí.
+  setTimeout(() => { try { if (_cotizHasContent()) cotizNueva(); } catch (_) {} }, 80);
 }
 
 function cotizNueva(silent) {
