@@ -7657,6 +7657,15 @@ function cotizGuardarBD() {
   if (!id) { id = cotizGetNextNum(); cotizWriteNum(id); }
   const bd = getData('bd_cotizaciones', []);
   const idx = bd.findIndex(c => c.id === id);
+  // Anti-duplicado: si la solicitud vinculada YA tiene otra cotización, no dejar crear otra.
+  const _solVinculada = (document.getElementById('cotiz-sol-vincular')||{}).value || '';
+  if (_solVinculada) {
+    const _sVinc = (getData('solicitudes_cotiz', [])||[]).find(x => x && x.id === _solVinculada);
+    if (_sVinc && _sVinc.cotizacionId && _sVinc.cotizacionId !== id) {
+      showToast('⛔ La solicitud ' + _solVinculada + ' ya tiene la cotización ' + _sVinc.cotizacionId + '. No se crea otra (evita duplicados). Abre esa cotización o quita la solicitud del selector.', 'error');
+      return;
+    }
+  }
   const record = {
     id,
     fecha: document.getElementById('cotiz-fecha-gen').value,
@@ -9088,7 +9097,8 @@ function solAbrirCotiz(solId, cliente) {
   if (box) box.style.display = 'block';
   const sel = document.getElementById('cotiz-sol-vincular');
   if (sel) {
-    const soles = getData('solicitudes_cotiz', []).filter(s => s.estado === 'pendiente' || s.estado === 'en_cotizacion');
+    // Excluir solicitudes que YA tienen cotización (evita duplicados); se conserva la actual.
+    const soles = getData('solicitudes_cotiz', []).filter(s => (s.estado === 'pendiente' || s.estado === 'en_cotizacion') && (!s.cotizacionId || s.id === solId));
     sel.innerHTML = '<option value="">— sin solicitud vinculada —</option>' +
       soles.map(s => `<option value="${s.id}"${s.id===solId?' selected':''}>${s.id} — ${s.cliente}</option>`).join('');
   }
@@ -9127,10 +9137,11 @@ function solPopulateVincular() {
   const box = document.getElementById('cotiz-vincular-box');
   const sel = document.getElementById('cotiz-sol-vincular');
   if (!sel) return;
-  const soles = getData('solicitudes_cotiz', []).filter(s => s.estado === 'pendiente' || s.estado === 'en_cotizacion');
+  const cur = sel.value;
+  // Excluir solicitudes que YA tienen cotización (evita duplicados); se conserva la vinculada actual.
+  const soles = getData('solicitudes_cotiz', []).filter(s => (s.estado === 'pendiente' || s.estado === 'en_cotizacion') && (!s.cotizacionId || s.id === cur));
   if (soles.length === 0) { if (box) box.style.display = 'none'; return; }
   if (box) box.style.display = 'block';
-  const cur = sel.value;
   sel.innerHTML = '<option value="">— sin solicitud vinculada —</option>' +
     soles.map(s => `<option value="${s.id}"${s.id===cur?' selected':''}>${s.id} — ${s.cliente}</option>`).join('');
 }
