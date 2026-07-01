@@ -1409,7 +1409,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                     <th style="width:80px">PROVEEDOR</th>
                     <th style="width:84px">P. PROVEEDOR</th>
                     <th style="width:62px;display:none" id="cotiz-th-factor" title="Divisor 0.5–0.9 — V. Unitario = P. Proveedor ÷ Factor (solo gerencia)">FACTOR</th>
-                    <th style="width:54px">MARGEN</th>
+                    <th style="width:54px;display:none" id="cotiz-th-margen" title="Margen (solo gerencia)">MARGEN</th>
                     <th style="width:22px"></th>
                   </tr>
                 </thead>
@@ -7385,7 +7385,7 @@ function cotizRender() {
       <td><input list="prov-dl" value="${(it.proveedor||'').replace(/"/g,'&quot;')}" oninput="cotizItems[${i}].proveedor=this.value" style="width:72px" placeholder="Proveedor"></td>
       <td><input type="number" value="${pprov||''}" min="0" placeholder="Costo" oninput="cotizItems[${i}].precioProveedor=parseFloat(this.value)||0;_cotizRecalcRow(${i})" style="width:80px" title="Precio de costo del proveedor (interno)"></td>
       <td class="cotiz-col-factor"><input type="number" id="cotiz-factor-${i}" value="${factorVal}" step="0.01" min="0.3" max="0.99" placeholder="0.5–0.9" oninput="_cotizSetFactor(${i},this.value)" style="width:58px" title="V. Unitario = P. Proveedor ÷ Factor"></td>
-      <td id="cotiz-margen-${i}" style="text-align:center;font-weight:700;font-size:11px;color:${margenColor};">${margen !== null ? margen+'%' : '—'}</td>
+      <td id="cotiz-margen-${i}" class="cotiz-col-margen" style="text-align:center;font-weight:700;font-size:11px;color:${margenColor};">${margen !== null ? margen+'%' : '—'}</td>
       <td><button onclick="cotizItems.splice(${i},1);cotizRender()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">×</button></td>
     </tr>`;
   }).join('');
@@ -7494,9 +7494,12 @@ function cotiz_showFactor() {
 // Muestra u oculta la columna FACTOR según el usuario (encabezado + todas las celdas).
 function _cotizAplicarVisibilidadFactor() {
   const show = cotiz_showFactor();
-  const th = document.getElementById('cotiz-th-factor');
-  if (th) th.style.display = show ? '' : 'none';
-  document.querySelectorAll('.cotiz-col-factor').forEach(td => { td.style.display = show ? '' : 'none'; });
+  // FACTOR y MARGEN: solo gerencia (Alberto/Andrea). Las asistentes no los ven.
+  ['cotiz-th-factor', 'cotiz-th-margen'].forEach(id => {
+    const th = document.getElementById(id);
+    if (th) th.style.display = show ? '' : 'none';
+  });
+  document.querySelectorAll('.cotiz-col-factor, .cotiz-col-margen').forEach(td => { td.style.display = show ? '' : 'none'; });
 }
 
 // El gerente escribe el FACTOR (0.5–0.9) → recalcula V. Unitario = P. Proveedor ÷ Factor.
