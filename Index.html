@@ -2388,6 +2388,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
             <button class="btn btn-ghost" onclick="remiVolver()" style="padding:8px 14px;font-size:12px;">← Volver</button>
             <h3 id="remi-editor-titulo" style="margin:0;font-family:'Montserrat',sans-serif;color:#fff;">Nueva remisión</h3>
+            <div id="remi-cotiz-link"></div>
           </div>
           <div class="abs-mov-form" style="margin-bottom:16px;">
             <div class="form-row">
@@ -7047,7 +7048,7 @@ function cotizShowTab(tab) {
   document.querySelectorAll('.cotiz-tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById('ctab-' + tab).classList.add('active');
   document.getElementById('cotiz-tab-' + tab).classList.add('active');
-  if (tab === 'bd') { bdRender(); if (!_bdHistCache) bdLoadHistorico().then(() => bdRender()); }
+  if (tab === 'bd') { bdRender(); if (!_bdHistCache) bdLoadHistorico().then(() => bdRender()); if (!_bdRemByCotiz) bdLoadRemisiones().then(() => bdRender()); }
   if (tab === 'agente') cotizRenderAgente();
   if (tab === 'proveedores') provRender();
   if (tab === 'clientes') cliRender();
@@ -8216,6 +8217,29 @@ async function exportCotizBDCompleta(){
 let _bdHistCache = null;      // array mapeado al shape de bdRender, o null si aún no cargó
 let _bdHistLoading = false;
 
+// Trazabilidad: mapa cotización -> remisión ligada (desde Supabase, solo las que tienen enlace)
+let _bdRemByCotiz = null;
+async function bdLoadRemisiones(force) {
+  if (_bdRemByCotiz && !force) return _bdRemByCotiz;
+  try {
+    const rows = await absFetch('remisiones?select=remision,cotizacion_id&cotizacion_id=not.is.null&limit=5000');
+    const m = {};
+    (rows || []).forEach(r => { if (r.cotizacion_id) m[String(r.cotizacion_id)] = r.remision; });
+    _bdRemByCotiz = m;
+  } catch (_) { _bdRemByCotiz = _bdRemByCotiz || {}; }
+  return _bdRemByCotiz;
+}
+function cotizVerRemision(cotizId) {
+  const rem = (_bdRemByCotiz || {})[String(cotizId)];
+  if (!rem) { showToast('Sin remisión ligada', 'info'); return; }
+  if (typeof navigate === 'function') {
+    navigate('remisiones');
+    setTimeout(() => { try { remiAbrir(String(rem)); } catch (_) { showToast('Abre la remisión ' + rem + ' en el módulo Remisiones', 'info'); } }, 900);
+  } else {
+    showToast('Remisión ligada: ' + rem, 'info');
+  }
+}
+
 async function bdLoadHistorico(force) {
   if (_bdHistCache && !force) return _bdHistCache;
   if (_bdHistLoading) return _bdHistCache || [];
@@ -8476,6 +8500,10 @@ function bdRender(filtro) {
     const idCell = _h
       ? `${c.id} <span style="font-size:9px;background:rgba(144,205,244,.2);color:#90cdf4;border-radius:4px;padding:1px 4px;vertical-align:middle;">📚 LIBRO</span>`
       : c.id;
+    const _rem = (_bdRemByCotiz || {})[String(c.id)];
+    const remBtn = _rem
+      ? `<button class="btn-sm" onclick="event.stopPropagation();cotizVerRemision('${String(c.id).replace(/'/g,"\\'")}')" title="Ver la remisión ligada a esta cotización" style="background:rgba(232,160,32,.16);border:1px solid rgba(232,160,32,.5);color:#fbbf24;font-weight:700">📦 Rem ${String(_rem).replace(/</g,'&lt;')}</button>`
+      : '';
     const _oc = _ocByCotiz[String(c.id)];
     const _ocNum = _oc ? String(_oc.num||_oc.id).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
     const ocBtn = _oc
@@ -8485,12 +8513,12 @@ function bdRender(filtro) {
         : '');
     const acciones = _h
       ? `<div style="display:flex;gap:4px;flex-wrap:wrap;">
-          ${ocBtn}
+          ${ocBtn}${remBtn}
           <button class="btn-sm bd-btn-edit" onclick="bdEditarHistorico('${c.id}')">✏️ Editar</button>
           <button class="btn-sm bd-btn-xl" onclick="bdVerHistorico('${c.id}')">👁 Ver</button>
         </div>`
       : `<div style="display:flex;gap:4px;flex-wrap:wrap;">
-          ${ocBtn}
+          ${ocBtn}${remBtn}
           <button class="btn-sm bd-btn-edit" onclick="bdCargar('${c.id}')">✏️ Editar</button>
           <button class="btn-sm bd-btn-xl" onclick="bdDescargar('${c.id}')">⬇️ XLS</button>
           <button class="btn-sm bd-btn-del" onclick="bdEliminar('${c.id}',event)">🗑</button>
@@ -9013,16 +9041,13 @@ function solVerCotizacion(cotizId) {
   bdCargar(cotizId);
 }
 
-// Desde una OC: abrir la cotización ligada (local → editor; histórica del LIBRO → visor)
+// Desde una OC: abrir la cotización ligada en el visor de solo lectura (Supabase).
+// Usa el mismo visor que funciona desde cualquier módulo, sin cambiar de sección.
 function pocVerCotizacion(cotizId) {
   if (!cotizId) return;
   try { closePocModal(); } catch (_) {}
-  const local = getData('bd_cotizaciones', []).find(x => x && x.id === cotizId && !x.deleted);
-  if (local) { bdCargar(cotizId); return; }
-  if (typeof bdVerHistorico === 'function' && (_bdHistCache || []).some(h => String(h.id) === String(cotizId))) {
-    bdVerHistorico(cotizId); return;
-  }
-  showToast('La cotización ' + cotizId + ' no está disponible en este equipo', 'info');
+  if (typeof bdVerHistorico === 'function') { bdVerHistorico(cotizId); return; }
+  showToast('No se pudo abrir la cotización ' + cotizId, 'info');
 }
 
 function solAbrirCotiz(solId, cliente) {
@@ -11933,7 +11958,7 @@ function remiNextNum(){
 function remiNueva(){
   if(!remiCanUse()) return showToast('No tienes permiso para crear remisiones','error');
   remi_current={ nueva:true, remision:remiNextNum(), fecha:new Date().toISOString().split('T')[0],
-    cliente:'', lugar:'', oc:'', contiene:'', observaciones:'',
+    cliente:'', lugar:'', oc:'', contiene:'', observaciones:'', cotizacionId:'',
     items:[{cantidad:'',descripcion:'',marca:'',colada:'',desviacion:''}] };
   remiAbrirEditor('Nueva remisión');
 }
@@ -11941,7 +11966,7 @@ function remiAbrir(remision, pdf){
   const its=remiGrupos()[String(remision)]; if(!its||!its.length) return showToast('Remisión no encontrada','error');
   const h=its[0];
   remi_current={ nueva:false, remision:String(remision), fecha:h.fecha||'', cliente:h.cliente||'', lugar:h.lugar||'',
-    oc:h.oc||'', contiene:h.contiene||'', observaciones:h.observaciones||'',
+    oc:h.oc||'', contiene:h.contiene||'', observaciones:h.observaciones||'', cotizacionId:h.cotizacion_id||'',
     items: its.slice().sort((a,b)=>(a.item||0)-(b.item||0)).map(r=>({cantidad:(r.cantidad==null?'':r.cantidad),descripcion:r.descripcion||'',marca:r.marca||'',colada:r.colada||'',desviacion:r.desviacion||''})) };
   remiAbrirEditor('Remisión '+remision);
   if(pdf) setTimeout(remiPDF, 250);
@@ -11959,6 +11984,20 @@ function remiAbrirEditor(titulo){
   document.getElementById('remi-contiene').value=c.contiene;
   document.getElementById('remi-obs').value=c.observaciones;
   remiRenderItems();
+  remiMostrarCotizLink();
+}
+// Trazabilidad: muestra la cotización ligada a la remisión (chip clicable)
+function remiMostrarCotizLink(){
+  const el=document.getElementById('remi-cotiz-link'); if(!el) return;
+  const cid = remi_current && remi_current.cotizacionId;
+  el.innerHTML = cid
+    ? `<button onclick="remiVerCotizacion('${String(cid).replace(/'/g,"\\'")}')" title="Ver la cotización ligada a esta remisión" style="background:rgba(126,179,255,.16);border:1px solid rgba(126,179,255,.4);color:#7eb3ff;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">📄 Cotización ${String(cid).replace(/</g,'&lt;')}</button>`
+    : '';
+}
+function remiVerCotizacion(cid){
+  if(!cid) return;
+  if(typeof bdVerHistorico==='function'){ bdVerHistorico(cid); return; }   // visor de solo lectura (Supabase)
+  showToast('No se pudo abrir la cotización '+cid,'error');
 }
 function remiSyncHeader(){
   const c=remi_current; if(!c) return;
@@ -11999,6 +12038,7 @@ async function remiGuardar(){
     }
     const rows=items.map((it,idx)=>({
       remision:String(c.remision), fecha:c.fecha||null, cliente:c.cliente, lugar:c.lugar, oc:c.oc,
+      cotizacion_id:c.cotizacionId||null,
       item:idx+1, descripcion:String(it.descripcion).trim(),
       cantidad:(it.cantidad===''||it.cantidad==null)?null:parseFloat(it.cantidad),
       marca:it.marca||'', colada:String(it.colada||''), desviacion:it.desviacion||'',
@@ -12359,7 +12399,10 @@ function remiCotizAgregar(){
   // Llenar el cliente del encabezado si está vacío
   const cli=document.getElementById('remi-cliente');
   if(cli&&!cli.value.trim()&&c.cliente){ cli.value=c.cliente; remi_current.cliente=c.cliente; }
+  // Trazabilidad: ligar la remisión a la cotización de la que se trajeron los ítems
+  remi_current.cotizacionId = c.id;
   remiRenderItems();
+  remiMostrarCotizLink();
   remiCotizCerrar();
   showToast(nuevos.length+' ítem(s) de la cotización '+c.id+' agregados ✓','ok');
 }
