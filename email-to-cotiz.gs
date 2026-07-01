@@ -188,7 +188,7 @@ function _extractData(subject, from, bodyText, attachments) {
         try {
           var tablaTxt = _archivoTablaATexto(att);
           if (tablaTxt && tablaTxt.length > 0) {
-            promptText += '\n\n[Datos del archivo "' + nom + '"]:\n' + tablaTxt.substring(0, 5000);
+            promptText += '\n\n[Datos del archivo "' + nom + '"]:\n' + tablaTxt.substring(0, 40000);
             adjuntosAgregados++;
             Logger.log('Excel/CSV agregado como texto (' + tablaTxt.length + ' chars)');
           }
@@ -209,7 +209,7 @@ function _extractData(subject, from, bodyText, attachments) {
     },
     payload: JSON.stringify({
       model: MODEL,
-      max_tokens: 2000,
+      max_tokens: 8000,
       system: systemPrompt,
       messages: [{ role: 'user', content: content }]
     }),
