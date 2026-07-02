@@ -8538,14 +8538,17 @@ function bdRender(filtro) {
       : (c.estado === 'Adjudicada'
         ? `<button class="btn-sm" onclick="event.stopPropagation();cotizCrearOC('${c.id}')" title="Crear Orden de Compra (Procesos OC) desde esta cotización adjudicada" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700">🧾 Crear OC</button>`
         : '');
+    const compBtn = (c.estado === 'Adjudicada' || c.estado === 'Facturada')
+      ? `<button class="btn-sm" onclick="event.stopPropagation();cotizCompararPlan('${c.id}')" title="Comparar lo cotizado vs lo adjudicado (Plan de Compras): ver qué se cayó y el % adjudicado" style="background:rgba(139,92,246,.18);border:1px solid rgba(139,92,246,.5);color:#c4b5fd;font-weight:700">⚖️ Comparar</button>`
+      : '';
     const acciones = _h
       ? `<div style="display:flex;gap:4px;flex-wrap:wrap;">
-          ${ocBtn}${remBtn}
+          ${ocBtn}${remBtn}${compBtn}
           <button class="btn-sm bd-btn-edit" onclick="bdEditarHistorico('${c.id}')">✏️ Editar</button>
           <button class="btn-sm bd-btn-xl" onclick="bdVerHistorico('${c.id}')">👁 Ver</button>
         </div>`
       : `<div style="display:flex;gap:4px;flex-wrap:wrap;">
-          ${ocBtn}${remBtn}
+          ${ocBtn}${remBtn}${compBtn}
           <button class="btn-sm bd-btn-edit" onclick="bdCargar('${c.id}')">✏️ Editar</button>
           <button class="btn-sm bd-btn-xl" onclick="bdDescargar('${c.id}')">⬇️ XLS</button>
           <button class="btn-sm bd-btn-del" onclick="bdEliminar('${c.id}',event)">🗑</button>
@@ -8648,6 +8651,75 @@ async function bdEditarHistorico(id) {
 // Abre el modal de Procesos OC en blanco, pre-llenado con cliente, descripción y valor
 // de la cotización; el usuario escribe el N° de OC (del cliente) y guarda.
 // No modifica la cotización. Sirve para locales y para las del LIBRO (Supabase).
+// Comparar una cotización con su Plan de Compras (= lo adjudicado). Muestra ítem
+// por ítem qué se adjudicó y qué se cayó, con el % adjudicado (por # y por $).
+async function cotizCompararPlan(id) {
+  const prev = document.getElementById('cotiz-comp-modal'); if (prev) prev.remove();
+  try {
+    showToast('Comparando ' + id + ' con el Plan de Compras…', 'info');
+    const cotItems = (await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(id) + '&order=item.asc&limit=2000')) || [];
+    const planItems = (await absFetch('plan_compras?cotizacion=eq.' + encodeURIComponent(id) + '&select=descripcion,cantidad&limit=2000')) || [];
+    if (!cotItems.length) { showToast('La cotización ' + id + ' no tiene ítems cargados', 'info'); return; }
+    if (!planItems.length) { showToast('Aún no hay Plan de Compras para ' + id + ' — arma el plan primero para poder comparar', 'info'); return; }
+    const norm = s => String(s || '').toUpperCase().replace(/[^0-9A-ZÁÉÍÓÚÑ\s]/g, '').replace(/\s+/g, ' ').trim();
+    const planNorms = planItems.map(p => norm(p.descripcion)).filter(Boolean);
+    const enPlan = d0 => {
+      const d = norm(d0); if (!d) return false;
+      const k = d.slice(0, 30);
+      return planNorms.some(pn => pn === d || (k.length >= 8 && (pn.includes(k) || d.includes(pn.slice(0, 30)))));
+    };
+    const money = n => '$' + (+n || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 });
+    let nAdj = 0, valAdj = 0, valTot = 0;
+    const filas = cotItems.map(it => {
+      const adj = enPlan(it.descripcion);
+      const v = (+it.v_total || (+it.qty || 0) * (+it.v_unit || 0)) || 0;
+      valTot += v; if (adj) { nAdj++; valAdj += v; }
+      return `<tr style="border-bottom:1px solid var(--border,#234);${adj ? '' : 'background:rgba(248,113,113,.06);'}">
+          <td style="padding:5px 6px;">${it.item ?? ''}</td>
+          <td style="padding:5px 6px;">${String(it.descripcion || '').slice(0, 70)}</td>
+          <td style="padding:5px 6px;text-align:right;">${it.qty ?? ''}</td>
+          <td style="padding:5px 6px;text-align:right;color:var(--gold);">${money(v)}</td>
+          <td style="padding:5px 6px;text-align:center;font-weight:700;color:${adj ? '#4ade80' : '#f87171'};">${adj ? '✅ Adjudicado' : '❌ No'}</td>
+        </tr>`;
+    }).join('');
+    const nTot = cotItems.length;
+    const pctN = nTot ? Math.round(nAdj / nTot * 100) : 0;
+    const pctV = valTot ? Math.round(valAdj / valTot * 100) : 0;
+    const ov = document.createElement('div');
+    ov.id = 'cotiz-comp-modal';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;';
+    ov.onclick = ev => { if (ev.target === ov) ov.remove(); };
+    ov.innerHTML = `<div style="background:var(--dark,#071525);border:1px solid var(--border,#234);border-radius:12px;max-width:920px;width:100%;max-height:90vh;overflow:auto;padding:22px;color:#fff;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+          <div><span style="color:var(--gold);font-weight:800;font-size:19px;">⚖️ ${id} — Cotizado vs Adjudicado</span>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">Lo adjudicado = lo que quedó en el Plan de Compras</div></div>
+          <button onclick="document.getElementById('cotiz-comp-modal').remove()" style="background:rgba(255,255,255,.08);border:1px solid var(--border,#234);color:#fff;font-size:18px;width:34px;height:34px;border-radius:8px;cursor:pointer;flex-shrink:0;">✕</button>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+          <div style="flex:1;min-width:140px;background:rgba(46,170,74,.12);border:1px solid rgba(46,170,74,.4);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:900;color:#4ade80;">${nAdj}/${nTot}</div>
+            <div style="font-size:11px;color:var(--text-muted);">Ítems adjudicados (${pctN}%)</div></div>
+          <div style="flex:1;min-width:140px;background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.4);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:16px;font-weight:900;color:var(--gold);">${money(valAdj)}</div>
+            <div style="font-size:11px;color:var(--text-muted);">de ${money(valTot)} (${pctV}% del valor)</div></div>
+          <div style="flex:1;min-width:140px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.4);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:900;color:#f87171;">${nTot - nAdj}</div>
+            <div style="font-size:11px;color:var(--text-muted);">Ítems que se cayeron</div></div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="border-bottom:2px solid var(--border,#234);color:var(--text-muted);text-align:left;">
+              <th style="padding:6px;">#</th><th style="padding:6px;">DESCRIPCIÓN COTIZADA</th><th style="padding:6px;text-align:right;">CANT</th><th style="padding:6px;text-align:right;">VALOR</th><th style="padding:6px;text-align:center;">¿ADJUDICADO?</th>
+            </tr></thead><tbody>${filas}</tbody></table>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:12px;">ℹ️ El cruce es por descripción (aproximado). Si un ítem salió marcado mal, puede ser que la descripción cambió entre la cotización y el plan.</div>
+      </div>`;
+    document.body.appendChild(ov);
+  } catch (e) {
+    showToast('Error al comparar ' + id + ': ' + (e && e.message || e), 'error');
+  }
+}
+
 function cotizCrearOC(id) {
   let c = getData('bd_cotizaciones', []).find(x => x && x.id === id && !x.deleted);
   if (!c) {
