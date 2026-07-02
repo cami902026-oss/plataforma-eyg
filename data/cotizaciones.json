@@ -7963,7 +7963,8 @@
     "cliente": "EIKOS",
     "contacto": "DIEGO",
     "correo": "",
-    "estado": "Facturada",
+    "estado": "Adjudicada",
+    "factura": "",
     "iva": 19,
     "subtotal": 2879800,
     "ivaVal": 547162,
@@ -8022,11 +8023,12 @@
         "desvTec": ""
       }
     ],
-    "fechaGuardado": "2026-07-01T19:54:38.227Z",
+    "fechaGuardado": "2026-07-02T20:53:47.896Z",
+    "adjudicadaAt": "2026-07-02",
     "createdAt": "2026-06-29T21:03:26.470Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-01T19:54:38.227Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-02T20:53:47.896Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1734",
@@ -11842,45 +11844,5 @@
     "createdBy": "lina",
     "updatedAt": "2026-07-02T19:40:30.803Z",
     "updatedBy": "lina"
-  },
-  {
-    "id": "LM1752",
-    "fecha": "2026-07-02",
-    "fechaVenc": "2026-07-10",
-    "cliente": "Consorcio SKF - OMIA",
-    "contacto": "Leidy Lorena Espejo Ramirez",
-    "correo": "",
-    "estado": "Revisión gerencia",
-    "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
-    "formaPago": "Crédito a 30 días",
-    "sitioEntrega": "SEGUN ACUERDO COMERCIAL",
-    "validez": "8 DÍAS",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "vendedor": "Sheila Baron",
-    "realizadaPor": "Alexandra",
-    "aprobadaPor": "Alberto",
-    "solicitudId": "SOL-20260702-982",
-    "items": [
-      {
-        "id": 1,
-        "desc": "Brida.WN,CS,8\",Cl300,SCH20,RF,A105,B16.5",
-        "udm": "EA",
-        "qty": 1,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS HABILES",
-        "desvTec": "AC 150L S40",
-        "marca": "XF",
-        "proveedor": "CODIFER",
-        "precioProveedor": 148960
-      }
-    ],
-    "fechaGuardado": "2026-07-02T20:52:25.840Z",
-    "createdAt": "2026-07-02T20:52:25.841Z",
-    "createdBy": "alexandra",
-    "updatedAt": "2026-07-02T20:52:25.841Z",
-    "updatedBy": "alexandra"
   }
 ]
