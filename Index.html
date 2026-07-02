@@ -7055,13 +7055,16 @@ function cotizEstadoChange() {
     if (fld) fld.value = num.trim();
     _cotizEstadoPrev = 'Facturada';
     _cotizFacturaRefresh();
-    // Escribir de una vez en la OC ligada (si la cotización ya está guardada y tiene OC)
-    if (cotizEditId) {
-      const ok = _cotizEscribirFacturaOC(cotizEditId, num.trim(), fecha);
-      if (!ok) showToast('Factura ' + num.trim() + ' registrada. Guarda la cotización (aún sin OC ligada).', 'info');
-      else showToast('Recuerda Guardar la cotización para conservar el estado Facturada.', 'info');
+    // Auto-guardar la cotización para no depender de "Guardar". Al guardar,
+    // _cotizPropagarFacturaOC escribe la factura+fecha en la OC ligada.
+    const _cli = (document.getElementById('cotiz-cliente').value || '').trim();
+    const _puede = _cli && Array.isArray(cotizItems) && cotizItems.length;
+    if (_puede) {
+      cotizGuardarBD();   // guarda la cotización Facturada + refleja en la OC
     } else {
-      showToast('Factura ' + num.trim() + ' registrada. Guarda la cotización para conservarla.', 'info');
+      // Aún no se puede guardar (faltan cliente/ítems): al menos reflejar en la OC ligada
+      if (cotizEditId) _cotizEscribirFacturaOC(cotizEditId, num.trim(), fecha);
+      showToast('Factura ' + num.trim() + ' registrada. Completa cliente e ítems y Guarda para conservar la cotización.', 'info');
     }
   } else {
     _cotizEstadoPrev = est;
