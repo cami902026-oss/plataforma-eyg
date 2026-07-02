@@ -5982,7 +5982,8 @@ function renderProcesos() {
         const guiaTxt = (i===1 && stages[i]?.guia) ? `<div class="poc-step-guia">🔖 ${stages[i].guia}</div>` : '';
         const destTxt = (i===1 && stages[i]?.dest) ? `<div class="poc-step-guia" style="color:#c4b5fd">📬 ${stages[i].dest}</div>` : '';
         const respTxt = (i===1 && stages[i]?.resp) ? `<div class="poc-step-note">👤 ${stages[i].resp}</div>` : '';
-        return `<div class="poc-step ${cls}"><div class="poc-step-circ" title="${st.label}">${st.icon}</div><div class="poc-step-lbl">${st.label}</div>${dateTxt}${envioTxt}${guiaTxt}${destTxt}${respTxt}${noteTxt}</div>`
+        const facturaTxt = (i===3 && stages[i]?.factura) ? `<div class="poc-step-guia" style="color:#86efac" title="N° de factura">🧾 ${String(stages[i].factura).replace(/</g,'&lt;')}</div>` : '';
+        return `<div class="poc-step ${cls}"><div class="poc-step-circ" title="${st.label}">${st.icon}</div><div class="poc-step-lbl">${st.label}</div>${dateTxt}${envioTxt}${guiaTxt}${destTxt}${respTxt}${facturaTxt}${noteTxt}</div>`
               + (addLine ? `<div class="poc-line ${lc}"></div>` : '');
       } catch(_) { return ''; }
     };
@@ -6957,6 +6958,8 @@ function viewPocReport(id) {
       ${entrega.resp?`<div style="font-size:12px;color:#cbd5e1;"><span style="color:#8899bb;">Responsable:</span> ${entrega.resp}</div>`:''}
       ${entrega.transp?`<div style="font-size:12px;color:#cbd5e1;"><span style="color:#8899bb;">Transportadora:</span> ${entrega.transp}</div>`:''}
     </div>` : '';
+  const facturaExtra = factura.factura ? `
+    <div style="margin-top:8px;font-size:13px;color:#cbd5e1;"><span style="color:#8899bb;">N° Factura:</span> <b style="color:#86efac;">${String(factura.factura).replace(/</g,'&lt;')}</b></div>` : '';
   const fechaGen = new Date().toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'});
   const updStr = o.updatedAt ? new Date(o.updatedAt).toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
   document.getElementById('poc-report-body').innerHTML = `
@@ -6987,7 +6990,7 @@ function viewPocReport(id) {
         ${stageRow('🛒','Compra',compra)}
         ${stageRow('🚛','Entrega',entrega,entregaExtra)}
         ${stageRow('📄','Certificado',cert)}
-        ${stageRow('💰','Facturación',factura)}
+        ${stageRow('💰','Facturación',factura,facturaExtra)}
       </div>
     </div>`;
   document.getElementById('modal-poc-report').classList.add('open');
