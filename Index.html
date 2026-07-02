@@ -1235,6 +1235,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                 <h4>💰 Facturación</h4>
                 <label>Fecha de facturación</label>
                 <input type="date" id="poc-s3-fecha">
+                <label>N° Factura</label>
+                <input type="text" id="poc-s3-factura" placeholder="Ej: FE-1234">
                 <label>Notas</label>
                 <textarea id="poc-s3-nota" rows="2" placeholder="Notas de facturación..."></textarea>
               </div>
@@ -1338,7 +1340,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                 </div>
                 <div class="form-group" style="margin-bottom:8px;">
                   <label>ESTADO</label>
-                  <select id="cotiz-estado" style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
+                  <select id="cotiz-estado" onchange="cotizEstadoChange()" style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
                     <option value="Borrador">📝 Borrador (no enviada)</option>
                     <option value="Revisión gerencia">👔 Para revisión gerencia</option>
                     <option value="Enviada">📤 Enviada al cliente</option>
@@ -1348,6 +1350,11 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                     <option value="Vencida">⏰ Vencida</option>
                     <option value="Pendiente">⏳ Pendiente seguimiento</option>
                   </select>
+                </div>
+                <div class="form-group" id="cotiz-factura-group" style="margin-bottom:8px;display:none;">
+                  <label>N° FACTURA <span style="color:var(--text-muted);font-weight:400;">(al facturar)</span></label>
+                  <input type="text" id="cotiz-factura" placeholder="Ej: FE-1234" style="width:100%;">
+                  <div id="cotiz-factura-hint" style="font-size:11px;color:#86efac;margin-top:4px;"></div>
                 </div>
                 <div class="form-group" style="margin-bottom:8px;">
                   <label>FECHA DE GENERACIÓN</label>
@@ -2530,6 +2537,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
               <button class="btn btn-primary" onclick="pcomGuardar()" style="width:auto;min-width:170px;">💾 Guardar plan</button>
               <button class="btn btn-secondary" onclick="pcomPDF()" style="width:auto;">📄 PDF Plan de Compras</button>
+              <button class="btn btn-secondary" onclick="pcomExcel()" style="width:auto;">📊 Excel Plan de Compras</button>
               <button class="btn btn-secondary" onclick="pcomLogistico()" style="width:auto;">🚚 Plan Logístico</button>
             </div>
           </div>
@@ -6158,6 +6166,7 @@ function openPocModal(id) {
     document.getElementById('poc-s'+i+'-fecha').value = stages[i]?.f||'';
     document.getElementById('poc-s'+i+'-nota').value = stages[i]?.n||'';
   });
+  document.getElementById('poc-s3-factura').value = stages[3]?.factura||'';
   document.getElementById('poc-envio').value = stages[1]?.envio||'';
   document.getElementById('poc-transp-nombre').value = stages[1]?.transp||'';
   document.getElementById('poc-guia').value = stages[1]?.guia||'';
@@ -6213,7 +6222,8 @@ function savePoc() {
     return { s:estado, f:fecha, n:nota,
       ...(i===1 ? {envio:envioVal, transp:transpNombre, guia:guia,
         dest:document.getElementById('poc-destinatario')?.value?.trim()||'',
-        resp:document.getElementById('poc-responsable-envio')?.value?.trim()||''} : {})
+        resp:document.getElementById('poc-responsable-envio')?.value?.trim()||''} : {}),
+      ...(i===3 ? {factura:(document.getElementById('poc-s3-factura')?.value||'').trim()} : {})
     };
   });
   const existingOrder = pocEditId ? getPOC().find(o => o.id === pocEditId) : null;
@@ -7015,6 +7025,60 @@ const COTIZ_ESTADOS_COLOR = {
   'Pendiente':'cotiz-estado-pendiente'
 };
 
+// Muestra/oculta el campo "N° FACTURA" según el estado. Al elegir "Facturada" aparece,
+// y si esta cotización ya tiene una OC ligada, avisa que se marcará facturada al guardar.
+function cotizEstadoChange() {
+  const est = (document.getElementById('cotiz-estado')||{}).value || '';
+  const grp = document.getElementById('cotiz-factura-group');
+  const hint = document.getElementById('cotiz-factura-hint');
+  if (!grp) return;
+  if (est === 'Facturada') {
+    grp.style.display = '';
+    let oc = null;
+    try {
+      const cid = cotizEditId;
+      if (cid) oc = (getPOC()||[]).find(o => o && o.cotizacionId === cid) || null;
+    } catch(_){}
+    if (hint) {
+      hint.textContent = oc
+        ? ('✓ OC ligada: ' + (oc.num || oc.id) + ' — al guardar se marcará Facturada con este número.')
+        : 'Al guardar se registra el N° de factura. (Esta cotización no tiene una OC ligada aún.)';
+    }
+    const fld = document.getElementById('cotiz-factura');
+    if (fld && !fld.value) setTimeout(() => { try { fld.focus(); } catch(_){} }, 60);
+  } else {
+    grp.style.display = 'none';
+  }
+}
+
+// Cuando una cotización pasa a "Facturada": busca la OC ligada (por cotizacionId) y marca
+// su etapa de Facturación como hecha, con la fecha de hoy (si estaba vacía) y el N° de factura.
+// Aditivo: si no hay OC ligada o el estado no es Facturada, no hace nada.
+function _cotizPropagarFacturaOC(record) {
+  if (!record || record.estado !== 'Facturada') return;
+  let list;
+  try { list = getPOCAll(); } catch(_){ return; }
+  if (!Array.isArray(list)) return;
+  const idx = list.findIndex(o => o && !o.deleted && o.cotizacionId === record.id);
+  if (idx < 0) {
+    if ((record.factura||'').trim())
+      showToast('Factura ' + record.factura + ' registrada en la cotización (sin OC ligada).', 'info');
+    return;
+  }
+  const oc = list[idx];
+  oc.stages = Array.isArray(oc.stages) ? oc.stages : [];
+  while (oc.stages.length < 4) oc.stages.push({ s:'pending', f:'', n:'' });
+  const s3 = oc.stages[3] || {};
+  s3.f = s3.f || _hoyLocal();
+  s3.s = 'done';
+  if ((record.factura||'').trim()) s3.factura = record.factura.trim();
+  oc.stages[3] = s3;
+  list[idx] = _audit(oc, false);
+  try { savePOCData(list); } catch(_){}
+  try { if (typeof renderProcesos === 'function') renderProcesos(); } catch(_){}
+  showToast('🧾 OC ' + (oc.num || oc.id) + ' marcada como Facturada' + ((record.factura||'').trim() ? ' (Factura ' + record.factura.trim() + ')' : ''), 'success');
+}
+
 function cotizGetNextNum() {
   const bd = getData('bd_cotizaciones', []);
   if (!bd.length) return 'LM1001';
@@ -7644,6 +7708,8 @@ function cotizNueva(silent) {
   document.getElementById('cotiz-contacto').value = '';
   document.getElementById('cotiz-correo').value = '';
   document.getElementById('cotiz-estado').value = 'Borrador';
+  document.getElementById('cotiz-factura').value = '';
+  cotizEstadoChange();
   document.getElementById('cotiz-iva').value = '19';
   document.getElementById('cotiz-pago').value = '30 DÍAS';
   document.getElementById('cotiz-sitio').value = '';
@@ -7693,6 +7759,7 @@ function cotizGuardarBD() {
     contacto: document.getElementById('cotiz-contacto').value,
     correo: document.getElementById('cotiz-correo').value,
     estado: document.getElementById('cotiz-estado').value,
+    factura: (document.getElementById('cotiz-factura').value||'').trim(),
     iva,
     subtotal,
     ivaVal,
@@ -7708,6 +7775,13 @@ function cotizGuardarBD() {
     items: JSON.parse(JSON.stringify(cotizItems)),
     fechaGuardado: new Date().toISOString()
   };
+  // Sello de fecha de facturación (primera vez que pasa a 'Facturada'; se conserva).
+  const _prevFac = (idx >= 0 && bd[idx]) ? bd[idx].facturadaAt : null;
+  if (record.estado === 'Facturada') {
+    record.facturadaAt = _prevFac || new Date().toISOString().slice(0, 10);
+  } else if (_prevFac) {
+    record.facturadaAt = _prevFac;
+  }
   // Sello de fecha de adjudicación (para contar adjudicadas por día/mes en el informe comercial).
   // Se pone la primera vez que pasa a 'Adjudicada' y se conserva después.
   const _prevAdj = (idx >= 0 && bd[idx]) ? bd[idx].adjudicadaAt : null;
@@ -7728,6 +7802,9 @@ function cotizGuardarBD() {
   saveData('bd_cotizaciones', bd);
   // Doble escritura: replicar a Supabase (no bloquea ni rompe si falla/offline)
   try { _cotizSyncSupabase(record); } catch(_){}
+  // Si la cotización quedó FACTURADA, reflejarlo en la Orden de Compra ligada
+  // (marca la etapa Facturación como hecha + fecha + N° de factura). No bloquea si no hay OC.
+  try { _cotizPropagarFacturaOC(record); } catch(_){}
   cotizEditId = id;
   // Si hay solicitud vinculada: en_cotizacion mientras se trabaja, enviada cuando se envía,
   // y se le ASIGNA el número de cotización (para el "policía" que evita cotizar 2 veces).
@@ -8591,6 +8668,8 @@ function _bdLoadIntoEditor(c, msg, adopted) {
   document.getElementById('cotiz-contacto').value = c.contacto || '';
   document.getElementById('cotiz-correo').value = c.correo || '';
   document.getElementById('cotiz-estado').value = c.estado || 'Enviada';
+  document.getElementById('cotiz-factura').value = c.factura || '';
+  cotizEstadoChange();
   document.getElementById('cotiz-fecha-gen').value = c.fecha || '';
   document.getElementById('cotiz-fecha-venc').value = c.fechaVenc || '';
   document.getElementById('cotiz-iva').value = c.iva || 19;
@@ -13091,9 +13170,8 @@ function pcomOCPrint(o){
   w.document.write(html); w.document.close();
 }
 // Impresión Plan de Compras — clon del formato Excel
-function pcomPDF(){
-  if(!pcom_current) return; pcomSyncHeader();
-  const c = pcom_current;
+// Cuerpo HTML del Plan de Compras (tablas). Fuente única para PDF y Excel.
+function _pcomPlanBodyHTML(c){
   const calc = pcomCalcRows(c.items);
   const items = c.items.filter(it=>String(it.descripcion||'').trim());
   const filas = items.map((it,i)=>{
@@ -13110,12 +13188,7 @@ function pcomPDF(){
   }).join('');
   const provs = Object.keys(calc.provs).sort();
   const filasResumen = provs.map(p=>{const x=calc.provs[p];return `<tr><td>${_remiEsc(p)}${x.sinOC?' <span style="font-size:8.5px;color:#888">(NO REQUIERE OC)</span>':''}</td><td style="text-align:right">${_pcomMoney(x.subtotal)}</td><td style="text-align:right">${_pcomMoney(x.total)}</td><td style="text-align:center;font-weight:700;color:${x.pago==='PAGADO'?'#2EAA4A':'#c00'}">${x.pago}</td></tr>`;}).join('');
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Plan de Compras ${_remiEsc(c.cc)}</title><style>
-    *{box-sizing:border-box} body{font-family:Calibri,Arial,sans-serif;font-size:10.5px;color:#000;margin:0;padding:24px 28px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    table{border-collapse:collapse;width:100%} .b td,.b th{border:1px solid #000;padding:4px 5px}
-    @page{size:landscape} @media print{.noprint{display:none}}
-  </style></head><body>
-  <table style="margin-bottom:8px"><tr>
+  return `<table style="margin-bottom:8px"><tr>
     <td style="font-size:15px;font-weight:800">E&amp;G ENERGY GROUP<br><span style="font-size:12px;font-weight:700">PLAN DE COMPRAS - ${_remiEsc(c.cliente)||''}</span></td>
     <td style="width:230px"><table class="b" style="background:#dce6f1"><tr><th>SUBTOTAL</th><th>IVA (19%)</th><th>RETENCION</th><th>NETO PAGAR</th></tr>
       <tr><td style="text-align:right">${_pcomMoney(calc.tot.subtotal)}</td><td style="text-align:right">${_pcomMoney(calc.tot.iva)}</td><td style="text-align:right">${_pcomMoney(calc.tot.rete)}</td><td style="text-align:right;font-weight:700">${_pcomMoney(calc.tot.total)}</td></tr></table></td>
@@ -13128,11 +13201,44 @@ function pcomPDF(){
   <div style="margin-top:16px;width:430px">
     <table class="b"><tr style="background:#003366;color:#fff;font-weight:700;text-align:center"><td>PROVEEDOR</td><td style="width:110px">VALOR SIN IVA</td><td style="width:110px">TOTAL A PAGAR</td><td style="width:80px">PAGO</td></tr>${filasResumen}</table>
   </div>
-  <div style="margin-top:14px;font-size:9px;color:#555">Retefuente 2,5% aplica si la compra al proveedor ≥ $ ${PCOM_BASE_RETE.toLocaleString('es-CO')} (27 UVT ${new Date().getFullYear()}) y no es autoretenedor. Cotización: ${_remiEsc(c.cotizacion)||'n.a.'} · Fecha: ${c.fecha?c.fecha.split('-').reverse().join('/'):''}</div>
+  <div style="margin-top:14px;font-size:9px;color:#555">Retefuente 2,5% aplica si la compra al proveedor ≥ $ ${PCOM_BASE_RETE.toLocaleString('es-CO')} (27 UVT ${new Date().getFullYear()}) y no es autoretenedor. Cotización: ${_remiEsc(c.cotizacion)||'n.a.'} · Fecha: ${c.fecha?c.fecha.split('-').reverse().join('/'):''}</div>`;
+}
+function pcomPDF(){
+  if(!pcom_current) return; pcomSyncHeader();
+  const c = pcom_current;
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Plan de Compras ${_remiEsc(c.cc)}</title><style>
+    *{box-sizing:border-box} body{font-family:Calibri,Arial,sans-serif;font-size:10.5px;color:#000;margin:0;padding:24px 28px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    table{border-collapse:collapse;width:100%} .b td,.b th{border:1px solid #000;padding:4px 5px}
+    @page{size:landscape} @media print{.noprint{display:none}}
+  </style></head><body>
+  ${_pcomPlanBodyHTML(c)}
   <div class="noprint" style="text-align:center;margin-top:16px"><button onclick="window.print()" style="padding:8px 22px;font-size:13px;cursor:pointer">🖨 Imprimir / PDF</button></div>
   </body></html>`;
   const w = window.open('','_blank'); if(!w) return showToast('Permite ventanas emergentes para imprimir','error');
   w.document.write(html); w.document.close();
+}
+// Descarga el Plan de Compras en Excel (.xls) con el MISMO diseño del PDF (colores/bordes/tablas).
+// Se genera como HTML que Excel abre con formato. Al abrirlo Excel puede mostrar un aviso de formato: se acepta y ya.
+function pcomExcel(){
+  if(!pcom_current) return; pcomSyncHeader();
+  const c = pcom_current;
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8">
+  <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Plan de Compras</x:Name><x:WorksheetOptions><x:PageSetup><x:Layout x:Orientation="Landscape"/></x:PageSetup><x:Print><x:ValidPrinterInfo/></x:Print></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+  <style>
+    body{font-family:Calibri,Arial,sans-serif;font-size:10.5px;color:#000}
+    table{border-collapse:collapse} .b td,.b th{border:1px solid #000;padding:4px 5px}
+    td,th{mso-number-format:"\\@"}
+    br{mso-data-placement:same-cell}
+  </style></head><body>
+  ${_pcomPlanBodyHTML(c)}
+  </body></html>`;
+  const nombre = 'Plan_de_Compras_' + (String(c.cc||'').replace(/[^\w\-]+/g,'_').replace(/^_+|_+$/g,'') || 'EYG') + '.xls';
+  const blob = new Blob(['﻿'+html], {type:'application/vnd.ms-excel;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = nombre;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  showToast('Excel del plan descargado','success');
 }
 // Impresión Plan Logístico — clon del formato Excel (sin precios)
 function pcomLogistico(){
