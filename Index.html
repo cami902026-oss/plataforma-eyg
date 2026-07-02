@@ -8553,7 +8553,7 @@ function bdRender(filtro) {
     return `<tr onclick="${onRow}">
       <td style="color:var(--gold);font-weight:700">${idCell}</td>
       <td>${c.fecha||''}</td>
-      <td style="font-weight:600">${c.cliente||''}</td>
+      <td style="font-weight:600">${c.cliente||''}${c.updatedBy?`<div style="font-size:10px;color:var(--text-muted);font-weight:400;">✏️ ${_auditLabel(c)}</div>`:''}</td>
       <td style="color:var(--text-muted)">${c.contacto||''}</td>
       <td style="color:var(--text-muted);font-size:11px">${c.realizadaPor||''}</td>
       <td style="text-align:center">${_h?'':_bdSemaforo(c)}</td>
@@ -8603,6 +8603,14 @@ function bdCargar(id) {
   const bd = getData('bd_cotizaciones', []);
   const c = bd.find(x => x.id === id);
   if (!c) return;
+  // Aviso anti-pisada: si alguien MÁS la editó hace poco, recordar refrescar primero.
+  const me = currentUser ? (currentUser.email || currentUser.name || '') : '';
+  if (c.updatedBy && c.updatedBy !== me && c.updatedAt) {
+    const ageMin = Math.round((Date.now() - new Date(c.updatedAt).getTime()) / 60000);
+    if (ageMin >= 0 && ageMin <= 10) {
+      if (!confirm('⚠️ ' + String(c.updatedBy).split('@')[0] + ' editó esta cotización hace ' + Math.max(1, ageMin) + ' min.\n\nDale Ctrl+F5 primero para tener la última versión y no pisar su cambio.\n\n¿Abrir de todos modos?')) return;
+    }
+  }
   _bdLoadIntoEditor(c, 'Cotización ' + id + ' cargada para editar');
 }
 
