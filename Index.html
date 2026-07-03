@@ -1757,6 +1757,11 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <br>Esta URL se sincroniza automáticamente con todo el equipo via <code>data/config.json</code>.
           </p>
         </div>
+        <div class="config-section" style="border-left:3px solid #38bdf8;">
+          <div class="config-title">🩺 Diagnóstico de sincronización (todo el equipo)</div>
+          <p style="font-size:12px;color:var(--text-muted);margin:6px 0 12px;">Revisa en segundos si el proxy y el token del servidor funcionan, y muestra el estado de <b>cada usuario</b>: quién tiene su token vencido, a quién se le quedaron cambios sin subir y quién está OK. Solo Andrea y Alberto.</p>
+          <button class="btn btn-primary" onclick="abrirDiagnosticoSync()" style="width:auto;background:linear-gradient(135deg,#0891b2,#38bdf8);">🩺 Ver estado de todos los usuarios</button>
+        </div>
         <div class="config-section">
           <div class="config-title">🔔 Token GitHub (Notificaciones Teams)</div>
           <div class="api-key-row">
@@ -2567,6 +2572,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div class="form-group" style="margin-bottom:10px;"><label>Plazo de pago</label><input type="text" id="pcom-oc-plazo" placeholder="Ej: Contado / 30 días" value="Contado"></div>
             <div class="form-group" style="margin-bottom:10px;"><label>Fecha de entrega</label><input type="text" id="pcom-oc-entrega" placeholder="Ej: 10 DE JUNIO DE 2026"></div>
             <div class="form-group" style="margin-bottom:10px;"><label>Lugar de entrega</label><input type="text" id="pcom-oc-lugar" placeholder="Ej: BODEGA E&G CHÍA" value="CHIA - BODEGA E&G"></div>
+            <div class="form-group" style="margin-bottom:10px;"><label>Observaciones</label><textarea id="pcom-oc-observaciones" rows="2" placeholder="Notas u observaciones para el proveedor (opcional)" style="width:100%;resize:vertical;"></textarea></div>
             <div style="border-top:1px solid rgba(255,255,255,.1);margin:8px 0 10px;padding-top:10px;font-size:12px;font-weight:700;color:var(--gold);">DATOS DEL PROVEEDOR</div>
             <div style="display:flex;gap:8px;"><div class="form-group" style="flex:1;margin-bottom:10px;"><label>NIT</label><input type="text" id="pcom-oc-nit" placeholder="Ej: 900.123.456-7"></div><div class="form-group" style="flex:1;margin-bottom:10px;"><label>Ciudad</label><input type="text" id="pcom-oc-ciudad" placeholder="Ej: Bogotá"></div></div>
             <div class="form-group" style="margin-bottom:10px;"><label>Dirección</label><input type="text" id="pcom-oc-direccion" placeholder="Dirección del proveedor"></div>
@@ -3805,6 +3811,201 @@ setInterval(() => {
     _drainSyncQueue().then(_refreshSyncBadge);
   }
 }, 120000);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🩺 DIAGNÓSTICO DE SINCRONIZACIÓN — estado de TODOS los usuarios
+// ---------------------------------------------------------------------------
+// Cada navegador escribe un "latido" en data/diag_<usuario>.json con su estado
+// (token, pendientes, online...). Lo escribe POR EL PROXY (token del servidor),
+// así un usuario con su PAT vencido IGUAL alcanza a reportar que está roto.
+// El panel (solo Andrea/Alberto) lee todos los latidos + prueba la infra y
+// muestra una tabla. 100% aditivo: no toca la lógica de guardado existente.
+// ═══════════════════════════════════════════════════════════════════════════
+function _diagSlug(email) {
+  return String(email || 'desconocido').toLowerCase().replace(/[^a-z0-9_\-]/g, '_').slice(0, 40);
+}
+function _diagFile(email) { return 'data/diag_' + _diagSlug(email) + '.json'; }
+
+// Prueba si el PAT del navegador actual sirve (401/403 = vencido/ inválido)
+async function _diagProbarPAT() {
+  const tok = _ghToken();
+  if (!tok) return 'sin_pat';
+  try {
+    const r = await fetch('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO,
+      { headers: { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/vnd.github+json' } });
+    if (r.ok) return 'ok';
+    if (r.status === 401 || r.status === 403) return 'vencido';
+    return 'error_' + r.status;
+  } catch (_) { return 'sin_red'; }
+}
+
+async function _diagEstadoActual() {
+  const q = _getSyncQueue();
+  const patEstado = await _diagProbarPAT();
+  return {
+    usuario: currentUser ? currentUser.email : 'anonimo',
+    nombre:  currentUser ? currentUser.name  : 'Sin sesión',
+    rol:     currentUser ? currentUser.role  : '',
+    ts:      Date.now(),
+    tsLegible: new Date().toLocaleString('es-CO'),
+    online:  navigator.onLine,
+    tienePAT: !!_ghToken(),
+    patEstado: patEstado,                 // 'ok' | 'vencido' | 'sin_pat' | 'error_*'
+    proxyConfigurado: !!_ghWriteProxyURL(),
+    pendientes: q.length,
+    pendientesArch: q.map(it => it.file).slice(0, 20),
+    navegador: (navigator.userAgent || '').slice(0, 120)
+  };
+}
+
+// Escribe el latido del usuario actual. Prefiere el PROXY para que un PAT
+// vencido no impida reportar el estado (el token del proxy vive en el servidor).
+async function _diagEscribirLatido() {
+  if (!currentUser) return;
+  try {
+    const estado = await _diagEstadoActual();
+    const file   = _diagFile(currentUser.email);
+    const proxy  = _ghWriteProxyURL();
+    if (proxy) { await _saveDataGH_viaProxy(proxy, file, estado, 'Diag ' + currentUser.email); return; }
+    await _saveDataGH_directPAT(file, estado, 'Diag ' + currentUser.email);
+  } catch (e) { console.warn('[diag] no se pudo escribir latido:', e && e.message || e); }
+}
+
+// Pruebas de la infraestructura COMPARTIDA (igual para todo el equipo).
+async function _diagProbarInfra() {
+  const proxy = _ghWriteProxyURL();
+  const out = { proxyURL: proxy, proxyVivo: false, proxyEscribe: false, repoLee: false };
+  try {
+    const r = await fetch('https://raw.githubusercontent.com/' + GH_OWNER + '/' + GH_REPO + '/main/ordenes.json?t=' + Date.now(), { cache: 'no-store' });
+    out.repoLee = r.ok;
+  } catch (_) {}
+  if (proxy) {
+    try { const r = await fetch(proxy); const j = await r.json(); out.proxyVivo = !!(j && j.ok); } catch (_) {}
+    try {
+      await _saveDataGH_viaProxy(proxy, 'data/diag_selftest.json',
+        { test: 'ok', ts: Date.now(), por: currentUser ? currentUser.email : '?' }, 'Diag selftest');
+      out.proxyEscribe = true;
+    } catch (_) {}
+  }
+  return out;
+}
+
+// Lee el latido de cada usuario conocido (raw público, en paralelo).
+async function _diagLeerTodos() {
+  return Promise.all(USERS.map(async u => {
+    try {
+      const r = await fetch('https://raw.githubusercontent.com/' + GH_OWNER + '/' + GH_REPO + '/main/' + _diagFile(u.email) + '?t=' + Date.now(), { cache: 'no-store' });
+      if (r.ok) return { u: u, d: await r.json() };
+    } catch (_) {}
+    return { u: u, d: null };
+  }));
+}
+
+function _diagEdad(ts) {
+  const min = Math.round((Date.now() - ts) / 60000);
+  if (min < 1) return 'ahora';
+  if (min < 60) return 'hace ' + min + ' min';
+  const h = Math.round(min / 60);
+  if (h < 24) return 'hace ' + h + ' h';
+  return 'hace ' + Math.round(h / 24) + ' días';
+}
+
+// Interpreta el estado de un usuario → { color, etiqueta, detalle }
+function _diagVeredicto(d) {
+  if (!d) return { c: '#64748b', e: 'Sin datos', det: 'Nunca ha reportado (no ha entrado con esta versión).' };
+  const viejo = (Date.now() - d.ts) > 2 * 3600 * 1000;
+  const puedeSubir = d.proxyConfigurado || d.patEstado === 'ok';
+  if (d.pendientes > 0 && !puedeSubir)
+    return { c: '#ef4444', e: '🔴 BLOQUEADO', det: d.pendientes + ' cambio(s) sin subir y sin forma de subirlos (PAT ' + d.patEstado + ', proxy ' + (d.proxyConfigurado ? 'sí' : 'NO') + ').' };
+  if (d.pendientes > 0)
+    return { c: '#f59e0b', e: '🟡 ' + d.pendientes + ' sin subir', det: 'Tiene ' + d.pendientes + ' cambio(s) en cola. Debería drenar solo por el proxy; pídele "Reintentar todo".' };
+  if (d.patEstado === 'vencido' && d.proxyConfigurado)
+    return { c: '#38bdf8', e: '🔵 PAT vencido (usa proxy)', det: 'Su token personal está vencido pero sube por el proxy. Ideal: borrar su PAT.' };
+  if (d.patEstado === 'vencido' && !d.proxyConfigurado)
+    return { c: '#ef4444', e: '🔴 PAT vencido, sin proxy', det: 'No puede subir nada. Configúrale el proxy o renueva el PAT.' };
+  if (viejo)
+    return { c: '#64748b', e: '⚪ Inactiva', det: 'Sin actividad reciente (' + _diagEdad(d.ts) + ').' };
+  return { c: '#22c55e', e: '🟢 OK', det: 'Sincronizando bien' + (d.patEstado === 'ok' ? ' (PAT propio válido).' : ' (por el proxy).') };
+}
+
+async function abrirDiagnosticoSync() {
+  const esAdmin = currentUser && (currentUser.email === 'alberto' || currentUser.email === 'andrea');
+  if (!esAdmin) { showToast('Solo Andrea o Alberto pueden ver el diagnóstico del equipo', 'error'); return; }
+
+  const prev = document.getElementById('modal-diag-sync');
+  if (prev) prev.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-diag-sync';
+  overlay.className = 'modal-overlay open';
+  overlay.style.zIndex = '10000';
+  overlay.innerHTML = '<div class="modal-content" style="max-width:860px;width:96vw;max-height:92vh;overflow-y:auto;background:#0F1A2E;border:1px solid rgba(56,189,248,.4);">'
+    + '<div style="padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#0F1A2E;z-index:2;">'
+    +   '<h3 style="margin:0;color:#fff;font-family:Montserrat,sans-serif;">🩺 Diagnóstico de sincronización</h3>'
+    +   '<button onclick="document.getElementById(\'modal-diag-sync\').remove()" style="background:transparent;border:none;color:#8899bb;font-size:24px;cursor:pointer;line-height:1;">&times;</button>'
+    + '</div>'
+    + '<div id="diag-body" style="padding:18px;"><p style="color:#cbd5ff;">Probando el proxy, el repositorio y leyendo el estado de cada usuario…</p></div>'
+    + '</div>';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+
+  let infra, todos;
+  try {
+    // Escribe el latido propio primero para que Andrea/Alberto aparezcan al día.
+    await _diagEscribirLatido();
+    [infra, todos] = await Promise.all([_diagProbarInfra(), _diagLeerTodos()]);
+  } catch (e) {
+    const b = document.getElementById('diag-body');
+    if (b) b.innerHTML = '<p style="color:#fca5a5;">Error corriendo el diagnóstico: ' + (e && e.message || e) + '</p>';
+    return;
+  }
+
+  const ok = (v) => v ? '<span style="color:#22c55e;font-weight:700;">✔ SÍ</span>' : '<span style="color:#ef4444;font-weight:700;">✘ NO</span>';
+  const infraGlobalOK = infra.proxyVivo && infra.proxyEscribe;
+  const banner = infraGlobalOK
+    ? '<div style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.4);border-radius:10px;padding:12px 16px;margin-bottom:16px;color:#86efac;font-weight:700;">🟢 Sincronización compartida OPERATIVA — el proxy y el token del servidor funcionan. Si a alguien no le sube, es SU navegador (mira la tabla).</div>'
+    : '<div style="background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.5);border-radius:10px;padding:12px 16px;margin-bottom:16px;color:#fca5a5;font-weight:700;">🔴 La sincronización compartida está CAÍDA — falla el proxy o su token de servidor. NADIE puede subir. Renueva GH_TOKEN en el Apps Script.</div>';
+
+  const infraTabla = '<table style="width:100%;border-collapse:collapse;margin-bottom:18px;background:rgba(255,255,255,.02);border-radius:8px;overflow:hidden;">'
+    + '<tr style="border-bottom:1px solid rgba(255,255,255,.06);"><td style="padding:9px 12px;color:#cbd5ff;">Proxy responde (está vivo)</td><td style="padding:9px 12px;text-align:right;">' + ok(infra.proxyVivo) + '</td></tr>'
+    + '<tr style="border-bottom:1px solid rgba(255,255,255,.06);"><td style="padding:9px 12px;color:#cbd5ff;">Proxy <b>escribe</b> en GitHub (token servidor válido)</td><td style="padding:9px 12px;text-align:right;">' + ok(infra.proxyEscribe) + '</td></tr>'
+    + '<tr><td style="padding:9px 12px;color:#cbd5ff;">Repositorio se lee (raw público)</td><td style="padding:9px 12px;text-align:right;">' + ok(infra.repoLee) + '</td></tr>'
+    + '</table>';
+
+  const filas = todos.map(({ u, d }) => {
+    const v = _diagVeredicto(d);
+    const pend = d && d.pendientes ? ('<div style="font-size:10px;color:#fbbf24;margin-top:2px;">' + d.pendientesArch.join(', ') + '</div>') : '';
+    return '<tr style="border-bottom:1px solid rgba(255,255,255,.06);">'
+      + '<td style="padding:9px 10px;"><div style="color:#fff;font-weight:600;font-size:13px;">' + u.name + '</div><div style="font-size:10px;color:#8899bb;">' + u.role + '</div></td>'
+      + '<td style="padding:9px 10px;"><span style="color:' + v.c + ';font-weight:700;font-size:12px;">' + v.e + '</span>' + pend + '</td>'
+      + '<td style="padding:9px 10px;color:#8899bb;font-size:11px;">' + (d ? _diagEdad(d.ts) : '—') + '</td>'
+      + '<td style="padding:9px 10px;color:#9fb3d1;font-size:11px;line-height:1.4;">' + v.det + '</td>'
+      + '</tr>';
+  }).join('');
+
+  const usuariosTabla = '<div style="font-weight:700;color:#e2e8f0;margin:4px 0 8px;">👥 Estado por usuario</div>'
+    + '<table style="width:100%;border-collapse:collapse;background:rgba(255,255,255,.02);border-radius:8px;overflow:hidden;">'
+    + '<thead><tr style="background:rgba(15,43,91,.5);">'
+    +   '<th style="padding:8px 10px;text-align:left;font-size:10px;color:#8899bb;text-transform:uppercase;">Usuario</th>'
+    +   '<th style="padding:8px 10px;text-align:left;font-size:10px;color:#8899bb;text-transform:uppercase;">Estado</th>'
+    +   '<th style="padding:8px 10px;text-align:left;font-size:10px;color:#8899bb;text-transform:uppercase;">Últ. vez</th>'
+    +   '<th style="padding:8px 10px;text-align:left;font-size:10px;color:#8899bb;text-transform:uppercase;">Detalle</th>'
+    + '</tr></thead><tbody>' + filas + '</tbody></table>'
+    + '<p style="font-size:11px;color:#64748b;margin-top:10px;line-height:1.5;">El estado se actualiza cuando cada persona abre la plataforma. "Sin datos" = aún no ha entrado con esta versión. Un usuario con <b>PAT vencido</b> sigue subiendo por el proxy; lo ideal es borrarle el PAT (F12 → Console → <code>localStorage.removeItem(\'gh_pat_token\')</code>).</p>'
+    + '<div style="margin-top:12px;text-align:right;"><button onclick="abrirDiagnosticoSync()" style="background:rgba(56,189,248,.2);color:#7dd3fc;border:1px solid rgba(56,189,248,.4);padding:8px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">🔄 Actualizar</button></div>';
+
+  const body = document.getElementById('diag-body');
+  if (body) body.innerHTML = banner + infraTabla + usuariosTabla;
+}
+
+// Programación de latidos (aditivo, no toca el flujo de login):
+// - primer latido ~apenas hay sesión;  - refresco cada 10 min mientras esté visible.
+let _diagPrimerLatido = false;
+setInterval(() => {
+  if (currentUser && !_diagPrimerLatido) { _diagPrimerLatido = true; _diagEscribirLatido(); }
+}, 5000);
+setInterval(() => {
+  if (currentUser && !document.hidden) _diagEscribirLatido();
+}, 600000);
 
 // ===== SYNC EN TIEMPO REAL (polling con ETag) =====
 // Cada 30s consulta los archivos más cambiantes en raw.githubusercontent.com.
@@ -13116,6 +13317,7 @@ function pcomOCModal(prov){
   const setv=(id,v)=>{const e=document.getElementById(id); if(e) e.value=v||'';};
   setv('pcom-oc-nit', pv.nit); setv('pcom-oc-ciudad', pv.ciudad); setv('pcom-oc-direccion', pv.direccion);
   setv('pcom-oc-telefono', pv.telefono); setv('pcom-oc-contacto', pv.contacto);
+  setv('pcom-oc-observaciones', '');   // observaciones: siempre en blanco para cada OC nueva
   const m = document.getElementById('pcom-oc-modal'); if(m) m.style.display='flex';
 }
 function pcomOCCerrar(){ pcom_oc_prov=null; const m=document.getElementById('pcom-oc-modal'); if(m) m.style.display='none'; }
@@ -13151,7 +13353,8 @@ async function pcomOCConfirmar(){
       condiciones: {
         plazo: document.getElementById('pcom-oc-plazo').value.trim(),
         entrega: document.getElementById('pcom-oc-entrega').value.trim(),
-        lugar: document.getElementById('pcom-oc-lugar').value.trim()
+        lugar: document.getElementById('pcom-oc-lugar').value.trim(),
+        observaciones: document.getElementById('pcom-oc-observaciones').value.trim()
       },
       items: lineas.map(it=>({ descripcion:it.descripcion, udm:it.udm||'EA', cantidad:parseFloat(it.cantidad)||0,
         costo_unit:parseFloat(it.costo_unit)||0, subtotal:(parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0) })),
@@ -13244,6 +13447,7 @@ function pcomOCPrint(o){
     </td>
   </tr></table>
   <table class="b" style="margin-top:8px"><tr><td class="lbl" style="text-align:right;width:70%">Total de la Compra y/o Servicio:</td><td style="text-align:right;font-weight:700">${_pcomMoney(o.total)}</td></tr></table>
+  ${cond.observaciones ? `<table class="b" style="margin-top:8px"><tr><td class="lbl" style="background:#d9d9d9;text-align:center">OBSERVACIONES</td></tr><tr><td style="min-height:34px;white-space:pre-wrap">${_remiEsc(cond.observaciones)}</td></tr></table>` : ''}
   <table style="margin-top:34px"><tr>
     <td style="width:45%;text-align:center;border-top:1px solid #000;padding-top:4px"><b>Elaboró</b><br>${_remiEsc(o.created_by||'')}<br><span style="font-size:9.5px;color:#444">ALMACEN-COMPRA</span></td>
     <td style="width:10%"></td>
