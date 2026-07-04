@@ -1520,26 +1520,6 @@
   "updated_at": "2026-05-29T17:45:51.280742+00:00"
  },
  {
-  "id": 80,
-  "codigo": "15000104",
-  "descripcion": "TEE AC NPT 3.000L 1/2\"",
-  "marca": "BOTHWELL",
-  "familia_id": 2,
-  "colada": "",
-  "lote": "-",
-  "fecha_ingreso": "2025-05-09",
-  "entradas": 10.0,
-  "salidas": 0.0,
-  "stock_actual": 10.0,
-  "costo_compra": 10800.0,
-  "precio_venta": 0,
-  "proveedor": "CODIFER",
-  "ubicacion": "F3-CAJA 13",
-  "activo": true,
-  "created_at": "2026-05-29T17:45:51.280742+00:00",
-  "updated_at": "2026-05-29T17:45:51.280742+00:00"
- },
- {
   "id": 81,
   "codigo": "15000105",
   "descripcion": "TEE AC NPT 3.000L 3/4\"",
@@ -2058,6 +2038,26 @@
   "activo": true,
   "created_at": "2026-05-29T17:45:51.90313+00:00",
   "updated_at": "2026-05-29T17:45:51.90313+00:00"
+ },
+ {
+  "id": 80,
+  "codigo": "15000104",
+  "descripcion": "TEE AC NPT 3.000L 1/2\"",
+  "marca": "BOTHWELL",
+  "familia_id": 2,
+  "colada": "",
+  "lote": "-",
+  "fecha_ingreso": "2025-05-09",
+  "entradas": 10.0,
+  "salidas": 2,
+  "stock_actual": 8,
+  "costo_compra": 10800.0,
+  "precio_venta": 0,
+  "proveedor": "CODIFER",
+  "ubicacion": "F3-CAJA 13",
+  "activo": true,
+  "created_at": "2026-05-29T17:45:51.280742+00:00",
+  "updated_at": "2026-07-03T21:05:12.636+00:00"
  },
  {
   "id": 61,
@@ -4460,6 +4460,26 @@
   "updated_at": "2026-06-01T19:54:20.789+00:00"
  },
  {
+  "id": 52,
+  "codigo": "5000005",
+  "descripcion": "NIPLE AC S40 1/2X 4-(10 CM)",
+  "marca": "WUXI",
+  "familia_id": 6,
+  "colada": "",
+  "lote": "69596",
+  "fecha_ingreso": "2026-03-19",
+  "entradas": 20.0,
+  "salidas": 18,
+  "stock_actual": 6,
+  "costo_compra": 1765.0,
+  "precio_venta": 0,
+  "proveedor": "DISEFER",
+  "ubicacion": "E3-CAJA 3",
+  "activo": true,
+  "created_at": "2026-05-29T17:45:51.280742+00:00",
+  "updated_at": "2026-07-03T21:04:49.857+00:00"
+ },
+ {
   "id": 284,
   "codigo": "19000183",
   "descripcion": "TEE REDU SCH 40 8X3",
@@ -4498,26 +4518,6 @@
   "activo": true,
   "created_at": "2026-05-29T17:45:51.280742+00:00",
   "updated_at": "2026-06-01T20:33:55.212+00:00"
- },
- {
-  "id": 52,
-  "codigo": "5000005",
-  "descripcion": "NIPLE AC S40 1/2X 4-(10 CM)",
-  "marca": "WUXI",
-  "familia_id": 6,
-  "colada": "",
-  "lote": "69596",
-  "fecha_ingreso": "2026-03-19",
-  "entradas": 20.0,
-  "salidas": 14,
-  "stock_actual": 10,
-  "costo_compra": 1765.0,
-  "precio_venta": 0,
-  "proveedor": "DISEFER",
-  "ubicacion": "E3-CAJA 3",
-  "activo": true,
-  "created_at": "2026-05-29T17:45:51.280742+00:00",
-  "updated_at": "2026-06-03T22:58:35.861+00:00"
  },
  {
   "id": 55,
@@ -5878,5 +5878,25 @@
   "activo": true,
   "created_at": "2026-05-29T17:45:51.90313+00:00",
   "updated_at": "2026-06-25T17:33:23.91+00:00"
+ },
+ {
+  "id": 295,
+  "codigo": "NP-058784",
+  "descripcion": "TAPON HEXAGONAL MACHO 1/2 X 3000",
+  "marca": "XF",
+  "familia_id": 2,
+  "colada": "",
+  "lote": "",
+  "fecha_ingreso": null,
+  "entradas": 0,
+  "salidas": 1,
+  "stock_actual": 199,
+  "costo_compra": 1758,
+  "precio_venta": null,
+  "proveedor": "IMP",
+  "ubicacion": "H2",
+  "activo": true,
+  "created_at": "2026-07-03T22:51:56.827158+00:00",
+  "updated_at": "2026-07-03T22:52:45.126+00:00"
  }
 ]
