@@ -3558,25 +3558,91 @@ async function _solMergeConRemoto(local) {
     return unidas;
   } catch(_) { return local; }
 }
-// Une las cotizaciones locales con las del repo por id (gana la de updatedAt
-// más reciente). Evita que el guardado desde un equipo borre cotizaciones
-// creadas/actualizadas en otro equipo que este aún no había sincronizado.
+// Reconcilia cotizaciones remoto+local SIN perder ninguna y renumerando las
+// colisiones de consecutivo (dos personas offline que generaron el mismo LMxxxx).
+// Función PURA (testeada con node): dado remoto+local devuelve {unidas, conflictos}.
+// - "Misma cotización editada en 2 equipos" (misma firma createdAt+createdBy) → gana updatedAt más nuevo.
+// - "Dos cotizaciones DISTINTAS con el mismo número" (firmas distintas) → se conservan AMBAS;
+//   la más antigua conserva el número y la(s) demás se renumeran al siguiente libre.
+// - Reconcilia también la renumeración a través de equipos por firma (no se duplica al re-sincronizar).
+function _cotizReconciliar(remoto, local, nowStamp) {
+  const firma = c => String(c.createdAt || c.fechaGuardado || '') + '|' + String(c.createdBy || c.created_by || '');
+  const ident = c => !!(c && (c.createdAt || c.fechaGuardado));
+  const numDe = c => { const m = String((c && c.id) || '').match(/(\d+)$/); return m ? parseInt(m[1]) : 0; };
+
+  const todos = [];
+  (Array.isArray(remoto) ? remoto : []).forEach(c => { if (c && c.id) todos.push(c); });
+  (Array.isArray(local)  ? local  : []).forEach(c => { if (c && c.id) todos.push(c); });
+
+  // Paso 1: colapsar por firma-real (misma cotización aunque tenga dos números por renumeración).
+  const porFirma = {};
+  const sinIdent = [];
+  todos.forEach(c => {
+    if (!ident(c)) { sinIdent.push(c); return; }
+    const f = firma(c);
+    const prev = porFirma[f];
+    const score = x => (x.renumeradaAt ? 1 : 0);   // preferir la versión ya renumerada (resuelta)
+    if (!prev || score(c) > score(prev) || (score(c) === score(prev) && String(c.updatedAt || '') >= String(prev.updatedAt || '')))
+      porFirma[f] = c;
+  });
+
+  // Paso 2: agrupar por número (id). Las legacy sin identidad se colapsan por updatedAt (comportamiento previo).
+  const grupos = {};
+  Object.values(porFirma).forEach(c => { (grupos[c.id] = grupos[c.id] || []).push(c); });
+  const legacy = {};
+  sinIdent.forEach(c => { const p = legacy[c.id]; if (!p || String(c.updatedAt || '') >= String(p.updatedAt || '')) legacy[c.id] = c; });
+  Object.values(legacy).forEach(c => { (grupos[c.id] = grupos[c.id] || []).push(c); });
+
+  let maxNum = 0;
+  Object.values(grupos).forEach(arr => arr.forEach(c => { const n = numDe(c); if (n > maxNum) maxNum = n; }));
+
+  const salida = [];
+  const conflictos = [];
+  Object.keys(grupos).forEach(id => {
+    const arr = grupos[id];
+    if (arr.length <= 1) { salida.push(arr[0]); return; }
+    // Colisión real: conservar TODAS. La más antigua conserva el número; renumerar el resto.
+    arr.sort((a, b) =>
+      String(a.createdAt || a.fechaGuardado || '').localeCompare(String(b.createdAt || b.fechaGuardado || '')) ||
+      firma(a).localeCompare(firma(b)));
+    salida.push(arr[0]);
+    for (let i = 1; i < arr.length; i++) {
+      maxNum += 1;
+      const nuevoId = 'LM' + maxNum;
+      salida.push(Object.assign({}, arr[i], { id: nuevoId, numeroOriginal: arr[i].numeroOriginal || arr[i].id, renumeradaAt: arr[i].renumeradaAt || nowStamp }));
+      conflictos.push({ original: arr[i].id, nuevo: nuevoId, cliente: arr[i].cliente || '' });
+    }
+  });
+
+  salida.sort((a, b) => String(a.fecha || '').localeCompare(String(b.fecha || '')) || String(a.id || '').localeCompare(String(b.id || '')));
+  return { unidas: salida, conflictos };
+}
+
+// Envoltura async: trae el remoto fresco, reconcilia, persiste y avisa de colisiones.
 async function _cotizMergeConRemoto(local) {
   try {
     const remoto = await _loadDataGHRaw('data/cotizaciones.json');
     if (!Array.isArray(remoto)) return local;
-    const porId = {};
-    remoto.forEach(c => { if (c && c.id) porId[c.id] = c; });
-    (local || []).forEach(c => {
-      if (!c || !c.id) return;
-      const rem = porId[c.id];
-      if (!rem || String(c.updatedAt || '') >= String(rem.updatedAt || '')) porId[c.id] = c;
-    });
-    const unidas = Object.values(porId).sort((a, b) =>
-      String(a.fecha || '').localeCompare(String(b.fecha || '')) || String(a.id || '').localeCompare(String(b.id || '')));
+    const { unidas, conflictos } = _cotizReconciliar(remoto, local, new Date().toISOString());
     try { localStorage.setItem('max_bd_cotizaciones', JSON.stringify(unidas)); } catch(_) {}
+    if (conflictos.length) { try { _cotizAvisarColision(conflictos); } catch(_) {} }
     return unidas;
   } catch(_) { return local; }
+}
+
+// Aviso al equipo cuando se resolvió una colisión de consecutivo (renumeración).
+// No repite el mismo aviso (registra los ya mostrados en localStorage).
+function _cotizAvisarColision(conflictos) {
+  let ya = [];
+  try { ya = JSON.parse(localStorage.getItem('energy_cotiz_colisiones') || '[]'); } catch(_) {}
+  const yaSet = new Set(ya.map(x => x.original + '>' + x.nuevo));
+  const nuevos = conflictos.filter(c => !yaSet.has(c.original + '>' + c.nuevo));
+  if (!nuevos.length) return;
+  const reg = ya.concat(nuevos.map(c => Object.assign({ at: new Date().toISOString() }, c)));
+  try { localStorage.setItem('energy_cotiz_colisiones', JSON.stringify(reg.slice(-50))); } catch(_) {}
+  const detalle = nuevos.map(c => c.original + ' → ' + c.nuevo + (c.cliente ? ' (' + c.cliente + ')' : '')).join(' · ');
+  try { showToast('⚠️ Consecutivo repetido: se renumeró para no perder ninguna cotización → ' + detalle, 'error', { durationMs: 12000 }); } catch(_) {}
+  console.warn('[cotiz] colisión de consecutivo resuelta:', nuevos);
 }
 const _ghBackupTimers = {};
 function _scheduleBackupGH(key, val) {
@@ -4156,6 +4222,16 @@ function _startPolling() {
 // Si el tab estaba oculto y vuelve a estar visible, polling inmediato
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && currentUser) _runPollCycle();
+});
+// También al recuperar el foco de la ventana (volver de Excel/WhatsApp/otra app),
+// con un pequeño anti-rebote para no saturar si se alterna mucho entre ventanas.
+let _lastFocusPoll = 0;
+window.addEventListener('focus', () => {
+  if (!currentUser || document.hidden) return;
+  const now = Date.now();
+  if (now - _lastFocusPoll < 3000) return;
+  _lastFocusPoll = now;
+  _runPollCycle();
 });
 // Configuración compartida por toda la empresa (URL del proxy, etc.)
 // Se guarda en data/config.json y se sincroniza a todos los dispositivos.
@@ -8969,7 +9045,14 @@ function _bdLoadIntoEditor(c, msg, adopted) {
   showToast(msg, 'success');
 }
 
-function bdCargar(id) {
+async function bdCargar(id) {
+  // Traer la ÚLTIMA versión del servidor ANTES de abrir para editar. Así se edita
+  // siempre sobre lo más reciente (evita pisar el cambio de un compañero y el
+  // "flip-flop" de guardados cruzados con datos viejos). Si no hay red, sigue con lo local.
+  try {
+    const tgt = POLL_TARGETS.find(t => t.file === 'data/cotizaciones.json');
+    if (tgt && navigator.onLine) await _pollOne(tgt);
+  } catch(_) {}
   const bd = getData('bd_cotizaciones', []);
   const c = bd.find(x => x.id === id);
   if (!c) return;
@@ -13236,18 +13319,32 @@ async function pcomToggleAutoret(prov){
     ? `¿Marcar a "${nombre}" como AUTORETENEDOR?\n\nNO se le aplicará retefuente (2,5%) en las órdenes de compra.`
     : `¿Marcar a "${nombre}" como retenedor normal?\n\nSe le aplicará retefuente 2,5% cuando la compra sea ≥ $${PCOM_BASE_RETE.toLocaleString('es-CO')}.`;
   if(!confirm(msg)) return;
+  // El id de Supabase es numérico. Los proveedores auto-creados desde la OC quedan con
+  // un id LOCAL de texto ('prov_<timestamp>'); si se hace PATCH ?id=eq.prov_... Postgres
+  // falla (bigint) → "Error al actualizar proveedor". Por eso solo usamos id si es numérico;
+  // si no, hacemos upsert por NOMBRE (ilike, case-insensitive) y adoptamos el id real.
+  const idNumerico = (p && p.id!=null && /^\d+$/.test(String(p.id))) ? String(p.id) : null;
   try{
-    if(p && p.id!=null){
-      await absFetch('proveedores?id=eq.'+encodeURIComponent(p.id),{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({autoretenedor:nuevo})});
-      p.autoretenedor = nuevo;
+    if(idNumerico){
+      await absFetch('proveedores?id=eq.'+idNumerico,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({autoretenedor:nuevo})});
+      if(p) p.autoretenedor = nuevo;
     } else {
-      // El proveedor no estaba en la tabla: se crea con el dato tributario.
-      const res = await absFetch('proveedores',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify({nombre:nombre, autoretenedor:nuevo})});
-      if(Array.isArray(res)&&res[0]) pcom_prov.push(res[0]); else pcom_prov.push({nombre:nombre, autoretenedor:nuevo});
+      // Buscar/actualizar por nombre (case-insensitive). Si existe → adopta su id numérico.
+      const upd = await absFetch('proveedores?nombre=ilike.'+encodeURIComponent(nombre),{method:'PATCH',headers:{'Prefer':'return=representation'},body:JSON.stringify({autoretenedor:nuevo})});
+      if(Array.isArray(upd) && upd.length){
+        if(p){ p.autoretenedor = nuevo; if(upd[0].id!=null) p.id = upd[0].id; }
+        else pcom_prov.push(upd[0]);
+      } else {
+        // No existía en Supabase: crearlo.
+        const res = await absFetch('proveedores',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify({nombre:nombre, autoretenedor:nuevo})});
+        const reg = (Array.isArray(res)&&res[0]) ? res[0] : {nombre:nombre, autoretenedor:nuevo};
+        if(p){ p.autoretenedor = nuevo; if(reg.id!=null) p.id = reg.id; }
+        else pcom_prov.push(reg);
+      }
     }
     pcomRenderResumen();
     showToast(`"${nombre}" ahora ${nuevo==='SI'?'es AUTORETENEDOR (sin retefuente)':'RETIENE retefuente 2,5%'} ✓`,'ok');
-  }catch(e){ showToast('Error al actualizar proveedor: '+(e&&e.message||e),'error'); }
+  }catch(e){ console.warn('[pcomToggleAutoret]',e); showToast('Error al actualizar proveedor: '+(e&&e.message||e),'error'); }
 }
 async function pcomTogglePago(prov){
   if(!pcom_current) return;
