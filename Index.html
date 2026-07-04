@@ -4077,7 +4077,7 @@ setInterval(() => {
 // Cada 30s consulta los archivos más cambiantes en raw.githubusercontent.com.
 // Usa ETag (If-None-Match) → 304 si no hay cambios → no descarga ni re-renderiza.
 // Si hay cambios: hace merge inteligente y re-renderiza el módulo afectado.
-const POLL_INTERVAL_MS = 10000;
+const POLL_INTERVAL_MS = 8000;
 const _pollEtags = {}; // file -> last seen ETag
 const POLL_TARGETS = [
   // Cada uno define cómo aplicar el remoto: storage key + función de re-render
@@ -4206,18 +4206,26 @@ async function _runPollCycle() {
   if (!navigator.onLine) return;
   if (document.hidden) return; // tab no visible: no consumir red ni cuota raw
   if (!currentUser) return;     // no autenticado todavía
-  let anyChange = false;
-  for (const t of POLL_TARGETS) {
-    const changed = await _pollOne(t);
-    if (changed) anyChange = true;
-  }
-  if (anyChange) showToast('Datos actualizados desde el servidor','info');
+  // Descargar TODOS los archivos EN PARALELO (antes era uno por uno en fila, así las
+  // cotizaciones —7º de la lista— esperaban a los anteriores). En paralelo todo el
+  // equipo ve los cambios casi al mismo tiempo. Un fallo suelto no tumba el ciclo.
+  const resultados = await Promise.all(POLL_TARGETS.map(t => _pollOne(t).catch(() => false)));
+  if (resultados.some(Boolean)) showToast('Datos actualizados desde el servidor','info');
 }
 function _startPolling() {
   if (_pollTimer) clearInterval(_pollTimer);
   // Primer ciclo a los 5s para no saturar el load inicial
   setTimeout(_runPollCycle, 5000);
   _pollTimer = setInterval(_runPollCycle, POLL_INTERVAL_MS);
+}
+// Refresco inmediato al abrir un módulo (con anti-rebote), para ver lo último al entrar.
+let _navPollT = 0;
+function _pollAlNavegar() {
+  if (!currentUser || document.hidden || !navigator.onLine) return;
+  const now = Date.now();
+  if (now - _navPollT < 1500) return;
+  _navPollT = now;
+  _runPollCycle();
 }
 // Si el tab estaba oculto y vuelve a estar visible, polling inmediato
 document.addEventListener('visibilitychange', () => {
@@ -4784,6 +4792,8 @@ function navigate(page) {
   if(page==='procesos') renderProcesos();
   if(page==='inventario') { setTimeout(async()=>{ try { const t = await getToken(); if(t) msLoadInventoryFromOneDrive(); } catch(e){} }, 500); }
   if(page==='abastecimiento') { const _ma=document.querySelector('.main-area'); if(_ma)_ma.scrollTop=0; window.scrollTo(0,0); setTimeout(()=>{ absCargar(); absApplyPermisos(); absCheckViernes(); }, 200); }
+  // Al abrir cualquier módulo, traer lo último del servidor de una vez (anti-rebote adentro).
+  try { _pollAlNavegar(); } catch(_) {}
 }
 function getNavLabel(page) {
   const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'cronograma',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',cotizaciones:'cotizaciones',ordenes:'procesos',fotoinv:'fotoinv',visitas:'visitas',mensajeria:'mensajeria',configuracion:'configuraci'};
