@@ -8070,7 +8070,11 @@ function fleteLoadConfig(){
   }
   if (typeof c.umbral !== 'number') c.umbral = FLETE_UMBRAL_DEFAULT;
   if (typeof c.redondeo !== 'number') c.redondeo = 1000;   // redondear flete hacia arriba a $1.000 (editable en ⚙️)
+  // Migración automática: el umbral oficial es $500.000. Corrige configs viejas guardadas en 5.000.000.
+  let _migro = false;
+  if (c.umbral === 5000000) { c.umbral = FLETE_UMBRAL_DEFAULT; _migro = true; }
   fleteConfig = c;
+  if (_migro) { try { fleteSaveConfig(); } catch(_){} }
   return c;
 }
 function fleteSaveConfig(){ try { localStorage.setItem('energy_flete_config', JSON.stringify(fleteConfig)); } catch(_){} }
