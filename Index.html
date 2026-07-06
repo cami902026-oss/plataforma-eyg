@@ -1485,7 +1485,9 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <h3>📄 Observaciones y condiciones comerciales</h3>
             <div class="form-group">
               <label>OBSERVACIONES</label>
-              <textarea id="cotiz-observaciones" rows="3" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:8px;color:#fff;font-size:12px;resize:vertical;">LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&amp;G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.</textarea>
+              <textarea id="cotiz-observaciones" rows="5" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:8px;color:#fff;font-size:12px;resize:vertical;">-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN
+-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&amp;G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.
+-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE</textarea>
             </div>
             <div class="form-row">
               <div class="form-group"><label>FORMA DE PAGO</label><input type="text" id="cotiz-pago" placeholder="Ej: 30 días" value="30 DÍAS"></div>
@@ -8041,7 +8043,7 @@ function cotizUpdateTotals() {
    ============================================================================ */
 const UTIL_FACTOR_CONTADO  = 0.8;      // venta contado = costo / 0.8
 const UTIL_FACTOR_30DIAS   = 0.7;      // venta 30 días = costo / 0.7
-const FLETE_UMBRAL_DEFAULT = 5000000;  // >= umbral => envío incluido (editable)
+const FLETE_UMBRAL_DEFAULT = 500000;   // >= $500.000 => envío incluido (según observación oficial de la cotización; editable en ⚙️)
 const UTIL_SB_URL = 'https://juprjevxkcitqpsnemto.supabase.co/rest/v1';
 const UTIL_SB_KEY = 'sb_publishable_zZrmpmvqbz4AJCGHRHQ8Xw_8tnf5ObM';
 
