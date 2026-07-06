@@ -8045,6 +8045,7 @@ const UTIL_SB_KEY = 'sb_publishable_zZrmpmvqbz4AJCGHRHQ8Xw_8tnf5ObM';
 let _utilBuilt = false;
 let _utilProds = [];
 let _utilProv = '';      // proveedor del ítem elegido (para arrastrarlo a la fila)
+let _utilMarca = '';     // marca del ítem elegido (para arrastrarla a la fila)
 let fleteConfig = null;
 
 function _utilFmt(n){ return '$' + Math.round(n||0).toLocaleString('es-CO'); }
@@ -8091,7 +8092,7 @@ function _utilBuild(){
 async function utilEnsureProductos(){
   if (_utilProds.length) { utilFillProductos(); return; }
   try {
-    const r = await fetch(UTIL_SB_URL + '/productos?select=codigo,descripcion,costo_compra,proveedor&activo=eq.true&order=descripcion', {
+    const r = await fetch(UTIL_SB_URL + '/productos?select=codigo,descripcion,costo_compra,proveedor,marca&activo=eq.true&order=descripcion', {
       headers: { apikey: UTIL_SB_KEY, Authorization: 'Bearer ' + UTIL_SB_KEY }
     });
     if (r.ok) { _utilProds = await r.json() || []; utilFillProductos(); }
@@ -8119,9 +8120,13 @@ function utilOnPickProducto(){
   if (p) {
     if ((p.costo_compra || 0) > 0) { const c = document.getElementById('util-costo'); if (c) c.value = p.costo_compra; }
     _utilProv = p.proveedor || '';
-    if (provEl) provEl.innerHTML = _utilProv ? ('Proveedor: <b style="color:var(--light)">' + String(_utilProv).replace(/</g,'&lt;') + '</b>') : '';
+    _utilMarca = p.marca || '';
+    const partes = [];
+    if (_utilMarca) partes.push('Marca: <b style="color:var(--light)">' + String(_utilMarca).replace(/</g,'&lt;') + '</b>');
+    if (_utilProv)  partes.push('Proveedor: <b style="color:var(--light)">' + String(_utilProv).replace(/</g,'&lt;') + '</b>');
+    if (provEl) provEl.innerHTML = partes.join(' &nbsp;·&nbsp; ');
   } else {
-    _utilProv = '';
+    _utilProv = ''; _utilMarca = '';
     if (provEl) provEl.innerHTML = '';
   }
   utilCalcular();
@@ -8151,7 +8156,7 @@ function utilAgregarFila(precio){
   const nombre = (document.getElementById('util-item') || {}).value || '';
   const qty    = parseFloat((document.getElementById('util-cant') || {}).value) || 1;
   cotizItems.push({ id:cotizItems.length+1, desc:nombre, udm:'EA', qty:qty, precio:precio||0,
-    tiempoEntrega:'1-2 DIAS', desvTec:'', marca:'', proveedor:(_utilProv||''), precioProveedor:costo });
+    tiempoEntrega:'1-2 DIAS', desvTec:'', marca:(_utilMarca||''), proveedor:(_utilProv||''), precioProveedor:costo });
   cotizRender();
   showToast('Ítem agregado a la cotización','success');
 }
