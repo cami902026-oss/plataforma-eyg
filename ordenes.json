@@ -2488,13 +2488,13 @@
     "num": "68226DPO00320",
     "cliente": "MAUREL & PROM COLOMBIA SOCIEDAD LTD",
     "desc": "Suministro de Material Mecánico Magico 2 - Conexionado MG2",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-05-22",
     "valor": 0,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-06-03",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -2513,20 +2513,20 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-01-06",
+        "n": "SERVIDOR"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-03",
+        "n": "464"
       }
     ],
     "createdAt": "2026-05-22T17:02:47.733Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-05-29T22:49:42.686Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-06-05T21:34:53.546Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1779461405791",
@@ -2534,6 +2534,7 @@
     "cliente": "ANDES OPERATING",
     "desc": "VÁLVULAS BOLA Y ACCESORIOS PARA COMBUSTIBLE",
     "estado": "completado",
+    "fechaIngreso": "2026-05-22",
     "valor": 622000,
     "hojaEntrada": {
       "requerida": false,
@@ -2562,14 +2563,14 @@
         "n": "SERVIDOR"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-01",
+        "n": "458"
       }
     ],
     "createdAt": "2026-05-22T20:38:55.909Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-05-22T21:24:58.210Z",
+    "updatedAt": "2026-06-12T21:08:03.843Z",
     "updatedBy": "andrea"
   },
   {
@@ -2577,7 +2578,7 @@
     "num": "ODC-AA-MEC-SKID-469-24-531",
     "cliente": "SKID EXPERT",
     "desc": "Acoples, válvulas, accesorios filtración y tanque agua pozo",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-05-29",
     "valor": 3856548,
     "hojaEntrada": {
@@ -2592,10 +2593,282 @@
         "n": "INDUVACOL\nCODIFER\nHIDROLING\nSEGEFER\nMUNDIAL\nCODIFER\n"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-01-06",
         "n": "",
         "envio": "moto",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-01",
+        "n": "SERVIDOR"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-04",
+        "n": "466"
+      }
+    ],
+    "createdAt": "2026-05-29T15:27:15.070Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-19T21:47:04.915Z",
+    "updatedBy": "lina"
+  },
+  {
+    "id": "poc_1781116679153",
+    "num": "090626E4379",
+    "cliente": "CIAM",
+    "desc": "Viga HEA, Perfil UPN 100 X 6 MTR y Flete para Diálisis de Crudo",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-10",
+    "valor": 4758067,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-10",
+        "n": "imperial"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-11",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "Yopal cargo",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-12-06",
+        "n": "SERVER"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-11",
+        "n": "477N/C. 494'493"
+      }
+    ],
+    "createdAt": "2026-06-10T18:39:13.914Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-25T16:32:08.263Z",
+    "updatedBy": "lina"
+  },
+  {
+    "id": "poc_1781208714339",
+    "num": "LM1654",
+    "cliente": "BOBINADOS",
+    "desc": "VALVULA MARIPOSA DSS304 EDPM 150 3\" ENGRANAJE",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-10",
+    "valor": 345100,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-10",
+        "n": "CODIFER"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-12",
+        "n": "",
+        "envio": "taquilla_bus",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-11",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-11",
+        "n": "478"
+      }
+    ],
+    "createdAt": "2026-06-10T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-06-12T21:35:09.298Z",
+    "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1780339680449",
+    "num": "68226DPO00330",
+    "cliente": "MAUREL & PROM COLOMBIA SOCIEDAD LTD",
+    "desc": "UMINSITRO MATERIAL",
+    "estado": "completado",
+    "fechaIngreso": "2026-12-05",
+    "valor": 4460398,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "2026-06-03",
+      "estado": "recibida"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-12",
+        "n": "CODIFER\nDISEFER\nINDUVACOL"
+      },
+      {
+        "s": "done",
+        "f": "2026-05-29",
+        "n": "",
+        "envio": "camion_externo",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-01",
+        "n": "SERVIDOR"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-03",
+        "n": "463"
+      }
+    ],
+    "createdAt": "2026-06-01T18:48:00.449Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-05T21:34:32.068Z",
+    "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1781279696156",
+    "num": "110626M9881",
+    "cliente": "CIAM",
+    "desc": "Niple galvanizado CROUSE HINDS 1/2x 2 Pulgadas (15 unidades)",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-12",
+    "valor": 255987,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-11",
+        "n": "Marin"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-12",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "0026-06-20",
+        "n": "server"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-12",
+        "n": "480"
+      }
+    ],
+    "createdAt": "2026-06-12T21:07:00.160Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-12T21:12:01.056Z",
+    "updatedBy": "andrea",
+    "lockedBy": "lina",
+    "lockedAt": "2026-06-12T21:12:01.056Z"
+  },
+  {
+    "id": "poc_1781300058074",
+    "num": "LM1671",
+    "cliente": "PGS",
+    "desc": "MATERIAL MECANICO",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-12",
+    "valor": 799630,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-12",
+        "n": "HIDROLING"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-13",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-12",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-12",
+        "n": "481"
+      }
+    ],
+    "createdAt": "2026-06-12T21:34:18.075Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-17T22:32:58.385Z",
+    "updatedBy": "alexandra"
+  },
+  {
+    "id": "poc_1781804395600",
+    "num": "ODC-AA-MEC-SKID-469-24-558",
+    "cliente": "SKID EXPERTS",
+    "desc": "Tubo inoxidable y bridas para mezcladores estáticos",
+    "estado": "cancelado",
+    "fechaIngreso": "2026-06-18",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-17",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
         "transp": "",
         "guia": "",
         "dest": "",
@@ -2612,9 +2885,101 @@
         "n": ""
       }
     ],
-    "createdAt": "2026-05-29T15:27:15.070Z",
+    "createdAt": "2026-06-18T17:40:32.020Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-05-29T22:47:10.391Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-06T18:16:32.290Z",
+    "updatedBy": "andrea",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-07-06T18:16:32.290Z"
+  },
+  {
+    "id": "poc_1781892389551",
+    "num": "4426",
+    "cliente": "SAR ENERGY",
+    "desc": "Material mecánico",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-17",
+    "valor": 2383869,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "2026-06-22",
+      "estado": "recibida"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-17",
+        "n": "Bodega\nCodifer\nJose montenegro"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-18",
+        "n": "",
+        "envio": "camion_energy",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-18",
+        "n": "Sevidor"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-22",
+        "n": "490"
+      }
+    ],
+    "createdAt": "2026-06-19T18:06:29.551Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-22T21:20:50.056Z",
+    "updatedBy": "lina"
+  },
+  {
+    "id": "poc_1782231414655",
+    "num": "02CMP9947",
+    "cliente": "PSI",
+    "desc": "ESPARRAGO 1 3/8-8 UNX 11.250 LONG CON DOBLE TUERCA",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-24",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": "",
+        "envio": "moto",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": "492"
+      }
+    ],
+    "createdAt": "2026-06-24T01:57:52.394Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-30T21:23:29.710Z",
+    "updatedBy": "andrea"
   }
 ]
