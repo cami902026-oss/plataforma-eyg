@@ -2458,7 +2458,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           </div>
           <div class="abs-mov-form" style="margin-bottom:16px;">
             <div class="form-row">
-              <div class="form-group"><label>N° Remisión</label><input type="text" id="remi-num" readonly style="font-weight:700;color:var(--gold)"></div>
+              <div class="form-group"><label>N° Remisión <button type="button" onclick="remiEditNum()" title="Editar el número — por ejemplo para agregar un sufijo como 1741-1" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:0 2px;vertical-align:middle">✏️</button></label><input type="text" id="remi-num" readonly onchange="if(remi_current)remi_current.remision=this.value.trim()" style="font-weight:700;color:var(--gold)"></div>
               <div class="form-group"><label>Fecha</label><input type="date" id="remi-fecha"></div>
               <div class="form-group"><label># OC</label><input type="text" id="remi-oc" placeholder="N° de OC"></div>
             </div>
@@ -13026,7 +13026,7 @@ function remiNextNum(){
 }
 function remiNueva(){
   if(!remiCanUse()) return showToast('No tienes permiso para crear remisiones','error');
-  remi_current={ nueva:true, remision:remiNextNum(), fecha:new Date().toISOString().split('T')[0],
+  remi_current={ nueva:true, remision:remiNextNum(), remisionOrig:null, fecha:new Date().toISOString().split('T')[0],
     cliente:'', lugar:'', oc:'', contiene:'', observaciones:'', cotizacionId:'',
     items:[{cantidad:'',descripcion:'',marca:'',colada:'',desviacion:''}] };
   remiAbrirEditor('Nueva remisión');
@@ -13034,18 +13034,24 @@ function remiNueva(){
 function remiAbrir(remision, pdf){
   const its=remiGrupos()[String(remision)]; if(!its||!its.length) return showToast('Remisión no encontrada','error');
   const h=its[0];
-  remi_current={ nueva:false, remision:String(remision), fecha:h.fecha||'', cliente:h.cliente||'', lugar:h.lugar||'',
+  remi_current={ nueva:false, remision:String(remision), remisionOrig:String(remision), fecha:h.fecha||'', cliente:h.cliente||'', lugar:h.lugar||'',
     oc:h.oc||'', contiene:h.contiene||'', observaciones:h.observaciones||'', cotizacionId:h.cotizacion_id||'',
     items: its.slice().sort((a,b)=>(a.item||0)-(b.item||0)).map(r=>({cantidad:(r.cantidad==null?'':r.cantidad),descripcion:r.descripcion||'',marca:r.marca||'',colada:r.colada||'',desviacion:r.desviacion||''})) };
   remiAbrirEditor('Remisión '+remision);
   if(pdf) setTimeout(remiPDF, 250);
+}
+function remiEditNum(){
+  const el=document.getElementById('remi-num'); if(!el) return;
+  el.readOnly=false; el.style.background='rgba(232,160,32,.14)'; el.focus(); el.select();
+  showToast('Puedes editar el número (ej: 1741-1). No repitas uno ya existente.','info');
 }
 function remiAbrirEditor(titulo){
   document.getElementById('remi-view-lista').style.display='none';
   document.getElementById('remi-view-editor').style.display='';
   document.getElementById('remi-editor-titulo').textContent=titulo;
   const c=remi_current;
-  document.getElementById('remi-num').value=c.remision;
+  const numEl=document.getElementById('remi-num');
+  numEl.value=c.remision; numEl.readOnly=true; numEl.style.background='';
   document.getElementById('remi-fecha').value=c.fecha;
   document.getElementById('remi-oc').value=c.oc;
   document.getElementById('remi-cliente').value=c.cliente;
@@ -13070,6 +13076,7 @@ function remiVerCotizacion(cid){
 }
 function remiSyncHeader(){
   const c=remi_current; if(!c) return;
+  const numV=(document.getElementById('remi-num').value||'').trim(); if(numV) c.remision=numV;
   c.fecha=document.getElementById('remi-fecha').value;
   c.oc=document.getElementById('remi-oc').value.trim();
   c.cliente=document.getElementById('remi-cliente').value.trim();
@@ -13098,13 +13105,24 @@ async function remiGuardar(){
   if(!remi_current) return;
   remiSyncHeader();
   const c=remi_current;
+  const num=String(c.remision||'').trim();
+  if(!num) return showToast('Ingresa el N° de remisión','error');
+  c.remision=num;
   if(!c.cliente) return showToast('Ingresa el cliente','error');
   const items=c.items.filter(it=>String(it.descripcion||'').trim()!=='');
   if(!items.length) return showToast('Agrega al menos un ítem con descripción','error');
+  // Si el número ya existe y NO es la misma remisión que estoy editando, avisa (evita pisar por error)
+  const grupos=remiGrupos();
+  if(grupos[num] && num!==(c.remisionOrig||'')){
+    if(!confirm('⚠️ Ya existe la remisión '+num+'.\n\nAl guardar se REEMPLAZARÁ por completo con estos ítems.\n\n¿Deseas continuar?')) return;
+  }
   try{
-    if(!c.nueva){
-      await absFetch('remisiones?remision=eq.'+encodeURIComponent(c.remision),{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+    // Si se renombró (ej: 1741 → 1741-1), borra primero la versión con el número anterior
+    if(!c.nueva && c.remisionOrig && c.remisionOrig!==num){
+      await absFetch('remisiones?remision=eq.'+encodeURIComponent(c.remisionOrig),{method:'DELETE',headers:{'Prefer':'return=minimal'}});
     }
+    // Borra cualquier fila existente bajo el número final (edición normal o sobrescritura); es no-op si no existe
+    await absFetch('remisiones?remision=eq.'+encodeURIComponent(num),{method:'DELETE',headers:{'Prefer':'return=minimal'}});
     const rows=items.map((it,idx)=>({
       remision:String(c.remision), fecha:c.fecha||null, cliente:c.cliente, lugar:c.lugar, oc:c.oc,
       cotizacion_id:c.cotizacionId||null,
