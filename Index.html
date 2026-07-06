@@ -1438,8 +1438,17 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                 <label style="font-size:12px;color:var(--text-muted)">Ítem del inventario (opcional)</label>
                 <input id="util-item" list="util-item-dl" placeholder="Escribe para buscar en el stock…" oninput="utilOnPickProducto()" style="width:100%;margin-bottom:6px">
                 <datalist id="util-item-dl"></datalist>
-                <label style="font-size:12px;color:var(--text-muted)">Costo (precio de compra)</label>
-                <input id="util-costo" type="number" min="0" placeholder="$ costo" oninput="utilCalcular()" style="width:100%;margin-bottom:10px">
+                <div id="util-proveedor" style="font-size:12px;color:var(--text-muted);margin:2px 0 8px"></div>
+                <div style="display:flex;gap:8px">
+                  <div style="flex:2">
+                    <label style="font-size:12px;color:var(--text-muted)">Costo (precio de compra)</label>
+                    <input id="util-costo" type="number" min="0" placeholder="$ costo" oninput="utilCalcular()" style="width:100%;margin-bottom:10px">
+                  </div>
+                  <div style="flex:1">
+                    <label style="font-size:12px;color:var(--text-muted)">Cantidad</label>
+                    <input id="util-cant" type="number" min="1" value="1" oninput="utilCalcular()" style="width:100%;margin-bottom:10px">
+                  </div>
+                </div>
                 <div id="util-resultado"></div>
               </div>
 
@@ -8035,6 +8044,7 @@ const UTIL_SB_KEY = 'sb_publishable_zZrmpmvqbz4AJCGHRHQ8Xw_8tnf5ObM';
 
 let _utilBuilt = false;
 let _utilProds = [];
+let _utilProv = '';      // proveedor del ítem elegido (para arrastrarlo a la fila)
 let fleteConfig = null;
 
 function _utilFmt(n){ return '$' + Math.round(n||0).toLocaleString('es-CO'); }
@@ -8081,7 +8091,7 @@ function _utilBuild(){
 async function utilEnsureProductos(){
   if (_utilProds.length) { utilFillProductos(); return; }
   try {
-    const r = await fetch(UTIL_SB_URL + '/productos?select=codigo,descripcion,costo_compra&activo=eq.true&order=descripcion', {
+    const r = await fetch(UTIL_SB_URL + '/productos?select=codigo,descripcion,costo_compra,proveedor&activo=eq.true&order=descripcion', {
       headers: { apikey: UTIL_SB_KEY, Authorization: 'Bearer ' + UTIL_SB_KEY }
     });
     if (r.ok) { _utilProds = await r.json() || []; utilFillProductos(); }
@@ -8105,9 +8115,14 @@ function utilOnPickProducto(){
   const v = (inp.value || '').trim().toLowerCase();
   const p = _utilProductos().find(x =>
     _utilLabel(x).toLowerCase() === v || (x.descripcion || '').toLowerCase() === v);
-  if (p && (p.costo_compra || 0) > 0) {
-    const c = document.getElementById('util-costo');
-    if (c) c.value = p.costo_compra;
+  const provEl = document.getElementById('util-proveedor');
+  if (p) {
+    if ((p.costo_compra || 0) > 0) { const c = document.getElementById('util-costo'); if (c) c.value = p.costo_compra; }
+    _utilProv = p.proveedor || '';
+    if (provEl) provEl.innerHTML = _utilProv ? ('Proveedor: <b style="color:var(--light)">' + String(_utilProv).replace(/</g,'&lt;') + '</b>') : '';
+  } else {
+    _utilProv = '';
+    if (provEl) provEl.innerHTML = '';
   }
   utilCalcular();
 }
@@ -8115,26 +8130,28 @@ function utilCalcular(){
   const out = document.getElementById('util-resultado');
   if (!out) return;
   const costo = parseFloat((document.getElementById('util-costo') || {}).value) || 0;
+  const qty   = parseFloat((document.getElementById('util-cant') || {}).value) || 1;
   if (costo <= 0) {
     out.innerHTML = '<div style="color:var(--text-muted);font-size:12px">Escribe un costo o elige un ítem del inventario.</div>';
     return;
   }
-  const contado = costo / UTIL_FACTOR_CONTADO;
-  const dias30  = costo / UTIL_FACTOR_30DIAS;
+  const contadoU = costo / UTIL_FACTOR_CONTADO;   // unitario
+  const dias30U  = costo / UTIL_FACTOR_30DIAS;
   out.innerHTML =
-    `<div class="cotiz-tot-row"><span>Contado (÷${UTIL_FACTOR_CONTADO})</span><span style="color:var(--gold);font-weight:700">${_utilFmt(contado)}</span></div>
-     <div class="cotiz-tot-row"><span>30 días (÷${UTIL_FACTOR_30DIAS})</span><span style="color:var(--gold);font-weight:700">${_utilFmt(dias30)}</span></div>
+    `<div class="cotiz-tot-row"><span>Contado${qty>1?(' × '+qty):''}</span><span style="color:var(--gold);font-weight:700">${_utilFmt(contadoU*qty)}</span></div>
+     <div class="cotiz-tot-row"><span>30 días${qty>1?(' × '+qty):''}</span><span style="color:var(--gold);font-weight:700">${_utilFmt(dias30U*qty)}</span></div>
      <div class="cotiz-tot-row"><span>Más de 30 días</span><span style="color:var(--text-muted)">Consultar con gerencia</span></div>
      <div style="display:flex;gap:8px;margin-top:8px">
-       <button onclick="utilAgregarFila(${Math.round(contado)})" style="flex:1">➕ Fila contado</button>
-       <button onclick="utilAgregarFila(${Math.round(dias30)})" style="flex:1">➕ Fila 30 días</button>
+       <button onclick="utilAgregarFila(${Math.round(contadoU)})" style="flex:1">➕ Fila contado</button>
+       <button onclick="utilAgregarFila(${Math.round(dias30U)})" style="flex:1">➕ Fila 30 días</button>
      </div>`;
 }
 function utilAgregarFila(precio){
   const costo  = parseFloat((document.getElementById('util-costo') || {}).value) || 0;
   const nombre = (document.getElementById('util-item') || {}).value || '';
-  cotizItems.push({ id:cotizItems.length+1, desc:nombre, udm:'EA', qty:1, precio:precio||0,
-    tiempoEntrega:'1-2 DIAS', desvTec:'', marca:'', proveedor:'', precioProveedor:costo });
+  const qty    = parseFloat((document.getElementById('util-cant') || {}).value) || 1;
+  cotizItems.push({ id:cotizItems.length+1, desc:nombre, udm:'EA', qty:qty, precio:precio||0,
+    tiempoEntrega:'1-2 DIAS', desvTec:'', marca:'', proveedor:(_utilProv||''), precioProveedor:costo });
   cotizRender();
   showToast('Ítem agregado a la cotización','success');
 }
