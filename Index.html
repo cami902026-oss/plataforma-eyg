@@ -2174,8 +2174,9 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   <div style="overflow-x:auto;"><div id="vis-plan-grid"></div></div>
   <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Toca una celda vac&iacute;a para programar, o una visita para editarla. Los colores indican el estado.</p>
 </div>
+</div><!-- /page-visitas -->
 
-<!-- MODAL PROGRAMAR/EDITAR VISITA -->
+<!-- MODAL PROGRAMAR/EDITAR VISITA (fuera de la pagina: overlay fijo) -->
 <div id="vis-plan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
   <div style="background:var(--card-bg,#0f1d33);border:1px solid rgba(255,255,255,.12);border-radius:14px;max-width:520px;width:100%;max-height:90vh;display:flex;flex-direction:column;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 22px 8px;flex:0 0 auto;">
@@ -2209,8 +2210,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <button class="btn btn-ghost" onclick="visPlanCerrar()">Cancelar</button>
     </div>
   </div>
-</div>
-</div><!-- /page-visitas -->
+</div><!-- /vis-plan-modal -->
 
 <!-- MODULO MENSAJERIA -->
 <div class="page" id="page-mensajeria">
