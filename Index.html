@@ -3591,9 +3591,9 @@ async function _ghGetSHA(filename) {
   if (_ghShaCache[filename]) return _ghShaCache[filename];
   if (!_ghToken()) return ''; // sin token no hay write, así que no hace falta SHA
   try {
-    const r = await fetch(
+    const r = await _fetchT(
       `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filename}`,
-      { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
+      { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }, 10000
     );
     if (r.ok) { const d = await r.json(); _ghShaCache[filename] = d.sha; return d.sha; }
   } catch(_) {}
@@ -3603,6 +3603,16 @@ async function _ghGetSHA(filename) {
 function _ghWriteProxyURL() {
   const stored = (localStorage.getItem('energy_gh_proxy_url') || '').trim().replace(/\/+$/,'');
   return stored || '';
+}
+// FIX "Sincronizando…" eterno: fetch con límite de tiempo (AbortController).
+// Con internet inestable una petición podía quedar colgada minutos y la píldora
+// nunca salía de "Sincronizando…". Ahora a los N seg se corta → el flujo normal
+// de errores encola el cambio y la píldora pasa a "⚠️ sin subir (reintentar)".
+function _fetchT(url, opts, ms) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), ms || 12000);
+  return fetch(url, Object.assign({}, opts || {}, { signal: ctl.signal }))
+    .finally(() => clearTimeout(t));
 }
 async function _saveDataGH(filename, data, label) {
   // Las solicitudes las escriben DOS robots a la vez (el correo y la plataforma).
@@ -3645,12 +3655,12 @@ function _proxySecret() { return 'eyg_prx_c70613f89a19d97c73d8800612029462'; }
 
 async function _saveDataGH_viaProxy(proxyURL, filename, data, label) {
   // Apps Script: usar text/plain para evitar preflight CORS
-  const resp = await fetch(proxyURL, {
+  const resp = await _fetchT(proxyURL, {
     method:'POST',
     headers:{ 'Content-Type':'text/plain;charset=utf-8' },
     body: JSON.stringify({ file: filename, content: data, label: label, secret: _proxySecret() }),
     redirect:'follow'
-  });
+  }, 20000);
   const j = await resp.json();
   if (!j.ok) throw new Error(j.error || 'Proxy GitHub error');
   if (j.sha) _ghShaCache[filename] = j.sha;
@@ -3662,19 +3672,19 @@ async function _saveDataGH_directPAT(filename, data, label) {
     const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
     const body = { message: `${label} — ${new Date().toLocaleString('es-CO')}`, content: b64, branch: 'main' };
     if (sha) body.sha = sha;
-    let r = await fetch(
+    let r = await _fetchT(
       `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filename}`,
-      { method: 'PUT', headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-    );
+      { method: 'PUT', headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+      15000);
     if (!r.ok && (r.status === 422 || r.status === 409)) {
       delete _ghShaCache[filename];
       const nsha = await _ghGetSHA(filename);
       if (nsha) {
         body.sha = nsha;
-        r = await fetch(
+        r = await _fetchT(
           `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filename}`,
-          { method: 'PUT', headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-        );
+          { method: 'PUT', headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) },
+          15000);
       }
     }
     if (r.ok) { const res = await r.json(); _ghShaCache[filename] = res.content.sha; return true; }
@@ -3686,9 +3696,9 @@ async function _loadDataGH(filename) {
   // Si hay token: usar la API (devuelve también el sha para poder escribir después)
   if (_ghToken()) {
     try {
-      const r = await fetch(
+      const r = await _fetchT(
         `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${filename}?t=${Date.now()}`,
-        { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }
+        { headers: { 'Authorization': `Bearer ${_ghToken()}`, 'Accept': 'application/vnd.github+json' } }, 10000
       );
       if (r.ok) {
         const d = await r.json();
@@ -3701,9 +3711,9 @@ async function _loadDataGH(filename) {
   // raw.githubusercontent.com sirve cualquier archivo sin autenticación.
   // Esto permite que cualquier dispositivo del equipo VEA los datos compartidos.
   try {
-    const r = await fetch(
+    const r = await _fetchT(
       `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${filename}?t=${Date.now()}`,
-      { cache: 'no-store' }
+      { cache: 'no-store' }, 10000
     );
     if (r.ok) return await r.json();
   } catch(e) { console.warn('GH raw load', filename, e); }
@@ -3715,7 +3725,7 @@ async function _loadDataGH(filename) {
 // correo u otra usuaria. raw con ?t= trae lo último y evita ese atasco.
 async function _loadDataGHRaw(filename) {
   try {
-    const r = await fetch(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${filename}?t=${Date.now()}`, { cache: 'no-store' });
+    const r = await _fetchT(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${filename}?t=${Date.now()}`, { cache: 'no-store' }, 10000);
     if (r.ok) return await r.json();
   } catch(_) {}
   return _loadDataGH(filename); // respaldo si raw falla
@@ -4302,7 +4312,7 @@ const POLL_TARGETS = [
   { file:'data/minutas.json',      storageKey:'max_minutas',         renderFn: () => { try{ renderMinutas(); }catch(_){} }, mergeBy:'id' },
   { file:'data/projects.json',     storageKey:'max_projects',        renderFn: () => { try{ renderGantt(); }catch(_){} try{ renderDashboard(); }catch(_){} }, mergeBy:'id' },
   { file:'data/team.json',         storageKey:'max_team',            renderFn: () => { try{ renderTeam(); renderTeamMgmt(); populateSelects(); }catch(_){} }, mergeBy:'id' },
-  { file:'data/cotizaciones.json',      storageKey:'max_bd_cotizaciones',   renderFn: () => { try{ bdRender(); }catch(_){} try{ _cotizNumVigilar(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/cotizaciones.json',      storageKey:'max_bd_cotizaciones',   renderFn: () => { try{ bdRender(); }catch(_){} try{ _cotizNumVigilar(); }catch(_){} try{ _cotizAutoVencidas(); }catch(_){} }, mergeBy:'id' },
   { file:'data/solicitudes_cotiz.json', storageKey:'max_solicitudes_cotiz', renderFn: () => { try{ solRender(); solUpdateBadge(); }catch(_){} }, mergeBy:'id' },
   { file:'data/clientes.json',          storageKey:'max_bd_clientes',        renderFn: () => { try{ cliRender(); _cliUpdateDL(); }catch(_){} }, mergeBy:'id' },
   { file:'data/visitas.json',      storageKey:'energy_visitas',      renderFn: () => { _refreshVisitasIfOpen(); }, mergeBy:'id' },
@@ -7766,6 +7776,30 @@ function _cotizNumSiguienteLibre(num, bd) {
 // al tiempo veían el mismo. El poll (cada 8s) llama esto: si el número en pantalla
 // de una cotización AÚN NO GUARDADA acaba de usarlo otra persona, se actualiza
 // al siguiente libre y se avisa — antes de guardar o generar el PDF.
+// AUTO-VENCIDAS: cotizaciones 'Enviada' cuya fecha de vencimiento ya pasó se marcan
+// 'Vencida' solas (antes quedaban 'Enviadas' eternas y el pipeline mentía). Corre con
+// el poll; sale sin costo cuando no hay nada que cambiar. El estado sigue editable:
+// si el cliente revive la compra, se marca Adjudicada normal.
+function _cotizAutoVencidas() {
+  if (!currentUser) return;
+  const hoy = new Date().toISOString().slice(0, 10);
+  const bd = getData('bd_cotizaciones', []);
+  let n = 0;
+  bd.forEach(c => {
+    if (c && !c.deleted && c.estado === 'Enviada' && c.fechaVenc && c.fechaVenc < hoy) {
+      c.estado = 'Vencida';
+      c.vencidaAutoAt = new Date().toISOString();
+      c.updatedAt = new Date().toISOString();
+      c.updatedBy = 'auto';
+      n++;
+    }
+  });
+  if (!n) return;
+  saveData('bd_cotizaciones', bd);
+  try { bdRender(); } catch(_) {}
+  showToast('⏰ ' + n + ' cotización(es) pasaron a VENCIDA (fecha de vencimiento cumplida). Si el cliente responde, se pueden re-marcar.', 'info');
+}
+
 function _cotizNumVigilar() {
   if (typeof currentPage === 'undefined' || currentPage !== 'cotizaciones') return;
   const num = cotizReadNum(); if (!num) return;
@@ -8834,6 +8868,15 @@ function cotizGuardarBD() {
     items: JSON.parse(JSON.stringify(cotizItems)),
     fechaGuardado: new Date().toISOString()
   };
+  // Sello de fecha de ENVÍO: primera vez que pasa a 'Enviada' se estampa el momento.
+  // Es lo que alimenta el semáforo de la BD (_bdSemaforo), que estaba muerto porque
+  // este campo nunca se asignaba. Se conserva aunque el estado cambie después.
+  const _prevEnvio = (idx >= 0 && bd[idx]) ? bd[idx].fechaEnvio : null;
+  if (record.estado === 'Enviada') {
+    record.fechaEnvio = _prevEnvio || new Date().toISOString();
+  } else if (_prevEnvio) {
+    record.fechaEnvio = _prevEnvio;
+  }
   // Sello de fecha de facturación: primera vez que pasa a 'Facturada' usa la fecha del
   // MOMENTO del cambio (_cotizFacturaFechaPend); si ya la tenía, se conserva.
   const _prevFac = (idx >= 0 && bd[idx]) ? bd[idx].facturadaAt : null;
@@ -8860,6 +8903,8 @@ function cotizGuardarBD() {
     showToast('Cotización ' + id + ' guardada — formulario listo para la siguiente','success');
   }
   saveData('bd_cotizaciones', bd);
+  // BD de clientes auto-alimentada: registrar/completar el cliente de esta cotización
+  try { _cliUpsertDesdeCotiz(record); } catch(_){}
   // Doble escritura: replicar a Supabase (no bloquea ni rompe si falla/offline)
   try { _cotizSyncSupabase(record); } catch(_){}
   // Si la cotización quedó FACTURADA, reflejarlo en la Orden de Compra ligada
@@ -9800,7 +9845,7 @@ async function bdCargar(id) {
   }
   // Aviso anti-pisada: si alguien MÁS la editó hace poco, recordar refrescar primero.
   const me = currentUser ? (currentUser.email || currentUser.name || '') : '';
-  if (c.updatedBy && c.updatedBy !== me && c.updatedAt) {
+  if (c.updatedBy && c.updatedBy !== me && c.updatedBy !== 'auto' && c.updatedAt) {
     const ageMin = Math.round((Date.now() - new Date(c.updatedAt).getTime()) / 60000);
     if (ageMin >= 0 && ageMin <= 10) {
       if (!confirm('⚠️ ' + String(c.updatedBy).split('@')[0] + ' editó esta cotización hace ' + Math.max(1, ageMin) + ' min.\n\nDale Ctrl+F5 primero para tener la última versión y no pisar su cambio.\n\n¿Abrir de todos modos?')) return;
@@ -10194,6 +10239,34 @@ function _cliAutoFill() {
   if (cc && !cc.value) cc.value = cli.contacto || '';
   if (ce && !ce.value) ce.value = cli.correo || '';
   if (cp && cli.formaPago) cp.value = cli.formaPago;
+}
+
+// BD de Clientes AUTO-ALIMENTADA: cada cotización guardada registra o completa su
+// cliente en la pestaña Clientes. Solo llena campos VACÍOS — nunca pisa lo que
+// alguien escribió a mano en la ficha del cliente.
+function _cliUpsertDesdeCotiz(rec) {
+  const empresa = (rec.cliente || '').trim();
+  if (!empresa) return;
+  const bd = getData('bd_clientes', []);
+  const key = empresa.toLowerCase();
+  const ix = bd.findIndex(c => (c.empresa || '').trim().toLowerCase() === key);
+  if (ix >= 0) {
+    const c = bd[ix];
+    let cambio = false;
+    if (rec.contacto && !c.contacto)   { c.contacto = rec.contacto; cambio = true; }
+    if (rec.correo && !c.correo)       { c.correo = rec.correo; cambio = true; }
+    if (rec.formaPago && !c.formaPago) { c.formaPago = rec.formaPago; cambio = true; }
+    if (!cambio) return;
+  } else {
+    bd.push({
+      id: 'cli_' + Date.now(), empresa,
+      nit: '', contacto: rec.contacto || '', cargo: '', correo: rec.correo || '',
+      telefono: '', ciudad: '', formaPago: rec.formaPago || '',
+      notas: 'Auto-creado desde cotización ' + (rec.id || '')
+    });
+  }
+  saveData('bd_clientes', bd);
+  try { _cliUpdateDL(); } catch(_) {}
 }
 
 function cliGuardar() {
