@@ -2979,5 +2979,52 @@
     "createdBy": "andrea",
     "updatedAt": "2026-06-30T21:23:29.710Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1783451709641",
+    "num": "ODC 333-26",
+    "cliente": "PGS",
+    "desc": "Cotización LM1739 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-07",
+    "valor": 2142000,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-07",
+        "n": "",
+        "factura": "508"
+      }
+    ],
+    "cotizacionId": "LM1739",
+    "createdAt": "2026-07-07T19:15:09.641Z",
+    "createdBy": "lina",
+    "updatedAt": "2026-07-07T19:15:09.641Z",
+    "updatedBy": "lina"
   }
 ]
