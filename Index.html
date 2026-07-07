@@ -841,6 +841,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div class="stat-card gold"><div class="stat-icon">💬</div><div class="stat-num" id="stat-mensajes">7</div><div class="stat-label">Mensajes sin leer</div></div>
           <div class="stat-card red"><div class="stat-icon">📋</div><div class="stat-num" id="stat-proyectos">0</div><div class="stat-label">OPs activas</div></div>
         </div>
+        <div id="dash-sabado" style="margin-bottom:20px;"></div>
         <div id="dash-alerts" style="margin-bottom:20px;"></div>
         <div id="dash-proceso" style="margin-bottom:20px;"></div>
                 <div class="grid-2">
@@ -5214,6 +5215,7 @@ function renderDashboard() {
   ];
   renderAlerts();
   renderProcesoSection();
+  try{ renderSabadoDash(); }catch(_){}
   document.getElementById('dash-activity').innerHTML = acts.map(a=>`
     <div class="activity-item">
       <div class="activity-dot" style="background:var(--green)"></div>
@@ -12725,6 +12727,30 @@ function sabExportMes(){
 function _refreshSabPlanIfOpen(){
   try{ _sabPlan=JSON.parse(localStorage.getItem(SAB_PLAN_KEY)||'[]'); }catch(_){ _sabPlan=[]; }
   if(typeof currentPage!=='undefined' && currentPage==='visitas' && _visPlanTab==='sabados') sabRender();
+  try{ renderSabadoDash(); }catch(_){}
+}
+// Tarjeta del Dashboard: "Este sábado trabaja: X" (lee localStorage; el poll la refresca)
+function renderSabadoDash(){
+  const box=document.getElementById('dash-sabado'); if(!box) return;
+  let plan=[]; try{ plan=JSON.parse(localStorage.getItem(SAB_PLAN_KEY)||'[]'); }catch(_){}
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  const sab=new Date(hoy); sab.setDate(sab.getDate()+((6-sab.getDay())%7));
+  const ds=_visPlanFmt(sab);
+  const r=plan.find(x=>x.fecha===ds);
+  const esHoy=hoy.getDay()===6;
+  const tit=esHoy?'Hoy s&aacute;bado':'Este s&aacute;bado '+sab.getDate()+'/'+(sab.getMonth()+1);
+  let inner;
+  if(r && r.estado==='No laboral'){
+    inner='<span style="font-weight:800;color:#94a3b8;">'+tit+' no se labora</span>'+(r.nota?' <span style="color:var(--text-muted);font-size:12px;">('+_vpEsc(r.nota)+')</span>':'');
+  } else if(r){
+    const efec=sabEfectiva(r); const col=SAB_COLORS[efec]||'#94a3b8';
+    inner='<span style="color:var(--text-muted);">'+tit+' trabaja:</span> <span style="font-weight:900;color:'+col+';font-size:16px;">'+_vpEsc(sabNombre(efec))+'</span>'
+      +((r.estado==='Cambiada'&&r.reemplazo)?' <span style="color:var(--text-muted);font-size:12px;">(cubre el turno de '+_vpEsc(sabNombre(r.asistente).split(' ')[0])+')</span>':'');
+  } else {
+    inner='<span style="color:var(--text-muted);">'+tit+':</span> <span style="font-weight:700;color:#94a3b8;">sin asignar</span>'+(sabIsManager()?' <span style="color:var(--gold);font-size:12px;">&mdash; toca para programar</span>':'');
+  }
+  box.innerHTML='<div onclick="navigate(\'visitas\');setTimeout(function(){try{visTab(\'sabados\')}catch(_){}} ,200);" style="cursor:pointer;background:rgba(13,31,60,.6);border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:12px;font-size:14px;">'
+    +'<span style="font-size:20px;">&#128467;&#65039;</span><div>'+inner+'</div></div>';
 }
 
 async function mensajeriaGuardar(){
