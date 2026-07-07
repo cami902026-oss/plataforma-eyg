@@ -3891,6 +3891,22 @@ async function _enqueueOrSave(file, data, label) {
     _refreshSyncBadge();
   }
 }
+// FIX PISADAS AL RECONECTAR: la cola offline guardaba una foto COMPLETA del archivo
+// tomada cuando no había red, y al volver la conexión la subía tal cual, pisando lo
+// que otros usuarios guardaron mientras tanto. Ahora, justo antes de subir, se baja
+// el remoto fresco y se re-mezcla (mismos merges por id/updatedAt que el guardado
+// normal). Solo aplica a archivos cuyos registros tienen id; el resto sube igual.
+async function _mergeAntesDeSubir(file, data) {
+  try {
+    if (file === 'data/cotizaciones.json')      return await _cotizMergeConRemoto(Array.isArray(data) ? data : []);
+    if (file === 'data/solicitudes_cotiz.json') return await _solMergeConRemoto(Array.isArray(data) ? data : []);
+    if (file === 'data/visitas_plan.json' || file === 'data/sabados_plan.json') {
+      const remoto = await _loadDataGHRaw(file);
+      if (Array.isArray(remoto)) return visPlanMerge(remoto, Array.isArray(data) ? data : []);
+    }
+  } catch(_) {}
+  return data;
+}
 async function _drainSyncQueue() {
   if (!navigator.onLine) return;
   if (!_ghToken() && !_ghWriteProxyURL()) return;
@@ -3908,7 +3924,8 @@ async function _drainSyncQueue() {
         await _saveOrdenesGH(item.data);
         // Si _saveOrdenesGH falló re-encoló sola; si funcionó, no quedó nada que mover.
       } else {
-        await _saveDataGH(item.file, item.data, item.label + ' (cola)');
+        const dataFinal = await _mergeAntesDeSubir(item.file, item.data);
+        await _saveDataGH(item.file, dataFinal, item.label + ' (cola)');
       }
     } catch(_) {
       remaining.push(item);
@@ -4025,7 +4042,12 @@ function _syncDiscardAll() {
   document.getElementById('modal-sync-stuck')?.remove();
   showToast(q.length+' cambio(s) descartado(s)','info');
 }
-window.addEventListener('online',  () => { _refreshSyncBadge(); _drainSyncQueue().then(_refreshSyncBadge); });
+window.addEventListener('online',  () => {
+  _refreshSyncBadge();
+  // Al reconectar: subir la cola (ya re-mezclada) y luego bajar de una vez lo que
+  // el resto del equipo guardó mientras este equipo estuvo sin red.
+  _drainSyncQueue().then(() => { _refreshSyncBadge(); try { _runPollCycle(); } catch(_) {} });
+});
 window.addEventListener('offline', () => _refreshSyncBadge());
 // Al cargar la app, intentar drenar lo que haya quedado pendiente
 document.addEventListener('DOMContentLoaded', () => {
