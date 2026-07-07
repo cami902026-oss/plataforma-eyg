@@ -9687,13 +9687,30 @@ async function bdCargar(id) {
   // Traer la ÚLTIMA versión del servidor ANTES de abrir para editar. Así se edita
   // siempre sobre lo más reciente (evita pisar el cambio de un compañero y el
   // "flip-flop" de guardados cruzados con datos viejos). Si no hay red, sigue con lo local.
+  // FIX LENTITUD AL ABRIR: la verificación tiene tope de 2,5 s. Con buen internet
+  // no cambia nada; con internet flojo se abre YA con la copia local y se avisa,
+  // en vez de quedarse colgada esperando la descarga (~medio mega) sin límite.
+  let _verificado = true;
   try {
     const tgt = POLL_TARGETS.find(t => t.file === 'data/cotizaciones.json');
-    if (tgt && navigator.onLine) await _pollOne(tgt);
-  } catch(_) {}
+    if (tgt && navigator.onLine) {
+      showToast('Abriendo ' + id + '…', 'info');
+      const timeout = new Promise(res => setTimeout(() => res('__timeout__'), 2500));
+      const r = await Promise.race([_pollOne(tgt), timeout]);
+      if (r === '__timeout__') _verificado = false;
+    }
+  } catch(_) { _verificado = false; }
   const bd = getData('bd_cotizaciones', []);
   const c = bd.find(x => x.id === id);
-  if (!c) return;
+  if (!c) {
+    // Antes fallaba en silencio ("no abre"). Puede pasar si acaba de renumerarse.
+    showToast('⚠️ No se encontró la cotización ' + id + ' — pudo cambiar de número hace un momento. Refresca la lista (Base de Datos) y búscala de nuevo.', 'error', { durationMs: 10000 });
+    try { bdRender(); } catch(_) {}
+    return;
+  }
+  if (!_verificado) {
+    showToast('⚠️ Internet lento: se abrió con la copia de este equipo sin verificar la última versión del servidor. Revisa antes de guardar.', 'info', { durationMs: 8000 });
+  }
   // Aviso anti-pisada: si alguien MÁS la editó hace poco, recordar refrescar primero.
   const me = currentUser ? (currentUser.email || currentUser.name || '') : '';
   if (c.updatedBy && c.updatedBy !== me && c.updatedAt) {
