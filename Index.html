@@ -2100,6 +2100,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);">
   <button id="vis-tabbtn-registrar" onclick="visTab('registrar')" style="background:none;border:none;border-bottom:3px solid var(--gold);color:#fff;font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;">&#129309; Registrar visita</button>
   <button id="vis-tabbtn-semanario" onclick="visTab('semanario')" style="background:none;border:none;border-bottom:3px solid transparent;color:var(--text-muted);font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;">&#128197; Semanario</button>
+  <button id="vis-tabbtn-sabados" onclick="visTab('sabados')" style="background:none;border:none;border-bottom:3px solid transparent;color:var(--text-muted);font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;">&#128467; S&aacute;bados</button>
 </div>
 <div id="vis-tab-registrar">
 <div style="background:rgba(13,31,60,0.8);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
@@ -2174,6 +2175,25 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   <div style="overflow-x:auto;"><div id="vis-plan-grid"></div></div>
   <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Toca una celda vac&iacute;a para programar, o una visita para editarla. Los colores indican el estado.</p>
 </div>
+
+<!-- ===== SABADOS (rotacion de asistentes: Alexandra / Lina / Sandra) ===== -->
+<div id="vis-tab-sabados" style="display:none;">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="sabMes(-1)" style="padding:8px 12px;">&#8249; Anterior</button>
+      <button class="btn btn-ghost" onclick="sabMes(0)" style="padding:8px 12px;">Hoy</button>
+      <button class="btn btn-ghost" onclick="sabMes(1)" style="padding:8px 12px;">Siguiente &#8250;</button>
+      <span id="sab-plan-rango" style="color:var(--gold);font-weight:700;margin-left:8px;font-size:14px;"></span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="sabExportMes()" title="Descargar los s&aacute;bados del mes en .ics para tu calendario de Outlook/Teams" style="padding:8px 14px;font-size:13px;">&#128197; Exportar mes</button>
+      <button class="btn btn-primary" id="sab-btn-generar" onclick="sabGenerar()" title="Programa autom&aacute;ticamente los s&aacute;bados que falten hasta fin de a&ntilde;o siguiendo la rotaci&oacute;n Alexandra &rarr; Lina &rarr; Sandra" style="padding:8px 16px;font-size:13px;display:none;">&#9881;&#65039; Generar rotaci&oacute;n</button>
+    </div>
+  </div>
+  <div id="sab-plan-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;"></div>
+  <div id="sab-plan-resumen" style="margin-top:18px;"></div>
+  <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Rotaci&oacute;n continua Alexandra &rarr; Lina &rarr; Sandra (no se reinicia cada mes). Si un s&aacute;bado se marca &quot;No laboral&quot;, la rotaci&oacute;n se corre y nadie pierde turno. Solo direcci&oacute;n (Alberto, Andrea y Mario) puede editar.</p>
+</div>
 </div><!-- /page-visitas -->
 
 <!-- MODAL PROGRAMAR/EDITAR VISITA (fuera de la pagina: overlay fijo) -->
@@ -2211,6 +2231,36 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     </div>
   </div>
 </div><!-- /vis-plan-modal -->
+
+<!-- MODAL EDITAR SABADO (fuera de la pagina: overlay fijo) -->
+<div id="sab-plan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--card-bg,#0f1d33);border:1px solid rgba(255,255,255,.12);border-radius:14px;max-width:460px;width:100%;max-height:90vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 22px 8px;flex:0 0 auto;">
+      <h3 id="sab-plan-modal-tit" style="margin:0;font-family:'Montserrat',sans-serif;color:#fff;font-size:17px;">Editar s&aacute;bado</h3>
+      <button onclick="sabCerrar()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;">&times;</button>
+    </div>
+    <div style="padding:0 22px;overflow-y:auto;flex:1 1 auto;">
+      <input type="hidden" id="sab-plan-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label>Fecha (s&aacute;bado)</label><input type="text" id="sab-plan-fecha" readonly style="color:var(--gold);"></div>
+        <div class="form-group"><label>Asistente asignada</label><select id="sab-plan-asistente"></select></div>
+        <div class="form-group"><label>Estado</label><select id="sab-plan-estado" onchange="sabEstadoUI()">
+          <option value="Programada">Programada</option>
+          <option value="Cumplida">Cumplida</option>
+          <option value="Cambiada">Cambiada</option>
+          <option value="No laboral">No laboral</option>
+        </select></div>
+        <div class="form-group" id="sab-plan-reemplazo-box" style="display:none;"><label>Reemplazo (qui&eacute;n cubre)</label><select id="sab-plan-reemplazo"></select></div>
+        <div class="form-group" style="grid-column:1/3"><label>Nota / motivo</label><textarea id="sab-plan-nota" rows="2" placeholder="Ej: permuta por cita m&eacute;dica, festivo puente..." style="resize:vertical;"></textarea></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;padding:14px 22px 20px;flex-wrap:wrap;flex:0 0 auto;border-top:1px solid rgba(255,255,255,.08);">
+      <button class="btn btn-primary" onclick="sabGuardar()" style="flex:1;min-width:140px;">&#128190; Guardar</button>
+      <button class="btn btn-ghost" id="sab-plan-btn-del" onclick="sabEliminar()" style="display:none;color:var(--red);">&#128465; Eliminar</button>
+      <button class="btn btn-ghost" onclick="sabCerrar()">Cancelar</button>
+    </div>
+  </div>
+</div><!-- /sab-plan-modal -->
 
 <!-- MODULO MENSAJERIA -->
 <div class="page" id="page-mensajeria">
@@ -4206,6 +4256,7 @@ const POLL_TARGETS = [
   { file:'data/clientes.json',          storageKey:'max_bd_clientes',        renderFn: () => { try{ cliRender(); _cliUpdateDL(); }catch(_){} }, mergeBy:'id' },
   { file:'data/visitas.json',      storageKey:'energy_visitas',      renderFn: () => { _refreshVisitasIfOpen(); }, mergeBy:'id' },
   { file:'data/visitas_plan.json', storageKey:'energy_visitas_plan', renderFn: () => { try{ _refreshVisPlanIfOpen(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/sabados_plan.json', storageKey:'energy_sabados_plan', renderFn: () => { try{ _refreshSabPlanIfOpen(); }catch(_){} }, mergeBy:'id' },
   { file:'data/mensajeria.json',   storageKey:'energy_mensajeria',   renderFn: () => { _refreshMensajeriaIfOpen(); }, mergeBy:'id' },
   { file:'data/fotos_inv.json',    storageKey:'energy_fotos_inv',    renderFn: () => { try{ if(typeof invRender==='function') invRender(); }catch(_){} }, mergeBy:'__obj__' },
   { file:'data/config.json',       storageKey:null,                  renderFn: () => {}, mergeBy:null },
@@ -4900,7 +4951,7 @@ function navigate(page) {
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
   if(page==='remisiones') remiInit();
-  if(page==='visitas') { try{ visPlanInit(); }catch(_){} }
+  if(page==='visitas') { try{ visPlanInit(); }catch(_){} try{ sabPlanInit(); }catch(_){} }
   if(page==='compras') pcomInit();
   if(page==='ayuda') ayudaRender();
   if(page==='cartera') { setTimeout(loadCarteraUrlUI, 100); }
@@ -12160,12 +12211,17 @@ function visTab(which){
   _visPlanTab=which;
   document.getElementById('vis-tab-registrar').style.display = which==='registrar'?'':'none';
   document.getElementById('vis-tab-semanario').style.display = which==='semanario'?'':'none';
+  const tabSab=document.getElementById('vis-tab-sabados');
+  if(tabSab) tabSab.style.display = which==='sabados'?'':'none';
   const act='border-bottom:3px solid var(--gold);color:#fff;';
   const ina='border-bottom:3px solid transparent;color:var(--text-muted);';
   const base='background:none;border:none;font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;';
   document.getElementById('vis-tabbtn-registrar').style.cssText=base+(which==='registrar'?act:ina);
   document.getElementById('vis-tabbtn-semanario').style.cssText=base+(which==='semanario'?act:ina);
+  const btnSab=document.getElementById('vis-tabbtn-sabados');
+  if(btnSab) btnSab.style.cssText=base+(which==='sabados'?act:ina);
   if(which==='semanario'){ visPlanFillSelects(); visPlanRender(); }
+  if(which==='sabados'){ try{ sabRender(); }catch(_){} }
 }
 async function visPlanInit(){
   if(!_visPlanWeek) _visPlanWeek=visPlanMonday(new Date());
@@ -12428,6 +12484,247 @@ function visPlanExportSemana(){
   if(!items.length){ showToast('No hay visitas en esta semana para exportar','info'); return; }
   _icsDownload(items.map(visPlanVevent).join(''), 'semanario_'+days[0]+'_a_'+days[5]+'.ics');
   showToast('📅 '+items.length+' visita(s) exportadas. Abre el archivo para agregarlas a tu calendario.','success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SÁBADOS — rotación de asistentes (Alexandra → Lina → Sandra)
+// Un registro por sábado (id determinístico 'sab_'+fecha) en
+// data/sabados_plan.json, con el mismo merge anti-pisadas del semanario.
+// Editan solo ADMIN/JEFE + mario (director comercial); el resto ve todo.
+// ═══════════════════════════════════════════════════════════════
+const SAB_PLAN_KEY='energy_sabados_plan';
+const SAB_PLAN_FILE='data/sabados_plan.json';
+const SAB_COLORS={alexandra:'#E8A020', lina:'#db2777', sandra:'#9333ea'};
+let _sabPlan=[];
+let _sabMes=null;   // Date del día 1 del mes visible
+
+function sabAsistentes(){
+  const emails=['alexandra','lina','sandra'];
+  const list=(typeof USERS!=='undefined'?USERS:[]);
+  return emails.map(e=>{ const u=list.find(x=>x.email===e); return {email:e, name:u?u.name:e}; });
+}
+function sabIsManager(){
+  if(!currentUser) return false;
+  return currentUser.role==='ADMIN'||currentUser.role==='JEFE'||currentUser.email==='mario';
+}
+function sabNombre(email){
+  const a=sabAsistentes().find(x=>x.email===email);
+  return a?a.name:(email||'—');
+}
+function sabEfectiva(r){ return (r.estado==='Cambiada'&&r.reemplazo)?r.reemplazo:r.asistente; }
+function sabEstadoColor(estado){
+  return ({Programada:'#1A3A8F', Cumplida:'#2EAA4A', Cambiada:'#E8A020', 'No laboral':'#6b7280'})[estado]||'#1A3A8F';
+}
+function sabDelMes(y,m){
+  const out=[]; const d=new Date(y,m,1);
+  while(d.getMonth()===m){ if(d.getDay()===6) out.push(new Date(d)); d.setDate(d.getDate()+1); }
+  return out;
+}
+async function sabCargar(){
+  try{
+    const remote=await _loadDataGH(SAB_PLAN_FILE);
+    let local=[]; try{ local=JSON.parse(localStorage.getItem(SAB_PLAN_KEY)||'[]'); }catch(_){}
+    _sabPlan=visPlanMerge(Array.isArray(remote)?remote:[], local);
+    localStorage.setItem(SAB_PLAN_KEY, JSON.stringify(_sabPlan));
+  }catch(_){
+    try{ _sabPlan=JSON.parse(localStorage.getItem(SAB_PLAN_KEY)||'[]'); }catch(e){ _sabPlan=[]; }
+  }
+}
+async function sabPlanInit(){
+  if(!_sabMes){ const n=new Date(); _sabMes=new Date(n.getFullYear(),n.getMonth(),1); }
+  await sabCargar();
+  if(_visPlanTab==='sabados') sabRender();
+}
+function sabMes(delta){
+  if(delta===0){ const n=new Date(); _sabMes=new Date(n.getFullYear(),n.getMonth(),1); }
+  else { _sabMes=new Date(_sabMes.getFullYear(), _sabMes.getMonth()+delta, 1); }
+  sabRender();
+}
+function sabRender(){
+  const grid=document.getElementById('sab-plan-grid'); if(!grid) return;
+  if(!_sabMes){ const n=new Date(); _sabMes=new Date(n.getFullYear(),n.getMonth(),1); }
+  const y=_sabMes.getFullYear(), m=_sabMes.getMonth();
+  const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const rango=document.getElementById('sab-plan-rango');
+  if(rango) rango.textContent=MESES[m]+' '+y;
+  const manager=sabIsManager();
+  const btnGen=document.getElementById('sab-btn-generar');
+  if(btnGen) btnGen.style.display=manager?'':'none';
+  const todayStr=_visPlanFmt(new Date());
+  let html='';
+  sabDelMes(y,m).forEach(d=>{
+    const ds=_visPlanFmt(d);
+    const r=_sabPlan.find(x=>x.fecha===ds);
+    const isToday=ds===todayStr;
+    const click=manager?('onclick="sabEditar(\''+ds+'\')"'):'';
+    const cur=manager?'cursor:pointer;':'';
+    let inner;
+    if(r){
+      const efec=sabEfectiva(r);
+      const col=SAB_COLORS[efec]||'#94a3b8';
+      const ecol=sabEstadoColor(r.estado);
+      const nolab=r.estado==='No laboral';
+      inner='<div style="font-size:12px;color:var(--text-muted);font-weight:700;">S&aacute;bado '+d.getDate()+' '+MESES[m].slice(0,3).toLowerCase()+'</div>'
+        +(nolab
+          ? '<div style="font-size:15px;font-weight:800;color:#94a3b8;margin:6px 0;">No laboral</div>'
+          : '<div style="font-size:16px;font-weight:800;color:'+col+';margin:6px 0;">'+_vpEsc(sabNombre(efec).split(' ')[0])+'</div>')
+        +'<span style="display:inline-block;font-size:10.5px;font-weight:700;color:#fff;background:'+ecol+';border-radius:10px;padding:2px 8px;">'+_vpEsc(r.estado||'Programada')+'</span>'
+        +((r.estado==='Cambiada'&&r.reemplazo)?'<div style="font-size:11px;color:var(--text-muted);margin-top:5px;">Turno de: '+_vpEsc(sabNombre(r.asistente).split(' ')[0])+'</div>':'')
+        +(r.nota?'<div style="font-size:11px;color:var(--text-muted);margin-top:5px;">'+_vpEsc(r.nota)+'</div>':'');
+    } else {
+      inner='<div style="font-size:12px;color:var(--text-muted);font-weight:700;">S&aacute;bado '+d.getDate()+' '+MESES[m].slice(0,3).toLowerCase()+'</div>'
+        +'<div style="font-size:14px;font-weight:700;color:var(--text-muted);margin:6px 0;">Sin asignar</div>'
+        +(manager?'<span style="font-size:11px;color:var(--gold);">+ Asignar</span>':'');
+    }
+    const bcol=(r&&r.estado!=='No laboral')?(SAB_COLORS[sabEfectiva(r)]||'var(--border)'):'var(--border)';
+    html+='<div '+click+' style="'+cur+'background:rgba(13,31,60,.55);border:1px solid '+(isToday?'var(--gold)':'var(--border)')+';border-top:3px solid '+bcol+';border-radius:12px;padding:14px;text-align:center;">'+inner+'</div>';
+  });
+  grid.innerHTML=html;
+  // Resumen de equidad del año visible (excluye 'No laboral'; cuenta a quien realmente cubre)
+  const res=document.getElementById('sab-plan-resumen');
+  if(res){
+    const yearRecs=_sabPlan.filter(r=>r.fecha && r.fecha.slice(0,4)===String(y) && r.estado!=='No laboral');
+    const chips=sabAsistentes().map(a=>{
+      const n=yearRecs.filter(r=>sabEfectiva(r)===a.email).length;
+      return '<span style="display:inline-block;background:'+(SAB_COLORS[a.email]||'#475569')+'22;border:1px solid '+(SAB_COLORS[a.email]||'#475569')+';border-radius:10px;padding:5px 12px;margin-right:8px;font-size:12.5px;color:#fff;font-weight:700;">'+_vpEsc(a.name.split(' ')[0])+': '+n+' s&aacute;bado'+(n===1?'':'s')+'</span>';
+    }).join('');
+    res.innerHTML='<div style="font-size:12px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">Equidad '+y+' (s&aacute;bados cubiertos)</div>'+chips;
+  }
+}
+function sabEstadoUI(){
+  const est=document.getElementById('sab-plan-estado').value;
+  document.getElementById('sab-plan-reemplazo-box').style.display = est==='Cambiada'?'':'none';
+}
+function sabEditar(fecha){
+  if(!sabIsManager()){ showToast('Solo dirección (Alberto, Andrea o Mario) puede editar los sábados','info'); return; }
+  const coms=sabAsistentes();
+  const selA=document.getElementById('sab-plan-asistente');
+  const selR=document.getElementById('sab-plan-reemplazo');
+  const opts=coms.map(c=>'<option value="'+c.email+'">'+_vpEsc(c.name)+'</option>').join('');
+  selA.innerHTML=opts; selR.innerHTML=opts;
+  const r=_sabPlan.find(x=>x.fecha===fecha);
+  document.getElementById('sab-plan-modal-tit').textContent = r?'Editar sábado':'Asignar sábado';
+  document.getElementById('sab-plan-id').value = r?r.id:'';
+  document.getElementById('sab-plan-fecha').value = fecha;
+  selA.value = r?(r.asistente||coms[0].email):coms[0].email;
+  document.getElementById('sab-plan-estado').value = r?(r.estado||'Programada'):'Programada';
+  selR.value = (r&&r.reemplazo)?r.reemplazo:coms[0].email;
+  document.getElementById('sab-plan-nota').value = r?(r.nota||''):'';
+  document.getElementById('sab-plan-btn-del').style.display = r?'':'none';
+  sabEstadoUI();
+  document.getElementById('sab-plan-modal').style.display='flex';
+}
+function sabCerrar(){ document.getElementById('sab-plan-modal').style.display='none'; }
+async function sabSync(msg){
+  try{
+    const remote=await _loadDataGH(SAB_PLAN_FILE);
+    _sabPlan=visPlanMerge(Array.isArray(remote)?remote:[], _sabPlan);
+    localStorage.setItem(SAB_PLAN_KEY, JSON.stringify(_sabPlan));
+    await _saveDataGH(SAB_PLAN_FILE, _sabPlan, msg);
+    return true;
+  }catch(e){
+    localStorage.setItem(SAB_PLAN_KEY, JSON.stringify(_sabPlan));
+    showToast('⚠️ Guardado local, falló sync: '+(e&&e.message||e),'error');
+    return false;
+  }
+}
+async function sabGuardar(){
+  if(!sabIsManager()){ showToast('No tienes permiso','error'); return; }
+  const fecha=document.getElementById('sab-plan-fecha').value;
+  if(!fecha) return;
+  const estado=document.getElementById('sab-plan-estado').value;
+  const reg={
+    id:'sab_'+fecha, fecha,
+    asistente:document.getElementById('sab-plan-asistente').value,
+    estado,
+    reemplazo: estado==='Cambiada'?document.getElementById('sab-plan-reemplazo').value:'',
+    nota:document.getElementById('sab-plan-nota').value.trim(),
+    updatedAt:new Date().toISOString(),
+    updatedBy: currentUser?(currentUser.name||currentUser.email):'—'
+  };
+  const ix=_sabPlan.findIndex(x=>x.id===reg.id);
+  if(ix>=0) _sabPlan[ix]=reg; else _sabPlan.push(reg);
+  showToast('Guardando…','info');
+  const ok=await sabSync('🗓️ Sábado '+fecha+' actualizado');
+  if(ok) showToast('✅ Sábado guardado','success');
+  sabCerrar();
+  sabRender();
+}
+async function sabEliminar(){
+  const id=document.getElementById('sab-plan-id').value; if(!id) return;
+  if(!sabIsManager()){ showToast('No tienes permiso','error'); return; }
+  if(!confirm('¿Eliminar la asignación de este sábado?')) return;
+  showToast('Eliminando…','info');
+  try{
+    const remote=await _loadDataGH(SAB_PLAN_FILE);
+    _sabPlan=(Array.isArray(remote)?remote:[]).filter(x=>x.id!==id);
+    localStorage.setItem(SAB_PLAN_KEY, JSON.stringify(_sabPlan));
+    await _saveDataGH(SAB_PLAN_FILE, _sabPlan, '🗑️ Sábado eliminado');
+    showToast('✅ Eliminado','success');
+  }catch(e){
+    _sabPlan=_sabPlan.filter(x=>x.id!==id);
+    localStorage.setItem(SAB_PLAN_KEY, JSON.stringify(_sabPlan));
+    showToast('⚠️ Eliminado local, falló sync','error');
+  }
+  sabCerrar();
+  sabRender();
+}
+// Genera la rotación desde el mes visible hasta fin de ese año.
+// Solo crea sábados que falten (no pisa los existentes). El ciclo continúa
+// desde el último sábado ya asignado; 'No laboral' no consume turno.
+async function sabGenerar(){
+  if(!sabIsManager()){ showToast('Solo dirección puede generar la rotación','error'); return; }
+  const emails=sabAsistentes().map(a=>a.email);
+  const y=_sabMes.getFullYear();
+  const sats=[];
+  for(let m=_sabMes.getMonth(); m<12; m++){ sabDelMes(y,m).forEach(d=>sats.push(d)); }
+  if(!sats.length){ showToast('No hay sábados en este rango','info'); return; }
+  const firstStr=_visPlanFmt(sats[0]);
+  const prev=_sabPlan.filter(r=>r.fecha<firstStr && r.estado!=='No laboral' && emails.indexOf(r.asistente)>=0)
+    .sort((a,b)=>a.fecha<b.fecha?1:-1)[0];
+  let idx = prev ? (emails.indexOf(prev.asistente)+1)%emails.length : 0;
+  const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  if(!confirm('Se programarán los sábados que falten desde '+MESES[_sabMes.getMonth()]+' hasta diciembre de '+y+',\nsiguiendo la rotación Alexandra → Lina → Sandra.\n\nLos sábados ya asignados NO se modifican. ¿Continuar?')) return;
+  let creados=0;
+  for(const d of sats){
+    const ds=_visPlanFmt(d);
+    const ex=_sabPlan.find(r=>r.fecha===ds);
+    if(ex){ if(ex.estado!=='No laboral' && emails.indexOf(ex.asistente)>=0){ idx=(emails.indexOf(ex.asistente)+1)%emails.length; } continue; }
+    _sabPlan.push({ id:'sab_'+ds, fecha:ds, asistente:emails[idx], estado:'Programada', reemplazo:'', nota:'',
+      updatedAt:new Date().toISOString(), updatedBy: currentUser?(currentUser.name||currentUser.email):'—' });
+    idx=(idx+1)%emails.length; creados++;
+  }
+  if(!creados){ showToast('Todos los sábados del rango ya estaban programados','info'); return; }
+  showToast('Guardando…','info');
+  const ok=await sabSync('🗓️ Rotación de sábados generada ('+creados+')');
+  if(ok) showToast('✅ '+creados+' sábado(s) programados','success');
+  sabRender();
+}
+function sabVevent(r){
+  const nom=sabNombre(sabEfectiva(r));
+  const f=(r.fecha||'').replace(/-/g,'');
+  const d=['Asistente: '+nom];
+  if(r.estado==='Cambiada'&&r.reemplazo) d.push('Turno original de: '+sabNombre(r.asistente));
+  if(r.nota) d.push('Nota: '+r.nota);
+  let ev='BEGIN:VEVENT\r\nUID:'+r.id+'@eyg\r\n';
+  ev+='SUMMARY:'+_icsEscape('Sábado E&G — '+nom.split(' ')[0])+'\r\n';
+  ev+='DESCRIPTION:'+_icsEscape(d.join('\n'))+'\r\n';
+  ev+='DTSTART;VALUE=DATE:'+f+'\r\n'+'DTEND;VALUE=DATE:'+_icsPlus(f,0,1)+'\r\n';
+  ev+='END:VEVENT\r\n';
+  return ev;
+}
+function sabExportMes(){
+  if(!_sabMes){ const n=new Date(); _sabMes=new Date(n.getFullYear(),n.getMonth(),1); }
+  const y=_sabMes.getFullYear(), m=_sabMes.getMonth();
+  const pref=y+'-'+String(m+1).padStart(2,'0');
+  const items=_sabPlan.filter(r=>r.fecha && r.fecha.slice(0,7)===pref && r.estado!=='No laboral');
+  if(!items.length){ showToast('No hay sábados asignados en este mes para exportar','info'); return; }
+  _icsDownload(items.map(sabVevent).join(''), 'sabados_'+pref+'.ics');
+  showToast('📅 '+items.length+' sábado(s) exportados. Abre el archivo para agregarlos a tu calendario.','success');
+}
+function _refreshSabPlanIfOpen(){
+  try{ _sabPlan=JSON.parse(localStorage.getItem(SAB_PLAN_KEY)||'[]'); }catch(_){ _sabPlan=[]; }
+  if(typeof currentPage!=='undefined' && currentPage==='visitas' && _visPlanTab==='sabados') sabRender();
 }
 
 async function mensajeriaGuardar(){
