@@ -1352,6 +1352,17 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                     <option value="Pendiente">⏳ Pendiente seguimiento</option>
                   </select>
                 </div>
+                <div class="form-group" id="cotiz-motivo-box" style="display:none;margin-bottom:8px;">
+                  <label style="color:#f87171;">MOTIVO DE RECHAZO (obligatorio)</label>
+                  <select id="cotiz-motivo-rechazo" style="background:var(--card-bg);border:1px solid rgba(248,113,113,.5);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
+                    <option value="">— Selecciona el motivo —</option>
+                    <option value="Sin stock disponible">Sin stock disponible</option>
+                    <option value="Stock insuficiente">Stock insuficiente</option>
+                    <option value="Falta soporte técnico">Falta soporte técnico</option>
+                    <option value="Precio no competitivo">Precio no competitivo</option>
+                    <option value="Tiempo de entrega no competitivo">Tiempo de entrega no competitivo</option>
+                  </select>
+                </div>
                 <div class="form-group" id="cotiz-factura-group" style="margin-bottom:8px;display:none;">
                   <label>N° FACTURA <span style="color:var(--text-muted);font-weight:400;">(al facturar)</span></label>
                   <input type="text" id="cotiz-factura" placeholder="Ej: FE-1234" style="width:100%;">
@@ -7563,6 +7574,10 @@ let _cotizFacturaFechaPend = '';
 function cotizEstadoChange() {
   const sel = document.getElementById('cotiz-estado');
   const est = sel ? sel.value : '';
+  // Motivo de rechazo: el desplegable solo se muestra cuando el estado es Rechazada
+  const _mbox = document.getElementById('cotiz-motivo-box');
+  if (_mbox) _mbox.style.display = est === 'Rechazada' ? '' : 'none';
+  if (est === 'Rechazada') { const _msel = document.getElementById('cotiz-motivo-rechazo'); if (_msel && !_msel.value) setTimeout(() => { try { _msel.focus(); } catch(_){} }, 50); }
   const fld = document.getElementById('cotiz-factura');
   if (est === 'Facturada') {
     const actual = (fld && fld.value.trim()) || '';
@@ -8681,6 +8696,8 @@ function cotizNueva(silent) {
   document.getElementById('cotiz-correo').value = '';
   document.getElementById('cotiz-estado').value = 'Borrador';
   document.getElementById('cotiz-factura').value = '';
+  const _mrSel2 = document.getElementById('cotiz-motivo-rechazo'); if (_mrSel2) _mrSel2.value = '';
+  const _mrBox2 = document.getElementById('cotiz-motivo-box'); if (_mrBox2) _mrBox2.style.display = 'none';
   _cotizEstadoPrev = 'Borrador';
   _cotizFacturaFechaPend = '';
   _cotizFacturaRefresh();
@@ -8706,6 +8723,15 @@ function cotizGuardarBD() {
   const cliente = document.getElementById('cotiz-cliente').value.trim();
   if (!cliente) { showToast('Ingresa el nombre del cliente','error'); return; }
   if (!cotizItems.length) { showToast('Agrega al menos un ítem','error'); return; }
+  // Motivo de rechazo obligatorio: sin motivo no se puede guardar como Rechazada
+  const _estadoAGuardar = document.getElementById('cotiz-estado').value;
+  const _motivoRech = ((document.getElementById('cotiz-motivo-rechazo')||{}).value || '').trim();
+  if (_estadoAGuardar === 'Rechazada' && !_motivoRech) {
+    const _mb = document.getElementById('cotiz-motivo-box'); if (_mb) _mb.style.display = '';
+    const _ms = document.getElementById('cotiz-motivo-rechazo'); if (_ms) { try { _ms.focus(); } catch(_){} }
+    showToast('Selecciona el MOTIVO DE RECHAZO — es obligatorio para marcar Rechazada','error');
+    return;
+  }
   const iva = parseFloat(document.getElementById('cotiz-iva').value) || 0;
   const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
   const ivaVal = subtotal * iva / 100;
@@ -8746,6 +8772,7 @@ function cotizGuardarBD() {
     realizadaPor: (document.getElementById('cotiz-realiza')||{}).value || '',
     aprobadaPor: (document.getElementById('cotiz-aprueba')||{}).value || '',
     solicitudId: (document.getElementById('cotiz-sol-vincular')||{}).value || '',
+    motivoRechazo: _estadoAGuardar === 'Rechazada' ? _motivoRech : '',
     items: JSON.parse(JSON.stringify(cotizItems)),
     fechaGuardado: new Date().toISOString()
   };
@@ -8869,8 +8896,8 @@ async function cotizGenerarPDF() {
       <td class="c">${it.tiempoEntrega||''}</td>
       <td class="c">${it.desvTec||''}</td>
       <td class="c">${it.marca||''}</td>
-      <td class="r">${fmt(it.precio||0)}</td>
-      <td class="r">${fmt((it.qty||0)*(it.precio||0))}</td>
+      <td class="r">${(it.precio||0)===0 ? '<span style="font-size:7.5px;color:#888;letter-spacing:.3px;">NO COTIZADO</span>' : fmt(it.precio||0)}</td>
+      <td class="r">${(it.precio||0)===0 ? '<span style="font-size:7.5px;color:#888;letter-spacing:.3px;">NO COTIZADO</span>' : fmt((it.qty||0)*(it.precio||0))}</td>
     </tr>`).join('');
 
   const html = `<!DOCTYPE html>
@@ -9124,8 +9151,8 @@ function cotizDownloadExcel() {
       it.tiempoEntrega || '',
       it.desvTec || '',
       it.marca || '',
-      it.precio || 0,
-      (it.qty||0) * (it.precio||0),
+      (it.precio||0) === 0 ? 'NO COTIZADO' : (it.precio || 0),
+      (it.precio||0) === 0 ? 'NO COTIZADO' : (it.qty||0) * (it.precio||0),
       it.proveedor || '',
       '',
       '',
@@ -9639,7 +9666,7 @@ function bdRender(filtro) {
       <td style="text-align:center">${_h?'':_bdSemaforo(c)}</td>
       <td style="color:var(--gold);font-weight:600">$${(c.total||0).toLocaleString('es-CO',{minimumFractionDigits:0})}</td>
       <td style="color:var(--text-muted)">${c.fechaVenc||''}</td>
-      <td><span class="cotiz-estado-badge ${cls}">${c.estado}</span></td>
+      <td><span class="cotiz-estado-badge ${cls}">${c.estado}</span>${c.motivoRechazo?`<div style="font-size:9.5px;color:#f87171;margin-top:2px;">${String(c.motivoRechazo).replace(/</g,'&lt;')}</div>`:''}</td>
       <td onclick="event.stopPropagation()">${acciones}</td>
     </tr>`;
   }).join('');
@@ -9667,6 +9694,8 @@ function _bdLoadIntoEditor(c, msg, adopted) {
   document.getElementById('cotiz-correo').value = c.correo || '';
   document.getElementById('cotiz-estado').value = c.estado || 'Enviada';
   document.getElementById('cotiz-factura').value = c.factura || '';
+  const _mrSel = document.getElementById('cotiz-motivo-rechazo'); if (_mrSel) _mrSel.value = c.motivoRechazo || '';
+  const _mrBox = document.getElementById('cotiz-motivo-box'); if (_mrBox) _mrBox.style.display = (c.estado === 'Rechazada') ? '' : 'none';
   _cotizEstadoPrev = c.estado || 'Enviada';
   _cotizFacturaFechaPend = c.facturadaAt || '';
   _cotizFacturaRefresh();
