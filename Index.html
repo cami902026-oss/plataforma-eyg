@@ -1391,6 +1391,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="btn btn-secondary" onclick="cotizBuscarInventarioModal()" style="width:auto;font-size:13px;background:rgba(26,58,143,.4);">🔍 Buscar en inventario</button>
               <button class="btn btn-secondary" onclick="cotizClear()" style="width:auto;font-size:13px;">🗑 Limpiar ítems</button>
               <button class="btn btn-secondary" id="cotiz-btn-quitar-img" onclick="cotizQuitarImagen()" style="width:auto;font-size:13px;display:none;background:rgba(248,113,113,.18);color:#fca5a5;">✕ Quitar imagen</button>
+              <button class="btn btn-secondary" id="cotiz-btn-undo" onclick="cotizUndoItems()" title="Restaura la tabla de ítems como estaba antes de la última extracción con IA" style="width:auto;font-size:13px;display:none;background:rgba(232,160,32,.18);color:#fcd34d;">↩️ Recuperar ítems anteriores</button>
             </div>
             <div id="cotiz-ai-status" style="display:none;" class="cotiz-ai-status">
               <div class="cotiz-ai-spinner"></div>
@@ -7913,6 +7914,22 @@ function cotizLoadFile(input) {
   reader.readAsDataURL(file);
 }
 
+// Respaldo de la tabla de ítems previo a una extracción con IA (para deshacer).
+// También queda en localStorage ('energy_cotiz_items_undo') por si se recarga la página.
+let _cotizItemsBackup = null;
+function cotizUndoItems() {
+  let bak = _cotizItemsBackup;
+  if (!bak || !bak.length) {
+    try { const s = JSON.parse(localStorage.getItem('energy_cotiz_items_undo') || 'null'); if (s && Array.isArray(s.items)) bak = s.items; } catch(_) {}
+  }
+  if (!bak || !bak.length) { showToast('No hay ítems anteriores para recuperar','info'); return; }
+  const actual = JSON.parse(JSON.stringify(cotizItems || []));
+  cotizItems = JSON.parse(JSON.stringify(bak));
+  _cotizItemsBackup = actual;   // permite alternar entre las dos versiones
+  cotizRender();
+  showToast('↩️ Ítems anteriores recuperados (' + cotizItems.length + '). Toca de nuevo para volver a la otra versión.','success');
+}
+
 async function cotizExtract() {
   const url = getClaudeProxyURL();
   if (!url) { showToast('Configura la URL del Proxy en Configuración → ENERGY IA','error'); return; }
@@ -7956,7 +7973,7 @@ async function cotizExtract() {
       if (!items.length) throw parseErr;
       showToast('⚠️ La lista era muy larga; se recuperaron '+items.length+' ítems. Revisa que estén todos.','info');
     }
-    cotizItems = items.map((it,i) => ({
+    const nuevos = items.map((it,i) => ({
       id: i+1,
       desc: it.desc || '',
       udm: it.udm || 'EA',
@@ -7967,8 +7984,27 @@ async function cotizExtract() {
       marca: it.marca || '',
       proveedor: it.proveedor || ''
     }));
+    // FIX "se borraron los ítems": antes la extracción REEMPLAZABA la tabla completa.
+    // Si ya hay ítems (ej. editando una cotización enviada), se pregunta si AGREGAR
+    // al final o reemplazar, y siempre queda respaldo para deshacer.
+    const habia = Array.isArray(cotizItems) ? cotizItems.length : 0;
+    if (habia > 0) {
+      _cotizItemsBackup = JSON.parse(JSON.stringify(cotizItems));
+      try { localStorage.setItem('energy_cotiz_items_undo', JSON.stringify({ ts: new Date().toISOString(), items: _cotizItemsBackup })); } catch(_) {}
+      const agregar = confirm('La tabla ya tiene ' + habia + ' ítem(s).\n\n✔ Aceptar → AGREGAR los ' + nuevos.length + ' ítems extraídos AL FINAL (se conservan los actuales)\n✖ Cancelar → REEMPLAZAR toda la tabla por los ' + nuevos.length + ' nuevos');
+      if (agregar) {
+        let maxId = 0; cotizItems.forEach(x => { const n = Number(x.id) || 0; if (n > maxId) maxId = n; });
+        nuevos.forEach((n,j) => { n.id = maxId + j + 1; });
+        cotizItems = cotizItems.concat(nuevos);
+      } else {
+        cotizItems = nuevos;
+      }
+      const btnU = document.getElementById('cotiz-btn-undo'); if (btnU) btnU.style.display = '';
+    } else {
+      cotizItems = nuevos;
+    }
     cotizRender();
-    showToast('¡' + cotizItems.length + ' ítems extraídos!','success');
+    showToast('¡' + nuevos.length + ' ítems extraídos!' + (habia > 0 ? ' Total en la tabla: ' + cotizItems.length + '. Si algo salió mal usa ↩️ Recuperar.' : ''),'success');
   } catch(e) {
     showToast('Error al procesar con IA: ' + e.message,'error');
   } finally {
