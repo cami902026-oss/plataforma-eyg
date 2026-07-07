@@ -815,6 +815,10 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <button class="gsearch-trigger" onclick="_gsearchOpen()" title="Búsqueda global (Ctrl+K)" type="button">
           🔍 <span class="lbl">Buscar</span> <span class="gsearch-kbd">Ctrl K</span>
         </button>
+        <button class="gsearch-trigger" id="btn-actualizar" onclick="actualizarAhora()" title="Bajar AHORA los últimos cambios del equipo (cotizaciones, solicitudes, sábados, todo)" type="button">
+          🔄 <span class="lbl" id="actualizar-lbl">Actualizar</span>
+        </button>
+        <span id="last-sync-ago" style="font-size:10px;color:var(--text-muted);white-space:nowrap;" title="Hace cuánto se bajaron datos del servidor por última vez"></span>
         <div class="sync-pill ok" id="sync-pill" title="Estado de sincronización" onclick="syncNow()">
           <span class="dot"></span><span class="lbl" id="sync-label">Sincronizado</span>
         </div>
@@ -4423,7 +4427,61 @@ async function _runPollCycle() {
   // cotizaciones —7º de la lista— esperaban a los anteriores). En paralelo todo el
   // equipo ve los cambios casi al mismo tiempo. Un fallo suelto no tumba el ciclo.
   const resultados = await Promise.all(POLL_TARGETS.map(t => _pollOne(t).catch(() => false)));
+  _lastPollOk = Date.now(); try { _lastSyncAgoPaint(); } catch(_) {}
   if (resultados.some(Boolean)) showToast('Datos actualizados desde el servidor','info');
+}
+
+// ── 🔄 Botón "Actualizar" (barra superior) ──
+// Un toque: sube lo pendiente de la cola (re-mezclado), fuerza la descarga completa
+// de TODOS los datos y refresca la vista. Además detecta si hay versión nueva de la
+// app y ofrece recargar. "hace Xs" = hace cuánto se bajaron datos por última vez.
+let _lastPollOk = 0;
+function _lastSyncAgoPaint() {
+  const el = document.getElementById('last-sync-ago'); if (!el) return;
+  if (!_lastPollOk) { el.textContent = ''; return; }
+  const s = Math.round((Date.now() - _lastPollOk) / 1000);
+  el.textContent = s < 5 ? 'al día' : (s < 60 ? 'hace ' + s + ' s' : 'hace ' + Math.round(s / 60) + ' min');
+}
+setInterval(_lastSyncAgoPaint, 10000);
+async function _appVersionCheck() {
+  try {
+    const r = await fetch('service-worker.js?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return null;
+    const m = (await r.text()).match(/CACHE_NAME\s*=\s*'energy-v(\d+)'/);
+    if (!m) return null;
+    const keys = await caches.keys();
+    const locales = keys.map(k => { const x = k.match(/^energy-v(\d+)$/); return x ? parseInt(x[1]) : 0; }).filter(Boolean);
+    const local = locales.length ? Math.max(...locales) : 0;
+    const remota = parseInt(m[1]);
+    if (local && remota > local) return { local, remota };
+  } catch(_) {}
+  return null;
+}
+async function actualizarAhora() {
+  const btn = document.getElementById('btn-actualizar');
+  const lbl = document.getElementById('actualizar-lbl');
+  if (btn && btn.disabled) return;
+  if (!navigator.onLine) { showToast('Sin conexión — se actualizará solo cuando vuelva la red', 'error'); return; }
+  if (btn) btn.disabled = true;
+  if (lbl) lbl.textContent = 'Actualizando…';
+  try {
+    await _drainSyncQueue();                                        // primero subir lo pendiente
+    Object.keys(_pollEtags).forEach(k => delete _pollEtags[k]);     // forzar descarga completa
+    await Promise.all(POLL_TARGETS.map(t => _pollOne(t).catch(() => false)));
+    _lastPollOk = Date.now(); _lastSyncAgoPaint();
+    _refreshSyncBadge();
+    showToast('✅ Datos actualizados — estás viendo lo último del equipo', 'success');
+    const v = await _appVersionCheck();
+    if (v && confirm('⬆️ Hay una versión NUEVA de la plataforma (v' + v.remota + ', tienes la v' + v.local + ').\n\n¿Recargar ahora para tenerla? (no se pierde nada)')) {
+      try { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await reg.update(); } catch(_) {}
+      location.reload();
+    }
+  } catch(e) {
+    showToast('No se pudo actualizar: ' + (e && e.message || e), 'error');
+  } finally {
+    if (btn) btn.disabled = false;
+    if (lbl) lbl.textContent = 'Actualizar';
+  }
 }
 function _startPolling() {
   if (_pollTimer) clearInterval(_pollTimer);
