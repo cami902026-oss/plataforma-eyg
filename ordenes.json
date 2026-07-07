@@ -3026,5 +3026,52 @@
     "createdBy": "lina",
     "updatedAt": "2026-07-07T19:15:09.641Z",
     "updatedBy": "lina"
+  },
+  {
+    "id": "poc_1783451945595",
+    "num": "ODCCMC-000031",
+    "cliente": "TOC ENERGIA",
+    "desc": "Cotización LM1547 · 21 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-07",
+    "valor": 758792,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-07",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-07",
+        "n": "",
+        "factura": "507"
+      }
+    ],
+    "cotizacionId": "LM1547",
+    "createdAt": "2026-07-07T19:19:05.595Z",
+    "createdBy": "lina",
+    "updatedAt": "2026-07-07T19:19:05.595Z",
+    "updatedBy": "lina"
   }
 ]
