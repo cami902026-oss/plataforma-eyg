@@ -233,4 +233,35 @@ location.reload();
 - ✅ **Email dinámico en encabezado del PDF:** se toma del campo `email` del vendedor en los datos de equipo. Fallback: `comercial1@eygenergygroup.com`
 - ✅ **Fila Vendedor / Elaboró / Aprobó** al pie del PDF
 
-*Fin del archivo de memoria. Última actualización: 23/may/2026*
+---
+
+## 🚀 Cambios y mejoras hechas el 07/jul/2026 (SW v86 → v94)
+
+### 🗓️ Cronograma de Sábados (nuevo, SW v86-v87)
+- Pestaña **"🗓️ Sábados"** en Visitas Comerciales: rotación continua **Alexandra → Lina → Sandra** (inicia 11/jul/2026), un registro por sábado en `data/sabados_plan.json` (id `sab_YYYY-MM-DD`, merge anti-pisadas).
+- Estados: Programada / Cumplida / Cambiada (con reemplazo) / No laboral (corre la rotación sin consumir turno). Botón "⚙️ Generar rotación" crea solo los sábados faltantes hasta fin de año.
+- Editan ADMIN/JEFE + **Mario**; el resto solo ve. Contador de equidad anual + export .ics por mes.
+- **Tarjeta Dashboard** "Este sábado trabaja: X" + **workflow `sabado-reminder.yml`** (viernes 4PM: correo a la asistente de turno + dirección; alerta si el sábado está sin asignar).
+- Excel de aprobación: `Escritorio\Cronograma_Sabados_2026.xlsx` (25 sábados jul-dic).
+
+### 🛡️ Sincronización blindada (SW v88, v93, v94)
+- **Fix pisadas al reconectar**: la cola offline ahora RE-MEZCLA con el remoto antes de subir (`_mergeAntesDeSubir` — cotizaciones, solicitudes, semanario, sábados). Al volver la red también baja de inmediato lo de los demás.
+- **Timeouts de red** (`_fetchT`, AbortController): 10-20s por petición en todo el guardado/lectura GitHub. Fin del "Sincronizando…" eterno (caso Andrea) — ahora pasa a cola con reintento.
+- **Botón 🔄 Actualizar** en barra superior: sube la cola + fuerza descarga de TODOS los datos + indicador "hace Xs" + detector de versión nueva con oferta de recarga.
+
+### 📋 Cotizaciones (SW v89-v92, v94)
+- **Extraer con IA ya no borra ítems**: si la tabla tiene ítems pregunta AGREGAR al final o reemplazar; botón "↩️ Recuperar ítems anteriores" (respaldo en `energy_cotiz_items_undo`).
+- **Consecutivo vivo**: si otra persona usa el número que está en pantalla, el campo se actualiza solo al siguiente libre (sufijos incluidos: LM1751-1→-2); al renumerar por colisión el formulario y `cotizEditId` se corrigen al instante ("Genera el PDF como LMxxxx").
+- **Abrir sin colgarse**: verificación pre-apertura con tope 2,5s (internet flojo → abre con copia local + aviso); mensaje claro si el número no existe.
+- **Motivo de rechazo OBLIGATORIO**: desplegable al marcar Rechazada (Sin stock disponible / Stock insuficiente / Falta soporte técnico / Precio no competitivo / Tiempo de entrega no competitivo); visible en rojo en la BD; se guarda en `motivoRechazo`.
+- **Ítems en $0 = "NO COTIZADO"** en PDF y Excel (los $0 son intencionales: ítems no encontrados).
+- **BD de Clientes auto-alimentada**: `_cliUpsertDesdeCotiz` al guardar (solo llena campos vacíos, nunca pisa lo manual) + seed `data/clientes.json` con 59 clientes del histórico. El autocompletar del formulario ya funciona.
+- **Semáforo revivido**: `fechaEnvio` se estampa al marcar Enviada (antes nunca se guardaba → columna muerta).
+- **Auto-Vencidas**: Enviadas con `fechaVenc` pasada se marcan Vencida solas (`updatedBy:'auto'`); ~33 corregidas al primer ciclo.
+
+### 📌 Roadmap pendiente (aprobado en concepto, sin construir)
+- **C** Precios sugeridos al cotizar (histórico del cliente + costo/margen). **B** Borrador de correo Outlook con PDF adjunto + marcar Enviada auto (usuario dijo SÍ). **E** Indicadores gerencia (conversión por vendedor, motivos de rechazo). **D** Alertas de vencimiento: "todavía no".
+- **Paso A Supabase**: migrar cotizaciones (90 días) a Supabase con consecutivo del servidor + Realtime. Fases 1-2 sin riesgo con gente trabajando; corte final 15 min fuera de horario.
+- Monitor de cotizaciones sin subir por usuario (heartbeat + panel dirección): propuesto, sin decidir.
+
+*Fin del archivo de memoria. Última actualización: 07/jul/2026*
