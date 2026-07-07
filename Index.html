@@ -3809,6 +3809,18 @@ function _cotizAvisarColision(conflictos) {
   const detalle = nuevos.map(c => c.original + ' → ' + c.nuevo + (c.cliente ? ' (' + c.cliente + ')' : '')).join(' · ');
   try { showToast('⚠️ Consecutivo repetido: se renumeró para no perder ninguna cotización → ' + detalle, 'error', { durationMs: 12000 }); } catch(_) {}
   console.warn('[cotiz] colisión de consecutivo resuelta:', nuevos);
+  // Si la renumerada es la que está ABIERTA en el formulario de este equipo,
+  // actualizar el campo y el modo edición YA — para que el PDF no salga con el
+  // número viejo (antes solo se avisaba y el formulario quedaba desactualizado).
+  try {
+    nuevos.forEach(c => {
+      if (typeof cotizEditId !== 'undefined' && cotizEditId === c.original) {
+        cotizEditId = c.nuevo;
+        if (cotizReadNum() === c.original) cotizWriteNum(c.nuevo);
+        showToast('⚠️ IMPORTANTE: tu cotización cambió de número ' + c.original + ' → ' + c.nuevo + ' porque otra persona usó el mismo consecutivo. Genera el PDF como ' + c.nuevo + '.', 'error', { durationMs: 15000 });
+      }
+    });
+  } catch(_) {}
 }
 const _ghBackupTimers = {};
 function _scheduleBackupGH(key, val) {
@@ -4275,7 +4287,7 @@ const POLL_TARGETS = [
   { file:'data/minutas.json',      storageKey:'max_minutas',         renderFn: () => { try{ renderMinutas(); }catch(_){} }, mergeBy:'id' },
   { file:'data/projects.json',     storageKey:'max_projects',        renderFn: () => { try{ renderGantt(); }catch(_){} try{ renderDashboard(); }catch(_){} }, mergeBy:'id' },
   { file:'data/team.json',         storageKey:'max_team',            renderFn: () => { try{ renderTeam(); renderTeamMgmt(); populateSelects(); }catch(_){} }, mergeBy:'id' },
-  { file:'data/cotizaciones.json',      storageKey:'max_bd_cotizaciones',   renderFn: () => { try{ bdRender(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/cotizaciones.json',      storageKey:'max_bd_cotizaciones',   renderFn: () => { try{ bdRender(); }catch(_){} try{ _cotizNumVigilar(); }catch(_){} }, mergeBy:'id' },
   { file:'data/solicitudes_cotiz.json', storageKey:'max_solicitudes_cotiz', renderFn: () => { try{ solRender(); solUpdateBadge(); }catch(_){} }, mergeBy:'id' },
   { file:'data/clientes.json',          storageKey:'max_bd_clientes',        renderFn: () => { try{ cliRender(); _cliUpdateDL(); }catch(_){} }, mergeBy:'id' },
   { file:'data/visitas.json',      storageKey:'energy_visitas',      renderFn: () => { _refreshVisitasIfOpen(); }, mergeBy:'id' },
@@ -7667,6 +7679,31 @@ function cotizRegenerarNum() {
   const proximo = cotizGetNextNum();
   cotizWriteNum(proximo);
   showToast('Consecutivo asignado: ' + proximo, 'success');
+}
+
+// Siguiente número libre respetando sufijos: si "LM1751-1" está tomado propone
+// "LM1751-2"; si es un número normal, el siguiente consecutivo global.
+function _cotizNumSiguienteLibre(num, bd) {
+  const existe = x => bd.some(c => c && c.id === x && !c.deleted);
+  const m = String(num).match(/^(.*?-)(\d+)$/);
+  if (m) { let s = parseInt(m[2]); let cand; do { s++; cand = m[1] + s; } while (existe(cand)); return cand; }
+  return cotizGetNextNum();
+}
+// NÚMERO VIVO: el consecutivo se toma al abrir el formulario, así que dos personas
+// al tiempo veían el mismo. El poll (cada 8s) llama esto: si el número en pantalla
+// de una cotización AÚN NO GUARDADA acaba de usarlo otra persona, se actualiza
+// al siguiente libre y se avisa — antes de guardar o generar el PDF.
+function _cotizNumVigilar() {
+  if (typeof currentPage === 'undefined' || currentPage !== 'cotizaciones') return;
+  const num = cotizReadNum(); if (!num) return;
+  if (cotizEditId && num === cotizEditId) return;   // editando una ya guardada: ese número es suyo
+  const bd = getData('bd_cotizaciones', []);
+  const tomado = bd.find(c => c && c.id === num && !c.deleted);
+  if (!tomado) return;
+  const nuevo = _cotizNumSiguienteLibre(num, bd);
+  if (nuevo === num) return;
+  cotizWriteNum(nuevo);
+  showToast('⚠️ El consecutivo ' + num + ' acaba de usarlo ' + (tomado.createdBy || tomado.updatedBy || 'otra persona') + ' — el tuyo ahora es ' + nuevo, 'error', { durationMs: 12000 });
 }
 
 function cotizShowTab(tab) {
