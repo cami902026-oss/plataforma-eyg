@@ -11312,6 +11312,12 @@ async function executeEnergyTool(name, args) {
   }
 }
 
+// MODO EXPERTO TÉCNICO: detecta preguntas de material mecánico/eléctrico/
+// instrumentación para responder con el modelo superior (Sonnet, en la lista
+// blanca del proxy) solo en esas consultas — el resto sigue en Haiku económico.
+const _TEC_REGEX = /\b(brida|bridas|esp[aá]rrago|esp[aá]rragos|perno|pernos|tuerca|empaque|junta|v[aá]lvula|v[aá]lvulas|tuber[ií]a|tubo|niple|codo|tee|reducci[oó]n|acople|sch\s*\d+|schedule|npt|bsp|bspt|rosca|roscas|ansi|asme|astm|api\s?\d+|\d{3}#|clase\s*\d+|inoxidable|a105|a106|a193|a320|\bb7\b|\bl7\b|\b316l?\b|\b304\b|galvanizad|cable|awg|thhn|thwn|calibre|motor|\bhp\b|\bkw\b|voltaje|440v|220v|110v|trif[aá]sic|monof[aá]sic|breaker|contactor|variador|vfd|retie|\bnec\b|transmisor|man[oó]metro|termocupla|rtd|presi[oó]n|psi|\bbar\b|caudal|flujo|nivel|instrumentaci[oó]n|atex|iecex|fm\s+approved|[aá]rea\s+clasificada|antiexplosi[oó]n|intr[ií]nsec|arrestallamas|criog[eé]nic|soldadura|electrodo|platina|l[aá]mina|orificio|manifold|actuador|solenoide|man[oó]metros|termopozo)\b/i;
+function _esPreguntaTecnica(txt){ return _TEC_REGEX.test(String(txt||'')); }
+
 async function callEnergyAI(prompt, systemContext, history) {
   const url = getClaudeProxyURL();
   if(!url) return '⚙️ Configura la URL del Proxy ENERGY IA en Configuración. La API Key vive segura en el servidor (Apps Script o Netlify).';
@@ -11319,6 +11325,7 @@ async function callEnergyAI(prompt, systemContext, history) {
   try {
     const messages = Array.isArray(history) ? history.map(m=>({role:m.role, content:m.content})) : [];
     messages.push({role:'user', content:prompt});
+    const esTec = _esPreguntaTecnica(prompt);
 
     const systemPrompt = `Eres ENERGY, asistente administrativo de E&G Energy Group SAS. Eres eficiente, breve y profesional. Hoy es ${today.toLocaleDateString('es-CO',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}. Usuario actual: ${currentUser?.name||'?'} (${currentUser?.role||'?'}).
 
@@ -11326,14 +11333,21 @@ TIENES HERRAMIENTAS PARA EJECUTAR ACCIONES. Cuando el usuario pida hacer algo (c
 
 Si el usuario solo pregunta información (sin pedir acción), responde con texto usando el contexto disponible.
 
+ASESOR TÉCNICO: también eres especialista en suministro industrial para oil & gas y ayudas al equipo con dudas de material mecánico, eléctrico e instrumentación:
+- Mecánico: bridas (ASME B16.5, caras RF/FF/RTJ, clases 150#-2500#), espárragos y pernos (ASTM A193 B7, A320 L7 para baja temperatura, A194 2H), válvulas (API 6D, API 600/602, bola/compuerta/globo/cheque/mariposa), tubería (A106 GrB, A53, SCH 40/80/160), accesorios (A234 WPB, A105), roscas NPT/BSP, aceros al carbón e inoxidables 304/316, platinas de orificio, arrestallamas.
+- Eléctrico: cables (AWG, THHN/THWN, encauchetados), motores (HP/kW, voltajes 110/220/440V, arranque), breakers, contactores, variadores; referencia normativa RETIE (Colombia) y NEC.
+- Instrumentación: transmisores de presión/nivel/flujo/temperatura, manómetros, termocuplas/RTD, termopozos, manifolds, y certificaciones ATEX / IECEx / FM Approved para áreas clasificadas (E&G comercializa equipo surplus certificado FM).
+Responde en español claro y práctico, al nivel de una asistente comercial que necesita responderle a un cliente: definición corta, diferencias clave, equivalencias y unidades. Si la duda es sobre un material concreto, USA la herramienta buscar_inventario y, si E&G lo tiene, di el código, stock y ubicación sugiriéndolo como opción de venta.
+IMPORTANTE: si el tema toca áreas clasificadas/atmósferas explosivas, equipos a presión o alta tensión, TERMINA SIEMPRE la respuesta con: "⚠️ Verificar con el ingeniero responsable y la hoja técnica del fabricante antes de decidir en campo."
+
 ${systemContext||''}`;
 
     let iterations = 0;
     while (iterations < 5) {
       iterations++;
       const payload = {
-        model:'claude-haiku-4-5-20251001',
-        max_tokens: 1500,
+        model: esTec ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001',
+        max_tokens: esTec ? 2500 : 1500,
         system: systemPrompt,
         messages,
         tools: ENERGY_TOOLS,
@@ -11525,7 +11539,7 @@ function initChat() {
     });
     return;
   }
-  addBotMsg(`¡Hola, ${currentUser.name.split(' ')[0]}! 👋 Soy ENERGY, tu asistente.\n\n${_briefingDelDia()}\n\nAhora puedo ejecutar acciones por ti. Por ejemplo:\n• "crea tarea para Sheila vence viernes: cotizar válvulas CIAM"\n• "marca la O.C. LM-1389 como entregada hoy"\n• "manda WhatsApp a Alexandra: recordando oferta Mansarovar"\n• "busca inventario válvula 2 pulgadas"\n\n¿En qué te ayudo?`);
+  addBotMsg(`¡Hola, ${currentUser.name.split(' ')[0]}! 👋 Soy ENERGY, tu asistente.\n\n${_briefingDelDia()}\n\nPuedo ejecutar acciones y también resolver dudas técnicas. Por ejemplo:\n• "crea tarea para Sheila vence viernes: cotizar válvulas CIAM"\n• "marca la O.C. LM-1389 como entregada hoy"\n• "busca inventario válvula 2 pulgadas"\n• 🔧 "¿qué diferencia hay entre espárrago B7 y L7?"\n• 🔧 "¿qué cable necesito para un motor de 5HP a 440V?"\n\n¿En qué te ayudo?`);
 }
 
 function _briefingDelDia() {
