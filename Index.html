@@ -15396,6 +15396,22 @@ async function pcomGuardar(silencioso){
   if(!c.cliente && !silencioso) return showToast('Ingresa el cliente / proyecto','error');
   const items = c.items.filter(it=>String(it.descripcion||'').trim()!=='');
   if(!items.length) return showToast('Agrega al menos una línea con descripción','error');
+  // CANDADO ANTI-BORRADO (2026-07-08): si es un plan NUEVO y ese CC ya existe (lo
+  // creó otra persona para la misma cotización), avisar ANTES de reemplazarlo —
+  // antes se sobrescribía en silencio y se perdía el plan del otro. Igual que en
+  // Remisiones. En auto-guardado (silencioso) no se pregunta.
+  if(c.nueva && !silencioso){
+    try{
+      // Consulta FRESCA al servidor (no la memoria local, que puede estar vieja)
+      const ex = await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc)+'&select=cliente,item');
+      if(Array.isArray(ex) && ex.length){
+        if(!confirm('⚠️ YA EXISTE un plan de compras con el número '+c.cc+'\n(cliente: '+((ex[0]&&ex[0].cliente)||'—')+', '+ex.length+' línea(s)).\n\nSi continúas, se REEMPLAZARÁ por completo y se perderá el plan anterior.\n\n¿Deseas continuar de todos modos?')) {
+          showToast('Guardado cancelado — el plan '+c.cc+' existente NO se tocó','info');
+          return;
+        }
+      }
+    }catch(_){}
+  }
   try{
     // GUARDADO SIN PÉRDIDA (plan de sostenibilidad): insertar primero las líneas
     // nuevas y borrar las viejas después (id not.in). Si la red falla en medio,
