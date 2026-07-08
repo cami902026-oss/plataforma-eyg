@@ -2,13 +2,17 @@
   "usuario": "alexandra",
   "nombre": "Alexandra",
   "rol": "COLABORADOR",
-  "ts": 1783528548922,
-  "tsLegible": "8/7/2026, 11:35:48 a. m.",
+  "ts": 1783530023174,
+  "tsLegible": "8/7/2026, 12:00:23 p. m.",
   "online": true,
   "tienePAT": false,
   "patEstado": "sin_pat",
   "proxyConfigurado": true,
-  "pendientes": 0,
-  "pendientesArch": [],
-  "navegador": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150."
+  "pendientes": 3,
+  "pendientesArch": [
+    "data/team.json",
+    "data/tasks.json",
+    "data/projects.json"
+  ],
+  "navegador": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36"
 }
