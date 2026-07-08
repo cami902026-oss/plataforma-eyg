@@ -2,13 +2,17 @@
   "usuario": "lina",
   "nombre": "Lina Cifuentes",
   "rol": "COLABORADOR",
-  "ts": 1783528604712,
-  "tsLegible": "8/7/2026, 11:36:44 a. m.",
+  "ts": 1783528788997,
+  "tsLegible": "8/7/2026, 11:39:48 a. m.",
   "online": true,
   "tienePAT": false,
   "patEstado": "sin_pat",
   "proxyConfigurado": true,
-  "pendientes": 0,
-  "pendientesArch": [],
+  "pendientes": 3,
+  "pendientesArch": [
+    "data/solicitudes_cotiz.json",
+    "data/clientes.json",
+    "data/cotizaciones.json"
+  ],
   "navegador": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150."
 }
