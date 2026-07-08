@@ -1987,7 +1987,10 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         </div>
 
       </div>
-      </div>
+      <!-- FIX: aquí había un </div> SOBRANTE que cerraba .content antes de tiempo.
+           Todos los módulos desde Inventario hasta Plan de Compras quedaban FUERA
+           del contenedor: sin padding y empujados hacia abajo por un .content
+           vacío con flex:1 (el "espacio en blanco" gigante del semanario). -->
 
             <div class="page" id="page-inventario">
         <div class="inv-stats" id="inv-stats-bar"></div>
