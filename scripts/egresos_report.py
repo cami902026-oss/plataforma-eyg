@@ -199,7 +199,9 @@ def armar_html(pagos, desde, hasta):
 
 
 def enviar_correo(token, destinatarios, asunto, html):
-    sender = os.environ['SENDER_EMAIL'].strip()
+    # Remitente FIJO info@ (pedido del usuario 2026-07-07: que el informe NO le
+    # llegue al jefe desde el correo de Andrea). EGRESOS_SENDER lo puede anular.
+    sender = os.environ.get('EGRESOS_SENDER', 'info@eygenergygroup.com').strip()
     payload = json.dumps({
         'message': {
             'subject': asunto,
