@@ -14677,10 +14677,22 @@ async function remiGuardar(){
   if(!c.cliente) return showToast('Ingresa el cliente','error');
   const items=c.items.filter(it=>String(it.descripcion||'').trim()!=='');
   if(!items.length) return showToast('Agrega al menos un ítem con descripción','error');
-  // Si el número ya existe y NO es la misma remisión que estoy editando, avisa (evita pisar por error)
-  const grupos=remiGrupos();
-  if(grupos[num] && num!==(c.remisionOrig||'')){
-    if(!confirm('⚠️ Ya existe la remisión '+num+'.\n\nAl guardar se REEMPLAZARÁ por completo con estos ítems.\n\n¿Deseas continuar?')) return;
+  // Si el número ya existe y NO es la misma remisión que estoy editando, avisa (evita
+  // pisar por error). MEJORA 2026-07-08: consulta el SERVIDOR (no la memoria local,
+  // que puede estar vieja) — así frena aunque otra persona haya creado ese número
+  // hace un momento (fue lo que pasó cuando SERSOLCA pisó a QCIEN en la 26150).
+  if(num!==(c.remisionOrig||'')){
+    let existe=null;
+    try{ existe = await absFetch('remisiones?remision=eq.'+encodeURIComponent(num)+'&select=cliente,item'); }
+    catch(_){ existe = (remiGrupos()[num]||null); }   // si falla la red, usar lo local
+    if(Array.isArray(existe) ? existe.length : existe){
+      const cliEx = Array.isArray(existe) ? ((existe[0]&&existe[0].cliente)||'—') : ((existe[0]&&existe[0].cliente)||'—');
+      const nEx = Array.isArray(existe) ? existe.length : existe.length;
+      if(!confirm('⚠️ YA EXISTE la remisión '+num+' (cliente: '+cliEx+', '+nEx+' ítem(s)).\n\nSi continúas se REEMPLAZARÁ por completo y se perderá la anterior.\n\n¿Deseas continuar de todos modos?')) {
+        showToast('Guardado cancelado — la remisión '+num+' existente NO se tocó','info');
+        return;
+      }
+    }
   }
   try{
     // GUARDADO SIN PÉRDIDA (plan de sostenibilidad): antes se BORRABA la remisión
