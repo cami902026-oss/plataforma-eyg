@@ -3847,8 +3847,17 @@ function _cotizReconciliar(remoto, local, nowStamp) {
     if (!ident(c)) { sinIdent.push(c); return; }
     const f = firma(c);
     const prev = porFirma[f];
-    const score = x => (x.renumeradaAt ? 1 : 0);   // preferir la versión ya renumerada (resuelta)
-    if (!prev || score(c) > score(prev) || (score(c) === score(prev) && String(c.updatedAt || '') >= String(prev.updatedAt || '')))
+    // FIX 2026-07-08 (pérdida de precios): antes esto prefería SIEMPRE la versión
+    // con `renumeradaAt` sobre cualquier otra, aunque fuera MÁS VIEJA y estuviera en
+    // $0. Como el consecutivo del servidor (v105) marcó varias cotizaciones con
+    // renumeradaAt, cualquier edición posterior (poner precios) PERDÍA contra la
+    // versión vieja renumerada → los precios se borraban. Ahora gana la MÁS RECIENTE
+    // por updatedAt; renumeradaAt solo desempata cuando la fecha es idéntica. El id
+    // renumerado se conserva igual (está en el campo id, no en la metadata).
+    const score = x => (x.renumeradaAt ? 1 : 0);
+    if (!prev
+        || String(c.updatedAt || '') > String(prev.updatedAt || '')
+        || (String(c.updatedAt || '') === String(prev.updatedAt || '') && score(c) > score(prev)))
       porFirma[f] = c;
   });
 
