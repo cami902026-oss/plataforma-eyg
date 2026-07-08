@@ -554,17 +554,17 @@
     "deletedAt": "2026-06-10T18:14:21.662Z"
   },
   {
-    "id": "LM1577",
+    "id": "LM1581",
     "fecha": "2026-05-25",
     "fechaVenc": "2026-06-02",
-    "cliente": "ANDES OPERATING",
-    "contacto": "Andres Bernal",
-    "correo": "andres.bernal@andesoperating.com",
+    "cliente": "JE JAIMES",
+    "contacto": "Luis Garzon ",
+    "correo": "contacto@jejaimes.com.co",
     "estado": "Vencida",
     "iva": 19,
-    "subtotal": 6500000,
-    "ivaVal": 1235000,
-    "total": 7735000,
+    "subtotal": 122760000,
+    "ivaVal": 23324400,
+    "total": 146084400,
     "formaPago": "CONTADO",
     "sitioEntrega": "INSTALACIONES ENERGY GROUP CHIA",
     "validez": "8 DÍAS",
@@ -572,27 +572,27 @@
     "vendedor": "",
     "realizadaPor": "",
     "aprobadaPor": "",
-    "solicitudId": "SOL-20260525-221",
+    "solicitudId": "SOL-20260525-609",
     "items": [
       {
-        "id": 2,
-        "desc": "BOMA IHM  10X16 SM",
+        "id": 1,
+        "desc": "TUBERIA  4 PULGADAS SCH 40 RANGO SENCILLO ",
         "udm": "EA",
-        "qty": 1,
-        "precio": 6500000,
-        "tiempoEntrega": "5 DIAS",
-        "desvTec": "",
-        "marca": "",
-        "proveedor": "IHM",
-        "precioProveedor": 4156000
+        "qty": 330,
+        "precio": 372000,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "SE COTIZA TUBO POR 6 METROS",
+        "marca": "BAOLAI",
+        "proveedor": "BODEGA",
+        "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-05-25T17:32:47.278Z",
+    "fechaGuardado": "2026-05-25T17:12:32.709Z",
     "createdAt": "2026-05-25T15:30:18.871Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-07T20:03:39.022Z",
+    "updatedAt": "2026-07-08T14:46:54.382Z",
     "updatedBy": "auto",
-    "vencidaAutoAt": "2026-07-07T20:03:39.022Z"
+    "vencidaAutoAt": "2026-07-08T14:46:54.382Z"
   },
   {
     "id": "LM1582",
@@ -15318,47 +15318,6 @@
     "createdAt": "2026-07-08T01:32:07.861Z",
     "createdBy": "andrea",
     "updatedAt": "2026-07-08T01:38:27.474Z",
-    "updatedBy": "andrea"
-  },
-  {
-    "id": "LM1778",
-    "fecha": "2026-07-08",
-    "fechaVenc": "2026-07-16",
-    "cliente": "PGS",
-    "contacto": "CARLOS",
-    "correo": "",
-    "estado": "Borrador",
-    "factura": "",
-    "iva": 19,
-    "subtotal": 6290000,
-    "ivaVal": 1195100,
-    "total": 7485100,
-    "formaPago": "30 DIAS ",
-    "sitioEntrega": "YOPAL",
-    "validez": "8 DÍAS",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "vendedor": "Sheila Baron",
-    "realizadaPor": "Lina Cifuentes",
-    "aprobadaPor": "Alberto",
-    "solicitudId": "",
-    "motivoRechazo": "",
-    "items": [
-      {
-        "desc": "UNION DE GOLPE 3\" FOG 602 SCH 80",
-        "udm": "EA",
-        "qty": 10,
-        "precio": 629000,
-        "marca": "SARA SAE ",
-        "proveedor": "",
-        "precioProveedor": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": ""
-      }
-    ],
-    "fechaGuardado": "2026-07-08T14:45:53.173Z",
-    "createdAt": "2026-07-08T14:45:53.173Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-07-08T14:45:53.173Z",
     "updatedBy": "andrea"
   }
 ]
