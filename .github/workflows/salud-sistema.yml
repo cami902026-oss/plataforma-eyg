@@ -1,0 +1,58 @@
+name: 🩺 Salud del Sistema
+
+on:
+  schedule:
+    # Informe completo: día 1 de cada mes, 7:00 AM Colombia (12:00 UTC)
+    - cron: '0 12 1 * *'
+    # Chequeo silencioso: lunes 7:00 AM Colombia (solo envía correo si hay alertas)
+    - cron: '0 12 * * 1'
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: 'Modo de ejecución'
+        required: false
+        default: 'prueba'
+        type: choice
+        options: ['prueba', 'informe', 'chequeo']
+
+permissions:
+  contents: write
+
+jobs:
+  salud:
+    runs-on: ubuntu-latest
+    name: 🩺 Revisar salud y notificar
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 🩺 Revisar salud del sistema
+        env:
+          MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          GITHUB_TOKEN:     ${{ secrets.GITHUB_TOKEN }}
+          MODO:             ${{ github.event.inputs.modo }}
+        run: python scripts/salud_sistema.py
+
+      - name: 💾 Guardar estado (tendencias del próximo informe)
+        if: ${{ github.event.inputs.modo != 'prueba' }}
+        run: |
+          git config user.name  "ENERGY Bot"
+          git config user.email "bot@eygenergygroup.com"
+          git add data/salud_estado.json
+          if git diff --staged --quiet; then
+            echo "Sin cambios de estado."
+          else
+            git commit -m "🩺 Salud del sistema - $(TZ='America/Bogota' date +'%Y-%m-%d')"
+            for i in 1 2 3; do
+              git push && break
+              git pull --rebase && sleep 3
+            done
+          fi

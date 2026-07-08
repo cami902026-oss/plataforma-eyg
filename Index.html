@@ -3339,6 +3339,28 @@ function _auditLabel(item) {
 }
 // Solo aplica cuando la plataforma corre en Netlify (donde existen las functions).
 const _NETLIFY_HOST = /\.netlify\.app$/i.test(location.hostname) || location.hostname === 'localhost';
+// AVISO DE CUOTA LLENA (plan de sostenibilidad): el navegador da ~5-10MB de
+// almacenamiento local. Antes, al llenarse, TODOS los guardados locales fallaban
+// EN SILENCIO (los try/catch los tragaban) y se perdían cambios sin que nadie lo
+// supiera. Se envuelve setItem UNA sola vez: si el navegador rechaza por espacio,
+// sale un aviso grande (máx. 1 vez cada 30s para no inundar).
+(function(){
+  const _setItemOrig = Storage.prototype.setItem;
+  let _cuotaAvisada = 0;
+  Storage.prototype.setItem = function(k, v){
+    try { return _setItemOrig.call(this, k, v); }
+    catch(e){
+      const esCuota = e && (e.name === 'QuotaExceededError' || e.code === 22 || e.name === 'NS_ERROR_DOM_QUOTA_REACHED');
+      if (esCuota && Date.now() - _cuotaAvisada > 30000) {
+        _cuotaAvisada = Date.now();
+        try { showToast('🛑 ALMACENAMIENTO DEL NAVEGADOR LLENO — los cambios NO se están guardando en este equipo. Lo ya sincronizado al servidor está a salvo, pero avisa a Andrea/soporte YA (hay que archivar fotos e históricos).', 'error', { durationMs: 20000 }); } catch(_){}
+        try { console.error('[cuota] localStorage lleno al guardar', k, 'bytes:', (v || '').length); } catch(_){}
+      }
+      throw e;
+    }
+  };
+})();
+
 function setData(key, val) {
   localStorage.setItem('max_'+key, JSON.stringify(val));
   // Guardar órdenes en GitHub automáticamente
@@ -14615,12 +14637,11 @@ async function remiGuardar(){
     if(!confirm('⚠️ Ya existe la remisión '+num+'.\n\nAl guardar se REEMPLAZARÁ por completo con estos ítems.\n\n¿Deseas continuar?')) return;
   }
   try{
-    // Si se renombró (ej: 1741 → 1741-1), borra primero la versión con el número anterior
-    if(!c.nueva && c.remisionOrig && c.remisionOrig!==num){
-      await absFetch('remisiones?remision=eq.'+encodeURIComponent(c.remisionOrig),{method:'DELETE',headers:{'Prefer':'return=minimal'}});
-    }
-    // Borra cualquier fila existente bajo el número final (edición normal o sobrescritura); es no-op si no existe
-    await absFetch('remisiones?remision=eq.'+encodeURIComponent(num),{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+    // GUARDADO SIN PÉRDIDA (plan de sostenibilidad): antes se BORRABA la remisión
+    // y luego se insertaba la nueva — si la red fallaba entre los dos pasos, la
+    // remisión desaparecía. Ahora: 1º se INSERTAN las filas nuevas, 2º se borran
+    // las viejas (id not.in). Si algo falla a mitad, lo peor es una duplicación
+    // temporal que el siguiente guardado limpia — nunca una pérdida.
     const rows=items.map((it,idx)=>({
       remision:String(c.remision), fecha:c.fecha||null, cliente:c.cliente, lugar:c.lugar, oc:c.oc,
       cotizacion_id:c.cotizacionId||null,
@@ -14630,7 +14651,15 @@ async function remiGuardar(){
       observaciones:c.observaciones||'', contiene:c.contiene||'', recibido_por:c.cliente,
       created_by: currentUser?.name||'—'
     }));
-    await absFetch('remisiones',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify(rows)});
+    const nuevas = await absFetch('remisiones',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(rows)});
+    const nuevosIds = (Array.isArray(nuevas)?nuevas:[]).map(r=>r&&r.id).filter(x=>x!=null);
+    if(nuevosIds.length){
+      await absFetch('remisiones?remision=eq.'+encodeURIComponent(num)+'&id=not.in.('+nuevosIds.join(',')+')',{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+    }
+    // Si se renombró (ej: 1741 → 1741-1), borrar la versión con el número anterior AL FINAL
+    if(!c.nueva && c.remisionOrig && c.remisionOrig!==num){
+      await absFetch('remisiones?remision=eq.'+encodeURIComponent(c.remisionOrig),{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+    }
     showToast('Remisión '+c.remision+' guardada ✓','ok');
     c.nueva=false;
     await remiCargar();
@@ -15321,9 +15350,9 @@ async function pcomGuardar(silencioso){
   const items = c.items.filter(it=>String(it.descripcion||'').trim()!=='');
   if(!items.length) return showToast('Agrega al menos una línea con descripción','error');
   try{
-    if(!c.nueva){
-      await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc),{method:'DELETE',headers:{'Prefer':'return=minimal'}});
-    }
+    // GUARDADO SIN PÉRDIDA (plan de sostenibilidad): insertar primero las líneas
+    // nuevas y borrar las viejas después (id not.in). Si la red falla en medio,
+    // lo peor es duplicación temporal — nunca se pierde el plan.
     const rows = items.map((it,idx)=>({
       cc:c.cc, cotizacion:c.cotizacion||'', cliente:c.cliente, fecha:c.fecha||null,
       item:idx+1, descripcion:String(it.descripcion).trim(), udm:it.udm||'',
@@ -15333,7 +15362,11 @@ async function pcomGuardar(silencioso){
       pago:it.pago||'PENDIENTE', sin_oc:!!it.sin_oc,
       created_by: currentUser?.name||'—'
     }));
-    await absFetch('plan_compras',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify(rows)});
+    const nuevasPC = await absFetch('plan_compras',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(rows)});
+    const idsPC = (Array.isArray(nuevasPC)?nuevasPC:[]).map(r=>r&&r.id).filter(x=>x!=null);
+    if(idsPC.length){
+      await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc)+'&id=not.in.('+idsPC.join(',')+')',{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+    }
     c.nueva = false;
     // refrescar memoria local sin perder la edición abierta
     pcom_rows = pcom_rows.filter(r=>String(r.cc)!==String(c.cc)).concat(rows);
