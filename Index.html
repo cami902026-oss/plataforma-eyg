@@ -4489,7 +4489,17 @@ async function _runPollCycle() {
   const resultados = await Promise.all(POLL_TARGETS.map(t => _pollOne(t).catch(() => false)));
   _lastPollOk = Date.now(); try { _lastSyncAgoPaint(); } catch(_) {}
   if (resultados.some(Boolean)) showToast('Datos actualizados desde el servidor','info');
+  // Reintento AUTOMÁTICO de la cola pendiente (máx. 1 vez por minuto): antes,
+  // un "guardado local, falló sync" se quedaba en cola hasta que el usuario
+  // guardara otra cosa o tocara la píldora. Ahora se resube solo.
+  try {
+    if (_getSyncQueue().length && Date.now() - _lastDrainAuto > 60000) {
+      _lastDrainAuto = Date.now();
+      _drainSyncQueue().then(_refreshSyncBadge).catch(() => {});
+    }
+  } catch(_) {}
 }
+let _lastDrainAuto = 0;
 
 // ── 🔄 Botón "Actualizar" (barra superior) ──
 // Un toque: sube lo pendiente de la cola (re-mezclado), fuerza la descarga completa
