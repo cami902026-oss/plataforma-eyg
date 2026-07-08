@@ -10308,14 +10308,16 @@ function _cliNorm(s) {
   return s.replace(/\s+/g, ' ').trim();
 }
 // ¿Dos nombres son el mismo cliente? Igual normalizado, o uno es prefijo del
-// otro (mín. 6 letras) — "ARROW" ≈ "ARROW EXPLORATION LLANOS".
+// otro (mín. 5 letras, confirmado por el usuario: ARROW y METAL son los mismos).
+// El prefijo exige espacio después ("METAL " ≈ "METAL INDUSTRIALES" pero
+// "METAL" ≠ "METALCO"), así 5 letras sigue siendo seguro.
 function _cliMismo(a, b) {
   const na = _cliNorm(a), nb = _cliNorm(b);
   if (!na || !nb) return false;
   if (na === nb) return true;
   const corto = na.length <= nb.length ? na : nb;
   const largo = na.length <= nb.length ? nb : na;
-  return corto.length >= 6 && largo.startsWith(corto + ' ');
+  return corto.length >= 5 && largo.startsWith(corto + ' ');
 }
 // BD de Clientes AUTO-ALIMENTADA: cada cotización guardada registra o completa su
 // cliente en la pestaña Clientes. Solo llena campos VACÍOS — nunca pisa lo que

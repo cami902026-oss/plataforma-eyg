@@ -12,18 +12,6 @@
     "id": "cli_seed_001"
   },
   {
-    "empresa": "ARROW",
-    "nit": "",
-    "contacto": "TENDER LLANOS",
-    "cargo": "",
-    "correo": "tenderllanos@arrowexploration.com",
-    "telefono": "",
-    "ciudad": "",
-    "formaPago": "CREDITO 30 DIAS",
-    "notas": "Auto-creado desde el histórico de cotizaciones",
-    "id": "cli_seed_003"
-  },
-  {
     "empresa": "ARROW EXPLORATION LLANOS SUCURSAL COLOMBIA",
     "nit": "",
     "contacto": "Tender Llanos",
@@ -32,7 +20,7 @@
     "telefono": "",
     "ciudad": "",
     "formaPago": "A treinta (30) días una vez radicadas en forma correcta",
-    "notas": "Auto-creado desde el histórico de cotizaciones",
+    "notas": "Auto-creado desde el histórico de cotizaciones | Fusionado 2026-07-07 con: ARROW",
     "id": "cli_seed_004"
   },
   {
@@ -264,16 +252,16 @@
     "id": "cli_seed_024"
   },
   {
-    "empresa": "METAL",
+    "id": "cli_1783474327864",
+    "empresa": "MAGNEX",
     "nit": "",
-    "contacto": "FERNANDO",
+    "contacto": "GUSTAVO AGUILAR",
     "cargo": "",
     "correo": "",
     "telefono": "",
     "ciudad": "",
-    "formaPago": "CONTADO",
-    "notas": "Auto-creado desde el histórico de cotizaciones",
-    "id": "cli_seed_025"
+    "formaPago": "30 DÍAS",
+    "notas": "Auto-creado desde cotización LM1777"
   },
   {
     "empresa": "METAL INDUSTRIALES",
@@ -284,7 +272,7 @@
     "telefono": "",
     "ciudad": "",
     "formaPago": "30 DÍAS",
-    "notas": "Auto-creado desde el histórico de cotizaciones",
+    "notas": "Auto-creado desde el histórico de cotizaciones | Fusionado 2026-07-07 con: METAL",
     "id": "cli_seed_026"
   },
   {
@@ -610,17 +598,5 @@
     "formaPago": "CONTADO",
     "notas": "Auto-creado desde el histórico de cotizaciones",
     "id": "cli_seed_059"
-  },
-  {
-    "id": "cli_1783474327864",
-    "empresa": "MAGNEX",
-    "nit": "",
-    "contacto": "GUSTAVO AGUILAR",
-    "cargo": "",
-    "correo": "",
-    "telefono": "",
-    "ciudad": "",
-    "formaPago": "30 DÍAS",
-    "notas": "Auto-creado desde cotización LM1777"
   }
 ]
