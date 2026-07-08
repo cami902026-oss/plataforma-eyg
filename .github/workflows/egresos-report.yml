@@ -2,8 +2,11 @@ name: 💸 Informe de Pagos 6PM
 
 on:
   schedule:
-    # 6:00 PM Colombia (23:00 UTC) — TODOS los días (reemplaza la tarea local Informe_Pagos_EYG)
-    - cron: '0 23 * * *'
+    # ~6:00 PM Colombia (23:17 UTC) — TODOS los días (reemplaza la tarea local Informe_Pagos_EYG).
+    # Minuto 17 (NO en punto) a propósito: GitHub congestiona/atrasa/salta los cron a la
+    # hora exacta (:00). Si algún día igual se salta, el informe del día siguiente recoge
+    # lo pendiente (reporta desde el último informe enviado), así nada queda sin reportar.
+    - cron: '17 23 * * *'
   workflow_dispatch:
     inputs:
       prueba:
