@@ -290,4 +290,30 @@ Hecho con 3 exploradores. Hallazgos clave — **roto/falso**: "Actividad recient
 - **v105 — CONSECUTIVO DEL SERVIDOR** (Paso A esencial): al guardar cotización nueva se reclama el número en Supabase con INSERT atómico (PK id) — imposible duplicar consecutivos aunque dos personas guarden en el mismo milisegundo; probado con carrera real (201 vs 409). Backfill verificado: las 108 cotizaciones activas + ítems completos en Supabase. **Cutover total (quitar JSON) = opcional NO recomendado** (perdería el offline; el híbrido es el diseño correcto).
 - **v106 — Plan de Sostenibilidad, sesión 1**: (1) guardado SIN PÉRDIDA en Remisiones y Plan de Compras (insertar nuevas → borrar viejas; adiós al DELETE+POST que podía borrar todo si fallaba la red); (2) aviso global de cuota del navegador llena (antes fallaba en silencio); (3) **informe 🩺 Salud del Sistema**: workflow `salud-sistema.yml` — día 1 de mes 7AM informe completo a Andrea + gerencia, lunes 7AM chequeo silencioso (solo escribe si hay alertas). Vigila backups (frescura y completitud), tamaños de data/ con tendencia, filas de Supabase, robots fallidos y tamaño del repo. Pendiente plan: sesión 2 (fotos→Supabase Storage + archivado automático) y sesión 3 (copia mensual OneDrive).
 
-*Fin del archivo de memoria. Última actualización: 08/jul/2026 madrugada (sesión completa: SW v86 → v106)*
+---
+
+## 🚑 Sesión 08/jul/2026 (día) — líos urgentes + fixes (SW v107 → v112)
+
+### Accesos del equipo
+- **404 al abrir la dirección corta** → `404.html` en la raíz redirige a `/plataforma-eyg/Index.html` (GitHub Pages es case-sensitive, solo existe Index.html). Link SIEMPRE bueno: `.../plataforma-eyg/Index.html`.
+- **Contraseña de Lina** es `Lina2026` (sin @). El login normaliza (minúsculas, sin espacios).
+- **Base de Datos de cotizaciones vacía para Sandra** (SW v107): el filtro `.includes('comercial')` atrapaba a "Asistente Comercial" (Sandra) y "Coordinador Comercial" (Mario) y les mostraba solo las suyas → BD vacía. FIX: `isComercial=false` → TODO el equipo ve TODAS las cotizaciones (los costos/FACTOR siguen ocultos aparte).
+
+### 🔴 BUG CRÍTICO: se borraban los precios de cotizaciones (SW v108)
+- CAUSA: el consecutivo del servidor (v105) marcó cotizaciones con `renumeradaAt`; el reconciliador `_cotizReconciliar` prefería SIEMPRE la versión renumerada (aunque vieja y en $0) → al poner precios, la versión vieja los borraba. FIX: gana la de `updatedAt` más reciente; renumeradaAt solo desempata.
+- **Trampa**: el fix solo protege a equipos ya actualizados. Un equipo con CÓDIGO VIEJO (Lina) seguía borrando precios y pisando el server con $0. Por eso TODOS deben recargar.
+- Recuperación: la doble escritura a Supabase salvó LM1780 (restaurada blindada con renumeradaAt+updatedAt nuevos, aguanta código viejo). LM1767 (Petroleum Blending) se perdió en todas las copias → REDIGITAR (pendiente).
+- **Indicador de versión** (v109): abajo-izquierda de la barra lateral muestra la vNNN real instalada (para detectar equipos desactualizados).
+
+### Otros
+- **Blindaje anti-duplicados Remisiones/Plan de Compras** (v110): `_dedupLineas` al leer, por si un corte de red dejó líneas repetidas (el guardado sin pérdida de v106).
+- **Auto-vencidas revisado**: correcto, 0 errores (las 33 tienen fechaVenc realmente pasada).
+- **Programación Equipo**: nuevo estado 🚗 Visita de campo (v111).
+- **Semanario visitas** (v112): 2+ visitas el mismo día ahora se ven separadas (borde completo, numeradas 1/2, hora en badge) — antes se veían pegadas y parecían una sola.
+
+### ⚠️ PENDIENTE al cierre
+- **LM1767 (Petroleum Blending)**: redigitar precios (perdidos) — hacerlo en equipo v108+ o pasárselos a Claude para escribir blindados.
+- **Confirmar que TODOS los equipos estén en la última versión** (mirar abajo-izq). Un equipo viejo puede volver a borrar precios.
+- Regla de oro: dos personas NO deben editar la misma cotización a la vez (se pisan, gana el último que guarda).
+
+*Fin del archivo de memoria. Última actualización: 08/jul/2026 (sesión completa: SW v86 → v112)*
