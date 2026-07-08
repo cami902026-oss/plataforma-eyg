@@ -1,0 +1,64 @@
+name: 💸 Informe de Pagos 6PM
+
+on:
+  schedule:
+    # 6:00 PM Colombia (23:00 UTC) — TODOS los días (reemplaza la tarea local Informe_Pagos_EYG)
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+    inputs:
+      prueba:
+        description: 'Modo prueba (solo a cami902026@gmail.com, no avanza el estado)'
+        required: false
+        default: 'no'
+        type: choice
+        options: ['no', 'si']
+
+permissions:
+  contents: write
+
+jobs:
+  informe:
+    runs-on: ubuntu-latest
+    name: 📧 Enviar resumen de egresos
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Dependencias
+        run: pip install openpyxl
+
+      - name: 💸 Generar y enviar informe
+        env:
+          MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          SENDER_EMAIL:     ${{ secrets.SENDER_EMAIL }}
+        run: |
+          if [ "${{ github.event.inputs.prueba }}" = "si" ]; then
+            python scripts/egresos_report.py --prueba
+          else
+            python scripts/egresos_report.py
+          fi
+
+      - name: 💾 Guardar estado (última fecha reportada)
+        if: ${{ github.event.inputs.prueba != 'si' }}
+        run: |
+          git config user.name  "ENERGY Bot"
+          git config user.email "bot@eygenergygroup.com"
+          git add data/informe_pagos_estado.json
+          if git diff --staged --quiet; then
+            echo "Sin cambios de estado."
+          else
+            git commit -m "💸 Informe de pagos enviado - $(TZ='America/Bogota' date +'%Y-%m-%d %H:%M')"
+            # Reintentos por si los robots están empujando data/ al mismo tiempo
+            for i in 1 2 3; do
+              git push && break
+              git pull --rebase && sleep 3
+            done
+          fi
