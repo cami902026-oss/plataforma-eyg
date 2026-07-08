@@ -275,4 +275,14 @@ Hecho con 3 exploradores. Hallazgos clave — **roto/falso**: "Actividad recient
 - **Paso A Supabase**: migrar cotizaciones (90 días) a Supabase con consecutivo del servidor + Realtime. Fases 1-2 sin riesgo con gente trabajando; corte final 15 min fuera de horario.
 - Monitor de cotizaciones sin subir por usuario (heartbeat + panel dirección): propuesto, sin decidir.
 
-*Fin del archivo de memoria. Última actualización: 07/jul/2026 (sesión completa: SW v86 → v96 + informe egresos en nube)*
+### 🌙 Segunda parte de la sesión 07/jul (SW v97 → v103)
+- **Arreglos rotos** (v97): actividad reciente del Dashboard ahora REAL, tarjeta "Alertas activas" (adiós al "7 mensajes" fijo), calendario de Reuniones navega meses, alerta de cotizaciones sin seguimiento revivida (una alerta resumen con valor en juego), botón Teams del Equipo abre chat real, WhatsApp "todo el equipo" copia al portapapeles, `schedule-reports.yml` eliminado (duplicaba reportes 5PM).
+- **Chat ENERGY asesor técnico** (v98-v99): responde dudas de material mecánico/eléctrico/instrumentación; detector automático → Sonnet solo en técnicas; sugiere inventario E&G; ⚠️ de seguridad en temas críticos; reintento automático si el proxy chispea.
+- **Módulo 🗓️ Programación Equipo** (v100-v101, v103): TODO el equipo lo VE, solo dirección (Alberto/Andrea/Mario) EDITA. Semana Lun-Sáb con ✅ Presencial/🏠 Remoto/🏖️ Permiso por persona, "⚡ Semana estándar", roster editable (presenciales: Andrea, Nelsy, Yesid, Alexandra, Lina, Nicolás · híbridos: Mario, Sandra), resumen mensual + Excel. La pestaña Sábados se mudó aquí desde Visitas. Datos: `data/programacion_equipo.json`. Cola de sync ahora reintenta sola cada 60s.
+- **FIX layout histórico** (v102): un `</div>` sobrante tras Configuración cerraba `.content` antes de tiempo — 8 módulos (Inventario→Compras) vivían fuera del contenedor sin padding, con un hueco gigante arriba (el "espacio en blanco" del semanario). Corregido y verificado con parser HTML5.
+- **Clientes** (v95-v96): botón 📗 Excel con marca, emparejador anti-duplicados normalizado, base depurada 59→50 (ARROW y METAL fusionados con confirmación).
+
+### 📌 Pendientes al cierre (prioridad sugerida)
+1) Cotizaciones: C precios sugeridos → B correo Outlook con PDF → E indicadores. 2) Paso A Supabase (aprobado). 3) Anti-pérdida remisiones/plan (DELETE+POST sin transacción, consecutivos locales) + cuota localStorage + cap 100. 4) Seguridad (RLS, secretos, contraseñas). 5) Cadena comercial ligada. Menores: WhatsApp real de Mario, tarifas flete, apagar sync-inventory.yml, redesplegar proxy (cap 16000), webhook Teams, informes por definir.
+
+*Fin del archivo de memoria. Última actualización: 07/jul/2026 (sesión completa: SW v86 → v103 + informe egresos en nube)*
