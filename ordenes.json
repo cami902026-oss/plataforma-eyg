@@ -3073,5 +3073,52 @@
     "createdBy": "lina",
     "updatedAt": "2026-07-08T02:06:03.929Z",
     "updatedBy": "lina"
+  },
+  {
+    "id": "poc_1783548443483",
+    "num": "LM1780",
+    "cliente": "SERSOLCA",
+    "desc": "Cotización LM1780 · 2 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-08",
+    "valor": 610608.04,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-08",
+        "n": ""
+      },
+      {
+        "s": "active",
+        "f": "",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1780",
+    "createdAt": "2026-07-08T22:07:23.483Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-08T22:07:23.483Z",
+    "updatedBy": "alexandra"
   }
 ]
