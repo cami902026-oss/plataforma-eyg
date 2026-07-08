@@ -1689,6 +1689,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end;">
             <input type="text" id="cli-search" placeholder="🔍 Buscar cliente..." oninput="cliRender()" style="flex:1;min-width:160px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:#fff;font-size:13px;">
             <button class="btn btn-secondary" onclick="cliNuevo()" style="width:auto;font-size:13px;">+ Nuevo cliente</button>
+            <button class="btn btn-secondary" onclick="cliDescargarExcel()" title="Descarga el directorio de clientes en Excel con la marca E&amp;G (si hay búsqueda activa, descarga solo lo filtrado)" style="width:auto;font-size:13px;background:rgba(46,170,74,.2);border:1px solid rgba(46,170,74,.5);color:#86efac;">📗 Excel</button>
           </div>
           <div class="cotiz-card" id="cli-form-card">
             <h3 id="cli-form-title">➕ Nuevo cliente</h3>
@@ -10241,15 +10242,90 @@ function _cliAutoFill() {
   if (cp && cli.formaPago) cp.value = cli.formaPago;
 }
 
+// 📗 Exportar el directorio de clientes a Excel con marca E&G (logo + colores).
+// Genera un .xls basado en HTML (Excel lo abre con todos los estilos); si hay
+// búsqueda activa exporta solo lo filtrado. Excel puede mostrar un aviso de
+// formato al abrir — es normal, se acepta y abre bien.
+function cliDescargarExcel() {
+  const NAVY = '#0F2B5B', NAVY2 = '#1A3A8F', GOLD = '#E8A020', GREY = '#F2F4F8';
+  let bd = getData('bd_clientes', []);
+  const q = ((document.getElementById('cli-search')||{}).value || '').trim().toLowerCase();
+  if (q) bd = bd.filter(c => JSON.stringify(c).toLowerCase().includes(q));
+  if (!bd.length) { showToast('No hay clientes para exportar','info'); return; }
+  bd = bd.slice().sort((a,b) => (a.empresa||'').localeCompare(b.empresa||''));
+  const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const hoy = new Date().toLocaleDateString('es-CO', {day:'2-digit',month:'long',year:'numeric'});
+  const filas = bd.map((c,i) => `
+    <tr style="background:${i%2? GREY : '#FFFFFF'};">
+      <td style="border:1px solid #C9D2E0;padding:6px 10px;font-weight:bold;color:${NAVY};">${esc(c.empresa)}</td>
+      <td style="border:1px solid #C9D2E0;padding:6px 10px;">${esc(c.nit)}</td>
+      <td style="border:1px solid #C9D2E0;padding:6px 10px;">${esc(c.contacto)}</td>
+      <td style="border:1px solid #C9D2E0;padding:6px 10px;">${esc(c.cargo)}</td>
+      <td style="border:1px solid #C9D2E0;padding:6px 10px;color:${NAVY2};">${esc(c.correo)}</td>
+      <td style="border:1px solid #C9D2E0;padding:6px 10px;">${esc(c.telefono)}</td>
+      <td style="border:1px solid #C9D2E0;padding:6px 10px;">${esc(c.ciudad)}</td>
+      <td style="border:1px solid #C9D2E0;padding:6px 10px;">${esc(c.formaPago)}</td>
+      <td style="border:1px solid #C9D2E0;padding:6px 10px;font-size:11px;color:#555;">${esc(c.notas)}</td>
+    </tr>`).join('');
+  const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8">
+<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+<x:Name>Clientes EYG</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+<body style="font-family:Segoe UI,Arial,sans-serif;">
+<table>
+  <tr><td colspan="9" style="padding:10px 0;">
+    <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" width="70" height="70" alt="E&amp;G">
+  </td></tr>
+  <tr><td colspan="9" style="font-size:20px;font-weight:bold;color:${NAVY};padding:4px 0;">DIRECTORIO DE CLIENTES — E&amp;G ENERGY GROUP SAS</td></tr>
+  <tr><td colspan="9" style="font-size:12px;color:${GOLD};font-weight:bold;padding-bottom:10px;">${bd.length} cliente(s) · Generado el ${esc(hoy)}${q?' · Filtro: "'+esc(q)+'"':''}</td></tr>
+  <tr>
+    ${['EMPRESA','NIT','CONTACTO','CARGO','CORREO','TELÉFONO','CIUDAD','FORMA DE PAGO','NOTAS'].map(h =>
+      `<th style="background:${NAVY};color:#FFFFFF;border:1px solid ${NAVY};padding:8px 10px;font-size:12px;text-align:left;">${h}</th>`).join('')}
+  </tr>
+  ${filas}
+  <tr><td colspan="9" style="border-top:3px solid ${GOLD};font-size:10px;color:#8899BB;padding-top:8px;">⚡ ENERGY — Plataforma Administrativa E&amp;G Energy Group · La base se alimenta automáticamente con cada cotización guardada</td></tr>
+</table></body></html>`;
+  const blob = new Blob(['﻿' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Clientes_EYG_' + new Date().toISOString().slice(0,10) + '.xls';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { try{ document.body.removeChild(a); }catch(_){} URL.revokeObjectURL(url); }, 500);
+  showToast('📗 Excel de ' + bd.length + ' cliente(s) descargado','success');
+}
+
+// Normaliza el nombre de un cliente para emparejar variantes: quita SAS/LTDA/
+// SUCURSAL, paréntesis (contactos), lo que sigue a una barra (ODS/gestorías),
+// NITs pegados y puntuación. "PETROLABIN / GESTORÍA ODS 06" → "PETROLABIN".
+function _cliNorm(s) {
+  s = String(s || '').toUpperCase();
+  s = s.replace(/\(.*?\)/g, ' ');
+  s = s.replace(/\/.*$/, ' ');
+  s = s.replace(/[.,&\-]/g, ' ');
+  s = s.replace(/\b\d{6,}\b/g, ' ');
+  s = s.replace(/\b(SAS|S A S|SA|LTDA|LTD|INC|CORP|SUCURSAL|COLOMBIA|DE COLOMBIA|GROUP|GRUPO|CIA|EU|E U|ZOMAC|BIC)\b/g, ' ');
+  return s.replace(/\s+/g, ' ').trim();
+}
+// ¿Dos nombres son el mismo cliente? Igual normalizado, o uno es prefijo del
+// otro (mín. 6 letras) — "ARROW" ≈ "ARROW EXPLORATION LLANOS".
+function _cliMismo(a, b) {
+  const na = _cliNorm(a), nb = _cliNorm(b);
+  if (!na || !nb) return false;
+  if (na === nb) return true;
+  const corto = na.length <= nb.length ? na : nb;
+  const largo = na.length <= nb.length ? nb : na;
+  return corto.length >= 6 && largo.startsWith(corto + ' ');
+}
 // BD de Clientes AUTO-ALIMENTADA: cada cotización guardada registra o completa su
 // cliente en la pestaña Clientes. Solo llena campos VACÍOS — nunca pisa lo que
-// alguien escribió a mano en la ficha del cliente.
+// alguien escribió a mano en la ficha del cliente. Empareja por nombre
+// NORMALIZADO para no crear fichas duplicadas por variantes de escritura.
 function _cliUpsertDesdeCotiz(rec) {
   const empresa = (rec.cliente || '').trim();
   if (!empresa) return;
   const bd = getData('bd_clientes', []);
-  const key = empresa.toLowerCase();
-  const ix = bd.findIndex(c => (c.empresa || '').trim().toLowerCase() === key);
+  const ix = bd.findIndex(c => _cliMismo(c.empresa, empresa));
   if (ix >= 0) {
     const c = bd[ix];
     let cambio = false;
