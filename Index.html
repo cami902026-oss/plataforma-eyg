@@ -7969,6 +7969,8 @@ function _cotizNumVigilar() {
 }
 
 function cotizShowTab(tab) {
+  // Candado: la pestaña Clientes es solo para gerencia y Andrea
+  if (tab === 'clientes' && !_cliCanSee()) { showToast('La base de clientes es solo para gerencia y Andrea','info'); return; }
   document.querySelectorAll('.cotiz-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.cotiz-tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById('ctab-' + tab).classList.add('active');
@@ -10990,7 +10992,14 @@ function _bdSemaforo(c) {
   return `<span title="${horas.toFixed(1)}h desde envío" style="font-size:12px;color:${color};white-space:nowrap;">${emoji} ${label}</span>`;
 }
 
+// La pestaña Clientes (base de datos de clientes) la ven SOLO gerencia (Alberto) y Andrea.
+function _cliCanSee(){ return currentUser && (currentUser.email==='alberto' || currentUser.email==='andrea'); }
+function _cliAplicarVisibilidad(){
+  const tab=document.getElementById('ctab-clientes');
+  if(tab) tab.style.display = _cliCanSee() ? '' : 'none';
+}
 function initCotizaciones() {
+  try{ _cliAplicarVisibilidad(); }catch(_){}
   const today2 = new Date().toISOString().split('T')[0];
   const venc = new Date(); venc.setDate(venc.getDate()+8);
   document.getElementById('cotiz-fecha-gen').value = today2;
