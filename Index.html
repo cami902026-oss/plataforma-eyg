@@ -12847,13 +12847,19 @@ function visPlanFillSelects(){
 function visPlanColor(estado){
   return ({Programada:'#1A3A8F', Realizada:'#2EAA4A', Reprogramada:'#E8A020', Cancelada:'#6b7280'})[estado] || '#1A3A8F';
 }
-function visPlanChip(v,canEdit){
+function visPlanChip(v,canEdit,idx,total){
   const col=visPlanColor(v.estado);
   const cli=_vpEsc(v.cliente||v.empresa||'Visita');
-  const sub=[v.hora,v.ciudad].filter(Boolean).map(_vpEsc).join(' · ');
+  const sub=[v.ciudad].filter(Boolean).map(_vpEsc).join(' · ');
   const click=canEdit?('onclick="visPlanEditar(\''+v.id+'\')"'):'';
   const cur=canEdit?'cursor:pointer;':'';
-  return '<div '+click+' title="'+_vpEsc(v.objetivo||'')+'" style="'+cur+'background:'+col+'22;border-left:3px solid '+col+';border-radius:6px;padding:5px 7px;margin-bottom:5px;">'
+  // Cuando hay varias visitas el mismo día se numeran (1/2, 2/2) y cada una lleva
+  // borde COMPLETO + más separación para que NO se vean pegadas ni se confundan.
+  const varias = total && total>1;
+  const numTag = varias ? '<span style="background:'+col+';color:#fff;font-size:9px;font-weight:800;border-radius:8px;padding:1px 6px;">'+(idx+1)+'/'+total+'</span>' : '';
+  const horaTag = v.hora ? '<span style="background:'+col+';color:#fff;font-size:10px;font-weight:800;border-radius:8px;padding:1px 7px;">🕐 '+_vpEsc(v.hora)+'</span>' : '';
+  return '<div '+click+' title="'+_vpEsc(v.objetivo||'')+'" style="'+cur+'background:'+col+'22;border:1.5px solid '+col+';border-left:4px solid '+col+';border-radius:8px;padding:6px 8px;margin-bottom:'+(varias?'8px':'5px')+';">'
+    +((horaTag||numTag)?'<div style="display:flex;gap:5px;align-items:center;margin-bottom:3px;flex-wrap:wrap;">'+horaTag+numTag+'</div>':'')
     +'<div style="font-size:12px;font-weight:700;color:#fff;line-height:1.2;">'+cli+'</div>'
     +(sub?'<div style="font-size:10.5px;color:var(--text-muted);margin-top:1px;">'+sub+'</div>':'')
     +((v.empresa&&v.cliente)?'<div style="font-size:10px;color:var(--text-muted);">'+_vpEsc(v.empresa)+'</div>':'')
@@ -12887,7 +12893,7 @@ function visPlanRender(){
       const ds=_visPlanFmt(d);
       const items=_visPlan.filter(v=>v.comercial===c.email && v.fecha===ds).sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
       const canEdit=visPlanCanEdit(c.email);
-      let cell=items.map(v=>visPlanChip(v,canEdit)).join('');
+      let cell=items.map((v,ix)=>visPlanChip(v,canEdit,ix,items.length)).join('');
       if(canEdit) cell+='<div onclick="visPlanNueva(\''+ds+'\',\''+c.email+'\')" title="Programar" style="cursor:pointer;text-align:center;color:var(--text-muted);border:1px dashed var(--border);border-radius:6px;padding:3px;font-size:12px;">+</div>';
       else if(!items.length) cell='<span style="color:var(--text-muted);font-size:11px;">—</span>';
       html+='<td style="vertical-align:top;padding:5px;background:rgba(13,31,60,.35);border-radius:8px;min-width:120px;">'+cell+'</td>';
