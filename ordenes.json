@@ -3120,5 +3120,52 @@
     "createdBy": "alexandra",
     "updatedAt": "2026-07-08T22:07:23.483Z",
     "updatedBy": "alexandra"
+  },
+  {
+    "id": "poc_1783548505564",
+    "num": "LM1781",
+    "cliente": "COPCOL",
+    "desc": "Cotización LM1781 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-08",
+    "valor": 414120,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-08",
+        "n": ""
+      },
+      {
+        "s": "active",
+        "f": "",
+        "n": "",
+        "envio": "taquilla_bus",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-08",
+        "n": "SERVER"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1781",
+    "createdAt": "2026-07-08T22:08:25.564Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-08T22:08:25.564Z",
+    "updatedBy": "alexandra"
   }
 ]
