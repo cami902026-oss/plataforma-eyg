@@ -774,6 +774,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="nav-item" onclick="navigate('cartera')"><span class="icon">💰</span>Cartera</div>
       <div class="nav-item" onclick="navigate('procesos')"><span class="icon">🚛</span>Procesos O.C.</div>
       <div class="nav-item" onclick="navigate('visitas')"><span class="icon">🤝</span>Visitas Comerciales</div>
+      <div class="nav-item" onclick="navigate('programacion')"><span class="icon">🗓️</span>Programación Equipo</div>
       <div class="nav-item" onclick="navigate('mensajeria')"><span class="icon">📬</span>Mensajería</div>
       <div class="nav-item" onclick="navigate('historico')"><span class="icon">📚</span>Históricos</div>
       <div class="nav-section">Abastecimiento</div>
@@ -2118,7 +2119,6 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);">
   <button id="vis-tabbtn-registrar" onclick="visTab('registrar')" style="background:none;border:none;border-bottom:3px solid var(--gold);color:#fff;font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;">&#129309; Registrar visita</button>
   <button id="vis-tabbtn-semanario" onclick="visTab('semanario')" style="background:none;border:none;border-bottom:3px solid transparent;color:var(--text-muted);font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;">&#128197; Semanario</button>
-  <button id="vis-tabbtn-sabados" onclick="visTab('sabados')" style="background:none;border:none;border-bottom:3px solid transparent;color:var(--text-muted);font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;">&#128467; S&aacute;bados</button>
 </div>
 <div id="vis-tab-registrar">
 <div style="background:rgba(13,31,60,0.8);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
@@ -2194,7 +2194,42 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Toca una celda vac&iacute;a para programar, o una visita para editarla. Los colores indican el estado.</p>
 </div>
 
-<!-- ===== SABADOS (rotacion de asistentes: Alexandra / Lina / Sandra) ===== -->
+</div><!-- /page-visitas -->
+
+<!-- ===== PROGRAMACIÓN EQUIPO (solo dirección: gerencia, Andrea, Mario) ===== -->
+<div class="page" id="page-programacion">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+  <div>
+    <h2 style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:#fff;">&#128467;&#65039; Programaci&oacute;n del Equipo</h2>
+    <p style="color:var(--text-muted);font-size:13px;margin-top:4px;">Qui&eacute;n trabaja presencial, remoto o est&aacute; de permiso cada d&iacute;a — y la rotaci&oacute;n de s&aacute;bados</p>
+  </div>
+</div>
+<div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);">
+  <button id="pe-tabbtn-semana" onclick="peTab('semana')" style="background:none;border:none;border-bottom:3px solid var(--gold);color:#fff;font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;">&#128203; Semana</button>
+  <button id="pe-tabbtn-sabados" onclick="peTab('sabados')" style="background:none;border:none;border-bottom:3px solid transparent;color:var(--text-muted);font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;">&#128467; S&aacute;bados</button>
+  <button id="pe-tabbtn-equipo" onclick="peTab('equipo')" style="background:none;border:none;border-bottom:3px solid transparent;color:var(--text-muted);font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;">&#9881;&#65039; Equipo</button>
+</div>
+
+<!-- Pestaña SEMANA -->
+<div id="pe-tab-semana">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="peSemana(-1)" style="padding:8px 12px;">&#8249; Anterior</button>
+      <button class="btn btn-ghost" onclick="peSemana(0)" style="padding:8px 12px;">Hoy</button>
+      <button class="btn btn-ghost" onclick="peSemana(1)" style="padding:8px 12px;">Siguiente &#8250;</button>
+      <span id="pe-rango" style="color:var(--gold);font-weight:700;margin-left:8px;font-size:14px;"></span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="peExcel()" title="Descargar la semana + resumen del mes en Excel con marca E&amp;G" style="padding:8px 14px;font-size:13px;background:rgba(46,170,74,.2);border:1px solid rgba(46,170,74,.5);color:#86efac;">&#128215; Excel</button>
+      <button class="btn btn-primary" onclick="peSemanaEstandar()" title="Marca a todos los PRESENCIALES como presencial Lunes a Viernes de esta semana (los h&iacute;bridos se marcan a mano)" style="padding:8px 16px;font-size:13px;">&#9889; Semana est&aacute;ndar</button>
+    </div>
+  </div>
+  <div style="overflow-x:auto;"><div id="pe-grid"></div></div>
+  <p style="color:var(--text-muted);font-size:12px;margin-top:10px;">Toca una celda para cambiar el estado: &#9989; Presencial &rarr; &#127968; Remoto &rarr; &#127958;&#65039; Vacaciones/permiso &rarr; &mdash; Descanso.</p>
+  <div id="pe-resumen" style="margin-top:18px;"></div>
+</div>
+
+<!-- Pestaña SÁBADOS (movida desde Visitas Comerciales; misma lógica y datos) -->
 <div id="vis-tab-sabados" style="display:none;">
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
@@ -2210,9 +2245,19 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   </div>
   <div id="sab-plan-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;"></div>
   <div id="sab-plan-resumen" style="margin-top:18px;"></div>
-  <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Rotaci&oacute;n continua Alexandra &rarr; Lina &rarr; Sandra (no se reinicia cada mes). Si un s&aacute;bado se marca &quot;No laboral&quot;, la rotaci&oacute;n se corre y nadie pierde turno. Solo direcci&oacute;n (Alberto, Andrea y Mario) puede editar.</p>
+  <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Rotaci&oacute;n continua Alexandra &rarr; Lina &rarr; Sandra (no se reinicia cada mes). Si un s&aacute;bado se marca &quot;No laboral&quot;, la rotaci&oacute;n se corre y nadie pierde turno. Todo el equipo ve qui&eacute;n trabaja el s&aacute;bado en la tarjeta del Dashboard.</p>
 </div>
-</div><!-- /page-visitas -->
+
+<!-- Pestaña EQUIPO (roster editable) -->
+<div id="pe-tab-equipo" style="display:none;">
+  <p style="color:var(--text-muted);font-size:13px;margin-bottom:14px;">Define qui&eacute;n es <b style="color:#86efac;">&#127970; Presencial</b> (va todos los d&iacute;as) y qui&eacute;n es <b style="color:#93c5fd;">&#128260; H&iacute;brido</b> (se programa d&iacute;a a d&iacute;a). Puedes agregar gente nueva sin tocar c&oacute;digo.</p>
+  <div id="pe-roster"></div>
+  <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+    <input type="text" id="pe-nueva-persona" placeholder="Nombre de la persona nueva..." style="flex:1;min-width:180px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:#fff;font-size:13px;">
+    <button class="btn btn-primary" onclick="peAgregarPersona()" style="width:auto;font-size:13px;">&#10133; Agregar</button>
+  </div>
+</div>
+</div><!-- /page-programacion -->
 
 <!-- MODAL PROGRAMAR/EDITAR VISITA (fuera de la pagina: overlay fijo) -->
 <div id="vis-plan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
@@ -3014,6 +3059,7 @@ const ALL_MODULES = [
   { id:'cartera',       label:'💰 Cartera' },
   { id:'procesos',      label:'🚛 Procesos O.C.' },
   { id:'visitas',       label:'🤝 Visitas Comerciales' },
+  { id:'programacion',  label:'🗓️ Programación Equipo (Solo dirección)' },
   { id:'mensajeria',    label:'📬 Mensajería' },
   { id:'historico',     label:'📚 Históricos (Solo Admin)' },
   { id:'configuracion', label:'⚙️ Configuración' }
@@ -3041,6 +3087,8 @@ function userCanSeeModule(mod) {
   if (mod === 'historico') return isAdmin;
   // Cartera: solo Andrea y Alberto (no se puede destrabar por config)
   if (mod === 'cartera') return email === 'andrea' || email === 'alberto';
+  // Programación Equipo: solo dirección (gerencia, Andrea y Mario)
+  if (mod === 'programacion') return isAdmin || email === 'mario';
   // Abastecimiento: andrea, alberto, yesid
   if (mod === 'abastecimiento') return email === 'andrea' || email === 'alberto' || email === 'yesid';
   // Remisiones: todo el equipo MENOS Nelsy
@@ -4319,6 +4367,7 @@ const POLL_TARGETS = [
   { file:'data/visitas.json',      storageKey:'energy_visitas',      renderFn: () => { _refreshVisitasIfOpen(); }, mergeBy:'id' },
   { file:'data/visitas_plan.json', storageKey:'energy_visitas_plan', renderFn: () => { try{ _refreshVisPlanIfOpen(); }catch(_){} }, mergeBy:'id' },
   { file:'data/sabados_plan.json', storageKey:'energy_sabados_plan', renderFn: () => { try{ _refreshSabPlanIfOpen(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/programacion_equipo.json', storageKey:'energy_prog_equipo', renderFn: () => { try{ _refreshPEIfOpen(); }catch(_){} }, mergeBy:'id' },
   { file:'data/mensajeria.json',   storageKey:'energy_mensajeria',   renderFn: () => { _refreshMensajeriaIfOpen(); }, mergeBy:'id' },
   { file:'data/fotos_inv.json',    storageKey:'energy_fotos_inv',    renderFn: () => { try{ if(typeof invRender==='function') invRender(); }catch(_){} }, mergeBy:'__obj__' },
   { file:'data/config.json',       storageKey:null,                  renderFn: () => {}, mergeBy:null },
@@ -5063,11 +5112,12 @@ function navigate(page) {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
   currentPage = page;
-  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',ayuda:'Ayuda'};
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',procesos:'Procesos O.C.',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',ayuda:'Ayuda'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
   if(page==='remisiones') remiInit();
-  if(page==='visitas') { try{ visPlanInit(); }catch(_){} try{ sabPlanInit(); }catch(_){} }
+  if(page==='visitas') { try{ visPlanInit(); }catch(_){} }
+  if(page==='programacion') { try{ peInit(); }catch(_){} try{ sabPlanInit(); }catch(_){} }
   if(page==='compras') pcomInit();
   if(page==='ayuda') ayudaRender();
   if(page==='cartera') { setTimeout(loadCarteraUrlUI, 100); }
@@ -12637,17 +12687,12 @@ function visTab(which){
   _visPlanTab=which;
   document.getElementById('vis-tab-registrar').style.display = which==='registrar'?'':'none';
   document.getElementById('vis-tab-semanario').style.display = which==='semanario'?'':'none';
-  const tabSab=document.getElementById('vis-tab-sabados');
-  if(tabSab) tabSab.style.display = which==='sabados'?'':'none';
   const act='border-bottom:3px solid var(--gold);color:#fff;';
   const ina='border-bottom:3px solid transparent;color:var(--text-muted);';
   const base='background:none;border:none;font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;';
   document.getElementById('vis-tabbtn-registrar').style.cssText=base+(which==='registrar'?act:ina);
   document.getElementById('vis-tabbtn-semanario').style.cssText=base+(which==='semanario'?act:ina);
-  const btnSab=document.getElementById('vis-tabbtn-sabados');
-  if(btnSab) btnSab.style.cssText=base+(which==='sabados'?act:ina);
   if(which==='semanario'){ visPlanFillSelects(); visPlanRender(); }
-  if(which==='sabados'){ try{ sabRender(); }catch(_){} }
 }
 async function visPlanInit(){
   if(!_visPlanWeek) _visPlanWeek=visPlanMonday(new Date());
@@ -12959,7 +13004,7 @@ async function sabCargar(){
 async function sabPlanInit(){
   if(!_sabMes){ const n=new Date(); _sabMes=new Date(n.getFullYear(),n.getMonth(),1); }
   await sabCargar();
-  if(_visPlanTab==='sabados') sabRender();
+  if(typeof _peTab!=='undefined' && _peTab==='sabados') sabRender();
 }
 function sabMes(delta){
   if(delta===0){ const n=new Date(); _sabMes=new Date(n.getFullYear(),n.getMonth(),1); }
@@ -13150,9 +13195,259 @@ function sabExportMes(){
 }
 function _refreshSabPlanIfOpen(){
   try{ _sabPlan=JSON.parse(localStorage.getItem(SAB_PLAN_KEY)||'[]'); }catch(_){ _sabPlan=[]; }
-  if(typeof currentPage!=='undefined' && currentPage==='visitas' && _visPlanTab==='sabados') sabRender();
+  if(typeof currentPage!=='undefined' && currentPage==='programacion' && typeof _peTab!=='undefined' && _peTab==='sabados') sabRender();
   try{ renderSabadoDash(); }catch(_){}
 }
+// ═══════════════════════════════════════════════════════════════
+// PROGRAMACIÓN EQUIPO — módulo solo dirección (gerencia, Andrea, Mario).
+// Programa quién trabaja presencial/remoto/permiso cada día (Lun-Sáb).
+// Datos en data/programacion_equipo.json: un registro 'pe_roster' (lista de
+// personas con tipo presencial/híbrido) + un registro por persona-semana
+// ('pe_<lunes>_<nombre>'). Mismo merge anti-pisadas por id+updatedAt.
+// ═══════════════════════════════════════════════════════════════
+const PE_KEY='energy_prog_equipo';
+const PE_FILE='data/programacion_equipo.json';
+const PE_ROSTER_DEFAULT=[
+  {nombre:'Andrea',    tipo:'presencial'},
+  {nombre:'Nelsy',     tipo:'presencial'},
+  {nombre:'Yesid',     tipo:'presencial'},
+  {nombre:'Alexandra', tipo:'presencial'},
+  {nombre:'Lina',      tipo:'presencial'},
+  {nombre:'Nicolás',   tipo:'presencial'},
+  {nombre:'Mario',     tipo:'hibrido'},
+  {nombre:'Sandra',    tipo:'hibrido'}
+];
+const PE_ESTADOS=['P','R','V',''];   // ciclo al tocar la celda
+const PE_INFO={ P:{txt:'Presencial',icon:'✅',col:'#2EAA4A'}, R:{txt:'Remoto',icon:'🏠',col:'#1A3A8F'}, V:{txt:'Vacaciones/permiso',icon:'🏖️',col:'#E8A020'}, '':{txt:'Descanso',icon:'—',col:'#475569'} };
+let _pePlan=[];
+let _peSemana=null;   // Date del lunes visible
+let _peTab='semana';
+
+function peRoster(){
+  const r=_pePlan.find(x=>x&&x.id==='pe_roster');
+  return (r&&Array.isArray(r.personas)&&r.personas.length)?r.personas:PE_ROSTER_DEFAULT;
+}
+function _peFmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function _peLunes(d){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
+async function peCargar(){
+  try{
+    const remote=await _loadDataGH(PE_FILE);
+    let local=[]; try{ local=JSON.parse(localStorage.getItem(PE_KEY)||'[]'); }catch(_){}
+    _pePlan=visPlanMerge(Array.isArray(remote)?remote:[], local);
+    localStorage.setItem(PE_KEY, JSON.stringify(_pePlan));
+  }catch(_){
+    try{ _pePlan=JSON.parse(localStorage.getItem(PE_KEY)||'[]'); }catch(e){ _pePlan=[]; }
+  }
+}
+async function peInit(){
+  if(!_peSemana) _peSemana=_peLunes(new Date());
+  await peCargar();
+  peRender(); peRenderRoster();
+}
+async function peSync(msg){
+  try{
+    const remote=await _loadDataGH(PE_FILE);
+    _pePlan=visPlanMerge(Array.isArray(remote)?remote:[], _pePlan);
+    localStorage.setItem(PE_KEY, JSON.stringify(_pePlan));
+    await _saveDataGH(PE_FILE, _pePlan, msg);
+  }catch(e){
+    localStorage.setItem(PE_KEY, JSON.stringify(_pePlan));
+    showToast('⚠️ Guardado local, falló sync: '+(e&&e.message||e),'error');
+  }
+}
+function peTab(which){
+  _peTab=which;
+  document.getElementById('pe-tab-semana').style.display = which==='semana'?'':'none';
+  document.getElementById('vis-tab-sabados').style.display = which==='sabados'?'':'none';
+  document.getElementById('pe-tab-equipo').style.display = which==='equipo'?'':'none';
+  const act='border-bottom:3px solid var(--gold);color:#fff;';
+  const ina='border-bottom:3px solid transparent;color:var(--text-muted);';
+  const base='background:none;border:none;font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;';
+  ['semana','sabados','equipo'].forEach(t=>{ const b=document.getElementById('pe-tabbtn-'+t); if(b) b.style.cssText=base+(which===t?act:ina); });
+  if(which==='semana'){ peRender(); }
+  if(which==='sabados'){ try{ sabRender(); }catch(_){} }
+  if(which==='equipo'){ peRenderRoster(); }
+}
+function peSemana(delta){
+  if(delta===0) _peSemana=_peLunes(new Date());
+  else { const d=new Date(_peSemana); d.setDate(d.getDate()+delta*7); _peSemana=d; }
+  peRender();
+}
+function _peRegDe(nombre, lunesStr){
+  return _pePlan.find(x=>x && x.id==='pe_'+lunesStr+'_'+nombre);
+}
+function peRender(){
+  const grid=document.getElementById('pe-grid'); if(!grid) return;
+  if(!_peSemana) _peSemana=_peLunes(new Date());
+  const mon=_peSemana, lunesStr=_peFmt(mon);
+  const days=[]; for(let i=0;i<6;i++){ const d=new Date(mon); d.setDate(mon.getDate()+i); days.push(d); }
+  const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const rango=document.getElementById('pe-rango');
+  if(rango) rango.textContent=days[0].getDate()+' '+meses[days[0].getMonth()]+' – '+days[5].getDate()+' '+meses[days[5].getMonth()]+' '+days[5].getFullYear();
+  const dayNames=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const todayStr=_peFmt(new Date());
+  const th='padding:8px;font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;text-align:center;';
+  let html='<table style="width:100%;border-collapse:separate;border-spacing:6px;min-width:840px;">';
+  html+='<thead><tr><th style="'+th+'text-align:left;min-width:130px;">Persona</th>';
+  days.forEach((d,i)=>{ const isT=_peFmt(d)===todayStr; html+='<th style="'+th+(isT?'color:var(--gold);':'')+'">'+dayNames[i]+'<br><span style="font-size:11px;">'+d.getDate()+'/'+(d.getMonth()+1)+'</span></th>'; });
+  html+='</tr></thead><tbody>';
+  peRoster().forEach(p=>{
+    const reg=_peRegDe(p.nombre, lunesStr);
+    const tipoTag = p.tipo==='hibrido' ? '<span style="font-size:9.5px;background:rgba(26,58,143,.4);color:#93c5fd;border-radius:6px;padding:1px 6px;">🔄 híbrido</span>' : '<span style="font-size:9.5px;background:rgba(46,170,74,.25);color:#86efac;border-radius:6px;padding:1px 6px;">🏢 presencial</span>';
+    html+='<tr><td style="vertical-align:middle;padding:8px;font-weight:700;color:#fff;background:rgba(15,43,91,.4);border-radius:8px;">'+_vpEsc(p.nombre)+'<br>'+tipoTag+'</td>';
+    for(let i=0;i<6;i++){
+      const est = reg && reg.dias ? (reg.dias[i]||'') : '';
+      const inf = PE_INFO[est]||PE_INFO[''];
+      html+='<td onclick="peCiclar(\''+p.nombre.replace(/'/g,"\\'")+'\','+i+')" title="'+inf.txt+' — toca para cambiar" style="cursor:pointer;text-align:center;vertical-align:middle;padding:10px 5px;background:'+inf.col+'22;border:1px solid '+inf.col+'55;border-radius:8px;font-size:16px;">'+inf.icon+'</td>';
+    }
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+  grid.innerHTML=html;
+  peRenderResumen();
+}
+async function peCiclar(nombre, dia){
+  const lunesStr=_peFmt(_peSemana);
+  let reg=_peRegDe(nombre, lunesStr);
+  if(!reg){
+    reg={ id:'pe_'+lunesStr+'_'+nombre, semana:lunesStr, nombre, dias:{}, updatedAt:'', updatedBy:'' };
+    _pePlan.push(reg);
+  }
+  const actual=reg.dias[dia]||'';
+  const ix=PE_ESTADOS.indexOf(actual);
+  reg.dias[dia]=PE_ESTADOS[(ix+1)%PE_ESTADOS.length];
+  reg.updatedAt=new Date().toISOString();
+  reg.updatedBy=currentUser?(currentUser.name||currentUser.email):'—';
+  peRender();
+  clearTimeout(window._peSaveT);
+  window._peSaveT=setTimeout(()=>{ peSync('🗓️ Programación equipo '+lunesStr); }, 1200);
+}
+async function peSemanaEstandar(){
+  const lunesStr=_peFmt(_peSemana);
+  if(!confirm('Se marcará PRESENCIAL de lunes a viernes a todo el personal presencial de esta semana ('+lunesStr+').\nLos híbridos (Mario, Sandra) no se tocan. ¿Continuar?')) return;
+  peRoster().forEach(p=>{
+    if(p.tipo!=='presencial') return;
+    let reg=_peRegDe(p.nombre, lunesStr);
+    if(!reg){ reg={ id:'pe_'+lunesStr+'_'+p.nombre, semana:lunesStr, nombre:p.nombre, dias:{}, updatedAt:'', updatedBy:'' }; _pePlan.push(reg); }
+    for(let i=0;i<5;i++){ if(!reg.dias[i]) reg.dias[i]='P'; }
+    reg.updatedAt=new Date().toISOString();
+    reg.updatedBy=currentUser?(currentUser.name||currentUser.email):'—';
+  });
+  peRender();
+  showToast('Guardando…','info');
+  await peSync('⚡ Semana estándar '+lunesStr);
+  showToast('✅ Semana estándar programada','success');
+}
+function peRenderResumen(){
+  const el=document.getElementById('pe-resumen'); if(!el) return;
+  const y=_peSemana.getFullYear(), m=_peSemana.getMonth();
+  const pref=y+'-'+String(m+1).padStart(2,'0');
+  const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const cnt={};
+  _pePlan.forEach(r=>{
+    if(!r||!r.semana||!r.dias||r.id==='pe_roster') return;
+    for(let i=0;i<6;i++){
+      const d=new Date(r.semana+'T12:00:00'); d.setDate(d.getDate()+i);
+      if(_peFmt(d).slice(0,7)!==pref) continue;
+      const e=r.dias[i]; if(!e) continue;
+      cnt[r.nombre]=cnt[r.nombre]||{P:0,R:0,V:0};
+      cnt[r.nombre][e]=(cnt[r.nombre][e]||0)+1;
+    }
+  });
+  const nombres=Object.keys(cnt);
+  if(!nombres.length){ el.innerHTML=''; return; }
+  const chips=peRoster().filter(p=>cnt[p.nombre]).map(p=>{
+    const c=cnt[p.nombre];
+    return '<span style="display:inline-block;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:10px;padding:5px 12px;margin:0 8px 8px 0;font-size:12px;color:#fff;"><b>'+_vpEsc(p.nombre)+'</b>: ✅'+(c.P||0)+' 🏠'+(c.R||0)+' 🏖️'+(c.V||0)+'</span>';
+  }).join('');
+  el.innerHTML='<div style="font-size:12px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">Resumen '+MESES[m]+' '+y+' (días programados)</div>'+chips;
+}
+function peRenderRoster(){
+  const el=document.getElementById('pe-roster'); if(!el) return;
+  el.innerHTML=peRoster().map((p,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;background:rgba(13,31,60,.55);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px;">
+      <span style="flex:1;font-weight:700;color:#fff;">${_vpEsc(p.nombre)}</span>
+      <select onchange="peCambiarTipo(${i}, this.value)" style="background:rgba(15,43,91,.6);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:#fff;font-size:12.5px;">
+        <option value="presencial" ${p.tipo==='presencial'?'selected':''}>🏢 Presencial (todos los días)</option>
+        <option value="hibrido" ${p.tipo==='hibrido'?'selected':''}>🔄 Híbrido (se programa)</option>
+      </select>
+      <button onclick="peQuitarPersona(${i})" title="Quitar del roster (no borra su historial)" style="background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;">🗑</button>
+    </div>`).join('');
+}
+async function _peGuardarRoster(personas, msg){
+  let r=_pePlan.find(x=>x&&x.id==='pe_roster');
+  if(!r){ r={id:'pe_roster', personas:[], updatedAt:''}; _pePlan.push(r); }
+  r.personas=personas;
+  r.updatedAt=new Date().toISOString();
+  r.updatedBy=currentUser?(currentUser.name||currentUser.email):'—';
+  peRenderRoster(); peRender();
+  await peSync(msg);
+}
+function peCambiarTipo(i, tipo){
+  const personas=peRoster().slice();
+  personas[i]=Object.assign({}, personas[i], {tipo});
+  _peGuardarRoster(personas, '⚙️ Tipo de trabajo: '+personas[i].nombre+' → '+tipo);
+}
+function peAgregarPersona(){
+  const inp=document.getElementById('pe-nueva-persona');
+  const nombre=(inp.value||'').trim();
+  if(!nombre){ showToast('Escribe el nombre','error'); return; }
+  const personas=peRoster().slice();
+  if(personas.some(p=>p.nombre.toLowerCase()===nombre.toLowerCase())){ showToast(nombre+' ya está en la lista','info'); return; }
+  personas.push({nombre, tipo:'presencial'});
+  inp.value='';
+  _peGuardarRoster(personas, '➕ '+nombre+' agregado a programación');
+  showToast('✅ '+nombre+' agregado como presencial (cámbialo a híbrido si aplica)','success');
+}
+function peQuitarPersona(i){
+  const personas=peRoster().slice();
+  const p=personas[i];
+  if(!confirm('¿Quitar a '+p.nombre+' del roster de programación? (su historial no se borra)')) return;
+  personas.splice(i,1);
+  _peGuardarRoster(personas, '🗑 '+p.nombre+' quitado de programación');
+}
+function _refreshPEIfOpen(){
+  try{ _pePlan=JSON.parse(localStorage.getItem(PE_KEY)||'[]'); }catch(_){ _pePlan=[]; }
+  if(typeof currentPage!=='undefined' && currentPage==='programacion'){
+    if(_peTab==='semana') peRender();
+    if(_peTab==='equipo') peRenderRoster();
+  }
+}
+// 📗 Excel de la semana visible + resumen del mes, con marca E&G
+function peExcel(){
+  const NAVY='#0F2B5B', GOLD='#E8A020', GREY='#F2F4F8';
+  const mon=_peSemana, lunesStr=_peFmt(mon);
+  const days=[]; for(let i=0;i<6;i++){ const d=new Date(mon); d.setDate(mon.getDate()+i); days.push(d); }
+  const dayNames=['LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO'];
+  const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  let filas='';
+  peRoster().forEach((p,ix)=>{
+    const reg=_peRegDe(p.nombre, lunesStr);
+    filas+='<tr style="background:'+(ix%2?GREY:'#FFFFFF')+';"><td style="border:1px solid #C9D2E0;padding:6px 10px;font-weight:bold;color:'+NAVY+';">'+esc(p.nombre)+' ('+(p.tipo==='hibrido'?'Híbrido':'Presencial')+')</td>';
+    for(let i=0;i<6;i++){
+      const e=reg&&reg.dias?(reg.dias[i]||''):'';
+      const inf=PE_INFO[e]||PE_INFO[''];
+      filas+='<td style="border:1px solid #C9D2E0;padding:6px 10px;text-align:center;">'+(e?inf.icon+' '+inf.txt:'—')+'</td>';
+    }
+    filas+='</tr>';
+  });
+  const html='<html><head><meta charset="UTF-8"></head><body style="font-family:Segoe UI,Arial,sans-serif;"><table>'
+    +'<tr><td colspan="7" style="padding:10px 0;"><img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" width="70" height="70"></td></tr>'
+    +'<tr><td colspan="7" style="font-size:20px;font-weight:bold;color:'+NAVY+';">PROGRAMACIÓN DEL EQUIPO — E&amp;G ENERGY GROUP SAS</td></tr>'
+    +'<tr><td colspan="7" style="font-size:12px;color:'+GOLD+';font-weight:bold;padding-bottom:10px;">Semana del '+days[0].toLocaleDateString('es-CO')+' al '+days[5].toLocaleDateString('es-CO')+'</td></tr>'
+    +'<tr><th style="background:'+NAVY+';color:#fff;border:1px solid '+NAVY+';padding:8px 10px;text-align:left;">PERSONA</th>'
+    +days.map((d,i)=>'<th style="background:'+NAVY+';color:#fff;border:1px solid '+NAVY+';padding:8px 10px;">'+dayNames[i]+' '+d.getDate()+'/'+(d.getMonth()+1)+'</th>').join('')+'</tr>'
+    +filas
+    +'<tr><td colspan="7" style="border-top:3px solid '+GOLD+';font-size:10px;color:#8899BB;padding-top:8px;">✅ Presencial · 🏠 Remoto · 🏖️ Vacaciones/permiso · — Descanso &nbsp;&nbsp;⚡ ENERGY — Plataforma E&amp;G</td></tr>'
+    +'</table></body></html>';
+  const blob=new Blob(['﻿'+html],{type:'application/vnd.ms-excel;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='Programacion_Equipo_'+lunesStr+'.xls';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ try{document.body.removeChild(a);}catch(_){} URL.revokeObjectURL(url); },500);
+  showToast('📗 Excel de la semana descargado','success');
+}
+
 // Tarjeta del Dashboard: "Este sábado trabaja: X" (lee localStorage; el poll la refresca)
 function renderSabadoDash(){
   const box=document.getElementById('dash-sabado'); if(!box) return;
