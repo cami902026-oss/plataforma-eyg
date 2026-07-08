@@ -9846,9 +9846,11 @@ function bdRender(filtro) {
 
   const isAdminOrJefe = currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'JEFE');
   const cuName = (currentUser && currentUser.name) || '';
-  // Restrict only users whose team role is 'Comercial' (case-insensitive) — scales to future sales reps
-  const teamMember = (getData('team', TEAM_DEFAULT)||[]).find(m => m.name === cuName);
-  const isComercial = !isAdminOrJefe && teamMember && (teamMember.role||'').toLowerCase().includes('comercial');
+  // DECISIÓN 2026-07-08: TODO el equipo ve TODAS las cotizaciones. Antes el filtro
+  // ".includes('comercial')" ocultaba la base a quien tuviera "comercial" en el cargo
+  // y le mostraba solo las suyas — pero atrapaba por error a Sandra ("Asistente
+  // Comercial") y Mario ("Coordinador Comercial"), a quienes les salía VACÍA.
+  const isComercial = false;
 
   // Vendedor filter: visible only for ADMIN/JEFE; Comercial users see only their own
   const vfEl = document.getElementById('bd-filter-vendedor');
