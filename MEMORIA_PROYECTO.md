@@ -316,4 +316,17 @@ Hecho con 3 exploradores. Hallazgos clave — **roto/falso**: "Actividad recient
 - **Confirmar que TODOS los equipos estén en la última versión** (mirar abajo-izq). Un equipo viejo puede volver a borrar precios.
 - Regla de oro: dos personas NO deben editar la misma cotización a la vez (se pisan, gana el último que guarda).
 
-*Fin del archivo de memoria. Última actualización: 08/jul/2026 (sesión completa: SW v86 → v112)*
+## 🔧 Sesión 08/jul (tarde-noche) — Remisiones/Planes/Visitas + varios (SW v113 → v120)
+- **Remisiones (v114) y Plan de Compras (v113) anti-borrado**: aviso que consulta el SERVIDOR antes de reemplazar un número/CC que ya existe. Causa: número de remisión se calcula desde memoria → colisiones; el plan usa CC determinístico por cotización → dos personas chocan. Caso real: SERSOLCA (rem 26150) pisó a QCIEN → QCIEN recuperada del backup `backups/remisiones.json`, SERSOLCA reubicada en 26202. (Otras 4 remisiones de junio bajo 26150 —SAR ENERGY/Wiler/PGS/MYM— quedan en el backup si se necesitan.)
+- **Visitas comerciales**: borrado con lápida `deleted:true` para que NO revivan al sincronizar (v115); nombres completos en el semanario (Mario Rodríguez/Sandra Sánchez, solo etiqueta vía VIS_NOMBRES); quitado el campo "Cliente" del modal Programar visita → queda "Empresa/Cliente" (v116); FIX visitas que desaparecían al guardar/borrar otra —ahora une remoto+LOCAL+cambio— (v117); **visita con VARIOS comerciales** (casillas, campo `comerciales[]`, sale en la fila de cada uno con 👥, backward-compatible) (v118).
+- **Programación Equipo**: agregada Sheila (híbrido) (v119).
+- **Cotizaciones IA**: pestaña **Clientes** visible SOLO para gerencia (Alberto) y Andrea (v120).
+- **Informe de pagos**: GitHub se saltó la corrida automática de las 6PM (congestión a la hora en punto); se disparó manual y se movió el cron a las 6:17PM (`17 23`) para que no se salte. Si falla un día, el siguiente recoge lo pendiente.
+
+### ⚠️ PENDIENTE al cierre 08/jul
+- **LM1767 (Petroleum Blending)**: redigitar precios (se perdieron en todas las copias).
+- **Que TODOS los equipos estén en v120** (indicador abajo-izq de la barra lateral). Un equipo con versión vieja puede volver a borrar precios/datos.
+- Mejora de fondo pendiente: **consecutivo de remisión del lado del servidor** (como el de cotizaciones) para que nunca se repita el número.
+- Contraseña de Lina: `Lina2026`.
+
+*Fin del archivo de memoria. Última actualización: 08/jul/2026 (sesión completa: SW v86 → v120)*
