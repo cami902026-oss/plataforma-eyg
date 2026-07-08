@@ -842,7 +842,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <div class="stat-grid">
           <div class="stat-card green"><div class="stat-icon">📅</div><div class="stat-num" id="stat-reuniones">3</div><div class="stat-label">Reuniones hoy</div></div>
           <div class="stat-card blue"><div class="stat-icon">✅</div><div class="stat-num" id="stat-tareas">4</div><div class="stat-label">Tareas pendientes</div></div>
-          <div class="stat-card gold"><div class="stat-icon">💬</div><div class="stat-num" id="stat-mensajes">7</div><div class="stat-label">Mensajes sin leer</div></div>
+          <div class="stat-card gold"><div class="stat-icon">🔔</div><div class="stat-num" id="stat-mensajes">0</div><div class="stat-label">Alertas activas</div></div>
           <div class="stat-card red"><div class="stat-icon">📋</div><div class="stat-num" id="stat-proyectos">0</div><div class="stat-label">OPs activas</div></div>
         </div>
         <div id="dash-sabado" style="margin-bottom:20px;"></div>
@@ -5134,25 +5134,32 @@ function buildAlerts() {
     }
   });
 
-  // --- Cotizaciones sin fecha de seguimiento ---
+  // --- Cotizaciones ENVIADAS sin seguimiento (≥5 días) ---
+  // FIX: leía la clave 'energy_cotizaciones' que NO existe (la real es
+  // 'max_bd_cotizaciones') → esta alerta jamás había disparado. Ahora es UNA
+  // alerta resumen (no una por cotización, serían decenas) con el valor en juego.
   try {
-    const cotz = JSON.parse(localStorage.getItem('energy_cotizaciones')||'[]');
-    cotz.forEach(c=>{
-      if(!c.fecha) return;
-      const d = new Date(c.fecha); d.setHours(0,0,0,0);
-      const dias = Math.round((today-d)/86400000);
-      if(dias>=5){
-        alerts.push({type:'blue', icon:'📄', title:`Cotización sin seguimiento: ${c.cliente||c.id}`,
-          detail:`Enviada hace ${dias} días · Total: ${c.total||'—'}`,
-          badge:{cls:'blue',txt:'SEGUIMIENTO'}, action:"navigate('cotizaciones')"});
-      }
+    const cotz = JSON.parse(localStorage.getItem('max_bd_cotizaciones')||'[]');
+    const viejas = (Array.isArray(cotz)?cotz:[]).filter(c=>{
+      if(!c || c.deleted || c.estado!=='Enviada') return false;
+      const f = c.fechaEnvio || c.fecha; if(!f) return false;
+      const d = new Date(f); d.setHours(0,0,0,0);
+      return Math.round((today-d)/86400000) >= 5;
     });
+    if(viejas.length){
+      const tot = viejas.reduce((s,c)=>s+(Number(c.total)||0),0);
+      alerts.push({type:'blue', icon:'📄', title:`${viejas.length} cotización(es) enviadas sin seguimiento hace 5+ días`,
+        detail:`Valor en juego: $${tot.toLocaleString('es-CO',{maximumFractionDigits:0})} · Toca para revisarlas en la BD`,
+        badge:{cls:'blue',txt:'SEGUIMIENTO'}, action:"navigate('cotizaciones')"});
+    }
   } catch(_){}
   return alerts;
 }
 
 function renderAlerts() {
   const alerts = buildAlerts();
+  // Tarjeta "Alertas activas" del Dashboard (antes decía "7 mensajes sin leer" fijo)
+  const sm = document.getElementById('stat-mensajes'); if (sm) sm.textContent = alerts.length;
   const el = document.getElementById('dash-alerts');
   if(!el) return;
   if(!alerts.length){
@@ -5320,23 +5327,50 @@ function renderDashboard() {
       </div>`).join('');
   }
 
-  // Activity
-  const acts = [
-    {icon:'📅',text:'Reunión "Seguimiento semanal" programada para hoy 9:00 AM',time:'Hace 2h'},
-    {icon:'✅',text:'Tarea "Actualizar base de datos clientes" marcada como completada',time:'Hace 3h'},
-    {icon:'💬',text:'Mensaje de seguimiento enviado a Sheila Baron',time:'Hace 4h'},
-    {icon:'📊',text:'Proyecto "Plan Comercial Q2" actualizado al 40%',time:'Ayer'},
-    {icon:'👤',text:'Tarea asignada a Andrea: revisión de procesos',time:'Hace 2 días'}
-  ];
+  // Actividad reciente REAL — antes era una lista FIJA de ejemplo que nunca
+  // cambiaba ("mensaje a Sheila hace 4h" eterno). Ahora se arma con los últimos
+  // movimientos reales de cotizaciones, tareas, reuniones, OCs, visitas y entregas.
   renderAlerts();
   renderProcesoSection();
   try{ renderSabadoDash(); }catch(_){}
-  document.getElementById('dash-activity').innerHTML = acts.map(a=>`
+  let acts = [];
+  try { acts = _actividadReciente(); } catch(_) {}
+  document.getElementById('dash-activity').innerHTML = acts.length ? acts.map(a=>`
     <div class="activity-item">
       <div class="activity-dot" style="background:var(--green)"></div>
       <div class="activity-text">${a.icon} ${a.text}</div>
       <div class="activity-time">${a.time}</div>
-    </div>`).join('');
+    </div>`).join('') : '<p style="color:var(--text-muted);font-size:13px;">Sin actividad registrada todavía.</p>';
+}
+
+function _haceTxt(ts){
+  const ms = Date.now() - new Date(ts).getTime();
+  if (isNaN(ms) || ms < 0) return '';
+  const min = Math.round(ms/60000);
+  if (min < 60) return 'Hace ' + Math.max(1,min) + ' min';
+  const h = Math.round(min/60);
+  if (h < 24) return 'Hace ' + h + ' h';
+  const d = Math.round(h/24);
+  return d === 1 ? 'Ayer' : 'Hace ' + d + ' días';
+}
+// Últimos 6 movimientos reales de toda la plataforma (por updatedAt/createdAt)
+function _actividadReciente(){
+  const out = [];
+  const esc = s => String(s==null?'':s).replace(/</g,'&lt;');
+  const add = (arr, icon, fn) => { (Array.isArray(arr)?arr:[]).forEach(x=>{ try{
+    if(!x) return;
+    const ts = x.updatedAt || x.createdAt || x.fechaGuardado; if(!ts) return;
+    const txt = fn(x); if(txt) out.push({icon, text:esc(txt), ts});
+  }catch(_){} }); };
+  try{ add(JSON.parse(localStorage.getItem('max_bd_cotizaciones')||'[]').filter(c=>c&&!c.deleted), '📄',
+    c=>'Cotización '+c.id+(c.cliente?' ('+c.cliente+')':'')+' — '+(c.estado||'')+(c.updatedBy&&c.updatedBy!=='auto'?' · '+String(c.updatedBy).split('@')[0]:'')); }catch(_){}
+  try{ add(getData('tasks', []), '✅', t=>'Tarea "'+(t.titulo||'')+'" — '+(t.estado||'')+(t.responsable?' · '+t.responsable:'')); }catch(_){}
+  try{ add(getData('meetings', []), '📅', m=>'Reunión "'+(m.titulo||'')+'"'+(m.fecha?' ('+m.fecha+')':'')); }catch(_){}
+  try{ add(getPOC(), '🏭', o=>'O.C. '+(o.numero||o.id||'')+(o.cliente?' — '+o.cliente:'')); }catch(_){}
+  try{ add(JSON.parse(localStorage.getItem('energy_visitas')||'[]'), '🤝', v=>'Visita: '+(v.empresa||v.cliente||'')); }catch(_){}
+  try{ add(JSON.parse(localStorage.getItem('energy_mensajeria')||'[]'), '📦', m=>'Entrega: '+(m.destinatario||m.empresa||'')); }catch(_){}
+  out.sort((a,b)=> new Date(b.ts) - new Date(a.ts));
+  return out.slice(0,6).map(a=>({icon:a.icon, text:a.text, time:_haceTxt(a.ts)}));
 }
 
 // ===== CALENDAR =====
@@ -5349,10 +5383,11 @@ function renderCalendar() {
     if (myTeam) meetings = meetings.filter(m=>m.participantes.includes(myTeam.id));
     tasks = tasks.filter(t=>t.responsable===currentUser.name||t.responsable.includes(currentUser.name));
   }
-  const year = today.getFullYear(), month = today.getMonth();
+  if (!window._calMes) window._calMes = new Date(today.getFullYear(), today.getMonth(), 1);
+  const year = window._calMes.getFullYear(), month = window._calMes.getMonth();
   const firstDay = new Date(year,month,1).getDay();
   const daysInMonth = new Date(year,month+1,0).getDate();
-  const monthName = today.toLocaleDateString('es-CO',{month:'long',year:'numeric'});
+  const monthName = window._calMes.toLocaleDateString('es-CO',{month:'long',year:'numeric'});
   const days = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
     <button class="btn btn-ghost" style="padding:6px 12px;" onclick="prevMonth()">‹</button>
@@ -5413,7 +5448,18 @@ function switchMeetingView(v) {
   document.getElementById('view-calendar-btn').classList.toggle('active',v==='calendar');
   document.getElementById('view-list-btn').classList.toggle('active',v==='list');
 }
-function prevMonth(){} function nextMonth(){}
+// FIX: estas funciones estaban VACÍAS desde siempre — los botones ‹ › del
+// calendario no hacían nada y quedaba clavado en el mes actual.
+function prevMonth(){
+  if (!window._calMes) window._calMes = new Date(today.getFullYear(), today.getMonth(), 1);
+  window._calMes = new Date(window._calMes.getFullYear(), window._calMes.getMonth()-1, 1);
+  renderCalendar();
+}
+function nextMonth(){
+  if (!window._calMes) window._calMes = new Date(today.getFullYear(), today.getMonth(), 1);
+  window._calMes = new Date(window._calMes.getFullYear(), window._calMes.getMonth()+1, 1);
+  renderCalendar();
+}
 
 function deleteMeeting(id) {
   let meetings = getData('meetings', MEETINGS_DEFAULT);
@@ -5838,14 +5884,13 @@ function renderTeam() {
     <div class="team-card">
       <div class="team-avatar" style="background:${m.color||'var(--blue)'};">
         ${initials(m.name)}
-        <div class="online-dot"></div>
       </div>
       <div class="team-name">${m.name}</div>
       <div class="team-role">${m.role}</div>
       <div class="team-email">${m.email}</div>
       <div class="team-actions">
         <button class="icon-btn" onclick="openWA('${m.wa}')" title="WhatsApp">📱</button>
-        <button class="icon-btn" onclick="showToast('Abriendo Teams...','info')" title="Teams">💻</button>
+        <button class="icon-btn" onclick="window.open('https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(m.email)}','_blank')" title="Chat de Teams con ${m.name}">💻</button>
         <button class="icon-btn" onclick="copyEmail('${m.email}')" title="Copiar email">📧</button>
         <button class="icon-btn" onclick="openKPIsMiembro(${m.id})" title="KPIs / Desempeño">📊</button>
         <button class="icon-btn" onclick="abrirEvalDesempeno('${(m.name||'').replace(/'/g,"\\'")}')" title="Evaluación de Desempeño">📝</button>
@@ -10850,7 +10895,7 @@ const ENERGY_TOOLS = [
       type: 'object',
       properties: {
         titulo:      { type: 'string', description: 'Título corto de la tarea' },
-        responsable: { type: 'string', description: 'Nombre del responsable. Debe ser uno del equipo: Alberto, Sheila Baron, Alexandra, Andrea, Nelsy, Lina Cifientes' },
+        responsable: { type: 'string', description: 'Nombre del responsable. Debe ser uno del equipo: Alberto, Andrea, Sheila Baron, Alexandra, Nelsy, Lina Cifuentes, Yesid Quintero, Mario, Sandra' },
         fecha:       { type: 'string', description: 'Fecha límite en formato YYYY-MM-DD' },
         prioridad:   { type: 'string', enum: ['Alta','Media','Baja'], description: 'Prioridad' },
         desc:        { type: 'string', description: 'Descripción opcional' }
@@ -11354,11 +11399,18 @@ function sendWhatsApp() {
   const msg = document.getElementById('wa-output').textContent;
   const recipient = document.getElementById('wa-recipient').value;
   const team = getData('team', TEAM_DEFAULT);
-  let wa = '';
-  if(recipient!=='equipo') {
-    const m = team.find(t=>t.name===recipient);
-    if(m) wa = m.wa.replace(/\D/g,'');
+  // FIX: con "Todo el equipo" antes se abría wa.me SIN destinatario (no hacía
+  // nada útil). WhatsApp no permite difusión por link, así que ahora se copia
+  // el mensaje y se abre WhatsApp para pegarlo en el grupo del equipo.
+  if (recipient === 'equipo') {
+    try { navigator.clipboard.writeText(msg); } catch(_) {}
+    showToast('📋 Mensaje copiado — pégalo en el grupo de WhatsApp del equipo (WhatsApp no permite envío masivo por link)', 'info');
+    window.open('https://wa.me/', '_blank');
+    return;
   }
+  const m = team.find(t=>t.name===recipient);
+  const wa = m ? m.wa.replace(/\D/g,'') : '';
+  if (!wa) { showToast('No encontré el número de WhatsApp de ' + recipient, 'error'); return; }
   const url = `https://wa.me/${wa}?text=${encodeURIComponent(msg)}`;
   window.open(url,'_blank');
 }
