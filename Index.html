@@ -12777,10 +12777,14 @@ let _visPlanTab='registrar';
 function _vpEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 // Comerciales que aparecen en el semanario (por email de login)
+// Nombres COMPLETOS para mostrar en el semanario de visitas (pedido del usuario
+// 2026-07-08). Solo es la etiqueta visible; internamente la visita se guarda por
+// email (v.comercial), así que esto no afecta datos ni permisos.
+const VIS_NOMBRES={ sheila:'Sheila Barón', mario:'Mario Rodríguez', sandra:'Sandra Sánchez' };
 function visComerciales(){
   const emails=['sheila','mario','sandra'];
   const list = (typeof USERS!=='undefined'?USERS:[]);
-  return emails.map(e=>{ const u=list.find(x=>x.email===e); return {email:e, name:u?u.name:e}; });
+  return emails.map(e=>{ const u=list.find(x=>x.email===e); return {email:e, name:VIS_NOMBRES[e]||(u?u.name:e)}; });
 }
 function visPlanIsManager(){
   if(!currentUser) return false;
@@ -12891,7 +12895,7 @@ function visPlanRender(){
     html+='<tr><td style="vertical-align:top;padding:8px;font-weight:700;color:#fff;background:rgba(15,43,91,.4);border-radius:8px;">'+_vpEsc(c.name)+'</td>';
     days.forEach(d=>{
       const ds=_visPlanFmt(d);
-      const items=_visPlan.filter(v=>v.comercial===c.email && v.fecha===ds).sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
+      const items=_visPlan.filter(v=>!v.deleted && v.comercial===c.email && v.fecha===ds).sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
       const canEdit=visPlanCanEdit(c.email);
       let cell=items.map((v,ix)=>visPlanChip(v,canEdit,ix,items.length)).join('');
       if(canEdit) cell+='<div onclick="visPlanNueva(\''+ds+'\',\''+c.email+'\')" title="Programar" style="cursor:pointer;text-align:center;color:var(--text-muted);border:1px dashed var(--border);border-radius:6px;padding:3px;font-size:12px;">+</div>';
@@ -12992,14 +12996,22 @@ async function visPlanEliminar(){
   if(v && !visPlanCanEdit(v.comercial)){ showToast('No tienes permiso','error'); return; }
   if(!confirm('¿Eliminar esta visita programada?')) return;
   showToast('Eliminando…','info');
+  // BORRADO CON LÁPIDA (2026-07-08): antes se QUITABA la visita, pero al sincronizar
+  // con un equipo que aún la tenía, REVIVÍA. Ahora se marca deleted:true con fecha
+  // nueva → el merge conserva ese "borrado" y se propaga a todos (no revive).
+  const tomb=Object.assign({}, v||{id:id}, {deleted:true, updatedAt:new Date().toISOString(), updatedBy: currentUser?(currentUser.name||currentUser.email):'—'});
   try{
     const remote=await _loadDataGH(VIS_PLAN_FILE);
-    _visPlan=(Array.isArray(remote)?remote:[]).filter(x=>x.id!==id);
+    let arr=Array.isArray(remote)?remote.slice():[];
+    const ix=arr.findIndex(x=>x.id===id);
+    if(ix>=0) arr[ix]=tomb; else arr.push(tomb);
+    _visPlan=visPlanMerge(arr,[tomb]);
     localStorage.setItem(VIS_PLAN_KEY, JSON.stringify(_visPlan));
     await _saveDataGH(VIS_PLAN_FILE, _visPlan, '🗑️ Visita del semanario eliminada');
     showToast('✅ Eliminada','success');
   }catch(e){
-    _visPlan=_visPlan.filter(x=>x.id!==id);
+    const ix=_visPlan.findIndex(x=>x.id===id);
+    if(ix>=0)_visPlan[ix]=tomb; else _visPlan.push(tomb);
     localStorage.setItem(VIS_PLAN_KEY, JSON.stringify(_visPlan));
     showToast('⚠️ Eliminada local, falló sync','error');
   }
@@ -13071,7 +13083,7 @@ function visPlanExportSemana(){
   if(!manager && currentUser) coms=coms.filter(c=>c.email===currentUser.email);
   const filtro=document.getElementById('vis-plan-filtro'); const fval=(manager&&filtro)?filtro.value:'';
   const emails = fval ? [fval] : coms.map(c=>c.email);
-  const items=_visPlan.filter(v=>emails.indexOf(v.comercial)>=0 && days.indexOf(v.fecha)>=0);
+  const items=_visPlan.filter(v=>!v.deleted && emails.indexOf(v.comercial)>=0 && days.indexOf(v.fecha)>=0);
   if(!items.length){ showToast('No hay visitas en esta semana para exportar','info'); return; }
   _icsDownload(items.map(visPlanVevent).join(''), 'semanario_'+days[0]+'_a_'+days[5]+'.ics');
   showToast('📅 '+items.length+' visita(s) exportadas. Abre el archivo para agregarlas a tu calendario.','success');
