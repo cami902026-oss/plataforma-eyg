@@ -13327,11 +13327,13 @@ function peRender(){
   });
   html+='</tbody></table>';
   grid.innerHTML=html;
-  // Controles de edición solo para dirección; el tab del roster también
+  // Controles de edición solo para dirección; el tab del roster y el Excel también
   const btnStd=document.querySelector('#pe-tab-semana button[onclick="peSemanaEstandar()"]');
   if(btnStd) btnStd.style.display = mgr ? '' : 'none';
   const tabEq=document.getElementById('pe-tabbtn-equipo');
   if(tabEq) tabEq.style.display = mgr ? '' : 'none';
+  const btnXls=document.querySelector('#pe-tab-semana button[onclick="peExcel()"]');
+  if(btnXls) btnXls.style.display = mgr ? '' : 'none';
   peRenderResumen();
 }
 async function peCiclar(nombre, dia){
@@ -13446,6 +13448,7 @@ function _refreshPEIfOpen(){
 }
 // 📗 Excel de la semana visible + resumen del mes, con marca E&G
 function peExcel(){
+  if(!peIsManager()){ showToast('El Excel de programación es solo para dirección','info'); return; }
   const NAVY='#0F2B5B', GOLD='#E8A020', GREY='#F2F4F8';
   const mon=_peSemana, lunesStr=_peFmt(mon);
   const days=[]; for(let i=0;i<6;i++){ const d=new Date(mon); d.setDate(mon.getDate()+i); days.push(d); }
