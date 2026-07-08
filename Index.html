@@ -14438,9 +14438,23 @@ async function remiCargar(){
     showToast('Remisiones cargadas ✓','ok');
   }catch(e){ showToast('Error: '+e.message,'error'); }
 }
+// BLINDAJE anti-duplicados (2026-07-08): el guardado "sin pérdida" (inserta lo
+// nuevo → borra lo viejo) podría, si se corta el internet en medio, dejar líneas
+// DUPLICADAS (mismo 'item', distinto 'id'). Al leer, nos quedamos con UNA por
+// número de línea, prefiriendo la más reciente (id más alto). No toca el guardado.
+function _dedupLineas(filas){
+  const porItem=new Map();
+  filas.forEach(r=>{
+    const k = (r.item!=null?r.item:JSON.stringify([r.descripcion,r.cantidad]));
+    const prev=porItem.get(k);
+    if(!prev || (Number(r.id)||0) > (Number(prev.id)||0)) porItem.set(k,r);
+  });
+  return Array.from(porItem.values());
+}
 function remiGrupos(){
   const m={};
   remi_rows.forEach(r=>{ const k=String(r.remision); (m[k]=m[k]||[]).push(r); });
+  Object.keys(m).forEach(k=>{ m[k]=_dedupLineas(m[k]); });
   return m;
 }
 function remiRenderLista(){
@@ -15084,6 +15098,7 @@ async function pcomCargar(){
 function pcomGrupos(){
   const m = {};
   pcom_rows.forEach(r=>{ const k = String(r.cc); (m[k]=m[k]||[]).push(r); });
+  Object.keys(m).forEach(k=>{ m[k]=_dedupLineas(m[k]); });   // mismo blindaje anti-duplicados
   return m;
 }
 function pcomProvInfo(nombre){
