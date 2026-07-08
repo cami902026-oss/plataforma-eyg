@@ -259,9 +259,20 @@ location.reload();
 - **Semáforo revivido**: `fechaEnvio` se estampa al marcar Enviada (antes nunca se guardaba → columna muerta).
 - **Auto-Vencidas**: Enviadas con `fechaVenc` pasada se marcan Vencida solas (`updatedBy:'auto'`); ~33 corregidas al primer ciclo.
 
+### 💸 Informe de Pagos (Egresos) migrado a la NUBE
+- Estaba en tarea local de Windows (`Informe_Pagos_EYG`, PC debía estar prendido a las 6PM) — falló los días 3-6/jul. **Ahora**: workflow `egresos-report.yml` (diario 6PM Colombia) + `scripts/egresos_report.py`: descarga el xlsm vía Graph del OneDrive de Andrea, **reporta desde el último informe enviado** (estado en `data/informe_pagos_estado.json`, nada queda sin reportar), **envía SIEMPRE** (día sin correo = alarma), remitente fijo **info@eygenergygroup.com** (pedido: que no salga del correo de Andrea). Tarea local DESHABILITADA. Probado con 3 corridas + informe real enviado (recuperó 3-7/jul).
+
+### 👥 Clientes: Excel + anti-duplicados (SW v95-v96)
+- Botón **📗 Excel** en pestaña Clientes (`cliDescargarExcel`): .xls con logo y colores E&G, respeta el filtro de búsqueda activo.
+- **Emparejador anti-duplicados** (`_cliNorm`/`_cliMismo`): normaliza SAS/LTDA/SUCURSAL/paréntesis/"/ODS…"/NITs antes de comparar; prefijo mínimo 5 letras con palabra completa (METAL≈METAL INDUSTRIALES, METAL≠METALCO).
+- **Limpieza única**: 59→50 fichas. 8 fusiones (Andes, CR Ingeniería, Petrolabin×3, Petroleum Blending×3, Skid Experts, TOC Energía, ARROW→ARROW EXPLORATION LLANOS SUCURSAL COLOMBIA, METAL→METAL INDUSTRIALES — las 2 últimas confirmadas por el usuario). Variantes anotadas en `notas` de cada ficha.
+
+### 🔍 Análisis integral de TODOS los módulos (solo informativo, sin implementar)
+Hecho con 3 exploradores. Hallazgos clave — **roto/falso**: "Actividad reciente" del Dashboard hardcodeada, "7 mensajes sin leer" fijo, calendario Reuniones no navega meses (prevMonth/nextMonth vacías), alerta "cotiz sin seguimiento" lee clave inexistente (nunca dispara), botón Teams de Equipo muerto, presencia online falsa, WhatsApp "todo el equipo" sin destinatario, workflows `schedule-reports.yml` (duplica reportes 5PM) y `teams-notify.yml` (roto) para apagar. **Riesgo de pérdida**: remiGuardar/pcomGuardar hacen DELETE+POST sin transacción; consecutivos de remisión/OC en memoria local (colisiones); localStorage 4,6MB sin manejo de cuota llena (falla silenciosa); Visitas/Mensajería cap 100 registros. **Seguridad**: RLS Supabase abierta + key en HTML, _proxySecret hardcodeado, hashes sin sal en config.json, defaults EYG2026. **Doble digitación**: OC cliente y Plan de Compras derivan ítems por separado; factura se digita en Procesos Y Cartera; remisión no descuenta stock. Prioridades propuestas: 1) arreglos rotos, 2) anti-pérdida, 3) Paso A Supabase, 4) seguridad, 5) cadena comercial ligada.
+
 ### 📌 Roadmap pendiente (aprobado en concepto, sin construir)
 - **C** Precios sugeridos al cotizar (histórico del cliente + costo/margen). **B** Borrador de correo Outlook con PDF adjunto + marcar Enviada auto (usuario dijo SÍ). **E** Indicadores gerencia (conversión por vendedor, motivos de rechazo). **D** Alertas de vencimiento: "todavía no".
 - **Paso A Supabase**: migrar cotizaciones (90 días) a Supabase con consecutivo del servidor + Realtime. Fases 1-2 sin riesgo con gente trabajando; corte final 15 min fuera de horario.
 - Monitor de cotizaciones sin subir por usuario (heartbeat + panel dirección): propuesto, sin decidir.
 
-*Fin del archivo de memoria. Última actualización: 07/jul/2026*
+*Fin del archivo de memoria. Última actualización: 07/jul/2026 (sesión completa: SW v86 → v96 + informe egresos en nube)*
