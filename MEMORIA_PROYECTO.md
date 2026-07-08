@@ -285,4 +285,9 @@ Hecho con 3 exploradores. Hallazgos clave — **roto/falso**: "Actividad recient
 ### 📌 Pendientes al cierre (prioridad sugerida)
 1) Cotizaciones: C precios sugeridos → B correo Outlook con PDF → E indicadores. 2) Paso A Supabase (aprobado). 3) Anti-pérdida remisiones/plan (DELETE+POST sin transacción, consecutivos locales) + cuota localStorage + cap 100. 4) Seguridad (RLS, secretos, contraseñas). 5) Cadena comercial ligada. Menores: WhatsApp real de Mario, tarifas flete, apagar sync-inventory.yml, redesplegar proxy (cap 16000), webhook Teams, informes por definir.
 
-*Fin del archivo de memoria. Última actualización: 07/jul/2026 (sesión completa: SW v86 → v103 + informe egresos en nube)*
+### 🌃 Cierre de la noche (SW v104 → v106)
+- **v104**: Excel de Programación Equipo solo para dirección.
+- **v105 — CONSECUTIVO DEL SERVIDOR** (Paso A esencial): al guardar cotización nueva se reclama el número en Supabase con INSERT atómico (PK id) — imposible duplicar consecutivos aunque dos personas guarden en el mismo milisegundo; probado con carrera real (201 vs 409). Backfill verificado: las 108 cotizaciones activas + ítems completos en Supabase. **Cutover total (quitar JSON) = opcional NO recomendado** (perdería el offline; el híbrido es el diseño correcto).
+- **v106 — Plan de Sostenibilidad, sesión 1**: (1) guardado SIN PÉRDIDA en Remisiones y Plan de Compras (insertar nuevas → borrar viejas; adiós al DELETE+POST que podía borrar todo si fallaba la red); (2) aviso global de cuota del navegador llena (antes fallaba en silencio); (3) **informe 🩺 Salud del Sistema**: workflow `salud-sistema.yml` — día 1 de mes 7AM informe completo a Andrea + gerencia, lunes 7AM chequeo silencioso (solo escribe si hay alertas). Vigila backups (frescura y completitud), tamaños de data/ con tendencia, filas de Supabase, robots fallidos y tamaño del repo. Pendiente plan: sesión 2 (fotos→Supabase Storage + archivado automático) y sesión 3 (copia mensual OneDrive).
+
+*Fin del archivo de memoria. Última actualización: 08/jul/2026 madrugada (sesión completa: SW v86 → v106)*
