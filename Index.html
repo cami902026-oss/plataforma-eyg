@@ -793,6 +793,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         </div>
         <button class="logout-btn" onclick="doLogout()" title="Cerrar sesión">⏏</button>
       </div>
+      <div class="sidebar-version" id="sidebar-version" onclick="actualizarAhora&&actualizarAhora()" title="Versión de la plataforma en este equipo — toca para actualizar" style="cursor:pointer;margin-top:10px;">ENERGY · v—</div>
     </div>
   </div>
 
@@ -4174,7 +4175,21 @@ window.addEventListener('offline', () => _refreshSyncBadge());
 // Al cargar la app, intentar drenar lo que haya quedado pendiente
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => { _refreshSyncBadge(); _drainSyncQueue().then(_refreshSyncBadge); }, 2000);
+  setTimeout(_paintVersion, 800);
 });
+// Muestra la versión REAL instalada en este equipo (lee el nombre de caché del
+// service worker). Así cualquiera confirma en qué versión está y soporte detecta
+// equipos desactualizados (causa de que se borraran precios — código viejo).
+async function _paintVersion() {
+  const el = document.getElementById('sidebar-version'); if (!el) return;
+  let v = '?';
+  try {
+    const keys = await caches.keys();
+    const nums = keys.map(k => { const m = k.match(/^energy-v(\d+)$/); return m ? parseInt(m[1]) : 0; }).filter(Boolean);
+    if (nums.length) v = 'v' + Math.max(...nums);
+  } catch(_) {}
+  el.textContent = 'ENERGY · ' + v;
+}
 // REINTENTO PERIÓDICO: cada 2 min revisa si hay pendientes y los reintenta.
 // Cubre el caso donde el push falló silenciosamente (token vencido, conflicto SHA,
 // no-cors silenciado) y nadie volvió a editar para destrabar.
