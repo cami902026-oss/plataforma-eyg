@@ -12978,7 +12978,10 @@ async function visPlanGuardar(){
     let arr=Array.isArray(remote)?remote.slice():[];
     const ix=arr.findIndex(x=>x.id===reg.id);
     if(ix>=0) arr[ix]=reg; else arr.push(reg);
-    _visPlan=visPlanMerge(arr, [reg]);
+    // FIX 2026-07-08: unir remoto + LOCAL + el cambio. Antes solo unía remoto+cambio,
+    // así que una visita recién creada (aún no en el remoto que baja con retraso) se
+    // PERDÍA al guardar/borrar otra. Ahora nada local-only se pierde.
+    _visPlan=visPlanMerge(visPlanMerge(arr, _visPlan), [reg]);
     localStorage.setItem(VIS_PLAN_KEY, JSON.stringify(_visPlan));
     await _saveDataGH(VIS_PLAN_FILE, _visPlan, '📅 Semanario visitas');
     showToast('✅ Visita programada','success');
@@ -13006,7 +13009,9 @@ async function visPlanEliminar(){
     let arr=Array.isArray(remote)?remote.slice():[];
     const ix=arr.findIndex(x=>x.id===id);
     if(ix>=0) arr[ix]=tomb; else arr.push(tomb);
-    _visPlan=visPlanMerge(arr,[tomb]);
+    // FIX 2026-07-08: unir remoto + LOCAL + la lápida, para NO perder visitas
+    // recién creadas que aún no estén en el remoto (que baja con retraso).
+    _visPlan=visPlanMerge(visPlanMerge(arr, _visPlan),[tomb]);
     localStorage.setItem(VIS_PLAN_KEY, JSON.stringify(_visPlan));
     await _saveDataGH(VIS_PLAN_FILE, _visPlan, '🗑️ Visita del semanario eliminada');
     showToast('✅ Eliminada','success');
