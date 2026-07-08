@@ -11343,11 +11343,13 @@ IMPORTANTE: si el tema toca áreas clasificadas/atmósferas explosivas, equipos 
 ${systemContext||''}`;
 
     let iterations = 0;
+    let modeloTec = esTec;      // puede degradarse a Haiku si el experto falla
+    let reintentado = false;
     while (iterations < 5) {
       iterations++;
       const payload = {
-        model: esTec ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001',
-        max_tokens: esTec ? 2500 : 1500,
+        model: modeloTec ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001',
+        max_tokens: modeloTec ? 2500 : 1500,
         system: systemPrompt,
         messages,
         tools: ENERGY_TOOLS,
@@ -11359,9 +11361,15 @@ ${systemContext||''}`;
         body: JSON.stringify(payload),
         redirect:'follow'
       });
-      const data = await resp.json();
+      let data = null;
+      try { data = await resp.json(); } catch(_) { data = null; }
+      // Falla puntual del proxy (sobrecarga/arranque en frío): reintentar UNA vez;
+      // si íbamos en modelo experto, bajar al económico para el reintento.
+      if (!data || (!data.error && !data.content)) {
+        if (!reintentado) { reintentado = true; modeloTec = false; iterations--; continue; }
+        return '❌ El proxy de IA no respondió bien (sobrecarga puntual). Intenta de nuevo en unos segundos.';
+      }
       if (data.error) return '❌ Error: '+(data.error.message||JSON.stringify(data.error));
-      if (!data.content) return '❌ Respuesta inválida del proxy';
 
       // Si Claude no usó tools → respuesta final
       if (data.stop_reason !== 'tool_use') {
