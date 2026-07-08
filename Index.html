@@ -3062,7 +3062,7 @@ const ALL_MODULES = [
   { id:'cartera',       label:'💰 Cartera' },
   { id:'procesos',      label:'🚛 Procesos O.C.' },
   { id:'visitas',       label:'🤝 Visitas Comerciales' },
-  { id:'programacion',  label:'🗓️ Programación Equipo (Solo dirección)' },
+  { id:'programacion',  label:'🗓️ Programación Equipo' },
   { id:'mensajeria',    label:'📬 Mensajería' },
   { id:'historico',     label:'📚 Históricos (Solo Admin)' },
   { id:'configuracion', label:'⚙️ Configuración' }
@@ -3090,8 +3090,9 @@ function userCanSeeModule(mod) {
   if (mod === 'historico') return isAdmin;
   // Cartera: solo Andrea y Alberto (no se puede destrabar por config)
   if (mod === 'cartera') return email === 'andrea' || email === 'alberto';
-  // Programación Equipo: solo dirección (gerencia, Andrea y Mario)
-  if (mod === 'programacion') return isAdmin || email === 'mario';
+  // Programación Equipo: TODO el equipo la VE (para saber quién está presencial);
+  // editar está restringido adentro a dirección (peIsManager: gerencia, Andrea, Mario)
+  if (mod === 'programacion') return true;
   // Abastecimiento: andrea, alberto, yesid
   if (mod === 'abastecimiento') return email === 'andrea' || email === 'alberto' || email === 'yesid';
   // Remisiones: todo el equipo MENOS Nelsy
@@ -13240,6 +13241,11 @@ function peRoster(){
   const r=_pePlan.find(x=>x&&x.id==='pe_roster');
   return (r&&Array.isArray(r.personas)&&r.personas.length)?r.personas:PE_ROSTER_DEFAULT;
 }
+// Todo el equipo VE la programación; solo dirección EDITA (gerencia, Andrea, Mario)
+function peIsManager(){
+  if(!currentUser) return false;
+  return currentUser.role==='ADMIN'||currentUser.role==='JEFE'||currentUser.email==='mario';
+}
 function _peFmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function _peLunes(d){ const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x; }
 async function peCargar(){
@@ -13304,6 +13310,7 @@ function peRender(){
   html+='<thead><tr><th style="'+th+'text-align:left;min-width:130px;">Persona</th>';
   days.forEach((d,i)=>{ const isT=_peFmt(d)===todayStr; html+='<th style="'+th+(isT?'color:var(--gold);':'')+'">'+dayNames[i]+'<br><span style="font-size:11px;">'+d.getDate()+'/'+(d.getMonth()+1)+'</span></th>'; });
   html+='</tr></thead><tbody>';
+  const mgr=peIsManager();
   peRoster().forEach(p=>{
     const reg=_peRegDe(p.nombre, lunesStr);
     const tipoTag = p.tipo==='hibrido' ? '<span style="font-size:9.5px;background:rgba(26,58,143,.4);color:#93c5fd;border-radius:6px;padding:1px 6px;">🔄 híbrido</span>' : '<span style="font-size:9.5px;background:rgba(46,170,74,.25);color:#86efac;border-radius:6px;padding:1px 6px;">🏢 presencial</span>';
@@ -13311,15 +13318,24 @@ function peRender(){
     for(let i=0;i<6;i++){
       const est = reg && reg.dias ? (reg.dias[i]||'') : '';
       const inf = PE_INFO[est]||PE_INFO[''];
-      html+='<td onclick="peCiclar(\''+p.nombre.replace(/'/g,"\\'")+'\','+i+')" title="'+inf.txt+' — toca para cambiar" style="cursor:pointer;text-align:center;vertical-align:middle;padding:10px 5px;background:'+inf.col+'22;border:1px solid '+inf.col+'55;border-radius:8px;font-size:16px;">'+inf.icon+'</td>';
+      const click = mgr ? ('onclick="peCiclar(\''+p.nombre.replace(/'/g,"\\'")+'\','+i+')"') : '';
+      const cur = mgr ? 'cursor:pointer;' : '';
+      const tit = mgr ? (inf.txt+' — toca para cambiar') : inf.txt;
+      html+='<td '+click+' title="'+tit+'" style="'+cur+'text-align:center;vertical-align:middle;padding:10px 5px;background:'+inf.col+'22;border:1px solid '+inf.col+'55;border-radius:8px;font-size:16px;">'+inf.icon+'</td>';
     }
     html+='</tr>';
   });
   html+='</tbody></table>';
   grid.innerHTML=html;
+  // Controles de edición solo para dirección; el tab del roster también
+  const btnStd=document.querySelector('#pe-tab-semana button[onclick="peSemanaEstandar()"]');
+  if(btnStd) btnStd.style.display = mgr ? '' : 'none';
+  const tabEq=document.getElementById('pe-tabbtn-equipo');
+  if(tabEq) tabEq.style.display = mgr ? '' : 'none';
   peRenderResumen();
 }
 async function peCiclar(nombre, dia){
+  if(!peIsManager()){ showToast('Solo dirección (Alberto, Andrea y Mario) puede editar la programación','info'); return; }
   const lunesStr=_peFmt(_peSemana);
   let reg=_peRegDe(nombre, lunesStr);
   if(!reg){
@@ -13336,6 +13352,7 @@ async function peCiclar(nombre, dia){
   window._peSaveT=setTimeout(()=>{ peSync('🗓️ Programación equipo '+lunesStr); }, 1200);
 }
 async function peSemanaEstandar(){
+  if(!peIsManager()){ showToast('Solo dirección puede programar','error'); return; }
   const lunesStr=_peFmt(_peSemana);
   if(!confirm('Se marcará PRESENCIAL de lunes a viernes a todo el personal presencial de esta semana ('+lunesStr+').\nLos híbridos (Mario, Sandra) no se tocan. ¿Continuar?')) return;
   peRoster().forEach(p=>{
@@ -13388,6 +13405,7 @@ function peRenderRoster(){
     </div>`).join('');
 }
 async function _peGuardarRoster(personas, msg){
+  if(!peIsManager()){ showToast('Solo dirección puede editar el equipo','error'); return; }
   let r=_pePlan.find(x=>x&&x.id==='pe_roster');
   if(!r){ r={id:'pe_roster', personas:[], updatedAt:''}; _pePlan.push(r); }
   r.personas=personas;
