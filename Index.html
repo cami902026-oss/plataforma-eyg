@@ -2756,7 +2756,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             </div>
             <datalist id="pcom-prov-datalist"></datalist>
             <div style="margin-top:18px;">
-              <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Resumen por proveedor <span style="font-size:11px;font-weight:400;text-transform:none">(IVA 19% · Retefuente 2,5% si la compra ≥ $1.414.098 y no es autoretenedor)</span></div>
+              <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Resumen por proveedor <span style="font-size:11px;font-weight:400;text-transform:none">(IVA 19% · Retefuente 2,5% si la compra ≥ $523.740 y no es autoretenedor)</span></div>
               <div style="overflow-x:auto;">
                 <table class="abs-table"><thead><tr>
                   <th>Proveedor</th><th style="width:110px">Subtotal</th><th style="width:100px">IVA 19%</th><th style="width:100px">Retefuente</th><th style="width:120px">Total a pagar</th><th style="width:110px">Pago</th><th style="width:110px">Orden de compra</th>
@@ -15139,7 +15139,7 @@ function remiCotizAgregar(){
 // Copia editable e independiente de la cotización: dividir proveedores,
 // cambiar cantidades y agregar líneas SIN tocar la cotización original.
 const PCOM_UVT = 52374;                      // UVT 2026 (DIAN). Actualizar cada año.
-const PCOM_BASE_RETE = 27 * PCOM_UVT;        // Base mínima retefuente compras = 27 UVT = $1.414.098
+const PCOM_BASE_RETE = 10 * PCOM_UVT;        // Base mínima retefuente compras = 10 UVT = $523.740 (Decreto 0572/2025, vigente desde 1-jul-2026; entre 8-may y 30-jun-2026 fue 27 UVT). Actualizar si cambia la norma.
 const PCOM_TASA_RETE = 0.025;                // 2,5% compras a declarantes
 const PCOM_TASA_IVA = 0.19;
 const PCOM_OC_INICIO = 26026;                // el consecutivo de OC arranca en 26027
@@ -15786,7 +15786,7 @@ function _pcomPlanBodyHTML(c){
   <div style="margin-top:16px;width:430px">
     <table class="b"><tr style="background:#003366;color:#fff;font-weight:700;text-align:center"><td>PROVEEDOR</td><td style="width:110px">VALOR SIN IVA</td><td style="width:110px">TOTAL A PAGAR</td><td style="width:80px">PAGO</td></tr>${filasResumen}</table>
   </div>
-  <div style="margin-top:14px;font-size:9px;color:#555">Retefuente 2,5% aplica si la compra al proveedor ≥ $ ${PCOM_BASE_RETE.toLocaleString('es-CO')} (27 UVT ${new Date().getFullYear()}) y no es autoretenedor. Cotización: ${_remiEsc(c.cotizacion)||'n.a.'} · Fecha: ${c.fecha?c.fecha.split('-').reverse().join('/'):''}</div>`;
+  <div style="margin-top:14px;font-size:9px;color:#555">Retefuente 2,5% aplica si la compra al proveedor ≥ $ ${PCOM_BASE_RETE.toLocaleString('es-CO')} (10 UVT ${new Date().getFullYear()}) y no es autoretenedor. Cotización: ${_remiEsc(c.cotizacion)||'n.a.'} · Fecha: ${c.fecha?c.fecha.split('-').reverse().join('/'):''}</div>`;
 }
 function pcomPDF(){
   if(!pcom_current) return; pcomSyncHeader();
@@ -15901,7 +15901,7 @@ function ayudaRender(){
   if(can('compras')) S.push({t:'🛒 Plan de compras, OCs y ruta logística', h:
     paso(1,'Menú <b>Plan de Compras</b> → <b>🛒 Nuevo plan</b> → elige la cotización. Se copian los ítems con proveedor y costo (la cotización NO se modifica).')+
     paso(2,'Edita libre: ✂️ divide una línea entre dos proveedores, cambia cantidades, agrega líneas.')+
-    paso(3,'El resumen calcula solo IVA 19% y retefuente 2,5% (si la compra al proveedor ≥ $1.414.098 y no es autoretenedor).')+
+    paso(3,'El resumen calcula solo IVA 19% y retefuente 2,5% (si la compra al proveedor ≥ $523.740 y no es autoretenedor).')+
     paso(4,'<b>🧾 Generar OC</b> por proveedor (formato E6-FC-01, consecutivo automático) — y si un proveedor no la necesita, márcalo con <b>🚫</b>.')+
     paso(5,'<b>🚚 Plan Logístico</b> imprime la orden de recogida para el conductor. El pago se marca PENDIENTE/PAGADO por proveedor.')});
 
