@@ -554,17 +554,17 @@
     "deletedAt": "2026-06-10T18:14:21.662Z"
   },
   {
-    "id": "LM1577",
+    "id": "LM1581",
     "fecha": "2026-05-25",
     "fechaVenc": "2026-06-02",
-    "cliente": "ANDES OPERATING",
-    "contacto": "Andres Bernal",
-    "correo": "andres.bernal@andesoperating.com",
+    "cliente": "JE JAIMES",
+    "contacto": "Luis Garzon ",
+    "correo": "contacto@jejaimes.com.co",
     "estado": "Vencida",
     "iva": 19,
-    "subtotal": 6500000,
-    "ivaVal": 1235000,
-    "total": 7735000,
+    "subtotal": 122760000,
+    "ivaVal": 23324400,
+    "total": 146084400,
     "formaPago": "CONTADO",
     "sitioEntrega": "INSTALACIONES ENERGY GROUP CHIA",
     "validez": "8 DÍAS",
@@ -572,27 +572,27 @@
     "vendedor": "",
     "realizadaPor": "",
     "aprobadaPor": "",
-    "solicitudId": "SOL-20260525-221",
+    "solicitudId": "SOL-20260525-609",
     "items": [
       {
-        "id": 2,
-        "desc": "BOMA IHM  10X16 SM",
+        "id": 1,
+        "desc": "TUBERIA  4 PULGADAS SCH 40 RANGO SENCILLO ",
         "udm": "EA",
-        "qty": 1,
-        "precio": 6500000,
-        "tiempoEntrega": "5 DIAS",
-        "desvTec": "",
-        "marca": "",
-        "proveedor": "IHM",
-        "precioProveedor": 4156000
+        "qty": 330,
+        "precio": 372000,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "SE COTIZA TUBO POR 6 METROS",
+        "marca": "BAOLAI",
+        "proveedor": "BODEGA",
+        "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-05-25T17:32:47.278Z",
+    "fechaGuardado": "2026-05-25T17:12:32.709Z",
     "createdAt": "2026-05-25T15:30:18.871Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-07T20:03:39.022Z",
+    "updatedAt": "2026-07-08T14:46:54.382Z",
     "updatedBy": "auto",
-    "vencidaAutoAt": "2026-07-07T20:03:39.022Z"
+    "vencidaAutoAt": "2026-07-08T14:46:54.382Z"
   },
   {
     "id": "LM1582",
@@ -8462,7 +8462,7 @@
     "cliente": "SAR ENERGY",
     "contacto": "SAMITH CARRILLO ",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "iva": 19,
     "subtotal": 67767003.198,
     "ivaVal": 12875730.60762,
@@ -8612,8 +8612,9 @@
     "fechaGuardado": "2026-07-01T15:47:44.244Z",
     "createdAt": "2026-06-30T21:31:28.410Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-01T15:47:44.244Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-09T01:04:21.259Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-07-09T01:04:21.259Z"
   },
   {
     "id": "LM1741",
@@ -8622,7 +8623,7 @@
     "cliente": "SAR ENERGY",
     "contacto": "SAMITH CARRILLO",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "iva": 19,
     "subtotal": 3237000,
     "ivaVal": 615030,
@@ -8652,8 +8653,9 @@
     "fechaGuardado": "2026-06-30T21:39:54.105Z",
     "createdAt": "2026-06-30T21:33:05.369Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-06-30T21:39:54.105Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-09T01:04:21.259Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-07-09T01:04:21.259Z"
   },
   {
     "id": "LM1742",
@@ -8662,7 +8664,7 @@
     "cliente": "QCIEN",
     "contacto": "DIEGO",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "iva": 19,
     "subtotal": 33000000,
     "ivaVal": 6270000,
@@ -8704,8 +8706,9 @@
     "fechaGuardado": "2026-06-30T22:08:05.823Z",
     "createdAt": "2026-06-30T21:57:18.887Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-06-30T22:08:05.823Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-09T01:04:21.259Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-07-09T01:04:21.259Z"
   },
   {
     "id": "LM1603",
