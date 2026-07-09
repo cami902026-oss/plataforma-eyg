@@ -2774,6 +2774,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="btn btn-secondary" onclick="pcomPDF()" style="width:auto;">📄 PDF Plan de Compras</button>
               <button class="btn btn-secondary" onclick="pcomExcel()" style="width:auto;">📊 Excel Plan de Compras</button>
               <button class="btn btn-secondary" onclick="pcomLogistico()" style="width:auto;">🚚 Plan Logístico</button>
+              <!-- Reporte de utilidad: SOLO gerencia (Alberto) + Andrea. Aditivo, 100% lectura. Añadido 2026-07-09. -->
+              <button id="pcom-btn-utilidad" class="btn btn-secondary" onclick="pcomUtilidad()" style="width:auto;display:none;background:linear-gradient(135deg,#1F7A3D,#2eaa4a);color:#fff;" title="Compara lo vendido (cotización) contra el costo del proveedor (plan) y muestra la utilidad por ítem. Solo gerencia y Andrea.">💰 Utilidad (gerencia)</button>
             </div>
           </div>
         </div>
@@ -15307,6 +15309,98 @@ function pcomAbrirEditor(titulo){
   document.getElementById('pcom-fecha').value = c.fecha;
   document.getElementById('pcom-cliente').value = c.cliente;
   pcomRenderItems();
+  const _bu = document.getElementById('pcom-btn-utilidad');
+  if (_bu) _bu.style.display = pcomEsGerencia() ? '' : 'none';
+}
+
+// ¿Quién ve la utilidad del plan? Solo gerencia (Alberto) + Andrea. Mismo criterio que la calculadora de utilidad.
+function pcomEsGerencia(){
+  return !!(currentUser && ['alberto','andrea'].includes((currentUser.email||'').toLowerCase()));
+}
+
+// Genera un Excel comparando lo VENDIDO (precio de la cotización ligada) contra el COSTO del
+// proveedor (costo_unit del plan), con utilidad por ítem, %, totales y un espacio de transporte.
+// 100% lectura: no toca el plan, la cotización ni la base de datos.
+function pcomUtilidad(){
+  if(!pcomEsGerencia()){ showToast('Solo gerencia y Andrea pueden ver la utilidad','error'); return; }
+  const c = pcom_current; if(!c){ return; }
+  if(typeof pcomSyncHeader==='function') pcomSyncHeader();
+  const cotId = String(c.cotizacion||'').trim();
+  let cotItems = [];
+  if(cotId && cotId!=='—'){
+    const cot = (typeof remiCotizData==='function'?remiCotizData():[]).find(x=>String(x.id)===cotId);
+    if(cot && Array.isArray(cot.items)) cotItems = cot.items;
+  }
+  if(!cotItems.length){
+    showToast('Este plan no está ligado a una cotización con precios de venta; no se puede calcular la utilidad.','error');
+    return;
+  }
+  const norm = s => String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+  const ventaPorDesc = {};
+  cotItems.forEach(it=>{ const k=norm(it.desc); if(k && ventaPorDesc[k]==null) ventaPorDesc[k]=Number(it.precio)||0; });
+
+  const aoa = [];
+  aoa.push(['E&G ENERGY GROUP SAS  ·  REPORTE DE UTILIDAD POR PLAN']);
+  aoa.push(['Plan '+c.cc+'   ·   Cotización '+cotId+'   ·   Cliente: '+(c.cliente||'—')+'   ·   Vista: GERENCIA + ANDREA']);
+  aoa.push(['Utilidad = Venta − Costo, antes de IVA. El transporte se descuenta de la utilidad total.']);
+  aoa.push([]);
+  aoa.push(['#','Descripción','Cant.','Vr. venta unit.','Costo unit. (prov.)','Venta total','Costo total','Utilidad','% Util.','Nota']);
+  const headRow = aoa.length; // 1-based index of the header row
+  let totV=0, totC=0, totU=0, sinCosto=0, sinVenta=0;
+  c.items.forEach((it,idx)=>{
+    const desc = it.descripcion||'';
+    const cant = parseFloat(it.cantidad)||0;
+    const costo = (it.costo_unit===''||it.costo_unit==null)?null:(parseFloat(it.costo_unit)||0);
+    const vu = ventaPorDesc[norm(desc)];
+    let nota='', vt=null, ct=null, ut=null, pc=null;
+    if(vu==null){ nota='REVISAR - sin precio de venta en cotización'; sinVenta++; }
+    if(costo==null){ nota=(nota?nota+' | ':'')+'REVISAR - sin costo cargado'; sinCosto++; }
+    if(vu!=null && costo!=null){
+      vt=vu*cant; ct=costo*cant; ut=vt-ct; pc=vt?((vt-ct)/vt):0;
+      totV+=vt; totC+=ct; totU+=ut;
+    }
+    aoa.push([idx+1, desc, cant, vu==null?'N/D':vu, costo==null?'N/D':costo,
+      vt==null?'N/D':vt, ct==null?'N/D':ct, ut==null?'N/D':ut, pc==null?'N/D':pc, nota]);
+  });
+  aoa.push([]);
+  const margen = totV?totU/totV:0;
+  aoa.push(['','TOTALES (ítems con costo y venta)','','','', totV, totC, totU, margen, 'Margen bruto']);
+  const totIdx = aoa.length; // 1-based row de TOTALES (leído DESPUÉS del push)
+  aoa.push([]);
+  aoa.push(['','','','','','','Transporte / Flete:',0,'','← editar']);
+  const transpIdx = aoa.length; // 1-based row de la casilla de transporte (col H)
+  aoa.push(['','','','','','','Utilidad NETA:', 0, 0, 'Margen neto']);
+  const netaIdx = aoa.length; // 1-based row de utilidad neta
+  aoa.push([]);
+  aoa.push(['','El transporte es editable: al cambiarlo, la Utilidad NETA y el Margen neto se recalculan.']);
+  if(sinCosto||sinVenta){
+    aoa.push(['','Ítems marcados REVISAR: '+sinCosto+' sin costo, '+sinVenta+' sin precio de venta. No entran en los totales (no se cuentan como 100%).']);
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  // Formatos de número
+  const dataFirst = headRow+1;
+  const setFmt = (addr,z)=>{ if(ws[addr] && typeof ws[addr].v==='number') ws[addr].z=z; };
+  for(let r=dataFirst; r<=totIdx; r++){
+    ['D','E','F','G','H'].forEach(col=>setFmt(col+r,'#,##0'));
+    setFmt('I'+r,'0.0%');
+  }
+  // Transporte (editable) y fórmulas vivas de neto
+  const utilTot = 'H'+totIdx, transp = 'H'+transpIdx;
+  ws[transp] = { t:'n', v:0, z:'#,##0' };
+  ws['H'+netaIdx] = { t:'n', f: utilTot+'-'+transp, z:'#,##0' };
+  ws['I'+netaIdx] = { t:'n', f: '('+utilTot+'-'+transp+')/F'+totIdx, z:'0.0%' };
+  // Anchos
+  ws['!cols'] = [{wch:4},{wch:38},{wch:7},{wch:15},{wch:16},{wch:14},{wch:14},{wch:13},{wch:9},{wch:34}];
+  ws['!merges'] = [
+    {s:{r:0,c:0},e:{r:0,c:9}}, {s:{r:1,c:0},e:{r:1,c:9}}, {s:{r:2,c:0},e:{r:2,c:9}}
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Utilidad');
+  const fecha = new Date().toISOString().substring(0,10);
+  XLSX.writeFile(wb, 'Utilidad_'+String(c.cc).replace(/[\s\/\\]/g,'_')+'_'+fecha+'.xlsx');
+  showToast('Reporte de utilidad generado'+((sinCosto||sinVenta)?' ('+(sinCosto+sinVenta)+' ítem(s) para revisar)':''), (sinCosto||sinVenta)?'info':'success');
 }
 function pcomSyncHeader(){
   const c = pcom_current; if(!c) return;
