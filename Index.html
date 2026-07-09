@@ -3088,8 +3088,8 @@ function userCanSeeModule(mod) {
   const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'JEFE';
   // Históricos es estrictamente admin/jefe (no se puede destrabar por config)
   if (mod === 'historico') return isAdmin;
-  // Cartera: solo Andrea y Alberto (no se puede destrabar por config)
-  if (mod === 'cartera') return email === 'andrea' || email === 'alberto';
+  // Cartera: Andrea, Alberto y Nelsy (no se puede destrabar por config)
+  if (mod === 'cartera') return email === 'andrea' || email === 'alberto' || email === 'nelsy';
   // Programación Equipo: TODO el equipo la VE (para saber quién está presencial);
   // editar está restringido adentro a dirección (peIsManager: gerencia, Andrea, Mario)
   if (mod === 'programacion') return true;
