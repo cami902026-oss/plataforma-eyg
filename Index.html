@@ -2123,6 +2123,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);">
   <button id="vis-tabbtn-registrar" onclick="visTab('registrar')" style="background:none;border:none;border-bottom:3px solid var(--gold);color:#fff;font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;">&#129309; Registrar visita</button>
   <button id="vis-tabbtn-semanario" onclick="visTab('semanario')" style="background:none;border:none;border-bottom:3px solid transparent;color:var(--text-muted);font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;">&#128197; Semanario</button>
+  <button id="vis-tabbtn-actas" onclick="visTab('actas')" style="background:none;border:none;border-bottom:3px solid transparent;color:var(--text-muted);font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;">&#128221; Actas de visita</button>
 </div>
 <div id="vis-tab-registrar">
 <div style="background:rgba(13,31,60,0.8);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px;">
@@ -2196,6 +2197,22 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   </div>
   <div style="overflow-x:auto;"><div id="vis-plan-grid"></div></div>
   <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Toca una celda vac&iacute;a para programar, o una visita para editarla. Los colores indican el estado.</p>
+</div>
+
+<!-- ===== ACTAS DE VISITA (bit&aacute;cora por visita, ligada al semanario por consecutivo) ===== -->
+<div id="vis-tab-actas" style="display:none;">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <input id="vis-actas-buscar" oninput="visActaRender()" placeholder="&#128269; Buscar empresa, consecutivo..." style="background:rgba(15,43,91,0.6);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;min-width:220px;">
+      <select id="vis-actas-filtro-com" onchange="visActaRender()" style="display:none;background:rgba(15,43,91,0.6);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;"></select>
+      <select id="vis-actas-filtro-estado" onchange="visActaRender()" style="background:rgba(15,43,91,0.6);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;">
+        <option value="">Todas</option><option value="Borrador">Borrador</option><option value="Finalizada">Finalizada</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="visActaNueva()" style="padding:8px 16px;font-size:13px;">&#10133; Nueva acta</button>
+  </div>
+  <div id="vis-actas-lista"></div>
+  <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Cada acta documenta una visita comercial. Tambi&eacute;n puedes crearla desde el bot&oacute;n &#128221; en una visita del semanario. Genera el informe con logo desde &#128196;.</p>
 </div>
 
 </div><!-- /page-visitas -->
@@ -2291,12 +2308,48 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     </div>
     <div style="display:flex;gap:10px;padding:14px 22px 20px;flex-wrap:wrap;flex:0 0 auto;border-top:1px solid rgba(255,255,255,.08);">
       <button class="btn btn-primary" onclick="visPlanGuardar()" style="flex:1;min-width:140px;">&#128190; Guardar</button>
+      <button class="btn btn-secondary" id="vis-plan-btn-acta" onclick="visActaDesdeVisita()" title="Abrir/crear el acta de esta visita" style="display:none;background:linear-gradient(135deg,#1A3A8F,#2f56c0);color:#fff;">&#128221; Acta de visita</button>
       <button class="btn btn-secondary" onclick="visPlanICS()" title="Descargar .ics para agregarla a tu calendario de Outlook/Teams">&#128197; A mi calendario</button>
       <button class="btn btn-ghost" id="vis-plan-btn-del" onclick="visPlanEliminar()" style="display:none;color:var(--red);">&#128465; Eliminar</button>
       <button class="btn btn-ghost" onclick="visPlanCerrar()">Cancelar</button>
     </div>
   </div>
 </div><!-- /vis-plan-modal -->
+
+<!-- MODAL ACTA DE VISITA -->
+<div id="vis-acta-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--card-bg,#0f1d33);border:1px solid rgba(255,255,255,.12);border-radius:14px;max-width:640px;width:100%;max-height:92vh;display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 22px 8px;flex:0 0 auto;">
+      <h3 id="vis-acta-tit" style="margin:0;font-family:'Montserrat',sans-serif;color:#fff;font-size:17px;">Acta de visita</h3>
+      <button onclick="visActaCerrar()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;">&times;</button>
+    </div>
+    <div style="padding:0 22px;overflow-y:auto;flex:1 1 auto;">
+      <input type="hidden" id="vis-acta-id"><input type="hidden" id="vis-acta-visita-id"><input type="hidden" id="vis-acta-consec"><input type="hidden" id="vis-acta-coms">
+      <div style="background:rgba(26,58,143,.18);border:1px solid rgba(26,58,143,.5);border-radius:10px;padding:10px 12px;margin:6px 0 14px;font-size:12.5px;color:#cbd5ff;">
+        Consecutivo <b id="vis-acta-consec-lbl" style="color:var(--gold)">—</b> &nbsp;·&nbsp; <span id="vis-acta-coms-lbl">—</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group"><label>Fecha de la visita</label><input type="date" id="vis-acta-fecha"></div>
+        <div class="form-group"><label>Estado del acta</label><select id="vis-acta-estado"><option value="Borrador">Borrador</option><option value="Finalizada">Finalizada</option></select></div>
+        <div class="form-group" style="grid-column:1/3"><label>Empresa</label><input type="text" id="vis-acta-empresa" placeholder="Empresa visitada"></div>
+        <div class="form-group"><label>Persona con quien se tuvo el espacio</label><input type="text" id="vis-acta-persona" placeholder="Nombre"></div>
+        <div class="form-group"><label>Cargo</label><input type="text" id="vis-acta-cargo" placeholder="Cargo de la persona"></div>
+        <div class="form-group" style="grid-column:1/3"><label>Visi&oacute;n del cliente en sus trabajos a corto plazo</label><textarea id="vis-acta-vision" rows="3" placeholder="Qu&eacute; proyectos/necesidades tiene el cliente a corto plazo..." style="resize:vertical;"></textarea></div>
+        <div class="form-group" style="grid-column:1/3"><label>Oportunidades detectadas</label><textarea id="vis-acta-oportunidades" rows="2" placeholder="Oportunidades de negocio identificadas..." style="resize:vertical;"></textarea></div>
+        <div class="form-group" style="grid-column:1/3"><label>Plan de acci&oacute;n (alineado con las oportunidades)</label><textarea id="vis-acta-plan" rows="3" placeholder="Acciones a ejecutar seg&uacute;n las oportunidades..." style="resize:vertical;"></textarea></div>
+        <div class="form-group" style="grid-column:1/3"><label>Compromisos y acuerdos</label><textarea id="vis-acta-compromisos" rows="3" placeholder="A qu&eacute; se comprometi&oacute; cada parte..." style="resize:vertical;"></textarea></div>
+        <div class="form-group" style="grid-column:1/3"><label>L&iacute;neas / productos de inter&eacute;s</label><textarea id="vis-acta-lineas" rows="2" placeholder="Productos o l&iacute;neas que le interesan (para cruzar con cotizaciones)..." style="resize:vertical;"></textarea></div>
+        <div class="form-group"><label>Pr&oacute;ximo seguimiento</label><input type="date" id="vis-acta-seguimiento"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;padding:14px 22px 20px;flex-wrap:wrap;flex:0 0 auto;border-top:1px solid rgba(255,255,255,.08);">
+      <button class="btn btn-primary" onclick="visActaGuardar()" style="flex:1;min-width:130px;">&#128190; Guardar</button>
+      <button class="btn btn-secondary" onclick="visActaInforme()" title="Generar informe con logo y colores corporativos" style="background:linear-gradient(135deg,#1F7A3D,#2eaa4a);color:#fff;">&#128196; Informe</button>
+      <button class="btn btn-ghost" id="vis-acta-btn-del" onclick="visActaEliminar()" style="display:none;color:var(--red);">&#128465; Eliminar</button>
+      <button class="btn btn-ghost" onclick="visActaCerrar()">Cancelar</button>
+    </div>
+  </div>
+</div><!-- /vis-acta-modal -->
 
 <!-- MODAL EDITAR SABADO (fuera de la pagina: overlay fijo) -->
 <div id="sab-plan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
@@ -4024,7 +4077,7 @@ async function _mergeAntesDeSubir(file, data) {
   try {
     if (file === 'data/cotizaciones.json')      return await _cotizMergeConRemoto(Array.isArray(data) ? data : []);
     if (file === 'data/solicitudes_cotiz.json') return await _solMergeConRemoto(Array.isArray(data) ? data : []);
-    if (file === 'data/visitas_plan.json' || file === 'data/sabados_plan.json') {
+    if (file === 'data/visitas_plan.json' || file === 'data/sabados_plan.json' || file === 'data/visitas_actas.json') {
       const remoto = await _loadDataGHRaw(file);
       if (Array.isArray(remoto)) return visPlanMerge(remoto, Array.isArray(data) ? data : []);
     }
@@ -4417,6 +4470,7 @@ const POLL_TARGETS = [
   { file:'data/clientes.json',          storageKey:'max_bd_clientes',        renderFn: () => { try{ cliRender(); _cliUpdateDL(); }catch(_){} }, mergeBy:'id' },
   { file:'data/visitas.json',      storageKey:'energy_visitas',      renderFn: () => { _refreshVisitasIfOpen(); }, mergeBy:'id' },
   { file:'data/visitas_plan.json', storageKey:'energy_visitas_plan', renderFn: () => { try{ _refreshVisPlanIfOpen(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/visitas_actas.json', storageKey:'energy_visitas_actas', renderFn: () => { try{ _refreshVisActasIfOpen(); }catch(_){} }, mergeBy:'id' },
   { file:'data/sabados_plan.json', storageKey:'energy_sabados_plan', renderFn: () => { try{ _refreshSabPlanIfOpen(); }catch(_){} }, mergeBy:'id' },
   { file:'data/programacion_equipo.json', storageKey:'energy_prog_equipo', renderFn: () => { try{ _refreshPEIfOpen(); }catch(_){} }, mergeBy:'id' },
   { file:'data/mensajeria.json',   storageKey:'energy_mensajeria',   renderFn: () => { _refreshMensajeriaIfOpen(); }, mergeBy:'id' },
@@ -4713,6 +4767,7 @@ async function _loadAllBackupsGH() {
   const customExtras = [
     { storageKey:'energy_visitas',      file:'data/visitas.json' },
     { storageKey:'energy_visitas_plan', file:'data/visitas_plan.json' },
+    { storageKey:'energy_visitas_actas', file:'data/visitas_actas.json' },
     { storageKey:'energy_mensajeria',   file:'data/mensajeria.json' }
   ];
   // Fotos de inventario (es un objeto, no un array → tratamiento especial)
@@ -12819,12 +12874,15 @@ function visTab(which){
   _visPlanTab=which;
   document.getElementById('vis-tab-registrar').style.display = which==='registrar'?'':'none';
   document.getElementById('vis-tab-semanario').style.display = which==='semanario'?'':'none';
+  const _ta=document.getElementById('vis-tab-actas'); if(_ta) _ta.style.display = which==='actas'?'':'none';
   const act='border-bottom:3px solid var(--gold);color:#fff;';
   const ina='border-bottom:3px solid transparent;color:var(--text-muted);';
   const base='background:none;border:none;font-weight:700;font-size:14px;padding:10px 16px;cursor:pointer;';
   document.getElementById('vis-tabbtn-registrar').style.cssText=base+(which==='registrar'?act:ina);
   document.getElementById('vis-tabbtn-semanario').style.cssText=base+(which==='semanario'?act:ina);
+  const _tb=document.getElementById('vis-tabbtn-actas'); if(_tb) _tb.style.cssText=base+(which==='actas'?act:ina);
   if(which==='semanario'){ visPlanFillSelects(); visPlanRender(); }
+  if(which==='actas'){ _visActasHidratar(); visActaFillSelects(); visActaRender(); visActaCargar().then(()=>{ if(_visPlanTab==='actas') visActaRender(); }); }
 }
 async function visPlanInit(){
   if(!_visPlanWeek) _visPlanWeek=visPlanMonday(new Date());
@@ -12959,6 +13017,7 @@ function visPlanNueva(fecha, comercial){
   ['cliente','empresa','ciudad','contacto','telefono','objetivo'].forEach(f=>{ const el=document.getElementById('vis-plan-'+f); if(el) el.value=''; });
   document.getElementById('vis-plan-estado').value='Programada';
   document.getElementById('vis-plan-btn-del').style.display='none';
+  { const _ba=document.getElementById('vis-plan-btn-acta'); if(_ba) _ba.style.display='none'; }
   document.getElementById('vis-plan-modal').style.display='flex';
 }
 function visPlanEditar(id){
@@ -12978,9 +13037,218 @@ function visPlanEditar(id){
   document.getElementById('vis-plan-objetivo').value=v.objetivo||'';
   document.getElementById('vis-plan-estado').value=v.estado||'Programada';
   document.getElementById('vis-plan-btn-del').style.display='';
+  { const _ba=document.getElementById('vis-plan-btn-acta'); if(_ba){ _ba.style.display=''; _ba.dataset.visitaId=v.id; } }
   document.getElementById('vis-plan-modal').style.display='flex';
 }
 function visPlanCerrar(){ document.getElementById('vis-plan-modal').style.display='none'; }
+
+// ===================== ACTAS DE VISITA (bitácora ligada al semanario) =====================
+// 100% aditivo: base propia JSON (data/visitas_actas.json) con el mismo patrón de sync que
+// el resto de Visitas. NO toca el semanario ni el registro de visitas existentes.
+const VIS_ACTAS_KEY='energy_visitas_actas';
+const VIS_ACTAS_FILE='data/visitas_actas.json';
+let _visActas=[];
+function _visActasHidratar(){ try{ _visActas=JSON.parse(localStorage.getItem(VIS_ACTAS_KEY)||'[]'); }catch(_){ _visActas=[]; } }
+// Consecutivo VIS-<año>-NNNN. Mira semanario Y actas para no repetir.
+function _visNextConsec(){
+  const yr=new Date().getFullYear(); const pref='VIS-'+yr+'-'; let max=0;
+  const scan=arr=>(arr||[]).forEach(v=>{ const m=String((v&&v.consecutivo)||'').match(/^VIS-(\d{4})-(\d+)$/); if(m&&+m[1]===yr){ const n=+m[2]; if(n>max)max=n; } });
+  scan(_visPlan); scan(_visActas);
+  return pref+String(max+1).padStart(4,'0');
+}
+async function visActaCargar(){
+  try{
+    const remote=await _loadDataGH(VIS_ACTAS_FILE);
+    let local=[]; try{ local=JSON.parse(localStorage.getItem(VIS_ACTAS_KEY)||'[]'); }catch(_){}
+    _visActas=visPlanMerge(Array.isArray(remote)?remote:[], local);
+    localStorage.setItem(VIS_ACTAS_KEY, JSON.stringify(_visActas));
+  }catch(_){ _visActasHidratar(); }
+}
+function _refreshVisActasIfOpen(){ _visActasHidratar(); if(_visPlanTab==='actas') visActaRender(); }
+function visActaFillSelects(){
+  const sel=document.getElementById('vis-actas-filtro-com'); if(!sel) return;
+  if(visPlanIsManager()){ sel.style.display=''; const cur=sel.value; sel.innerHTML='<option value="">Todos los comerciales</option>'+visComerciales().map(c=>'<option value="'+c.email+'">'+_vpEsc(c.name)+'</option>').join(''); sel.value=cur; }
+  else sel.style.display='none';
+}
+function _visComsNombres(coms){ return (coms||[]).map(e=>((visComerciales().find(c=>c.email===e)||{}).name)||e).join(', '); }
+function visActaRender(){
+  const cont=document.getElementById('vis-actas-lista'); if(!cont) return;
+  if(!_visActas.length) _visActasHidratar();
+  const manager=visPlanIsManager();
+  const qq=(((document.getElementById('vis-actas-buscar')||{}).value||'').trim().toLowerCase());
+  const fcom=manager?(((document.getElementById('vis-actas-filtro-com')||{}).value)||''):'';
+  const fest=((document.getElementById('vis-actas-filtro-estado')||{}).value)||'';
+  let list=(_visActas||[]).filter(a=>a&&!a.deleted);
+  if(!manager&&currentUser) list=list.filter(a=>_visComsDe(a).indexOf(currentUser.email)>=0 || a.createdByEmail===currentUser.email);
+  if(fcom) list=list.filter(a=>_visComsDe(a).indexOf(fcom)>=0);
+  if(fest) list=list.filter(a=>(a.estado||'Borrador')===fest);
+  if(qq) list=list.filter(a=>(((a.empresa||'')+' '+(a.consecutivo||'')+' '+(a.persona||'')).toLowerCase().indexOf(qq)>=0));
+  list.sort((a,b)=>String(b.fecha||'').localeCompare(String(a.fecha||''))||String(b.consecutivo||'').localeCompare(String(a.consecutivo||'')));
+  if(!list.length){ cont.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:26px;">Sin actas todavía. Crea una con «➕ Nueva acta» o desde el botón 📝 en una visita del semanario.</div>'; return; }
+  cont.innerHTML=list.map(a=>{
+    const col=(a.estado==='Finalizada')?'#2EAA4A':'#E8A020';
+    const fecha=a.fecha?String(a.fecha).split('-').reverse().join('/'):'';
+    return '<div style="background:rgba(13,31,60,.6);border:1px solid var(--border);border-left:4px solid '+col+';border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">'
+      +'<div style="min-width:200px;">'
+        +'<div style="font-size:11px;color:var(--gold);font-weight:800;">'+_vpEsc(a.consecutivo||'—')+' <span style="color:'+col+';">· '+_vpEsc(a.estado||'Borrador')+'</span></div>'
+        +'<div style="font-size:14px;color:#fff;font-weight:700;">'+_vpEsc(a.empresa||'—')+'</div>'
+        +'<div style="font-size:11.5px;color:var(--text-muted);">'+fecha+(a.persona?(' · '+_vpEsc(a.persona)):'')+(a.cargo?(' ('+_vpEsc(a.cargo)+')'):'')+(_visComsDe(a).length?(' · '+_vpEsc(_visComsNombres(_visComsDe(a)))):'')+'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'
+        +'<button class="btn btn-ghost" onclick="visActaAbrir(\''+a.id+'\')" style="padding:6px 12px;font-size:12px;">✏️ Editar</button>'
+        +'<button class="btn btn-secondary" onclick="visActaInforme(\''+a.id+'\')" style="padding:6px 12px;font-size:12px;">📄 Informe</button>'
+      +'</div></div>';
+  }).join('');
+}
+function _visActaFromVisita(v){
+  let a=(_visActas||[]).find(x=>x&&!x.deleted&&x.visitaId===v.id);
+  if(!a){
+    a={ id:'', visitaId:v.id, consecutivo:v.consecutivo||_visNextConsec(),
+        comerciales:_visComsDe(v).slice(), fecha:v.fecha||_visPlanFmt(new Date()),
+        empresa:v.empresa||v.cliente||'', persona:v.contacto||'', cargo:'',
+        vision:'',oportunidades:'',plan:'',compromisos:'',lineas:'',seguimiento:'',estado:'Borrador' };
+  }
+  return a;
+}
+function visActaOpen(a){
+  document.getElementById('vis-acta-id').value=a.id||'';
+  document.getElementById('vis-acta-visita-id').value=a.visitaId||'';
+  document.getElementById('vis-acta-consec').value=a.consecutivo||'';
+  document.getElementById('vis-acta-coms').value=JSON.stringify(a.comerciales||[]);
+  document.getElementById('vis-acta-consec-lbl').textContent=a.consecutivo||'—';
+  document.getElementById('vis-acta-coms-lbl').textContent=_visComsNombres(a.comerciales||[])||'—';
+  document.getElementById('vis-acta-fecha').value=a.fecha||'';
+  document.getElementById('vis-acta-estado').value=a.estado||'Borrador';
+  document.getElementById('vis-acta-empresa').value=a.empresa||'';
+  document.getElementById('vis-acta-persona').value=a.persona||'';
+  document.getElementById('vis-acta-cargo').value=a.cargo||'';
+  document.getElementById('vis-acta-vision').value=a.vision||'';
+  document.getElementById('vis-acta-oportunidades').value=a.oportunidades||'';
+  document.getElementById('vis-acta-plan').value=a.plan||'';
+  document.getElementById('vis-acta-compromisos').value=a.compromisos||'';
+  document.getElementById('vis-acta-lineas').value=a.lineas||'';
+  document.getElementById('vis-acta-seguimiento').value=a.seguimiento||'';
+  document.getElementById('vis-acta-tit').textContent=(a.id?'Editar acta':'Nueva acta')+(a.consecutivo?(' · '+a.consecutivo):'');
+  document.getElementById('vis-acta-btn-del').style.display=a.id?'':'none';
+  document.getElementById('vis-acta-modal').style.display='flex';
+}
+function visActaDesdeVisita(){
+  const btn=document.getElementById('vis-plan-btn-acta'); const vid=btn&&btn.dataset.visitaId;
+  const v=_visPlan.find(x=>x.id===vid); if(!v){ showToast('Guarda la visita primero','info'); return; }
+  if(!_visActas.length) _visActasHidratar();
+  visPlanCerrar();
+  visActaOpen(_visActaFromVisita(v));
+}
+function visActaNueva(){
+  if(!_visActas.length) _visActasHidratar();
+  const me=currentUser&&currentUser.email;
+  visActaOpen({ id:'', visitaId:'', consecutivo:_visNextConsec(), comerciales: me?[me]:[], fecha:_visPlanFmt(new Date()),
+    empresa:'',persona:'',cargo:'',vision:'',oportunidades:'',plan:'',compromisos:'',lineas:'',seguimiento:'',estado:'Borrador' });
+}
+function visActaAbrir(id){ const a=(_visActas||[]).find(x=>x.id===id); if(!a){ showToast('Acta no encontrada','error'); return; } visActaOpen(a); }
+function visActaCerrar(){ document.getElementById('vis-acta-modal').style.display='none'; }
+function _visActaFormValues(){
+  let coms=[]; try{ coms=JSON.parse(document.getElementById('vis-acta-coms').value||'[]'); }catch(_){}
+  return { id:document.getElementById('vis-acta-id').value, visitaId:document.getElementById('vis-acta-visita-id').value,
+    consecutivo:document.getElementById('vis-acta-consec').value, comerciales:coms,
+    fecha:document.getElementById('vis-acta-fecha').value, estado:document.getElementById('vis-acta-estado').value||'Borrador',
+    empresa:document.getElementById('vis-acta-empresa').value.trim(), persona:document.getElementById('vis-acta-persona').value.trim(),
+    cargo:document.getElementById('vis-acta-cargo').value.trim(), vision:document.getElementById('vis-acta-vision').value,
+    oportunidades:document.getElementById('vis-acta-oportunidades').value, plan:document.getElementById('vis-acta-plan').value,
+    compromisos:document.getElementById('vis-acta-compromisos').value, lineas:document.getElementById('vis-acta-lineas').value,
+    seguimiento:document.getElementById('vis-acta-seguimiento').value };
+}
+async function visActaGuardar(){
+  const f=_visActaFormValues();
+  if(!f.empresa){ showToast('Indica la empresa','error'); return; }
+  const now=new Date().toISOString();
+  const prev=f.id?(_visActas.find(x=>x.id===f.id)||{}):{};
+  const reg=Object.assign({}, prev, f, {
+    id: f.id || ('va_'+Date.now()+'_'+Math.floor(Math.random()*1000)),
+    consecutivo: f.consecutivo || prev.consecutivo || _visNextConsec(),
+    comerciales: (f.comerciales&&f.comerciales.length)?f.comerciales:(prev.comerciales||(currentUser?[currentUser.email]:[])),
+    updatedAt: now, updatedBy: currentUser?(currentUser.name||currentUser.email):'—'
+  });
+  if(!reg.createdAt){ reg.createdAt=now; reg.createdBy=reg.updatedBy; reg.createdByEmail=currentUser?currentUser.email:''; }
+  showToast('Guardando…','info');
+  try{
+    const remote=await _loadDataGH(VIS_ACTAS_FILE);
+    let arr=Array.isArray(remote)?remote.slice():[];
+    const ix=arr.findIndex(x=>x.id===reg.id); if(ix>=0)arr[ix]=reg; else arr.push(reg);
+    _visActas=visPlanMerge(visPlanMerge(arr,_visActas),[reg]);
+    localStorage.setItem(VIS_ACTAS_KEY, JSON.stringify(_visActas));
+    await _saveDataGH(VIS_ACTAS_FILE, _visActas, '📝 Acta de visita '+(reg.consecutivo||''));
+    showToast('✅ Acta guardada','success');
+  }catch(e){
+    const ix=_visActas.findIndex(x=>x.id===reg.id); if(ix>=0)_visActas[ix]=reg; else _visActas.push(reg);
+    localStorage.setItem(VIS_ACTAS_KEY, JSON.stringify(_visActas));
+    showToast('⚠️ Guardada local, falló sync: '+(e&&e.message||e),'error');
+  }
+  visActaCerrar(); visActaRender();
+}
+async function visActaEliminar(){
+  const id=document.getElementById('vis-acta-id').value; if(!id) return;
+  if(!confirm('¿Eliminar esta acta de visita?')) return;
+  const v=_visActas.find(x=>x.id===id)||{id:id};
+  const tomb=Object.assign({},v,{deleted:true, updatedAt:new Date().toISOString(), updatedBy: currentUser?(currentUser.name||currentUser.email):'—'});
+  showToast('Eliminando…','info');
+  try{
+    const remote=await _loadDataGH(VIS_ACTAS_FILE);
+    let arr=Array.isArray(remote)?remote.slice():[];
+    const ix=arr.findIndex(x=>x.id===id); if(ix>=0)arr[ix]=tomb; else arr.push(tomb);
+    _visActas=visPlanMerge(visPlanMerge(arr,_visActas),[tomb]);
+    localStorage.setItem(VIS_ACTAS_KEY, JSON.stringify(_visActas));
+    await _saveDataGH(VIS_ACTAS_FILE,_visActas,'🗑️ Acta de visita eliminada');
+    showToast('✅ Eliminada','success');
+  }catch(e){
+    const ix=_visActas.findIndex(x=>x.id===id); if(ix>=0)_visActas[ix]=tomb; else _visActas.push(tomb);
+    localStorage.setItem(VIS_ACTAS_KEY, JSON.stringify(_visActas));
+    showToast('⚠️ Eliminada local, falló sync','error');
+  }
+  visActaCerrar(); visActaRender();
+}
+function visActaInforme(id){
+  let a;
+  if(id){ a=(_visActas||[]).find(x=>x.id===id); if(!a){ showToast('Acta no encontrada','error'); return; } }
+  else { a=_visActaFormValues(); if(!a.empresa){ showToast('Completa al menos la empresa','error'); return; } }
+  _pdfOverlay(_visActaInformeHTML(a), 'Acta de visita '+(a.consecutivo||''));
+}
+function _visActaInformeHTML(a){
+  const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const nl=s=>esc(s).replace(/\n/g,'<br>');
+  const fecha=a.fecha?String(a.fecha).split('-').reverse().join('/'):'';
+  const seg=a.seguimiento?String(a.seguimiento).split('-').reverse().join('/'):'';
+  const coms=_visComsNombres(a.comerciales||[]);
+  const LOGO='https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png';
+  const sec=(t,c)=> (c&&String(c).trim()) ? '<div class="sec"><div class="sech">'+t+'</div><div class="secb">'+nl(c)+'</div></div>' : '';
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Acta de visita '+esc(a.consecutivo||'')+'</title>'
+   +'<style>*{box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;color:#1a2230;margin:0;padding:28px;background:#fff}'
+   +'.wrap{max-width:800px;margin:0 auto}.top{display:flex;align-items:center;gap:16px;border-bottom:4px solid #E8A020;padding-bottom:14px}'
+   +'.top img{height:60px}.top .co{font-size:20px;font-weight:800;color:#0F2B5B}.top .sub{font-size:12px;color:#5a6470}'
+   +'.badge{margin-left:auto;text-align:right}.badge .t{background:#0F2B5B;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;display:inline-block}'
+   +'.badge .c{font-size:18px;font-weight:800;color:#E8A020;margin-top:6px}'
+   +'h1{font-size:16px;color:#0F2B5B;text-align:center;margin:18px 0 6px;letter-spacing:.5px}'
+   +'.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;background:#f4f6fb;border:1px solid #e2e7f0;border-radius:8px;padding:12px 16px;margin:10px 0 6px;font-size:13px}.meta b{color:#0F2B5B}'
+   +'.sec{margin:12px 0}.sech{background:#1A3A8F;color:#fff;font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:6px 6px 0 0}'
+   +'.secb{border:1px solid #dbe1ec;border-top:none;border-radius:0 0 6px 6px;padding:11px 14px;font-size:13px;line-height:1.5;min-height:24px}'
+   +'.foot{margin-top:30px;display:flex;justify-content:space-between;gap:30px}.fw{flex:1;text-align:center;font-size:12px;color:#5a6470}.fw .ln{border-top:1px solid #999;margin-top:36px;padding-top:5px}'
+   +'.pie{margin-top:22px;text-align:center;font-size:10px;color:#9aa3b0;border-top:1px solid #eee;padding-top:8px}@media print{body{padding:0}.wrap{max-width:100%}}'
+   +'</style></head><body><div class="wrap">'
+   +'<div class="top"><img src="'+LOGO+'" alt="E&amp;G"><div><div class="co">E&amp;G ENERGY GROUP SAS</div><div class="sub">Suministro industrial · Visitas comerciales</div></div>'
+   +'<div class="badge"><div class="t">ACTA DE VISITA</div><div class="c">'+esc(a.consecutivo||'—')+'</div></div></div>'
+   +'<h1>INFORME DE VISITA COMERCIAL</h1>'
+   +'<div class="meta"><div><b>Empresa:</b> '+esc(a.empresa||'—')+'</div><div><b>Fecha:</b> '+esc(fecha||'—')+'</div>'
+   +'<div><b>Persona / cargo:</b> '+esc(a.persona||'—')+(a.cargo?(' — '+esc(a.cargo)):'')+'</div><div><b>Comercial(es):</b> '+esc(coms||'—')+'</div>'
+   +'<div><b>Estado:</b> '+esc(a.estado||'Borrador')+'</div><div><b>Próximo seguimiento:</b> '+esc(seg||'—')+'</div></div>'
+   +sec('VISIÓN DEL CLIENTE (TRABAJOS A CORTO PLAZO)', a.vision)
+   +sec('OPORTUNIDADES DETECTADAS', a.oportunidades)
+   +sec('PLAN DE ACCIÓN', a.plan)
+   +sec('COMPROMISOS Y ACUERDOS', a.compromisos)
+   +sec('LÍNEAS / PRODUCTOS DE INTERÉS', a.lineas)
+   +'<div class="foot"><div class="fw"><div class="ln">Comercial E&amp;G</div></div><div class="fw"><div class="ln">Cliente</div></div></div>'
+   +'<div class="pie">E&amp;G ENERGY GROUP SAS · Carrera 7 # 12-61, Chía · Tel 320 494 7227 · comercial1@eygenergygroup.com</div>'
+   +'</div></body></html>';
+}
 async function visPlanGuardar(){
   const id=document.getElementById('vis-plan-id').value;
   const manager=visPlanIsManager();
@@ -12996,8 +13264,13 @@ async function visPlanGuardar(){
   if(!empresa){ showToast('Indica la empresa o cliente a visitar','error'); return; }
   if(!comerciales.length){ showToast('Marca al menos un comercial','error'); return; }
   if(!visPlanCanEdit(comercial)){ showToast('No tienes permiso para programar a ese comercial','error'); return; }
+  // Consecutivo de visita (aditivo): se asigna al CREAR y se conserva al editar.
+  let _consec='';
+  if(id){ const _ex=_visPlan.find(x=>x.id===id); _consec=(_ex&&_ex.consecutivo)||''; }
+  if(!_consec) _consec=_visNextConsec();
   const reg={
     id: id || ('vp_'+Date.now()+'_'+Math.floor(Math.random()*1000)),
+    consecutivo: _consec,
     comercial, comerciales, fecha,
     hora:document.getElementById('vis-plan-hora').value,
     cliente, empresa,
