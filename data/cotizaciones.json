@@ -16980,12 +16980,10 @@
     "fechaGuardado": "2026-07-10T17:15:23.366Z",
     "createdAt": "2026-07-10T17:15:23.366Z",
     "createdBy": "alberto",
-    "updatedAt": "2026-07-10T17:21:25.759Z",
+    "updatedAt": "2026-07-10T17:15:24.588Z",
     "updatedBy": "alberto",
     "numeroOriginal": "LM1790-1",
-    "renumeradaAt": "2026-07-10T17:15:24.588Z",
-    "deleted": true,
-    "deletedAt": "2026-07-10T17:21:25.759Z"
+    "renumeradaAt": "2026-07-10T17:15:24.588Z"
   },
   {
     "id": "LM1791",
@@ -17387,9 +17385,9 @@
     "estado": "Enviada",
     "factura": "",
     "iva": 19,
-    "subtotal": 830000,
-    "ivaVal": 157700,
-    "total": 987700,
+    "subtotal": 2483667,
+    "ivaVal": 471896.73,
+    "total": 2955563.73,
     "formaPago": "CONTADO",
     "sitioEntrega": "TERMINAL DE CARTAGENA",
     "validez": "8 DÍAS",
@@ -17413,13 +17411,37 @@
         "precioProveedor": 0,
         "fotoId": "F1783698556454169",
         "fotoEnPDF": true
+      },
+      {
+        "id": 2,
+        "desc": "VALVULA COMPUERTA 4 X 150 RF A-216 WCB",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 1649267,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "0",
+        "marca": "SIO",
+        "proveedor": "CODIFER",
+        "precioProveedor": 1484340
+      },
+      {
+        "id": 3,
+        "desc": "ESPARRAGO 5/8 * 3 3/4  A-193/194 B7 2H",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 4400,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "JDF",
+        "marca": "",
+        "proveedor": "MUNDIAL",
+        "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-07-10T15:54:19.071Z",
+    "fechaGuardado": "2026-07-10T17:22:14.819Z",
     "fechaEnvio": "2026-07-10T15:54:19.071Z",
     "createdAt": "2026-07-10T15:53:12.631Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-10T15:54:19.071Z",
+    "updatedAt": "2026-07-10T17:22:14.819Z",
     "updatedBy": "alexandra"
   },
   {
@@ -17551,71 +17573,5 @@
     "updatedBy": "alberto",
     "numeroOriginal": "LM1790-1",
     "renumeradaAt": "2026-07-10T17:14:39.522Z"
-  },
-  {
-    "id": "LM1797",
-    "fecha": "2026-07-10",
-    "fechaVenc": "2026-07-18",
-    "cliente": "PSI",
-    "contacto": "ING OSCAR",
-    "correo": "",
-    "estado": "Enviada",
-    "factura": "",
-    "iva": 19,
-    "subtotal": 727986,
-    "ivaVal": 138317.34,
-    "total": 866303.34,
-    "formaPago": "60 DÍAS",
-    "sitioEntrega": "PUENTE ARANDA BOGOTA",
-    "validez": "8 DÍAS",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "vendedor": "Sheila Baron",
-    "realizadaPor": "Alexandra",
-    "aprobadaPor": "Alberto",
-    "solicitudId": "",
-    "motivoRechazo": "",
-    "items": [
-      {
-        "desc": "ESPARRAGO 1 1/8 X 8.50\" LONG CERTIFICADO MATERIAL, GRADO B7",
-        "udm": "EA",
-        "qty": 12,
-        "precio": 20737,
-        "marca": "JDF ",
-        "proveedor": "MUNDIAL",
-        "precioProveedor": 13479,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "SE OFERTA  X 9 GRADO B A.-193 "
-      },
-      {
-        "desc": "TUERCA ROSCA 1 1/8  CERTIFICADO MATERIAL, GRADO 2H",
-        "udm": "EA",
-        "qty": 24,
-        "precio": 4308,
-        "marca": "JDF ",
-        "proveedor": "MUNDIAL",
-        "precioProveedor": 2800,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "2H A-194"
-      },
-      {
-        "desc": "RING GASKET R-45 CERTIFICADO MATERIAL",
-        "udm": "EA",
-        "qty": 3,
-        "precio": 125250,
-        "marca": "DINASEAL",
-        "proveedor": "FLEXILATINA",
-        "precioProveedor": 87675,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "MATERIAL SOFT IRON"
-      }
-    ],
-    "fechaGuardado": "2026-07-10T17:22:03.514Z",
-    "fechaEnvio": "2026-07-10T17:22:03.514Z",
-    "createdAt": "2026-07-10T17:22:03.515Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-07-10T17:22:04.770Z",
-    "updatedBy": "andrea",
-    "numeroOriginal": "LM1790-1",
-    "renumeradaAt": "2026-07-10T17:22:04.770Z"
   }
 ]
