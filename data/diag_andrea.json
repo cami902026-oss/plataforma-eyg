@@ -2,13 +2,15 @@
   "usuario": "andrea",
   "nombre": "Andrea",
   "rol": "ADMIN",
-  "ts": 1783639227866,
-  "tsLegible": "9/7/2026, 6:20:27 p. m.",
+  "ts": 1783696660888,
+  "tsLegible": "10/7/2026, 10:17:40 a. m.",
   "online": true,
-  "tienePAT": true,
-  "patEstado": "ok",
+  "tienePAT": false,
+  "patEstado": "sin_pat",
   "proxyConfigurado": true,
-  "pendientes": 0,
-  "pendientesArch": [],
-  "navegador": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36"
+  "pendientes": 1,
+  "pendientesArch": [
+    "data/cotizaciones.json"
+  ],
+  "navegador": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150."
 }
