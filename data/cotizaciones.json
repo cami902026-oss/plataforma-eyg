@@ -1,5 +1,15 @@
 [
   {
+    "id": "LM1790-4",
+    "cliente": "PSI",
+    "deleted": true,
+    "items": [],
+    "updatedAt": "2026-07-10T19:45:00.000Z",
+    "updatedBy": "fix-consecutivo",
+    "createdBy": "fix-consecutivo",
+    "createdAt": "2026-07-10T19:45:00.000Z"
+  },
+  {
     "id": "LM1396",
     "fecha": "2026-04-07",
     "fechaVenc": "2026-04-15",
@@ -16787,6 +16797,71 @@
     "updatedBy": "lina"
   },
   {
+    "id": "LM1790-1",
+    "fecha": "2026-07-10",
+    "fechaVenc": "2026-07-18",
+    "cliente": "PSI",
+    "contacto": "ING OSCAR",
+    "correo": "",
+    "estado": "Borrador",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 727986,
+    "ivaVal": 138317.34,
+    "total": 866303.34,
+    "formaPago": "60 DÍAS",
+    "sitioEntrega": "PUENTE ARANDA BOGOTA",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Alexandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "desc": "ESPARRAGO 1 1/8 X 8.50\" LONG CERTIFICADO MATERIAL, GRADO B7",
+        "udm": "EA",
+        "qty": 12,
+        "precio": 20737,
+        "marca": "JDF ",
+        "proveedor": "MUNDIAL",
+        "precioProveedor": 13479,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "SE OFERTA  X 9 GRADO B A.-193 "
+      },
+      {
+        "desc": "TUERCA ROSCA 1 1/8  CERTIFICADO MATERIAL, GRADO 2H",
+        "udm": "EA",
+        "qty": 24,
+        "precio": 4308,
+        "marca": "JDF ",
+        "proveedor": "MUNDIAL",
+        "precioProveedor": 2800,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "2H A-194"
+      },
+      {
+        "desc": "RING GASKET R-45 CERTIFICADO MATERIAL",
+        "udm": "EA",
+        "qty": 3,
+        "precio": 125250,
+        "marca": "DINASEAL",
+        "proveedor": "FLEXILATINA",
+        "precioProveedor": 87675,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "MATERIAL SOFT IRON"
+      }
+    ],
+    "fechaGuardado": "2026-07-10T17:15:23.366Z",
+    "createdAt": "2026-07-10T17:15:23.366Z",
+    "createdBy": "alberto",
+    "updatedAt": "2026-07-10T20:00:00.000Z",
+    "updatedBy": "fix-consecutivo",
+    "deleted": false,
+    "deletedAt": "2026-07-10T17:21:25.759Z"
+  },
+  {
     "id": "LM1790-2",
     "fecha": "2026-07-10",
     "fechaVenc": "2026-07-18",
@@ -16919,71 +16994,6 @@
     "renumeradaAt": "2026-07-10T17:12:53.862Z",
     "deleted": true,
     "deletedAt": "2026-07-10T17:13:20.330Z"
-  },
-  {
-    "id": "LM1790-1",
-    "fecha": "2026-07-10",
-    "fechaVenc": "2026-07-18",
-    "cliente": "PSI",
-    "contacto": "ING OSCAR",
-    "correo": "",
-    "estado": "Borrador",
-    "factura": "",
-    "iva": 19,
-    "subtotal": 727986,
-    "ivaVal": 138317.34,
-    "total": 866303.34,
-    "formaPago": "60 DÍAS",
-    "sitioEntrega": "PUENTE ARANDA BOGOTA",
-    "validez": "8 DÍAS",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "vendedor": "Sheila Baron",
-    "realizadaPor": "Alexandra",
-    "aprobadaPor": "Alberto",
-    "solicitudId": "",
-    "motivoRechazo": "",
-    "items": [
-      {
-        "desc": "ESPARRAGO 1 1/8 X 8.50\" LONG CERTIFICADO MATERIAL, GRADO B7",
-        "udm": "EA",
-        "qty": 12,
-        "precio": 20737,
-        "marca": "JDF ",
-        "proveedor": "MUNDIAL",
-        "precioProveedor": 13479,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "SE OFERTA  X 9 GRADO B A.-193 "
-      },
-      {
-        "desc": "TUERCA ROSCA 1 1/8  CERTIFICADO MATERIAL, GRADO 2H",
-        "udm": "EA",
-        "qty": 24,
-        "precio": 4308,
-        "marca": "JDF ",
-        "proveedor": "MUNDIAL",
-        "precioProveedor": 2800,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "2H A-194"
-      },
-      {
-        "desc": "RING GASKET R-45 CERTIFICADO MATERIAL",
-        "udm": "EA",
-        "qty": 3,
-        "precio": 125250,
-        "marca": "DINASEAL",
-        "proveedor": "FLEXILATINA",
-        "precioProveedor": 87675,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "MATERIAL SOFT IRON"
-      }
-    ],
-    "fechaGuardado": "2026-07-10T17:15:23.366Z",
-    "createdAt": "2026-07-10T17:15:23.366Z",
-    "createdBy": "alberto",
-    "updatedAt": "2026-07-10T20:00:00.000Z",
-    "updatedBy": "fix-consecutivo",
-    "deleted": false,
-    "deletedAt": "2026-07-10T17:21:25.759Z"
   },
   {
     "id": "LM1791",
@@ -17645,55 +17655,5 @@
     "renumeradaAt": "2026-07-10T17:22:04.770Z",
     "deleted": true,
     "deletedAt": "2026-07-10T17:31:59.536Z"
-  },
-  {
-    "id": "LM1790-4",
-    "cliente": "PSI",
-    "deleted": true,
-    "items": [],
-    "updatedAt": "2026-07-10T19:45:00.000Z",
-    "updatedBy": "fix-consecutivo",
-    "createdBy": "fix-consecutivo",
-    "createdAt": "2026-07-10T19:45:00.000Z"
-  },
-  {
-    "id": "LM1790-5",
-    "cliente": "PSI",
-    "deleted": true,
-    "items": [],
-    "updatedAt": "2026-07-10T19:45:00.000Z",
-    "updatedBy": "fix-consecutivo",
-    "createdBy": "fix-consecutivo",
-    "createdAt": "2026-07-10T19:45:00.000Z"
-  },
-  {
-    "id": "LM1790-6",
-    "cliente": "PSI",
-    "deleted": true,
-    "items": [],
-    "updatedAt": "2026-07-10T19:45:00.000Z",
-    "updatedBy": "fix-consecutivo",
-    "createdBy": "fix-consecutivo",
-    "createdAt": "2026-07-10T19:45:00.000Z"
-  },
-  {
-    "id": "LM1790-7",
-    "cliente": "PSI",
-    "deleted": true,
-    "items": [],
-    "updatedAt": "2026-07-10T19:45:00.000Z",
-    "updatedBy": "fix-consecutivo",
-    "createdBy": "fix-consecutivo",
-    "createdAt": "2026-07-10T19:45:00.000Z"
-  },
-  {
-    "id": "LM1790-8",
-    "cliente": "PSI",
-    "deleted": true,
-    "items": [],
-    "updatedAt": "2026-07-10T19:45:00.000Z",
-    "updatedBy": "fix-consecutivo",
-    "createdBy": "fix-consecutivo",
-    "createdAt": "2026-07-10T19:45:00.000Z"
   }
 ]
