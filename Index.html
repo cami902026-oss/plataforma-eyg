@@ -8033,17 +8033,20 @@ function _cotizAutoVencidas() {
   showToast('⏰ ' + n + ' cotización(es) pasaron a VENCIDA (fecha de vencimiento cumplida). Si el cliente responde, se pueden re-marcar.', 'info');
 }
 
+let _cotizNumAvisado = '';
 function _cotizNumVigilar() {
   if (typeof currentPage === 'undefined' || currentPage !== 'cotizaciones') return;
-  const num = cotizReadNum(); if (!num) return;
+  const num = cotizReadNum(); if (!num) { _cotizNumAvisado = ''; return; }
   if (cotizEditId && num === cotizEditId) return;   // editando una ya guardada: ese número es suyo
   const bd = getData('bd_cotizaciones', []);
   const tomado = bd.find(c => c && c.id === num && !c.deleted);
-  if (!tomado) return;
-  const nuevo = _cotizNumSiguienteLibre(num, bd);
-  if (nuevo === num) return;
-  cotizWriteNum(nuevo);
-  showToast('⚠️ El consecutivo ' + num + ' acaba de usarlo ' + (tomado.createdBy || tomado.updatedBy || 'otra persona') + ' — el tuyo ahora es ' + nuevo, 'error', { durationMs: 12000 });
+  if (!tomado) { if (_cotizNumAvisado === num) _cotizNumAvisado = ''; return; }
+  // SOLO AVISAR (2026-07-10, decisión del usuario): ya NO renumera solo. El usuario cambia
+  // el número a mano. Antes cambiaba el número en pantalla y sorprendía (caso LM1790).
+  if (_cotizNumAvisado === num) return;   // avisar una sola vez por número, no cada 8s
+  _cotizNumAvisado = num;
+  const sug = _cotizNumSiguienteLibre(num, bd);
+  showToast('⚠️ El número ' + num + ' ya lo usó ' + (tomado.createdBy || tomado.updatedBy || 'otra persona') + '. Cámbialo antes de guardar (libre: ' + sug + ').', 'error', { durationMs: 14000 });
 }
 
 function cotizShowTab(tab) {
@@ -9808,43 +9811,23 @@ async function _cotizReclamarYSubir(record, esNueva) {
     // abierto coincide con el que se está editando, jamás es "nueva".
     if (record && record.id && typeof cotizEditId !== 'undefined' && cotizEditId && String(cotizEditId) === String(record.id)) esNueva = false;
     if (esNueva && navigator.onLine && record && record.id) {
-      let id = String(record.id);
-      let reclamado = false;
-      for (let intento = 0; intento < 15; intento++) {
-        let r;
-        try {
-          r = await _fetchT(UTIL_SB_URL + '/cotizaciones', {
-            method: 'POST',
-            headers: { apikey: UTIL_SB_KEY, Authorization: 'Bearer ' + UTIL_SB_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-            body: JSON.stringify({ id, cliente: record.cliente || null, estado: record.estado || null, fecha: record.fecha || null, fuente: 'Plataforma' })
-          }, 10000);
-        } catch(_) { break; }                 // red caída: seguir flujo local normal
-        if (r.status === 201) { reclamado = true; break; }   // número reclamado: es nuestro
-        if (r.status !== 409) break;                          // otro error: no insistir
-        // 409 = ese número YA lo tomó otra persona → probar el siguiente
-        const suf = id.match(/^(.*?-)(\d+)$/);
-        const lm  = id.match(/^LM(\d+)$/i);
-        if (suf) id = suf[1] + (parseInt(suf[2]) + 1);
-        else if (lm) id = 'LM' + (parseInt(lm[1]) + 1);
-        else break;
-      }
-      if (reclamado && id !== record.id) {
-        // Renumerar el registro local + el formulario YA, antes del PDF
-        const viejo = record.id;
-        const bd2 = getData('bd_cotizaciones', []);
-        const ix2 = bd2.findIndex(x => x && x.id === viejo);
-        if (ix2 >= 0) {
-          bd2[ix2].id = id;
-          bd2[ix2].numeroOriginal = bd2[ix2].numeroOriginal || viejo;
-          bd2[ix2].renumeradaAt = new Date().toISOString();
-          bd2[ix2].updatedAt = new Date().toISOString();
-          saveData('bd_cotizaciones', bd2);
-        }
-        record.id = id;
-        if (typeof cotizEditId !== 'undefined' && cotizEditId === viejo) cotizEditId = id;
-        try { if (cotizReadNum() === viejo) cotizWriteNum(id); } catch(_) {}
-        try { bdRender(); } catch(_) {}
-        showToast('⚠️ El número ' + viejo + ' lo tomó otra persona en este instante — tu cotización quedó como ' + id + '. Genera el PDF como ' + id + '.', 'error', { durationMs: 15000 });
+      // SOLO AVISAR (2026-07-10, decisión del usuario): intenta reclamar el número UNA vez.
+      // Si ya está tomado (409), NO renumera solo (eso causaba el rebote LM1790-1 -> -4):
+      // avisa para que el usuario cambie el número a mano. El reconciliador sigue evitando
+      // pérdidas si dos guardan igual sin verse.
+      const id = String(record.id);
+      let r = null;
+      try {
+        r = await _fetchT(UTIL_SB_URL + '/cotizaciones', {
+          method: 'POST',
+          headers: { apikey: UTIL_SB_KEY, Authorization: 'Bearer ' + UTIL_SB_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+          body: JSON.stringify({ id, cliente: record.cliente || null, estado: record.estado || null, fecha: record.fecha || null, fuente: 'Plataforma' })
+        }, 10000);
+      } catch(_) { r = null; }                 // red caída: seguir flujo local normal
+      // 201 = reclamado (nuestro). 409 = ya lo tomó otra persona → avisar, NO cambiar.
+      if (r && r.status === 409) {
+        const sug = _cotizNumSiguienteLibre(id, getData('bd_cotizaciones', []));
+        showToast('⚠️ El número ' + id + ' ya lo tomó otra persona. Cámbialo antes de generar el PDF (libre: ' + sug + ').', 'error', { durationMs: 15000 });
       }
     }
   } catch(_) {}
@@ -12588,14 +12571,28 @@ if ('serviceWorker' in navigator) {
           if (!sw) return;
           sw.addEventListener('statechange', () => {
             if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-              showToast('Nueva versión disponible — recargando…','info');
-              setTimeout(() => location.reload(), 1500);
+              // Cambio 2026-07-10: NO auto-recargar (cortaba a quien estaba editando).
+              // Banner con botón: el usuario recarga cuando esté listo.
+              _bannerNuevaVersion();
             }
           });
         });
       })
       .catch(err => console.warn('[ENERGY PWA] Error al registrar SW:', err));
   });
+}
+
+// Banner "nueva versión disponible" — NO recarga solo (para no cortar a quien edita).
+// El usuario decide cuándo recargar. Idempotente: no se duplica.
+function _bannerNuevaVersion(){
+  if (document.getElementById('_verBanner')) return;
+  const b = document.createElement('div');
+  b.id = '_verBanner';
+  b.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:100001;background:#0F2B5B;color:#fff;border:1px solid #E8A020;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 8px 30px rgba(0,0,0,.4);font-size:13px;max-width:92vw;';
+  b.innerHTML = '<span>🔄 Hay una <b>versión nueva</b> de la plataforma. Guarda lo que estés haciendo y recarga.</span>'
+    + '<button onclick="location.reload()" style="background:#E8A020;color:#15202e;border:none;border-radius:8px;padding:8px 16px;font-weight:800;cursor:pointer;">Recargar</button>'
+    + '<button onclick="var e=document.getElementById(\'_verBanner\');if(e)e.remove();" title="Recordar luego" style="background:none;border:none;color:#cbd5ff;cursor:pointer;font-size:18px;">×</button>';
+  document.body.appendChild(b);
 }
 
 
