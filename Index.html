@@ -9802,6 +9802,11 @@ async function bdVerHistorico(id) {
 // (el reconciliador renumera al sincronizar). No cambia nada visible del módulo.
 async function _cotizReclamarYSubir(record, esNueva) {
   try {
+    // BLINDAJE (2026-07-10): NUNCA reclamar/renumerar una cotización que se está EDITANDO
+    // (su número ya es suyo). Antes, al REVISAR una cotización guardada con sufijo (ej. LM1790-1),
+    // el reclamo en Supabase la rebotaba -1 -> -2 -> -3 -> -4 y no dejaba guardar. Si el número
+    // abierto coincide con el que se está editando, jamás es "nueva".
+    if (record && record.id && typeof cotizEditId !== 'undefined' && cotizEditId && String(cotizEditId) === String(record.id)) esNueva = false;
     if (esNueva && navigator.onLine && record && record.id) {
       let id = String(record.id);
       let reclamado = false;
