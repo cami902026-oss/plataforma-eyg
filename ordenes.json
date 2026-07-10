@@ -3268,5 +3268,52 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-09T20:07:49.786Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1783720491105",
+    "num": "LM1790-1",
+    "cliente": "PSI",
+    "desc": "Cotización LM1790-1 · 3 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-10",
+    "valor": 866303.34,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-10",
+        "n": ""
+      },
+      {
+        "s": "active",
+        "f": "",
+        "n": "",
+        "envio": "camion_energy",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1790-1",
+    "createdAt": "2026-07-10T21:54:51.105Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-10T21:54:51.105Z",
+    "updatedBy": "andrea"
   }
 ]
