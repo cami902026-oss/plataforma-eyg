@@ -17473,8 +17473,10 @@
     "fechaGuardado": "2026-07-09T20:48:13.751Z",
     "createdAt": "2026-07-09T20:09:29.714Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-09T20:48:13.751Z",
-    "updatedBy": "alberto"
+    "updatedAt": "2026-07-10T22:36:29.110Z",
+    "updatedBy": "alberto",
+    "deleted": true,
+    "deletedAt": "2026-07-10T22:36:29.110Z"
   },
   {
     "id": "LM1789-1",
@@ -17539,8 +17541,10 @@
     "fechaGuardado": "2026-07-10T15:24:48.009Z",
     "createdAt": "2026-07-10T15:17:55.476Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-10T15:24:48.009Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-07-10T22:36:24.518Z",
+    "updatedBy": "sandra",
+    "deleted": true,
+    "deletedAt": "2026-07-10T22:36:24.518Z"
   },
   {
     "id": "LM1790",
@@ -19434,9 +19438,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 31808646,
+    "ivaVal": 6043642.74,
+    "total": 37852288.74,
     "formaPago": "CONTADO ",
     "sitioEntrega": "BODEGA E&G ENERGY GROUP SAS ",
     "validez": "8 DÍAS",
@@ -19444,7 +19448,7 @@
     "vendedor": "Mario",
     "realizadaPor": "Lina Cifuentes",
     "aprobadaPor": "Alberto",
-    "solicitudId": "SOL-20260710-736",
+    "solicitudId": "",
     "motivoRechazo": "",
     "items": [
       {
@@ -19452,9 +19456,9 @@
         "desc": "tubería 4\" s/c sch40, con extremos roscados NPT",
         "udm": "MTS",
         "qty": 354,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS ",
-        "desvTec": "TUBERIA  AC SCH 40 -  ESTREMOS BISELADO  4\"   VALOR METRO    ",
+        "precio": 82340,
+        "tiempoEntrega": "3-4 DIAS ",
+        "desvTec": "TUBERIA DE 4 IN  AC / SCH 40  BINORMA/  ESTREMOS CON ROSCA NPT (PROCESO DE ROSCA REALIZADO LOCALMENTE)    ",
         "marca": "BAOLAI ",
         "proveedor": "EN BODEGA TENEMOS PRECIO REFERENTE CODIFER ",
         "precioProveedor": 84810
@@ -19464,7 +19468,7 @@
         "desc": "uniones 4\" clase 150 NPT en hierro negro",
         "udm": "EA",
         "qty": 58,
-        "precio": 0,
+        "precio": 45867,
         "tiempoEntrega": "1-2 DIAS ",
         "desvTec": "UNION 4\" CLASE 150 3000PSI  AC  ",
         "marca": "XF ",
@@ -19472,11 +19476,11 @@
         "precioProveedor": 41280
       }
     ],
-    "fechaGuardado": "2026-07-10T21:43:17.118Z",
+    "fechaGuardado": "2026-07-11T14:22:50.597Z",
     "createdAt": "2026-07-10T21:05:35.155Z",
     "createdBy": "lina",
-    "updatedAt": "2026-07-10T21:43:17.118Z",
-    "updatedBy": "lina"
+    "updatedAt": "2026-07-11T14:22:50.597Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM1799",
