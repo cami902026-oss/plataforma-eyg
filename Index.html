@@ -1066,7 +1066,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div style="background:linear-gradient(135deg,rgba(46,170,74,0.12),rgba(15,43,91,0.4));border:1px solid rgba(46,170,74,0.3);border-radius:14px;padding:24px;margin-bottom:18px;">
             <h2 style="margin:0 0 8px;color:#fff;font-size:22px;display:flex;align-items:center;gap:10px;">💰 Aplicativo de Cartera</h2>
             <p style="color:var(--text-muted);font-size:13px;margin:6px 0 0;line-height:1.5;">
-              Acceso al aplicativo de cartera. <b>Visible solo para Andrea y Alberto.</b><br>
+              Acceso al aplicativo de cartera. <b>Visible solo para Andrea, Alberto y Nelsy.</b><br>
               La cartera se actualiza automáticamente cuando guardas un Excel nuevo en
               <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;color:#fbbf24;">C:\Users\Lenovo\Downloads\Cartera\</code>
             </p>
@@ -1080,6 +1080,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               • Estar usando el PC anfitrión (localhost:5050)
             </p>
             <button class="btn btn-primary" onclick="abrirCartera()" style="width:auto;font-size:15px;padding:14px 28px;">🚀 Abrir Cartera</button>
+            <button class="btn btn-secondary" onclick="descargarLibroCartera()" title="Descarga el Excel COMPLETO de control de cartera (pide una clave la primera vez; Shift+clic para cambiarla)" style="width:auto;font-size:14px;padding:14px 22px;margin-left:8px;">⬇️ Descargar libro completo</button>
             <div style="margin-top:14px;padding:12px;background:rgba(232,160,32,0.08);border:1px solid rgba(232,160,32,0.3);border-radius:8px;font-size:12px;color:#fbbf24;line-height:1.5;">
               ⚠️ Si al hacer clic no abre nada o muestra error de conexión:<br>
               1. Verifica que el aplicativo de cartera esté corriendo en tu PC<br>
@@ -6655,6 +6656,26 @@ async function abrirCartera() {
   const url = getCarteraURL();
   if (win && !win.closed) { win.location.href = url; }
   else { window.open(url, '_blank', 'noopener'); }
+}
+
+// Descarga el LIBRO COMPLETO de cartera (Excel tal cual) desde el agente, protegido
+// con clave (el túnel no tiene contraseña). La clave se pide UNA vez por equipo y se
+// recuerda; Shift+clic para cambiarla. Aditivo 2026-07-12.
+async function descargarLibroCartera(ev) {
+  ev = ev || window.event;
+  let clave = localStorage.getItem('cartera_libro_clave') || '';
+  if (!clave || (ev && ev.shiftKey)) {
+    clave = (prompt('Clave de descarga del libro de cartera:', clave) || '').trim();
+    if (!clave) return;
+    localStorage.setItem('cartera_libro_clave', clave);
+  }
+  // Abrir la pestaña YA (dentro del clic) para que el navegador no bloquee el popup
+  const win = window.open('about:blank', '_blank');
+  try { await refreshCarteraURLFromGitHub(); } catch(_) {}
+  const url = getCarteraURL() + '/api/descargar-libro?clave=' + encodeURIComponent(clave);
+  if (win && !win.closed) { win.location.href = url; }
+  else { window.open(url, '_blank', 'noopener'); }
+  showToast('Descargando libro de cartera… Si sale "Clave incorrecta", usa Shift+clic para corregirla.', 'info');
 }
 async function testCarteraConnection() {
   const status = document.getElementById('cartera-status');
