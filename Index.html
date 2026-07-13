@@ -10508,6 +10508,21 @@ function _presPintar() {
     });
   } catch(_) {}
 }
+// La presencia solo vale mientras el editor de la cotización esté A LA VISTA.
+// Si el usuario se va a otro módulo/pestaña del asistente (o a otra pestaña del
+// navegador), se suelta el aviso 👀 de inmediato; al volver, se retoma solo.
+function _presVigilar() {
+  try {
+    if (!_presChan) return;
+    const tb = document.getElementById('cotiz-tbody');
+    const editorVisible = !!(tb && tb.offsetParent !== null) && !document.hidden;
+    const deberia = (editorVisible && typeof cotizEditId !== 'undefined' && cotizEditId) ? cotizEditId : null;
+    if (String(deberia || '') !== String(_presCotizId || '')) _presTrack(deberia);
+  } catch(_) {}
+}
+setInterval(_presVigilar, 2000);
+document.addEventListener('visibilitychange', _presVigilar);
+
 // Arranque perezoso: espera al login y conecta (si falla, no pasa nada — queda el poll)
 (function _rtBoot() {
   try {
