@@ -19797,8 +19797,8 @@
   },
   {
     "id": "LM1800",
-    "fecha": "2026-07-13",
-    "fechaVenc": "2026-07-21",
+    "fecha": "2026-07-11",
+    "fechaVenc": "2026-07-19",
     "cliente": "ROMA INTEGRAL GROUP SAS",
     "contacto": "CRISTIAN SOSA ",
     "correo": "@",
@@ -19827,9 +19827,10 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "codifer",
         "tiempoEntrega": "",
-        "precioProveedor": 0
+        "precioProveedor": 20000,
+        "fotoGrande": false
       },
       {
         "id": 2,
@@ -19840,10 +19841,9 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "MUNDIAL",
         "tiempoEntrega": "",
-        "precioProveedor": 0,
-        "fotoGrande": false
+        "precioProveedor": 8451
       },
       {
         "id": 3,
@@ -20106,11 +20106,11 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-07-13T23:53:18.456Z",
+    "fechaGuardado": "2026-07-13T23:53:47.720Z",
     "createdAt": "2026-07-11T14:05:08.687Z",
     "createdBy": "lina",
-    "updatedAt": "2026-07-13T23:53:18.456Z",
-    "updatedBy": "alberto"
+    "updatedAt": "2026-07-13T23:53:47.720Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1801",
@@ -20122,9 +20122,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 62585,
-    "ivaVal": 11891.15,
-    "total": 74476.15,
+    "subtotal": 158585,
+    "ivaVal": 30131.15,
+    "total": 188716.15,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "BOGOTA",
     "validez": "8 DÍAS",
@@ -20137,37 +20137,35 @@
     "items": [
       {
         "id": 1,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "e6f67d98-459e-4426-ab48-2c67db1a13ae",
         "desc": "BRIDA",
-        "marca": "DDDD",
-        "precio": 14000,
-        "desvTec": "",
-        "proveedor": "",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 110000,
         "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "DDDD",
+        "proveedor": "",
         "precioProveedor": 0
       },
       {
         "id": 2,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "f059ba8f-a1e3-477c-9601-ccec36bfcbac",
         "desc": "CAP DE",
-        "marca": "RRRR",
+        "udm": "EA",
+        "qty": 1,
         "precio": 48585,
-        "desvTec": "",
-        "proveedor": "",
         "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "RRRR",
+        "proveedor": "",
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-07-13T23:33:53.926Z",
+    "fechaGuardado": "2026-07-13T23:33:06.362Z",
     "createdAt": "2026-07-13T23:33:06.362Z",
     "createdBy": "alberto",
-    "updatedAt": "2026-07-13T23:34:36.921Z",
+    "updatedAt": "2026-07-13T23:34:58.727Z",
     "updatedBy": "alberto",
     "deleted": true,
-    "deletedAt": "2026-07-13T23:34:36.921Z"
+    "deletedAt": "2026-07-13T23:34:58.727Z"
   }
 ]
