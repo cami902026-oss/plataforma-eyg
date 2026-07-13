@@ -8471,7 +8471,7 @@ function cotizRender() {
     // FACTOR = P.Proveedor ÷ V.Unitario (derivado; al escribirlo recalcula el V.Unitario). Solo gerencia.
     const factorVal = (pprov > 0 && it.precio > 0) ? Math.round((pprov / it.precio) * 1000) / 1000 : '';
     return `
-    <tr>
+    <tr data-uid="${it.uid||''}" data-idx="${i}">
       <td style="color:var(--text-muted);text-align:center">${i+1}</td>
       <td><input value="${it.udm||'EA'}" oninput="cotizItems[${i}].udm=this.value" style="width:44px"></td>
       <td><input type="number" value="${it.qty}" min="0" oninput="cotizItems[${i}].qty=parseFloat(this.value)||0;cotizUpdateTotals()" style="width:50px"></td>
@@ -8501,6 +8501,8 @@ function cotizRender() {
   if (!_cotizFotosLoaded) { _cotizFotosEnsure().then(() => { try { cotizRender(); } catch(_){} }); }
   _cotizAplicarVisibilidadFactor();
   cotizUpdateTotals();
+  // Re-aplicar el resaltado de presencia (el innerHTML de arriba lo borra)
+  try { _presPintar(); } catch(_) {}
 }
 
 // ===== Descripción que crece de alto (renglón completo) =====
@@ -10351,8 +10353,10 @@ async function _rtInit() {
       .subscribe();
     _presChan = _rtClient.channel('cotiz-presencia', { config: { presence: { key: _rtMe() || ('anon' + Math.random().toString(36).slice(2, 8)) } } });
     _presChan.on('presence', { event: 'sync' }, _presPintar).subscribe(st => {
-      if (st === 'SUBSCRIBED' && _presCotizId) _presChan.track({ u: _rtMe(), c: _presCotizId });
+      if (st === 'SUBSCRIBED' && _presCotizId) _presSend();
     });
+    // Rastrear en qué fila de ítems está el cursor (para mostrárselo a los demás)
+    document.addEventListener('focusin', _presFocusHandler);
     console.log('[realtime] conectado');
   } catch (e) {
     console.warn('[realtime] no disponible, sigue el poll de siempre:', e && e.message);
@@ -10424,33 +10428,84 @@ function _rtOnItem(payload) {
     _rtRenderTimer = setTimeout(() => { try { cotizRender(); } catch(_) {} }, 400);
   } catch(_) {}
 }
-// ── Presencia: "👀 X está en esta cotización" ──
-function _presTrack(cotizId) {
-  _presCotizId = cotizId || null;
+// ── Presencia: "👀 X está en esta cotización" + fila donde está trabajando ──
+// Se publica {u: usuario, c: cotización abierta, iu: ítem con el foco}. En los
+// demás equipos: burbuja grande abajo a la derecha + la fila del ítem donde está
+// la otra persona se resalta en dorado con su nombre (se actualiza al cambiar de
+// campo/fila — decisión del usuario 2026-07-13: sin rastreo tecla a tecla).
+let _presItemUid = null;
+function _presSend() {
   try {
     if (!_presChan) return;
-    if (_presCotizId) _presChan.track({ u: _rtMe(), c: _presCotizId });
+    if (_presCotizId) _presChan.track({ u: _rtMe(), c: _presCotizId, iu: _presItemUid || null });
     else { _presChan.untrack(); _presPintar(); }
+  } catch(_) {}
+}
+function _presTrack(cotizId) {
+  _presCotizId = cotizId || null;
+  _presItemUid = null;
+  _presSend();
+}
+// ¿En qué fila de la tabla de ítems está mi cursor? (delegación de focus)
+function _presFocusHandler(e) {
+  try {
+    if (!_presCotizId) return;
+    const tb = document.getElementById('cotiz-tbody');
+    if (!tb || !tb.contains(e.target)) return;
+    const tr = e.target.closest ? e.target.closest('tr') : null;
+    if (!tr) return;
+    const iu = tr.getAttribute('data-uid') || ('idx:' + tr.getAttribute('data-idx'));
+    if (iu && iu !== _presItemUid) { _presItemUid = iu; _presSend(); }
   } catch(_) {}
 }
 function _presPintar() {
   try {
-    let el = document.getElementById('rt-presencia');
-    const otros = [];
+    // limpiar resaltados previos
+    document.querySelectorAll('#cotiz-tbody tr.rt-row-otro').forEach(tr => {
+      tr.classList.remove('rt-row-otro'); tr.style.outline = '';
+      tr.querySelectorAll('.rt-row-tag').forEach(t => t.remove());
+    });
+    const otros = [];    // nombres para la burbuja
+    const porFila = {};  // ítem (uid) -> nombres que están ahí
     if (_presChan && _presCotizId) {
       const st = _presChan.presenceState() || {};
       Object.keys(st).forEach(k => (st[k] || []).forEach(m => {
-        if (m && m.c === _presCotizId && m.u && m.u !== _rtMe()) otros.push(String(m.u).split('@')[0]);
+        if (m && m.c === _presCotizId && m.u && m.u !== _rtMe()) {
+          const nom = String(m.u).split('@')[0];
+          otros.push(nom);
+          if (m.iu) (porFila[m.iu] = porFila[m.iu] || []).push(nom);
+        }
       }));
     }
+    // burbuja (grande y llamativa; misma posición abajo-derecha)
+    let el = document.getElementById('rt-presencia');
     if (!otros.length) { if (el) el.remove(); return; }
     if (!el) {
       el = document.createElement('div');
       el.id = 'rt-presencia';
-      el.style.cssText = 'position:fixed;bottom:64px;right:16px;z-index:9998;background:#0b2b46;border:1px solid var(--gold,#d4af37);color:#fff;padding:8px 14px;border-radius:20px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.4);';
       document.body.appendChild(el);
     }
-    el.textContent = '👀 ' + [...new Set(otros)].join(', ') + ' está' + (otros.length > 1 ? 'n' : '') + ' en esta cotización';
+    el.style.cssText = 'position:fixed;bottom:64px;right:16px;z-index:9998;background:#0b2b46;border:2px solid var(--gold,#d4af37);color:#fff;padding:12px 20px;border-radius:26px;font-size:15px;font-weight:700;box-shadow:0 6px 22px rgba(0,0,0,.55);max-width:340px;';
+    el.textContent = '👀 ' + [...new Set(otros)].join(', ') + ' está' + (new Set(otros).size > 1 ? 'n' : '') + ' en esta cotización';
+    // resaltar la fila del ítem donde está cada persona
+    const tb = document.getElementById('cotiz-tbody');
+    if (!tb) return;
+    Object.keys(porFila).forEach(iu => {
+      let tr = null;
+      if (iu.indexOf('idx:') === 0) tr = tb.querySelector('tr[data-idx="' + iu.slice(4) + '"]');
+      else { try { tr = tb.querySelector('tr[data-uid="' + (window.CSS && CSS.escape ? CSS.escape(iu) : iu) + '"]'); } catch(_) {} }
+      if (!tr) return;
+      tr.classList.add('rt-row-otro');
+      tr.style.outline = '2px solid var(--gold,#d4af37)';
+      const td = tr.querySelector('td');
+      if (td) {
+        const tag = document.createElement('span');
+        tag.className = 'rt-row-tag';
+        tag.style.cssText = 'display:block;font-size:10px;color:#071525;background:var(--gold,#d4af37);border-radius:8px;padding:1px 6px;margin-top:3px;white-space:nowrap;font-weight:800;';
+        tag.textContent = '✏️ ' + [...new Set(porFila[iu])].join(', ');
+        td.appendChild(tag);
+      }
+    });
   } catch(_) {}
 }
 // Arranque perezoso: espera al login y conecta (si falla, no pasa nada — queda el poll)
