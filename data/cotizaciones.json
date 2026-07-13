@@ -19805,9 +19805,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 133334,
+    "ivaVal": 25333.46,
+    "total": 158667.46,
     "formaPago": "CONTADO",
     "sitioEntrega": "PAZ DE ARIPORO",
     "validez": "8 DÍAS",
@@ -19825,12 +19825,12 @@
         "uid": "492bd4ae-8e16-467e-9ff9-ff1f33bcea48",
         "desc": "Codo radio corto 90° PVC unión mecanica Ø 3\"",
         "marca": "",
-        "precio": 0,
+        "precio": 66667,
         "desvTec": "",
         "proveedor": "codifer",
+        "fotoGrande": false,
         "tiempoEntrega": "",
-        "precioProveedor": 20000,
-        "fotoGrande": false
+        "precioProveedor": 20000
       },
       {
         "id": 2,
@@ -20106,11 +20106,11 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-07-13T23:53:47.720Z",
+    "fechaGuardado": "2026-07-13T23:54:30.929Z",
     "createdAt": "2026-07-11T14:05:08.687Z",
     "createdBy": "lina",
-    "updatedAt": "2026-07-13T23:53:47.720Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-07-13T23:54:30.929Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM1801",
@@ -20122,9 +20122,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 158585,
-    "ivaVal": 30131.15,
-    "total": 188716.15,
+    "subtotal": 62585,
+    "ivaVal": 11891.15,
+    "total": 74476.15,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "BOGOTA",
     "validez": "8 DÍAS",
@@ -20137,35 +20137,37 @@
     "items": [
       {
         "id": 1,
-        "desc": "BRIDA",
-        "udm": "EA",
         "qty": 1,
-        "precio": 110000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "e6f67d98-459e-4426-ab48-2c67db1a13ae",
+        "desc": "BRIDA",
         "marca": "DDDD",
+        "precio": 14000,
+        "desvTec": "",
         "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 0
       },
       {
         "id": 2,
-        "desc": "CAP DE",
-        "udm": "EA",
         "qty": 1,
-        "precio": 48585,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "f059ba8f-a1e3-477c-9601-ccec36bfcbac",
+        "desc": "CAP DE",
         "marca": "RRRR",
+        "precio": 48585,
+        "desvTec": "",
         "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-07-13T23:33:06.362Z",
+    "fechaGuardado": "2026-07-13T23:33:53.926Z",
     "createdAt": "2026-07-13T23:33:06.362Z",
     "createdBy": "alberto",
-    "updatedAt": "2026-07-13T23:34:58.727Z",
+    "updatedAt": "2026-07-13T23:34:36.921Z",
     "updatedBy": "alberto",
     "deleted": true,
-    "deletedAt": "2026-07-13T23:34:58.727Z"
+    "deletedAt": "2026-07-13T23:34:36.921Z"
   }
 ]
