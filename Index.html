@@ -10328,7 +10328,8 @@ function _cotizSnapshotSet(id, rows) {
 // antes (poll + botón 🔄). No toca rutas de guardado.
 let _rtClient = null, _rtBooted = false, _presChan = null, _presCotizId = null;
 let _rtRenderTimer = null, _rtAvisado = {};
-function _rtMe() { return (window.currentUser && (currentUser.email || currentUser.name)) || ''; }
+// OJO: currentUser es `let` global (no cuelga de window) — usarlo directo.
+function _rtMe() { return (typeof currentUser !== 'undefined' && currentUser && (currentUser.email || currentUser.name)) || ''; }
 function _rtLoadLib() {
   return new Promise((res, rej) => {
     if (window.supabase && window.supabase.createClient) return res();
@@ -10456,7 +10457,7 @@ function _presPintar() {
 (function _rtBoot() {
   try {
     if (_rtBooted) return;
-    if (typeof window.currentUser === 'undefined' || !window.currentUser || !navigator.onLine) { setTimeout(_rtBoot, 5000); return; }
+    if (typeof currentUser === 'undefined' || !currentUser || !navigator.onLine) { setTimeout(_rtBoot, 5000); return; }
     _rtInit();
   } catch(_) { setTimeout(_rtBoot, 10000); }
 })();
