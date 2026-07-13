@@ -6,6 +6,7 @@
  * qué tipo de petición es:
  *   - Si el body tiene { messages:[...] }  → reenvía a Anthropic Claude
  *   - Si el body tiene { file, content }   → escribe el archivo en GitHub
+ *   - Si el body tiene { sb:{...} }        → escribe en Supabase (RLS cerrada)
  *
  * Cómo desplegarlo (una sola vez):
  * 1. https://script.google.com/home → Nuevo proyecto.
@@ -17,7 +18,11 @@
  *      GH_REPO        = plataforma-eyg
  *      GH_BRANCH      = main
  *      SHARED_SECRET  = eyg_prx_...        (token de seguridad; el MISMO que está en Index.html)
- *      RATE_LIMIT_PER_MIN = 90             (opcional; máximo de peticiones por minuto)
+ *      SUPABASE_SECRET = sb_secret_...     (key SECRETA de Supabase: Dashboard → Settings →
+ *                                           API Keys → "secret". Escribe saltándose la RLS;
+ *                                           NUNCA va en el HTML, solo aquí.)
+ *      RATE_LIMIT_PER_MIN = 240            (recomendado subirlo: ahora las escrituras de
+ *                                           inventario/remisiones/cotizaciones pasan por aquí)
  *
  *   IMPORTANTE: agrega SHARED_SECRET SOLO cuando el Index.html que ya manda el token
  *   esté publicado (Ctrl+F5). Mientras la propiedad no exista, el proxy acepta todo
@@ -91,7 +96,10 @@ function doPost(e) {
     if (typeof body.file === 'string') {
       return _handleGitHubWrite(body);
     }
-    return _json({ error: 'Petición inválida — falta messages[] o file' });
+    if (body.sb && typeof body.sb === 'object') {
+      return _handleSupabaseWrite(body.sb);
+    }
+    return _json({ error: 'Petición inválida — falta messages[], file o sb' });
 
   } catch (err) {
     return _json({ error: 'Proxy error: ' + err.message });
@@ -102,9 +110,52 @@ function doGet() {
   return _json({
     ok: true,
     service: 'ENERGY proxy unificado',
-    handles: ['claude','github-write'],
+    handles: ['claude','github-write','supabase-write'],
+    sbListo: !!PROPS.getProperty('SUPABASE_SECRET'),
     model: MODEL_DEFAULT
   });
+}
+
+// ─── Supabase write (RLS cerrada: la key publishable del HTML solo LEE; ─────
+// ─── las escrituras entran por aquí con la key secreta del servidor) ────────
+const SB_URL = 'https://juprjevxkcitqpsnemto.supabase.co/rest/v1';
+// Solo las tablas de la plataforma; cualquier otra se rechaza.
+const SB_TABLAS = ['productos','kardex','familias','conteos','conteo_items',
+                   'remisiones','cotizaciones','cotizacion_items',
+                   'plan_compras','oc_compras','proveedores'];
+
+function _handleSupabaseWrite(sb) {
+  const key = PROPS.getProperty('SUPABASE_SECRET');
+  if (!key) return _json({ error: 'SUPABASE_SECRET no configurada en Propiedades del script' });
+
+  const method = String(sb.method || '').toLowerCase();
+  if (['post','patch','delete'].indexOf(method) < 0) {
+    return _json({ error: 'Método no permitido: ' + sb.method });
+  }
+  const path = String(sb.path || '').replace(/^\/+/, '');
+  const tabla = path.split('?')[0].split('/')[0];
+  if (SB_TABLAS.indexOf(tabla) < 0) {
+    return _json({ error: 'Tabla no permitida: ' + tabla });
+  }
+  // Gate de versión mínima para ESCRIBIR (protege contra pestañas con código viejo,
+  // causa raíz del rebote LM1790). Solo se exige si la propiedad existe.
+  const minV = parseInt(PROPS.getProperty('MIN_WRITE_VERSION')) || 0;
+  if (minV && (parseInt(sb.v) || 0) < minV) {
+    return _json({ status: 426, body: JSON.stringify({ message:
+      'Tu pestaña tiene una versión vieja de la plataforma. Recarga la página (Ctrl+F5) para seguir guardando.' }) });
+  }
+
+  const headers = { 'apikey': key, 'Authorization': 'Bearer ' + key };
+  if (sb.prefer) headers['Prefer'] = String(sb.prefer);
+  const opts = { method: method, headers: headers, muteHttpExceptions: true };
+  if (sb.body != null && method !== 'delete') {
+    opts.contentType = 'application/json';
+    opts.payload = (typeof sb.body === 'string') ? sb.body : JSON.stringify(sb.body);
+  }
+  const resp = UrlFetchApp.fetch(SB_URL + '/' + path, opts);
+  // El status REAL de Supabase viaja dentro del JSON (Apps Script siempre responde 200);
+  // el cliente lo desempaca en _sbWriteRaw. 201/204/409 etc. llegan intactos.
+  return _json({ status: resp.getResponseCode(), body: resp.getContentText() });
 }
 
 // ─── Claude (chat IA) ────────────────────────────────────────────────────────

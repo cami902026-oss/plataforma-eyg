@@ -18,7 +18,10 @@ Modo:
 import json, os, sys, urllib.request, urllib.error
 
 BASE = "https://juprjevxkcitqpsnemto.supabase.co/rest/v1"
-KEY  = "sb_publishable_zZrmpmvqbz4AJCGHRHQ8Xw_8tnf5ObM"
+# RLS cerrada (2026-07-13): la key publishable ya solo LEE. Para escribir (--write)
+# hay que exportar la key SECRETA antes de correr:  set SUPABASE_SECRET=sb_secret_...
+# (Dashboard -> Settings -> API Keys -> secret). La publishable sigue para el dry-run.
+KEY  = os.environ.get("SUPABASE_SECRET") or "sb_publishable_zZrmpmvqbz4AJCGHRHQ8Xw_8tnf5ObM"
 
 DATA    = r"C:\Users\Lenovo\OneDrive\Escritorio\Energy_bot\plataforma-eyg\data"
 WEB     = os.path.join(DATA, "cotizaciones.json")

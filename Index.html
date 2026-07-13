@@ -3803,6 +3803,48 @@ async function _saveDataGH(filename, data, label) {
 // el abuso de la cuota de Claude y la escritura no autorizada en GitHub.
 function _proxySecret() { return 'eyg_prx_c70613f89a19d97c73d8800612029462'; }
 
+// ─── ESCRITURA SUPABASE VÍA PROXY (RLS cerrada, 2026-07-13) ──────────────────
+// La key publishable del HTML quedó SOLO-LECTURA (RLS). Toda escritura a Supabase
+// (POST/PATCH/DELETE) viaja por el energy-proxy, que tiene la key secreta en sus
+// propiedades. El proxy devuelve el status REAL de Supabase dentro del JSON
+// ({status, body}) porque Apps Script siempre responde 200.
+// Versión del protocolo de escritura: el proxy puede exigir un mínimo
+// (propiedad MIN_WRITE_VERSION) para frenar pestañas con código viejo.
+const SB_WRITE_V = 129;
+async function _sbWriteRaw(path, method, bodyStr, prefer, ms) {
+  const proxy = _ghWriteProxyURL();
+  if (proxy) {
+    try {
+      const resp = await _fetchT(proxy, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },   // evita preflight CORS
+        body: JSON.stringify({ secret: _proxySecret(), sb: { path: path, method: method, body: bodyStr || null, prefer: prefer || '', v: SB_WRITE_V } }),
+        redirect: 'follow'
+      }, ms || 20000);
+      const j = await resp.json();
+      if (j && typeof j.status === 'number') {
+        if (j.status === 426) {
+          // Gate de versión: esta pestaña es vieja para escribir
+          try { showToast('⚠️ ' + (JSON.parse(j.body || '{}').message || 'Recarga la página (Ctrl+F5) para seguir guardando.'), 'error', { durationMs: 15000 }); } catch(_) {}
+        }
+        return { status: j.status, ok: j.status >= 200 && j.status < 300, body: j.body || '' };
+      }
+      // El proxy respondió pero sin status → aún no tiene el manejador Supabase
+      // (versión vieja del .gs) o error de autorización. Probar escritura directa.
+      console.warn('[sbWrite] proxy sin soporte Supabase:', j && j.error);
+    } catch (e) {
+      console.warn('[sbWrite] proxy no respondió, probando directo:', e && e.message);
+    }
+  }
+  // Respaldo: escritura DIRECTA con la key publishable. Funciona mientras la RLS
+  // siga abierta (transición); con RLS cerrada devuelve 401/403 y el error sube
+  // al mismo manejo de siempre (cola/reintento/aviso).
+  const headers = { 'apikey': ABS_KEY, 'Authorization': 'Bearer ' + ABS_KEY, 'Content-Type': 'application/json' };
+  if (prefer) headers['Prefer'] = prefer;
+  const r = await _fetchT(ABS_URL + '/' + path, { method: method, headers: headers, body: bodyStr || undefined }, ms || 20000);
+  return { status: r.status, ok: r.ok, body: await r.text() };
+}
+
 async function _saveDataGH_viaProxy(proxyURL, filename, data, label) {
   // Apps Script: usar text/plain para evitar preflight CORS
   const resp = await _fetchT(proxyURL, {
@@ -9042,6 +9084,9 @@ function _cotizGuardarYNueva() {
 function cotizNueva(silent) {
   cotizEditId = null;
   cotizItems = [];
+  // Ya no estoy "en" ninguna cotización: soltar presencia y foto de colaboración
+  try { _presTrack(null); } catch(_) {}
+  try { _cotizSnapshotSet(null, null); } catch(_) {}
   try { cotizQuitarImagen(); } catch(_){ cotizImgBase64 = null; }
   document.getElementById('cotiz-cliente').value = '';
   document.getElementById('cotiz-contacto').value = '';
@@ -9738,7 +9783,14 @@ async function bdLoadHistorico(force) {
   if (_bdHistLoading) return _bdHistCache || [];
   _bdHistLoading = true;
   try {
-    const rows = await absFetch('cotizaciones?select=id,fecha,cliente,contacto,total,fecha_venc,estado,vendedor,realizada_por,fuente&order=fecha.desc.nullslast&limit=5000');
+    // deleted=not.is.true excluye las lápidas (borradas). Si la columna aún no
+    // existe (SQL de migración sin correr), reintenta sin el filtro.
+    let rows;
+    try {
+      rows = await absFetch('cotizaciones?select=id,fecha,cliente,contacto,total,fecha_venc,estado,vendedor,realizada_por,fuente&deleted=not.is.true&order=fecha.desc.nullslast&limit=5000');
+    } catch (_) {
+      rows = await absFetch('cotizaciones?select=id,fecha,cliente,contacto,total,fecha_venc,estado,vendedor,realizada_por,fuente&order=fecha.desc.nullslast&limit=5000');
+    }
     _bdHistCache = (rows || []).map(r => ({
       id: r.id, fecha: r.fecha || '', cliente: r.cliente || '', contacto: r.contacto || '',
       total: +r.total || 0, fechaVenc: r.fecha_venc || '', estado: r.estado || 'Histórico',
@@ -9839,11 +9891,11 @@ async function _cotizReclamarYSubir(record, esNueva) {
       const id = String(record.id);
       let r = null;
       try {
-        r = await _fetchT(UTIL_SB_URL + '/cotizaciones', {
-          method: 'POST',
-          headers: { apikey: UTIL_SB_KEY, Authorization: 'Bearer ' + UTIL_SB_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-          body: JSON.stringify({ id, cliente: record.cliente || null, estado: record.estado || null, fecha: record.fecha || null, fuente: 'Plataforma' })
-        }, 10000);
+        // RLS cerrada (2026-07-13): el reclamo va por el proxy (_sbWriteRaw devuelve
+        // el status REAL de Supabase: 201 = nuestro, 409 = tomado). Misma semántica.
+        r = await _sbWriteRaw('cotizaciones', 'POST',
+          JSON.stringify({ id, cliente: record.cliente || null, estado: record.estado || null, fecha: record.fecha || null, fuente: 'Plataforma' }),
+          'return=minimal', 12000);
       } catch(_) { r = null; }                 // red caída: seguir flujo local normal
       // 201 = reclamado (nuestro). 409 = ya lo tomó otra persona → avisar, NO cambiar.
       if (r && r.status === 409) {
@@ -9855,6 +9907,28 @@ async function _cotizReclamarYSubir(record, esNueva) {
   try { await _cotizSyncSupabase(record); } catch(_) {}
 }
 
+// Identidad estable de cada ítem para la colaboración por ítem: un uid que nace
+// una vez y viaja en el JSON local, el respaldo de GitHub y la fila de Supabase.
+function _cotizItemUid(it) {
+  if (!it.uid) {
+    try { it.uid = crypto.randomUUID(); }
+    catch(_) { it.uid = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+  }
+  return it.uid;
+}
+// Mapeo ítem web → fila Supabase (columnas estructuradas; el registro completo va en cab.extra)
+function _cotizItemRow(record, it, n) {
+  return {
+    cotizacion_id: record.id, uid: _cotizItemUid(it), item: n + 1,
+    descripcion: it.desc || null, udm: it.udm || null,
+    qty: (it.qty != null && it.qty !== '' ? +it.qty : null), v_unit: (it.precio != null ? +it.precio : null),
+    v_total: ((+it.qty || 0) * (+it.precio || 0)) || null, marca: it.marca || null, proveedor: it.proveedor || null,
+    precio_proveedor: (it.precioProveedor != null ? +it.precioProveedor : null),
+    tiempo_entrega: it.tiempoEntrega || null, desviacion_tecnica: it.desvTec || null,
+    foto_grande: (it.fotoGrande ? true : null),
+    updated_by: (currentUser && (currentUser.email || currentUser.name)) || null
+  };
+}
 async function _cotizSyncSupabase(record) {
   if (!record || !record.id) return false;
   try {
@@ -9866,20 +9940,119 @@ async function _cotizSyncSupabase(record) {
       forma_pago: record.formaPago || null, sitio_entrega: record.sitioEntrega || null,
       validez: record.validez || null, observaciones: record.observaciones || null,
       vendedor: record.vendedor || null, realizada_por: record.realizadaPor || null,
-      aprobada_por: record.aprobadaPor || null, fuente: 'Plataforma'
+      aprobada_por: record.aprobadaPor || null, fuente: 'Plataforma',
+      // Columnas nuevas (migración 2026-07-13). extra = registro web COMPLETO (jsonb):
+      // al leer desde Supabase se reconstruye la cotización EXACTA, sin perder campos.
+      factura: record.factura || null, solicitud_id: record.solicitudId || null,
+      motivo_rechazo: record.motivoRechazo || null,
+      fecha_envio: record.fechaEnvio || null,
+      facturada_at: record.facturadaAt || null, adjudicada_at: record.adjudicadaAt || null,
+      deleted: !!record.deleted,
+      created_by: record.createdBy || null, updated_by: record.updatedBy || null,
+      extra: record
     };
-    // Upsert cabecera (merge por PK id)
-    await absFetch('cotizaciones', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(cab) });
-    // Reemplazar ítems: borrar los de esta cotización y reinsertar
-    await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(record.id), { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
-    const items = (record.items || []).map((it, n) => ({
-      cotizacion_id: record.id, item: n + 1, descripcion: it.desc || null, udm: it.udm || null,
-      qty: (it.qty != null && it.qty !== '' ? +it.qty : null), v_unit: (it.precio != null ? +it.precio : null),
-      v_total: ((+it.qty || 0) * (+it.precio || 0)) || null, marca: it.marca || null, proveedor: it.proveedor || null,
-      precio_proveedor: (it.precioProveedor != null ? +it.precioProveedor : null),
-      tiempo_entrega: it.tiempoEntrega || null, desviacion_tecnica: it.desvTec || null
-    }));
-    if (items.length) await absFetch('cotizacion_items', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(items) });
+    // Asegurar uid de cada ítem ANTES de armar extra/filas (queda también en el JSON local)
+    (record.items || []).forEach(it => _cotizItemUid(it));
+    let _legacy = false;
+    // Upsert cabecera (merge por PK id). Si la tabla aún no tiene las columnas nuevas
+    // (SQL de migración sin correr), reintenta con el mapeo VIEJO para no perder el espejo.
+    try {
+      await absFetch('cotizaciones', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(cab) });
+    } catch (e) {
+      _legacy = true;
+      const cabViejo = { id: cab.id, fecha: cab.fecha, fecha_venc: cab.fecha_venc, cliente: cab.cliente, contacto: cab.contacto, correo: cab.correo, estado: cab.estado, subtotal: cab.subtotal, iva: cab.iva, total: cab.total, forma_pago: cab.forma_pago, sitio_entrega: cab.sitio_entrega, validez: cab.validez, observaciones: cab.observaciones, vendedor: cab.vendedor, realizada_por: cab.realizada_por, aprobada_por: cab.aprobada_por, fuente: 'Plataforma' };
+      await absFetch('cotizaciones', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(cabViejo) });
+    }
+    const items = (record.items || []).map((it, n) => _cotizItemRow(record, it, n));
+    if (_legacy) {
+      // Tabla sin columnas nuevas: reemplazo completo como siempre (formato viejo)
+      await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(record.id), { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+      const viejos = items.map(r => { const { uid, foto_grande, updated_by, ...v } = r; return v; });
+      if (viejos.length) await absFetch('cotizacion_items', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(viejos) });
+    } else if (_cotizSnap && _cotizSnap.id === record.id && Object.keys(_cotizSnap.porUid).length) {
+      // ── COLABORACIÓN POR ÍTEM (2026-07-13) ── La cotización se abrió con "foto"
+      // de sus ítems en el servidor. Solo se suben los ítems que TÚ cambiaste;
+      // los que cambió OTRA persona (en ítems distintos) se respetan y se adoptan
+      // al local. Choque en el MISMO ítem → gana el servidor + aviso (política
+      // "rechazo con aviso", igual que el consecutivo).
+      const enc = encodeURIComponent(record.id);
+      const fresh = (await absFetch('cotizacion_items?cotizacion_id=eq.' + enc + '&limit=2000')) || [];
+      const freshByUid = {}; fresh.forEach(rw => { if (rw.uid) freshByUid[rw.uid] = rw; });
+      const subir = [], borrarUids = [], conflictos = [];
+      let adoptados = 0;
+      const localByUid = {}; items.forEach(r => { localByUid[r.uid] = r; });
+      for (const row of items) {
+        const snap = _cotizSnap.porUid[row.uid];
+        const srv  = freshByUid[row.uid];
+        const miCanon  = _cotizRowCanon(row);
+        const dirty      = !snap || snap.j !== miCanon;          // yo lo cambié (o es nuevo)
+        const srvCambio  = snap && srv && _cotizRowCanon(srv) !== snap.j; // otro lo cambió
+        if (!dirty) continue;                                    // no lo toqué → respetar servidor
+        if (srvCambio && _cotizRowCanon(srv) !== miCanon) { conflictos.push({ row: row, srv: srv }); continue; }
+        subir.push(row);
+      }
+      // Ítems que borré localmente: borrar en servidor SOLO si nadie los cambió después
+      for (const uid in _cotizSnap.porUid) {
+        if (localByUid[uid]) continue;
+        const srv = freshByUid[uid];
+        if (srv && _cotizRowCanon(srv) !== _cotizSnap.porUid[uid].j) { conflictos.push({ row: null, srv: srv }); continue; }
+        if (srv) borrarUids.push(uid);
+      }
+      if (subir.length) await absFetch('cotizacion_items?on_conflict=cotizacion_id,uid', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(subir) });
+      if (borrarUids.length) await absFetch('cotizacion_items?cotizacion_id=eq.' + enc + '&uid=in.(' + borrarUids.map(u => '"' + u + '"').join(',') + ')', { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+      // ADOPTAR al registro local: versión del servidor para (a) ítems que no toqué y
+      // otro cambió, (b) ítems en conflicto (ganó el servidor), (c) ítems nuevos de otros.
+      const rowAWeb = rw => ({ uid: rw.uid, desc: rw.descripcion || '', udm: rw.udm || '', qty: (rw.qty != null ? +rw.qty : 0), precio: (rw.v_unit != null ? +rw.v_unit : 0), marca: rw.marca || '', proveedor: rw.proveedor || '', precioProveedor: (rw.precio_proveedor != null ? +rw.precio_proveedor : null), tiempoEntrega: rw.tiempo_entrega || '', desvTec: rw.desviacion_tecnica || '', fotoGrande: !!rw.foto_grande });
+      const conflictUids = new Set(conflictos.filter(c => c.srv).map(c => c.srv.uid));
+      let itemsMerge = (record.items || []).map(it => {
+        const srv = freshByUid[it.uid];
+        if (!srv) return it;
+        const snap = _cotizSnap.porUid[it.uid];
+        const dirty = !snap || snap.j !== _cotizRowCanon(_cotizItemRow(record, it, 0));
+        if (conflictUids.has(it.uid) || (!dirty && _cotizRowCanon(srv) !== (snap && snap.j))) { adoptados++; return Object.assign({}, it, rowAWeb(srv)); }
+        return it;
+      });
+      // ítems agregados por otros (en servidor, no locales, no borrados por mí)
+      let _maxItemId = 0; itemsMerge.forEach(it => { if (+it.id > _maxItemId) _maxItemId = +it.id; });
+      fresh.forEach(rw => {
+        if (rw.uid && !localByUid[rw.uid] && !(rw.uid in _cotizSnap.porUid)) { itemsMerge.push(Object.assign({ id: ++_maxItemId }, rowAWeb(rw))); adoptados++; }
+      });
+      if (adoptados > 0 || conflictos.length) {
+        record.items = itemsMerge;
+        // Re-subir la cabecera para que `extra` refleje el estado FINAL (post-merge)
+        try { await absFetch('cotizaciones', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ id: record.id, extra: record }) }); } catch(_) {}
+        try {
+          const bd2 = getData('bd_cotizaciones', []);
+          const i2 = bd2.findIndex(x => x.id === record.id);
+          if (i2 >= 0) { bd2[i2].items = itemsMerge; saveData('bd_cotizaciones', bd2); }
+          if (typeof cotizEditId !== 'undefined' && cotizEditId === record.id && Array.isArray(cotizItems)) {
+            cotizItems.length = 0; itemsMerge.forEach(it => cotizItems.push(it));
+            try { cotizRender(); } catch(_) {}
+          }
+        } catch(_) {}
+        if (conflictos.length) {
+          const desc = conflictos.map(c => (c.srv && c.srv.descripcion || c.row && c.row.descripcion || '').slice(0, 40)).filter(Boolean).join(' · ');
+          showToast('⚠️ ' + conflictos.length + ' ítem(s) también los modificó otra persona y se conservó SU versión (' + desc + '). Revisa la tabla y vuelve a aplicar tu cambio si hace falta.', 'error', { durationMs: 15000 });
+        } else if (adoptados > 0) {
+          showToast('👥 Se integraron cambios de otra persona en ' + adoptados + ' ítem(s) de esta cotización.', 'info', { durationMs: 8000 });
+        }
+      }
+      // Refrescar la "foto" al estado recién guardado
+      try { _cotizSnapshotSet(record.id, (await absFetch('cotizacion_items?cotizacion_id=eq.' + enc + '&limit=2000')) || []); } catch(_) {}
+    } else {
+      // Sin foto (cotización nueva, o abierta del flujo de respaldo): UPSERT por
+      // (cotizacion_id, uid) + limpieza de sobrantes. Mismo resultado que el
+      // reemplazo de antes, pero conservando el updated_at de filas intactas.
+      if (items.length) {
+        await absFetch('cotizacion_items?on_conflict=cotizacion_id,uid', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(items) });
+        const uids = items.map(r => '"' + r.uid + '"').join(',');
+        // filas viejas sin uid (formato anterior) + ítems borrados en esta edición
+        await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(record.id) + '&uid=is.null', { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+        await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(record.id) + '&uid=not.in.(' + uids + ')', { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+      } else {
+        await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(record.id), { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+      }
+    }
     // Refrescar caché para que la BD lo muestre al instante
     if (Array.isArray(_bdHistCache)) {
       const mapped = { id: record.id, fecha: record.fecha || '', cliente: record.cliente || '', contacto: record.contacto || '', total: +record.total || 0, fechaVenc: record.fechaVenc || '', estado: record.estado || '', vendedor: record.vendedor || '', realizadaPor: record.realizadaPor || '', _hist: true };
@@ -9894,11 +10067,18 @@ async function _cotizSyncSupabase(record) {
   }
 }
 
-// Borrado en Supabase (cascade quita los ítems). No bloquea el borrado local.
+// Borrado en Supabase: LÁPIDA (deleted=true) en vez de borrar la fila — así el
+// registro no puede "revivir" como histórico sin botón de borrar (caso LM1790-2..-5)
+// y el Realtime avisa del borrado a los demás equipos. Fallback: si la columna
+// deleted aún no existe (SQL de migración sin correr), borra físico como antes.
 async function _cotizDeleteSupabase(id) {
   if (!id) return;
   try {
-    await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id), { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+    try {
+      await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id), { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ deleted: true, updated_by: (currentUser && (currentUser.email || currentUser.name)) || null }) });
+    } catch (_) {
+      await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id), { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+    }
     if (Array.isArray(_bdHistCache)) {
       const k = String(id).toUpperCase();
       _bdHistCache = _bdHistCache.filter(h => String(h.id).toUpperCase() !== k);
@@ -10111,46 +10291,243 @@ function _bdLoadIntoEditor(c, msg, adopted) {
   cotizPopulateSelects(c.vendedor||'', c.realizadaPor||'', c.aprobadaPor||'');
   cotizRender();
   cotizShowTab('nueva');
+  // Presencia: avisar al equipo que estoy en esta cotización (👀)
+  try { _presTrack(c.id); } catch(_) {}
   showToast(msg, 'success');
 }
 
-async function bdCargar(id) {
-  // Traer la ÚLTIMA versión del servidor ANTES de abrir para editar. Así se edita
-  // siempre sobre lo más reciente (evita pisar el cambio de un compañero y el
-  // "flip-flop" de guardados cruzados con datos viejos). Si no hay red, sigue con lo local.
-  // FIX LENTITUD AL ABRIR: la verificación tiene tope de 2,5 s. Con buen internet
-  // no cambia nada; con internet flojo se abre YA con la copia local y se avisa,
-  // en vez de quedarse colgada esperando la descarga (~medio mega) sin límite.
-  let _verificado = true;
+// ─── SNAPSHOT POR ÍTEM (colaboración, 2026-07-13) ───────────────────────────
+// Al abrir una cotización desde Supabase se toma una "foto" de sus filas de ítems.
+// Al guardar, se comparan los ítems locales contra esta foto: solo lo que TÚ
+// cambiaste se sube; lo que cambió OTRA persona en ítems distintos se respeta.
+let _cotizSnap = null; // { id, porUid: { uid: { updated_at, j } } }
+function _cotizRowCanon(rw) {
+  // Huella del CONTENIDO del ítem (excluye posición, autor y timestamps)
+  return JSON.stringify({
+    d: rw.descripcion || null, u: rw.udm || null, q: (rw.qty != null ? +rw.qty : null),
+    p: (rw.v_unit != null ? +rw.v_unit : null), m: rw.marca || null, pr: rw.proveedor || null,
+    pp: (rw.precio_proveedor != null ? +rw.precio_proveedor : null),
+    te: rw.tiempo_entrega || null, dt: rw.desviacion_tecnica || null,
+    fg: (rw.foto_grande ? true : null)
+  });
+}
+function _cotizSnapshotSet(id, rows) {
+  if (!rows) { _cotizSnap = null; return; }
+  const porUid = {};
+  rows.forEach(rw => { if (rw.uid) porUid[rw.uid] = { updated_at: rw.updated_at || null, j: _cotizRowCanon(rw) }; });
+  _cotizSnap = { id: id, porUid: porUid };
+}
+
+// ═══ TIEMPO REAL + PRESENCIA (2026-07-13) ═══════════════════════════════════
+// Supabase Realtime sobre las tablas cotizaciones/cotizacion_items:
+//  • La lista (BD) se refresca sola ~1s después de que otro equipo guarda.
+//  • Si dos personas tienen ABIERTA la misma cotización: presencia "👀 X está
+//    en esta cotización" + los ítems que la otra persona guarda aparecen EN VIVO
+//    en tu tabla (solo los que tú NO has tocado — jamás pisa lo que escribes).
+// 100% aditivo: si la librería no carga o el websocket cae, todo sigue como
+// antes (poll + botón 🔄). No toca rutas de guardado.
+let _rtClient = null, _rtBooted = false, _presChan = null, _presCotizId = null;
+let _rtRenderTimer = null, _rtAvisado = {};
+function _rtMe() { return (window.currentUser && (currentUser.email || currentUser.name)) || ''; }
+function _rtLoadLib() {
+  return new Promise((res, rej) => {
+    if (window.supabase && window.supabase.createClient) return res();
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+    s.onload = () => res(); s.onerror = () => rej(new Error('no se pudo cargar supabase-js'));
+    document.head.appendChild(s);
+  });
+}
+async function _rtInit() {
+  if (_rtBooted) return;
+  _rtBooted = true;
   try {
-    const tgt = POLL_TARGETS.find(t => t.file === 'data/cotizaciones.json');
-    if (tgt && navigator.onLine) {
-      showToast('Abriendo ' + id + '…', 'info');
-      const timeout = new Promise(res => setTimeout(() => res('__timeout__'), 2500));
-      const r = await Promise.race([_pollOne(tgt), timeout]);
-      if (r === '__timeout__') _verificado = false;
-    }
-  } catch(_) { _verificado = false; }
-  const bd = getData('bd_cotizaciones', []);
-  const c = bd.find(x => x.id === id);
-  if (!c) {
-    // Antes fallaba en silencio ("no abre"). Puede pasar si acaba de renumerarse.
-    showToast('⚠️ No se encontró la cotización ' + id + ' — pudo cambiar de número hace un momento. Refresca la lista (Base de Datos) y búscala de nuevo.', 'error', { durationMs: 10000 });
-    try { bdRender(); } catch(_) {}
-    return;
+    await _rtLoadLib();
+    _rtClient = window.supabase.createClient('https://juprjevxkcitqpsnemto.supabase.co', ABS_KEY, { realtime: { params: { eventsPerSecond: 5 } } });
+    _rtClient.channel('cotiz-db')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cotizaciones' }, _rtOnCotiz)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cotizacion_items' }, _rtOnItem)
+      .subscribe();
+    _presChan = _rtClient.channel('cotiz-presencia', { config: { presence: { key: _rtMe() || ('anon' + Math.random().toString(36).slice(2, 8)) } } });
+    _presChan.on('presence', { event: 'sync' }, _presPintar).subscribe(st => {
+      if (st === 'SUBSCRIBED' && _presCotizId) _presChan.track({ u: _rtMe(), c: _presCotizId });
+    });
+    console.log('[realtime] conectado');
+  } catch (e) {
+    console.warn('[realtime] no disponible, sigue el poll de siempre:', e && e.message);
   }
-  if (!_verificado) {
-    showToast('⚠️ Internet lento: se abrió con la copia de este equipo sin verificar la última versión del servidor. Revisa antes de guardar.', 'info', { durationMs: 8000 });
+}
+// Lista BD: refrescar el caché del histórico y repintar (con calma, máx 1 vez/seg)
+function _rtOnCotiz(payload) {
+  try {
+    const rw = payload.new || payload.old || {};
+    if (!rw.id) return;
+    if ((rw.updated_by || '') === _rtMe() && _rtMe()) return;   // mis propios cambios ya están pintados
+    if (Array.isArray(_bdHistCache)) {
+      const k = String(rw.id).toUpperCase();
+      const borrada = payload.eventType === 'DELETE' || rw.deleted === true;
+      const idx = _bdHistCache.findIndex(h => String(h.id).toUpperCase() === k);
+      if (borrada) { if (idx >= 0) _bdHistCache.splice(idx, 1); }
+      else {
+        const mapped = { id: rw.id, fecha: rw.fecha || '', cliente: rw.cliente || '', contacto: rw.contacto || '', total: +rw.total || 0, fechaVenc: rw.fecha_venc || '', estado: rw.estado || '', vendedor: rw.vendedor || '', realizadaPor: rw.realizada_por || '', _hist: true };
+        if (idx >= 0) _bdHistCache[idx] = mapped; else _bdHistCache.push(mapped);
+      }
+    }
+    // Aviso si es la cotización que tengo ABIERTA (cambio de cabecera de otra persona)
+    if (typeof cotizEditId !== 'undefined' && cotizEditId && String(cotizEditId) === String(rw.id)) {
+      const quien = String(rw.updated_by || 'otra persona').split('@')[0];
+      const kAviso = 'cab_' + rw.id;
+      if (!_rtAvisado[kAviso] || Date.now() - _rtAvisado[kAviso] > 60000) {
+        _rtAvisado[kAviso] = Date.now();
+        showToast('👀 ' + quien + ' guardó cambios en la cotización ' + rw.id + ' que tienes abierta.', 'info', { durationMs: 8000 });
+      }
+    }
+    clearTimeout(_rtRenderTimer);
+    _rtRenderTimer = setTimeout(() => { try { bdRender(); } catch(_) {} }, 900);
+  } catch(_) {}
+}
+// Ítem guardado por otra persona en la cotización que tengo abierta → pintarlo EN VIVO
+// (solo si YO no he tocado ese ítem; jamás pisa lo que estoy escribiendo)
+function _rtOnItem(payload) {
+  try {
+    const rw = payload.new || payload.old || {};
+    if (typeof cotizEditId === 'undefined' || !cotizEditId || String(rw.cotizacion_id || '') !== String(cotizEditId)) return;
+    if (!_cotizSnap || _cotizSnap.id !== cotizEditId || !rw.uid) return;
+    if ((rw.updated_by || '') === _rtMe() && _rtMe()) return;
+    const idx = cotizItems.findIndex(it => it && it.uid === rw.uid);
+    const borrado = payload.eventType === 'DELETE';
+    if (idx >= 0) {
+      // ¿Lo tengo tocado localmente? entonces NO pisar (se resuelve al guardar)
+      const snap = _cotizSnap.porUid[rw.uid];
+      const miCanon = _cotizRowCanon(_cotizItemRow({ id: cotizEditId }, cotizItems[idx], 0));
+      const dirty = !snap || snap.j !== miCanon;
+      if (dirty) return;
+      if (borrado) { cotizItems.splice(idx, 1); delete _cotizSnap.porUid[rw.uid]; }
+      else {
+        Object.assign(cotizItems[idx], { desc: rw.descripcion || '', udm: rw.udm || '', qty: (rw.qty != null ? +rw.qty : 0), precio: (rw.v_unit != null ? +rw.v_unit : 0), marca: rw.marca || '', proveedor: rw.proveedor || '', precioProveedor: (rw.precio_proveedor != null ? +rw.precio_proveedor : null), tiempoEntrega: rw.tiempo_entrega || '', desvTec: rw.desviacion_tecnica || '', fotoGrande: !!rw.foto_grande });
+        _cotizSnap.porUid[rw.uid] = { updated_at: rw.updated_at || null, j: _cotizRowCanon(rw) };
+      }
+    } else if (!borrado) {
+      if (rw.uid in _cotizSnap.porUid) return;  // yo lo borré localmente: se resuelve al guardar
+      let maxId = 0; cotizItems.forEach(it => { if (+it.id > maxId) maxId = +it.id; });
+      cotizItems.push({ id: maxId + 1, uid: rw.uid, desc: rw.descripcion || '', udm: rw.udm || '', qty: (rw.qty != null ? +rw.qty : 0), precio: (rw.v_unit != null ? +rw.v_unit : 0), marca: rw.marca || '', proveedor: rw.proveedor || '', precioProveedor: (rw.precio_proveedor != null ? +rw.precio_proveedor : null), tiempoEntrega: rw.tiempo_entrega || '', desvTec: rw.desviacion_tecnica || '', fotoGrande: !!rw.foto_grande });
+      _cotizSnap.porUid[rw.uid] = { updated_at: rw.updated_at || null, j: _cotizRowCanon(rw) };
+    }
+    const quien = String(rw.updated_by || 'otra persona').split('@')[0];
+    const kAviso = 'item_' + cotizEditId;
+    if (!_rtAvisado[kAviso] || Date.now() - _rtAvisado[kAviso] > 60000) {
+      _rtAvisado[kAviso] = Date.now();
+      showToast('👥 ' + quien + ' está trabajando ítems de esta cotización — se actualizan en vivo.', 'info', { durationMs: 6000 });
+    }
+    clearTimeout(_rtRenderTimer);
+    _rtRenderTimer = setTimeout(() => { try { cotizRender(); } catch(_) {} }, 400);
+  } catch(_) {}
+}
+// ── Presencia: "👀 X está en esta cotización" ──
+function _presTrack(cotizId) {
+  _presCotizId = cotizId || null;
+  try {
+    if (!_presChan) return;
+    if (_presCotizId) _presChan.track({ u: _rtMe(), c: _presCotizId });
+    else { _presChan.untrack(); _presPintar(); }
+  } catch(_) {}
+}
+function _presPintar() {
+  try {
+    let el = document.getElementById('rt-presencia');
+    const otros = [];
+    if (_presChan && _presCotizId) {
+      const st = _presChan.presenceState() || {};
+      Object.keys(st).forEach(k => (st[k] || []).forEach(m => {
+        if (m && m.c === _presCotizId && m.u && m.u !== _rtMe()) otros.push(String(m.u).split('@')[0]);
+      }));
+    }
+    if (!otros.length) { if (el) el.remove(); return; }
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'rt-presencia';
+      el.style.cssText = 'position:fixed;bottom:64px;right:16px;z-index:9998;background:#0b2b46;border:1px solid var(--gold,#d4af37);color:#fff;padding:8px 14px;border-radius:20px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.4);';
+      document.body.appendChild(el);
+    }
+    el.textContent = '👀 ' + [...new Set(otros)].join(', ') + ' está' + (otros.length > 1 ? 'n' : '') + ' en esta cotización';
+  } catch(_) {}
+}
+// Arranque perezoso: espera al login y conecta (si falla, no pasa nada — queda el poll)
+(function _rtBoot() {
+  try {
+    if (_rtBooted) return;
+    if (typeof window.currentUser === 'undefined' || !window.currentUser || !navigator.onLine) { setTimeout(_rtBoot, 5000); return; }
+    _rtInit();
+  } catch(_) { setTimeout(_rtBoot, 10000); }
+})();
+
+async function bdCargar(id) {
+  // SUPABASE MANDA (2026-07-13): al abrir se trae PRIMERO la fila de Supabase
+  // (1 registro con el web-record completo en `extra`, ~300ms) — la fuente más
+  // fresca — con tope de 4s. El flujo anterior (verificar el JSON completo de
+  // GitHub con tope 2,5s) queda de RESPALDO si Supabase no responde o la fila
+  // todavía no tiene `extra` (guardada por código anterior a la migración).
+  let c = null, _deSupabase = false;
+  try {
+    if (navigator.onLine) {
+      showToast('Abriendo ' + id + '…', 'info');
+      const timeout = new Promise(res => setTimeout(() => res('__timeout__'), 4000));
+      const r = await Promise.race([(async () => {
+        const cab = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id) + '&select=id,extra,deleted,updated_at&limit=1')) || [];
+        const h = cab[0];
+        if (!h || !h.extra || typeof h.extra !== 'object' || !h.extra.id) return null;
+        if (h.deleted) return '__deleted__';
+        const rows = (await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(id) + '&order=item.asc&limit=2000')) || [];
+        return { rec: h.extra, rows: rows };
+      })(), timeout]);
+      if (r === '__deleted__') {
+        showToast('⚠️ La cotización ' + id + ' fue borrada por otro miembro del equipo.', 'error', { durationMs: 10000 });
+        try { bdRender(); } catch(_) {}
+        return;
+      }
+      if (r && r !== '__timeout__' && r && r.rec) {
+        c = r.rec; _deSupabase = true;
+        // Si la copia LOCAL es más nueva (cambio de este equipo aún sin sincronizar), gana la local
+        const loc = (getData('bd_cotizaciones', []) || []).find(x => x.id === id);
+        if (loc && loc.updatedAt && c.updatedAt && new Date(loc.updatedAt) > new Date(c.updatedAt)) c = loc;
+        _cotizSnapshotSet(id, r.rows);
+      }
+    }
+  } catch(_) { c = null; }
+  if (!c) {
+    // RESPALDO: flujo anterior — verificar el JSON de GitHub (tope 2,5s) y abrir local
+    _cotizSnapshotSet(id, null);
+    let _verificado = true;
+    try {
+      const tgt = POLL_TARGETS.find(t => t.file === 'data/cotizaciones.json');
+      if (tgt && navigator.onLine) {
+        const timeout = new Promise(res => setTimeout(() => res('__timeout__'), 2500));
+        const r = await Promise.race([_pollOne(tgt), timeout]);
+        if (r === '__timeout__') _verificado = false;
+      }
+    } catch(_) { _verificado = false; }
+    const bd = getData('bd_cotizaciones', []);
+    c = bd.find(x => x.id === id);
+    if (!c) {
+      // Antes fallaba en silencio ("no abre"). Puede pasar si acaba de renumerarse.
+      showToast('⚠️ No se encontró la cotización ' + id + ' — pudo cambiar de número hace un momento. Refresca la lista (Base de Datos) y búscala de nuevo.', 'error', { durationMs: 10000 });
+      try { bdRender(); } catch(_) {}
+      return;
+    }
+    if (!_verificado) {
+      showToast('⚠️ Internet lento: se abrió con la copia de este equipo sin verificar la última versión del servidor. Revisa antes de guardar.', 'info', { durationMs: 8000 });
+    }
   }
   // Aviso anti-pisada: si alguien MÁS la editó hace poco, recordar refrescar primero.
+  // (Con la copia fresca de Supabase el riesgo baja, pero el aviso ayuda a coordinarse.)
   const me = currentUser ? (currentUser.email || currentUser.name || '') : '';
-  if (c.updatedBy && c.updatedBy !== me && c.updatedBy !== 'auto' && c.updatedAt) {
+  if (!_deSupabase && c.updatedBy && c.updatedBy !== me && c.updatedBy !== 'auto' && c.updatedAt) {
     const ageMin = Math.round((Date.now() - new Date(c.updatedAt).getTime()) / 60000);
     if (ageMin >= 0 && ageMin <= 10) {
       if (!confirm('⚠️ ' + String(c.updatedBy).split('@')[0] + ' editó esta cotización hace ' + Math.max(1, ageMin) + ' min.\n\nDale Ctrl+F5 primero para tener la última versión y no pisar su cambio.\n\n¿Abrir de todos modos?')) return;
     }
   }
-  _bdLoadIntoEditor(c, 'Cotización ' + id + ' cargada para editar');
+  _bdLoadIntoEditor(c, 'Cotización ' + id + ' cargada para editar' + (_deSupabase ? ' ⚡ (última versión del servidor)' : ''));
 }
 
 // Editar una cotización del LIBRO (Supabase): se trae completa, se carga en el editor
@@ -14331,6 +14708,18 @@ let abs_loaded = false, abs_mov_tipo = null, abs_mov_producto = null;
 let abs_conteo_activo = null, abs_rotacion = [];
 
 async function absFetch(endpoint, opts={}) {
+  // RLS cerrada (2026-07-13): las ESCRITURAS ya no van directas — pasan por el
+  // energy-proxy con la key secreta (_sbWriteRaw). Las lecturas siguen directas
+  // con la key publishable (la RLS permite SELECT). Ningún llamador cambia:
+  // misma firma, mismos errores, mismo retorno.
+  const _m = String(opts.method || 'GET').toUpperCase();
+  if (_m === 'POST' || _m === 'PATCH' || _m === 'DELETE' || _m === 'PUT') {
+    const _prefer = (opts.headers || {})['Prefer'] || (opts.headers || {})['prefer'] || '';
+    const w = await _sbWriteRaw(endpoint, _m, (typeof opts.body === 'string' ? opts.body : (opts.body ? JSON.stringify(opts.body) : null)), _prefer);
+    if (!w.ok) throw new Error(`Supabase ${w.status}: ${w.body}`);
+    if (w.status === 204) return null;
+    return w.body ? JSON.parse(w.body) : null;
+  }
   const res = await fetch(`${ABS_URL}/${endpoint}`, {
     ...opts,
     headers: { 'apikey':ABS_KEY, 'Authorization':`Bearer ${ABS_KEY}`, 'Content-Type':'application/json', ...(opts.headers||{}) }
