@@ -3315,5 +3315,52 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-10T21:54:51.105Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1784044650417",
+    "num": "LM1805",
+    "cliente": "SAR ENERGY",
+    "desc": "Cotización LM1805 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-14",
+    "valor": 17125290,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-07-14",
+        "n": "TALLECTRO"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1805",
+    "createdAt": "2026-07-14T15:57:30.418Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-14T15:57:30.418Z",
+    "updatedBy": "andrea"
   }
 ]
