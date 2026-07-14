@@ -14181,7 +14181,7 @@
     "cliente": "SKID EXPERTS",
     "contacto": "SANDY",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 4053957,
@@ -14195,6 +14195,7 @@
     "realizadaPor": "Alexandra",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
+    "motivoRechazo": "",
     "items": [
       {
         "id": 1,
@@ -14205,7 +14206,8 @@
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": "SCH40 RF ",
         "marca": "XF",
-        "proveedor": "CODIFER"
+        "proveedor": "CODIFER",
+        "uid": "1ce6290d-ce2f-4b61-a616-d202b390e63f"
       },
       {
         "id": 2,
@@ -14217,7 +14219,8 @@
         "desvTec": "SE OFERTA SCH 40",
         "marca": "XF",
         "proveedor": "CODIFER",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "4582f6e7-6392-4fc5-80b9-5f38dc76dacf"
       },
       {
         "id": 3,
@@ -14228,7 +14231,8 @@
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": "",
         "marca": "BOTHWELL",
-        "proveedor": "CODIFER"
+        "proveedor": "CODIFER",
+        "uid": "c694afa5-8dec-4856-b1db-44c6c46ee39f"
       },
       {
         "id": 4,
@@ -14239,7 +14243,8 @@
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": " A-216 RF  X 150",
         "marca": "JAGUAR",
-        "proveedor": ""
+        "proveedor": "",
+        "uid": "fa5811d6-7333-4aa9-a8cf-3fc582a5c0b7"
       },
       {
         "id": 5,
@@ -14250,7 +14255,8 @@
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": " A-216 RF  X 150",
         "marca": "JAGUAR",
-        "proveedor": ""
+        "proveedor": "",
+        "uid": "f5ec9418-6131-43e2-8404-1b53b44ca8fa"
       },
       {
         "id": 6,
@@ -14262,7 +14268,8 @@
         "desvTec": "",
         "marca": "XF",
         "proveedor": "CODIFER",
-        "precioProveedor": 6820
+        "precioProveedor": 6820,
+        "uid": "2fd5428d-d5af-4f66-8c4b-b6bd54ece3c1"
       },
       {
         "id": 7,
@@ -14273,7 +14280,8 @@
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": "INOX SCH40",
         "marca": "XF",
-        "proveedor": ""
+        "proveedor": "",
+        "uid": "e6e1043c-ce8b-4692-9a74-a1ed47396095"
       },
       {
         "id": 8,
@@ -14284,7 +14292,8 @@
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": "",
         "marca": "",
-        "proveedor": ""
+        "proveedor": "",
+        "uid": "9efbf5fb-7ffd-4608-96c9-515ea534dc7a"
       },
       {
         "id": 9,
@@ -14295,7 +14304,8 @@
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": "",
         "marca": "",
-        "proveedor": ""
+        "proveedor": "",
+        "uid": "52fc275b-f0a8-407b-97ef-83d14052ad10"
       },
       {
         "id": 10,
@@ -14306,7 +14316,8 @@
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": "",
         "marca": "XF",
-        "proveedor": ""
+        "proveedor": "",
+        "uid": "03df0606-ed3a-4846-a3f6-846b29c19f57"
       },
       {
         "id": 11,
@@ -14317,7 +14328,8 @@
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": "",
         "marca": "",
-        "proveedor": ""
+        "proveedor": "",
+        "uid": "3d763555-1904-47ca-985a-7f2e34373531"
       },
       {
         "id": 12,
@@ -14328,7 +14340,8 @@
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": "",
         "marca": "XF",
-        "proveedor": ""
+        "proveedor": "",
+        "uid": "86e4b0bd-277c-482b-9a74-fa501c665d01"
       },
       {
         "id": 13,
@@ -14339,7 +14352,8 @@
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": "CONECTOR RECTO  DE 1/2\" MNPT X 1/2 OD ",
         "marca": "TYLOK",
-        "proveedor": ""
+        "proveedor": "",
+        "uid": "4002776e-4c0d-4674-891a-151170f6501e"
       },
       {
         "id": 15,
@@ -14351,15 +14365,16 @@
         "desvTec": "FABRICACION NACIONAL",
         "marca": "",
         "proveedor": "TECINCOL",
-        "precioProveedor": 279000
+        "precioProveedor": 279000,
+        "uid": "c9ed5b0f-1df4-4b27-8862-c7bec367970f"
       }
     ],
-    "fechaGuardado": "2026-07-07T18:51:19.672Z",
+    "fechaGuardado": "2026-07-14T16:14:41.253Z",
+    "fechaEnvio": "2026-07-14T16:14:41.253Z",
     "createdAt": "2026-07-07T18:41:32.069Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-12T00:36:41.323Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-07-12T00:36:41.323Z"
+    "updatedAt": "2026-07-14T16:14:41.253Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1766",
