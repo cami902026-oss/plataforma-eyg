@@ -8959,7 +8959,8 @@
     "cliente": "SKID EXPERT",
     "contacto": " JENNY ARIAS",
     "correo": "",
-    "estado": "Adjudicada",
+    "estado": "Enviada",
+    "factura": "",
     "iva": 19,
     "subtotal": 1618800,
     "ivaVal": 307572,
@@ -8972,6 +8973,7 @@
     "realizadaPor": "Sheila Baron",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
+    "motivoRechazo": "",
     "items": [
       {
         "id": 1,
@@ -8983,7 +8985,8 @@
         "desvTec": "",
         "marca": "",
         "proveedor": "",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "819107cb-2005-4e92-bec1-f7c1dde87470"
       },
       {
         "id": 2,
@@ -8995,7 +8998,8 @@
         "desvTec": "SE OFERTA SCH 80 ",
         "marca": "XF",
         "proveedor": "BODEGA",
-        "precioProveedor": 28446
+        "precioProveedor": 28446,
+        "uid": "42cd58d9-d350-408d-92ff-7da46077bdff"
       },
       {
         "id": 3,
@@ -9007,7 +9011,8 @@
         "desvTec": "",
         "marca": "BOTHWELL",
         "proveedor": "CODIFER",
-        "precioProveedor": 30698
+        "precioProveedor": 30698,
+        "uid": "57f4a2a2-648c-4c7d-aa73-1474bdfb0cb6"
       },
       {
         "id": 4,
@@ -9019,7 +9024,8 @@
         "desvTec": "",
         "marca": "BOTHWELL",
         "proveedor": "CODIFER",
-        "precioProveedor": 29715
+        "precioProveedor": 29715,
+        "uid": "1922db92-7d53-43a5-94aa-32a83e322052"
       },
       {
         "id": 5,
@@ -9031,7 +9037,8 @@
         "desvTec": "SE OFERTA CONECTOR RECTO DE 1/2 MNPT X 1/2 OD ",
         "marca": "TYLOC",
         "proveedor": "",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "13609349-75e7-43ca-99c4-0063429121c4"
       },
       {
         "id": 6,
@@ -9043,7 +9050,8 @@
         "desvTec": "SE OFERTA SCH 80 ",
         "marca": "XF",
         "proveedor": "BODEGA",
-        "precioProveedor": 9500
+        "precioProveedor": 9500,
+        "uid": "3e9263ee-7097-4e59-b7c8-b0b6c32056d7"
       },
       {
         "id": 7,
@@ -9055,7 +9063,8 @@
         "desvTec": "SE OFERTA SCH 80 ",
         "marca": "XF",
         "proveedor": "BODEGA",
-        "precioProveedor": 4641
+        "precioProveedor": 4641,
+        "uid": "881d0753-7c92-4936-8f18-7b8651429af0"
       },
       {
         "id": 8,
@@ -9067,7 +9076,8 @@
         "desvTec": "",
         "marca": "XF",
         "proveedor": "BODEGA",
-        "precioProveedor": 8954
+        "precioProveedor": 8954,
+        "uid": "0eb0c8b4-f53c-42f8-b881-a0f9e3740671"
       },
       {
         "id": 9,
@@ -9079,7 +9089,8 @@
         "desvTec": "",
         "marca": "BOTHWELL",
         "proveedor": "CODIFER",
-        "precioProveedor": 58523
+        "precioProveedor": 58523,
+        "uid": "71e2378e-ab86-4790-9bb9-c06f351de5f8"
       },
       {
         "id": 10,
@@ -9091,7 +9102,8 @@
         "desvTec": "SE OFERTA SCH 80 ",
         "marca": "XF",
         "proveedor": "BODEGA",
-        "precioProveedor": 26317
+        "precioProveedor": 26317,
+        "uid": "e4823d9c-5836-4160-9e16-d68270560335"
       },
       {
         "id": 11,
@@ -9103,14 +9115,16 @@
         "desvTec": "",
         "marca": "XF",
         "proveedor": "BODEGA",
-        "precioProveedor": 11575
+        "precioProveedor": 11575,
+        "uid": "ce68883d-af3b-457f-a32f-c4bb4b44306e"
       }
     ],
-    "fechaGuardado": "2026-06-25T16:46:49.578Z",
+    "fechaGuardado": "2026-07-14T16:16:07.678Z",
+    "fechaEnvio": "2026-07-14T16:16:07.678Z",
     "createdAt": "2026-06-25T16:38:35.275Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-06-25T16:46:49.578Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-14T16:16:07.678Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1730",
