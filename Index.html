@@ -2486,6 +2486,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       </select>
       <button class="btn btn-ghost" onclick="absCargar()" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
       <button class="btn btn-secondary" onclick="absDescargarExcel()" style="padding:8px 14px;font-size:12px;background:#1e7e34;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ Descargar Excel</button>
+      <button class="btn btn-secondary" onclick="absDescargarConteo()" style="padding:8px 14px;font-size:12px;background:#0F2B5B;color:#E8A020;border:1px solid #E8A020;border-radius:8px;cursor:pointer;font-weight:700;">📋 Descarga para conteo</button>
       <button class="btn btn-secondary" onclick="absSyncExcelPick()" style="padding:8px 14px;font-size:12px;background:#1a3a8f;color:#fff;border:none;border-radius:8px;cursor:pointer;">📊 Sincronizar con Excel</button>
       <button id="abs-btn-nuevo-prod" onclick="absNuevoProductoModal()" style="display:none;padding:8px 14px;font-size:12px;background:#2EAA4A;color:#fff;border:none;border-radius:8px;cursor:pointer;">➕ Nuevo producto</button>
       <button id="abs-btn-nueva-fam" onclick="absNuevaFamiliaModal()" style="display:none;padding:8px 14px;font-size:12px;background:rgba(232,160,32,.15);color:var(--gold);border:1px solid rgba(232,160,32,.4);border-radius:8px;cursor:pointer;">📁 Nueva familia</button>
@@ -14819,6 +14820,76 @@ function absCheckViernes() {
     banner.style.display = '';
     localStorage.setItem(key, '1');
   }
+}
+
+// ═══ DESCARGA PARA CONTEO FÍSICO (2026-07-13) ═══════════════════════════════
+// Excel con marca E&G para tomar inventario físico: CONTEO CIEGO (sin cantidades
+// del sistema, decisión del usuario), agrupado por familia, columnas vacías para
+// contar y observar. Respeta el buscador y el filtro de familia activos.
+// 100% de solo lectura: no escribe nada en ninguna parte.
+function absDescargarConteo() {
+  if (!abs_loaded || !abs_productos.length) { showToast('Primero carga el inventario (🔄 Recargar)','info'); return; }
+  const NAVY = '#0F2B5B', GOLD = '#E8A020', GREY = '#F2F4F8';
+  const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const famPorId = {}; (abs_familias||[]).forEach(f => { famPorId[f.id] = f.nombre || ''; });
+  // Respetar filtros activos del tab Stock (búsqueda + familia)
+  const q = ((document.getElementById('abs-search')||{}).value || '').trim().toLowerCase();
+  const famFiltro = (document.getElementById('abs-familia-filter')||{}).value || '';
+  let prods = abs_productos.slice();
+  if (famFiltro) prods = prods.filter(p => String(p.familia_id) === String(famFiltro));
+  if (q) prods = prods.filter(p => ((p.codigo||'')+' '+(p.descripcion||'')+' '+(p.marca||'')).toLowerCase().includes(q));
+  if (!prods.length) { showToast('No hay productos con ese filtro','info'); return; }
+  // Agrupar por familia (A-Z), dentro por descripción
+  const grupos = {};
+  prods.forEach(p => {
+    const fam = famPorId[p.familia_id] || 'SIN FAMILIA';
+    (grupos[fam] = grupos[fam] || []).push(p);
+  });
+  const cel = 'border:1px solid #C9D2E0;padding:7px 10px;font-size:12px;';
+  let cuerpo = '', n = 0;
+  Object.keys(grupos).sort((a,b) => a.localeCompare(b)).forEach(fam => {
+    cuerpo += `<tr><td colspan="6" style="background:${GOLD};color:${NAVY};font-weight:bold;font-size:13px;padding:6px 10px;border:1px solid ${GOLD};">📁 ${esc(fam)} (${grupos[fam].length})</td></tr>`;
+    grupos[fam].sort((a,b) => (a.descripcion||'').localeCompare(b.descripcion||'')).forEach(p => {
+      cuerpo += `<tr style="background:${n%2? GREY : '#FFFFFF'};">
+        <td style="${cel}font-weight:bold;color:${NAVY};white-space:nowrap;">${esc(p.codigo)}</td>
+        <td style="${cel}">${esc(p.descripcion)}</td>
+        <td style="${cel}">${esc(p.marca)}</td>
+        <td style="${cel}">${esc(p.ubicacion)}</td>
+        <td style="${cel}border:2px solid ${NAVY};background:#FFFDF2;">&nbsp;</td>
+        <td style="${cel}">&nbsp;</td>
+      </tr>`;
+      n++;
+    });
+  });
+  const hoy = new Date().toLocaleDateString('es-CO', {day:'2-digit',month:'long',year:'numeric'});
+  const filtroTxt = (famFiltro? ' · Familia: ' + esc(famPorId[famFiltro]||'') : '') + (q? ' · Filtro: "' + esc(q) + '"' : '');
+  const html = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8">
+<!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+<x:Name>Conteo Inventario</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>
+</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+<body style="font-family:Segoe UI,Arial,sans-serif;">
+<table>
+  <tr><td colspan="6" style="padding:10px 0;">
+    <img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" width="70" height="70" alt="E&amp;G">
+  </td></tr>
+  <tr><td colspan="6" style="font-size:20px;font-weight:bold;color:${NAVY};padding:4px 0;">TOMA DE INVENTARIO FÍSICO — E&amp;G ENERGY GROUP SAS</td></tr>
+  <tr><td colspan="6" style="font-size:12px;color:${GOLD};font-weight:bold;padding-bottom:4px;">${prods.length} producto(s) · Generado el ${esc(hoy)}${filtroTxt} · CONTEO CIEGO (sin cantidades del sistema)</td></tr>
+  <tr><td colspan="6" style="font-size:12px;color:${NAVY};padding:6px 0 12px 0;">Contado por: ______________________ &nbsp;&nbsp; Fecha del conteo: ______________ &nbsp;&nbsp; Verificado por: ______________________</td></tr>
+  <tr>
+    ${['CÓDIGO','DESCRIPCIÓN','MARCA','UBICACIÓN','CONTEO FÍSICO','OBSERVACIONES'].map(h =>
+      `<th style="background:${NAVY};color:#FFFFFF;border:1px solid ${NAVY};padding:8px 10px;font-size:12px;text-align:left;">${h}</th>`).join('')}
+  </tr>
+  ${cuerpo}
+  <tr><td colspan="6" style="border-top:3px solid ${GOLD};font-size:10px;color:#8899BB;padding-top:8px;">⚡ ENERGY — Plataforma Administrativa E&amp;G Energy Group · Formato de conteo ciego: comparar contra Abastecimiento al terminar</td></tr>
+</table></body></html>`;
+  const blob = new Blob(['﻿' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Conteo_Inventario_EYG_' + new Date().toISOString().slice(0,10) + '.xls';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { try{ document.body.removeChild(a); }catch(_){} URL.revokeObjectURL(url); }, 500);
+  showToast('📋 Formato de conteo con ' + prods.length + ' producto(s) descargado','success');
 }
 
 async function absCargar() {
