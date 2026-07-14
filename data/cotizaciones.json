@@ -21557,8 +21557,9 @@
         "marca": "MOLONG-BAOLAI-WUXY",
         "precio": 0,
         "desvTec": "3/4\"",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "proveedor": "EFREN",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 5000
       },
       {
         "id": 7,
@@ -21569,8 +21570,9 @@
         "marca": "MOLONG-BAOLAI-WUXY",
         "precio": 0,
         "desvTec": "3/4\"",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "proveedor": "EFREN",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 5000
       },
       {
         "id": 8,
@@ -22005,10 +22007,10 @@
         "precioProveedor": 2390
       }
     ],
-    "fechaGuardado": "2026-07-14T17:30:29.821Z",
+    "fechaGuardado": "2026-07-14T17:45:44.098Z",
     "createdAt": "2026-07-14T16:45:20.405Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-14T17:30:29.821Z",
+    "updatedAt": "2026-07-14T17:45:44.098Z",
     "updatedBy": "sandra"
   },
   {
@@ -22018,7 +22020,7 @@
     "cliente": "EIKOS",
     "contacto": "DIEGO",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Revisión gerencia",
     "factura": "",
     "iva": 19,
     "subtotal": 0,
@@ -22036,57 +22038,61 @@
     "items": [
       {
         "id": 1,
-        "desc": "Tee 10” x 6” SCH40",
-        "udm": "EA",
         "qty": 1,
+        "udm": "EA",
+        "uid": "14576d42-a38b-44d2-bfa8-3140a111a5ce",
+        "desc": "Tee 10” x 6” SCH40",
+        "marca": "XF",
         "precio": 0,
+        "desvTec": "A-234 WPB",
+        "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "",
-        "proveedor": "",
-        "precioProveedor": 0
+        "precioProveedor": 364300
       },
       {
         "id": 2,
-        "desc": "codo 8\" x 90 SCH 40",
-        "udm": "EA",
         "qty": 1,
+        "udm": "EA",
+        "uid": "3264c75c-afd7-4fc9-83d7-19a91675ad15",
+        "desc": "codo 8\" x 90 SCH 40",
+        "marca": "XF",
         "precio": 0,
+        "desvTec": "A-234 WPB",
+        "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "",
-        "proveedor": "",
-        "precioProveedor": 0
+        "precioProveedor": 130150
       },
       {
         "id": 3,
-        "desc": "brida RF de 3\" x 150 SCH 40",
-        "udm": "EA",
         "qty": 1,
+        "udm": "EA",
+        "uid": "d803f758-f616-4c2b-9613-d8c934c3e41a",
+        "desc": "brida RF de 3\" x 150 SCH 40",
+        "marca": "XF",
         "precio": 0,
+        "desvTec": "A-105",
+        "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "",
-        "proveedor": "",
-        "precioProveedor": 0
+        "precioProveedor": 40800
       },
       {
         "id": 4,
-        "desc": "espárragos de 5/8” x 90",
-        "udm": "EA",
         "qty": 36,
+        "udm": "EA",
+        "uid": "68c9f002-0ec0-405a-ae67-f3f5cf6759b2",
+        "desc": "espárragos de 5/8” x 90",
+        "marca": "JDF",
         "precio": 0,
+        "desvTec": "A-193/194 B7 2H",
+        "proveedor": "MUNDIA",
         "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "",
-        "proveedor": "",
-        "precioProveedor": 0
+        "precioProveedor": 2390
       }
     ],
-    "fechaGuardado": "2026-07-14T17:32:05.990Z",
+    "fechaGuardado": "2026-07-14T17:34:44.484Z",
     "createdAt": "2026-07-14T17:32:05.990Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-14T17:32:05.990Z",
+    "updatedAt": "2026-07-14T17:34:44.484Z",
     "updatedBy": "sandra"
   }
 ]
