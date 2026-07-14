@@ -3362,5 +3362,52 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-14T15:58:55.913Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1784046230252",
+    "num": "LM1738-1",
+    "cliente": "SKID EXPERTS",
+    "desc": "Cotización LM1738-1 · 27 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-14",
+    "valor": 10109764,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1738-1",
+    "createdAt": "2026-07-14T16:23:50.252Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-14T16:23:50.252Z",
+    "updatedBy": "andrea"
   }
 ]
