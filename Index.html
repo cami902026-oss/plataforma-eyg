@@ -8054,11 +8054,47 @@ function cotizWriteNum(val) {
   else el.textContent = val;
 }
 
-// Botón "Auto": rellena el siguiente consecutivo disponible
+// ── CONSECUTIVO QUE NACE AL GUARDAR (v134, 2026-07-14) ──────────────────────
+// Regla del usuario: numeración única, correlativa, sin huecos y sin reutilizar.
+// El formulario nuevo ya NO prellena número: muestra 'LM — pendiente' y el número
+// definitivo se RECLAMA atómicamente en Supabase en el PRIMER guardado. Así dos
+// personas creando a la vez JAMÁS reciben el mismo número (caso BRINSA/SAR LM1803).
+const COTIZ_NUM_PENDIENTE = 'LM — pendiente';
+function _cotizNumEsPendiente(v) {
+  return !v || /pendiente/i.test(String(v));
+}
+// Reclama el siguiente consecutivo en el servidor: INSERT del candidato (id es
+// PRIMARY KEY → atómico); 409 = ya tomado → prueba el siguiente. El candidato
+// arranca del máximo local (que incluye lo pendiente de sincronizar), por eso
+// nunca deja huecos: solo un INSERT exitoso "gasta" un número. Sin internet o
+// proxy caído devuelve el candidato local como PROVISIONAL (flujo local de
+// siempre: el reconciliador lo confirma al sincronizar).
+async function _cotizAsignarNumeroServidor(datos) {
+  let cand = cotizGetNextNum();
+  for (let i = 0; i < 15; i++) {
+    let r = null;
+    try {
+      r = await _sbWriteRaw('cotizaciones', 'POST',
+        JSON.stringify({ id: cand, cliente: (datos && datos.cliente) || null, estado: (datos && datos.estado) || 'Borrador', fecha: (datos && datos.fecha) || null, fuente: 'Plataforma' }),
+        'return=minimal', 12000);
+    } catch(_) { r = null; }
+    if (!r) return { id: cand, reclamado: false };              // red/proxy caído: provisional
+    if (r.status === 201) return { id: cand, reclamado: true };  // reclamado: es nuestro
+    if (r.status === 409) {                                      // tomado: probar el siguiente
+      const m = String(cand).match(/^(.*?)(\d+)$/);
+      if (!m) return { id: cand, reclamado: false };
+      cand = m[1] + (parseInt(m[2]) + 1);
+      continue;
+    }
+    return { id: cand, reclamado: false };                       // status inesperado: provisional
+  }
+  return { id: cand, reclamado: false };
+}
+
+// Botón "Auto": desde v134 el número definitivo lo asigna el servidor al guardar
 function cotizRegenerarNum() {
-  const proximo = cotizGetNextNum();
-  cotizWriteNum(proximo);
-  showToast('Consecutivo asignado: ' + proximo, 'success');
+  cotizWriteNum(COTIZ_NUM_PENDIENTE);
+  showToast('El número definitivo se asigna al GUARDAR (consecutivo del servidor).', 'info');
 }
 
 // Siguiente número libre respetando sufijos: si "LM1751-1" está tomado propone
@@ -8101,6 +8137,7 @@ let _cotizNumAvisado = '';
 function _cotizNumVigilar() {
   if (typeof currentPage === 'undefined' || currentPage !== 'cotizaciones') return;
   const num = cotizReadNum(); if (!num) { _cotizNumAvisado = ''; return; }
+  if (_cotizNumEsPendiente(num)) { _cotizNumAvisado = ''; return; }  // v134: sin número aún, nada que vigilar
   if (cotizEditId && num === cotizEditId) return;   // editando una ya guardada: ese número es suyo
   const bd = getData('bd_cotizaciones', []);
   const tomado = bd.find(c => c && c.id === num && !c.deleted);
@@ -9079,9 +9116,12 @@ function _cotizGuardarYNueva() {
     showToast('Faltan datos para guardar (cliente e ítems). Complétalos o usa Descartar.', 'error');
     return;
   }
-  cotizGuardarBD();
-  // Las nuevas: cotizGuardarBD ya limpia el formulario. Las existentes: limpiar aquí.
-  setTimeout(() => { try { if (_cotizHasContent()) cotizNueva(); } catch (_) {} }, 80);
+  // v134: cotizGuardarBD es async (reclama el consecutivo del servidor) — esperar
+  // a que termine antes de limpiar, o el número naciente se perdería del formulario.
+  Promise.resolve(cotizGuardarBD()).then(() => {
+    // Las nuevas: cotizGuardarBD ya limpia el formulario. Las existentes: limpiar aquí.
+    setTimeout(() => { try { if (_cotizHasContent()) cotizNueva(); } catch (_) {} }, 80);
+  }).catch(() => {});
 }
 
 function cotizNueva(silent) {
@@ -9113,13 +9153,14 @@ function cotizNueva(silent) {
   const cu = window.currentUser || {};
   const cuName = cu.name || '';
   cotizPopulateSelects('', cuName, 'Alberto');
-  cotizWriteNum(cotizGetNextNum());
+  // v134: sin número hasta el primer guardado (el servidor lo asigna, sin choques)
+  cotizWriteNum(COTIZ_NUM_PENDIENTE);
   cotizRender();
   cotizShowTab('nueva');
   if (!silent) showToast('Nueva cotización lista','success');
 }
 
-function cotizGuardarBD() {
+async function cotizGuardarBD() {
   const cliente = document.getElementById('cotiz-cliente').value.trim();
   if (!cliente) { showToast('Ingresa el nombre del cliente','error'); return; }
   if (!cotizItems.length) { showToast('Agrega al menos un ítem','error'); return; }
@@ -9139,6 +9180,21 @@ function cotizGuardarBD() {
   const numCampo = cotizReadNum();
   // Si el número del campo difiere del id en edición → es cotización nueva (no sobrescribir)
   let id = (cotizEditId && numCampo === cotizEditId) ? cotizEditId : numCampo;
+  // v134 — CONSECUTIVO AL GUARDAR: si el campo dice 'LM — pendiente' (cotización nueva),
+  // el número definitivo se reclama en el servidor AQUÍ. Un número digitado a MANO
+  // (adoptadas del LIBRO, sufijos tipo LM1653-GEP) se respeta y sigue el flujo de siempre.
+  let _numReclamadoYa = false;
+  if (_cotizNumEsPendiente(id)) {
+    const _asig = await _cotizAsignarNumeroServidor({
+      cliente,
+      estado: _estadoAGuardar,
+      fecha: document.getElementById('cotiz-fecha-gen').value
+    });
+    id = _asig.id;
+    _numReclamadoYa = _asig.reclamado;
+    cotizWriteNum(id);
+    if (!_asig.reclamado) showToast('⚠️ Sin conexión con el consecutivo del servidor: número PROVISIONAL ' + id + ' — se confirma al reconectar.', 'info', { durationMs: 9000 });
+  }
   if (!id) { id = cotizGetNextNum(); cotizWriteNum(id); }
   const bd = getData('bd_cotizaciones', []);
   const idx = bd.findIndex(c => c.id === id);
@@ -9214,7 +9270,9 @@ function cotizGuardarBD() {
   // BD de clientes auto-alimentada: registrar/completar el cliente de esta cotización
   try { _cliUpsertDesdeCotiz(record); } catch(_){}
   // CONSECUTIVO DEL SERVIDOR + doble escritura a Supabase (no bloquea si falla/offline)
-  try { _cotizReclamarYSubir(record, idx < 0); } catch(_){}
+  // v134: si el número ya se reclamó arriba (nació al guardar), no re-reclamar —
+  // el 409 contra nuestro propio reclamo dispararía un falso aviso de choque.
+  try { _cotizReclamarYSubir(record, idx < 0 && !_numReclamadoYa); } catch(_){}
   // Si la cotización quedó FACTURADA, reflejarlo en la Orden de Compra ligada
   // (marca la etapa Facturación como hecha + fecha + N° de factura). No bloquea si no hay OC.
   try { _cotizPropagarFacturaOC(record); } catch(_){}
@@ -9270,6 +9328,8 @@ function _pdfOverlay(html, titulo) {
 }
 async function cotizGenerarPDF() {
   if (!cotizItems.length) { showToast('Agrega ítems primero','error'); return; }
+  // v134: el número nace al guardar — sin guardar no hay número para el PDF
+  if (_cotizNumEsPendiente(cotizReadNum())) { showToast('💾 Guarda la cotización primero — al guardar se le asigna su número definitivo.','error'); return; }
   // Asegurar que las fotos marcadas para PDF estén cargadas (se guardan en archivo aparte)
   if (cotizItems.some(it => it && it.fotoId && it.fotoEnPDF !== false)) {
     if (cotizItems.some(it => it && it.fotoId && it.fotoEnPDF !== false && !_cotizFotos[it.fotoId])) _cotizFotosLoaded = false;
@@ -9523,6 +9583,8 @@ function _cotizInvAdd(codigo, desc, marca, precio, udm) {
 
 function cotizDownloadExcel() {
   if (!cotizItems.length) { showToast('Agrega ítems primero','error'); return; }
+  // v134: el número nace al guardar — sin guardar no hay número para el Excel
+  if (_cotizNumEsPendiente(cotizReadNum())) { showToast('💾 Guarda la cotización primero — al guardar se le asigna su número definitivo.','error'); return; }
   const cliente = document.getElementById('cotiz-cliente').value || 'Cliente';
   const contacto = document.getElementById('cotiz-contacto').value || '';
   const correo = document.getElementById('cotiz-correo').value || '';
@@ -11542,7 +11604,8 @@ function initCotizaciones() {
   document.getElementById('cotiz-fecha-gen').value = today2;
   document.getElementById('cotiz-fecha-venc').value = venc.toISOString().split('T')[0];
   if (!cotizEditId) {
-    cotizWriteNum(cotizGetNextNum());
+    // v134: sin número hasta el primer guardado (el servidor lo asigna, sin choques)
+    cotizWriteNum(COTIZ_NUM_PENDIENTE);
     const cu = window.currentUser || {};
     cotizPopulateSelects('', cu.name||'', 'Alberto');
   } else {
