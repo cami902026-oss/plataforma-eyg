@@ -9160,7 +9160,18 @@ function cotizNueva(silent) {
   if (!silent) showToast('Nueva cotización lista','success');
 }
 
+// v135: CANDADO ANTI DOBLE-CLIC — con v134 el guardado espera al servidor (~1s);
+// un segundo clic en ese lapso pedía OTRO número → cotizaciones duplicadas
+// (caso real 15-jul: Transmena LM1813/1814/1815 por triple clic de Lina).
+// Mientras un guardado está en curso, los clics extra se ignoran con aviso.
+let _cotizGuardandoLock = false;
 async function cotizGuardarBD() {
+  if (_cotizGuardandoLock) { showToast('⏳ Guardando… un momento (clic extra ignorado para no duplicar).', 'info'); return; }
+  _cotizGuardandoLock = true;
+  try { return await _cotizGuardarBDCore(); }
+  finally { _cotizGuardandoLock = false; }
+}
+async function _cotizGuardarBDCore() {
   const cliente = document.getElementById('cotiz-cliente').value.trim();
   if (!cliente) { showToast('Ingresa el nombre del cliente','error'); return; }
   if (!cotizItems.length) { showToast('Agrega al menos un ítem','error'); return; }
