@@ -74,13 +74,13 @@
     "num": "2026005441",
     "cliente": "NEW GRANADA",
     "desc": "Sumisitro",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-05-22",
     "valor": 0,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-07-15",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -104,17 +104,17 @@
         "n": "No aplica"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-07-15",
+        "n": "",
+        "factura": "518"
       }
     ],
+    "cotizacionId": "",
     "createdAt": "2026-05-22T17:09:06.912Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-15T22:03:56.880Z",
-    "updatedBy": "andrea",
-    "lockedBy": "lina",
-    "lockedAt": "2026-07-15T22:03:56.880Z"
+    "updatedAt": "2026-07-15T22:05:18.193Z",
+    "updatedBy": "lina"
   },
   {
     "id": "poc_1777493314013",
