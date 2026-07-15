@@ -24620,9 +24620,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 9015384,
+    "ivaVal": 1712922.96,
+    "total": 10728306.96,
     "formaPago": "CONTADO",
     "sitioEntrega": "AGUACHICA CESAR",
     "validez": "8 DÍAS",
@@ -24635,21 +24635,22 @@
     "items": [
       {
         "id": 1,
-        "desc": "Solenoid 1-1/2\" NPT 24VDC Normally Closed 0-25PSI NatGas Part Number: 8215B060",
-        "udm": "UNIDAD",
         "qty": 2,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "NatGas",
-        "proveedor": "",
-        "uid": "b1b5d17e-0d66-44f7-b5a3-9eaca336e43c"
+        "udm": "UNIDAD",
+        "uid": "b143cae8-b5d3-474c-b043-cd179e5292a8",
+        "desc": "Solenoid 1-1/2\" NPT 24VDC Normally Closed 0-25PSI NatGas Part Number: 8215B060",
+        "marca": "ASCO",
+        "precio": 4507692,
+        "desvTec": "VALVULA 2/2 CONEXIÓN 1 1/4\" A 24VDC  REF 8215B070",
+        "proveedor": "FERRONEUMATICA",
+        "tiempoEntrega": "3-4 DIAS",
+        "precioProveedor": 2930000
       }
     ],
-    "fechaGuardado": "2026-07-15T20:47:48.933Z",
+    "fechaGuardado": "2026-07-15T21:24:07.438Z",
     "createdAt": "2026-07-15T20:47:48.933Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-15T20:47:48.933Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-07-15T21:24:07.438Z",
+    "updatedBy": "alberto"
   }
 ]
