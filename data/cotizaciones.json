@@ -15474,7 +15474,7 @@
     "cliente": "SKID EXPERTS",
     "contacto": "JENNY ARIAS",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 1200000,
@@ -15488,6 +15488,7 @@
     "realizadaPor": "Sandra",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
+    "motivoRechazo": "",
     "items": [
       {
         "id": 1,
@@ -15499,15 +15500,16 @@
         "desvTec": "",
         "marca": " ZIBO",
         "proveedor": "TUVAPOR",
-        "precioProveedor": 847220
+        "precioProveedor": 847220,
+        "uid": "3d3f7a33-a6e2-4a1a-8c8d-7114377ecf59"
       }
     ],
-    "fechaGuardado": "2026-07-06T20:44:55.176Z",
+    "fechaGuardado": "2026-07-15T18:56:03.498Z",
+    "adjudicadaAt": "2026-07-15",
     "createdAt": "2026-07-06T20:33:30.944Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-15T02:29:37.416Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-07-15T02:29:37.416Z"
+    "updatedAt": "2026-07-15T18:56:03.499Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1752",
