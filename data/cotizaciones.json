@@ -610,6 +610,49 @@
     "vencidaAutoAt": "2026-07-14T21:15:28.418Z"
   },
   {
+    "id": "LM1519",
+    "fecha": "2026-05-11",
+    "fechaVenc": "2026-05-19",
+    "cliente": "ENERFLEX",
+    "contacto": "YULIETH CONDE",
+    "correo": "yconde@enerflex.com",
+    "estado": "Enviada",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 67600000,
+    "ivaVal": 12844000,
+    "total": 80444000,
+    "formaPago": "30 DÍAS",
+    "sitioEntrega": "A CONVENIR",
+    "validez": "8 DIAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S,A,S, CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO,                                                                                                         -PARA PEDIDOS CON UN VALOR INFERIOR A $500,000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "",
+    "realizadaPor": "",
+    "aprobadaPor": "",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "qty": 2,
+        "udm": "EA",
+        "uid": "316c761c-ecfe-40dd-bfa2-64097a622ebe",
+        "desc": "VALVULA DE CONTROL DE GLOBO TIPO ED CON ACTUADOR 667  3\" ANSI 600 CON POSICIONADOR DVC 6200",
+        "marca": "FISHER",
+        "precio": 33800000,
+        "desvTec": "VALVULA CON INTERNOS NUEVOS Y CUERPO SURPLUS, CALCULADA  CON BASE A LA FICHA TECNICA ADJUNTADA MARCA CVS , ESPECIFICACION TECNICA DE ACUERDO AL ADJUNTO FICHA TECNICA, CON PRUEBAS DE HERMETICIDAD Y PRUEBA DE RECORRIDO DE ACTUADOR CON POSICIONADOR",
+        "proveedor": "",
+        "tiempoEntrega": "2 SEMANAS",
+        "precioProveedor": null
+      }
+    ],
+    "fechaGuardado": "2026-07-15T16:58:31.576Z",
+    "fechaEnvio": "2026-07-15T16:46:11.645Z",
+    "createdAt": "2026-07-15T16:46:11.645Z",
+    "createdBy": "sandra",
+    "updatedAt": "2026-07-15T16:58:31.576Z",
+    "updatedBy": "sandra"
+  },
+  {
     "id": "LM1547",
     "fecha": "2026-05-20",
     "fechaVenc": "2026-05-28",
@@ -16714,8 +16757,7 @@
         "desvTec": "MOTOR DE ARRANQUE 12V - ",
         "marca": "DELCO ",
         "proveedor": "YHM ",
-        "precioProveedor": 2900000,
-        "uid": "e787a3ac-f6f2-4a79-ac6b-f9c693f0c84c"
+        "precioProveedor": 2900000
       },
       {
         "id": 2,
@@ -16727,8 +16769,7 @@
         "desvTec": "VALVULA SOLENOIDE APAGADO 3928160 - ",
         "marca": "COREA ",
         "proveedor": "YHM",
-        "precioProveedor": 400000,
-        "uid": "5bdb00c4-33eb-4612-a0b7-7a5948398b28"
+        "precioProveedor": 400000
       },
       {
         "id": 3,
@@ -16740,8 +16781,7 @@
         "desvTec": "ALTERNADOR 12V - PL ",
         "marca": "MALASIA ",
         "proveedor": "YHM",
-        "precioProveedor": 717800,
-        "uid": "c6969220-8219-4b93-a81e-c70538ab6744"
+        "precioProveedor": 717800
       },
       {
         "id": 4,
@@ -16753,8 +16793,7 @@
         "desvTec": "BOMBA DE AGUA 3800974",
         "marca": "CUMMINS ",
         "proveedor": "YHM",
-        "precioProveedor": 350000,
-        "uid": "ef0924c7-90e2-4dd5-b013-b1c28a13c066"
+        "precioProveedor": 350000
       },
       {
         "id": 5,
@@ -16766,15 +16805,14 @@
         "desvTec": "",
         "marca": "CUMMIS ",
         "proveedor": "YHM",
-        "precioProveedor": 380000,
-        "uid": "1eb80b2c-a7b1-441d-8739-a29e58b578be"
+        "precioProveedor": 380000
       }
     ],
-    "fechaGuardado": "2026-07-15T16:32:36.016Z",
+    "fechaGuardado": "2026-07-09T22:11:58.014Z",
     "fechaEnvio": "2026-07-09T22:11:35.439Z",
     "createdAt": "2026-07-08T19:31:24.764Z",
     "createdBy": "lina",
-    "updatedAt": "2026-07-15T16:32:36.016Z",
+    "updatedAt": "2026-07-09T22:11:58.014Z",
     "updatedBy": "lina"
   },
   {
@@ -23103,62 +23141,6 @@
     "updatedBy": "sandra"
   },
   {
-    "id": "LM1519",
-    "fecha": "2026-07-15",
-    "fechaVenc": "2026-07-23",
-    "cliente": "ENERFLEX",
-    "contacto": "YULIETH CONDE",
-    "correo": "yconde@enerflex.com",
-    "estado": "Enviada",
-    "factura": "",
-    "iva": 19,
-    "subtotal": 67600000,
-    "ivaVal": 12844000,
-    "total": 80444000,
-    "formaPago": "30 DÍAS",
-    "sitioEntrega": "A CONVENIR",
-    "validez": "8 DIAS",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S,A,S, CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO,                                                                                                         -PARA PEDIDOS CON UN VALOR INFERIOR A $500,000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "vendedor": "",
-    "realizadaPor": "",
-    "aprobadaPor": "",
-    "solicitudId": "",
-    "motivoRechazo": "",
-    "items": [
-      {
-        "qty": 2,
-        "udm": "EA",
-        "uid": "316c761c-ecfe-40dd-bfa2-64097a622ebe",
-        "desc": "VALVULA DE CONTROL DE GLOBO TIPO ED CON ACTUADOR 667  3\" ANSI 600 CON POSICIONADOR DVC 6200",
-        "marca": "FISHER",
-        "precio": 33800000,
-        "desvTec": "VALVULA CON INTERNOS NUEVOS Y CUERPO SURPLUS, CALCULADA  CON BASE A LA FICHA TECNICA ADJUNTADA MARCA CVS , ESPECIFICACION TECNICA DE ACUERDO AL ADJUNTO FICHA TECNICA, CON PRUEBAS DE HERMETICIDAD Y PRUEBA DE RECORRIDO DE ACTUADOR CON POSICIONADOR",
-        "proveedor": "",
-        "tiempoEntrega": "2 SEMANAS",
-        "precioProveedor": null
-      },
-      {
-        "id": 2,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "29f4891e-aa18-492a-a575-1b0488c54c4c",
-        "desc": "POSICIONADOR FISHER MODELO DVC -6200, PROTOCOLO HAR, SEÑAR DE CONTROL DE 4 A 20 MAMP",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      }
-    ],
-    "fechaGuardado": "2026-07-15T16:51:37.369Z",
-    "fechaEnvio": "2026-07-15T16:46:11.645Z",
-    "createdAt": "2026-07-15T16:46:11.645Z",
-    "createdBy": "sandra",
-    "updatedAt": "2026-07-15T16:51:37.370Z",
-    "updatedBy": "sandra"
-  },
-  {
     "id": "LM1519-1",
     "fecha": "2026-07-15",
     "fechaVenc": "2026-07-23",
@@ -23535,14 +23517,14 @@
     "subtotal": 0,
     "ivaVal": 0,
     "total": 0,
-    "formaPago": "30 DÍAS",
+    "formaPago": "",
     "sitioEntrega": "",
     "validez": "8 DÍAS",
     "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
     "vendedor": "Sheila Baron",
     "realizadaPor": "Lina Cifuentes",
     "aprobadaPor": "Alberto",
-    "solicitudId": "",
+    "solicitudId": "SOL-20260715-995",
     "motivoRechazo": "",
     "items": [
       {
@@ -23590,12 +23572,12 @@
         "udm": "EA",
         "uid": "1593b0e2-b1b1-47c6-9893-d1419033462c",
         "desc": "Manguera de 1/4 caucho lona 30 metros",
-        "marca": "NAC // IMPORTADA ",
+        "marca": "",
         "precio": 0,
-        "desvTec": "MANGUERA DE AIRE  ROJA  120 LIBRAS // IMPORTADA 350 LIBRAS VALOR METRO ",
-        "proveedor": "MONTENEGRO ",
+        "desvTec": "",
+        "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 20005800
+        "precioProveedor": 0
       },
       {
         "id": 5,
@@ -23603,12 +23585,12 @@
         "udm": "EA",
         "uid": "23f8946c-32b3-4c45-baac-0f932194368a",
         "desc": "Manguera de 3/4 caucho lona 30 metros",
-        "marca": "NAC ",
+        "marca": "",
         "precio": 0,
-        "desvTec": "AIRE VALOR METRO ",
-        "proveedor": "MONTENEGRO ",
+        "desvTec": "",
+        "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 19000
+        "precioProveedor": 0
       },
       {
         "id": 6,
@@ -23629,12 +23611,12 @@
         "udm": "EA",
         "uid": "ed58bdb0-70ef-4b36-aeef-e37067a3f4f1",
         "desc": "Guantes de soldadura",
-        "marca": "NAC ",
+        "marca": "",
         "precio": 0,
-        "desvTec": "GUANTE SOLDADOR ",
-        "proveedor": "MONTENEGRO ",
+        "desvTec": "",
+        "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 24000
+        "precioProveedor": 0
       },
       {
         "id": 8,
@@ -23642,12 +23624,12 @@
         "udm": "EA",
         "uid": "1da50b63-9de4-49f3-be70-edaa571fab2f",
         "desc": "Chaqueta de soldador",
-        "marca": "NAC ",
+        "marca": "",
         "precio": 0,
-        "desvTec": "CHAQUETA CARNAZA ",
-        "proveedor": "MONTENE",
+        "desvTec": "",
+        "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 85000
+        "precioProveedor": 0
       },
       {
         "id": 9,
@@ -23657,10 +23639,10 @@
         "desc": "Careta de pulidora( cerrada preferiblemente)",
         "marca": "",
         "precio": 0,
-        "desvTec": "VISERA TRANSPARENTE (ABIERTA )",
-        "proveedor": "MONTENEGRO ",
+        "desvTec": "",
+        "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 19800
+        "precioProveedor": 0
       },
       {
         "id": 10,
@@ -23670,10 +23652,10 @@
         "desc": "Guantes de precisión",
         "marca": "",
         "precio": 0,
-        "desvTec": "GUANTE DE TELA ",
-        "proveedor": "MONTENEGRO ",
+        "desvTec": "",
+        "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 3500
+        "precioProveedor": 0
       },
       {
         "id": 11,
@@ -23681,12 +23663,12 @@
         "udm": "EA",
         "uid": "89fc1d35-2107-4787-b76b-bc5af186d120",
         "desc": "1 quintal de 70/18 por 1/8",
-        "marca": "WESTARCO ",
+        "marca": "",
         "precio": 0,
-        "desvTec": "VALOR KILO ",
+        "desvTec": "",
         "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 24800
+        "precioProveedor": 0
       },
       {
         "id": 12,
@@ -23694,12 +23676,12 @@
         "udm": "EA",
         "uid": "be72ab18-94ff-4d2a-969b-e4d8eaf4e13f",
         "desc": "1 quintal de 60/13 por 1/8 y 3/32",
-        "marca": "WESRARCO ",
+        "marca": "",
         "precio": 0,
-        "desvTec": "VALOR KILO  1/8 6013",
+        "desvTec": "",
         "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 22500
+        "precioProveedor": 0
       },
       {
         "id": 13,
@@ -23709,10 +23691,10 @@
         "desc": "Vidrios trasparentes para careta de soldar",
         "marca": "",
         "precio": 0,
-        "desvTec": "VIDRIO  TRANSPARENTE ",
+        "desvTec": "",
         "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 550
+        "precioProveedor": 0
       },
       {
         "id": 14,
@@ -23722,7 +23704,7 @@
         "desc": "Piensas saca pines de abrir y cerrar",
         "marca": "",
         "precio": 0,
-        "desvTec": "------",
+        "desvTec": "",
         "proveedor": "",
         "tiempoEntrega": "",
         "precioProveedor": 0
@@ -23748,10 +23730,10 @@
         "desc": "1 gato de 10 toneladas",
         "marca": "",
         "precio": 0,
-        "desvTec": "12 TONELADAS  ",
-        "proveedor": "MONTENEGRO ",
+        "desvTec": "",
+        "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 215000
+        "precioProveedor": 0
       },
       {
         "id": 17,
@@ -23761,10 +23743,10 @@
         "desc": "2 gatos de 15 toneladas",
         "marca": "",
         "precio": 0,
-        "desvTec": "20 TONELADAS ",
+        "desvTec": "",
         "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 248000
+        "precioProveedor": 0
       },
       {
         "id": 18,
@@ -23842,7 +23824,7 @@
         "desvTec": "",
         "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 8500
+        "precioProveedor": 0
       },
       {
         "id": 24,
@@ -23863,12 +23845,12 @@
         "udm": "EA",
         "uid": "0d76b5b2-c9c7-449d-a26f-95173957b415",
         "desc": "Una caja de discos de pulir de 4 y 7 pulgadas",
-        "marca": "DEWALT ",
+        "marca": "",
         "precio": 0,
-        "desvTec": "4.5  \" ",
+        "desvTec": "",
         "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 6000
+        "precioProveedor": 0
       },
       {
         "id": 26,
@@ -23876,12 +23858,12 @@
         "udm": "EA",
         "uid": "d21a15f8-6a38-4da0-9558-e568c153cf9a",
         "desc": "Una pulidora de 7 pulgadas",
-        "marca": "TULLS ",
+        "marca": "",
         "precio": 0,
-        "desvTec": "7\" ",
-        "proveedor": "MONTENEGRO ",
+        "desvTec": "",
+        "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 290000
+        "precioProveedor": 0
       },
       {
         "id": 27,
@@ -23889,12 +23871,12 @@
         "udm": "EA",
         "uid": "6ec3ec18-17da-4610-b204-14ddeef85194",
         "desc": "Un equipo de oxicorte",
-        "marca": "IMPORTAO ",
+        "marca": "",
         "precio": 0,
-        "desvTec": "CON RELOJ Y MANGUERA ",
+        "desvTec": "",
         "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 750000
+        "precioProveedor": 0
       },
       {
         "id": 28,
@@ -23902,12 +23884,12 @@
         "udm": "EA",
         "uid": "5a6992de-7210-4e12-a385-c26201737fc7",
         "desc": "Un equipo de soldar multiproposito",
-        "marca": "PRETULL",
+        "marca": "",
         "precio": 0,
-        "desvTec": "110/220",
+        "desvTec": "",
         "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 540000
+        "precioProveedor": 0
       },
       {
         "id": 29,
@@ -24194,38 +24176,12 @@
         "proveedor": "",
         "tiempoEntrega": "",
         "precioProveedor": 0
-      },
-      {
-        "id": 51,
-        "desc": "1 quintal de 60/13 por 1/8 y 3/32",
-        "udm": "EA",
-        "qty": 1,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "1/8 3/32",
-        "marca": "WSTARCO ",
-        "proveedor": "MONTENEGRO ",
-        "precioProveedor": 23500,
-        "uid": "6899d8e4-a164-435a-bd9d-47738991e069"
-      },
-      {
-        "id": 52,
-        "desc": "Una caja de discos de pulir de 4 y 7 pulgadas",
-        "udm": "EA",
-        "qty": 1,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "7\"",
-        "marca": "DEWALT ",
-        "proveedor": "MONTENEGRO ",
-        "precioProveedor": 9900,
-        "uid": "13defb2f-3a29-4cc3-9719-66c16187326c"
       }
     ],
-    "fechaGuardado": "2026-07-15T16:58:19.935Z",
+    "fechaGuardado": "2026-07-15T15:25:19.553Z",
     "createdAt": "2026-07-15T15:18:54.221Z",
     "createdBy": "lina",
-    "updatedAt": "2026-07-15T16:58:19.935Z",
+    "updatedAt": "2026-07-15T15:25:19.553Z",
     "updatedBy": "lina"
   },
   {
