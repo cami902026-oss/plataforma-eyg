@@ -1036,56 +1036,17 @@
     "deletedAt": "2026-06-10T18:14:21.662Z"
   },
   {
-    "id": "LM1003",
-    "fecha": "2026-05-23",
-    "fechaVenc": "2026-05-31",
-    "cliente": "PEPE",
-    "contacto": "PEPITO",
-    "correo": "pepito@eygenergygrimsjd.com",
-    "estado": "Borrador",
-    "iva": 19,
-    "subtotal": 12447.857142857143,
-    "ivaVal": 2365.092857142857,
-    "total": 14812.95,
-    "formaPago": "30 DÍAS",
-    "sitioEntrega": "chia",
-    "validez": "8 DÍAS",
-    "observaciones": "LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.",
-    "vendedor": "Sheila Baron",
-    "realizadaPor": "Alexandra",
-    "aprobadaPor": "Alberto",
-    "items": [
-      {
-        "id": 1,
-        "desc": "CODO AC NPT 3.000L 3/4\"",
-        "udm": "EA",
-        "qty": 1,
-        "precio": 12447.857142857143,
-        "tiempoEntrega": "1-2 DÍAS HÁBILES",
-        "desvTec": "",
-        "marca": "BOTHWELL",
-        "proveedor": "",
-        "codigo": 15000117
-      }
-    ],
-    "fechaGuardado": "2026-05-23T17:58:29.244Z",
-    "createdAt": "2026-05-23T17:58:29.244Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-05-23T17:58:29.244Z",
-    "updatedBy": "andrea"
-  },
-  {
-    "id": "LM1581",
+    "id": "LM1577",
     "fecha": "2026-05-25",
     "fechaVenc": "2026-06-02",
-    "cliente": "JE JAIMES",
-    "contacto": "Luis Garzon ",
-    "correo": "contacto@jejaimes.com.co",
+    "cliente": "ANDES OPERATING",
+    "contacto": "Andres Bernal",
+    "correo": "andres.bernal@andesoperating.com",
     "estado": "Vencida",
     "iva": 19,
-    "subtotal": 122760000,
-    "ivaVal": 23324400,
-    "total": 146084400,
+    "subtotal": 6500000,
+    "ivaVal": 1235000,
+    "total": 7735000,
     "formaPago": "CONTADO",
     "sitioEntrega": "INSTALACIONES ENERGY GROUP CHIA",
     "validez": "8 DÍAS",
@@ -1093,27 +1054,27 @@
     "vendedor": "",
     "realizadaPor": "",
     "aprobadaPor": "",
-    "solicitudId": "SOL-20260525-609",
+    "solicitudId": "SOL-20260525-221",
     "items": [
       {
-        "id": 1,
-        "desc": "TUBERIA  4 PULGADAS SCH 40 RANGO SENCILLO ",
+        "id": 2,
+        "desc": "BOMA IHM  10X16 SM",
         "udm": "EA",
-        "qty": 330,
-        "precio": 372000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "SE COTIZA TUBO POR 6 METROS",
-        "marca": "BAOLAI",
-        "proveedor": "BODEGA",
-        "precioProveedor": 0
+        "qty": 1,
+        "precio": 6500000,
+        "tiempoEntrega": "5 DIAS",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": "IHM",
+        "precioProveedor": 4156000
       }
     ],
-    "fechaGuardado": "2026-05-25T17:12:32.709Z",
+    "fechaGuardado": "2026-05-25T17:32:47.278Z",
     "createdAt": "2026-05-25T15:30:18.871Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-16T21:28:25.988Z",
+    "updatedAt": "2026-07-16T00:25:43.601Z",
     "updatedBy": "auto",
-    "vencidaAutoAt": "2026-07-16T21:28:25.988Z"
+    "vencidaAutoAt": "2026-07-16T00:25:43.601Z"
   },
   {
     "id": "LM1582",
@@ -17696,33 +17657,49 @@
     "motivoRechazo": "",
     "items": [
       {
-        "desc": "202110-15850 3\" Gate valve, flexible wedge, API 600, 2500#, RTJ Flg, Full Port ,OS&Y-Rising Stem , Bolted Bnt, ASTM A216 Grade WCB, Gear Op, API Trim 8 , Renewable Seats & Backseat , Flexible Graphite Packing",
-        "udm": "UND",
         "qty": 4,
-        "precio": 32142857,
+        "udm": "UND",
+        "uid": "d2eb5ea4-2d74-4e26-a53c-5af01ed59db2",
+        "desc": "202110-15850 3\" Gate valve, flexible wedge, API 600, 2500#, RTJ Flg, Full Port ,OS&Y-Rising Stem , Bolted Bnt, ASTM A216 Grade WCB, Gear Op, API Trim 8 , Renewable Seats & Backseat , Flexible Graphite Packing",
         "marca": "SAVAL",
+        "precio": 32142857,
+        "desvTec": "Valvula de Compuerta Solida (Gate), API 600, de 3” CLASE 2500, Extremos Flanchados RTJ ASME B16.5, Cuerpo A216\nWCB, Trim 8, Paso Completo (full), Empaques Cuerpo Graphite, Empaque Vastago Grafito, Bonete/Tapa Apernada, Operacion\nVolante",
         "proveedor": "SAVAL",
-        "precioProveedor": 22500000,
         "tiempoEntrega": "20-25  DIAS",
-        "desvTec": "Valvula de Compuerta Solida (Gate), API 600, de 3” CLASE 2500, Extremos Flanchados RTJ ASME B16.5, Cuerpo A216\nWCB, Trim 8, Paso Completo (full), Empaques Cuerpo Graphite, Empaque Vastago Grafito, Bonete/Tapa Apernada, Operacion\nVolante"
+        "precioProveedor": 22500000
       },
       {
-        "desc": "202110-15852 2\" Gate valve, flexible wedge, API 600, 300#, RF Flg, Full Port , OS&Y-Rising Stem , Bolted Bnt, ASTM A216 Grade WCB, Handwheel Op, API Trim 8 , Renewable Seats & Backseat , Flexible Graphite Packing",
+        "qty": 2,
         "udm": "UND",
+        "uid": "1c49daeb-8d60-439d-9fe8-5651e3267ca4",
+        "desc": "202110-15852 2\" Gate valve, flexible wedge, API 600, 300#, RF Flg, Full Port , OS&Y-Rising Stem , Bolted Bnt, ASTM A216 Grade WCB, Handwheel Op, API Trim 8 , Renewable Seats & Backseat , Flexible Graphite Packing",
+        "marca": "VIZA",
+        "precio": 916667,
+        "desvTec": "VALVULA CORTINA A216 FLG 300L 2\" RF",
+        "proveedor": "INDUVACOL",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 687500,
+        "fotoGrande": false
+      },
+      {
+        "id": 3,
+        "desc": "202110-15852 2\" Gate valve, flexible wedge, API 600, 300#, RF Flg, Full Port , OS&Y-Rising Stem , Bolted Bnt, ASTM A216 Grade WCB, Handwheel Op, API Trim 8 , Renewable Seats & Backseat , Flexible Graphite Packing",
+        "udm": "EA",
         "qty": 2,
         "precio": 916667,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "VALVULA CORTINA A216 FLG 300L 2\" RF",
         "marca": "VIZA",
         "proveedor": "INDUVACOL",
         "precioProveedor": 687500,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "VALVULA CORTINA A216 FLG 300L 2\" RF"
+        "uid": "f900df49-46de-4f32-8704-567f778564ca"
       }
     ],
-    "fechaGuardado": "2026-07-16T20:59:52.053Z",
+    "fechaGuardado": "2026-07-16T21:11:24.983Z",
     "fechaEnvio": "2026-07-16T20:59:52.053Z",
     "createdAt": "2026-07-16T20:59:52.054Z",
     "createdBy": "lina",
-    "updatedAt": "2026-07-16T20:59:52.054Z",
+    "updatedAt": "2026-07-16T21:11:24.983Z",
     "updatedBy": "lina"
   },
   {
@@ -26983,9 +26960,10 @@
         "desc": "codo galvanizado de 1/2\"",
         "marca": "",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "desvTec": "CODO GALVANIZADO ROSCADO  BAJA PRESION ",
+        "proveedor": "GRANADA ",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 2000
       },
       {
         "id": 3,
@@ -26995,9 +26973,10 @@
         "desc": "tee galvanizado de 1/2\"",
         "marca": "",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "desvTec": "TEE GALVANIZADA",
+        "proveedor": "GRANADA",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 2100
       },
       {
         "id": 4,
@@ -27007,9 +26986,10 @@
         "desc": "union galvanizado de 1/2\"",
         "marca": "",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "desvTec": "UNION GALVANIZADA 1/2 ROSCADA BAJA PRESION ",
+        "proveedor": "GRANADA ",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 1600
       },
       {
         "id": 5,
@@ -27029,11 +27009,12 @@
         "udm": "UN",
         "uid": "74c475da-be0f-4abf-918a-ac306a907ebc",
         "desc": "válvula de bola conexión de 3/2\" x 1000 psi en acero inox",
-        "marca": "",
+        "marca": "SIO ",
         "precio": 0,
-        "desvTec": "",
+        "desvTec": "VALVULA 316 INOX 1000 ",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 623000
       },
       {
         "id": 7,
@@ -27218,10 +27199,10 @@
         "tiempoEntrega": "1-2 DIAS"
       }
     ],
-    "fechaGuardado": "2026-07-16T17:51:46.380Z",
+    "fechaGuardado": "2026-07-16T21:29:07.221Z",
     "createdAt": "2026-07-16T16:38:24.590Z",
     "createdBy": "lina",
-    "updatedAt": "2026-07-16T17:51:46.381Z",
+    "updatedAt": "2026-07-16T21:29:07.221Z",
     "updatedBy": "lina"
   },
   {
