@@ -2585,7 +2585,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 <!-- KARDEX -->
   <div id="abs-tab-kardex" class="abs-panel" style="display:none">
     <div class="abs-toolbar">
-      <input type="text" id="abs-kardex-search" placeholder="Buscar código o descripción..." oninput="absRenderKardex()" style="flex:1;min-width:180px;">
+      <input type="text" id="abs-kardex-search" placeholder="Buscar código, descripción, remisión o responsable..." oninput="absRenderKardex()" style="flex:1;min-width:180px;">
       <select id="abs-kardex-tipo" onchange="absRenderKardex()">
         <option value="">Todos los tipos</option>
         <option>ENTRADA</option><option>SALIDA</option><option>DEVOLUCION</option>
@@ -15251,6 +15251,29 @@ function absMovClearProduct() {
   const btnS=document.getElementById('abs-btn-salida');  if(btnS) btnS.classList.remove('active');
   ['abs-mov-cantidad','abs-mov-lote','abs-mov-colada','abs-mov-remision','abs-mov-notas'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 }
+// ── AVISO ANTI-DOBLE REGISTRO DE REMISIÓN (v137, 2026-07-16) ─────────────────
+// Caso real: la remisión 26199 se digitó completa DOS veces (6-jul y 14-jul) y
+// descontó doble 3 productos. Antes de registrar una salida se consulta si ese
+// número YA tiene salidas en el kardex: si las tiene, AVISA (no bloquea — los
+// despachos parciales existen); un segundo clic deliberado continúa.
+function _absRemNum(v){ const m=String(v||'').match(/\d{4,}/); return m?m[0]:''; }
+let _absRemAvisada='';
+async function _absSalidasDeRemision(num){
+  if(!num) return [];
+  try{ return await absFetch('kardex?tipo=eq.SALIDA&remision=ilike.*'+encodeURIComponent(num)+'*&select=fecha,codigo_producto,descripcion_producto,cantidad,responsable&order=fecha.asc&limit=100')||[]; }
+  catch(_){ return []; }
+}
+async function _absAvisarRemisionDoble(remision){
+  const num=_absRemNum(remision);
+  if(!num||_absRemAvisada===num) return false;      // sin número o ya avisado: continuar
+  const prev=await _absSalidasDeRemision(num);
+  if(!prev.length) return false;
+  _absRemAvisada=num;
+  const u=prev[prev.length-1];
+  showToast('⚠️ La remisión '+num+' YA tiene '+prev.length+' salida(s) registrada(s) — última: '+u.fecha+', '+(u.descripcion_producto||'').substring(0,40)+' x'+u.cantidad+' ('+(u.responsable||'')+'). Si esto es un despacho ADICIONAL real, presiona Registrar otra vez.','error',{durationMs:16000});
+  return true;                                        // avisado: detener este intento
+}
+
 async function absGuardarMovimiento() {
   if(!abs_mov_tipo)    return showToast('Selecciona ENTRADA o SALIDA','error');
   if(!abs_mov_producto) return showToast('Selecciona un producto','error');
@@ -15264,6 +15287,8 @@ async function absGuardarMovimiento() {
   if(abs_mov_tipo==='ENTRADA'&&!lote) return showToast('El lote es obligatorio para entradas','error');
   if(abs_mov_tipo==='SALIDA'&&!colada) return showToast('La colada es obligatoria para salidas','error');
   if(abs_mov_tipo==='SALIDA'&&!remision) return showToast('La remisión es obligatoria para salidas','error');
+  // v137: si la remisión ya tiene salidas, avisar y esperar un 2º clic deliberado
+  if(abs_mov_tipo==='SALIDA'&&await _absAvisarRemisionDoble(remision)) return;
   try {
     const nuevo_stock=abs_mov_tipo==='ENTRADA'
       ?abs_mov_producto.stock_actual+cantidad
@@ -15405,6 +15430,8 @@ async function absCartGuardar() {
     if(abs_cart_tipo==='SALIDA'&&it.cantidad>it.stock_actual) return showToast('Stock insuficiente en '+it.codigo+' (disp: '+it.stock_actual+')','error');
   }
   const remision=abs_cart_tipo==='SALIDA'?(document.getElementById('abs-cart-remision')?.value?.trim()||''):'';
+  // v137: si la remisión ya tiene salidas, avisar y esperar un 2º clic deliberado
+  if(abs_cart_tipo==='SALIDA'&&await _absAvisarRemisionDoble(remision)) return;
   const notas=document.getElementById('abs-cart-notas')?.value?.trim()||'';
   const btn=document.getElementById('abs-cart-registrar'); if(btn) btn.disabled=true;
   const prog=document.getElementById('abs-cart-progreso');
@@ -15454,7 +15481,9 @@ function absRenderKardex() {
   const desde=document.getElementById('abs-kardex-desde')?.value||'';
   const hasta=document.getElementById('abs-kardex-hasta')?.value||'';
   let rows=abs_kardex.filter(k=>{
-    if(q&&!(k.codigo_producto||'').toLowerCase().includes(q)&&!(k.descripcion_producto||'').toLowerCase().includes(q)) return false;
+    // v137: la búsqueda también encuentra por REMISIÓN y responsable (antes solo código/descripción)
+    if(q&&!(k.codigo_producto||'').toLowerCase().includes(q)&&!(k.descripcion_producto||'').toLowerCase().includes(q)
+        &&!(k.remision||'').toLowerCase().includes(q)&&!(k.responsable||'').toLowerCase().includes(q)) return false;
     if(tipo&&k.tipo!==tipo) return false;
     if(desde&&k.fecha<desde) return false;
     if(hasta&&k.fecha>hasta) return false;
@@ -15591,8 +15620,58 @@ function remiRenderLista(){
     <td style="white-space:nowrap">
       <button onclick="remiAbrir('${_remiEsc(r.remision)}')" style="background:rgba(26,58,143,.4);border:1px solid rgba(26,58,143,.6);color:#90cdf4;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">👁 Ver</button>
       <button onclick="remiAbrir('${_remiEsc(r.remision)}',true)" title="Descargar PDF" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:var(--gold);padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">📄</button>
+      <button onclick="remiVerSalidas('${_remiEsc(r.remision)}')" title="Salidas de bodega asociadas a esta remisión (kardex)" style="background:rgba(46,170,74,.15);border:1px solid rgba(46,170,74,.4);color:#86efac;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">📦</button>
     </td>
   </tr>${(r._match&&r._match.length)?`<tr><td></td><td colspan="5" style="padding:2px 8px 10px;font-size:11.5px;color:var(--text-muted);border-top:none">${r._match.map(it=>`↳ ${it.cantidad!=null?('<b style="color:var(--gold)">'+_remiEsc(it.cantidad)+'</b> × '):''}${_remiEsc(it.descripcion)}${it.marca?(' · <i>'+_remiEsc(it.marca)+'</i>'):''}`).join('<br>')}</td></tr>`:''}`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Sin remisiones</td></tr>';
+}
+// ── 📦 SALIDAS DE BODEGA DE UNA REMISIÓN (v137, 2026-07-16) ──────────────────
+// Cruce remisión ↔ kardex: muestra los movimientos de bodega asociados al número
+// (busca cualquier forma de escribirlo: "26199-CR", "CR 26199"…), marca si está
+// SIN descontar y detecta códigos con MÁS de una salida (posible doble registro,
+// caso 26199). Solo lectura.
+async function remiVerSalidas(numero){
+  const num=_absRemNum(numero)||String(numero||'').trim();
+  if(!num) return showToast('Remisión sin número','error');
+  showToast('Consultando bodega para la remisión '+num+'…','info');
+  let rows=[];
+  try{ rows=await absFetch('kardex?remision=ilike.*'+encodeURIComponent(num)+'*&select=fecha,hora,tipo,codigo_producto,descripcion_producto,cantidad,responsable,remision&order=fecha.asc,hora.asc&limit=200')||[]; }
+  catch(e){ return showToast('No se pudo consultar el kardex: '+(e&&e.message||''),'error'); }
+  const salidas=rows.filter(x=>x.tipo==='SALIDA');
+  const devol=rows.filter(x=>x.tipo!=='SALIDA');
+  // Códigos con más de una salida = alerta de posible doble registro
+  const porCod={}; salidas.forEach(s=>{ porCod[s.codigo_producto]=(porCod[s.codigo_producto]||0)+1; });
+  const dobles=Object.keys(porCod).filter(c=>porCod[c]>1);
+  const grupos=(typeof remiGrupos==='function')?remiGrupos():{};
+  const itsRemi=grupos[numero]||grupos[num]||[];
+  const estado=salidas.length
+    ?'<span style="background:rgba(46,170,74,.2);color:#86efac;padding:3px 10px;border-radius:20px;font-size:12px;">✅ '+salidas.length+' salida(s) en bodega</span>'
+    :'<span style="background:rgba(239,68,68,.2);color:#fca5a5;padding:3px 10px;border-radius:20px;font-size:12px;">⚠️ SIN salidas de bodega registradas</span>';
+  const filas=rows.map(x=>'<tr>'+
+    '<td style="padding:5px 8px;font-size:11px;border-bottom:1px solid rgba(255,255,255,.06);">'+x.fecha+'</td>'+
+    '<td style="padding:5px 8px;font-size:11px;border-bottom:1px solid rgba(255,255,255,.06);">'+String(x.hora||'').substring(0,5)+'</td>'+
+    '<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.06);"><span class="abs-badge '+String(x.tipo||'').toLowerCase()+'">'+x.tipo+'</span></td>'+
+    '<td style="padding:5px 8px;font-size:11px;color:var(--gold);border-bottom:1px solid rgba(255,255,255,.06);'+(dobles.includes(x.codigo_producto)?'font-weight:800;':'')+'">'+x.codigo_producto+(dobles.includes(x.codigo_producto)?' 🚨':'')+'</td>'+
+    '<td style="padding:5px 8px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.06);">'+_remiEsc(x.descripcion_producto||'')+'</td>'+
+    '<td style="padding:5px 8px;text-align:right;font-weight:700;border-bottom:1px solid rgba(255,255,255,.06);">'+x.cantidad+'</td>'+
+    '<td style="padding:5px 8px;font-size:11px;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,.06);">'+_remiEsc(x.responsable||'')+'</td>'+
+    '<td style="padding:5px 8px;font-size:10px;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,.06);">'+_remiEsc(x.remision||'')+'</td></tr>').join('');
+  const old=document.getElementById('remi-salidas-modal'); if(old) old.remove();
+  const ov=document.createElement('div');
+  ov.id='remi-salidas-modal';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:4000;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML='<div style="background:#0f2034;border:1px solid var(--border);border-radius:14px;max-width:860px;width:100%;max-height:85vh;overflow-y:auto;padding:22px;">'+
+    '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:4px;">'+
+    '<h3 style="margin:0;color:#fff;font-family:Montserrat,sans-serif;">📦 Bodega — Remisión '+_remiEsc(num)+'</h3>'+estado+
+    '<button onclick="document.getElementById(\'remi-salidas-modal\').remove()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:4px 12px;cursor:pointer;">✖ Cerrar</button></div>'+
+    '<p style="color:var(--text-muted);font-size:12px;margin:4px 0 12px;">La remisión tiene <b>'+itsRemi.length+'</b> ítem(s) en el documento · el kardex registra <b>'+salidas.length+'</b> salida(s)'+(devol.length?(' y <b>'+devol.length+'</b> entrada(s)/devolución(es)'):'')+'.</p>'+
+    (dobles.length?('<div style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;color:#fca5a5;">🚨 <b>Posible DOBLE registro:</b> estos códigos tienen más de una salida con este número: '+dobles.join(', ')+'. Verificar si fueron despachos parciales reales o un descuento repetido (caso 26199).</div>'):'')+
+    (rows.length?('<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;min-width:680px;"><thead><tr>'+
+      ['FECHA','HORA','TIPO','CÓDIGO','PRODUCTO','CANT','RESPONSABLE','REM. ESCRITA'].map(h=>'<th style="text-align:left;padding:5px 8px;font-size:10px;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,.15);">'+h+'</th>').join('')+
+      '</tr></thead><tbody>'+filas+'</tbody></table></div>')
+      :'<div style="padding:20px;text-align:center;color:var(--text-muted);">El kardex no tiene movimientos con el número '+_remiEsc(num)+'.<br>Si el despacho ya salió físicamente, falta registrar la salida en Abastecimiento → Movimientos.</div>')+
+    '</div>';
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });
+  document.body.appendChild(ov);
 }
 async function remiExportExcel(){
   if (!remi_rows.length) await remiCargar();
