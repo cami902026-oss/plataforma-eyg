@@ -23509,10 +23509,10 @@
         "desc": "20\" X 18\"  CARBON STEEL ECCENTRIC REDUCER , ASTM  A 324 GR WPB DIMENIONS AS PER ASME B16.9 BUTT WELDING ENDS BORE AND SCHEDULE XS /XS ",
         "marca": "",
         "precio": 0,
-        "desvTec": "REDUCCION EXCENTRICA 20\" X 18\" SCHXS FABRICADA SEGÚN ASMEB B16,9 EXTREMO LISO ",
-        "proveedor": "AFC",
+        "desvTec": "",
+        "proveedor": "",
         "tiempoEntrega": "",
-        "precioProveedor": 3700000
+        "precioProveedor": 0
       },
       {
         "id": 2,
@@ -23541,10 +23541,10 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-07-16T14:03:02.239Z",
+    "fechaGuardado": "2026-07-15T17:17:10.339Z",
     "createdAt": "2026-07-15T13:40:28.567Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-16T14:03:02.239Z",
+    "updatedAt": "2026-07-15T17:17:10.339Z",
     "updatedBy": "lina"
   },
   {
@@ -24725,13 +24725,13 @@
     "fechaVenc": "2026-07-23",
     "cliente": "INDUMEC",
     "contacto": "PEDRO",
-    "correo": "",
+    "correo": "--------------3-",
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 27125921,
-    "ivaVal": 5153924.99,
-    "total": 32279845.990000002,
+    "subtotal": 26578655,
+    "ivaVal": 5049944.45,
+    "total": 31628599.45,
     "formaPago": "CONTADO",
     "sitioEntrega": "BCA UPIA",
     "validez": "8 DÍAS",
@@ -24946,9 +24946,9 @@
         "marca": "MOLONG/WUXY/TPCO",
         "precio": 0,
         "desvTec": "4IN LONG SCH 160",
-        "proveedor": "INSTRUGASES",
+        "proveedor": "DISEFER--",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 40000
       },
       {
         "id": 17,
@@ -25160,7 +25160,7 @@
       },
       {
         "id": 33,
-        "qty": 2,
+        "qty": 0,
         "udm": "EA",
         "uid": "60b85173-5437-4df7-99af-0872afa7026a",
         "desc": "BRIDA WN CS 8\" CL 300 SCH 80 RF A105 B16.5 \n",
@@ -25198,11 +25198,11 @@
         "precioProveedor": 2302820
       }
     ],
-    "fechaGuardado": "2026-07-16T00:19:23.275Z",
+    "fechaGuardado": "2026-07-16T14:03:57.424Z",
     "createdAt": "2026-07-15T22:10:08.519Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-16T00:19:23.275Z",
-    "updatedBy": "alberto"
+    "updatedAt": "2026-07-16T14:03:57.424Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM1819",
@@ -25479,46 +25479,5 @@
     "createdBy": "sandra",
     "updatedAt": "2026-07-16T13:03:20.669Z",
     "updatedBy": "sandra"
-  },
-  {
-    "id": "LM1581",
-    "fecha": "2026-05-25",
-    "fechaVenc": "2026-06-02",
-    "cliente": "JE JAIMES",
-    "contacto": "Luis Garzon ",
-    "correo": "contacto@jejaimes.com.co",
-    "estado": "Vencida",
-    "iva": 19,
-    "subtotal": 122760000,
-    "ivaVal": 23324400,
-    "total": 146084400,
-    "formaPago": "CONTADO",
-    "sitioEntrega": "INSTALACIONES ENERGY GROUP CHIA",
-    "validez": "8 DÍAS",
-    "observaciones": "LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE. ",
-    "vendedor": "",
-    "realizadaPor": "",
-    "aprobadaPor": "",
-    "solicitudId": "SOL-20260525-609",
-    "items": [
-      {
-        "id": 1,
-        "desc": "TUBERIA  4 PULGADAS SCH 40 RANGO SENCILLO ",
-        "udm": "EA",
-        "qty": 330,
-        "precio": 372000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "SE COTIZA TUBO POR 6 METROS",
-        "marca": "BAOLAI",
-        "proveedor": "BODEGA",
-        "precioProveedor": 0
-      }
-    ],
-    "fechaGuardado": "2026-05-25T17:12:32.709Z",
-    "createdAt": "2026-05-25T15:30:18.871Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-07-08T14:46:54.382Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-07-08T14:46:54.382Z"
   }
 ]
