@@ -17634,6 +17634,59 @@
     "updatedBy": "lina"
   },
   {
+    "id": "LM1776-1",
+    "fecha": "2026-07-09",
+    "fechaVenc": "2026-07-17",
+    "cliente": "Petrolabin S.A.S (GESTOR COMPRAS) - para Contrato Marco 3045385 / ODS 9",
+    "contacto": "MARIA PAULA MORENO JARAMILLO ",
+    "correo": "",
+    "estado": "Enviada",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 130404762,
+    "ivaVal": 24776904.78,
+    "total": 155181666.78,
+    "formaPago": "CONTADO ",
+    "sitioEntrega": "ACACIAS ",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Lina Cifuentes",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "desc": "202110-15850 3\" Gate valve, flexible wedge, API 600, 2500#, RTJ Flg, Full Port ,OS&Y-Rising Stem , Bolted Bnt, ASTM A216 Grade WCB, Gear Op, API Trim 8 , Renewable Seats & Backseat , Flexible Graphite Packing",
+        "udm": "UND",
+        "qty": 4,
+        "precio": 32142857,
+        "marca": "SAVAL",
+        "proveedor": "SAVAL",
+        "precioProveedor": 22500000,
+        "tiempoEntrega": "20-25  DIAS",
+        "desvTec": "Valvula de Compuerta Solida (Gate), API 600, de 3” CLASE 2500, Extremos Flanchados RTJ ASME B16.5, Cuerpo A216\nWCB, Trim 8, Paso Completo (full), Empaques Cuerpo Graphite, Empaque Vastago Grafito, Bonete/Tapa Apernada, Operacion\nVolante"
+      },
+      {
+        "desc": "202110-15852 2\" Gate valve, flexible wedge, API 600, 300#, RF Flg, Full Port , OS&Y-Rising Stem , Bolted Bnt, ASTM A216 Grade WCB, Handwheel Op, API Trim 8 , Renewable Seats & Backseat , Flexible Graphite Packing",
+        "udm": "UND",
+        "qty": 2,
+        "precio": 916667,
+        "marca": "VIZA",
+        "proveedor": "INDUVACOL",
+        "precioProveedor": 687500,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "VALVULA CORTINA A216 FLG 300L 2\" RF"
+      }
+    ],
+    "fechaGuardado": "2026-07-16T20:59:52.053Z",
+    "fechaEnvio": "2026-07-16T20:59:52.053Z",
+    "createdAt": "2026-07-16T20:59:52.054Z",
+    "createdBy": "lina",
+    "updatedAt": "2026-07-16T20:59:52.054Z",
+    "updatedBy": "lina"
+  },
+  {
     "id": "LM1782",
     "fecha": "2026-07-09",
     "fechaVenc": "2026-07-16",
@@ -26603,12 +26656,12 @@
     "cliente": "SKID EXPERT",
     "contacto": "JENNY ARIAS",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Revisión gerencia",
     "factura": "",
     "iva": 19,
-    "subtotal": 2999935,
-    "ivaVal": 569987.65,
-    "total": 3569922.65,
+    "subtotal": 1008257,
+    "ivaVal": 191568.83,
+    "total": 1199825.83,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "MOSQUERA",
     "validez": "8 DÍAS",
@@ -26626,11 +26679,11 @@
         "uid": "b1b5f3ad-e078-45a7-9b90-82143fff9847",
         "desc": "PIPE SMLS NPS 4\" SCH 80 (SA-106 Gr B)\n",
         "marca": "BAOLAI-MOLONG",
-        "precio": 856098,
+        "precio": 0,
         "desvTec": "X 6 MT",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 702000
+        "precioProveedor": 117000
       },
       {
         "id": 2,
@@ -26643,7 +26696,7 @@
         "desvTec": "X 6 MT",
         "proveedor": "TECNITUBERIAS",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 660000
+        "precioProveedor": 110000
       },
       {
         "id": 3,
@@ -26652,11 +26705,11 @@
         "uid": "dc78525d-bb4f-4ae6-b2cd-0f6932858c9c",
         "desc": "PIPE SMLS NPS 1\" SCH XXS (SA-106 Gr B)\n",
         "marca": "BAOLAI-MOLON",
-        "precio": 199200,
+        "precio": 0,
         "desvTec": "SE OFERTA SCH 160 X 6MT",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 159360
+        "precioProveedor": 26.56
       },
       {
         "id": 4,
@@ -26664,12 +26717,12 @@
         "udm": "EA",
         "uid": "146a2e63-d575-44c3-89b5-c352ecca8f9a",
         "desc": "FLANGE NPS 4\" WN SCH 80 RF CL 150 (SA-105N)\n",
-        "marca": "BEBITZ",
-        "precio": 170370,
+        "marca": "XF",
+        "precio": 0,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 170370
+        "precioProveedor": 170.37
       },
       {
         "id": 5,
@@ -26677,12 +26730,12 @@
         "udm": "EA",
         "uid": "18fbbdcd-7a66-4f06-9130-f2c13aefc6e2",
         "desc": "FLANGE  NPS 2\" WN SCH 160 RF CL 150 (SA-105N)\n",
-        "marca": "XF",
-        "precio": 120000,
-        "desvTec": "A105",
-        "proveedor": "BODEGA",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 120000
+        "precioProveedor": 0
       },
       {
         "id": 6,
@@ -26691,11 +26744,11 @@
         "uid": "deeb90f7-4ce2-4dae-9178-7afbd076df4f",
         "desc": "FLANGE NPS 2\" BLIND RF CL 150 (SA-105N)\n",
         "marca": "XF",
-        "precio": 19611,
+        "precio": 0,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 17650
+        "precioProveedor": 17.65
       },
       {
         "id": 7,
@@ -26704,11 +26757,11 @@
         "uid": "f51c96c1-b824-4638-abbc-25cae0428f6e",
         "desc": "FULL COUPLING NPS 1 1/2\" NPT CL 6000 (SA-105)\n",
         "marca": "BOTHWEL-XF",
-        "precio": 32072,
+        "precio": 30000,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 26620
+        "precioProveedor": 26.62
       },
       {
         "id": 8,
@@ -26717,11 +26770,11 @@
         "uid": "80d9fbd6-166d-471e-9944-ebdafd80a63c",
         "desc": "FULL COUPLING NPS 1\" NPT CL 6000 (SA-105)\n",
         "marca": "BOTHWEL-XF",
-        "precio": 18169,
+        "precio": 0,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 15080
+        "precioProveedor": 15.08
       },
       {
         "id": 9,
@@ -26730,11 +26783,11 @@
         "uid": "e131ded1-bf24-4ba0-a739-46189e582b8d",
         "desc": "FULL COUPLING NPS 3/4\" NPT CL 6000 (SA-105)\n",
         "marca": "BOTHWEL-XF",
-        "precio": 11108,
+        "precio": 0,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 9220
+        "precioProveedor": 9.22
       },
       {
         "id": 10,
@@ -26743,11 +26796,11 @@
         "uid": "7c0bccca-5a77-43f0-84b8-579ae88c9ef0",
         "desc": "PLUG HEX NPS 1 1/2\" NPT CL 6000 (SA-105)\n",
         "marca": "BOTHWEL-XF",
-        "precio": 13036,
+        "precio": 0,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 10820
+        "precioProveedor": 10.82
       },
       {
         "id": 11,
@@ -26756,11 +26809,11 @@
         "uid": "fac6728b-b85f-40da-ad01-3dc28e456507",
         "desc": "PLUG HEX NPS 1\" NPT CL 6000 (SA-105)\n",
         "marca": "BOTHWEL-XF",
-        "precio": 8145,
+        "precio": 0,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 6760
+        "precioProveedor": 6.76
       },
       {
         "id": 12,
@@ -26769,11 +26822,11 @@
         "uid": "3092ae08-8406-4b36-881f-b7a44ef6c6be",
         "desc": "PLUG HEX NPS 3/4\" NPT CL 6000 (SA-105)\n",
         "marca": "BOTHWEL-XF",
-        "precio": 7867,
+        "precio": 0,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 6530
+        "precioProveedor": 6.53
       },
       {
         "id": 13,
@@ -26782,7 +26835,7 @@
         "uid": "27662ab1-bd8e-4781-a4c5-f990c55d701f",
         "desc": "STUD BOLT NPS 5/8 UNC 4\" (SA-193 Gr B7)\n",
         "marca": "JDF",
-        "precio": 2356,
+        "precio": 0,
         "desvTec": "",
         "proveedor": "MUNDIAL",
         "tiempoEntrega": "1-2 DIAS",
@@ -26795,7 +26848,7 @@
         "uid": "96d8603e-0504-40a3-ad9f-5a498de36767",
         "desc": "HEX NUT NPS 5/8\"-11 UNC (SA-194 2H)\n",
         "marca": "JDF",
-        "precio": 726,
+        "precio": 0,
         "desvTec": "",
         "proveedor": "MUNDIAL",
         "tiempoEntrega": "1-2 DIAS",
@@ -26841,11 +26894,10 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-07-16T20:59:44.148Z",
-    "fechaEnvio": "2026-07-16T20:58:12.052Z",
+    "fechaGuardado": "2026-07-16T16:57:08.892Z",
     "createdAt": "2026-07-16T14:59:40.411Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-16T20:59:44.148Z",
+    "updatedAt": "2026-07-16T16:57:08.892Z",
     "updatedBy": "sandra"
   },
   {
@@ -27575,7 +27627,7 @@
         "desc": "REDUCER PIPE CONCENTRIC;16\" X 10\";BUTT WELD;SCH STD;CARBON STEEL;GR WPB;ASTM A234;FULL COMPLIANCE WITH ASME B16.9",
         "marca": "",
         "precio": 0,
-        "desvTec": "A-234 WPB",
+        "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 307000
@@ -27601,7 +27653,7 @@
         "desc": "FLANGE PIPE WELD NECK;2\";CLASS 1500;RTJ;SCH 80;CARBON STEEL;ASTMA105;FULL COMPLIANCE WITH ASME B16.5;QA/QC CERTIFICATE;REQUIRED MILL TEST REPORT AND VISUAL INSPECTION REQUIRED",
         "marca": "",
         "precio": 0,
-        "desvTec": "A-105",
+        "desvTec": "",
         "proveedor": "TUVACOL",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 229600
@@ -27627,7 +27679,7 @@
         "desc": "VALVE,CHECK;SWING;3\";CLASS 900;RTJ;CARBON STEEL;ASTM A216;GR WCB FLAPPER;STAINLESS STEEL PIN;RENEW SEAT TRIM;250DEG F;BOLTED COVER;API 6D;QA/QC CERTIFICATE REQUIRED MILL TEST REPORT AND VISUAL INSPECTION REQUIRED",
         "marca": "",
         "precio": 0,
-        "desvTec": "A-216 WCB",
+        "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 3472600
@@ -27653,7 +27705,7 @@
         "desc": "FLANGE PIPE;WELD NECK;3\";CLASS 900;RTJ FACE;SCH 80;CARBON STEEL;ASTM A105;FULL COMPLIANCE WITH ASME B16.5;QA/QC CERT REQ MILL TEST REPORT AND OXY VISUAL INSPECTION REQ",
         "marca": "",
         "precio": 0,
-        "desvTec": "A-105",
+        "desvTec": "",
         "proveedor": "CODIFER ",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 134700
@@ -27666,7 +27718,7 @@
         "desc": "GASKET;RING JOINT;R OVAL;3\" PIPE;PHENOLIC;CLASS 900;API R31;FULLCOMPLIANCE WITH ASME B16.20;QA/QC CERTIFICATE REQUIRED MILL TEST REPORT AND VISUAL INSPECTION REQUIRED",
         "marca": "CHENSEA",
         "precio": 0,
-        "desvTec": "R31",
+        "desvTec": "",
         "proveedor": "COLIMPORTADOS",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 25560
@@ -27679,7 +27731,7 @@
         "desc": "FLANGE PIPE;SPECTACLE BLIND;3\";CLASS 900;RTJ FACE;CARBON STEEL;ASTM A516GR.70;FULL COMPLIANCE WITH ASME B16.48;QA/QC CERTIFICATE REQUIRED MILL TEST REPORT AND VISUAL INSPECTION REQUIRED",
         "marca": "NACIONAL",
         "precio": 0,
-        "desvTec": "FABRICACION A PARTIR DE LAMINA  A-516 GR 70",
+        "desvTec": "",
         "proveedor": "TECINCOL",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 450000
@@ -27775,10 +27827,10 @@
         "precioProveedor": 8076
       }
     ],
-    "fechaGuardado": "2026-07-16T20:57:06.372Z",
+    "fechaGuardado": "2026-07-16T20:44:05.026Z",
     "createdAt": "2026-07-16T20:30:20.371Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-16T20:57:06.372Z",
+    "updatedAt": "2026-07-16T20:44:05.026Z",
     "updatedBy": "sandra"
   }
 ]
