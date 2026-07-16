@@ -141,7 +141,11 @@ def fetch_cartera_facturacion():
             url = (json.load(f).get('url') or '').rstrip('/')
         if not url:
             return None
-        req = urllib.request.Request(url + '/api/facturacion', headers={'User-Agent': 'EYG-Report'})
+        # Clave del endpoint (2026-07-15): viaja como secreto CARTERA_CLAVE del workflow.
+        # Sin la variable, se pide sin clave (compatible mientras el agente no la exija).
+        clave = os.environ.get('CARTERA_CLAVE', '').strip()
+        qs = ('?clave=' + urllib.parse.quote(clave)) if clave else ''
+        req = urllib.request.Request(url + '/api/facturacion' + qs, headers={'User-Agent': 'EYG-Report'})
         with urllib.request.urlopen(req, timeout=45) as resp:
             d = json.loads(resp.read())
             if d.get('ok'):

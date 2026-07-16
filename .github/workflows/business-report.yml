@@ -36,6 +36,8 @@ jobs:
           RECIPIENT_EMAILS:  'andrea.bernal@eygenergygroup.com,gerenciageneral@eygenergygroup.com'
           SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY:      ${{ secrets.SUPABASE_KEY }}
+          # Clave de /api/facturacion del agente de cartera (2026-07-15)
+          CARTERA_CLAVE:     ${{ secrets.CARTERA_CLAVE }}
         run: python scripts/business_report.py
 
       - name: ✅ Confirmar envío
