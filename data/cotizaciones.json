@@ -27883,9 +27883,9 @@
     "estado": "Revisión gerencia",
     "factura": "",
     "iva": 19,
-    "subtotal": 1343288,
-    "ivaVal": 255224.72,
-    "total": 1598512.72,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
     "formaPago": "CREDITO 15 DIAS",
     "sitioEntrega": "MOSQUERA",
     "validez": "8 DÍAS",
@@ -27903,7 +27903,7 @@
         "uid": "8b3363fc-bf4f-4c56-8d91-6ff2311b49ec",
         "desc": "FLANCHE SLIPON AC 150L 18\".",
         "marca": "XF",
-        "precio": 519425,
+        "precio": 0,
         "desvTec": "A105",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -27916,19 +27916,19 @@
         "uid": "e1dda31e-54d3-44d7-8fb2-c3cb2c81f343",
         "desc": "FLANCHE CIEGO AC 150L 18",
         "marca": "XF",
-        "precio": 823863,
+        "precio": 0,
         "desvTec": "A105",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 659090
       }
     ],
-    "fechaGuardado": "2026-07-16T22:03:09.719Z",
+    "fechaGuardado": "2026-07-16T21:42:47.778Z",
     "fechaEnvio": "2026-07-16T21:21:49.728Z",
     "createdAt": "2026-07-16T21:07:08.239Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-16T22:03:09.719Z",
-    "updatedBy": "alberto"
+    "updatedAt": "2026-07-16T21:42:47.778Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM1829",
@@ -27954,34 +27954,34 @@
     "motivoRechazo": "",
     "items": [
       {
-        "desc": "Manguera de 4\" con acoples rapidos macho-hembra x 1,0 metros",
-        "udm": "EA",
         "qty": 1,
-        "precio": 535305,
+        "udm": "EA",
+        "uid": "4c054905-fadb-4646-bfa1-747825f3d105",
+        "desc": "Manguera de 4\" con acoples rapidos macho-hembra x 1,0 metros",
         "marca": "ESTRIMGFLEX",
-        "proveedor": "HIDROLING",
-        "precioProveedor": 347948,
-        "tiempoEntrega": "1-2 DIAS",
+        "precio": 535305,
         "desvTec": "",
-        "uid": "4c054905-fadb-4646-bfa1-747825f3d105"
+        "proveedor": "HIDROLING",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 347948
       },
       {
-        "desc": "Manguera de 4\" con acoples rapidos macho-hembra x 1,5 metros",
-        "udm": "EA",
         "qty": 1,
-        "precio": 644689,
+        "udm": "EA",
+        "uid": "9985d7f7-1dd5-46bc-80ed-a51057c29039",
+        "desc": "Manguera de 4\" con acoples rapidos macho-hembra x 1,5 metros",
         "marca": "ESTRIMGFLEX",
-        "proveedor": "HIDROLING",
-        "precioProveedor": 419048,
-        "tiempoEntrega": "1-2 DIAS",
+        "precio": 644689,
         "desvTec": "",
-        "uid": "9985d7f7-1dd5-46bc-80ed-a51057c29039"
+        "proveedor": "HIDROLING",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 419048
       }
     ],
-    "fechaGuardado": "2026-07-16T22:01:40.056Z",
+    "fechaGuardado": "2026-07-16T22:03:26.241Z",
     "createdAt": "2026-07-16T22:01:40.056Z",
     "createdBy": "alberto",
-    "updatedAt": "2026-07-16T22:01:40.056Z",
-    "updatedBy": "alberto"
+    "updatedAt": "2026-07-16T22:03:26.241Z",
+    "updatedBy": "sandra"
   }
 ]
