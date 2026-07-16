@@ -24671,12 +24671,12 @@
         "precioProveedor": 28980
       }
     ],
-    "fechaGuardado": "2026-07-16T13:59:15.965Z",
+    "fechaGuardado": "2026-07-16T14:39:54.231Z",
     "fechaEnvio": "2026-07-15T18:39:02.317Z",
     "createdAt": "2026-07-15T18:13:35.776Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-16T13:59:15.965Z",
-    "updatedBy": "lina"
+    "updatedAt": "2026-07-16T14:39:54.231Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM1817",
@@ -24729,7 +24729,7 @@
     "cliente": "INDUMEC",
     "contacto": "PEDRO",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 27194561,
@@ -25201,10 +25201,11 @@
         "precioProveedor": 2302820
       }
     ],
-    "fechaGuardado": "2026-07-16T14:18:17.739Z",
+    "fechaGuardado": "2026-07-16T14:37:37.401Z",
+    "fechaEnvio": "2026-07-16T14:37:37.401Z",
     "createdAt": "2026-07-15T22:10:08.519Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-16T14:18:17.739Z",
+    "updatedAt": "2026-07-16T14:37:37.401Z",
     "updatedBy": "sandra"
   },
   {
@@ -25481,6 +25482,49 @@
     "createdAt": "2026-07-16T13:03:20.669Z",
     "createdBy": "sandra",
     "updatedAt": "2026-07-16T13:03:20.669Z",
+    "updatedBy": "sandra"
+  },
+  {
+    "id": "LM1822",
+    "fecha": "2026-07-16",
+    "fechaVenc": "2026-07-24",
+    "cliente": "SERVINCI SERVICIOS DE INGENIERIA SA",
+    "contacto": "Alejandro Morales",
+    "correo": "",
+    "estado": "Revisión gerencia",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
+    "formaPago": "CONTADO",
+    "sitioEntrega": "BOGOTA",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Sandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "id": 1,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "b237e67b-991e-4afe-ae6e-3e8474316b17",
+        "desc": "KIT DE AISLAMIENTO 20\" X 150",
+        "marca": "DURLON",
+        "precio": 0,
+        "desvTec": "KIT DE AISL TIPO F, D8500, M-MY / A-G11ZPS, 20 X 150 Lbs Kit de aislamiento dieléctrico REF: FSSI-DUALSERVICE-D8500 Material Empaque: Fibras aramidas con aglutinante en nitrilo (NBR), marca Durlon Ref. 8500, espesor de 1/8 (3.2 mm) Material Arandelas Aislantes: Resina Epoxica Reforzada con tejido de Fibra de Vidrio, Grado Nema G-11, espesor de 1/8 (3.2 mm) Material Arandelas Metálicas: Acero al Carbono Zincadas - F-436, espesor de 1/8 (3.2 mm) Material Bujes Aislantes: Material LE MYLAR, espesor 1 mm, instalar en espárragos B7 y Tuerca 2H Marca Ofertada: Ensamble nacional / Junta DURLON Instalar en Bridas: ASME B16.5 RF/RF SCH STD",
+        "proveedor": "FSS INTER",
+        "tiempoEntrega": "2-4 DIAS",
+        "precioProveedor": 1597500
+      }
+    ],
+    "fechaGuardado": "2026-07-16T14:48:02.766Z",
+    "createdAt": "2026-07-16T14:45:50.037Z",
+    "createdBy": "sandra",
+    "updatedAt": "2026-07-16T14:48:02.766Z",
     "updatedBy": "sandra"
   }
 ]
