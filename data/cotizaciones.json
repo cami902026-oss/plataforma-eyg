@@ -24657,7 +24657,7 @@
       {
         "id": 1,
         "qty": 2,
-        "udm": "MTR",
+        "udm": "EA",
         "uid": "771aaaba-5209-444d-970b-734e6c917144",
         "desc": "Tubo A.C.SA 106 Gr 8 2\" SCH 40 x 6 mt",
         "marca": "MOLONG-BAOLAI",
@@ -24668,12 +24668,12 @@
         "precioProveedor": 28980
       }
     ],
-    "fechaGuardado": "2026-07-15T20:45:05.834Z",
+    "fechaGuardado": "2026-07-16T13:58:40.010Z",
     "fechaEnvio": "2026-07-15T18:39:02.317Z",
     "createdAt": "2026-07-15T18:13:35.776Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-15T20:45:05.834Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-07-16T13:58:40.010Z",
+    "updatedBy": "lina"
   },
   {
     "id": "LM1817",
@@ -25479,5 +25479,46 @@
     "createdBy": "sandra",
     "updatedAt": "2026-07-16T13:03:20.669Z",
     "updatedBy": "sandra"
+  },
+  {
+    "id": "LM1581",
+    "fecha": "2026-05-25",
+    "fechaVenc": "2026-06-02",
+    "cliente": "JE JAIMES",
+    "contacto": "Luis Garzon ",
+    "correo": "contacto@jejaimes.com.co",
+    "estado": "Vencida",
+    "iva": 19,
+    "subtotal": 122760000,
+    "ivaVal": 23324400,
+    "total": 146084400,
+    "formaPago": "CONTADO",
+    "sitioEntrega": "INSTALACIONES ENERGY GROUP CHIA",
+    "validez": "8 DÍAS",
+    "observaciones": "LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE. ",
+    "vendedor": "",
+    "realizadaPor": "",
+    "aprobadaPor": "",
+    "solicitudId": "SOL-20260525-609",
+    "items": [
+      {
+        "id": 1,
+        "desc": "TUBERIA  4 PULGADAS SCH 40 RANGO SENCILLO ",
+        "udm": "EA",
+        "qty": 330,
+        "precio": 372000,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "SE COTIZA TUBO POR 6 METROS",
+        "marca": "BAOLAI",
+        "proveedor": "BODEGA",
+        "precioProveedor": 0
+      }
+    ],
+    "fechaGuardado": "2026-05-25T17:12:32.709Z",
+    "createdAt": "2026-05-25T15:30:18.871Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-08T14:46:54.382Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-07-08T14:46:54.382Z"
   }
 ]
