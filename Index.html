@@ -2492,7 +2492,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   <!-- STOCK -->
   <div id="abs-tab-stock" class="abs-panel">
     <div class="abs-toolbar">
-      <input type="text" id="abs-search" placeholder="Buscar código, descripción, marca..." oninput="absRenderStock()" style="flex:1;min-width:200px;">
+      <input type="text" id="abs-search" placeholder="Buscar: código, o palabras en cualquier orden (ej. copa 6*4 sch 80)..." oninput="absRenderStock()" style="flex:1;min-width:200px;">
       <select id="abs-familia-filter" onchange="absRenderStock()"><option value="">Todas las familias</option></select>
       <select id="abs-stock-filter" onchange="absRenderStock()">
         <option value="">Todo el stock</option>
@@ -15030,7 +15030,7 @@ function absDescargarConteo() {
   const famFiltro = (document.getElementById('abs-familia-filter')||{}).value || '';
   let prods = abs_productos.slice();
   if (famFiltro) prods = prods.filter(p => String(p.familia_id) === String(famFiltro));
-  if (q) prods = prods.filter(p => ((p.codigo||'')+' '+(p.descripcion||'')+' '+(p.marca||'')).toLowerCase().includes(q));
+  if (q) { const _qt=_absQTokens(q); prods = prods.filter(p => _absScore(p,_qt,q)>0); }   // v138: mismo criterio del buscador
   if (!prods.length) { showToast('No hay productos con ese filtro','info'); return; }
   // Agrupar por familia (A-Z), dentro por descripción
   const grupos = {};
@@ -15140,14 +15140,81 @@ function absRenderFamiliaFilter() {
   const sel=document.getElementById('abs-familia-filter'); if(!sel) return;
   sel.innerHTML='<option value="">Todas las familias</option>'+abs_familias.map(f=>`<option value="${f.id}">${f.nombre}</option>`).join('');
 }
+// ── BÚSQUEDA INTELIGENTE (v138, 2026-07-16) ──────────────────────────────────
+// "copa de 6*4 sch 80" encuentra "COPA AC P/S SCH 80 6X4": busca por PALABRAS en
+// cualquier orden con equivalencias (* = X, SCH 80 = S80 = SCH80, 150L = 150# =
+// 150 LBS, BRIDA = FLANCHE, ELBOW = CODO, 3.000 = 3000, sin acentos, ignora
+// "de/para"). Escribir el código sigue funcionando igual. Aplica a los 3
+// buscadores: tab Stock, selector de Movimientos y carrito.
+const _ABS_SINONIMOS = [
+  [/\bBRIDAS?\b|\bFLANGES?\b|\bFLANCHES?\b/g, 'FLANCHE'],
+  [/\bSLIP[\s\-]?ON\b/g, 'SLIPON'],
+  [/\bWELDING\s*NECK\b|\bW\.?N\.?\b/g, 'CUELLO'],
+  [/\bBLIND\b|\bCIEGAS?\b/g, 'CIEGO'],
+  [/\bTUBOS?\b|\bPIPE\b/g, 'TUBERIA'],
+  [/\bVALVE\b|\bVALV\.?\b/g, 'VALVULA'],
+  [/\bELBOW\b/g, 'CODO'],
+  [/\bREDUCER\b/g, 'REDUCCION'],
+  [/\bSTUD\s*BOLTS?\b/g, 'ESPARRAGO'],
+  [/\bGASKETS?\b/g, 'EMPAQUE'],
+  [/\bACERO\s*(?:AL\s*)?CARBON\w*\b|\bCARBON\s*STEEL\b/g, 'AC'],
+  [/\bINOXIDABLE\b|\bSTAINLESS\b|\bINOX\.?\b/g, 'INOX'],
+];
+function _absNorm(s){
+  s = String(s||'').toUpperCase();
+  try { s = s.normalize('NFD').replace(/[̀-ͯ]/g,''); } catch(_){}
+  s = s.replace(/[”“]/g,'"').replace(/\*/g,'X');
+  s = s.replace(/(\d)\.(\d{3})\b/g,'$1$2');                        // 3.000 -> 3000
+  _ABS_SINONIMOS.forEach(par=>{ s = s.replace(par[0], par[1]); });
+  s = s.replace(/\bSCH\s*\.?\s*(\d+|STD|XS)\b/g,'S$1');            // SCH 80 -> S80
+  s = s.replace(/\b(\d+)\s*(?:L\b|LBS?\b|LIBRAS\b|#)\.?/g,'$1');   // 150L = 150# -> 150
+  s = s.replace(/(\d)\s*\/\s*(\d)/g,'$1/$2');
+  s = s.replace(/(\d)\s*X\s*(\d)/g,'$1X$2');                        // 6 X 4 -> 6X4
+  s = s.replace(/[^A-Z0-9"\/#\.\s]/g,' ');
+  return s.replace(/\s+/g,' ').trim();
+}
+const _ABS_STOP = { DE:1, PARA:1, EN:1, CON:1, POR:1, TIPO:1, Y:1, A:1, EL:1, LA:1, UN:1, UNA:1 };
+function _absQTokens(q){
+  return _absNorm(q).split(' ').filter(t=>t && !_ABS_STOP[t]);
+}
+// Puntaje: 0 = no cumple (falta alguna palabra); mayor = mejor coincidencia.
+function _absScore(p, qtoks, qRaw){
+  if(!p.__btxt) p.__btxt = ' ' + _absNorm((p.codigo||'')+' '+(p.descripcion||'')+' '+(p.marca||'')+' '+(p.proveedor||'')) + ' ';
+  let sc = 0;
+  for(let i=0;i<qtoks.length;i++){
+    const t = qtoks[i];
+    if(p.__btxt.indexOf(' '+t+' ') >= 0) sc += 3;        // palabra exacta
+    else if(p.__btxt.indexOf(t) >= 0) sc += 1;           // contenida (4 dentro de 4")
+    else return 0;                                        // falta una palabra: no va
+  }
+  if(qRaw && (p.codigo||'').toLowerCase().indexOf(qRaw) >= 0) sc += 5;   // código directo
+  if((p.stock_actual||0) > 0) sc += 0.5;                  // con stock primero
+  return sc;
+}
+function absBuscarInteligente(q, limite){
+  const qRaw = String(q||'').trim().toLowerCase();
+  const qtoks = _absQTokens(q);
+  if(!qtoks.length) return [];
+  const res = [];
+  for(const p of abs_productos){
+    const sc = _absScore(p, qtoks, qRaw);
+    if(sc > 0) res.push([sc, p]);
+  }
+  res.sort((a,b)=> b[0]-a[0] || (b[1].stock_actual||0)-(a[1].stock_actual||0));
+  return res.slice(0, limite||15).map(x=>x[1]);
+}
+
 function absRenderStock() {
   const tbody=document.getElementById('abs-stock-tbody'); if(!tbody) return;
   const q=(document.getElementById('abs-search')?.value||'').toLowerCase();
   const fam=document.getElementById('abs-familia-filter')?.value||'';
   const sf=document.getElementById('abs-stock-filter')?.value||'';
   const showC=abs_showCosto(), showP=abs_showPrecio(), showAj=abs_canAjuste();
+  // v138: búsqueda inteligente (palabras en cualquier orden + equivalencias)
+  let _qOk=null;
+  if(q){ const _qt=_absQTokens(q); _qOk={}; abs_productos.forEach(p=>{ if(_absScore(p,_qt,q.trim())>0) _qOk[p.codigo]=1; }); }
   let rows=abs_productos.filter(p=>{
-    if(q&&![p.codigo,p.descripcion,p.marca,p.proveedor].some(v=>(v||'').toLowerCase().includes(q))) return false;
+    if(_qOk&&!_qOk[p.codigo]) return false;
     if(fam&&String(p.familia_id)!==fam) return false;
     if(sf==='ok'&&p.stock_actual<=0) return false;
     if(sf==='out'&&p.stock_actual>0) return false;
@@ -15209,7 +15276,7 @@ function absMovSearch() {
   const q=(document.getElementById('abs-mov-search')?.value||'').toLowerCase();
   const sug=document.getElementById('abs-mov-suggestions'); if(!sug) return;
   if(!q||q.length<2){sug.innerHTML='';sug.style.display='none';return;}
-  const ms=abs_productos.filter(p=>(p.codigo||'').toLowerCase().includes(q)||(p.descripcion||'').toLowerCase().includes(q)).slice(0,8);
+  const ms=absBuscarInteligente(q,15);   // v138: por palabras + equivalencias, mejor coincidencia primero
   if(!ms.length){sug.innerHTML='';sug.style.display='none';return;}
   sug.style.display='';
   sug.innerHTML=ms.map(p=>`<div class="abs-sug-item" onclick="absMovSelectProduct('${p.codigo}')">
@@ -15367,7 +15434,7 @@ function absCartSearch() {
   const q=(document.getElementById('abs-cart-search')?.value||'').toLowerCase();
   const sug=document.getElementById('abs-cart-suggestions'); if(!sug) return;
   if(!q||q.length<2){sug.innerHTML='';sug.style.display='none';return;}
-  const ms=abs_productos.filter(p=>(p.codigo||'').toLowerCase().includes(q)||(p.descripcion||'').toLowerCase().includes(q)).slice(0,8);
+  const ms=absBuscarInteligente(q,15);   // v138: por palabras + equivalencias, mejor coincidencia primero
   if(!ms.length){sug.innerHTML='';sug.style.display='none';return;}
   sug.style.display='';
   sug.innerHTML=ms.map(p=>`<div class="abs-sug-item" onclick="absCartAdd('${p.codigo}')">
