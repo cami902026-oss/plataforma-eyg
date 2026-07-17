@@ -1545,7 +1545,6 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <!-- Botones -->
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
             <button class="btn btn-primary" onclick="cotizGuardarBD()" style="width:auto;font-size:13px;">💾 Guardar en base de datos</button>
-            <button class="btn btn-secondary" id="cotiz-btn-remision" onclick="cotizCrearRemision()" title="Crea la remisión de esta cotización adjudicada: eliges los ítems y ajustas cantidades" style="width:auto;font-size:13px;display:none;">🚚 Crear remisión</button>
             <button class="btn btn-primary" onclick="cotizGenerarPDF()" style="width:auto;font-size:13px;background:rgba(229,62,62,.3);border-color:#e53e3e;">📄 Generar PDF</button>
             <button class="btn btn-primary" onclick="cotizDownloadExcel()" style="width:auto;font-size:13px;background:rgba(46,170,74,.3);border-color:#2eaa4a;">⬇️ Descargar Excel</button>
             <button class="btn btn-secondary" onclick="cotizNuevaConfirm()" style="width:auto;font-size:13px;">+ Nueva cotización</button>
@@ -8091,59 +8090,33 @@ function cotizEstadoChange() {
       showToast('Factura ' + num.trim() + ' registrada. Completa cliente e ítems y Guarda para conservar la cotización.', 'info');
     }
   } else {
-    // v140: al pasar a Adjudicada, ofrecer crear la remisión de una vez
-    if (est === 'Adjudicada' && _cotizEstadoPrev !== 'Adjudicada') { try { _cotizOfrecerRemision(); } catch(_){} }
     _cotizEstadoPrev = est;
     _cotizFacturaRefresh();
   }
-  try { _cotizRemiBtnRefresh(); } catch(_){}
 }
 
-// ── v140: PUENTE ADJUDICADA → REMISIÓN ───────────────────────────────────────
-// Botón fijo "🚚 Crear remisión" (visible solo con estado Adjudicada) + oferta al
-// marcar Adjudicada. Reutiliza el flujo existente "📋 Traer de cotización" de
-// Remisiones (checkboxes + cantidad editable) — no cambia nada de ese flujo.
-function _cotizRemiBtnRefresh(){
-  const b = document.getElementById('cotiz-btn-remision'); if (!b) return;
-  const est = (document.getElementById('cotiz-estado')||{}).value || '';
-  b.style.display = est === 'Adjudicada' ? '' : 'none';
-}
-function _cotizOfrecerRemision(){
-  const prev = document.getElementById('cotiz-adj-modal'); if (prev) prev.remove();
-  const ov = document.createElement('div');
-  ov.id = 'cotiz-adj-modal';
-  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;';
-  ov.onclick = ev => { if (ev.target === ov) ov.remove(); };
-  ov.innerHTML = `<div style="background:var(--dark,#071525);border:1px solid var(--border,#234);border-radius:12px;max-width:430px;width:100%;padding:22px;color:#fff;text-align:center;">
-      <div style="font-size:34px;margin-bottom:6px;">🎉</div>
-      <div style="font-weight:800;font-size:17px;margin-bottom:6px;">¡Cotización adjudicada!</div>
-      <div style="font-size:13px;color:var(--text-muted,#9fb3c8);margin-bottom:18px;">¿Creamos la remisión de una vez? Se guarda la cotización y pasas a marcar los ítems adjudicados (con cantidades editables si fue parcial).</div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <button onclick="document.getElementById('cotiz-adj-modal').remove();_cotizGuardarYRemision()" style="background:rgba(46,170,74,.3);border:1px solid #2EAA4A;color:#86efac;padding:11px;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;">🚚 Guardar y crear remisión</button>
-        <button onclick="document.getElementById('cotiz-adj-modal').remove()" style="background:rgba(255,255,255,.08);border:1px solid var(--border,#234);color:#fff;padding:11px;border-radius:8px;cursor:pointer;font-size:14px;">Después (queda el botón 🚚 en el formulario)</button>
-      </div></div>`;
-  document.body.appendChild(ov);
-}
-async function _cotizGuardarYRemision(){
-  try { await cotizGuardarBD(); } catch(_){}
-  cotizCrearRemision();
-}
-async function cotizCrearRemision(){
-  const id = cotizEditId || cotizReadNum();
+// ── v141: PUENTE ADJUDICADA → REMISIÓN ───────────────────────────────────────
+// Botón "🚚 Crear remisión" en la FILA de la BD (igual que 🧾 Crear OC): aparece
+// cuando la cotización está Adjudicada, guardada y SIN remisión ligada. Abre
+// Remisiones con remisión nueva + el flujo existente "📋 Traer de cotización"
+// ya posicionado en esa cotización (checkboxes + cantidades editables).
+async function cotizCrearRemision(id){
+  id = id || cotizEditId || cotizReadNum();
   if (!id || _cotizNumEsPendiente(id)) return showToast('Guarda la cotización primero (necesita su número).', 'error');
-  const bd = getData('bd_cotizaciones', []);
-  if (!bd.some(c => c && String(c.id) === String(id) && !c.deleted)) return showToast('Guarda la cotización primero — la remisión se arma con la copia guardada.', 'error');
   navigate('remisiones');
   setTimeout(async () => {
     try {
+      // Asegurar que Remisiones tenga sus datos (para el consecutivo correcto)
+      try { if (typeof remiCargar === 'function' && !(remi_rows||[]).length) await remiCargar(); } catch(_){}
       remiNueva();
+      if (!remi_current) return;   // sin permiso de remisiones: remiNueva ya avisó
       await remiCotizAbrir();
       const s = document.getElementById('remi-cotiz-search'); if (s) s.value = String(id);
       remiCotizBuscar();
       await remiCotizElegir(String(id));
       showToast('Marca los ítems ADJUDICADOS y ajusta cantidades si fue parcial.', 'info');
     } catch(e) { showToast('No se pudo preparar la remisión: ' + (e && e.message || e), 'error'); }
-  }, 450);
+  }, 500);
 }
 
 // ── v140: VENCIMIENTO AUTOMÁTICO ─────────────────────────────────────────────
@@ -8162,7 +8135,6 @@ function cotizFechaVencAuto(){
 // Solo refresca la vista del campo N° FACTURA (mostrar/ocultar + aviso). NO pregunta.
 // Se usa al cargar/crear una cotización para no disparar el prompt.
 function _cotizFacturaRefresh() {
-  try { _cotizRemiBtnRefresh(); } catch(_){}   // v140: botón 🚚 sigue al estado en todos los caminos (cargar/crear/cambiar)
   const est = (document.getElementById('cotiz-estado')||{}).value || '';
   const grp = document.getElementById('cotiz-factura-group');
   const hint = document.getElementById('cotiz-factura-hint');
@@ -10476,7 +10448,9 @@ function bdRender(filtro) {
     const _rem = (_bdRemByCotiz || {})[String(c.id)];
     const remBtn = _rem
       ? `<button class="btn-sm" onclick="event.stopPropagation();cotizVerRemision('${String(c.id).replace(/'/g,"\\'")}')" title="Ver la remisión ligada a esta cotización" style="background:rgba(232,160,32,.16);border:1px solid rgba(232,160,32,.5);color:#fbbf24;font-weight:700">📦 Rem ${String(_rem).replace(/</g,'&lt;')}</button>`
-      : '';
+      : (c.estado === 'Adjudicada'
+        ? `<button class="btn-sm" onclick="event.stopPropagation();cotizCrearRemision('${String(c.id).replace(/'/g,"\\'")}')" title="Crear la remisión de esta cotización adjudicada: eliges los ítems adjudicados y ajustas cantidades" style="background:rgba(232,160,32,.16);border:1px solid rgba(232,160,32,.5);color:#fbbf24;font-weight:700">🚚 Crear remisión</button>`
+        : '');
     const _oc = _ocByCotiz[String(c.id)];
     const _ocNum = _oc ? String(_oc.num||_oc.id).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
     const ocBtn = _oc
