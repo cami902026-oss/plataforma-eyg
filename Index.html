@@ -2788,7 +2788,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             </div>
             <div style="padding:0 22px;overflow-y:auto;flex:1 1 auto;">
               <div class="form-group" style="margin-bottom:6px;"><label>¿Cuántas cajas / bultos?</label><input type="number" id="remi-rot-num" min="1" max="40" value="1" onchange="remiRotuloCampos()" style="width:90px;"></div>
-              <p style="font-size:11.5px;color:var(--text-muted);margin:2px 0 10px;">Escribe qué lleva cada caja. Se guarda con la remisión y cada rótulo sale numerado (CAJA 1 DE N…). Deja en blanco lo que no aplique.</p>
+              <p style="font-size:11.5px;color:var(--text-muted);margin:2px 0 10px;">Escribe qué lleva cada caja, <b>un ítem por línea con la cantidad al final</b> (ej: <i>CONDULETA TIPO LB x 18</i>). Se guarda con la remisión y salen 2 rótulos media carta por hoja, numerados (CAJA 1 DE N…).</p>
               <div id="remi-rot-lista"></div>
             </div>
             <div style="display:flex;gap:10px;padding:14px 22px 20px;flex-wrap:wrap;flex:0 0 auto;border-top:1px solid rgba(255,255,255,.08);">
@@ -16138,11 +16138,11 @@ function _remiRotuloLeerCampos(){ return Array.from(document.querySelectorAll('.
 function remiRotuloCampos(pre){
   let n=parseInt(document.getElementById('remi-rot-num').value,10); if(isNaN(n)||n<1)n=1; if(n>40)n=40;
   const saved = Array.isArray(pre) ? pre : _remiRotuloLeerCampos();
-  const inS='width:100%;padding:7px 9px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:6px;color:#fff;font-size:13px;';
+  const inS='width:100%;padding:7px 9px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:6px;color:#fff;font-size:13px;resize:vertical;min-height:52px;font-family:inherit;';
   let h='';
   for(let i=0;i<n;i++){
-    h+='<div class="form-group" style="margin-bottom:8px;"><label style="font-size:12px;">Caja '+(i+1)+' de '+n+' — contenido</label>'
-      +'<input type="text" class="remi-rot-caja" value="'+_remiEsc(saved[i]||'').replace(/"/g,'&quot;')+'" placeholder="Ej: 4 válvulas 2" + accesorios" style="'+inS+'"></div>';
+    h+='<div class="form-group" style="margin-bottom:8px;"><label style="font-size:12px;">Caja '+(i+1)+' de '+n+' — contenido (un ítem por línea)</label>'
+      +'<textarea class="remi-rot-caja" rows="2" placeholder="Ej: CONDULETA TIPO LB x 18&#10;CONDULETA TIPO LL x 18" style="'+inS+'">'+_remiEsc(saved[i]||'')+'</textarea></div>';
   }
   document.getElementById('remi-rot-lista').innerHTML=h;
 }
@@ -16164,44 +16164,86 @@ async function remiRotuloImprimir(){
   remiRotuloCerrar();
   _remiRotuloPrint(c, cajas);
 }
+// Diseño "skill rótulos": media carta, 2 por hoja carta vertical, franja tricolor E&G
+function _remiRotItemParse(linea){
+  // "CONDULETA TIPO LB x 18" / "HUB RECTO 2" — 22 unidades" / "*300 unidades*" al final
+  const s=linea.replace(/\*/g,'').trim(); if(!s) return null;
+  const m=s.match(/^(.*?)[\s\-–—:]*(?:[x×]\s*)?(\d+)\s*(?:und(?:s)?\.?|unidades|unds|u\.?|pcs|piezas)?\s*$/i);
+  if(m && m[1].trim()) return {desc:m[1].trim().toUpperCase(), cant:m[2]};
+  return {desc:s.toUpperCase(), cant:''};
+}
 function _remiRotuloPrint(c, cajas){
   const n=(cajas&&cajas.length)?cajas.length:1;
   const logo='https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png';
-  let blocks='';
-  for(let i=0;i<n;i++){
-    const contenido=((cajas&&cajas[i])||'').trim();
-    blocks+=`<div class="rot">
-      <div class="rhead"><img src="${logo}" alt="logo"><div>
-        <div class="nm">E&amp;G ENERGY GROUP S.A.S</div>
-        <div class="de">DE: Carrera 7 # 12-61, Chía &middot; +57 320 494 7227</div></div>
-        <div class="cajanum">CAJA ${i+1} DE ${n}</div></div>
-      <div class="rbody">
-        <div class="lbl">PARA</div><div class="val">${_remiEsc(c.cliente)||'—'}</div>
-        <div class="lbl" style="margin-top:9px">DIRECCIÓN / LUGAR</div><div class="val2">${_remiEsc(c.lugar)||'—'}</div>
-        ${contenido?`<div class="lbl" style="margin-top:9px">CONTENIDO DE ESTA CAJA</div><div class="cont">${_remiEsc(contenido)}</div>`:''}
-        <div class="ref">REF: REMISIÓN ${_remiEsc(c.remision)}${c.oc?' &middot; OC '+_remiEsc(c.oc):''}</div>
-      </div></div>`;
+  const VERDE='#2EAA4A', AZUL='#1A3A8F', DORADO='#E8A020', OSCURO='#071525';
+  const fsDesc=k=>({1:22,2:20,3:17,4:15,5:13,6:12}[k]||11);
+  const rotulo=(i)=>{
+    const items=((cajas&&cajas[i])||'').split(/\n/).map(_remiRotItemParse).filter(Boolean);
+    const fs=fsDesc(items.length||1);
+    const filas=items.map(it=>`
+        <div class="item">
+          <div class="desc" style="font-size:${fs}px">${_remiEsc(it.desc)}</div>
+          ${it.cant?`<div class="cant"><span class="lbl">CANT.</span><span class="num">${_remiEsc(it.cant)}</span></div>`:''}
+        </div>`).join('');
+    const destino=[c.cliente,c.lugar].filter(Boolean).map(_remiEsc).join(' &bull; ');
+    return `
+    <div class="rotulo">
+      <div class="stripe"></div>
+      <div class="head">
+        <img class="logo" src="${logo}" alt="E&G Energy Group">
+        <div class="caja">
+          <div class="caja-word">CAJA</div>
+          <div class="caja-num">${i+1}</div>
+          <div class="caja-de">DE ${n}</div>
+        </div>
+      </div>
+      ${destino?`<div class="dest">PARA: <b>${destino}</b></div>`:''}
+      <div class="contenido">
+        <div class="cont-titulo">CONTENIDO</div>
+        ${filas}
+      </div>
+      <div class="foot">
+        <span>E&amp;G ENERGY GROUP SAS</span>
+        <span class="sep">&bull;</span>
+        <span>REMISI&Oacute;N ${_remiEsc(c.remision)||'—'}${c.oc?' &bull; OC '+_remiEsc(c.oc):''}</span>
+        <span class="sep">&bull;</span>
+        <span>www.eygenergygroup.com</span>
+      </div>
+      <div class="stripe"></div>
+    </div>`;
+  };
+  let hojas='';
+  for(let i=0;i<n;i+=2){
+    hojas+='<div class="hoja-media">'+rotulo(i)+(i+1<n?rotulo(i+1):'')+'</div>';
   }
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rótulos ${_remiEsc(c.remision)}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet"><style>
-    *{box-sizing:border-box} html,body{margin:0;padding:0}
-    body{font-family:'Inter',Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:9mm}
-    .rot{border:2.5px solid #0F2B5B;border-radius:10px;overflow:hidden;margin:0 auto 8mm;max-width:178mm;page-break-inside:avoid}
-    .rhead{background:#0F2B5B;color:#fff;display:flex;align-items:center;gap:12px;padding:9px 16px}
-    .rhead img{width:44px;height:44px;object-fit:contain;background:#fff;border-radius:6px;padding:3px}
-    .rhead .nm{font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;line-height:1.1}
-    .rhead .de{font-size:9.5px;color:#cdd8ef;margin-top:2px}
-    .rhead .cajanum{margin-left:auto;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;background:#E8A020;color:#15202e;border-radius:8px;padding:4px 10px;white-space:nowrap}
-    .rbody{padding:13px 18px 16px}
-    .lbl{font-size:8.5px;color:#9aa6b4;text-transform:uppercase;letter-spacing:1.5px;font-weight:700}
-    .val{font-size:23px;font-weight:800;color:#15202e;line-height:1.12}
-    .val2{font-size:14px;font-weight:600;color:#15202e;margin-top:1px}
-    .cont{font-size:14px;font-weight:600;color:#15202e;background:#f4f7fb;border:1px solid #d7e0ee;border-radius:6px;padding:6px 10px;margin-top:2px;line-height:1.3}
-    .ref{margin-top:11px;font-family:'Montserrat',sans-serif;font-size:15px;color:#0F2B5B;font-weight:800;background:#fff8ec;border:1.5px solid #E8A020;border-radius:8px;padding:7px 12px;display:inline-block}
-    @media print{.noprint{display:none}}
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Rótulos ${_remiEsc(c.remision)}</title><style>
+  @page { size: letter portrait; margin: 0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .hoja-media { width: 8.5in; height: 11in; page-break-after: always; margin:0 auto; background:#fff; }
+  .rotulo { width: 8.5in; height: 5.5in; display:flex; flex-direction:column; padding: 0.22in 0.4in; }
+  .rotulo + .rotulo { border-top: 2px dashed #9aa4b2; }
+  .stripe { height:0.12in; border-radius:4px; background:linear-gradient(90deg, ${VERDE} 0%, ${AZUL} 55%, ${DORADO} 100%); flex:0 0 auto; }
+  .head { display:flex; align-items:center; justify-content:space-between; padding:0.08in 0.05in; flex:0 0 auto; }
+  .logo { height:0.8in; }
+  .caja { background:${OSCURO}; color:#fff; border-radius:12px; padding:0.08in 0.3in; text-align:center; display:flex; align-items:baseline; gap:0.15in; }
+  .caja-word { font-size:30px; font-weight:900; letter-spacing:3px; }
+  .caja-num  { font-size:64px; font-weight:900; color:${DORADO}; line-height:1; }
+  .caja-de   { font-size:20px; font-weight:700; color:#cfe0ff; }
+  .dest { flex:0 0 auto; font-size:13px; color:${OSCURO}; padding:0 0.05in 0.04in; letter-spacing:0.5px; }
+  .contenido { flex:1 1 auto; display:flex; flex-direction:column; justify-content:center; gap:0.07in; padding:0 0.05in; overflow:hidden; }
+  .cont-titulo { color:${AZUL}; font-size:14px; font-weight:900; letter-spacing:4px; border-bottom:2px solid ${DORADO}; padding-bottom:3px; margin-bottom:0.02in; align-self:flex-start; }
+  .item { display:flex; align-items:center; justify-content:space-between; background:#f1f5fb; border-left:7px solid ${VERDE}; border-radius:7px; padding:0.06in 0.16in; gap:0.2in; }
+  .desc { font-weight:800; color:${OSCURO}; line-height:1.15; }
+  .cant { background:${AZUL}; color:#fff; border-radius:8px; padding:0.04in 0.14in; text-align:center; white-space:nowrap; display:flex; flex-direction:column; align-items:center; flex:0 0 auto; }
+  .cant .lbl { font-size:9px; font-weight:700; letter-spacing:2px; color:#cfe0ff; }
+  .cant .num { font-size:26px; font-weight:900; color:#fff; line-height:1.05; }
+  .foot { flex:0 0 auto; text-align:center; color:${AZUL}; font-size:10px; font-weight:700; letter-spacing:1.5px; padding:0.04in 0; }
+  .foot .sep { color:${DORADO}; margin:0 6px; }
+  @media print{ .noprint{display:none} }
   </style></head><body>
-  ${blocks}
-  <button class="noprint" onclick="window.print()" style="display:block;margin:6mm auto 0;padding:9px 18px;background:#0F2B5B;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨️ Imprimir ${n>1?('('+n+' cajas)'):''}</button>
+  ${hojas}
+  <button class="noprint" onclick="window.print()" style="display:block;margin:6mm auto;padding:9px 18px;background:${AZUL};color:#fff;border:none;border-radius:6px;cursor:pointer">🖨️ Imprimir (${n} caja${n>1?'s':''}, ${Math.ceil(n/2)} hoja${n>2?'s':''})</button>
   <script>window.onload=function(){setTimeout(function(){window.print();},600);}<\/script></body></html>`;
   const w=window.open('','_blank'); if(!w){showToast('Permite ventanas emergentes','error');return;}
   w.document.write(html); w.document.close();
