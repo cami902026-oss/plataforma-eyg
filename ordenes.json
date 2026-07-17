@@ -3511,5 +3511,52 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-15T18:57:26.633Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1784325991849",
+    "num": "PO4888",
+    "cliente": "Disico",
+    "desc": "Cotización LM1804 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-17",
+    "valor": 1276275,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-07-17",
+        "n": "VALVECO"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1804",
+    "createdAt": "2026-07-17T22:06:31.849Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-17T22:06:31.849Z",
+    "updatedBy": "andrea"
   }
 ]
