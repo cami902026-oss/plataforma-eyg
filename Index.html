@@ -15170,7 +15170,8 @@ function _absNorm(s){
   s = s.replace(/\b(\d+)\s*(?:L\b|LBS?\b|LIBRAS\b|#)\.?/g,'$1');   // 150L = 150# -> 150
   s = s.replace(/(\d)\s*\/\s*(\d)/g,'$1/$2');
   s = s.replace(/(\d)\s*X\s*(\d)/g,'$1X$2');                        // 6 X 4 -> 6X4
-  s = s.replace(/[^A-Z0-9"\/#\.\s]/g,' ');
+  s = s.replace(/[^A-Z0-9"\/#\.\-\s]/g,' ');
+  s = s.replace(/(^|[^0-9])-|-(?![0-9])/g,'$1 ');                   // guion SOLO entre dígitos (2-1/2 queda entero)
   return s.replace(/\s+/g,' ').trim();
 }
 const _ABS_STOP = { DE:1, PARA:1, EN:1, CON:1, POR:1, TIPO:1, Y:1, A:1, EL:1, LA:1, UN:1, UNA:1 };
@@ -15178,14 +15179,32 @@ function _absQTokens(q){
   return _absNorm(q).split(' ').filter(t=>t && !_ABS_STOP[t]);
 }
 // Puntaje: 0 = no cumple (falta alguna palabra); mayor = mejor coincidencia.
+// v139: los tokens CON dígitos son MEDIDAS y deben coincidir EXACTAS (solo se
+// tolera la comilla: "2" encuentra 2\" pero NUNCA 1/2\" ni 12\" ni 2-1/2\").
+// Las palabras coinciden exactas o por prefijo (espárrag→ESPÁRRAGO).
 function _absScore(p, qtoks, qRaw){
-  if(!p.__btxt) p.__btxt = ' ' + _absNorm((p.codigo||'')+' '+(p.descripcion||'')+' '+(p.marca||'')+' '+(p.proveedor||'')) + ' ';
+  if(!p.__btok) p.__btok = _absNorm((p.codigo||'')+' '+(p.descripcion||'')+' '+(p.marca||'')+' '+(p.proveedor||'')).split(' ');
+  const bt = p.__btok;
   let sc = 0;
   for(let i=0;i<qtoks.length;i++){
     const t = qtoks[i];
-    if(p.__btxt.indexOf(' '+t+' ') >= 0) sc += 3;        // palabra exacta
-    else if(p.__btxt.indexOf(t) >= 0) sc += 1;           // contenida (4 dentro de 4")
-    else return 0;                                        // falta una palabra: no va
+    let hit = 0;
+    if(/\d/.test(t)){                                     // MEDIDA: igualdad exacta (sin comilla)
+      const tq = t.replace(/"+$/,'');
+      for(let k=0;k<bt.length;k++){
+        const bq = bt[k].replace(/"+$/,'');
+        if(bq === tq){ hit = 3; break; }
+        // compuestos: "3000" o "1/2" encuentran "1/2X3000"; "4" encuentra "6X4"
+        if(bq.indexOf('X') > 0 && bq.split('X').indexOf(tq) >= 0){ hit = 2; break; }
+      }
+    } else {                                              // PALABRA: exacta o prefijo
+      for(let k=0;k<bt.length;k++){
+        if(bt[k] === t){ hit = 3; break; }
+        if(!hit && bt[k].indexOf(t) === 0) hit = 1;
+      }
+    }
+    if(!hit) return 0;                                    // falta una palabra: no va
+    sc += hit;
   }
   if(qRaw && (p.codigo||'').toLowerCase().indexOf(qRaw) >= 0) sc += 5;   // código directo
   if((p.stock_actual||0) > 0) sc += 0.5;                  // con stock primero
