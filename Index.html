@@ -14215,7 +14215,10 @@ function sabRender(){
           : '<div style="font-size:16px;font-weight:800;color:'+col+';margin:6px 0;">'+_vpEsc(sabNombre(efec).split(' ')[0])+'</div>')
         +'<span style="display:inline-block;font-size:10.5px;font-weight:700;color:#fff;background:'+ecol+';border-radius:10px;padding:2px 8px;">'+_vpEsc(r.estado||'Programada')+'</span>'
         +((r.estado==='Cambiada'&&r.reemplazo)?'<div style="font-size:11px;color:var(--text-muted);margin-top:5px;">Turno de: '+_vpEsc(sabNombre(r.asistente).split(' ')[0])+'</div>':'')
-        +(r.nota?'<div style="font-size:11px;color:var(--text-muted);margin-top:5px;">'+_vpEsc(r.nota)+'</div>':'');
+        +(r.nota?'<div style="font-size:11px;color:var(--text-muted);margin-top:5px;">'+_vpEsc(r.nota)+'</div>':'')
+        // v142: aviso (solo aviso) si esa persona tiene V en Programación Equipo
+        +((!nolab && (function(){ try{ return _peSabadoInfo(d).vacaciones.some(n=>String(n).split(' ')[0]===sabNombre(efec).split(' ')[0]); }catch(_){ return false; } })())
+          ? '<div style="font-size:11px;color:#E8A020;font-weight:700;margin-top:5px;">&#9888;&#65039; Vacaciones/permiso en Prog. Equipo &mdash; reasignar</div>' : '');
     } else {
       inner='<div style="font-size:12px;color:var(--text-muted);font-weight:700;">S&aacute;bado '+d.getDate()+' '+MESES[m].slice(0,3).toLowerCase()+'</div>'
         +'<div style="font-size:14px;font-weight:700;color:var(--text-muted);margin:6px 0;">Sin asignar</div>'
@@ -14292,8 +14295,41 @@ async function sabGuardar(){
   showToast('Guardando…','info');
   const ok=await sabSync('🗓️ Sábado '+fecha+' actualizado');
   if(ok) showToast('✅ Sábado guardado','success');
+  // v142: reflejar el turno en la cuadrícula de Programación Equipo (aditivo,
+  // best-effort: si falla no afecta el guardado del sábado que ya ocurrió).
+  if(ok && estado!=='No laboral'){ try{ await _sabMarcarPE(fecha, sabEfectiva(reg)); }catch(_){ } }
   sabCerrar();
   sabRender();
+}
+
+// ── v142: al asignar un sábado en la rotación, marcar 'P' en la celda del
+// sábado de esa persona en Programación Equipo. NUNCA pisa una celda ya
+// definida a mano (si la clave '5' ya existe se respeta; si es 'V' solo avisa).
+async function _sabMarcarPE(fecha, email){
+  const nombre=sabNombre(email).split(' ')[0];
+  const d=new Date(fecha+'T12:00:00'); if(isNaN(d.getTime())) return;
+  const lunes=_peFmt(_peLunes(d));
+  let plan=[];
+  try{
+    const remote=await _loadDataGH(PE_FILE);
+    let local=[]; try{ local=JSON.parse(localStorage.getItem(PE_KEY)||'[]'); }catch(_){ }
+    plan=visPlanMerge(Array.isArray(remote)?remote:[], local);
+  }catch(_){
+    try{ plan=JSON.parse(localStorage.getItem(PE_KEY)||'[]'); }catch(e){ plan=[]; }
+  }
+  const id='pe_'+lunes+'_'+nombre;
+  let rec=plan.find(x=>x&&x.id===id);
+  if(rec && rec.dias && Object.prototype.hasOwnProperty.call(rec.dias,'5')){
+    if(rec.dias['5']==='V') showToast('⚠️ '+nombre+' tiene vacaciones/permiso ese sábado en Programación Equipo — revisa la asignación','info');
+    return;   // celda ya definida a mano: se respeta, cero pisadas
+  }
+  const who=currentUser?(currentUser.name||currentUser.email):'—';
+  if(rec){ rec.dias=Object.assign({},rec.dias||{},{'5':'P'}); rec.updatedAt=new Date().toISOString(); rec.updatedBy=who; }
+  else { rec={id:id, semana:lunes, nombre:nombre, dias:{'5':'P'}, updatedAt:new Date().toISOString(), updatedBy:who}; plan.push(rec); }
+  localStorage.setItem(PE_KEY, JSON.stringify(plan));
+  try{ _pePlan=plan; }catch(_){ }
+  await _saveDataGH(PE_FILE, plan, '🗓️ Sábado '+fecha+': '+nombre+' presencial (auto desde rotación)');
+  showToast('🗓️ '+nombre+' quedó Presencial ese sábado en Programación Equipo','info');
 }
 async function sabEliminar(){
   const id=document.getElementById('sab-plan-id').value; if(!id) return;
@@ -14643,6 +14679,22 @@ function peExcel(){
   showToast('📗 Excel de la semana descargado','success');
 }
 
+// ── v142: cruce Sábados ↔ Programación Equipo (solo LECTURA aquí) ────────────
+// Devuelve quién está marcado en la cuadrícula para el sábado de esa fecha:
+// trabajan = P (presencial) o C (visita de campo); vacaciones = V.
+function _peSabadoInfo(sabDate){
+  let plan=[]; try{ plan=JSON.parse(localStorage.getItem(PE_KEY)||'[]'); }catch(_){ }
+  const lunes=_peFmt(_peLunes(sabDate));
+  const trabajan=[], vacaciones=[];
+  plan.forEach(r=>{
+    if(!r||r.id==='pe_roster'||r.semana!==lunes) return;
+    const v=(r.dias||{})['5'];
+    if(v==='P'||v==='C') trabajan.push(r.nombre);
+    else if(v==='V') vacaciones.push(r.nombre);
+  });
+  return {trabajan, vacaciones};
+}
+
 // Tarjeta del Dashboard: "Este sábado trabaja: X" (lee localStorage; el poll la refresca)
 function renderSabadoDash(){
   const box=document.getElementById('dash-sabado'); if(!box) return;
@@ -14653,17 +14705,35 @@ function renderSabadoDash(){
   const r=plan.find(x=>x.fecha===ds);
   const esHoy=hoy.getDay()===6;
   const tit=esHoy?'Hoy s&aacute;bado':'Este s&aacute;bado '+sab.getDate()+'/'+(sab.getMonth()+1);
+  // v142: primero mira la cuadrícula de Programación Equipo (la fuente que se
+  // mantiene al día); si no hay nadie marcado ese sábado, cae a la rotación
+  // (comportamiento anterior INTACTO). Si la persona del turno de la rotación
+  // tiene V (vacaciones/permiso) en la cuadrícula, solo se AVISA.
+  let warn='';
+  try{
+    if(r && r.estado!=='No laboral'){
+      const _efNom=sabNombre(sabEfectiva(r)).split(' ')[0];
+      if(_peSabadoInfo(sab).vacaciones.some(n=>String(n).split(' ')[0]===_efNom))
+        warn=' <span style="color:#E8A020;font-size:12px;font-weight:700;">&#9888;&#65039; '+_vpEsc(_efNom)+' tiene vacaciones/permiso ese d&iacute;a &mdash; reasignar</span>';
+    }
+  }catch(_){ }
+  let peList=[]; try{ peList=_peSabadoInfo(sab).trabajan; }catch(_){ }
   let inner;
-  if(r && r.estado==='No laboral'){
+  if(peList.length){
+    const noms=peList.map(n=>_vpEsc(String(n).split(' ')[0]));
+    const lista=noms.length>1?(noms.slice(0,-1).join(', ')+' y '+noms[noms.length-1]):noms[0];
+    inner='<span style="color:var(--text-muted);">'+tit+' trabaja'+(noms.length>1?'n':'')+':</span> <span style="font-weight:900;color:var(--gold);font-size:16px;">'+lista+'</span>'+warn;
+  } else if(r && r.estado==='No laboral'){
     inner='<span style="font-weight:800;color:#94a3b8;">'+tit+' no se labora</span>'+(r.nota?' <span style="color:var(--text-muted);font-size:12px;">('+_vpEsc(r.nota)+')</span>':'');
   } else if(r){
     const efec=sabEfectiva(r); const col=SAB_COLORS[efec]||'#94a3b8';
     inner='<span style="color:var(--text-muted);">'+tit+' trabaja:</span> <span style="font-weight:900;color:'+col+';font-size:16px;">'+_vpEsc(sabNombre(efec))+'</span>'
-      +((r.estado==='Cambiada'&&r.reemplazo)?' <span style="color:var(--text-muted);font-size:12px;">(cubre el turno de '+_vpEsc(sabNombre(r.asistente).split(' ')[0])+')</span>':'');
+      +((r.estado==='Cambiada'&&r.reemplazo)?' <span style="color:var(--text-muted);font-size:12px;">(cubre el turno de '+_vpEsc(sabNombre(r.asistente).split(' ')[0])+')</span>':'')
+      +warn;
   } else {
     inner='<span style="color:var(--text-muted);">'+tit+':</span> <span style="font-weight:700;color:#94a3b8;">sin asignar</span>'+(sabIsManager()?' <span style="color:var(--gold);font-size:12px;">&mdash; toca para programar</span>':'');
   }
-  box.innerHTML='<div onclick="navigate(\'visitas\');setTimeout(function(){try{visTab(\'sabados\')}catch(_){}} ,200);" style="cursor:pointer;background:rgba(13,31,60,.6);border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:12px;font-size:14px;">'
+  box.innerHTML='<div onclick="navigate(\'programacion\');setTimeout(function(){try{peTab(\'sabados\')}catch(_){}} ,200);" style="cursor:pointer;background:rgba(13,31,60,.6);border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:12px;font-size:14px;">'
     +'<span style="font-size:20px;">&#128467;&#65039;</span><div>'+inner+'</div></div>';
 }
 
