@@ -1041,13 +1041,13 @@
     "num": "17824",
     "cliente": "CONSORCIO SKF - OMIA",
     "desc": "Suministro de Materiales y Accesorios para Estación Cartagena",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-10",
     "valor": 714595,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-07-17",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -1071,17 +1071,17 @@
         "n": "SERVIDOR"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-07-18",
+        "n": "",
+        "factura": "522"
       }
     ],
+    "cotizacionId": "",
     "createdAt": "2026-06-10T21:19:27.539Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-18T22:38:36.389Z",
-    "updatedBy": "alexandra",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-18T22:38:36.389Z"
+    "updatedAt": "2026-07-18T22:38:59.149Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1781713617271",
