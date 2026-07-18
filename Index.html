@@ -8250,7 +8250,7 @@ function otRender(){
           : '<span style="color:var(--text-muted);">— sin ficha (opcional) —</span>'
             +'<button type="button" onclick="otSubirFicha('+n+')" style="background:rgba(46,170,74,.2);border:1px solid rgba(46,170,74,.5);color:#68d391;border-radius:5px;padding:2px 8px;font-size:10.5px;cursor:pointer;">➕ Subir ficha PDF del fabricante</button>')
         +'</div>'
-        +'<textarea rows="2" placeholder="Especificaciones técnicas del ítem (opcional) — material, norma, presión, temperatura, certificaciones…" oninput="_otRows['+n+'].specs=this.value;_otSpecsEdit('+n+')" style="width:100%;margin-top:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:#fff;font-size:12px;resize:vertical;">'+_otEsc(r.specs)+'</textarea>'
+        +'<textarea rows="4" placeholder="Especificaciones técnicas del ítem (opcional) — una por línea: MATERIAL: …, NORMA: …, PRESION: …, TEMPERATURA: …, CERTIFICACIONES: …" oninput="_otRows['+n+'].specs=this.value;_otSpecsEdit('+n+')" style="width:100%;margin-top:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:#fff;font-size:12px;resize:vertical;">'+_otEsc(r.specs)+'</textarea>'
       ):'')
       +'</div>';
   }).join('');
@@ -8301,9 +8301,9 @@ async function otIA(n){
     const resp=await fetch(url,{
       method:'POST',
       headers:{'Content-Type': (/script\.google\.com/i.test(url)?'text/plain;charset=utf-8':'application/json')},
-      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1800, messages:[{role:'user',content:[
+      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:3000, messages:[{role:'user',content:[
         { type:'document', source:{ type:'base64', media_type:'application/pdf', data:b64 } },
-        { type:'text', text:'Eres ingeniero de aplicaciones de E&G Energy Group (suministro industrial, Colombia). Lee la ficha técnica adjunta del producto "'+desc+'" y redacta en ESPAÑOL un bloque breve de especificaciones técnicas para una oferta técnica formal. Incluye SOLO lo que la ficha respalde: material, norma/estándar de fabricación, rango de presión y temperatura, dimensiones/conexiones y certificaciones. Máximo 8 líneas, texto plano sin markdown, sin precios, sin inventar datos.' }
+        { type:'text', text:'Eres ingeniero de aplicaciones de E&G Energy Group (suministro industrial, Colombia). Lee la ficha técnica adjunta del producto "'+desc+'" y redacta en ESPAÑOL las especificaciones técnicas COMPLETAS para una oferta técnica formal, una por línea con el formato "CAMPO: valor". Cubre todos los campos que la ficha respalde, por ejemplo: DESCRIPCION GENERAL, MATERIAL DE CUERPO, MATERIAL DE INTERNOS/ASIENTOS, NORMA DE FABRICACION, NORMA DE PRUEBAS/ENSAYOS, RATING O CLASE, PRESION DE TRABAJO, PRESION DE PRUEBA, RANGO DE TEMPERATURA, TIPO DE CONEXION Y ROSCA, DIMENSIONES Y PESO, ACABADO/RECUBRIMIENTO, CERTIFICACIONES (API/ASME/ASTM/ISO/FM/UL/ATEX), APLICACION TIPICA. Sé exhaustivo con los valores numéricos, unidades, grados de material y designaciones de norma que SÍ aparezcan en la ficha; omite los campos que la ficha no mencione y NO inventes datos. Texto plano sin markdown, sin precios.' }
       ]}], secret:_proxySecret() }),
       redirect:'follow'
     });
@@ -8385,8 +8385,12 @@ async function otGenerar(){
       pg.drawText(_otTx(rw[1]).slice(0,90),{x:M+116,y:y-11.5,size:8.5,font:font});
       y-=16;
     });
-    y-=18;
-    pg.drawText('ALCANCE DEL SUMINISTRO',{x:M,y:y,size:11,font:fontB,color:AZUL}); y-=14;
+    y-=14;
+    // Presentación: da contexto formal y evita la portada semivacía
+    const intro='E&G ENERGY GROUP SAS presenta a continuacion la oferta tecnica para el suministro de los bienes relacionados. Las especificaciones corresponden a la informacion tecnica del fabricante y las fichas tecnicas anexas hacen parte integral de esta oferta.'+(_cotizNumEsPendiente(num)?'':' Las condiciones comerciales se presentan en la cotizacion No. '+num+'.');
+    wrap(_otTx(intro),font,8.5,CW).forEach(function(ln){ pg.drawText(ln,{x:M,y:y,size:8.5,font:font}); y-=11; });
+    y-=10;
+    pg.drawText('ALCANCE DEL SUMINISTRO Y ESPECIFICACIONES TECNICAS',{x:M,y:y,size:11,font:fontB,color:AZUL}); y-=14;
     // Tabla de ítems SIN precios: ITEM | CANT | UDM | DESCRIPCION | MARCA
     const cols=[30,42,36,332,92];
     const heads=['ITEM','CANT','UDM','DESCRIPCION','MARCA'];
@@ -8400,6 +8404,7 @@ async function otGenerar(){
       y-=15;
     };
     drawItemsHeader();
+    const GCLARO=rgb(0.972,0.972,0.972);
     rows.forEach(function(r,ix){
       const it=cotizItems[r.i]||{};
       const dLines=wrap(_otTx(String(it.desc||'').toUpperCase()),font,8,cols[3]-6);
@@ -8414,27 +8419,25 @@ async function otGenerar(){
         x+=cols[ci];
       });
       pg.drawRectangle({x:x,y:y-rh,width:cols[3],height:rh,borderColor:NEGRO,borderWidth:0.8});
-      dLines.forEach(function(ln,li){ pg.drawText(ln,{x:x+3,y:y-12-li*10,size:8,font:font}); });
+      dLines.forEach(function(ln,li){ pg.drawText(ln,{x:x+3,y:y-12-li*10,size:8,font:fontB}); });
       x+=cols[3];
       pg.drawRectangle({x:x,y:y-rh,width:cols[4],height:rh,borderColor:NEGRO,borderWidth:0.8});
       mLines.forEach(function(ln,li){ pg.drawText(ln,{x:x+3,y:y-12-li*10,size:8,font:font}); });
       y-=rh;
+      // Specs del ítem: fila sombreada a lo ancho, pegada al renglón (diseño denso).
+      // Se parte en bloques si no cabe en la página (specs largas de la IA).
+      const sLines=String(r.specs||'').trim()?wrap(_otTx('ESPECIFICACIONES TECNICAS:  '+r.specs),font,8,CW-14):[];
+      let li=0;
+      while(li<sLines.length){
+        let avail=Math.floor((y-58)/10);
+        if(avail<3){ newPage(); avail=Math.floor((y-58)/10); }
+        const chunk=sLines.slice(li,li+avail);
+        const ch=chunk.length*10+8;
+        pg.drawRectangle({x:M,y:y-ch,width:CW,height:ch,borderColor:NEGRO,borderWidth:0.8,color:GCLARO});
+        chunk.forEach(function(ln,k){ pg.drawText(ln,{x:M+7,y:y-11-k*10,size:8,font:font}); });
+        y-=ch; li+=chunk.length;
+      }
     });
-    // Especificaciones por ítem (solo los que tengan specs)
-    const conSpecs=rows.filter(function(r){ return String(r.specs||'').trim(); });
-    if(conSpecs.length){
-      y-=22; need(40);
-      pg.drawText('ESPECIFICACIONES TECNICAS',{x:M,y:y,size:11,font:fontB,color:AZUL}); y-=16;
-      conSpecs.forEach(function(r){
-        const it=cotizItems[r.i]||{};
-        const tLines=wrap(_otTx('ITEM '+(rows.indexOf(r)+1)+' - '+String(it.desc||'').toUpperCase()),fontB,8.5,CW);
-        const sLines=wrap(_otTx(r.specs),font,8.5,CW-10);
-        need(tLines.length*11+sLines.length*11+18);
-        tLines.forEach(function(ln){ pg.drawText(ln,{x:M,y:y,size:8.5,font:fontB}); y-=11; });
-        sLines.forEach(function(ln){ pg.drawText(ln,{x:M+10,y:y,size:8.5,font:font}); y-=11; });
-        y-=8;
-      });
-    }
     // Anexos: fichas del fabricante
     msg.textContent='Cargando fichas de la biblioteca…';
     const anexos=[];
@@ -8445,12 +8448,12 @@ async function otGenerar(){
       }
     }
     if(anexos.length){
-      newPage();
-      pg.drawText('ANEXOS - FICHAS TECNICAS DEL FABRICANTE',{x:M,y:y,size:12,font:fontB,color:AZUL}); y-=18;
+      y-=16; need(28+anexos.length*13);
+      pg.drawText('DOCUMENTOS ANEXOS - FICHAS TECNICAS DEL FABRICANTE',{x:M,y:y,size:10,font:fontB,color:AZUL}); y-=13;
       anexos.forEach(function(a,ai){
         const it=cotizItems[a.r.i]||{};
-        wrap(_otTx('ANEXO '+(ai+1)+': '+String(it.desc||'').toUpperCase()+'  ('+(_otIndex[a.r.slug].archivo||'')+')'),font,9,CW).forEach(function(ln){ pg.drawText(ln,{x:M,y:y,size:9,font:font}); y-=12; });
-        y-=4;
+        wrap(_otTx('ANEXO '+(ai+1)+': '+String(it.desc||'').toUpperCase()+'  ('+(_otIndex[a.r.slug].archivo||'')+')'),font,8.5,CW).forEach(function(ln){ if(y<58){ newPage(); } pg.drawText(ln,{x:M,y:y,size:8.5,font:font}); y-=11; });
+        y-=2;
       });
     }
     // pie de página SOLO en las hojas generadas (las fichas anexas van tal cual)
