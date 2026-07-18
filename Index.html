@@ -1549,6 +1549,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <button class="btn btn-primary" onclick="cotizGuardarBD()" style="width:auto;font-size:13px;">💾 Guardar en base de datos</button>
             <button class="btn btn-primary" onclick="cotizGenerarPDF()" style="width:auto;font-size:13px;background:rgba(229,62,62,.3);border-color:#e53e3e;">📄 Generar PDF</button>
             <button class="btn btn-primary" onclick="cotizDownloadExcel()" style="width:auto;font-size:13px;background:rgba(46,170,74,.3);border-color:#2eaa4a;">⬇️ Descargar Excel</button>
+            <button class="btn btn-primary" onclick="otAbrir()" title="Documento técnico SIN precios con fichas del fabricante anexas (opcional)" style="width:auto;font-size:13px;background:rgba(26,58,143,.35);border-color:#1a3a8f;">📑 Oferta Técnica</button>
             <button class="btn btn-secondary" onclick="cotizNuevaConfirm()" style="width:auto;font-size:13px;">+ Nueva cotización</button>
           </div>
         </div>
@@ -2368,6 +2369,23 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     </div>
   </div>
 </div><!-- /vis-acta-modal -->
+
+<!-- MODAL OFERTA TÉCNICA v144 (opcional — solo corre si se abre; overlay fijo) -->
+<div id="ot-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2000;align-items:flex-start;justify-content:center;overflow:auto;padding:30px 12px;">
+  <div style="background:#0d1f3c;border:1px solid var(--border);border-radius:14px;max-width:920px;width:100%;padding:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <h3 style="margin:0;">📑 Oferta Técnica <span id="ot-num" style="color:var(--gold);font-size:15px;"></span></h3>
+      <button onclick="otCerrar()" style="background:none;border:none;color:#f87171;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.5;">Documento técnico <b>SIN precios</b>: portada con membrete + ítems + especificaciones + fichas del fabricante anexas, todo en UN solo PDF. Marca los ítems a incluir. La ficha por ítem es <b>opcional</b> y queda en la biblioteca para próximas ofertas del mismo producto. El botón 🤖 le pide a la IA redactar las especificaciones desde la ficha — revísalas y edítalas antes de generar.</p>
+    <div id="ot-items"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center;">
+      <button class="btn btn-primary" id="ot-btn-generar" onclick="otGenerar()" style="width:auto;font-size:13px;background:rgba(229,62,62,.3);border-color:#e53e3e;">📄 Generar Oferta Técnica (PDF)</button>
+      <span id="ot-msg" style="font-size:12px;color:var(--text-muted);"></span>
+    </div>
+  </div>
+</div>
+<input type="file" id="ot-file" accept="application/pdf" style="display:none">
 
 <!-- MODAL EDITAR SABADO (fuera de la pagina: overlay fijo) -->
 <div id="sab-plan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
@@ -8132,6 +8150,337 @@ function cotizFechaVencAuto(){
   const v = document.getElementById('cotiz-fecha-venc'); if (!v) return;
   v.value = d.toISOString().split('T')[0];
   showToast('Vencimiento recalculado: ' + v.value.split('-').reverse().join('/') + ' (fecha + 8 días)', 'info');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// v144: OFERTA TÉCNICA (100% OPCIONAL) — botón 📑 en el editor de cotización.
+// Genera UN PDF: portada membrete + ítems SIN precios + specs + fichas anexas.
+// Biblioteca de fichas por producto:
+//   data/fichas_index.json          → índice pequeño {slug:{desc,archivo,specs,...}}
+//   data/fichas/<slug>.json         → PDF en base64 (se escribe UNA vez por ficha)
+// Las fichas NO entran al sync periódico ni a localStorage (protege la cuota);
+// se cargan bajo demanda solo al abrir el modal / generar. Si el botón no se
+// toca, nada de esto corre — cero impacto en lo que ya funciona.
+// ═══════════════════════════════════════════════════════════════
+const OT_INDEX_FILE='data/fichas_index.json';
+let _otIndex={};        // índice de la biblioteca
+let _otRows=[];         // filas del modal: {i, incluir, slug, specs}
+let _otFichaCache={};   // base64 por slug (solo en memoria de la sesión)
+let _otPdfLibP=null;
+let _otDirty=false;
+
+function _otSlug(desc){
+  return String(desc||'').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^A-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60) || 'SIN-DESC';
+}
+function _otEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// pdf-lib usa codificación WinAnsi (Latin-1): tildes y ° pasan; emojis y símbolos raros no.
+function _otTx(s){
+  return String(s==null?'':s).replace(/[‘’]/g,"'").replace(/[“”]/g,'"')
+    .replace(/[–—]/g,'-').replace(/…/g,'...').replace(/\t/g,' ')
+    .replace(/[^\x20-\xFF\n]/g,'').replace(/ +/g,' ');
+}
+function _otB64ToBytes(b64){ const bin=atob(b64); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return u; }
+function _otPdfLib(){
+  if(window.PDFLib) return Promise.resolve(window.PDFLib);
+  if(_otPdfLibP) return _otPdfLibP;
+  _otPdfLibP=new Promise(function(res,rej){
+    const s=document.createElement('script');
+    s.src='libs/pdf-lib.min.js';
+    s.onload=function(){ window.PDFLib?res(window.PDFLib):rej(new Error('PDFLib no inicializó')); };
+    s.onerror=function(){ _otPdfLibP=null; rej(new Error('No se pudo cargar libs/pdf-lib.min.js (¿sin internet?)')); };
+    document.head.appendChild(s);
+  });
+  return _otPdfLibP;
+}
+async function _otLoadIndex(){
+  try{ const r=await _loadDataGHRaw(OT_INDEX_FILE); if(r&&typeof r==='object'&&!Array.isArray(r)) _otIndex=r; }
+  catch(_){ /* primera vez: índice vacío */ }
+}
+async function _otSaveIndex(label){
+  // merge anti-pisadas: lo remoto entra primero y lo local gana solo si es más reciente
+  try{
+    const remote=await _loadDataGHRaw(OT_INDEX_FILE).catch(function(){return null;});
+    if(remote&&typeof remote==='object'&&!Array.isArray(remote)){
+      Object.keys(remote).forEach(function(k){
+        const r=remote[k], l=_otIndex[k];
+        if(!l || String(r.updatedAt||'')>String(l.updatedAt||'')) _otIndex[k]=r;
+      });
+    }
+  }catch(_){ }
+  await _saveDataGH(OT_INDEX_FILE, _otIndex, label||'📑 Biblioteca fichas técnicas');
+  _otDirty=false;
+}
+async function otAbrir(){
+  if(!cotizItems.length){ showToast('Agrega ítems a la cotización primero','error'); return; }
+  const num=cotizReadNum();
+  document.getElementById('ot-num').textContent=_cotizNumEsPendiente(num)?'(borrador — guarda la cotización para el número definitivo)':('OT-'+num);
+  document.getElementById('ot-modal').style.display='flex';
+  document.getElementById('ot-items').innerHTML='<div style="color:var(--text-muted);font-size:13px;padding:20px;text-align:center;">Cargando biblioteca de fichas…</div>';
+  await _otLoadIndex();
+  _otRows=cotizItems.map(function(it,i){
+    const slug=_otSlug(it.desc);
+    return { i:i, incluir:true, slug:slug, specs:(_otIndex[slug]&&_otIndex[slug].specs)||'' };
+  });
+  otRender();
+}
+function otCerrar(){
+  document.getElementById('ot-modal').style.display='none';
+  if(_otDirty){ _otSaveIndex('📑 Specs fichas actualizadas').catch(function(){}); }
+}
+function otRender(){
+  const box=document.getElementById('ot-items'); if(!box) return;
+  box.innerHTML=_otRows.map(function(r,n){
+    const it=cotizItems[r.i]||{};
+    const fic=_otIndex[r.slug];
+    const tiene=!!(fic&&fic.archivo);
+    return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;'+(r.incluir?'':'opacity:.45;')+'">'
+      +'<div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">'
+      +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;min-width:0;flex:1;">'
+      +'<input type="checkbox" '+(r.incluir?'checked':'')+' onchange="_otRows['+n+'].incluir=this.checked;otRender()">'
+      +'<span style="font-weight:700;text-transform:uppercase;font-size:12.5px;">'+(r.i+1)+'. '+_otEsc(it.desc||'(sin descripción)')+'</span></label>'
+      +'<span style="font-size:11.5px;color:var(--text-muted);white-space:nowrap;">'+_otEsc(String(it.qty||0))+' '+_otEsc(it.udm||'EA')+(it.marca?' · '+_otEsc(it.marca):'')+'</span>'
+      +'</div>'
+      +(r.incluir?(
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:11.5px;">'
+        +(tiene
+          ? '<span style="color:#4ade80;">📎 Ficha en biblioteca: '+_otEsc(fic.archivo)+'</span>'
+            +'<button type="button" class="foto-btn" onclick="otSubirFicha('+n+')" style="background:rgba(26,58,143,.4);border:1px solid var(--border);color:#cbd5e1;border-radius:5px;padding:2px 8px;font-size:10.5px;cursor:pointer;">🔄 Reemplazar</button>'
+            +'<button type="button" onclick="otIA('+n+')" id="ot-ia-'+n+'" style="background:rgba(232,160,32,.2);border:1px solid rgba(232,160,32,.5);color:#e8a020;border-radius:5px;padding:2px 8px;font-size:10.5px;cursor:pointer;">🤖 Redactar specs con IA</button>'
+          : '<span style="color:var(--text-muted);">— sin ficha (opcional) —</span>'
+            +'<button type="button" onclick="otSubirFicha('+n+')" style="background:rgba(46,170,74,.2);border:1px solid rgba(46,170,74,.5);color:#68d391;border-radius:5px;padding:2px 8px;font-size:10.5px;cursor:pointer;">➕ Subir ficha PDF del fabricante</button>')
+        +'</div>'
+        +'<textarea rows="2" placeholder="Especificaciones técnicas del ítem (opcional) — material, norma, presión, temperatura, certificaciones…" oninput="_otRows['+n+'].specs=this.value;_otSpecsEdit('+n+')" style="width:100%;margin-top:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:#fff;font-size:12px;resize:vertical;">'+_otEsc(r.specs)+'</textarea>'
+      ):'')
+      +'</div>';
+  }).join('');
+}
+function _otSpecsEdit(n){
+  const r=_otRows[n]; if(!r) return;
+  _otIndex[r.slug]=Object.assign({},_otIndex[r.slug],{ desc:(cotizItems[r.i]||{}).desc||'', specs:r.specs, updatedAt:new Date().toISOString(), updatedBy:(currentUser&&(currentUser.name||currentUser.email))||'—' });
+  _otDirty=true;
+}
+function otSubirFicha(n){
+  const inp=document.getElementById('ot-file'); if(!inp) return;
+  inp.onchange=async function(){
+    const f=inp.files[0]; inp.value=''; if(!f) return;
+    if(!/\.pdf$/i.test(f.name)&&f.type!=='application/pdf'){ showToast('La ficha debe ser un PDF','error'); return; }
+    if(f.size>4*1024*1024){ showToast('La ficha pesa '+(f.size/1048576).toFixed(1)+' MB — máximo 4 MB. Comprímela e intenta de nuevo.','error'); return; }
+    const r=_otRows[n]; if(!r) return;
+    const b64=await new Promise(function(res,rej){ const rd=new FileReader(); rd.onload=function(){res(String(rd.result).split(',')[1]);}; rd.onerror=rej; rd.readAsDataURL(f); });
+    showToast('Subiendo ficha a la biblioteca…','info');
+    try{
+      const who=(currentUser&&(currentUser.name||currentUser.email))||'—';
+      await _saveDataGH('data/fichas/'+r.slug+'.json',
+        { slug:r.slug, desc:(cotizItems[r.i]||{}).desc||'', nombre:f.name, pdf:b64, updatedAt:new Date().toISOString(), updatedBy:who },
+        '📎 Ficha técnica '+r.slug);
+      _otIndex[r.slug]=Object.assign({},_otIndex[r.slug],{ desc:(cotizItems[r.i]||{}).desc||'', archivo:f.name, updatedAt:new Date().toISOString(), updatedBy:who });
+      _otFichaCache[r.slug]=b64;
+      await _otSaveIndex('📎 Índice fichas: '+r.slug);
+      showToast('✅ Ficha guardada en la biblioteca — quedará disponible en futuras ofertas','success');
+    }catch(e){ showToast('No se pudo subir la ficha: '+((e&&e.message)||e),'error'); }
+    otRender();
+  };
+  inp.click();
+}
+async function _otFichaB64(slug){
+  if(_otFichaCache[slug]) return _otFichaCache[slug];
+  const d=await _loadDataGHRaw('data/fichas/'+slug+'.json');
+  if(d&&d.pdf){ _otFichaCache[slug]=d.pdf; return d.pdf; }
+  throw new Error('Ficha no encontrada en la biblioteca');
+}
+async function otIA(n){
+  const r=_otRows[n]; if(!r) return;
+  const url=getClaudeProxyURL();
+  if(!url){ showToast('Configura la URL del Proxy en Configuración → ENERGY IA','error'); return; }
+  const btn=document.getElementById('ot-ia-'+n);
+  if(btn){ btn.disabled=true; btn.textContent='🤖 Leyendo ficha…'; }
+  try{
+    const b64=await _otFichaB64(r.slug);
+    const desc=(cotizItems[r.i]||{}).desc||'';
+    const resp=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type': (/script\.google\.com/i.test(url)?'text/plain;charset=utf-8':'application/json')},
+      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:1800, messages:[{role:'user',content:[
+        { type:'document', source:{ type:'base64', media_type:'application/pdf', data:b64 } },
+        { type:'text', text:'Eres ingeniero de aplicaciones de E&G Energy Group (suministro industrial, Colombia). Lee la ficha técnica adjunta del producto "'+desc+'" y redacta en ESPAÑOL un bloque breve de especificaciones técnicas para una oferta técnica formal. Incluye SOLO lo que la ficha respalde: material, norma/estándar de fabricación, rango de presión y temperatura, dimensiones/conexiones y certificaciones. Máximo 8 líneas, texto plano sin markdown, sin precios, sin inventar datos.' }
+      ]}], secret:_proxySecret() }),
+      redirect:'follow'
+    });
+    const data=await resp.json();
+    const txt=(data&&data.content&&data.content[0]&&data.content[0].text)||'';
+    if(!txt){ throw new Error((data&&data.error&&(data.error.message||data.error))||'la IA no devolvió texto'); }
+    r.specs=txt.trim();
+    _otSpecsEdit(n);
+    otRender();
+    showToast('🤖 Specs redactadas — revísalas y ajusta lo que haga falta','success');
+  }catch(e){ showToast('No se pudo redactar con IA: '+((e&&e.message)||e),'error'); }
+  if(btn){ btn.disabled=false; btn.textContent='🤖 Redactar specs con IA'; }
+}
+async function otGenerar(){
+  const rows=_otRows.filter(function(r){return r.incluir;});
+  if(!rows.length){ showToast('Marca al menos un ítem','error'); return; }
+  const msg=document.getElementById('ot-msg');
+  const btn=document.getElementById('ot-btn-generar'); if(btn) btn.disabled=true;
+  try{
+    msg.textContent='Cargando librería PDF…';
+    const PL=await _otPdfLib();
+    const PDFDocument=PL.PDFDocument, StandardFonts=PL.StandardFonts, rgb=PL.rgb;
+    const doc=await PDFDocument.create();
+    const font=await doc.embedFont(StandardFonts.Helvetica);
+    const fontB=await doc.embedFont(StandardFonts.HelveticaBold);
+    let logo=null;
+    try{ const lb=await (await fetch('libs/logo-eyg.png')).arrayBuffer(); logo=await doc.embedPng(lb); }catch(_){ }
+    const AZUL=rgb(0.102,0.227,0.561), VERDE=rgb(0.361,0.722,0.361), GRISF=rgb(0.95,0.95,0.95), NEGRO=rgb(0,0,0), GRIST=rgb(0.42,0.42,0.42);
+    const W=612,H=792,M=40,CW=W-2*M;
+    const num=cotizReadNum();
+    const numOT='OT-'+(_cotizNumEsPendiente(num)?'BORRADOR':num);
+    const cliente=_otTx(document.getElementById('cotiz-cliente').value||'');
+    const contacto=_otTx(document.getElementById('cotiz-contacto').value||'');
+    const fecha=(document.getElementById('cotiz-fecha-gen').value||'').split('-').reverse().join('/');
+    const wrap=function(text,f,size,maxw){
+      const out=[];
+      String(text||'').split('\n').forEach(function(par){
+        let line='';
+        par.split(/ +/).forEach(function(w){
+          if(!w) return;
+          const t=line?line+' '+w:w;
+          if(f.widthOfTextAtSize(t,size)<=maxw){ line=t; return; }
+          if(line) out.push(line);
+          while(f.widthOfTextAtSize(w,size)>maxw && w.length>1){
+            let k=w.length-1; while(k>1&&f.widthOfTextAtSize(w.slice(0,k),size)>maxw)k--;
+            out.push(w.slice(0,k)); w=w.slice(k);
+          }
+          line=w;
+        });
+        out.push(line);
+      });
+      return out;
+    };
+    const pagesGen=[];
+    const drawHeader=function(page){
+      const hy=H-M;
+      page.drawRectangle({x:M,y:hy-58,width:CW,height:58,borderColor:NEGRO,borderWidth:1});
+      if(logo){ const lw=52, lh=lw*(logo.height/logo.width); page.drawImage(logo,{x:M+10,y:hy-58+(58-lh)/2,width:lw,height:lh}); }
+      page.drawText('E&G ENERGY GROUP SAS',{x:M+78,y:hy-22,size:11,font:fontB});
+      page.drawText('CARRERA 7 # 12-61 CHIA - TELEFONO 320 494 7227',{x:M+78,y:hy-36,size:8,font:font});
+      page.drawText('www.eygenergygroup.com',{x:M+78,y:hy-48,size:8,font:font});
+      page.drawRectangle({x:W-M-140,y:hy-58,width:140,height:58,borderColor:NEGRO,borderWidth:1});
+      page.drawText('OFERTA TECNICA No.',{x:W-M-130,y:hy-24,size:8.5,font:fontB});
+      page.drawText(numOT,{x:W-M-130,y:hy-44,size:12,font:fontB});
+      page.drawRectangle({x:M,y:hy-66,width:CW,height:4,color:AZUL});
+      page.drawRectangle({x:M,y:hy-70,width:CW,height:4,color:VERDE});
+      return hy-86;
+    };
+    let pg=null, y=0;
+    const newPage=function(){ const p=doc.addPage([W,H]); pagesGen.push(p); pg=p; y=drawHeader(p); };
+    const need=function(h){ if(y-h<50) newPage(); };
+    newPage();
+    // Bloque cliente
+    const cliRows=[['CLIENTE',cliente],['CONTACTO',contacto],['FECHA',fecha],['REF. COTIZACION',_cotizNumEsPendiente(num)?'—':String(num)]];
+    cliRows.forEach(function(rw){
+      pg.drawRectangle({x:M,y:y-16,width:110,height:16,borderColor:NEGRO,borderWidth:0.8,color:GRISF});
+      pg.drawRectangle({x:M+110,y:y-16,width:CW-110,height:16,borderColor:NEGRO,borderWidth:0.8});
+      pg.drawText(rw[0],{x:M+6,y:y-11.5,size:8,font:fontB});
+      pg.drawText(_otTx(rw[1]).slice(0,90),{x:M+116,y:y-11.5,size:8.5,font:font});
+      y-=16;
+    });
+    y-=18;
+    pg.drawText('ALCANCE DEL SUMINISTRO',{x:M,y:y,size:11,font:fontB,color:AZUL}); y-=14;
+    // Tabla de ítems SIN precios: ITEM | CANT | UDM | DESCRIPCION | MARCA
+    const cols=[30,42,36,332,92];
+    const heads=['ITEM','CANT','UDM','DESCRIPCION','MARCA'];
+    const drawItemsHeader=function(){
+      let x=M;
+      heads.forEach(function(h,ci){
+        pg.drawRectangle({x:x,y:y-15,width:cols[ci],height:15,borderColor:NEGRO,borderWidth:0.8,color:GRISF});
+        pg.drawText(h,{x:x+3,y:y-11,size:7.5,font:fontB});
+        x+=cols[ci];
+      });
+      y-=15;
+    };
+    drawItemsHeader();
+    rows.forEach(function(r,ix){
+      const it=cotizItems[r.i]||{};
+      const dLines=wrap(_otTx(String(it.desc||'').toUpperCase()),font,8,cols[3]-6);
+      const mLines=wrap(_otTx(String(it.marca||'').toUpperCase()),font,8,cols[4]-6);
+      const rh=Math.max(dLines.length,mLines.length,1)*10+6;
+      if(y-rh<50){ newPage(); drawItemsHeader(); }
+      const vals=[String(ix+1),String(it.qty||0),String(it.udm||'EA')];
+      let x=M;
+      [0,1,2].forEach(function(ci){
+        pg.drawRectangle({x:x,y:y-rh,width:cols[ci],height:rh,borderColor:NEGRO,borderWidth:0.8});
+        pg.drawText(vals[ci],{x:x+3,y:y-12,size:8,font:font});
+        x+=cols[ci];
+      });
+      pg.drawRectangle({x:x,y:y-rh,width:cols[3],height:rh,borderColor:NEGRO,borderWidth:0.8});
+      dLines.forEach(function(ln,li){ pg.drawText(ln,{x:x+3,y:y-12-li*10,size:8,font:font}); });
+      x+=cols[3];
+      pg.drawRectangle({x:x,y:y-rh,width:cols[4],height:rh,borderColor:NEGRO,borderWidth:0.8});
+      mLines.forEach(function(ln,li){ pg.drawText(ln,{x:x+3,y:y-12-li*10,size:8,font:font}); });
+      y-=rh;
+    });
+    // Especificaciones por ítem (solo los que tengan specs)
+    const conSpecs=rows.filter(function(r){ return String(r.specs||'').trim(); });
+    if(conSpecs.length){
+      y-=22; need(40);
+      pg.drawText('ESPECIFICACIONES TECNICAS',{x:M,y:y,size:11,font:fontB,color:AZUL}); y-=16;
+      conSpecs.forEach(function(r){
+        const it=cotizItems[r.i]||{};
+        const tLines=wrap(_otTx('ITEM '+(rows.indexOf(r)+1)+' - '+String(it.desc||'').toUpperCase()),fontB,8.5,CW);
+        const sLines=wrap(_otTx(r.specs),font,8.5,CW-10);
+        need(tLines.length*11+sLines.length*11+18);
+        tLines.forEach(function(ln){ pg.drawText(ln,{x:M,y:y,size:8.5,font:fontB}); y-=11; });
+        sLines.forEach(function(ln){ pg.drawText(ln,{x:M+10,y:y,size:8.5,font:font}); y-=11; });
+        y-=8;
+      });
+    }
+    // Anexos: fichas del fabricante
+    msg.textContent='Cargando fichas de la biblioteca…';
+    const anexos=[];
+    for(const r of rows){
+      if(_otIndex[r.slug]&&_otIndex[r.slug].archivo){
+        try{ anexos.push({ r:r, b64:await _otFichaB64(r.slug) }); }
+        catch(_){ showToast('⚠️ No se pudo cargar la ficha de "'+((cotizItems[r.i]||{}).desc||'').slice(0,40)+'" — la oferta sale sin ese anexo','info'); }
+      }
+    }
+    if(anexos.length){
+      newPage();
+      pg.drawText('ANEXOS - FICHAS TECNICAS DEL FABRICANTE',{x:M,y:y,size:12,font:fontB,color:AZUL}); y-=18;
+      anexos.forEach(function(a,ai){
+        const it=cotizItems[a.r.i]||{};
+        wrap(_otTx('ANEXO '+(ai+1)+': '+String(it.desc||'').toUpperCase()+'  ('+(_otIndex[a.r.slug].archivo||'')+')'),font,9,CW).forEach(function(ln){ pg.drawText(ln,{x:M,y:y,size:9,font:font}); y-=12; });
+        y-=4;
+      });
+    }
+    // pie de página SOLO en las hojas generadas (las fichas anexas van tal cual)
+    pagesGen.forEach(function(p,i){
+      p.drawText('E&G ENERGY GROUP SAS - '+numOT+' - Pagina '+(i+1)+' de '+pagesGen.length,{x:M,y:26,size:7,font:font,color:GRIST});
+    });
+    msg.textContent='Uniendo fichas al documento…';
+    for(const a of anexos){
+      try{
+        const src=await PDFDocument.load(_otB64ToBytes(a.b64),{ignoreEncryption:true});
+        const pages=await doc.copyPages(src,src.getPageIndices());
+        pages.forEach(function(p){ doc.addPage(p); });
+      }catch(_){ showToast('⚠️ La ficha de "'+((cotizItems[a.r.i]||{}).desc||'').slice(0,40)+'" no se pudo anexar (PDF no compatible)','info'); }
+    }
+    msg.textContent='Generando archivo…';
+    const bytes=await doc.save();
+    const blob=new Blob([bytes],{type:'application/pdf'});
+    const aEl=document.createElement('a');
+    aEl.href=URL.createObjectURL(blob);
+    aEl.download='Oferta_Tecnica_'+numOT+(cliente?('_'+cliente.replace(/[^A-Za-z0-9]+/g,'_').slice(0,30)):'')+'.pdf';
+    document.body.appendChild(aEl); aEl.click();
+    setTimeout(function(){ try{ URL.revokeObjectURL(aEl.href); aEl.remove(); }catch(_){ } },4000);
+    msg.textContent='';
+    showToast('✅ Oferta Técnica generada ('+numOT+')','success');
+    if(_otDirty){ _otSaveIndex('📑 Specs fichas actualizadas').catch(function(){}); }
+  }catch(e){
+    msg.textContent='';
+    showToast('No se pudo generar la Oferta Técnica: '+((e&&e.message)||e),'error');
+  }
+  if(btn) btn.disabled=false;
 }
 
 // Solo refresca la vista del campo N° FACTURA (mostrar/ocultar + aviso). NO pregunta.
