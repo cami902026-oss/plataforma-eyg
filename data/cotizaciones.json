@@ -1036,17 +1036,56 @@
     "deletedAt": "2026-06-10T18:14:21.662Z"
   },
   {
-    "id": "LM1577",
+    "id": "LM1003",
+    "fecha": "2026-05-23",
+    "fechaVenc": "2026-05-31",
+    "cliente": "PEPE",
+    "contacto": "PEPITO",
+    "correo": "pepito@eygenergygrimsjd.com",
+    "estado": "Borrador",
+    "iva": 19,
+    "subtotal": 12447.857142857143,
+    "ivaVal": 2365.092857142857,
+    "total": 14812.95,
+    "formaPago": "30 DÍAS",
+    "sitioEntrega": "chia",
+    "validez": "8 DÍAS",
+    "observaciones": "LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Alexandra",
+    "aprobadaPor": "Alberto",
+    "items": [
+      {
+        "id": 1,
+        "desc": "CODO AC NPT 3.000L 3/4\"",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 12447.857142857143,
+        "tiempoEntrega": "1-2 DÍAS HÁBILES",
+        "desvTec": "",
+        "marca": "BOTHWELL",
+        "proveedor": "",
+        "codigo": 15000117
+      }
+    ],
+    "fechaGuardado": "2026-05-23T17:58:29.244Z",
+    "createdAt": "2026-05-23T17:58:29.244Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-05-23T17:58:29.244Z",
+    "updatedBy": "andrea"
+  },
+  {
+    "id": "LM1581",
     "fecha": "2026-05-25",
     "fechaVenc": "2026-06-02",
-    "cliente": "ANDES OPERATING",
-    "contacto": "Andres Bernal",
-    "correo": "andres.bernal@andesoperating.com",
+    "cliente": "JE JAIMES",
+    "contacto": "Luis Garzon ",
+    "correo": "contacto@jejaimes.com.co",
     "estado": "Vencida",
     "iva": 19,
-    "subtotal": 6500000,
-    "ivaVal": 1235000,
-    "total": 7735000,
+    "subtotal": 122760000,
+    "ivaVal": 23324400,
+    "total": 146084400,
     "formaPago": "CONTADO",
     "sitioEntrega": "INSTALACIONES ENERGY GROUP CHIA",
     "validez": "8 DÍAS",
@@ -1054,27 +1093,27 @@
     "vendedor": "",
     "realizadaPor": "",
     "aprobadaPor": "",
-    "solicitudId": "SOL-20260525-221",
+    "solicitudId": "SOL-20260525-609",
     "items": [
       {
-        "id": 2,
-        "desc": "BOMA IHM  10X16 SM",
+        "id": 1,
+        "desc": "TUBERIA  4 PULGADAS SCH 40 RANGO SENCILLO ",
         "udm": "EA",
-        "qty": 1,
-        "precio": 6500000,
-        "tiempoEntrega": "5 DIAS",
-        "desvTec": "",
-        "marca": "",
-        "proveedor": "IHM",
-        "precioProveedor": 4156000
+        "qty": 330,
+        "precio": 372000,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "SE COTIZA TUBO POR 6 METROS",
+        "marca": "BAOLAI",
+        "proveedor": "BODEGA",
+        "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-05-25T17:32:47.278Z",
+    "fechaGuardado": "2026-05-25T17:12:32.709Z",
     "createdAt": "2026-05-25T15:30:18.871Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-16T00:25:43.601Z",
+    "updatedAt": "2026-07-16T21:28:25.988Z",
     "updatedBy": "auto",
-    "vencidaAutoAt": "2026-07-16T00:25:43.601Z"
+    "vencidaAutoAt": "2026-07-16T21:28:25.988Z"
   },
   {
     "id": "LM1582",
@@ -17590,7 +17629,7 @@
     "cliente": "Petrolabin S.A.S (GESTOR COMPRAS) - para Contrato Marco 3045385 / ODS 9",
     "contacto": "MARIA PAULA MORENO JARAMILLO ",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "factura": "",
     "iva": 19,
     "subtotal": 130404762,
@@ -17633,8 +17672,9 @@
     "fechaEnvio": "2026-07-09T18:26:38.973Z",
     "createdAt": "2026-07-07T17:40:47.363Z",
     "createdBy": "lina",
-    "updatedAt": "2026-07-09T18:26:38.973Z",
-    "updatedBy": "lina"
+    "updatedAt": "2026-07-18T01:06:03.842Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-07-18T01:06:03.842Z"
   },
   {
     "id": "LM1776-1",
@@ -17643,7 +17683,7 @@
     "cliente": "Petrolabin S.A.S (GESTOR COMPRAS) - para Contrato Marco 3045385 / ODS 9",
     "contacto": "MARIA PAULA MORENO JARAMILLO ",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "factura": "",
     "iva": 19,
     "subtotal": 172384762,
@@ -17702,8 +17742,9 @@
     "fechaEnvio": "2026-07-16T20:59:52.053Z",
     "createdAt": "2026-07-16T20:59:52.054Z",
     "createdBy": "lina",
-    "updatedAt": "2026-07-17T13:44:45.730Z",
-    "updatedBy": "lina"
+    "updatedAt": "2026-07-18T01:06:03.842Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-07-18T01:06:03.842Z"
   },
   {
     "id": "LM1782",
@@ -18361,7 +18402,7 @@
     "cliente": "DISICO",
     "contacto": "ING LEONEL LINARES",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "factura": "",
     "iva": 19,
     "subtotal": 1409634,
@@ -18406,8 +18447,9 @@
     "fechaEnvio": "2026-07-09T16:56:02.905Z",
     "createdAt": "2026-07-09T15:09:56.944Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-09T16:56:02.905Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-07-18T01:06:03.842Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-07-18T01:06:03.842Z"
   },
   {
     "id": "LM1787",
@@ -18604,7 +18646,7 @@
     "cliente": "SOLDISMAN",
     "contacto": "SANDRA",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "factura": "",
     "iva": 19,
     "subtotal": 796282,
@@ -18697,8 +18739,9 @@
     "fechaEnvio": "2026-07-09T22:26:32.411Z",
     "createdAt": "2026-07-09T17:34:35.924Z",
     "createdBy": "lina",
-    "updatedAt": "2026-07-09T22:26:32.411Z",
-    "updatedBy": "lina"
+    "updatedAt": "2026-07-18T01:06:03.842Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-07-18T01:06:03.842Z"
   },
   {
     "id": "LM1789",
@@ -18867,7 +18910,7 @@
     "cliente": "PSI",
     "contacto": "ING OSCAR",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "factura": "",
     "iva": 19,
     "subtotal": 1065570,
@@ -18924,8 +18967,9 @@
     "fechaEnvio": "2026-07-09T23:13:42.755Z",
     "createdAt": "2026-07-09T21:42:42.070Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-09T23:13:42.755Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-18T01:06:03.842Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-07-18T01:06:03.842Z"
   },
   {
     "id": "LM1748",
