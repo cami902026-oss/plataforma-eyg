@@ -8426,7 +8426,7 @@ async function otGenerar(){
       y-=rh;
       // Specs del ítem: fila sombreada a lo ancho, pegada al renglón (diseño denso).
       // Se parte en bloques si no cabe en la página (specs largas de la IA).
-      const sLines=String(r.specs||'').trim()?wrap(_otTx('ESPECIFICACIONES TECNICAS:  '+r.specs),font,8,CW-14):[];
+      const sLines=String(r.specs||'').trim()?wrap(_otTx('ESPECIFICACIONES TECNICAS:  '+String(r.specs).replace(/\n{2,}/g,'\n')),font,8,CW-14):[];
       let li=0;
       while(li<sLines.length){
         let avail=Math.floor((y-58)/10);
