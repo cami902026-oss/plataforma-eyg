@@ -8303,14 +8303,18 @@ async function otIA(n){
       headers:{'Content-Type': (/script\.google\.com/i.test(url)?'text/plain;charset=utf-8':'application/json')},
       body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:3000, messages:[{role:'user',content:[
         { type:'document', source:{ type:'base64', media_type:'application/pdf', data:b64 } },
-        { type:'text', text:'Eres ingeniero de aplicaciones de E&G Energy Group (suministro industrial, Colombia). Lee la ficha técnica adjunta del producto "'+desc+'" y redacta en ESPAÑOL las especificaciones técnicas COMPLETAS para una oferta técnica formal, una por línea con el formato "CAMPO: valor". Cubre todos los campos que la ficha respalde, por ejemplo: DESCRIPCION GENERAL, MATERIAL DE CUERPO, MATERIAL DE INTERNOS/ASIENTOS, NORMA DE FABRICACION, NORMA DE PRUEBAS/ENSAYOS, RATING O CLASE, PRESION DE TRABAJO, PRESION DE PRUEBA, RANGO DE TEMPERATURA, TIPO DE CONEXION Y ROSCA, DIMENSIONES Y PESO, ACABADO/RECUBRIMIENTO, CERTIFICACIONES (API/ASME/ASTM/ISO/FM/UL/ATEX), APLICACION TIPICA. Sé exhaustivo con los valores numéricos, unidades, grados de material y designaciones de norma que SÍ aparezcan en la ficha; omite los campos que la ficha no mencione y NO inventes datos. Texto plano sin markdown, sin precios.' }
+        { type:'text', text:'Eres ingeniero de aplicaciones de E&G Energy Group (suministro industrial, Colombia). Lee la ficha técnica adjunta del producto "'+desc+'" y redacta en ESPAÑOL las especificaciones técnicas COMPLETAS para una oferta técnica formal, una por línea con el formato "CAMPO: valor". Cubre todos los campos que la ficha respalde, por ejemplo: DESCRIPCION GENERAL, MATERIAL DE CUERPO, MATERIAL DE INTERNOS/ASIENTOS, NORMA DE FABRICACION, NORMA DE PRUEBAS/ENSAYOS, RATING O CLASE, PRESION DE TRABAJO, PRESION DE PRUEBA, RANGO DE TEMPERATURA, TIPO DE CONEXION Y ROSCA, DIMENSIONES Y PESO, ACABADO/RECUBRIMIENTO, CERTIFICACIONES (API/ASME/ASTM/ISO/FM/UL/ATEX), APLICACION TIPICA. Sé exhaustivo con los valores numéricos, unidades, grados de material y designaciones de norma que SÍ aparezcan en la ficha; omite los campos que la ficha no mencione y NO inventes datos. EXCLUYE todo dato comercial o administrativo: NO incluyas órdenes de compra, facturas, fechas de inspección o emisión, cantidades del pedido, referencias de cliente ni encabezados/títulos — únicamente las especificaciones técnicas del producto. Texto plano sin markdown, sin precios.' }
       ]}], secret:_proxySecret() }),
       redirect:'follow'
     });
     const data=await resp.json();
     const txt=(data&&data.content&&data.content[0]&&data.content[0].text)||'';
     if(!txt){ throw new Error((data&&data.error&&(data.error.message||data.error))||'la IA no devolvió texto'); }
-    r.specs=txt.trim();
+    // Red de seguridad: fuera líneas comerciales/administrativas y títulos que
+    // la IA pudiera colar — la oferta lleva SOLO información técnica del producto.
+    r.specs=txt.trim().split('\n').filter(function(ln){
+      return !/^\s*(ORDEN DE COMPRA|FACTURA|FECHA DE INSPECCION|FECHA DE EMISION|CANTIDAD|CLIENTE|ESPECIFICACIONES T|E&G ENERGY GROUP)/i.test(ln.trim());
+    }).join('\n').replace(/\n{2,}/g,'\n').trim();
     _otSpecsEdit(n);
     otRender();
     showToast('🤖 Specs redactadas — revísalas y ajusta lo que haga falta','success');
