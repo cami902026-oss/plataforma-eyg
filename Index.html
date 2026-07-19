@@ -3268,7 +3268,7 @@ function applyPermissions() {
   const p = currentPerms();
   const show = (id, visible) => { const el=document.getElementById(id); if(el) el.style.display = visible ? '' : 'none'; };
   show('btn-nueva-reunion',  p.canCreate);
-  show('btn-nueva-tarea',    p.canCreate);
+  show('btn-nueva-tarea',    true);   // v150: todos crean tareas (colaborador solo para sí mismo)
   show('btn-nuevo-proyecto', p.canCreate);
   show('btn-nueva-oc',       p.canCreate);
   // Panel de privilegios y claves solo para JEFE/ADMIN
@@ -5761,6 +5761,23 @@ function editMeetingQuick(id) {
 }
 
 // ===== KANBAN =====
+// ── v150: KANBAN PERSONAL ────────────────────────────────────────────────────
+// Colaboradores crean/mueven/editan/borran SOLO sus tareas (guard POR TAREA;
+// DEFAULT_PERMS no cambia para no darles poder global). Alberto y Andrea
+// (JEFE/ADMIN) ven todo con color por persona + leyenda. Mario = colaborador.
+function _taskEsDireccion(){ return !!(currentUser&&(currentUser.role==='ADMIN'||currentUser.role==='JEFE')); }
+function _taskEsMia(t){
+  if(!currentUser||!t) return false;
+  return String(t.responsable||'').split(',').map(function(s){return s.trim();}).indexOf(currentUser.name)>=0;
+}
+function _taskPuedeTocar(t){ return _taskEsDireccion()||_taskEsMia(t); }
+const TASK_COLORS_PALETA=['#E8A020','#db2777','#9333ea','#0891b2','#2EAA4A','#e53e3e','#6366f1','#f59e0b','#14b8a6','#8b5cf6'];
+function _taskColor(nombre){
+  const primero=String(nombre||'').split(',')[0].trim();
+  const team=getData('team',TEAM_DEFAULT)||[];
+  const ix=team.findIndex(function(m){return m&&m.name===primero;});
+  return ix<0?'#94a3b8':TASK_COLORS_PALETA[ix%TASK_COLORS_PALETA.length];
+}
 function renderKanban(filter) {
   let tasks = getData('tasks', TASKS_DEFAULT);
   const p = currentPerms();
@@ -5770,6 +5787,19 @@ function renderKanban(filter) {
   }
   if(filter==='mine') tasks=tasks.filter(t=>t.responsable===currentUser.name);
   else if(filter==='alta') tasks=tasks.filter(t=>t.prioridad==='Alta');
+  // v150: leyenda de colores por persona (solo en la vista completa de dirección)
+  try{
+    let leg=document.getElementById('kanban-leyenda');
+    if(!leg){ const kb=document.getElementById('kanban-board'); leg=document.createElement('div'); leg.id='kanban-leyenda'; leg.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;'; kb.parentNode.insertBefore(leg,kb); }
+    if(currentUser && !p.filteredView){
+      const conTarea={};
+      tasks.forEach(function(t){ String(t.responsable||'').split(',').forEach(function(s){ s=s.trim(); if(s) conTarea[s]=true; }); });
+      leg.innerHTML=Object.keys(conTarea).sort().map(function(nom){
+        const c=_taskColor(nom);
+        return '<span style="display:inline-flex;align-items:center;gap:5px;background:'+c+'22;border:1px solid '+c+';border-radius:10px;padding:3px 10px;font-size:11.5px;font-weight:700;color:#fff;"><span style="width:9px;height:9px;border-radius:50%;background:'+c+';display:inline-block;"></span>'+nom.replace(/</g,'&lt;')+'</span>';
+      }).join('');
+    } else leg.innerHTML='';
+  }catch(_){ }
   const cols = ['Pendiente','En Progreso','Completado'];
   const colColors = {Pendiente:'var(--gold)',['En Progreso']:'var(--blue)',Completado:'var(--green)'};
   const colIcons = {Pendiente:'⏳',['En Progreso']:'🔄',Completado:'✅'};
@@ -5780,19 +5810,19 @@ function renderKanban(filter) {
         <div class="kanban-col-title" style="color:${colColors[col]}">${colIcons[col]} ${col}</div>
         <span class="count-badge">${colTasks.length}</span>
       </div>
-      ${colTasks.map(t=>`<div class="task-card" draggable="true" ondragstart="event.dataTransfer.setData('taskId',${t.id})" style="cursor:grab;">
+      ${colTasks.map(t=>`<div class="task-card" draggable="true" ondragstart="event.dataTransfer.setData('taskId',${t.id})" style="cursor:grab;border-left:4px solid ${_taskColor(t.responsable)};">
         <div class="task-title">${t.titulo}</div>
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">${t.desc||''}</div>
         <div class="task-meta">
-          <span class="task-assignee" title="Responsables">👥 ${t.responsable}</span>
+          <span class="task-assignee" title="Responsables" style="color:${_taskColor(t.responsable)};font-weight:700;">👥 ${t.responsable}</span>
           <span class="badge badge-${t.prioridad.toLowerCase()}">${t.prioridad}</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:12px;">
           <span class="task-date">📅 ${t.fecha}</span>
           <div style="display:flex;gap:4px;">
-            ${p.canEdit?`<button onclick="editTask(${t.id})" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:13px;" title="Editar">✏️</button>`:''}
-            ${p.canEdit?`<button onclick="quickCompleteTask(${t.id})" style="background:none;border:none;color:var(--green);cursor:pointer;font-size:13px;" title="Completar">✅</button>`:''}
-            ${p.canDelete?`<button onclick="deleteTask(${t.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;" title="Eliminar">🗑</button>`:''}
+            ${(p.canEdit||_taskEsMia(t))?`<button onclick="editTask(${t.id})" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:13px;" title="Editar">✏️</button>`:''}
+            ${(p.canEdit||_taskEsMia(t))?`<button onclick="quickCompleteTask(${t.id})" style="background:none;border:none;color:var(--green);cursor:pointer;font-size:13px;" title="Completar">✅</button>`:''}
+            ${(p.canDelete||_taskEsMia(t))?`<button onclick="deleteTask(${t.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;" title="Eliminar">🗑</button>`:''}
           </div>
         </div>
         ${t.updatedBy?`<div class="audit-line" title="${t.createdBy?'Creada por '+t.createdBy.split('@')[0]+(t.createdAt?' el '+new Date(t.createdAt).toLocaleDateString('es-CO'):''):''}">✏️ ${_auditLabel(t)}</div>`:''}
@@ -5806,6 +5836,7 @@ function moveTask(event, newState) {
   const taskId = parseInt(event.dataTransfer.getData('taskId'));
   let tasks = getData('tasks', TASKS_DEFAULT);
   const task = tasks.find(t => t.id === taskId);
+  if (task && !_taskPuedeTocar(task)) { showToast('Solo puedes mover tus propias tareas','error'); return; }
   if (task) {
     const oldState = task.estado;
     task.estado = newState;
@@ -5824,6 +5855,8 @@ function filterTasks(f, btn) {
 
 function deleteTask(id) {
   let tasks = getData('tasks', TASKS_DEFAULT);
+  const _t=tasks.find(t=>t.id===id);
+  if(_t && !(currentPerms().canDelete||_taskEsMia(_t))){ showToast('Solo puedes eliminar tus propias tareas','error'); return; }
   tasks = tasks.filter(t=>t.id!==id);
   setData('tasks', tasks);
   renderKanban('all'); renderDashboard();
@@ -5834,6 +5867,7 @@ function editTask(id) {
   const tasks = getData('tasks', TASKS_DEFAULT);
   const task = tasks.find(t => t.id === id);
   if (!task) return;
+  if(!(currentPerms().canEdit||_taskEsMia(task))){ showToast('Solo puedes editar tus propias tareas','error'); return; }
 
   // Llenar modal con datos de la tarea
   document.getElementById('t-titulo').value = task.titulo;
@@ -5847,6 +5881,7 @@ function editTask(id) {
   const responsables = task.responsable.split(', ').map(r => r.trim());
   document.querySelectorAll('#responsables-checkboxes input').forEach(cb => {
     cb.checked = responsables.includes(cb.value);
+    cb.disabled = !_taskEsDireccion();   // v150: colaborador no puede reasignar
   });
 
   // Marcar como edición
@@ -5859,6 +5894,7 @@ function editTask(id) {
 function quickCompleteTask(id) {
   let tasks = getData('tasks', TASKS_DEFAULT);
   const task = tasks.find(t => t.id === id);
+  if (task && !_taskPuedeTocar(task)) { showToast('Solo puedes completar tus propias tareas','error'); return; }
   if (task) {
     task.estado = 'Completado';
     setData('tasks', tasks);
@@ -6363,7 +6399,11 @@ function openModal(id) {
       document.getElementById('t-prioridad').value = 'Media';
       document.getElementById('t-estado').value = 'Pendiente';
       document.getElementById('t-fecha').value = todayStr;
-      document.querySelectorAll('#responsables-checkboxes input').forEach(cb => cb.checked = false);
+      // v150: colaborador crea SOLO para sí mismo — su nombre marcado y bloqueado
+      document.querySelectorAll('#responsables-checkboxes input').forEach(cb => {
+        if(_taskEsDireccion()){ cb.checked=false; cb.disabled=false; }
+        else { cb.checked=(currentUser&&cb.value===currentUser.name); cb.disabled=true; }
+      });
       document.querySelector('#modal-tarea .modal-title').innerText = '✅ Nueva Tarea';
     }
   }
@@ -6494,9 +6534,12 @@ function saveTarea() {
   if(!titulo) { showToast('Ingresa el título de la tarea','error'); return; }
 
   // Obtener múltiples responsables seleccionados
-  const responsablesSeleccionados = [...document.querySelectorAll('#responsables-checkboxes input:checked')]
+  let responsablesSeleccionados = [...document.querySelectorAll('#responsables-checkboxes input:checked')]
     .map(cb => cb.value)
     .join(', ');
+
+  // v150: colaborador SIEMPRE guarda a su propio nombre (aunque toque el DOM)
+  if (!_taskEsDireccion() && currentUser) responsablesSeleccionados = currentUser.name;
 
   if (!responsablesSeleccionados) {
     showToast('Selecciona al menos un responsable','error');
@@ -6512,6 +6555,10 @@ function saveTarea() {
     const idx = tasks.findIndex(t => t.id === taskId);
     if (idx !== -1) {
       const prev = tasks[idx];
+      // v150: guard por tarea — editar solo las propias (o dirección)
+      if(!(currentPerms().canEdit||_taskEsMia(prev))){ showToast('Solo puedes editar tus propias tareas','error'); return; }
+      // v150: colaborador no reasigna — se conserva el responsable original
+      if(!_taskEsDireccion()) responsablesSeleccionados = prev.responsable;
       tasks[idx] = _audit({
         id: taskId,
         titulo,
