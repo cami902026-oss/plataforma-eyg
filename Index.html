@@ -8233,7 +8233,9 @@ function otRender(){
   box.innerHTML=_otRows.map(function(r,n){
     const it=cotizItems[r.i]||{};
     const fic=_otIndex[r.slug];
-    const tiene=!!(fic&&fic.archivo);
+    // v149: varios adjuntos por ítem (PDF + fotos). Compat: entradas viejas con un solo 'archivo'.
+    const nombres=(fic&&Array.isArray(fic.archivos)&&fic.archivos.length)?fic.archivos:((fic&&fic.archivo)?[fic.archivo]:[]);
+    const tiene=nombres.length>0;
     return '<div ondragover="event.preventDefault();this.style.borderColor=\'#E8A020\';" ondragleave="this.style.borderColor=\'\';" ondrop="this.style.borderColor=\'\';otDropFicha(event,'+n+')" style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;'+(r.incluir?'':'opacity:.45;')+'">'
       +'<div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">'
       +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;min-width:0;flex:1;">'
@@ -8244,8 +8246,8 @@ function otRender(){
       +(r.incluir?(
         '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:11.5px;">'
         +(tiene
-          ? '<span style="color:#4ade80;">📎 Ficha en biblioteca: '+_otEsc(fic.archivo)+'</span>'
-            +'<button type="button" class="foto-btn" onclick="otSubirFicha('+n+')" style="background:rgba(26,58,143,.4);border:1px solid var(--border);color:#cbd5e1;border-radius:5px;padding:2px 8px;font-size:10.5px;cursor:pointer;">🔄 Reemplazar</button>'
+          ? nombres.map(function(nom,ai){ return '<span style="color:#4ade80;">📎 '+_otEsc(nom)+'<button type="button" onclick="otQuitarAdjunto('+n+','+ai+')" title="Quitar este archivo" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:12px;padding:0 3px;">🗑</button></span>'; }).join('')
+            +(nombres.length<4?'<button type="button" onclick="otSubirFicha('+n+')" style="background:rgba(46,170,74,.2);border:1px solid rgba(46,170,74,.5);color:#68d391;border-radius:5px;padding:2px 8px;font-size:10.5px;cursor:pointer;">➕ Agregar otro (PDF o imagen)</button>':'')
             +'<button type="button" onclick="otIA('+n+')" id="ot-ia-'+n+'" style="background:rgba(232,160,32,.2);border:1px solid rgba(232,160,32,.5);color:#e8a020;border-radius:5px;padding:2px 8px;font-size:10.5px;cursor:pointer;">🤖 Redactar specs con IA</button>'
           : '<span style="color:var(--text-muted);">— sin ficha (opcional) —</span>'
             +'<button type="button" onclick="otSubirFicha('+n+')" style="background:rgba(46,170,74,.2);border:1px solid rgba(46,170,74,.5);color:#68d391;border-radius:5px;padding:2px 8px;font-size:10.5px;cursor:pointer;">➕ Subir ficha (PDF o imagen)</button><span style="color:var(--text-muted);">o arrástrala sobre el ítem</span>')
@@ -8309,22 +8311,46 @@ async function _otProcesarFicha(n,f){
   }catch(e){ showToast('No se pudo leer el archivo: '+((e&&e.message)||e),'error'); return; }
   showToast('Subiendo ficha a la biblioteca…','info');
   try{
-    const who=(currentUser&&(currentUser.name||currentUser.email))||'—';
-    await _saveDataGH('data/fichas/'+r.slug+'.json',
-      { slug:r.slug, desc:(cotizItems[r.i]||{}).desc||'', nombre:f.name, pdf:b64, mime:mime, updatedAt:new Date().toISOString(), updatedBy:who },
-      '📎 Ficha técnica '+r.slug);
-    _otIndex[r.slug]=Object.assign({},_otIndex[r.slug],{ desc:(cotizItems[r.i]||{}).desc||'', archivo:f.name, mime:mime, updatedAt:new Date().toISOString(), updatedBy:who });
-    _otFichaCache[r.slug]={ b64:b64, mime:mime };
-    await _otSaveIndex('📎 Índice fichas: '+r.slug);
-    showToast('✅ Ficha guardada en la biblioteca — quedará disponible en futuras ofertas','success');
+    // v149: se AGREGA a la lista de adjuntos del ítem (PDF + fotos, máx 4)
+    let lista=[]; try{ lista=(await _otFichasGet(r.slug)).slice(); }catch(_){ lista=[]; }
+    if(lista.length>=4){ showToast('Máximo 4 archivos por ítem','error'); return; }
+    lista.push({ nombre:f.name, mime:mime, b64:b64 });
+    await _otGuardarFichas(r, lista, '📎 Ficha técnica '+r.slug);
+    showToast('✅ Archivo agregado a la biblioteca ('+lista.length+' adjunto'+(lista.length>1?'s':'')+' en este ítem)','success');
   }catch(e){ showToast('No se pudo subir la ficha: '+((e&&e.message)||e),'error'); }
   otRender();
 }
-// Devuelve {b64, mime} — compatible con fichas viejas (sin mime = PDF)
-async function _otFichaGet(slug){
+// v149: quitar UN adjunto de la lista del ítem
+async function otQuitarAdjunto(n,ai){
+  const r=_otRows[n]; if(!r) return;
+  if(!confirm('¿Quitar este archivo de la biblioteca del producto?')) return;
+  try{
+    let lista=[]; try{ lista=(await _otFichasGet(r.slug)).slice(); }catch(_){ lista=[]; }
+    lista.splice(ai,1);
+    await _otGuardarFichas(r, lista, '🗑 Adjunto eliminado '+r.slug);
+    showToast('✅ Archivo quitado','success');
+  }catch(e){ showToast('No se pudo quitar: '+((e&&e.message)||e),'error'); }
+  otRender();
+}
+// Guarda la lista completa de adjuntos del ítem + actualiza el índice
+async function _otGuardarFichas(r, lista, label){
+  const who=(currentUser&&(currentUser.name||currentUser.email))||'—';
+  await _saveDataGH('data/fichas/'+r.slug+'.json',
+    { slug:r.slug, desc:(cotizItems[r.i]||{}).desc||'', archivos:lista, updatedAt:new Date().toISOString(), updatedBy:who },
+    label);
+  _otIndex[r.slug]=Object.assign({},_otIndex[r.slug],{ desc:(cotizItems[r.i]||{}).desc||'', archivos:lista.map(function(a){return a.nombre;}), archivo:(lista[0]?lista[0].nombre:''), updatedAt:new Date().toISOString(), updatedBy:who });
+  _otFichaCache[r.slug]=lista;
+  await _otSaveIndex('📎 Índice fichas: '+r.slug);
+}
+// Devuelve la LISTA de adjuntos [{nombre,mime,b64}] — compatible con fichas
+// viejas de un solo archivo ({pdf, mime, nombre})
+async function _otFichasGet(slug){
   if(_otFichaCache[slug]) return _otFichaCache[slug];
   const d=await _loadDataGHRaw('data/fichas/'+slug+'.json');
-  if(d&&d.pdf){ const o={ b64:d.pdf, mime:d.mime||'application/pdf' }; _otFichaCache[slug]=o; return o; }
+  let lista=null;
+  if(d&&Array.isArray(d.archivos)) lista=d.archivos.map(function(a){ return { nombre:a.nombre||'ficha', mime:a.mime||'application/pdf', b64:a.b64||a.pdf }; }).filter(function(a){return a.b64;});
+  else if(d&&d.pdf) lista=[{ nombre:d.nombre||'ficha.pdf', mime:d.mime||'application/pdf', b64:d.pdf }];
+  if(lista){ _otFichaCache[slug]=lista; return lista; }
   throw new Error('Ficha no encontrada en la biblioteca');
 }
 async function otIA(n){
@@ -8334,18 +8360,20 @@ async function otIA(n){
   const btn=document.getElementById('ot-ia-'+n);
   if(btn){ btn.disabled=true; btn.textContent='🤖 Leyendo ficha…'; }
   try{
-    const fic=await _otFichaGet(r.slug);
+    const lista=await _otFichasGet(r.slug);
     const desc=(cotizItems[r.i]||{}).desc||'';
-    const bloqueFicha=/^image\//.test(fic.mime)
-      ? { type:'image', source:{ type:'base64', media_type:fic.mime, data:fic.b64 } }
-      : { type:'document', source:{ type:'base64', media_type:'application/pdf', data:fic.b64 } };
+    // v149: la IA recibe TODOS los adjuntos del ítem (PDF + fotos) a la vez
+    const bloques=lista.map(function(a){
+      return /^image\//.test(a.mime)
+        ? { type:'image', source:{ type:'base64', media_type:a.mime, data:a.b64 } }
+        : { type:'document', source:{ type:'base64', media_type:'application/pdf', data:a.b64 } };
+    });
     const resp=await fetch(url,{
       method:'POST',
       headers:{'Content-Type': (/script\.google\.com/i.test(url)?'text/plain;charset=utf-8':'application/json')},
-      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:3000, messages:[{role:'user',content:[
-        bloqueFicha,
+      body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:3000, messages:[{role:'user',content:bloques.concat([
         { type:'text', text:'Eres ingeniero de aplicaciones de E&G Energy Group (suministro industrial, Colombia). Lee la ficha técnica adjunta del producto "'+desc+'" y redacta en ESPAÑOL las especificaciones técnicas COMPLETAS para una oferta técnica formal, una por línea con el formato "CAMPO: valor". Cubre todos los campos que la ficha respalde, por ejemplo: DESCRIPCION GENERAL, MATERIAL DE CUERPO, MATERIAL DE INTERNOS/ASIENTOS, NORMA DE FABRICACION, NORMA DE PRUEBAS/ENSAYOS, RATING O CLASE, PRESION DE TRABAJO, PRESION DE PRUEBA, RANGO DE TEMPERATURA, TIPO DE CONEXION Y ROSCA, DIMENSIONES Y PESO, ACABADO/RECUBRIMIENTO, CERTIFICACIONES (API/ASME/ASTM/ISO/FM/UL/ATEX), APLICACION TIPICA. Sé exhaustivo con los valores numéricos, unidades, grados de material y designaciones de norma que SÍ aparezcan en la ficha; omite los campos que la ficha no mencione y NO inventes datos. EXCLUYE todo dato comercial o administrativo: NO incluyas órdenes de compra, facturas, fechas de inspección o emisión, cantidades del pedido, referencias de cliente ni encabezados/títulos — únicamente las especificaciones técnicas del producto. Texto plano sin markdown, sin precios.' }
-      ]}], secret:_proxySecret() }),
+      ])}], secret:_proxySecret() }),
       redirect:'follow'
     });
     const data=await resp.json();
@@ -8487,8 +8515,10 @@ async function otGenerar(){
     msg.textContent='Cargando fichas de la biblioteca…';
     const anexos=[];
     for(const r of rows){
-      if(_otIndex[r.slug]&&_otIndex[r.slug].archivo){
-        try{ anexos.push({ r:r, fic:await _otFichaGet(r.slug) }); }
+      const idx=_otIndex[r.slug];
+      const hayAdj=idx&&((Array.isArray(idx.archivos)&&idx.archivos.length)||idx.archivo);
+      if(hayAdj){
+        try{ (await _otFichasGet(r.slug)).forEach(function(fic){ anexos.push({ r:r, fic:fic }); }); }
         catch(_){ showToast('⚠️ No se pudo cargar la ficha de "'+((cotizItems[r.i]||{}).desc||'').slice(0,40)+'" — la oferta sale sin ese anexo','info'); }
       }
     }
@@ -8497,7 +8527,7 @@ async function otGenerar(){
       pg.drawText('DOCUMENTOS ANEXOS - FICHAS TECNICAS DEL FABRICANTE',{x:M,y:y,size:10,font:fontB,color:AZUL}); y-=13;
       anexos.forEach(function(a,ai){
         const it=cotizItems[a.r.i]||{};
-        wrap(_otTx('ANEXO '+(ai+1)+': '+String(it.desc||'').toUpperCase()+'  ('+(_otIndex[a.r.slug].archivo||'')+')'),font,8.5,CW).forEach(function(ln){ if(y<58){ newPage(); } pg.drawText(ln,{x:M,y:y,size:8.5,font:font}); y-=11; });
+        wrap(_otTx('ANEXO '+(ai+1)+': '+String(it.desc||'').toUpperCase()+'  ('+(a.fic.nombre||'')+')'),font,8.5,CW).forEach(function(ln){ if(y<58){ newPage(); } pg.drawText(ln,{x:M,y:y,size:8.5,font:font}); y-=11; });
         y-=2;
       });
     }
