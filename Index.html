@@ -2377,7 +2377,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <h3 style="margin:0;">📑 Oferta Técnica <span id="ot-num" style="color:var(--gold);font-size:15px;"></span></h3>
       <button onclick="otCerrar()" style="background:none;border:none;color:#f87171;font-size:20px;cursor:pointer;">✕</button>
     </div>
-    <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.5;">Documento técnico <b>SIN precios</b>: portada con membrete + ítems + especificaciones + fichas del fabricante anexas, todo en UN solo PDF. Marca los ítems a incluir. La ficha por ítem es <b>opcional</b> y queda en la biblioteca para próximas ofertas del mismo producto. El botón 🤖 le pide a la IA redactar las especificaciones desde la ficha — revísalas y edítalas antes de generar.</p>
+    <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px;line-height:1.5;">Documento técnico <b>SIN precios</b>: portada con membrete + ítems + especificaciones + fichas del fabricante anexas, todo en UN solo PDF. Marca los ítems a incluir. La ficha por ítem es <b>opcional</b> y queda en la biblioteca para próximas ofertas del mismo producto. La ficha puede ser <b>PDF o imagen</b> (JPG/PNG, ej. foto de catálogo) — súbela con el botón o <b>arrástrala y suéltala sobre el ítem</b>. El botón 🤖 le pide a la IA redactar las especificaciones desde la ficha — revísalas y edítalas antes de generar.</p>
     <div id="ot-items"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center;">
       <button class="btn btn-primary" id="ot-btn-generar" onclick="otGenerar()" style="width:auto;font-size:13px;background:rgba(229,62,62,.3);border-color:#e53e3e;">📄 Generar Oferta Técnica (PDF)</button>
@@ -2385,7 +2385,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     </div>
   </div>
 </div>
-<input type="file" id="ot-file" accept="application/pdf" style="display:none">
+<input type="file" id="ot-file" accept="application/pdf,image/*" style="display:none">
 
 <!-- MODAL EDITAR SABADO (fuera de la pagina: overlay fijo) -->
 <div id="sab-plan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
@@ -8234,7 +8234,7 @@ function otRender(){
     const it=cotizItems[r.i]||{};
     const fic=_otIndex[r.slug];
     const tiene=!!(fic&&fic.archivo);
-    return '<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;'+(r.incluir?'':'opacity:.45;')+'">'
+    return '<div ondragover="event.preventDefault();this.style.borderColor=\'#E8A020\';" ondragleave="this.style.borderColor=\'\';" ondrop="this.style.borderColor=\'\';otDropFicha(event,'+n+')" style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;'+(r.incluir?'':'opacity:.45;')+'">'
       +'<div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;">'
       +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;min-width:0;flex:1;">'
       +'<input type="checkbox" '+(r.incluir?'checked':'')+' onchange="_otRows['+n+'].incluir=this.checked;otRender()">'
@@ -8248,7 +8248,7 @@ function otRender(){
             +'<button type="button" class="foto-btn" onclick="otSubirFicha('+n+')" style="background:rgba(26,58,143,.4);border:1px solid var(--border);color:#cbd5e1;border-radius:5px;padding:2px 8px;font-size:10.5px;cursor:pointer;">🔄 Reemplazar</button>'
             +'<button type="button" onclick="otIA('+n+')" id="ot-ia-'+n+'" style="background:rgba(232,160,32,.2);border:1px solid rgba(232,160,32,.5);color:#e8a020;border-radius:5px;padding:2px 8px;font-size:10.5px;cursor:pointer;">🤖 Redactar specs con IA</button>'
           : '<span style="color:var(--text-muted);">— sin ficha (opcional) —</span>'
-            +'<button type="button" onclick="otSubirFicha('+n+')" style="background:rgba(46,170,74,.2);border:1px solid rgba(46,170,74,.5);color:#68d391;border-radius:5px;padding:2px 8px;font-size:10.5px;cursor:pointer;">➕ Subir ficha PDF del fabricante</button>')
+            +'<button type="button" onclick="otSubirFicha('+n+')" style="background:rgba(46,170,74,.2);border:1px solid rgba(46,170,74,.5);color:#68d391;border-radius:5px;padding:2px 8px;font-size:10.5px;cursor:pointer;">➕ Subir ficha (PDF o imagen)</button><span style="color:var(--text-muted);">o arrástrala sobre el ítem</span>')
         +'</div>'
         +'<textarea rows="4" placeholder="Especificaciones técnicas del ítem (opcional) — una por línea: MATERIAL: …, NORMA: …, PRESION: …, TEMPERATURA: …, CERTIFICACIONES: …" oninput="_otRows['+n+'].specs=this.value;_otSpecsEdit('+n+')" style="width:100%;margin-top:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:#fff;font-size:12px;resize:vertical;">'+_otEsc(r.specs)+'</textarea>'
       ):'')
@@ -8262,31 +8262,69 @@ function _otSpecsEdit(n){
 }
 function otSubirFicha(n){
   const inp=document.getElementById('ot-file'); if(!inp) return;
-  inp.onchange=async function(){
-    const f=inp.files[0]; inp.value=''; if(!f) return;
-    if(!/\.pdf$/i.test(f.name)&&f.type!=='application/pdf'){ showToast('La ficha debe ser un PDF','error'); return; }
-    if(f.size>4*1024*1024){ showToast('La ficha pesa '+(f.size/1048576).toFixed(1)+' MB — máximo 4 MB. Comprímela e intenta de nuevo.','error'); return; }
-    const r=_otRows[n]; if(!r) return;
-    const b64=await new Promise(function(res,rej){ const rd=new FileReader(); rd.onload=function(){res(String(rd.result).split(',')[1]);}; rd.onerror=rej; rd.readAsDataURL(f); });
-    showToast('Subiendo ficha a la biblioteca…','info');
-    try{
-      const who=(currentUser&&(currentUser.name||currentUser.email))||'—';
-      await _saveDataGH('data/fichas/'+r.slug+'.json',
-        { slug:r.slug, desc:(cotizItems[r.i]||{}).desc||'', nombre:f.name, pdf:b64, updatedAt:new Date().toISOString(), updatedBy:who },
-        '📎 Ficha técnica '+r.slug);
-      _otIndex[r.slug]=Object.assign({},_otIndex[r.slug],{ desc:(cotizItems[r.i]||{}).desc||'', archivo:f.name, updatedAt:new Date().toISOString(), updatedBy:who });
-      _otFichaCache[r.slug]=b64;
-      await _otSaveIndex('📎 Índice fichas: '+r.slug);
-      showToast('✅ Ficha guardada en la biblioteca — quedará disponible en futuras ofertas','success');
-    }catch(e){ showToast('No se pudo subir la ficha: '+((e&&e.message)||e),'error'); }
-    otRender();
-  };
+  inp.onchange=function(){ const f=inp.files[0]; inp.value=''; if(f) _otProcesarFicha(n,f); };
   inp.click();
 }
-async function _otFichaB64(slug){
+// v148: arrastrar y soltar la ficha sobre la tarjeta del ítem
+function otDropFicha(ev,n){
+  ev.preventDefault();
+  const f=ev.dataTransfer&&ev.dataTransfer.files&&ev.dataTransfer.files[0];
+  if(f) _otProcesarFicha(n,f);
+}
+// v148: la ficha puede ser PDF o IMAGEN (foto de catálogo). Las imágenes se
+// comprimen en el navegador (máx 1600px, JPEG) antes de subir.
+function _otImgComprimir(f){
+  return new Promise(function(res,rej){
+    const img=new Image();
+    img.onload=function(){
+      try{
+        const MAX=1600;
+        let w=img.width,h=img.height;
+        if(Math.max(w,h)>MAX){ const k=MAX/Math.max(w,h); w=Math.round(w*k); h=Math.round(h*k); }
+        const c=document.createElement('canvas'); c.width=w; c.height=h;
+        const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
+        res({ b64:c.toDataURL('image/jpeg',0.87).split(',')[1], mime:'image/jpeg' });
+      }catch(e){ rej(e); }
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror=function(){ rej(new Error('No se pudo leer la imagen')); };
+    img.src=URL.createObjectURL(f);
+  });
+}
+async function _otProcesarFicha(n,f){
+  const r=_otRows[n]; if(!r) return;
+  const esPdf=/\.pdf$/i.test(f.name)||f.type==='application/pdf';
+  const esImg=/^image\//.test(f.type)||/\.(jpe?g|png|webp)$/i.test(f.name);
+  if(!esPdf&&!esImg){ showToast('La ficha debe ser un PDF o una imagen (JPG/PNG)','error'); return; }
+  let b64, mime;
+  try{
+    if(esImg){
+      const red=await _otImgComprimir(f);
+      b64=red.b64; mime=red.mime;
+    } else {
+      if(f.size>4*1024*1024){ showToast('La ficha pesa '+(f.size/1048576).toFixed(1)+' MB — máximo 4 MB. Comprímela e intenta de nuevo.','error'); return; }
+      b64=await new Promise(function(res,rej){ const rd=new FileReader(); rd.onload=function(){res(String(rd.result).split(',')[1]);}; rd.onerror=rej; rd.readAsDataURL(f); });
+      mime='application/pdf';
+    }
+  }catch(e){ showToast('No se pudo leer el archivo: '+((e&&e.message)||e),'error'); return; }
+  showToast('Subiendo ficha a la biblioteca…','info');
+  try{
+    const who=(currentUser&&(currentUser.name||currentUser.email))||'—';
+    await _saveDataGH('data/fichas/'+r.slug+'.json',
+      { slug:r.slug, desc:(cotizItems[r.i]||{}).desc||'', nombre:f.name, pdf:b64, mime:mime, updatedAt:new Date().toISOString(), updatedBy:who },
+      '📎 Ficha técnica '+r.slug);
+    _otIndex[r.slug]=Object.assign({},_otIndex[r.slug],{ desc:(cotizItems[r.i]||{}).desc||'', archivo:f.name, mime:mime, updatedAt:new Date().toISOString(), updatedBy:who });
+    _otFichaCache[r.slug]={ b64:b64, mime:mime };
+    await _otSaveIndex('📎 Índice fichas: '+r.slug);
+    showToast('✅ Ficha guardada en la biblioteca — quedará disponible en futuras ofertas','success');
+  }catch(e){ showToast('No se pudo subir la ficha: '+((e&&e.message)||e),'error'); }
+  otRender();
+}
+// Devuelve {b64, mime} — compatible con fichas viejas (sin mime = PDF)
+async function _otFichaGet(slug){
   if(_otFichaCache[slug]) return _otFichaCache[slug];
   const d=await _loadDataGHRaw('data/fichas/'+slug+'.json');
-  if(d&&d.pdf){ _otFichaCache[slug]=d.pdf; return d.pdf; }
+  if(d&&d.pdf){ const o={ b64:d.pdf, mime:d.mime||'application/pdf' }; _otFichaCache[slug]=o; return o; }
   throw new Error('Ficha no encontrada en la biblioteca');
 }
 async function otIA(n){
@@ -8296,13 +8334,16 @@ async function otIA(n){
   const btn=document.getElementById('ot-ia-'+n);
   if(btn){ btn.disabled=true; btn.textContent='🤖 Leyendo ficha…'; }
   try{
-    const b64=await _otFichaB64(r.slug);
+    const fic=await _otFichaGet(r.slug);
     const desc=(cotizItems[r.i]||{}).desc||'';
+    const bloqueFicha=/^image\//.test(fic.mime)
+      ? { type:'image', source:{ type:'base64', media_type:fic.mime, data:fic.b64 } }
+      : { type:'document', source:{ type:'base64', media_type:'application/pdf', data:fic.b64 } };
     const resp=await fetch(url,{
       method:'POST',
       headers:{'Content-Type': (/script\.google\.com/i.test(url)?'text/plain;charset=utf-8':'application/json')},
       body: JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:3000, messages:[{role:'user',content:[
-        { type:'document', source:{ type:'base64', media_type:'application/pdf', data:b64 } },
+        bloqueFicha,
         { type:'text', text:'Eres ingeniero de aplicaciones de E&G Energy Group (suministro industrial, Colombia). Lee la ficha técnica adjunta del producto "'+desc+'" y redacta en ESPAÑOL las especificaciones técnicas COMPLETAS para una oferta técnica formal, una por línea con el formato "CAMPO: valor". Cubre todos los campos que la ficha respalde, por ejemplo: DESCRIPCION GENERAL, MATERIAL DE CUERPO, MATERIAL DE INTERNOS/ASIENTOS, NORMA DE FABRICACION, NORMA DE PRUEBAS/ENSAYOS, RATING O CLASE, PRESION DE TRABAJO, PRESION DE PRUEBA, RANGO DE TEMPERATURA, TIPO DE CONEXION Y ROSCA, DIMENSIONES Y PESO, ACABADO/RECUBRIMIENTO, CERTIFICACIONES (API/ASME/ASTM/ISO/FM/UL/ATEX), APLICACION TIPICA. Sé exhaustivo con los valores numéricos, unidades, grados de material y designaciones de norma que SÍ aparezcan en la ficha; omite los campos que la ficha no mencione y NO inventes datos. EXCLUYE todo dato comercial o administrativo: NO incluyas órdenes de compra, facturas, fechas de inspección o emisión, cantidades del pedido, referencias de cliente ni encabezados/títulos — únicamente las especificaciones técnicas del producto. Texto plano sin markdown, sin precios.' }
       ]}], secret:_proxySecret() }),
       redirect:'follow'
@@ -8447,7 +8488,7 @@ async function otGenerar(){
     const anexos=[];
     for(const r of rows){
       if(_otIndex[r.slug]&&_otIndex[r.slug].archivo){
-        try{ anexos.push({ r:r, b64:await _otFichaB64(r.slug) }); }
+        try{ anexos.push({ r:r, fic:await _otFichaGet(r.slug) }); }
         catch(_){ showToast('⚠️ No se pudo cargar la ficha de "'+((cotizItems[r.i]||{}).desc||'').slice(0,40)+'" — la oferta sale sin ese anexo','info'); }
       }
     }
@@ -8467,10 +8508,20 @@ async function otGenerar(){
     msg.textContent='Uniendo fichas al documento…';
     for(const a of anexos){
       try{
-        const src=await PDFDocument.load(_otB64ToBytes(a.b64),{ignoreEncryption:true});
-        const pages=await doc.copyPages(src,src.getPageIndices());
-        pages.forEach(function(p){ doc.addPage(p); });
-      }catch(_){ showToast('⚠️ La ficha de "'+((cotizItems[a.r.i]||{}).desc||'').slice(0,40)+'" no se pudo anexar (PDF no compatible)','info'); }
+        if(/^image\//.test(a.fic.mime)){
+          // ficha-imagen: página nueva con la imagen centrada y ajustada
+          const bytes=_otB64ToBytes(a.fic.b64);
+          const img=(a.fic.mime==='image/png')?await doc.embedPng(bytes):await doc.embedJpg(bytes);
+          const p=doc.addPage([W,H]);
+          const k=Math.min((W-2*M)/img.width,(H-2*M)/img.height,1);
+          const iw=img.width*k, ih=img.height*k;
+          p.drawImage(img,{x:(W-iw)/2,y:(H-ih)/2,width:iw,height:ih});
+        } else {
+          const src=await PDFDocument.load(_otB64ToBytes(a.fic.b64),{ignoreEncryption:true});
+          const pages=await doc.copyPages(src,src.getPageIndices());
+          pages.forEach(function(p){ doc.addPage(p); });
+        }
+      }catch(_){ showToast('⚠️ La ficha de "'+((cotizItems[a.r.i]||{}).desc||'').slice(0,40)+'" no se pudo anexar (archivo no compatible)','info'); }
     }
     msg.textContent='Generando archivo…';
     const bytes=await doc.save();
