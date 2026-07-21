@@ -5,36 +5,46 @@
     "cliente": "WILER",
     "desc": "SUMINSITRO DE VALVULA 4-300",
     "estado": "activo",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
-        "n": "CODIFER",
-        "f": "2026-04-07"
+        "f": "2026-04-07",
+        "n": "CODIFER"
       },
       {
+        "s": "done",
+        "f": "2026-04-08",
+        "n": "",
+        "envio": "flota",
+        "transp": "LIBERTADORES",
         "guia": "9003",
         "dest": "WILER",
-        "envio": "flota",
-        "resp": "Andrea Bernal",
-        "transp": "LIBERTADORES",
-        "s": "done",
-        "n": "",
-        "f": "2026-04-08"
+        "resp": "Andrea Bernal"
       },
       {
-        "n": "",
         "s": "done",
-        "f": "2026-04-17"
+        "f": "2026-04-17",
+        "n": ""
       },
       {
-        "n": "PENDIETE POR ARREGLAR INONVENIENTE DE GARANTIA",
         "s": "pending",
-        "f": ""
+        "f": "",
+        "n": "PENDIETE POR ARREGLAR INONVENIENTE DE GARANTIA",
+        "factura": ""
       }
     ],
-    "updatedAt": "2026-07-21T14:19:43.147Z",
-    "lockedBy": "sandra",
-    "lockedAt": "2026-07-21T14:19:43.147Z"
+    "cotizacionId": "",
+    "createdAt": "2026-07-21T14:20:54.416Z",
+    "createdBy": "sandra",
+    "updatedAt": "2026-07-21T14:20:54.416Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "poc_1777675105625",
