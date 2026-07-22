@@ -1062,64 +1062,84 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <div class="team-grid" id="team-grid"></div>
       </div>
 
-      <!-- CARTERA (solo Andrea y Alberto) -->
+      <!-- CARTERA EN LA NUBE (solo Andrea, Alberto y Nelsy) — F2 2026-07-21: lee Supabase, sin túnel -->
       <div class="page" id="page-cartera">
-        <div style="max-width:760px;margin:0 auto;padding:8px 0 40px;">
-          <div style="background:linear-gradient(135deg,rgba(46,170,74,0.12),rgba(15,43,91,0.4));border:1px solid rgba(46,170,74,0.3);border-radius:14px;padding:24px;margin-bottom:18px;">
-            <h2 style="margin:0 0 8px;color:#fff;font-size:22px;display:flex;align-items:center;gap:10px;">💰 Aplicativo de Cartera</h2>
-            <p style="color:var(--text-muted);font-size:13px;margin:6px 0 0;line-height:1.5;">
-              Acceso al aplicativo de cartera. <b>Visible solo para Andrea, Alberto y Nelsy.</b><br>
-              La cartera se actualiza automáticamente cuando guardas un Excel nuevo en
-              <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;color:#fbbf24;">C:\Users\Lenovo\Downloads\Cartera\</code>
+        <div style="max-width:980px;margin:0 auto;padding:8px 0 40px;">
+          <div style="background:linear-gradient(135deg,rgba(46,170,74,0.12),rgba(15,43,91,0.4));border:1px solid rgba(46,170,74,0.3);border-radius:14px;padding:22px 24px;margin-bottom:16px;">
+            <h2 style="margin:0 0 6px;color:#fff;font-size:22px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">💰 Cartera E&amp;G <span style="font-size:11px;background:rgba(46,170,74,.25);border:1px solid rgba(46,170,74,.5);color:#86efac;border-radius:20px;padding:3px 10px;">☁️ EN LA NUBE</span></h2>
+            <p style="color:var(--text-muted);font-size:13px;margin:4px 0 0;line-height:1.5;">
+              Disponible 24/7 desde cualquier lugar — ya no depende de ningún PC. <b>Visible solo para Andrea, Alberto y Nelsy.</b>
             </p>
           </div>
 
-          <div class="card" style="padding:24px;">
-            <div class="config-title" style="margin-bottom:14px;">🔗 Abrir aplicativo</div>
-            <p style="color:var(--text-muted);font-size:12px;margin:0 0 16px;line-height:1.5;">
-              El aplicativo abre en una pestaña nueva. Requiere:<br>
-              • Estar conectado a la WiFi de la oficina (192.168.20.5:5050), o<br>
-              • Estar usando el PC anfitrión (localhost:5050)
-            </p>
-            <button class="btn btn-primary" onclick="abrirCartera()" style="width:auto;font-size:15px;padding:14px 28px;">🚀 Abrir Cartera</button>
-            <button class="btn btn-secondary" onclick="descargarLibroCartera()" title="Descarga el Excel COMPLETO de control de cartera (pide una clave la primera vez; Shift+clic para cambiarla)" style="width:auto;font-size:14px;padding:14px 22px;margin-left:8px;">⬇️ Descargar libro completo</button>
-            <div style="margin-top:14px;padding:12px;background:rgba(232,160,32,0.08);border:1px solid rgba(232,160,32,0.3);border-radius:8px;font-size:12px;color:#fbbf24;line-height:1.5;">
-              ⚠️ Si al hacer clic no abre nada o muestra error de conexión:<br>
-              1. Verifica que el aplicativo de cartera esté corriendo en tu PC<br>
-              2. Verifica que estés en la misma WiFi de la oficina<br>
-              3. Si estás en el PC anfitrión, cambia la URL abajo a <code>http://localhost:5050</code>
-            </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
+            <button class="btn btn-primary" id="cnu-tab-btn-cartera" onclick="cnuTab('cartera')" style="width:auto;font-size:13px;padding:9px 16px;">🚦 Cartera</button>
+            <button class="btn btn-secondary" id="cnu-tab-btn-comisiones" onclick="cnuTab('comisiones')" style="width:auto;font-size:13px;padding:9px 16px;">💵 Comisiones</button>
+            <button class="btn btn-secondary" id="cnu-tab-btn-meses" onclick="cnuTab('meses')" style="width:auto;font-size:13px;padding:9px 16px;">📅 Meses</button>
+            <span style="flex:1;"></span>
+            <button class="btn btn-secondary" onclick="cnuCargar(true)" style="width:auto;font-size:13px;padding:9px 14px;" title="Vuelve a leer los datos de la nube">🔄 Actualizar</button>
+            <span id="cnu-status" style="font-size:12px;color:var(--text-muted);"></span>
           </div>
 
-          <!-- 📅 Facturado y pagado por mes (v136, 2026-07-15) — lee /api/facturacion del agente -->
-          <div class="card" style="padding:24px;margin-top:16px;">
-            <div class="config-title" style="margin-bottom:6px;">📅 Facturado y pagado por mes</div>
-            <p style="color:var(--text-muted);font-size:12px;margin:0 0 12px;line-height:1.5;">
-              Datos EN VIVO del libro de cartera. <b>Facturado</b> = emitido en el mes · <b>Pagado</b> = plata recibida en el mes (incluye abonos) · <b>Pendiente</b> = saldo vivo de lo facturado ese mes. Clic en un mes para ver el detalle.
-            </p>
-            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
-              <select id="cmes-anio" onchange="carteraMesRender()" style="width:auto;padding:8px 12px;"></select>
-              <button class="btn btn-secondary" onclick="carteraMesCargar(true)" style="width:auto;font-size:13px;padding:9px 16px;" title="Pide la clave de cartera una vez (la misma del libro); Shift+clic para cambiarla">🔄 Consultar / Actualizar</button>
-              <span id="cmes-status" style="font-size:12px;color:var(--text-muted);"></span>
-            </div>
-            <div id="cmes-tabla" style="overflow-x:auto;"></div>
-            <div id="cmes-detalle" style="margin-top:12px;"></div>
-          </div>
-
-          <div class="card" style="padding:24px;margin-top:16px;">
-            <div class="config-title" style="margin-bottom:14px;">⚙️ URL del aplicativo</div>
-            <p style="color:var(--text-muted);font-size:12px;margin:0 0 12px;">
-              Por defecto: <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;color:#fbbf24;">http://192.168.20.5:5050</code> (WiFi oficina).<br>
-              Si estás en el PC anfitrión usa: <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;color:#fbbf24;">http://localhost:5050</code>
-            </p>
-            <div class="api-key-row">
-              <div class="form-group" style="flex:1;margin:0;">
-                <input type="text" id="cartera-url-input" placeholder="http://192.168.20.5:5050">
+          <div id="cnu-tab-cartera">
+            <div id="cnu-resumen" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px;"></div>
+            <div class="card" style="padding:18px;">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+                <div class="config-title" style="margin:0;">🚦 Cartera pendiente por cliente</div>
+                <span style="flex:1;"></span>
+                <input type="text" id="cnu-buscar" oninput="cnuRenderLista()" placeholder="🔍 Buscar cliente o factura…" style="width:220px;padding:8px 12px;">
+                <button class="btn btn-secondary" onclick="cnuExportCartera()" style="width:auto;font-size:12px;padding:8px 14px;">⬇️ Excel</button>
               </div>
-              <button class="btn btn-primary" onclick="saveCarteraURL()" style="width:auto;white-space:nowrap;">Guardar</button>
+              <div id="cnu-lista"></div>
             </div>
-            <div id="cartera-url-updatedAt" style="font-size:11px;color:#86efac;margin-top:8px;"></div>
           </div>
+
+          <div id="cnu-tab-comisiones" style="display:none;">
+            <div class="card" style="padding:18px;">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+                <div class="config-title" style="margin:0;">💵 Comisiones por vendedor</div>
+                <span style="flex:1;"></span>
+                <select id="cnu-com-mes" onchange="cnuRenderComisiones()" style="width:auto;padding:8px 12px;"></select>
+                <select id="cnu-com-quin" onchange="cnuRenderComisiones()" style="width:auto;padding:8px 12px;">
+                  <option value="">Ambas quincenas</option>
+                  <option value="antes">Primeros 15</option>
+                  <option value="despues">Después del 15</option>
+                </select>
+                <button class="btn btn-secondary" onclick="cnuExportComisiones()" style="width:auto;font-size:12px;padding:8px 14px;">⬇️ Excel</button>
+              </div>
+              <div id="cnu-com-lista"></div>
+            </div>
+          </div>
+
+          <div id="cnu-tab-meses" style="display:none;">
+            <div class="card" style="padding:18px;">
+              <div class="config-title" style="margin-bottom:6px;">📅 Facturado y pagado por mes</div>
+              <p style="color:var(--text-muted);font-size:12px;margin:0 0 12px;line-height:1.5;">
+                <b>Facturado</b> = emitido en el mes · <b>Pagado</b> = plata recibida en el mes (incluye abonos) · <b>Pendiente</b> = saldo vivo de lo facturado ese mes. Clic en un mes para ver el detalle.
+              </p>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+                <select id="cmes-anio" onchange="carteraMesRender()" style="width:auto;padding:8px 12px;"></select>
+                <span id="cmes-status" style="font-size:12px;color:var(--text-muted);"></span>
+              </div>
+              <div id="cmes-tabla" style="overflow-x:auto;"></div>
+              <div id="cmes-detalle" style="margin-top:12px;"></div>
+            </div>
+          </div>
+
+          <details style="margin-top:18px;">
+            <summary style="cursor:pointer;color:var(--text-muted);font-size:12px;">🖥️ App clásica (PC de Andrea) — solo mientras dura la transición a la nube</summary>
+            <div class="card" style="padding:18px;margin-top:10px;">
+              <button class="btn btn-primary" onclick="abrirCartera()" style="width:auto;font-size:13px;padding:10px 18px;">🚀 Abrir app clásica</button>
+              <button class="btn btn-secondary" onclick="descargarLibroCartera()" title="Descarga el Excel histórico del PC (pide una clave la primera vez; Shift+clic para cambiarla)" style="width:auto;font-size:13px;padding:10px 16px;margin-left:8px;">⬇️ Libro del PC</button>
+              <div class="api-key-row" style="margin-top:12px;">
+                <div class="form-group" style="flex:1;margin:0;">
+                  <input type="text" id="cartera-url-input" placeholder="http://192.168.20.5:5050">
+                </div>
+                <button class="btn btn-primary" onclick="saveCarteraURL()" style="width:auto;white-space:nowrap;">Guardar</button>
+              </div>
+              <div id="cartera-url-updatedAt" style="font-size:11px;color:#86efac;margin-top:8px;"></div>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -5336,7 +5356,7 @@ function navigate(page) {
   if(page==='programacion') { try{ peInit(); }catch(_){} try{ sabPlanInit(); }catch(_){} }
   if(page==='compras') pcomInit();
   if(page==='ayuda') ayudaRender();
-  if(page==='cartera') { setTimeout(loadCarteraUrlUI, 100); setTimeout(()=>{ try { carteraMesCargar(false); } catch(_){} }, 300); }
+  if(page==='cartera') { setTimeout(()=>{ try { cnuCargar(false); } catch(_){} }, 100); setTimeout(loadCarteraUrlUI, 400); }
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
   if(page==='historico') { setTimeout(historicoListMonths, 100); }
   if(page==='procesos') renderProcesos();
@@ -6802,38 +6822,213 @@ async function descargarLibroCartera(ev) {
   else { window.open(url, '_blank', 'noopener'); }
   showToast('Descargando libro de cartera… Si sale "Clave incorrecta", usa Shift+clic para corregirla.', 'info');
 }
-// ── 📅 FACTURADO Y PAGADO POR MES (v136, 2026-07-15) ─────────────────────────
-// Lee /api/facturacion del agente (protegido con la MISMA clave del libro) y
-// agrega en el navegador. Solo lectura: no escribe nada en el libro de cartera.
+
+// ===== ☁️ CARTERA EN LA NUBE (F2, 2026-07-21) =====
+// Fuente única: tablas cartera_facturas/cartera_clientes en Supabase (mismo
+// proyecto de Abastecimiento). Solo lectura en esta fase; el agente del PC y su
+// túnel quedan como respaldo en "App clásica" hasta terminar la migración.
+let _cnuFacturas = null;
+let _cnuTs = 0;
+const _CNU_CAT = {
+  critica: { orden: 4, color: '#f87171', bg: 'rgba(239,68,68,.12)',  label: 'CRÍTICA' },
+  alta:    { orden: 3, color: '#fb923c', bg: 'rgba(249,115,22,.12)', label: 'ALTA' },
+  media:   { orden: 2, color: '#fbbf24', bg: 'rgba(232,160,32,.12)', label: 'MEDIA' },
+  hoy:     { orden: 1, color: '#60a5fa', bg: 'rgba(59,130,246,.12)', label: 'VENCE HOY' },
+  vigente: { orden: 0, color: '#86efac', bg: 'rgba(46,170,74,.12)',  label: 'VIGENTE' }
+};
+function _cnuFmt(v) { return '$' + Math.round(v || 0).toLocaleString('es-CO'); }
+async function cnuCargar(force) {
+  const st = document.getElementById('cnu-status');
+  if (_cnuFacturas && !force && (Date.now() - _cnuTs) < 60000) { cnuRenderTodo(); return; }
+  if (st) st.textContent = '⏳ Leyendo la nube…';
+  try {
+    const r = await fetch(UTIL_SB_URL + '/cartera_facturas?select=*&order=fecha_facturacion.desc&limit=10000', {
+      headers: { apikey: UTIL_SB_KEY, Authorization: 'Bearer ' + UTIL_SB_KEY }, cache: 'no-store'
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    _cnuFacturas = await r.json();
+    _cnuTs = Date.now();
+    _cmesData = null;   // el tab Meses se rearma con datos frescos
+    if (st) st.textContent = '✅ ' + _cnuFacturas.length + ' facturas en vivo';
+    cnuRenderTodo();
+  } catch(e) {
+    if (st) st.textContent = '❌ Sin conexión con la nube (' + (e && e.message || e) + ')';
+  }
+}
+function cnuRenderTodo() {
+  cnuRenderResumen(); cnuRenderLista(); cnuComMeses(); cnuRenderComisiones();
+  try { carteraMesCargar(false); } catch(_){}
+}
+function cnuTab(t) {
+  ['cartera','comisiones','meses'].forEach(x => {
+    const d = document.getElementById('cnu-tab-' + x);
+    if (d) d.style.display = (x === t) ? '' : 'none';
+    const b = document.getElementById('cnu-tab-btn-' + x);
+    if (b) { b.classList.toggle('btn-primary', x === t); b.classList.toggle('btn-secondary', x !== t); }
+  });
+}
+// Mora y categoría — misma lógica del agente local: media ≤15, alta ≤30, crítica >30
+function _cnuMora(f, hoy) {
+  if (!f.fecha_vencimiento) return null;
+  const v = new Date(f.fecha_vencimiento + 'T12:00:00');
+  if (isNaN(v.getTime())) return null;
+  return Math.round((hoy - v) / 86400000);
+}
+function _cnuCatDe(m) {
+  if (m === null) return null;
+  if (m < 0) return ['vigente', 'Vence en ' + (-m) + (m === -1 ? ' día' : ' días')];
+  if (m === 0) return ['hoy', 'Vence HOY'];
+  if (m <= 15) return ['media', m + ' días de mora'];
+  if (m <= 30) return ['alta', m + ' días de mora'];
+  return ['critica', m + ' días de mora'];
+}
+function _cnuEsPendiente(f) {
+  const ef = f.estado_financiero || '', e = f.estado || '';
+  return (ef === 'SALDO POR PAGAR' || ef === 'POR PAGAR' || ef === 'PENDIENTE' || e === 'PENDIENTE') && parseFloat(f.saldo || 0) > 0;
+}
+function cnuAgrupar() {
+  const hoy = new Date(); hoy.setHours(12, 0, 0, 0);
+  const emp = {};
+  (_cnuFacturas || []).forEach(f => {
+    if (!_cnuEsPendiente(f)) return;
+    const m = _cnuMora(f, hoy); const cat = _cnuCatDe(m); if (!cat) return;
+    const k = f.cliente_nombre;
+    if (!emp[k]) emp[k] = { empresa: k, nit: f.nit || '', vendedor: f.vendedor || '', facturas: [], total: 0, moraMax: -9999, catMax: 'vigente' };
+    const c = emp[k];
+    c.facturas.push({ ...f, mora: m, cat: cat[0], desc: cat[1] });
+    c.total += parseFloat(f.saldo || 0);
+    if (m > c.moraMax) { c.moraMax = m; c.catMax = cat[0]; }
+  });
+  return Object.values(emp).sort((a, b) => (_CNU_CAT[b.catMax].orden - _CNU_CAT[a.catMax].orden) || (b.moraMax - a.moraMax));
+}
+function cnuRenderResumen() {
+  const cont = document.getElementById('cnu-resumen'); if (!cont) return;
+  const g = cnuAgrupar();
+  const tot = g.reduce((s, c) => s + c.total, 0);
+  const n = k => g.filter(c => c.catMax === k).length;
+  const card = (num, lab, color) => '<div class="card" style="padding:12px;text-align:center;"><div style="font-size:19px;font-weight:800;color:' + (color || '#fff') + ';white-space:nowrap;">' + num + '</div><div style="font-size:10px;color:var(--text-muted);letter-spacing:.5px;">' + lab + '</div></div>';
+  cont.innerHTML =
+    card(_cnuFmt(tot), 'TOTAL CARTERA', '#fbbf24') + card(g.length, 'CLIENTES') +
+    card(n('critica'), 'CRÍTICAS', _CNU_CAT.critica.color) + card(n('alta'), 'ALTAS', _CNU_CAT.alta.color) +
+    card(n('media'), 'MEDIAS', _CNU_CAT.media.color) + card(n('hoy') + n('vigente'), 'VIGENTES', _CNU_CAT.vigente.color);
+}
+function cnuRenderLista() {
+  const cont = document.getElementById('cnu-lista'); if (!cont) return;
+  const q = ((document.getElementById('cnu-buscar') || {}).value || '').toLowerCase().trim();
+  let g = cnuAgrupar();
+  if (q) g = g.filter(c => c.empresa.toLowerCase().includes(q) || (c.nit || '').includes(q) || c.facturas.some(f => String(f.numero || '').toLowerCase().includes(q)));
+  if (!g.length) { cont.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">Sin cartera pendiente' + (q ? ' que coincida con la búsqueda' : '') + ' 🎉</div>'; return; }
+  const td = 'padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.05);';
+  const th = 'text-align:left;padding:6px 10px;color:var(--text-muted);font-size:10px;';
+  cont.innerHTML = g.map((c, i) => {
+    const cc = _CNU_CAT[c.catMax];
+    const facs = c.facturas.slice().sort((a, b) => ((b.mora === null ? -9999 : b.mora) - (a.mora === null ? -9999 : a.mora))).map(f =>
+      '<tr><td style="' + td + '">#' + (f.numero || '—') + (f.oc ? ' <span style="color:var(--text-muted);font-size:10px;">OC ' + f.oc + '</span>' : '') + '</td>' +
+      '<td style="' + td + 'font-size:11px;">' + (f.fecha_facturacion || '—') + '</td>' +
+      '<td style="' + td + 'font-size:11px;">' + (f.fecha_vencimiento || '—') + '</td>' +
+      '<td style="' + td + '"><span style="font-size:10px;font-weight:700;color:' + _CNU_CAT[f.cat].color + ';background:' + _CNU_CAT[f.cat].bg + ';border-radius:10px;padding:2px 8px;white-space:nowrap;">' + f.desc + '</span></td>' +
+      '<td style="' + td + 'text-align:right;font-weight:600;">' + _cnuFmt(f.saldo) + '</td></tr>'
+    ).join('');
+    return '<div style="border:1px solid rgba(255,255,255,.09);border-left:4px solid ' + cc.color + ';border-radius:10px;margin-bottom:10px;overflow:hidden;">' +
+      '<div onclick="const d=document.getElementById(\'cnu-emp-' + i + '\');d.style.display=d.style.display===\'none\'?\'\':\'none\';" style="display:flex;gap:10px;align-items:center;padding:12px 14px;cursor:pointer;flex-wrap:wrap;">' +
+        '<div style="flex:1;min-width:180px;"><b>' + c.empresa + '</b><div style="font-size:11px;color:var(--text-muted);">NIT ' + (c.nit || '—') + (c.vendedor ? ' · ' + c.vendedor : '') + ' · ' + c.facturas.length + ' factura' + (c.facturas.length !== 1 ? 's' : '') + '</div></div>' +
+        '<span style="font-size:10px;font-weight:700;color:' + cc.color + ';background:' + cc.bg + ';border-radius:10px;padding:3px 10px;">' + cc.label + '</span>' +
+        '<b style="min-width:110px;text-align:right;">' + _cnuFmt(c.total) + '</b></div>' +
+      '<div id="cnu-emp-' + i + '" style="display:none;overflow-x:auto;padding:0 6px 8px;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:560px;">' +
+        '<thead><tr><th style="' + th + '">FACTURA</th><th style="' + th + '">EMITIDA</th><th style="' + th + '">VENCE</th><th style="' + th + '">ESTADO</th><th style="' + th + 'text-align:right;">SALDO</th></tr></thead><tbody>' + facs + '</tbody></table></div></div>';
+  }).join('');
+}
+// ── Comisiones (por vendedor, mes de pago y quincena) ──
+const _CNU_MESES_N = { ENERO:1, FEBRERO:2, MARZO:3, ABRIL:4, MAYO:5, JUNIO:6, JULIO:7, AGOSTO:8, SEPTIEMBRE:9, OCTUBRE:10, NOVIEMBRE:11, DICIEMBRE:12 };
+function _cnuMesKey(m) { const p = (m || '').trim().split(/\s+/); return (p.length === 2 && _CNU_MESES_N[p[0]] && /^\d{4}$/.test(p[1])) ? parseInt(p[1]) * 100 + _CNU_MESES_N[p[0]] : 0; }
+function _cnuQuin(f) { return ((f.quincena || '').indexOf('ntes') >= 0) ? 'antes' : 'despues'; }
+function _cnuEsComision(f) { return f.estado === 'PAGADA' && parseFloat(f.comision || 0) > 0; }
+function cnuComMeses() {
+  const sel = document.getElementById('cnu-com-mes'); if (!sel || !_cnuFacturas) return;
+  const meses = [...new Set(_cnuFacturas.filter(f => _cnuEsComision(f) && f.mes_pago).map(f => f.mes_pago))].sort((a, b) => _cnuMesKey(b) - _cnuMesKey(a));
+  const actual = sel.value;
+  sel.innerHTML = '<option value="">Todos los meses</option>' + meses.map(m => '<option' + (m === actual ? ' selected' : '') + '>' + m + '</option>').join('');
+  if (!actual && meses.length) sel.value = meses[0];   // por defecto: el mes más reciente
+}
+function cnuRenderComisiones() {
+  const cont = document.getElementById('cnu-com-lista'); if (!cont || !_cnuFacturas) return;
+  const mes = (document.getElementById('cnu-com-mes') || {}).value || '';
+  const quin = (document.getElementById('cnu-com-quin') || {}).value || '';
+  const vend = {};
+  _cnuFacturas.forEach(f => {
+    if (!_cnuEsComision(f)) return;
+    if (mes && f.mes_pago !== mes) return;
+    if (quin && _cnuQuin(f) !== quin) return;
+    const v = (f.vendedor || '').trim() || 'SIN VENDEDOR';
+    if (!vend[v]) vend[v] = { filas: [], total: 0 };
+    vend[v].filas.push(f);
+    vend[v].total += parseFloat(f.comision);
+  });
+  const lista = Object.entries(vend).sort((a, b) => b[1].total - a[1].total);
+  if (!lista.length) { cont.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">Sin comisiones para ese filtro.</div>'; return; }
+  const totalG = lista.reduce((s, e) => s + e[1].total, 0);
+  const td = 'padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.05);';
+  const th = 'text-align:left;padding:6px 10px;color:var(--text-muted);font-size:10px;';
+  cont.innerHTML = lista.map((e, i) => {
+    const nombre = e[0], v = e[1];
+    return '<div style="border:1px solid rgba(255,255,255,.09);border-radius:10px;margin-bottom:10px;overflow:hidden;">' +
+      '<div onclick="const d=document.getElementById(\'cnu-com-' + i + '\');d.style.display=d.style.display===\'none\'?\'\':\'none\';" style="display:flex;gap:10px;align-items:center;padding:12px 14px;cursor:pointer;">' +
+      '<b style="flex:1;">🧑‍💼 ' + nombre + '</b><span style="font-size:11px;color:var(--text-muted);">' + v.filas.length + ' factura' + (v.filas.length !== 1 ? 's' : '') + '</span><b style="color:#86efac;">' + _cnuFmt(v.total) + '</b></div>' +
+      '<div id="cnu-com-' + i + '" style="display:none;overflow-x:auto;padding:0 6px 8px;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:560px;">' +
+      '<thead><tr><th style="' + th + '">EMPRESA</th><th style="' + th + '">FACTURA</th><th style="' + th + '">MES</th><th style="' + th + '">QUINCENA</th><th style="' + th + '">RETEICA</th><th style="' + th + 'text-align:right;">COMISIÓN</th></tr></thead><tbody>' +
+      v.filas.map(f => '<tr><td style="' + td + '">' + f.cliente_nombre + '</td><td style="' + td + '">#' + (f.numero || '—') + '</td><td style="' + td + 'font-size:11px;">' + (f.mes_pago || '—') + '</td><td style="' + td + 'font-size:11px;">' + (_cnuQuin(f) === 'antes' ? 'Primeros 15' : 'Después del 15') + '</td><td style="' + td + 'font-size:11px;">' + (f.reteica || 'NO') + '</td><td style="' + td + 'text-align:right;font-weight:600;">' + _cnuFmt(f.comision) + '</td></tr>').join('') +
+      '</tbody></table></div></div>';
+  }).join('') +
+  '<div style="text-align:right;font-weight:800;padding:10px 14px;background:rgba(15,43,91,.35);border-radius:10px;">TOTAL GENERAL: <span style="color:#86efac;">' + _cnuFmt(totalG) + '</span></div>';
+}
+// ── Exportar a Excel (SheetJS ya cargado en la plataforma) ──
+function cnuExportCartera() {
+  if (!_cnuFacturas) { showToast('Primero espera a que cargue la cartera.', 'error'); return; }
+  const rows = [];
+  cnuAgrupar().forEach(c => c.facturas.forEach(f => rows.push({
+    'EMPRESA': c.empresa, 'NIT': c.nit, 'FACTURA': f.numero, 'EMITIDA': f.fecha_facturacion || '',
+    'VENCIMIENTO': f.fecha_vencimiento || '', 'DÍAS MORA': f.mora, 'ESTADO': f.desc,
+    'SALDO': parseFloat(f.saldo || 0), 'VENDEDOR': f.vendedor || ''
+  })));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Cartera Pendiente');
+  XLSX.writeFile(wb, 'Cartera_Pendiente_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+}
+function cnuExportComisiones() {
+  if (!_cnuFacturas) { showToast('Primero espera a que cargue la cartera.', 'error'); return; }
+  const mes = (document.getElementById('cnu-com-mes') || {}).value || '';
+  const quin = (document.getElementById('cnu-com-quin') || {}).value || '';
+  const rows = _cnuFacturas.filter(f => _cnuEsComision(f) && (!mes || f.mes_pago === mes) && (!quin || _cnuQuin(f) === quin))
+    .map(f => ({ 'VENDEDOR': (f.vendedor || '').trim() || 'SIN VENDEDOR', 'EMPRESA': f.cliente_nombre, 'FACTURA': f.numero, 'MES': f.mes_pago || '', 'QUINCENA': _cnuQuin(f) === 'antes' ? 'Primeros 15' : 'Después del 15', 'RETEICA': f.reteica || 'NO', 'COMISIÓN': parseFloat(f.comision) }));
+  if (!rows.length) { showToast('Sin comisiones para exportar con ese filtro.', 'error'); return; }
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Comisiones');
+  XLSX.writeFile(wb, 'Comisiones_' + (mes || 'Todas').replace(/\s+/g, '_') + '.xlsx');
+}
+
+// ── 📅 FACTURADO Y PAGADO POR MES ─────────────────────────────────────────────
+// v136 (2026-07-15) leía /api/facturacion del agente del PC con clave; desde F2
+// (2026-07-21) agrega las MISMAS cifras pero desde Supabase — sin túnel ni clave.
 let _cmesData = null;
 const _CMES_NOMBRES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 function _cmesFmt(v) { return '$' + Math.round(v || 0).toLocaleString('es-CO'); }
 function _cmesMes(f) { return (f && f.length >= 7) ? f.slice(0, 7) : ''; }   // 'YYYY-MM'
-async function carteraMesCargar(force, ev) {
+async function carteraMesCargar(force) {
   const st = document.getElementById('cmes-status'); if (!st) return;
   if (_cmesData && !force) { carteraMesAnios(); carteraMesRender(); return; }
-  ev = ev || window.event;
-  let clave = localStorage.getItem('cartera_libro_clave') || '';
-  if (force && (!clave || (ev && ev.shiftKey))) {
-    clave = (prompt('Clave de cartera (la misma del botón ⬇️ libro):', clave) || '').trim();
-    if (!clave) { st.textContent = 'Se necesita la clave para consultar.'; return; }
-    localStorage.setItem('cartera_libro_clave', clave);
+  if (!_cnuFacturas) {
+    try { await cnuCargar(false); } catch(_) {}
+    if (_cmesData) return;   // cnuCargar ya rearmó este tab vía cnuRenderTodo
+    if (!_cnuFacturas) { st.textContent = '❌ Sin conexión con la nube.'; return; }
   }
-  if (!clave) { st.textContent = 'Presiona "🔄 Consultar" (pide la clave una sola vez).'; return; }
-  st.textContent = '⏳ Consultando el libro de cartera…';
-  try { await refreshCarteraURLFromGitHub(); } catch(_) {}
-  try {
-    const r = await _fetchT(getCarteraURL() + '/api/facturacion?clave=' + encodeURIComponent(clave), { cache: 'no-store' }, 20000);
-    if (r.status === 403) { localStorage.removeItem('cartera_libro_clave'); st.textContent = '🔒 Clave incorrecta — presiona Consultar e ingrésala de nuevo.'; return; }
-    const j = await r.json();
-    if (!j || !j.ok) throw new Error((j && j.error) || 'respuesta inválida');
-    _cmesData = j.data || [];
-    st.textContent = '✅ ' + _cmesData.length + ' facturas del libro (en vivo)';
-    carteraMesAnios();
-    carteraMesRender();
-  } catch(e) {
-    st.textContent = '❌ Sin conexión con el agente de cartera. ¿El PC anfitrión está encendido? (' + (e && e.message || 'timeout') + ')';
-  }
+  _cmesData = _cnuFacturas.map(f => ({
+    empresa: f.cliente_nombre, factura: f.numero, fecha_facturacion: f.fecha_facturacion || '',
+    fecha_pago: f.fecha_pago || '', monto_total: parseFloat(f.monto_total || 0),
+    valor_recibido: parseFloat(f.valor_recibido || 0), saldo: parseFloat(f.saldo || 0), estado: f.estado || ''
+  }));
+  st.textContent = '✅ ' + _cmesData.length + ' facturas (nube)';
+  carteraMesAnios();
+  carteraMesRender();
 }
 function carteraMesAnios() {
   const sel = document.getElementById('cmes-anio'); if (!sel || !_cmesData) return;
