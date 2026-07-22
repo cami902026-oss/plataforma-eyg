@@ -3230,6 +3230,33 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-cnu-lote">
+  <div class="modal" style="max-width:660px;">
+    <div class="modal-header">
+      <div class="modal-title" id="cnul-titulo">💳 Pago en lote</div>
+      <button class="close-btn" onclick="closeModal('modal-cnu-lote')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>💵 Valor consignado</label><input type="number" id="cnul-valor" oninput="cnuLoteCalc()" placeholder="0"></div>
+        <div class="form-group"><label>Fecha del pago</label><input type="date" id="cnul-fecha"></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="cnul-reteiva" onchange="cnuLoteRender()"> Aplican ReteIVA (15% del IVA)</label>
+        <span style="flex:1;"></span>
+        <button class="btn btn-primary" onclick="cnuLoteBuscar()" style="width:auto;font-size:13px;padding:9px 16px;">🔍 Buscar combinación exacta</button>
+      </div>
+      <div id="cnul-lista" style="max-height:300px;overflow:auto;margin-bottom:10px;"></div>
+      <div id="cnul-resumen" style="font-size:13px;margin-bottom:8px;"></div>
+      <div id="cnul-parcial-wrap" style="display:none;margin-bottom:8px;">
+        <div class="form-group"><label>Factura que queda con el saldo restante</label><select id="cnul-parcial" style="width:100%;"></select></div>
+      </div>
+      <div id="cnul-msg" style="font-size:12px;margin-bottom:10px;min-height:16px;"></div>
+      <button class="btn btn-primary" id="cnul-aplicar" onclick="cnuLoteAplicar()">💾 Aplicar pagos del lote</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Modal KPIs por miembro ===== -->
 <style>
   #modal-kpis .modal { max-width: 760px; width: 95%; }
@@ -7053,17 +7080,20 @@ function cnuRenderLista() {
       '<td style="' + td + 'font-size:11px;">' + (f.fecha_facturacion || '—') + '</td>' +
       '<td style="' + td + 'font-size:11px;">' + (f.fecha_vencimiento || '—') + '</td>' +
       '<td style="' + td + '"><span style="font-size:10px;font-weight:700;color:' + _CNU_CAT[f.cat].color + ';background:' + _CNU_CAT[f.cat].bg + ';border-radius:10px;padding:2px 8px;white-space:nowrap;">' + f.desc + '</span></td>' +
+      '<td style="' + td + 'text-align:right;color:var(--text-muted);font-size:11px;">' + _cnuFmt(f.monto_antes_iva) + '</td>' +
+      '<td style="' + td + 'text-align:right;font-size:11px;">' + _cnuFmt(f.monto_total) + '</td>' +
       '<td style="' + td + 'text-align:right;font-weight:600;">' + _cnuFmt(f.saldo) + '</td>' +
       '<td style="' + td + 'text-align:right;"><button class="btn-sm" onclick="event.stopPropagation();cnuPago(' + f.id + ')" title="Registrar pago o abono" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700;">💰 Pago</button></td></tr>';
     }).join('');
     return '<div style="border:1px solid rgba(255,255,255,.09);border-left:4px solid ' + cc.color + ';border-radius:10px;margin-bottom:10px;overflow:hidden;">' +
       '<div onclick="const d=document.getElementById(\'cnu-emp-' + i + '\');d.style.display=d.style.display===\'none\'?\'\':\'none\';" style="display:flex;gap:10px;align-items:center;padding:12px 14px;cursor:pointer;flex-wrap:wrap;">' +
         '<div style="flex:1;min-width:180px;"><b>' + c.empresa + '</b><div style="font-size:11px;color:var(--text-muted);">NIT ' + (c.nit || '—') + (c.vendedor ? ' · ' + c.vendedor : '') + ' · ' + c.facturas.length + ' factura' + (c.facturas.length !== 1 ? 's' : '') + '</div></div>' +
+        '<button class="btn-sm" onclick="event.stopPropagation();cnuLoteIdx(' + i + ')" title="Pago en lote: repartir una consignación entre varias facturas" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.45);color:#60a5fa;">💳 Lote</button>' +
         '<button class="btn-sm" onclick="event.stopPropagation();cnuNotasIdx(' + i + ')" title="Notas de seguimiento de cobro" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:#fbbf24;">📝</button>' +
         '<span style="font-size:10px;font-weight:700;color:' + cc.color + ';background:' + cc.bg + ';border-radius:10px;padding:3px 10px;">' + cc.label + '</span>' +
         '<b style="min-width:110px;text-align:right;">' + _cnuFmt(c.total) + '</b></div>' +
       '<div id="cnu-emp-' + i + '" style="display:none;overflow-x:auto;padding:0 6px 8px;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:620px;">' +
-        '<thead><tr><th style="' + th + '">FACTURA</th><th style="' + th + '">EMITIDA</th><th style="' + th + '">VENCE</th><th style="' + th + '">ESTADO</th><th style="' + th + 'text-align:right;">SALDO</th><th style="' + th + '"></th></tr></thead><tbody>' + facs + '</tbody></table></div></div>';
+        '<thead><tr><th style="' + th + '">FACTURA</th><th style="' + th + '">EMITIDA</th><th style="' + th + '">VENCE</th><th style="' + th + '">ESTADO</th><th style="' + th + 'text-align:right;">SIN IVA</th><th style="' + th + 'text-align:right;">TOTAL (IVA)</th><th style="' + th + 'text-align:right;">SALDO</th><th style="' + th + '"></th></tr></thead><tbody>' + facs + '</tbody></table></div></div>';
   }).join('');
 }
 // ── Comisiones (por vendedor, mes de pago y quincena) ──
@@ -7385,6 +7415,156 @@ async function cnuNotaGuardar() {
     cnuNotas(_cnuNotaCli.id, _cnuNotaCli.nombre);
   } catch(e) { showToast('Error guardando nota: ' + e.message, 'error'); }
 }
+// ── 💳 Pago en lote (2026-07-22) ──
+// El cliente consigna UNA plata que cubre varias facturas. La calculadora busca
+// la combinación de facturas que suma exacto lo consignado (con o sin ReteIVA =
+// 15% del IVA), o deja marcar a mano con sumador en vivo. Diferencias: avisa y
+// Andrea decide a cuál factura dejar el saldo (abono parcial).
+let _cnuLote = null;
+function cnuLoteIdx(i) {
+  const c = (_cnuUltGrupo || [])[i];
+  if (c) cnuLoteAbrir(c);
+}
+function cnuLoteAbrir(c) {
+  _cnuLote = { cli: c, fs: [] };
+  document.getElementById('cnul-titulo').textContent = '💳 Pago en lote — ' + c.empresa;
+  document.getElementById('cnul-valor').value = '';
+  document.getElementById('cnul-reteiva').checked = false;
+  document.getElementById('cnul-fecha').value = _cnuHoy();
+  document.getElementById('cnul-msg').textContent = '';
+  cnuLoteRender();
+  openModal('modal-cnu-lote');
+}
+function _cnuLoteNeto(f) {
+  const saldo = parseFloat(f.saldo || 0);
+  if (!document.getElementById('cnul-reteiva').checked) return saldo;
+  // ReteIVA = 15% del IVA de la factura, proporcional al saldo vivo (por si hubo abonos)
+  const iva = Math.max(0, parseFloat(f.monto_total || 0) - parseFloat(f.monto_antes_iva || 0));
+  const prop = parseFloat(f.monto_total || 0) > 0 ? saldo / parseFloat(f.monto_total) : 1;
+  return Math.round((saldo - iva * 0.15 * prop) * 100) / 100;
+}
+function cnuLoteRender() {
+  if (!_cnuLote) return;
+  const rete = document.getElementById('cnul-reteiva').checked;
+  _cnuLote.fs = _cnuLote.cli.facturas.slice().sort((a, b) => ((b.mora === null ? -9999 : b.mora) - (a.mora === null ? -9999 : a.mora)));
+  const td = 'padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.05);';
+  const th = 'text-align:left;padding:6px 10px;color:var(--text-muted);font-size:10px;';
+  document.getElementById('cnul-lista').innerHTML =
+    '<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px;"><thead><tr>' +
+    '<th style="' + th + '"></th><th style="' + th + '">FACTURA</th><th style="' + th + '">VENCE</th><th style="' + th + '">MORA</th><th style="' + th + 'text-align:right;">SALDO</th>' +
+    (rete ? '<th style="' + th + 'text-align:right;">NETO (–ReteIVA)</th>' : '') + '</tr></thead><tbody>' +
+    _cnuLote.fs.map((f, i) =>
+      '<tr><td style="' + td + '"><input type="checkbox" id="cnul-cb-' + i + '" onchange="cnuLoteCalc()"></td>' +
+      '<td style="' + td + '">#' + (f.numero || '—') + '</td>' +
+      '<td style="' + td + 'font-size:11px;">' + (f.fecha_vencimiento || '—') + '</td>' +
+      '<td style="' + td + 'font-size:11px;">' + (f.desc || '') + '</td>' +
+      '<td style="' + td + 'text-align:right;">' + _cnuFmt(f.saldo) + '</td>' +
+      (rete ? '<td style="' + td + 'text-align:right;color:#86efac;">' + _cnuFmt(_cnuLoteNeto(f)) + '</td>' : '') + '</tr>'
+    ).join('') + '</tbody></table>';
+  document.getElementById('cnul-parcial-wrap').style.display = 'none';
+  cnuLoteCalc();
+}
+function cnuLoteCalc() {
+  if (!_cnuLote || !_cnuLote.fs.length) return;
+  const checked = _cnuLote.fs.map((f, i) => ({ f, i })).filter(x => (document.getElementById('cnul-cb-' + x.i) || {}).checked);
+  const suma = Math.round(checked.reduce((s, x) => s + _cnuLoteNeto(x.f), 0) * 100) / 100;
+  const consignado = parseFloat(document.getElementById('cnul-valor').value) || 0;
+  const diff = Math.round((consignado - suma) * 100) / 100;
+  document.getElementById('cnul-resumen').innerHTML =
+    'Seleccionado: <b>' + _cnuFmt(suma) + '</b> (' + checked.length + ' fact.) · Consignado: <b>' + _cnuFmt(consignado) + '</b> · Diferencia: <b style="color:' + (Math.abs(diff) <= 1 ? '#86efac' : '#fbbf24') + ';">' + _cnuFmt(diff) + '</b>';
+  const wrap = document.getElementById('cnul-parcial-wrap');
+  if (diff < -1 && checked.length && consignado) {
+    const sel = document.getElementById('cnul-parcial');
+    const val = sel.value;
+    sel.innerHTML = '<option value="">— Elige la factura que queda con saldo —</option>' + checked.map(x => '<option value="' + x.f.id + '">#' + (x.f.numero || x.f.id) + ' (' + _cnuFmt(_cnuLoteNeto(x.f)) + ')</option>').join('');
+    sel.value = val;
+    wrap.style.display = '';
+  } else wrap.style.display = 'none';
+}
+function cnuLoteBuscar() {
+  if (!_cnuLote) return;
+  const msg = document.getElementById('cnul-msg');
+  const objetivo = Math.round((parseFloat(document.getElementById('cnul-valor').value) || 0) * 100);
+  if (!objetivo) { msg.style.color = '#fca5a5'; msg.textContent = 'Primero escribe el valor consignado.'; return; }
+  const rete = document.getElementById('cnul-reteiva').checked;
+  const fs = _cnuLote.fs;
+  const vals = fs.map(f => Math.round(_cnuLoteNeto(f) * 100));
+  const tol = (rete ? 10 : 1) * 100;   // tolerancia por redondeos de la retención
+  const order = vals.map((v, i) => i).sort((a, b) => vals[b] - vals[a]);
+  const suf = new Array(order.length + 1).fill(0);
+  for (let i = order.length - 1; i >= 0; i--) suf[i] = suf[i + 1] + vals[order[i]];
+  let sol = null, nodos = 0;
+  (function dfs(pos, resto, pick) {
+    if (sol || nodos++ > 400000) return;
+    if (pick.length && Math.abs(resto) <= tol) { sol = pick.slice(); return; }
+    if (pos >= order.length || resto < -tol || resto > suf[pos] + tol) return;
+    pick.push(order[pos]);
+    dfs(pos + 1, resto - vals[order[pos]], pick);
+    pick.pop();
+    if (sol) return;
+    dfs(pos + 1, resto, pick);
+  })(0, objetivo, []);
+  if (sol) {
+    fs.forEach((f, i) => { const cb = document.getElementById('cnul-cb-' + i); if (cb) cb.checked = sol.includes(i); });
+    cnuLoteCalc();
+    msg.style.color = '#86efac';
+    msg.textContent = '✅ ¡Encontrada! ' + sol.length + ' factura' + (sol.length !== 1 ? 's' : '') + ' suma' + (sol.length !== 1 ? 'n' : '') + ' exactamente lo consignado' + (rete ? ' (con ReteIVA descontado)' : '') + '. Revisa y aplica.';
+  } else {
+    msg.style.color = '#fca5a5';
+    msg.textContent = '❌ Ninguna combinación suma exacto ese valor. ' + (rete ? 'Prueba SIN el check de ReteIVA' : 'Prueba marcando ☑ ReteIVA') + ', o marca a mano y aplica dejando el saldo en una factura.';
+  }
+}
+async function cnuLoteAplicar() {
+  if (!_cnuLote) return;
+  const msg = document.getElementById('cnul-msg');
+  const checked = _cnuLote.fs.map((f, i) => ({ f, i })).filter(x => (document.getElementById('cnul-cb-' + x.i) || {}).checked);
+  if (!checked.length) { msg.style.color = '#fca5a5'; msg.textContent = 'Marca al menos una factura.'; return; }
+  const consignado = parseFloat(document.getElementById('cnul-valor').value) || 0;
+  if (!consignado) { msg.style.color = '#fca5a5'; msg.textContent = 'Escribe el valor consignado.'; return; }
+  const fecha = document.getElementById('cnul-fecha').value || _cnuHoy();
+  const rete = document.getElementById('cnul-reteiva').checked;
+  const tol = rete ? 10 : 1;
+  const suma = checked.reduce((s, x) => s + _cnuLoteNeto(x.f), 0);
+  const diff = Math.round((consignado - suma) * 100) / 100;
+  let parcialId = null;
+  if (diff > tol) { msg.style.color = '#fca5a5'; msg.textContent = '⚠️ Lo consignado supera lo seleccionado por ' + _cnuFmt(diff) + ' — marca más facturas o revisa el valor.'; return; }
+  if (diff < -tol) {
+    parcialId = parseInt((document.getElementById('cnul-parcial') || {}).value) || null;
+    if (!parcialId) { cnuLoteCalc(); msg.style.color = '#fbbf24'; msg.textContent = '💡 Faltan ' + _cnuFmt(-diff) + ' — elige arriba cuál factura queda con ese saldo y vuelve a Aplicar.'; return; }
+  }
+  const btn = document.getElementById('cnul-aplicar'); btn.disabled = true;
+  const mesPago = (_CNU_MES_NOM[parseInt(fecha.slice(5, 7)) - 1] || '') + ' ' + fecha.slice(0, 4);
+  const quincena = parseInt(fecha.slice(8, 10)) <= 15 ? 'Antes del 15' : 'Después del 15';
+  let pagadas = 0, abonada = null;
+  try {
+    for (const x of checked) {
+      const f = x.f;
+      const neto = _cnuLoteNeto(f);
+      if (parcialId && f.id === parcialId) {
+        const abono = Math.round((neto + diff) * 100) / 100;   // diff es negativo
+        if (abono <= 0) throw new Error('el abono de la factura #' + (f.numero || f.id) + ' queda en cero — reparte de otra forma');
+        const nuevoSaldo = Math.max(0, Math.round((parseFloat(f.saldo || 0) - abono) * 100) / 100);
+        await sbCartera('PATCH', 'cartera_facturas?id=eq.' + f.id, {
+          valor_recibido: Math.round((parseFloat(f.valor_recibido || 0) + abono) * 100) / 100,
+          saldo: nuevoSaldo, fecha_pago: fecha, actualizado_en: new Date().toISOString()
+        });
+        abonada = { numero: f.numero || f.id, saldo: nuevoSaldo };
+      } else {
+        await sbCartera('PATCH', 'cartera_facturas?id=eq.' + f.id, {
+          valor_recibido: Math.round((parseFloat(f.valor_recibido || 0) + neto) * 100) / 100,
+          saldo: 0, estado: 'PAGADA', estado_financiero: 'PAGADA',
+          fecha_pago: fecha, mes_pago: mesPago, quincena, actualizado_en: new Date().toISOString()
+        });
+        pagadas++;
+      }
+    }
+    closeModal('modal-cnu-lote');
+    showToast('💳 Lote aplicado: ' + pagadas + ' factura' + (pagadas !== 1 ? 's' : '') + ' PAGADA' + (pagadas !== 1 ? 'S' : '') + (abonada ? ' + abono a #' + abonada.numero + ' (queda ' + _cnuFmt(abonada.saldo) + ')' : '') + (rete ? ' · ReteIVA aplicado' : ''), 'success');
+    _cnuLote = null;
+    cnuCargar(true);
+  } catch(e) { msg.style.color = '#fca5a5'; msg.textContent = 'Error aplicando: ' + e.message; }
+  btn.disabled = false;
+}
 // ── Amarre con la cadena de cotizaciones ──
 // Al guardar una cotización FACTURADA con su número digitado, si esa factura aún
 // no existe en Cartera se abre el formulario PRE-LLENADO (cliente, valor, OC,
@@ -7600,6 +7780,28 @@ function _pocAutoPurge(daysKeep) {
   } catch(_){}
 }
 document.addEventListener('DOMContentLoaded', () => setTimeout(_pocAutoPurge, 5000));
+// Barrido de reparación (2026-07-22): OCs que quedaron "activas" con las 4 etapas
+// ya fechadas (el camino de facturar desde la cotización no auto-completaba) se
+// pasan a COMPLETADO una sola vez al cargar.
+function _pocRepararCompletadas() {
+  try {
+    const all = getPOCAll();
+    let n = 0;
+    all.forEach(o => {
+      if (!o || o.deleted || o.estado !== 'activo') return;
+      const stages = Array.isArray(o.stages) ? o.stages : [];
+      const todas4 = stages.length === 4 && stages.every(st => !!(st && st.f));
+      const heOK = !(o.hojaEntrada && o.hojaEntrada.requerida) || !!(o.hojaEntrada && o.hojaEntrada.fecha);
+      if (todas4 && heOK) { o.estado = 'completado'; o.updatedAt = new Date().toISOString(); n++; }
+    });
+    if (n) {
+      savePOCData(all);
+      try { renderProcesos(); } catch(_) {}
+      showToast('✅ ' + n + ' OC' + (n !== 1 ? 's' : '') + ' con todas las etapas terminadas pasaron a COMPLETADO', 'success');
+    }
+  } catch(_) {}
+}
+document.addEventListener('DOMContentLoaded', () => setTimeout(_pocRepararCompletadas, 7000));
 let _pocLastSave = 0; // timestamp del último guardado local — bloquea sync remoto 60s
 function savePOCData(arr) {
   _pocLastSave = Date.now();
@@ -9270,6 +9472,16 @@ function _cotizEscribirFacturaOC(cotizId, numFactura, fecha) {
   s3.s = 'done';
   if ((numFactura||'').trim()) s3.factura = numFactura.trim();
   oc.stages[3] = s3;
+  // Auto-completar (2026-07-22, mismo criterio del modal): si con esta facturación
+  // las 4 etapas quedan con fecha y la Hoja de Entrada (si es requerida) está hecha,
+  // la OC pasa sola a COMPLETADO. Antes este camino no lo hacía y la orden quedaba
+  // "activa" aunque estuviera 100% terminada.
+  const _todas4 = oc.stages.length === 4 && oc.stages.every(st => !!(st && st.f));
+  const _heOK = !(oc.hojaEntrada && oc.hojaEntrada.requerida) || !!(oc.hojaEntrada && oc.hojaEntrada.fecha);
+  if (_todas4 && _heOK && oc.estado !== 'cancelado' && oc.estado !== 'completado') {
+    oc.estado = 'completado';
+    showToast('✅ OC ' + (oc.num || oc.id) + ' COMPLETADA automáticamente (las 4 etapas quedaron con fecha)', 'success');
+  }
   list[idx] = _audit(oc, false);
   try { savePOCData(list); } catch(_){}
   try { if (typeof renderProcesos === 'function') renderProcesos(); } catch(_){}
