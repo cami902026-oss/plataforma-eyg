@@ -1076,6 +1076,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
             <button class="btn btn-primary" id="cnu-tab-btn-cartera" onclick="cnuTab('cartera')" style="width:auto;font-size:13px;padding:9px 16px;">🚦 Cartera</button>
             <button class="btn btn-secondary" id="cnu-tab-btn-comisiones" onclick="cnuTab('comisiones')" style="width:auto;font-size:13px;padding:9px 16px;">💵 Comisiones</button>
+            <button class="btn btn-secondary" id="cnu-tab-btn-pagos" onclick="cnuTab('pagos')" style="width:auto;font-size:13px;padding:9px 16px;">✅ Pagos</button>
             <button class="btn btn-secondary" id="cnu-tab-btn-meses" onclick="cnuTab('meses')" style="width:auto;font-size:13px;padding:9px 16px;">📅 Meses</button>
             <button class="btn btn-secondary" id="cnu-tab-btn-clientes" onclick="cnuTab('clientes')" style="width:auto;font-size:13px;padding:9px 16px;">👥 Clientes</button>
             <span style="flex:1;"></span>
@@ -1126,6 +1127,21 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               </div>
               <div id="cmes-tabla" style="overflow-x:auto;"></div>
               <div id="cmes-detalle" style="margin-top:12px;"></div>
+            </div>
+          </div>
+
+          <div id="cnu-tab-pagos" style="display:none;">
+            <div id="cnu-pag-resumen" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px;"></div>
+            <div class="card" style="padding:18px;">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+                <div class="config-title" style="margin:0;">✅ Facturas pagadas</div>
+                <span style="flex:1;"></span>
+                <select id="cnu-pag-anio" onchange="cnuRenderPagos()" style="width:auto;padding:8px 12px;"></select>
+                <select id="cnu-pag-mes" onchange="cnuRenderPagos()" style="width:auto;padding:8px 12px;"></select>
+                <input type="text" id="cnu-pag-buscar" oninput="cnuRenderPagos()" placeholder="🔍 Cliente o factura…" style="width:190px;padding:8px 12px;">
+                <button class="btn btn-secondary" onclick="cnuExportPagos()" style="width:auto;font-size:12px;padding:8px 14px;">⬇️ Excel</button>
+              </div>
+              <div id="cnu-pag-lista" style="overflow-x:auto;"></div>
             </div>
           </div>
 
@@ -7081,10 +7097,71 @@ async function cnuCargar(force) {
 }
 function cnuRenderTodo() {
   cnuRenderResumen(); cnuRenderLista(); cnuComMeses(); cnuRenderComisiones();
+  try { cnuPagAnios(); cnuRenderPagos(); } catch(_){}
   try { carteraMesCargar(false); } catch(_){}
 }
+// ── ✅ Pestaña Pagos: facturas pagadas filtradas por año/mes (2026-07-22) ──
+function _cnuPagRows() {
+  return (_cnuFacturas || []).filter(f => f.fecha_pago && parseFloat(f.valor_recibido || 0) > 0);
+}
+function cnuPagAnios() {
+  const sel = document.getElementById('cnu-pag-anio'); if (!sel) return;
+  const anios = [...new Set(_cnuPagRows().map(f => String(f.fecha_pago).slice(0, 4)))].filter(a => /^\d{4}$/.test(a)).sort().reverse();
+  const actual = sel.value || String(new Date().getFullYear());
+  sel.innerHTML = '<option value="">Todos los años</option>' + anios.map(a => '<option' + (a === actual ? ' selected' : '') + '>' + a + '</option>').join('');
+  if (!sel.value && anios.length) sel.value = anios.includes(actual) ? actual : anios[0];
+  const selM = document.getElementById('cnu-pag-mes');
+  if (selM && !selM.options.length) {
+    const MES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    selM.innerHTML = '<option value="">Todos los meses</option>' + MES.map((m, i) => '<option value="' + String(i + 1).padStart(2, '0') + '">' + m + '</option>').join('');
+  }
+}
+function _cnuPagFiltradas() {
+  const anio = (document.getElementById('cnu-pag-anio') || {}).value || '';
+  const mes = (document.getElementById('cnu-pag-mes') || {}).value || '';
+  const q = ((document.getElementById('cnu-pag-buscar') || {}).value || '').toLowerCase().trim();
+  return _cnuPagRows().filter(f => {
+    const fp = String(f.fecha_pago);
+    if (anio && fp.slice(0, 4) !== anio) return false;
+    if (mes && fp.slice(5, 7) !== mes) return false;
+    if (q && !(f.cliente_nombre.toLowerCase().includes(q) || String(f.numero || '').toLowerCase().includes(q) || (f.nit || '').includes(q))) return false;
+    return true;
+  }).sort((a, b) => String(b.fecha_pago).localeCompare(String(a.fecha_pago)));
+}
+function cnuRenderPagos() {
+  const cont = document.getElementById('cnu-pag-lista'); if (!cont) return;
+  const fs = _cnuPagFiltradas();
+  const res = document.getElementById('cnu-pag-resumen');
+  const recibido = fs.reduce((s, f) => s + parseFloat(f.valor_recibido || 0), 0);
+  const clientes = new Set(fs.map(f => f.cliente_nombre)).size;
+  const contado = fs.filter(f => f.fecha_pago && f.fecha_facturacion && f.fecha_pago <= f.fecha_facturacion).length;
+  const card = (v, l, c) => '<div class="card" style="padding:12px;text-align:center;"><div style="font-size:19px;font-weight:800;color:' + (c || '#fff') + ';white-space:nowrap;">' + v + '</div><div style="font-size:10px;color:var(--text-muted);letter-spacing:.5px;">' + l + '</div></div>';
+  if (res) res.innerHTML = card(_cnuFmt(recibido), 'TOTAL RECIBIDO', '#86efac') + card(fs.length, 'FACTURAS PAGADAS') + card(clientes, 'CLIENTES') + card(contado, 'DE CONTADO', '#60a5fa');
+  if (!fs.length) { cont.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">Sin pagos para ese filtro.</div>'; return; }
+  const th = 'text-align:left;padding:6px 10px;color:var(--text-muted);font-size:10px;';
+  const td = 'padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.05);';
+  cont.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:680px;">' +
+    '<thead><tr><th style="' + th + '">FECHA PAGO</th><th style="' + th + '">CLIENTE</th><th style="' + th + '">FACTURA</th><th style="' + th + '">EMITIDA</th><th style="' + th + 'text-align:right;">TOTAL</th><th style="' + th + 'text-align:right;">RECIBIDO</th><th style="' + th + '">VENDEDOR</th></tr></thead><tbody>' +
+    fs.map(f => '<tr><td style="' + td + 'color:#86efac;font-weight:600;">' + f.fecha_pago + '</td>' +
+      '<td style="' + td + '">' + f.cliente_nombre + '</td>' +
+      '<td style="' + td + '">#' + (f.numero || '—') + (f.cotizacion_id ? ' <span style="color:#c4b5fd;font-size:10px;">' + f.cotizacion_id + '</span>' : '') + '</td>' +
+      '<td style="' + td + 'font-size:11px;">' + (f.fecha_facturacion || '—') + '</td>' +
+      '<td style="' + td + 'text-align:right;">' + _cnuFmt(f.monto_total) + '</td>' +
+      '<td style="' + td + 'text-align:right;color:#86efac;font-weight:600;">' + _cnuFmt(f.valor_recibido) + '</td>' +
+      '<td style="' + td + 'font-size:11px;">' + (f.vendedor || '—') + '</td></tr>').join('') +
+    '</tbody></table>';
+}
+function cnuExportPagos() {
+  const fs = _cnuPagFiltradas();
+  if (!fs.length) { showToast('Sin pagos para exportar con ese filtro.', 'error'); return; }
+  const rows = fs.map(f => ({ 'FECHA PAGO': f.fecha_pago, 'CLIENTE': f.cliente_nombre, 'NIT': f.nit || '', 'FACTURA': f.numero, 'EMITIDA': f.fecha_facturacion || '', 'TOTAL': parseFloat(f.monto_total || 0), 'RECIBIDO': parseFloat(f.valor_recibido || 0), 'VENDEDOR': f.vendedor || '' }));
+  const anio = (document.getElementById('cnu-pag-anio') || {}).value || 'Todos';
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Pagos');
+  XLSX.writeFile(wb, 'Pagos_' + anio + '.xlsx');
+}
 function cnuTab(t) {
-  ['cartera','comisiones','meses','clientes'].forEach(x => {
+  ['cartera','comisiones','pagos','meses','clientes'].forEach(x => {
     const d = document.getElementById('cnu-tab-' + x);
     if (d) d.style.display = (x === t) ? '' : 'none';
     const b = document.getElementById('cnu-tab-btn-' + x);
