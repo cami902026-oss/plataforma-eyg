@@ -12368,7 +12368,8 @@
     "cliente": "SAR ENERGY",
     "contacto": "SAMITH CARRILLO ",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
+    "factura": "",
     "iva": 19,
     "subtotal": 67767003.198,
     "ivaVal": 12875730.60762,
@@ -12381,6 +12382,7 @@
     "realizadaPor": "Alexandra",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
+    "motivoRechazo": "",
     "items": [
       {
         "id": 1,
@@ -12392,7 +12394,8 @@
         "desvTec": "",
         "marca": "MURPHY",
         "proveedor": "TALECTRO",
-        "precioProveedor": 1080000
+        "precioProveedor": 1080000,
+        "uid": "6dbd3625-c52c-4b56-9994-867efcb2140c"
       },
       {
         "id": 2,
@@ -12404,7 +12407,8 @@
         "desvTec": "",
         "marca": "NACIONAL",
         "proveedor": "GERENCIA",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "4cde77bb-c985-4b71-bd5c-8c19f27e755e"
       },
       {
         "id": 3,
@@ -12416,7 +12420,8 @@
         "desvTec": "SE OFERTA JUEGOS DE DADOS PARA ROSCADORA 1224 - 26192 DE  2-1/2\" A 4",
         "marca": "RIDGID",
         "proveedor": "FISA",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "9df8880b-ab90-4667-864f-f6770b847d02"
       },
       {
         "id": 4,
@@ -12428,7 +12433,8 @@
         "desvTec": "FLANCHADO RF A-216 WCB",
         "marca": "JAGUAR",
         "proveedor": "CODIFER",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "37d9fda2-a7bd-4605-9891-ca8b03022595"
       },
       {
         "id": 5,
@@ -12440,7 +12446,8 @@
         "desvTec": "",
         "marca": "NACIONAL",
         "proveedor": "GERENCIA",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "8cbb6047-e392-49db-bbe5-66f1038a88eb"
       },
       {
         "id": 6,
@@ -12452,7 +12459,8 @@
         "desvTec": "",
         "marca": "MURPHY",
         "proveedor": "TALECTRO",
-        "precioProveedor": 1080000
+        "precioProveedor": 1080000,
+        "uid": "f2c0fbc6-6f5a-4189-981e-c855ce4e82fc"
       },
       {
         "id": 7,
@@ -12464,7 +12472,8 @@
         "desvTec": "",
         "marca": "NACIONAL",
         "proveedor": "MAS DOTACIONES",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "61d934bc-e4b9-45d1-a2bf-0ad8c0b96612"
       },
       {
         "id": 8,
@@ -12476,7 +12485,8 @@
         "desvTec": "A-216 WCB FLOATING",
         "marca": "SIO",
         "proveedor": "CODIFER",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "457beaf7-0cc5-47d2-905a-11fd200a5ebe"
       },
       {
         "id": 9,
@@ -12488,7 +12498,8 @@
         "desvTec": "A-216 WCB FLOATING",
         "marca": "SIO",
         "proveedor": "CODIFER",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "d3edb07a-397f-422d-a87f-a73560ab8bb1"
       },
       {
         "id": 10,
@@ -12500,7 +12511,8 @@
         "desvTec": "",
         "marca": "NACIONAL",
         "proveedor": "GERENCIA",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "da60169b-2170-491f-b719-c08b5caec29a"
       },
       {
         "id": 11,
@@ -12512,15 +12524,16 @@
         "desvTec": "",
         "marca": "MURPHY",
         "proveedor": "TALECTRO",
-        "precioProveedor": 1080000
+        "precioProveedor": 1080000,
+        "uid": "46b9b0ef-bd7f-4e0d-b2fc-2355ca8cc763"
       }
     ],
-    "fechaGuardado": "2026-07-01T15:47:44.244Z",
+    "fechaGuardado": "2026-07-22T01:04:31.310Z",
+    "adjudicadaAt": "2026-07-22",
     "createdAt": "2026-06-30T21:31:28.410Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-09T01:04:21.259Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-07-09T01:04:21.259Z"
+    "updatedAt": "2026-07-22T01:04:31.310Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1741",
