@@ -671,6 +671,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .abs-rot-stat{background:var(--card-bg);border:1px solid var(--border);border-left:3px solid;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js" onerror="document.head.insertAdjacentHTML('beforeend','<script src=\'https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js\'><\/script>')"></script>
 </head>
 <body>
@@ -3253,6 +3254,79 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       </div>
       <div id="cnul-msg" style="font-size:12px;margin-bottom:10px;min-height:16px;"></div>
       <button class="btn btn-primary" id="cnul-aplicar" onclick="cnuLoteAplicar()">💾 Aplicar pagos del lote</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-cnu-hist">
+  <div class="modal" style="max-width:760px;">
+    <div class="modal-header">
+      <div class="modal-title" id="cnuh-titulo">📚 Historial</div>
+      <button class="close-btn" onclick="closeModal('modal-cnu-hist')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="cnuh-body" style="max-height:60vh;overflow-y:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-cnu-correo">
+  <div class="modal" style="max-width:620px;">
+    <div class="modal-header">
+      <div class="modal-title" id="cnucor-titulo">✉️ Correo de cobro</div>
+      <button class="close-btn" onclick="closeModal('modal-cnu-correo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="cnucor-para" style="font-size:12px;color:#86efac;margin-bottom:8px;"></div>
+      <textarea id="cnucor-texto" rows="14" style="width:100%;font-size:13px;line-height:1.5;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn btn-primary" onclick="cnuCorreoCopiar()" style="flex:1;">📋 Copiar correo</button>
+        <button class="btn btn-secondary" onclick="cnuCorreoRegenerar()" style="width:auto;">🔄 Redactar de nuevo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-cnu-cc">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-header">
+      <div class="modal-title">📄 Cuenta de cobro</div>
+      <button class="close-btn" onclick="closeModal('modal-cnu-cc')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Consecutivo N°</label><input type="text" id="cnucc-consecutivo" placeholder="2026-10"></div>
+        <div class="form-group"><label>Ciudad</label><input type="text" id="cnucc-ciudad" value="Bogotá"></div>
+        <div class="form-group"><label>Fecha</label><input type="date" id="cnucc-fecha"></div>
+      </div>
+      <div class="form-group"><label>Beneficiario (a quien se le paga)</label><input type="text" id="cnucc-nombre" placeholder="Nombre completo"></div>
+      <div class="form-row">
+        <div class="form-group"><label>C.C. / NIT</label><input type="text" id="cnucc-id"></div>
+        <div class="form-group"><label>Teléfono (opcional)</label><input type="text" id="cnucc-tel"></div>
+      </div>
+      <div class="form-group"><label>Dirección (opcional)</label><input type="text" id="cnucc-dir"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Banco (opcional)</label><input type="text" id="cnucc-banco" placeholder="Ej: Bancolombia ahorros"></div>
+        <div class="form-group"><label>N° de cuenta (opcional)</label><input type="text" id="cnucc-cuenta"></div>
+      </div>
+      <div class="form-group"><label>Concepto (pone la retención solo)</label>
+        <select id="cnucc-concepto" onchange="cnuCCConcepto()">
+          <option value="COMISIONES COMERCIALES|11">Comisiones comerciales (11%)</option>
+          <option value="TRANSPORTE DE CARGA|1">Transporte de carga (1%)</option>
+          <option value="TRANSPORTE DE PASAJEROS|3.5">Transporte de pasajeros (3,5%)</option>
+          <option value="SIN RETENCIÓN|0">Sin retención (0%)</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Valor base</label><input type="number" id="cnucc-base" oninput="cnuCCRecalc()"></div>
+        <div class="form-group"><label>Retención %</label><input type="number" id="cnucc-pct" step="0.1" oninput="cnuCCRecalc()"></div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:10px;">
+        <input type="checkbox" id="cnucc-ica-on" onchange="cnuCCRecalc()"> Aplicar ReteICA
+        <input type="number" id="cnucc-ica-pct" value="0.966" step="0.001" oninput="cnuCCRecalc()" style="width:90px;padding:5px 8px;"> ‰ (por mil)
+      </label>
+      <div id="cnucc-resumen" style="background:rgba(15,43,91,.35);border-radius:10px;padding:12px 16px;font-size:13px;margin-bottom:12px;"></div>
+      <button class="btn btn-primary" id="cnucc-btn" onclick="cnuCCPdf()">⬇ Descargar PDF (avanza el consecutivo)</button>
     </div>
   </div>
 </div>
@@ -7089,6 +7163,8 @@ function cnuRenderLista() {
       '<div onclick="const d=document.getElementById(\'cnu-emp-' + i + '\');d.style.display=d.style.display===\'none\'?\'\':\'none\';" style="display:flex;gap:10px;align-items:center;padding:12px 14px;cursor:pointer;flex-wrap:wrap;">' +
         '<div style="flex:1;min-width:180px;"><b>' + c.empresa + '</b><div style="font-size:11px;color:var(--text-muted);">NIT ' + (c.nit || '—') + (c.vendedor ? ' · ' + c.vendedor : '') + ' · ' + c.facturas.length + ' factura' + (c.facturas.length !== 1 ? 's' : '') + '</div></div>' +
         '<button class="btn-sm" onclick="event.stopPropagation();cnuLoteIdx(' + i + ')" title="Pago en lote: repartir una consignación entre varias facturas" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.45);color:#60a5fa;">💳 Lote</button>' +
+        '<button class="btn-sm" onclick="event.stopPropagation();cnuCorreoIdx(' + i + ')" title="Redactar correo de cobro con IA según la mora (para copiar y enviar)" style="background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.45);color:#c4b5fd;">✉️</button>' +
+        '<button class="btn-sm" onclick="event.stopPropagation();cnuHistIdx(' + i + ')" title="Ver TODAS las facturas del cliente, incluidas las pagadas con su fecha de pago" style="background:rgba(148,163,184,.15);border:1px solid rgba(148,163,184,.4);color:#cbd5e1;">📚</button>' +
         '<button class="btn-sm" onclick="event.stopPropagation();cnuNotasIdx(' + i + ')" title="Notas de seguimiento de cobro" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:#fbbf24;">📝</button>' +
         '<span style="font-size:10px;font-weight:700;color:' + cc.color + ';background:' + cc.bg + ';border-radius:10px;padding:3px 10px;">' + cc.label + '</span>' +
         '<b style="min-width:110px;text-align:right;">' + _cnuFmt(c.total) + '</b></div>' +
@@ -7124,6 +7200,7 @@ function cnuRenderComisiones() {
   });
   const lista = Object.entries(vend).sort((a, b) => b[1].total - a[1].total);
   if (!lista.length) { cont.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">Sin comisiones para ese filtro.</div>'; return; }
+  _cnuComLista = lista;
   const totalG = lista.reduce((s, e) => s + e[1].total, 0);
   const td = 'padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.05);';
   const th = 'text-align:left;padding:6px 10px;color:var(--text-muted);font-size:10px;';
@@ -7131,7 +7208,7 @@ function cnuRenderComisiones() {
     const nombre = e[0], v = e[1];
     return '<div style="border:1px solid rgba(255,255,255,.09);border-radius:10px;margin-bottom:10px;overflow:hidden;">' +
       '<div onclick="const d=document.getElementById(\'cnu-com-' + i + '\');d.style.display=d.style.display===\'none\'?\'\':\'none\';" style="display:flex;gap:10px;align-items:center;padding:12px 14px;cursor:pointer;">' +
-      '<b style="flex:1;">🧑‍💼 ' + nombre + '</b><span style="font-size:11px;color:var(--text-muted);">' + v.filas.length + ' factura' + (v.filas.length !== 1 ? 's' : '') + '</span><b style="color:#86efac;">' + _cnuFmt(v.total) + '</b></div>' +
+      '<b style="flex:1;">🧑‍💼 ' + nombre + '</b><button class="btn-sm" onclick="event.stopPropagation();cnuCCDesdeCom(' + i + ')" title="Generar cuenta de cobro en PDF con consecutivo compartido" style="background:rgba(46,170,74,.18);border:1px solid rgba(46,170,74,.5);color:#86efac;">📄 Cta cobro</button><span style="font-size:11px;color:var(--text-muted);">' + v.filas.length + ' factura' + (v.filas.length !== 1 ? 's' : '') + '</span><b style="color:#86efac;">' + _cnuFmt(v.total) + '</b></div>' +
       '<div id="cnu-com-' + i + '" style="display:none;overflow-x:auto;padding:0 6px 8px;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:560px;">' +
       '<thead><tr><th style="' + th + '">EMPRESA</th><th style="' + th + '">FACTURA</th><th style="' + th + '">MES</th><th style="' + th + '">QUINCENA</th><th style="' + th + '">RETEICA</th><th style="' + th + 'text-align:right;">COMISIÓN</th></tr></thead><tbody>' +
       v.filas.map(f => '<tr><td style="' + td + '">' + f.cliente_nombre + '</td><td style="' + td + '">#' + (f.numero || '—') + '</td><td style="' + td + 'font-size:11px;">' + (f.mes_pago || '—') + '</td><td style="' + td + 'font-size:11px;">' + (_cnuQuin(f) === 'antes' ? 'Primeros 15' : 'Después del 15') + '</td><td style="' + td + 'font-size:11px;">' + (f.reteica || 'NO') + '</td><td style="' + td + 'text-align:right;font-weight:600;">' + _cnuFmt(f.comision) + '</td></tr>').join('') +
@@ -7335,7 +7412,7 @@ async function cnuRenderClientes() {
   cont.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:760px;">' +
     '<thead><tr><th style="' + th + '">CLIENTE</th><th style="' + th + '">NIT</th><th style="' + th + '">DÍAS</th><th style="' + th + '">VENDEDOR</th><th style="' + th + '">%</th><th style="' + th + '">CORREOS DE CARTERA</th><th style="' + th + '">CONTACTO</th><th style="' + th + '"></th></tr></thead><tbody>' +
     lista.map(c => '<tr><td style="' + td + 'font-weight:600;">' + c.nombre + '</td><td style="' + td + '">' + (c.nit || '—') + '</td><td style="' + td + '">' + (c.dias_pago || '—') + '</td><td style="' + td + '">' + (c.vendedor || '—') + '</td><td style="' + td + '">' + (c.pct_comision != null ? c.pct_comision + '%' : '—') + '</td><td style="' + td + 'font-size:11px;color:' + (c.correos ? 'inherit' : '#fb923c') + ';">' + (c.correos || 'sin correo aún') + '</td><td style="' + td + 'font-size:11px;">' + (c.contacto || '') + (c.telefono ? ' · ' + c.telefono : '') + '</td>' +
-    '<td style="' + td + '"><button class="btn-sm" onclick="cnuClienteEditar(' + c.id + ')" style="background:rgba(26,58,143,.35);border:1px solid #1A3A8F;color:#90cdf4;">✏️</button></td></tr>').join('') +
+    '<td style="' + td + 'white-space:nowrap;"><button class="btn-sm" onclick="cnuClienteEditar(' + c.id + ')" style="background:rgba(26,58,143,.35);border:1px solid #1A3A8F;color:#90cdf4;">✏️</button> <button class="btn-sm" onclick="cnuHistorial(' + c.id + ', ' + JSON.stringify(c.nombre).replace(/"/g, '&quot;') + ')" title="Historial completo de facturas (pagadas y pendientes)" style="background:rgba(148,163,184,.15);border:1px solid rgba(148,163,184,.4);color:#cbd5e1;">📚</button></td></tr>').join('') +
     '</tbody></table>';
 }
 async function cnuClienteEditar(id) {
@@ -7563,6 +7640,311 @@ async function cnuLoteAplicar() {
     _cnuLote = null;
     cnuCargar(true);
   } catch(e) { msg.style.color = '#fca5a5'; msg.textContent = 'Error aplicando: ' + e.message; }
+  btn.disabled = false;
+}
+// ── 📚 Historial completo por cliente (pagadas con fecha de pago + pendientes) ──
+function cnuHistIdx(i) { const c = (_cnuUltGrupo || [])[i]; if (c) cnuHistorial((c.facturas[0] || {}).cliente_id || null, c.empresa); }
+async function cnuHistorial(clienteId, nombre) {
+  document.getElementById('cnuh-titulo').textContent = '📚 Historial — ' + nombre;
+  const cont = document.getElementById('cnuh-body');
+  cont.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">⏳ Cargando…</div>';
+  openModal('modal-cnu-hist');
+  try {
+    const filtro = clienteId ? 'cliente_id=eq.' + clienteId : 'cliente_nombre=eq.' + encodeURIComponent(nombre);
+    const fs = await sbCartera('GET', 'cartera_facturas?' + filtro + '&select=*&order=fecha_facturacion.desc&limit=2000');
+    if (!fs || !fs.length) { cont.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Sin facturas registradas para este cliente.</div>'; return; }
+    const tot = fs.reduce((s, f) => s + parseFloat(f.monto_total || 0), 0);
+    const rec = fs.reduce((s, f) => s + parseFloat(f.valor_recibido || 0), 0);
+    const pend = fs.reduce((s, f) => s + parseFloat(f.saldo || 0), 0);
+    const pagadas = fs.filter(f => f.estado === 'PAGADA').length;
+    const card = (v, l, c) => '<div class="card" style="padding:10px;text-align:center;"><div style="font-size:14px;font-weight:800;color:' + (c || '#fff') + ';white-space:nowrap;">' + v + '</div><div style="font-size:9px;color:var(--text-muted);letter-spacing:.4px;">' + l + '</div></div>';
+    const th = 'text-align:left;padding:6px 10px;color:var(--text-muted);font-size:10px;', td = 'padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.05);';
+    cont.innerHTML =
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:12px;">' +
+      card(fs.length, 'FACTURAS') + card(pagadas, 'PAGADAS', '#86efac') + card(_cnuFmt(tot), 'FACTURADO HIST.') + card(_cnuFmt(rec), 'RECAUDADO', '#86efac') + card(_cnuFmt(pend), 'PENDIENTE', '#fbbf24') + '</div>' +
+      '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:660px;">' +
+      '<thead><tr><th style="' + th + '">FACTURA</th><th style="' + th + '">EMITIDA</th><th style="' + th + '">VENCE</th><th style="' + th + '">ESTADO</th><th style="' + th + '">FECHA PAGO</th><th style="' + th + 'text-align:right;">TOTAL</th><th style="' + th + 'text-align:right;">RECIBIDO</th><th style="' + th + 'text-align:right;">SALDO</th></tr></thead><tbody>' +
+      fs.map(f => {
+        const pag = f.estado === 'PAGADA';
+        return '<tr><td style="' + td + '">#' + (f.numero || '—') + (f.cotizacion_id ? ' <span style="color:#c4b5fd;font-size:10px;">' + f.cotizacion_id + '</span>' : '') + '</td>' +
+        '<td style="' + td + 'font-size:11px;">' + (f.fecha_facturacion || '—') + '</td>' +
+        '<td style="' + td + 'font-size:11px;">' + (f.fecha_vencimiento || '—') + '</td>' +
+        '<td style="' + td + '"><span style="font-size:10px;font-weight:700;color:' + (pag ? '#86efac' : '#fbbf24') + ';background:' + (pag ? 'rgba(46,170,74,.12)' : 'rgba(232,160,32,.12)') + ';border-radius:10px;padding:2px 8px;">' + (f.estado || '') + '</span></td>' +
+        '<td style="' + td + 'font-size:11px;color:' + (pag ? '#86efac' : 'var(--text-muted)') + ';">' + (f.fecha_pago || '—') + '</td>' +
+        '<td style="' + td + 'text-align:right;">' + _cnuFmt(f.monto_total) + '</td>' +
+        '<td style="' + td + 'text-align:right;color:#86efac;">' + _cnuFmt(f.valor_recibido) + '</td>' +
+        '<td style="' + td + 'text-align:right;font-weight:600;color:' + (parseFloat(f.saldo || 0) > 0 ? '#fbbf24' : 'inherit') + ';">' + _cnuFmt(f.saldo) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  } catch(e) { cont.innerHTML = '<div style="color:#fca5a5;font-size:12px;">Error: ' + e.message + '</div>'; }
+}
+// ── ✉️ Correo de cobro con Claude (vía proxy seguro, solo COPIAR — no envía) ──
+let _cnuCorreoCli = null;
+function cnuCorreoIdx(i) { const c = (_cnuUltGrupo || [])[i]; if (c) cnuCorreo(c); }
+async function cnuCorreo(c) {
+  _cnuCorreoCli = c;
+  document.getElementById('cnucor-titulo').textContent = '✉️ Correo de cobro — ' + c.empresa;
+  const paraEl = document.getElementById('cnucor-para');
+  paraEl.textContent = '';
+  try {
+    await cnuCargarClientes();
+    const cli = (_cnuClientes || []).find(x => x.id === (c.facturas[0] || {}).cliente_id);
+    paraEl.textContent = (cli && cli.correos) ? '📧 Para: ' + cli.correos : '📧 Sin correos en la BD — agrégalos en 👥 Clientes para tenerlos a la mano';
+  } catch(_) {}
+  openModal('modal-cnu-correo');
+  cnuCorreoRegenerar();
+}
+async function cnuCorreoRegenerar() {
+  const c = _cnuCorreoCli; if (!c) return;
+  const ta = document.getElementById('cnucor-texto');
+  ta.value = '⏳ Claude está redactando el correo según los días de mora…';
+  const lines = c.facturas.map(f => '  • Factura #' + f.numero + ' | Vence: ' + f.fecha_vencimiento + ' | ' + f.desc + ' | Saldo: ' + _cnuFmt(f.saldo) + ' COP').join('\n');
+  const mora = c.moraMax;
+  const tono = mora <= 0
+    ? 'amable y preventivo, recordando cordialmente el próximo vencimiento como un favor al cliente'
+    : mora <= 15
+    ? 'conciliador y respetuoso, entendiendo que pueden existir demoras administrativas y solicitando confirmación de pago'
+    : mora <= 30
+    ? 'conciliador pero directo, expresando interés en encontrar una solución conjunta y solicitando una fecha de compromiso de pago'
+    : 'conciliador y profesional, reconociendo la relación comercial, expresando disposición a acordar un plan de pagos y solicitando contacto para resolver juntos la situación';
+  const prompt = 'Redacta un correo de cobro de cartera en español colombiano para la empresa ' + c.empresa + ' (NIT: ' + (c.nit || '') + ').\n\nRemitente: E&G ENERGY GROUP SAS\n\nFacturas pendientes:\n' + lines + '\n\nTotal adeudado: ' + _cnuFmt(c.total) + ' COP\nMayor mora: ' + mora + ' días\n\nTono: ' + tono + '\n\nReglas estrictas:\n1. Primera línea: "Asunto: [texto del asunto]"\n2. Línea en blanco\n3. Cuerpo del correo (máximo 180 palabras)\n4. Cierre:\n   Cordialmente,\n   Área de Cartera\n   E&G ENERGY GROUP SAS\n5. Sin asteriscos, negritas ni formato especial — solo texto plano\n6. Saludo genérico (no poner nombre de contacto del cliente)\n7. Incluir en el cuerpo la lista de facturas con sus montos\n8. NUNCA mencionar cobro jurídico, acciones legales, demandas ni consecuencias negativas\n9. Mostrar disposición a dialogar y encontrar soluciones\n10. Mantener la relación comercial como prioridad';
+  try {
+    const url = getClaudeProxyURL();
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': (/script\.google\.com/i.test(url) ? 'text/plain;charset=utf-8' : 'application/json') },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 700, messages: [{ role: 'user', content: prompt }], secret: _proxySecret() }),
+      redirect: 'follow'
+    });
+    const data = await resp.json();
+    const txt = (data && data.content && data.content[0] && data.content[0].text) || '';
+    if (!txt) throw new Error((data && data.error && (data.error.message || data.error)) || 'la IA no devolvió texto');
+    ta.value = txt.trim();
+  } catch(e) { ta.value = '❌ No se pudo generar: ' + e.message + '\n\nInténtalo de nuevo con 🔄 o escribe el correo a mano aquí mismo.'; }
+}
+function cnuCorreoCopiar() {
+  const ta = document.getElementById('cnucor-texto');
+  ta.select(); ta.setSelectionRange(0, 999999);
+  try { navigator.clipboard.writeText(ta.value); } catch(_) { try { document.execCommand('copy'); } catch(__) {} }
+  showToast('📋 Correo copiado — pégalo en Outlook/Gmail y envíalo', 'success');
+}
+// ── 📄 Cuenta de cobro (consecutivo COMPARTIDO en cartera_config + jsPDF) ──
+let _cnuComLista = null;
+let _ccBenefs = null;
+let _ccLogoImg = null;
+async function _ccConfigGet(clave) {
+  const r = await sbCartera('GET', 'cartera_config?clave=eq.' + clave + '&select=valor');
+  return (r && r[0] && r[0].valor) || {};
+}
+function _ccLogoCargar() {
+  if (_ccLogoImg) return Promise.resolve(_ccLogoImg);
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => { _ccLogoImg = img; resolve(img); };
+    img.onerror = () => resolve(null);
+    img.src = 'libs/logo-eyg.png';
+  });
+}
+function cnuCCDesdeCom(i) { const e = (_cnuComLista || [])[i]; if (e) cnuCCAbrir(e[0], e[1].total); }
+async function cnuCCAbrir(vendedor, total) {
+  ['cnucc-id','cnucc-tel','cnucc-dir','cnucc-banco','cnucc-cuenta'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cnucc-nombre').value = vendedor || '';
+  document.getElementById('cnucc-ciudad').value = 'Bogotá';
+  document.getElementById('cnucc-fecha').value = _cnuHoy();
+  document.getElementById('cnucc-base').value = Math.round(total || 0);
+  document.getElementById('cnucc-concepto').value = 'COMISIONES COMERCIALES|11';
+  document.getElementById('cnucc-ica-on').checked = false;
+  document.getElementById('cnucc-consecutivo').value = '…';
+  cnuCCConcepto();
+  openModal('modal-cnu-cc');
+  try {
+    const cc = await _ccConfigGet('cuenta_cobro');
+    const anio = parseInt(cc.anio) || 2026, seq = parseInt(cc.seq) || 10;
+    document.getElementById('cnucc-consecutivo').value = anio + '-' + String(seq).padStart(2, '0');
+  } catch(_) { document.getElementById('cnucc-consecutivo').value = '2026-10'; }
+  try {
+    _ccBenefs = await _ccConfigGet('beneficiarios');
+    const b = _ccBenefs[(vendedor || '').trim().toUpperCase()];
+    if (b) {
+      if (b.nombre) document.getElementById('cnucc-nombre').value = b.nombre;
+      document.getElementById('cnucc-id').value = b.id || '';
+      document.getElementById('cnucc-tel').value = b.tel || '';
+      document.getElementById('cnucc-dir').value = b.dir || '';
+      document.getElementById('cnucc-banco').value = b.banco || '';
+      document.getElementById('cnucc-cuenta').value = b.cuenta || '';
+      if (b.ciudad) document.getElementById('cnucc-ciudad').value = b.ciudad;
+    }
+  } catch(_) { _ccBenefs = {}; }
+}
+function cnuCCConcepto() {
+  const pct = parseFloat((document.getElementById('cnucc-concepto').value || '').split('|')[1] || '0');
+  document.getElementById('cnucc-pct').value = pct;
+  cnuCCRecalc();
+}
+function cnuCCDatos() {
+  const base = Math.round(parseFloat(document.getElementById('cnucc-base').value) || 0);
+  const retePct = parseFloat(document.getElementById('cnucc-pct').value) || 0;
+  const rete = Math.round(base * retePct / 100);
+  let reteica = 0, icaPct = 0;
+  if (document.getElementById('cnucc-ica-on').checked) {
+    icaPct = parseFloat(document.getElementById('cnucc-ica-pct').value) || 0;
+    reteica = Math.round(base * icaPct / 1000);
+  }
+  return { base, retePct, rete, icaPct, reteica, neto: base - rete - reteica };
+}
+function cnuCCRecalc() {
+  const d = cnuCCDatos();
+  let html = '<div style="display:flex;justify-content:space-between;padding:3px 0;"><span>Valor base</span><b>' + _cnuFmt(d.base) + '</b></div>' +
+    '<div style="display:flex;justify-content:space-between;padding:3px 0;color:#f87171;"><span>(–) Retención ' + d.retePct + '%</span><b>' + _cnuFmt(d.rete) + '</b></div>';
+  if (d.reteica > 0) html += '<div style="display:flex;justify-content:space-between;padding:3px 0;color:#f87171;"><span>(–) ReteICA ' + d.icaPct + '‰</span><b>' + _cnuFmt(d.reteica) + '</b></div>';
+  html += '<div style="display:flex;justify-content:space-between;padding:8px 0 2px;margin-top:6px;border-top:1px solid rgba(255,255,255,.2);font-size:14px;"><span style="font-weight:800;">NETO A PAGAR</span><b style="color:#86efac;">' + _cnuFmt(d.neto) + '</b></div>';
+  document.getElementById('cnucc-resumen').innerHTML = html;
+}
+function _cnuLetras(n) {
+  n = Math.round(n);
+  if (n === 0) return 'CERO';
+  if (n < 0) return 'MENOS ' + _cnuLetras(-n);
+  const UNI = ['','UNO','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE','VEINTE'];
+  const DEC = ['','','','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
+  const CEN = ['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
+  function seccion(num) {
+    if (num === 100) return 'CIEN';
+    let s = '';
+    const c = Math.floor(num / 100), r = num % 100;
+    if (c) s += CEN[c] + ' ';
+    if (r <= 20) s += UNI[r];
+    else if (r < 30) s += (r === 20 ? 'VEINTE' : 'VEINTI' + UNI[r % 10]);
+    else { const dd = Math.floor(r / 10), u = r % 10; s += DEC[dd] + (u ? ' Y ' + UNI[u] : ''); }
+    return s.trim();
+  }
+  function miles(num) {
+    const m = Math.floor(num / 1000), r = num % 1000;
+    let s = '';
+    if (m) s += (m === 1 ? 'MIL' : seccion(m) + ' MIL');
+    if (r) s += (s ? ' ' : '') + seccion(r);
+    return s;
+  }
+  function millones(num) {
+    const mi = Math.floor(num / 1000000), r = num % 1000000;
+    let s = '';
+    if (mi) s += (mi === 1 ? 'UN MILLÓN' : miles(mi) + ' MILLONES');
+    if (r) s += (s ? ' ' : '') + miles(r);
+    return s;
+  }
+  return millones(n).trim();
+}
+function _cnuCCFechaTexto() {
+  const MES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const ciudad = (document.getElementById('cnucc-ciudad').value || '').trim();
+  const f = document.getElementById('cnucc-fecha').value;
+  let t = f;
+  if (f) { const p = f.split('-'); t = parseInt(p[2]) + ' de ' + MES[parseInt(p[1]) - 1] + ' de ' + p[0]; }
+  return (ciudad ? ciudad + ', ' : '') + t;
+}
+async function cnuCCPdf() {
+  const nombre = (document.getElementById('cnucc-nombre').value || '').trim();
+  const idBenef = (document.getElementById('cnucc-id').value || '').trim();
+  if (!nombre || !idBenef) { showToast('Completa el nombre y la C.C./NIT del beneficiario.', 'error'); return; }
+  if (!window.jspdf || !window.jspdf.jsPDF) { showToast('No cargó el generador de PDF (¿sin internet?). Recarga la página.', 'error'); return; }
+  const btn = document.getElementById('cnucc-btn'); btn.disabled = true;
+  const consecutivo = (document.getElementById('cnucc-consecutivo').value || '').trim();
+  const logo = await _ccLogoCargar();
+  const d = cnuCCDatos();
+  const conceptoTxt = document.getElementById('cnucc-concepto').value.split('|')[0];
+  const banco = (document.getElementById('cnucc-banco').value || '').trim();
+  const cuenta = (document.getElementById('cnucc-cuenta').value || '').trim();
+  const tel = (document.getElementById('cnucc-tel').value || '').trim();
+  const dir = (document.getElementById('cnucc-dir').value || '').trim();
+  const NAVY = [15,43,91], GREEN = [46,170,74], GOLD = [232,160,32], DARK = [30,41,59];
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210;
+  doc.setFillColor(...NAVY); doc.rect(0, 0, W, 30, 'F');
+  doc.setFillColor(...GREEN); doc.rect(0, 30, W, 1.6, 'F');
+  doc.setFillColor(...GOLD); doc.rect(0, 31.6, W, 0.8, 'F');
+  if (logo && logo.naturalWidth) {
+    const hLogo = 18, wLogo = Math.min(46, hLogo * (logo.naturalWidth / logo.naturalHeight));
+    try { doc.addImage(logo, 'PNG', 12, 6, wLogo, hLogo); } catch(_) {}
+  }
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold'); doc.setFontSize(20);
+  doc.text('CUENTA DE COBRO', W/2, 15, { align: 'center' });
+  doc.setFontSize(10); doc.setFont('helvetica','normal');
+  doc.text('E&G ENERGY GROUP SAS', W/2, 23, { align: 'center' });
+  doc.setTextColor(...DARK);
+  if (consecutivo) { doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text('No. ' + consecutivo, W - 18, 42, { align: 'right' }); }
+  doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
+  doc.text(_cnuCCFechaTexto(), W - 18, 49, { align: 'right' });
+  let y = 66;
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(...NAVY);
+  doc.text('E&G ENERGY GROUP SAS   NIT 900.745.984-4', W/2, y, { align: 'center' });
+  y += 9;
+  doc.setTextColor(...GOLD); doc.setFontSize(11);
+  doc.text('DEBE A', W/2, y, { align: 'center' });
+  y += 9;
+  doc.setTextColor(...DARK); doc.setFontSize(12);
+  doc.text(nombre.toUpperCase() + '   C.C./NIT ' + idBenef, W/2, y, { align: 'center' });
+  y += 16;
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(...NAVY);
+  doc.text('CONCEPTO:', 22, y);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...DARK);
+  doc.text(conceptoTxt, 47, y);
+  y += 10;
+  const x0 = 22, xw = W - 44, rh = 9;
+  const filas = [['Valor base', _cnuFmt(d.base)], ['(–) Retención ' + d.retePct + '%', '-' + _cnuFmt(d.rete)]];
+  if (d.reteica > 0) filas.push(['(–) ReteICA ' + d.icaPct + '‰', '-' + _cnuFmt(d.reteica)]);
+  doc.setDrawColor(210,215,222); doc.setLineWidth(0.2);
+  filas.forEach((f, i) => {
+    doc.setFillColor(i % 2 ? 245 : 240, i % 2 ? 247 : 244, i % 2 ? 250 : 248);
+    doc.rect(x0, y, xw, rh, 'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(10.5); doc.setTextColor(...DARK);
+    doc.text(f[0], x0 + 4, y + 6);
+    doc.text(f[1], x0 + xw - 4, y + 6, { align: 'right' });
+    y += rh;
+  });
+  doc.setFillColor(...NAVY); doc.rect(x0, y, xw, rh + 1.5, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(11.5); doc.setTextColor(255,255,255);
+  doc.text('NETO A PAGAR', x0 + 4, y + 7);
+  doc.setTextColor(...GOLD);
+  doc.text(_cnuFmt(d.neto), x0 + xw - 4, y + 7, { align: 'right' });
+  y += rh + 1.5;
+  y += 14;
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(...NAVY);
+  doc.text('LA SUMA DE:', 22, y);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...DARK);
+  doc.text(doc.splitTextToSize(_cnuLetras(d.neto) + ' PESOS M/CTE ($' + d.neto.toLocaleString('es-CO') + ')', W - 44 - 30), 52, y);
+  if (banco || cuenta) {
+    y += 16;
+    doc.setFont('helvetica','bold'); doc.setTextColor(...GREEN); doc.setFontSize(10);
+    doc.text('Favor consignar a:', 22, y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(...DARK);
+    doc.text(banco + (banco && cuenta ? '  —  ' : '') + (cuenta ? 'N° ' + cuenta : ''), 60, y);
+  }
+  y = Math.max(y + 34, 235);
+  doc.setDrawColor(...NAVY); doc.setLineWidth(0.4);
+  doc.line(22, y, 95, y);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(...DARK);
+  doc.text(nombre.toUpperCase(), 22, y + 6);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(90,100,115);
+  doc.text('C.C./NIT ' + idBenef, 22, y + 11);
+  if (tel) doc.text('Tel: ' + tel, 22, y + 16);
+  if (dir) doc.text(dir, 22, y + (tel ? 21 : 16));
+  doc.setFillColor(...NAVY); doc.rect(0, 287, W, 10, 'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.text('E&G ENERGY GROUP SAS  ·  NIT 900.745.984-4', W/2, 293, { align: 'center' });
+  const safe = nombre.replace(/[^a-zA-Z0-9]/g, '_');
+  const cons = consecutivo ? consecutivo.replace(/[^0-9A-Za-z-]/g, '') + '_' : '';
+  doc.save('Cuenta_de_cobro_' + cons + safe + '.pdf');
+  // Avanzar el consecutivo COMPARTIDO y guardar el beneficiario en la nube
+  try {
+    const m = consecutivo.match(/(\d{4})\s*-\s*(\d+)/);
+    if (m) await sbCartera('PATCH', 'cartera_config?clave=eq.cuenta_cobro', { valor: { anio: parseInt(m[1]), seq: parseInt(m[2]) + 1 }, actualizado_en: new Date().toISOString() });
+  } catch(_) { showToast('⚠️ El PDF se descargó pero no pude avanzar el consecutivo en la nube — revísalo la próxima vez.', 'info'); }
+  try {
+    _ccBenefs = _ccBenefs || {};
+    _ccBenefs[nombre.trim().toUpperCase()] = { nombre, id: idBenef, tel, dir, banco, cuenta, ciudad: (document.getElementById('cnucc-ciudad').value || '').trim() };
+    await sbCartera('PATCH', 'cartera_config?clave=eq.beneficiarios', { valor: _ccBenefs, actualizado_en: new Date().toISOString() });
+  } catch(_) {}
+  showToast('📄 Cuenta de cobro ' + consecutivo + ' descargada — consecutivo avanzado para todo el equipo', 'success');
   btn.disabled = false;
 }
 // ── Amarre con la cadena de cotizaciones ──

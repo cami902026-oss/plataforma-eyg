@@ -134,8 +134,36 @@ def load_cotizaciones_supabase():
 
 
 def fetch_cartera_facturacion():
-    """Lee TODAS las facturas (pagadas y pendientes) del libro de cartera,
-    a través del túnel del Agente de Cartera (data/cartera_url.json)."""
+    """Lee TODAS las facturas (pagadas y pendientes) de la Cartera en la Nube
+    (Supabase, 2026-07-22). Si Supabase falla, cae al túnel viejo del Agente."""
+    try:
+        supa = 'https://juprjevxkcitqpsnemto.supabase.co/rest/v1'
+        key = 'sb_publishable_zZrmpmvqbz4AJCGHRHQ8Xw_8tnf5ObM'
+        req = urllib.request.Request(
+            supa + '/cartera_facturas?select=*&limit=10000',
+            headers={'apikey': key, 'Authorization': 'Bearer ' + key})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            rows = json.loads(resp.read())
+        facturas = [{
+            'empresa': f.get('cliente_nombre') or '',
+            'nit': f.get('nit') or '',
+            'fecha_facturacion': f.get('fecha_facturacion') or '',
+            'factura': f.get('numero') or '',
+            'oc': f.get('oc') or '',
+            'fecha_vencimiento': f.get('fecha_vencimiento') or '',
+            'fecha_pago': f.get('fecha_pago') or '',
+            'monto_total': f.get('monto_total') or 0,
+            'valor_recibido': f.get('valor_recibido') or 0,
+            'saldo': f.get('saldo') or 0,
+            'estado': f.get('estado') or '',
+            'estado_financiero': f.get('estado_financiero') or '',
+            'vendedor': f.get('vendedor') or '',
+        } for f in rows]
+        if facturas:
+            print(f'   Cartera (Supabase): {len(facturas)} facturas')
+            return facturas
+    except Exception as e:
+        print(f'⚠️  Cartera en Supabase no disponible ({e}) — intento el túnel viejo…')
     try:
         with open(os.path.join(REPO_ROOT, 'data', 'cartera_url.json'), encoding='utf-8') as f:
             url = (json.load(f).get('url') or '').rstrip('/')
