@@ -2349,5 +2349,52 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-17T22:46:45.626Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1784682387079",
+    "num": "ODC4544",
+    "cliente": "SAR ENERGY",
+    "desc": "Cotización LM1740 · 11 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-30",
+    "valor": 1902810,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "2026-07-21",
+      "estado": "recibida"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-30",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-30",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-21",
+        "n": "",
+        "factura": "525"
+      }
+    ],
+    "cotizacionId": "LM1740",
+    "createdAt": "2026-07-22T01:06:27.079Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-22T01:06:27.079Z",
+    "updatedBy": "andrea"
   }
 ]
