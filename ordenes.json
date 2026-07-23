@@ -4866,5 +4866,52 @@
     "createdBy": "alexandra",
     "updatedAt": "2026-07-23T19:44:27.940Z",
     "updatedBy": "alexandra"
+  },
+  {
+    "id": "poc_1784836135127",
+    "num": "350001388",
+    "cliente": "SAINT AUBIN",
+    "desc": "Cotización LM1782 · 5 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-15",
+    "valor": 10009260.17,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1782",
+    "createdAt": "2026-07-23T19:48:55.127Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-23T19:48:55.127Z",
+    "updatedBy": "alexandra"
   }
 ]
