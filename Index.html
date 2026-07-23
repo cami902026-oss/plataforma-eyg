@@ -1084,7 +1084,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <button class="btn btn-secondary" id="cnu-tab-btn-meses" onclick="cnuTab('meses')" style="width:auto;font-size:13px;padding:9px 16px;">📅 Meses</button>
             <button class="btn btn-secondary" id="cnu-tab-btn-clientes" onclick="cnuTab('clientes')" style="width:auto;font-size:13px;padding:9px 16px;">👥 Clientes</button>
             <span style="flex:1;"></span>
-            <button class="btn btn-primary" onclick="cnuNuevaFactura()" style="width:auto;font-size:13px;padding:9px 16px;">➕ Nueva factura</button>
+            <button class="btn btn-primary" id="cnu-btn-nuevafact" onclick="cnuNuevaFactura()" style="width:auto;font-size:13px;padding:9px 16px;">➕ Nueva factura</button>
             <button class="btn btn-secondary" onclick="cnuCargar(true)" style="width:auto;font-size:13px;padding:9px 14px;" title="Vuelve a leer los datos de la nube">🔄 Actualizar</button>
             <span id="cnu-status" style="font-size:12px;color:var(--text-muted);"></span>
           </div>
@@ -1142,8 +1142,10 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                 <span style="flex:1;"></span>
                 <select id="cnu-pag-anio" onchange="cnuRenderPagos()" style="width:auto;padding:8px 12px;"></select>
                 <select id="cnu-pag-mes" onchange="cnuRenderPagos()" style="width:auto;padding:8px 12px;"></select>
+                <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);" title="Corte: la lista muestra solo pagos HASTA esta fecha, y el botón 📸 descarga la foto completa de la cartera a esa fecha">Corte <input type="date" id="cnu-pag-corte" onchange="cnuRenderPagos()" style="width:auto;padding:8px 12px;"></label>
                 <input type="text" id="cnu-pag-buscar" oninput="cnuRenderPagos()" placeholder="🔍 Cliente o factura…" style="width:190px;padding:8px 12px;">
                 <button class="btn btn-secondary" onclick="cnuExportPagos()" style="width:auto;font-size:12px;padding:8px 14px;">⬇️ Excel</button>
+                <button class="btn btn-secondary" onclick="cnuExportCorte()" title="Foto completa de la cartera a la fecha de corte: hoja RESUMEN por cliente + PAGADAS al corte + PENDIENTES al corte (ej: saldos pagados a 30 de junio)" style="width:auto;font-size:12px;padding:8px 14px;">📸 Excel corte</button>
               </div>
               <div id="cnu-pag-lista" style="overflow-x:auto;"></div>
             </div>
@@ -1155,7 +1157,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                 <div class="config-title" style="margin:0;">👥 Base de datos de clientes</div>
                 <span style="flex:1;"></span>
                 <input type="text" id="cnu-cli-buscar" oninput="cnuRenderClientes()" placeholder="🔍 Buscar…" style="width:200px;padding:8px 12px;">
-                <button class="btn btn-primary" onclick="cnuClienteEditar(null)" style="width:auto;font-size:12px;padding:8px 14px;">➕ Nuevo cliente</button>
+                <button class="btn btn-primary" id="cnu-btn-nuevocliente" onclick="cnuClienteEditar(null)" style="width:auto;font-size:12px;padding:8px 14px;">➕ Nuevo cliente</button>
               </div>
               <div id="cnu-cli-lista" style="overflow-x:auto;"></div>
             </div>
@@ -3256,8 +3258,10 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     </div>
     <div class="modal-body">
       <div id="cnun-lista" style="max-height:260px;overflow-y:auto;margin-bottom:12px;"></div>
-      <div class="form-group"><label>Nueva nota</label><textarea id="cnun-texto" rows="2" placeholder="Ej: Llamé, prometió pago el 30 de julio" style="width:100%;"></textarea></div>
-      <button class="btn btn-primary" onclick="cnuNotaGuardar()">💾 Guardar nota</button>
+      <div id="cnun-escritura">
+        <div class="form-group"><label>Nueva nota</label><textarea id="cnun-texto" rows="2" placeholder="Ej: Llamé, prometió pago el 30 de julio" style="width:100%;"></textarea></div>
+        <button class="btn btn-primary" onclick="cnuNotaGuardar()">💾 Guardar nota</button>
+      </div>
     </div>
   </div>
 </div>
@@ -7111,6 +7115,12 @@ async function cnuCargar(force) {
   }
 }
 function cnuRenderTodo() {
+  // v154: ocultar los botones de escritura fijos a quien es solo consulta (Nelsy)
+  try {
+    const _esc = _cnuPuedeEscribir();
+    const b1 = document.getElementById('cnu-btn-nuevafact'); if (b1) b1.style.display = _esc ? '' : 'none';
+    const b2 = document.getElementById('cnu-btn-nuevocliente'); if (b2) b2.style.display = _esc ? '' : 'none';
+  } catch(_) {}
   cnuRenderResumen(); cnuRenderLista(); cnuComMeses(); cnuRenderComisiones();
   try { cnuPagAnios(); cnuRenderPagos(); } catch(_){}
   try { carteraMesCargar(false); } catch(_){}
@@ -7134,11 +7144,13 @@ function cnuPagAnios() {
 function _cnuPagFiltradas() {
   const anio = (document.getElementById('cnu-pag-anio') || {}).value || '';
   const mes = (document.getElementById('cnu-pag-mes') || {}).value || '';
+  const corte = (document.getElementById('cnu-pag-corte') || {}).value || '';   // v154: solo pagos HASTA esta fecha
   const q = ((document.getElementById('cnu-pag-buscar') || {}).value || '').toLowerCase().trim();
   return _cnuPagRows().filter(f => {
     const fp = String(f.fecha_pago);
     if (anio && fp.slice(0, 4) !== anio) return false;
     if (mes && fp.slice(5, 7) !== mes) return false;
+    if (corte && fp.slice(0, 10) > corte) return false;
     if (q && !(f.cliente_nombre.toLowerCase().includes(q) || String(f.numero || '').toLowerCase().includes(q) || (f.nit || '').includes(q))) return false;
     return true;
   }).sort((a, b) => String(b.fecha_pago).localeCompare(String(a.fecha_pago)));
@@ -7175,6 +7187,67 @@ function cnuExportPagos() {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Pagos');
   XLSX.writeFile(wb, 'Pagos_' + anio + '.xlsx');
+}
+// ── 📸 v154: Excel con FOTO COMPLETA de la cartera a una fecha de corte ─────────
+// 3 hojas: RESUMEN por cliente + PAGADAS al corte + PENDIENTES al corte.
+// Nota contable: los abonos parciales viven sobre la misma factura, así que si una
+// factura tuvo abonos antes Y después del corte, el saldo al corte es aproximado
+// (se usa el mejor dato disponible; se advierte en la hoja RESUMEN).
+function cnuExportCorte() {
+  if (!_cnuFacturas) { showToast('Primero espera a que cargue la cartera.', 'error'); return; }
+  let corte = (document.getElementById('cnu-pag-corte') || {}).value || '';
+  if (!corte) {
+    corte = (prompt('Fecha de corte (AAAA-MM-DD). Ej: 2026-06-30', new Date().toISOString().slice(0, 10)) || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(corte)) { if (corte) showToast('Fecha inválida — usa el formato AAAA-MM-DD.', 'error'); return; }
+    const el = document.getElementById('cnu-pag-corte'); if (el) el.value = corte;
+  }
+  const anulada = f => f.estado === 'ANULADA' || (f.estado_financiero || '') === 'ANULADA';
+  const univ = (_cnuFacturas || []).filter(f => !anulada(f) && f.fecha_facturacion && String(f.fecha_facturacion).slice(0, 10) <= corte);
+  if (!univ.length) { showToast('No hay facturas emitidas hasta ' + corte + '.', 'error'); return; }
+  const pagoAlCorte = f => f.fecha_pago && String(f.fecha_pago).slice(0, 10) <= corte && parseFloat(f.valor_recibido || 0) > 0;
+  // Saldo que se debía AL CORTE: pago posterior al corte → se debía el total;
+  // pago (o abono) hasta el corte → el saldo que quede hoy; sin pago → saldo actual.
+  const saldoAlCorte = f => {
+    const fp = f.fecha_pago ? String(f.fecha_pago).slice(0, 10) : '';
+    if (fp && fp > corte) return parseFloat(f.monto_total || 0);
+    return parseFloat(f.saldo || 0);
+  };
+  const moraAlCorte = f => {
+    if (!f.fecha_vencimiento) return '';
+    const d = Math.round((new Date(corte + 'T12:00:00') - new Date(String(f.fecha_vencimiento).slice(0, 10) + 'T12:00:00')) / 86400000);
+    return d > 0 ? d : 0;
+  };
+  const pagadas = univ.filter(pagoAlCorte);
+  const pendientes = univ.filter(f => saldoAlCorte(f) > 0);
+  const hojaPag = pagadas.sort((a, b) => String(b.fecha_pago).localeCompare(String(a.fecha_pago))).map(f => ({
+    'CLIENTE': f.cliente_nombre, 'NIT': f.nit || '', 'FACTURA': f.numero || '', 'EMITIDA': f.fecha_facturacion || '',
+    'FECHA PAGO': f.fecha_pago || '', 'TOTAL': parseFloat(f.monto_total || 0), 'RECIBIDO': parseFloat(f.valor_recibido || 0),
+    'SALDO HOY': parseFloat(f.saldo || 0), 'VENDEDOR': f.vendedor || ''
+  }));
+  const hojaPend = pendientes.sort((a, b) => saldoAlCorte(b) - saldoAlCorte(a)).map(f => ({
+    'CLIENTE': f.cliente_nombre, 'NIT': f.nit || '', 'FACTURA': f.numero || '', 'EMITIDA': f.fecha_facturacion || '',
+    'VENCE': f.fecha_vencimiento || '', 'DÍAS MORA AL CORTE': moraAlCorte(f), 'TOTAL': parseFloat(f.monto_total || 0),
+    'SALDO AL CORTE': saldoAlCorte(f), 'ESTADO HOY': (f.fecha_pago && parseFloat(f.saldo || 0) <= 0) ? ('PAGADA ' + f.fecha_pago) : 'PENDIENTE',
+    'VENDEDOR': f.vendedor || ''
+  }));
+  const porCli = {};
+  univ.forEach(f => {
+    const k = f.cliente_nombre || '—';
+    if (!porCli[k]) porCli[k] = { 'CLIENTE': k, 'NIT': f.nit || '', 'FACTURADO AL CORTE': 0, 'PAGADO AL CORTE': 0, 'SALDO AL CORTE': 0, 'FACTURAS': 0 };
+    porCli[k]['FACTURADO AL CORTE'] += parseFloat(f.monto_total || 0);
+    if (pagoAlCorte(f)) porCli[k]['PAGADO AL CORTE'] += parseFloat(f.valor_recibido || 0);
+    porCli[k]['SALDO AL CORTE'] += saldoAlCorte(f);
+    porCli[k]['FACTURAS']++;
+  });
+  const hojaRes = Object.values(porCli).sort((a, b) => b['SALDO AL CORTE'] - a['SALDO AL CORTE']);
+  hojaRes.push({ 'CLIENTE': 'TOTAL GENERAL', 'NIT': '', 'FACTURADO AL CORTE': hojaRes.reduce((s, r) => s + r['FACTURADO AL CORTE'], 0), 'PAGADO AL CORTE': hojaRes.reduce((s, r) => s + r['PAGADO AL CORTE'], 0), 'SALDO AL CORTE': hojaRes.reduce((s, r) => s + r['SALDO AL CORTE'], 0), 'FACTURAS': hojaRes.reduce((s, r) => s + r['FACTURAS'], 0) });
+  hojaRes.push({ 'CLIENTE': 'Corte a ' + corte + ' · Nota: si una factura tuvo abonos antes y después del corte, su saldo al corte es aproximado.', 'NIT': '', 'FACTURADO AL CORTE': '', 'PAGADO AL CORTE': '', 'SALDO AL CORTE': '', 'FACTURAS': '' });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(hojaRes), 'RESUMEN al corte');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(hojaPag), 'PAGADAS al corte');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(hojaPend), 'PENDIENTES al corte');
+  XLSX.writeFile(wb, 'Cartera_Corte_' + corte + '.xlsx');
+  showToast('📸 Excel del corte a ' + corte + ' descargado (' + pagadas.length + ' pagadas · ' + pendientes.length + ' pendientes).', 'success');
 }
 function cnuTab(t) {
   ['cartera','comisiones','pagos','meses','clientes'].forEach(x => {
@@ -7251,13 +7324,13 @@ function cnuRenderLista() {
       '<td style="' + td + 'text-align:right;color:var(--text-muted);font-size:11px;">' + _cnuFmt(f.monto_antes_iva) + '</td>' +
       '<td style="' + td + 'text-align:right;font-size:11px;">' + _cnuFmt(f.monto_total) + '</td>' +
       '<td style="' + td + 'text-align:right;font-weight:600;">' + _cnuFmt(f.saldo) + '</td>' +
-      '<td style="' + td + 'text-align:right;white-space:nowrap;"><button class="btn-sm" onclick="event.stopPropagation();cnuPago(' + f.id + ')" title="Registrar pago o abono" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700;">💰 Pago</button>' +
+      '<td style="' + td + 'text-align:right;white-space:nowrap;">' + (_cnuPuedeEscribir() ? '<button class="btn-sm" onclick="event.stopPropagation();cnuPago(' + f.id + ')" title="Registrar pago o abono" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700;">💰 Pago</button>' : '') +
       (_cnuEsAdminCartera() ? ' <button class="btn-sm" onclick="event.stopPropagation();cnuFactEditar(' + f.id + ')" title="Editar, anular o borrar esta factura" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:#fbbf24;">✏️</button>' : '') + '</td></tr>';
     }).join('');
     return '<div style="border:1px solid rgba(255,255,255,.09);border-left:4px solid ' + cc.color + ';border-radius:10px;margin-bottom:10px;overflow:hidden;">' +
       '<div onclick="const d=document.getElementById(\'cnu-emp-' + i + '\');d.style.display=d.style.display===\'none\'?\'\':\'none\';" style="display:flex;gap:10px;align-items:center;padding:12px 14px;cursor:pointer;flex-wrap:wrap;">' +
         '<div style="flex:1;min-width:180px;"><b>' + c.empresa + '</b><div style="font-size:11px;color:var(--text-muted);">NIT ' + (c.nit || '—') + (c.vendedor ? ' · ' + c.vendedor : '') + ' · ' + c.facturas.length + ' factura' + (c.facturas.length !== 1 ? 's' : '') + '</div></div>' +
-        '<button class="btn-sm" onclick="event.stopPropagation();cnuLoteIdx(' + i + ')" title="Pago en lote: repartir una consignación entre varias facturas" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.45);color:#60a5fa;">💳 Lote</button>' +
+        (_cnuPuedeEscribir() ? '<button class="btn-sm" onclick="event.stopPropagation();cnuLoteIdx(' + i + ')" title="Pago en lote: repartir una consignación entre varias facturas" style="background:rgba(96,165,250,.15);border:1px solid rgba(96,165,250,.45);color:#60a5fa;">💳 Lote</button>' : '') +
         '<button class="btn-sm" onclick="event.stopPropagation();cnuCorreoIdx(' + i + ')" title="Redactar correo de cobro con IA según la mora (para copiar y enviar)" style="background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.45);color:#c4b5fd;">✉️</button>' +
         '<button class="btn-sm" onclick="event.stopPropagation();cnuHistIdx(' + i + ')" title="Ver TODAS las facturas del cliente, incluidas las pagadas con su fecha de pago" style="background:rgba(148,163,184,.15);border:1px solid rgba(148,163,184,.4);color:#cbd5e1;">📚</button>' +
         '<button class="btn-sm" onclick="event.stopPropagation();cnuNotasIdx(' + i + ')" title="Notas de seguimiento de cobro" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:#fbbf24;">📝</button>' +
@@ -7303,7 +7376,7 @@ function cnuRenderComisiones() {
     const nombre = e[0], v = e[1];
     return '<div style="border:1px solid rgba(255,255,255,.09);border-radius:10px;margin-bottom:10px;overflow:hidden;">' +
       '<div onclick="const d=document.getElementById(\'cnu-com-' + i + '\');d.style.display=d.style.display===\'none\'?\'\':\'none\';" style="display:flex;gap:10px;align-items:center;padding:12px 14px;cursor:pointer;">' +
-      '<b style="flex:1;">🧑‍💼 ' + nombre + '</b><button class="btn-sm" onclick="event.stopPropagation();cnuCCDesdeCom(' + i + ')" title="Generar cuenta de cobro en PDF con consecutivo compartido" style="background:rgba(46,170,74,.18);border:1px solid rgba(46,170,74,.5);color:#86efac;">📄 Cta cobro</button><span style="font-size:11px;color:var(--text-muted);">' + v.filas.length + ' factura' + (v.filas.length !== 1 ? 's' : '') + '</span><b style="color:#86efac;">' + _cnuFmt(v.total) + '</b></div>' +
+      '<b style="flex:1;">🧑‍💼 ' + nombre + '</b>' + (_cnuPuedeEscribir() ? '<button class="btn-sm" onclick="event.stopPropagation();cnuCCDesdeCom(' + i + ')" title="Generar cuenta de cobro en PDF con consecutivo compartido" style="background:rgba(46,170,74,.18);border:1px solid rgba(46,170,74,.5);color:#86efac;">📄 Cta cobro</button>' : '') + '<span style="font-size:11px;color:var(--text-muted);">' + v.filas.length + ' factura' + (v.filas.length !== 1 ? 's' : '') + '</span><b style="color:#86efac;">' + _cnuFmt(v.total) + '</b></div>' +
       '<div id="cnu-com-' + i + '" style="display:none;overflow-x:auto;padding:0 6px 8px;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:560px;">' +
       '<thead><tr><th style="' + th + '">EMPRESA</th><th style="' + th + '">FACTURA</th><th style="' + th + '">MES</th><th style="' + th + '">QUINCENA</th><th style="' + th + '">RETEICA</th><th style="' + th + 'text-align:right;">COMISIÓN</th></tr></thead><tbody>' +
       v.filas.map(f => '<tr><td style="' + td + '">' + f.cliente_nombre + '</td><td style="' + td + '">#' + (f.numero || '—') + '</td><td style="' + td + 'font-size:11px;">' + (f.mes_pago || '—') + '</td><td style="' + td + 'font-size:11px;">' + (_cnuQuin(f) === 'antes' ? 'Primeros 15' : 'Después del 15') + '</td><td style="' + td + 'font-size:11px;">' + (f.reteica || 'NO') + '</td><td style="' + td + 'text-align:right;font-weight:600;">' + _cnuFmt(f.comision) + '</td></tr>').join('') +
@@ -7363,6 +7436,7 @@ async function cnuCargarClientes(force) {
 }
 // ── Nueva factura ──
 async function cnuNuevaFactura(prefill) {
+  if (!_cnuPuedeEscribir()) { showToast('Tu usuario es de consulta en Cartera — los cambios los registran Andrea o Alberto.', 'error'); return; }
   prefill = prefill || {};
   try { await cnuCargarClientes(); } catch(e) { showToast('Sin conexión con la nube: ' + e.message, 'error'); return; }
   _cnuFactEdit = null;
@@ -7417,6 +7491,7 @@ function cnuFactComision() {
   if (antes && pct) document.getElementById('cnuf-comision').value = (antes * pct / 100).toFixed(2);
 }
 async function cnuFactGuardar() {
+  if (!_cnuPuedeEscribir()) { showToast('Tu usuario es de consulta en Cartera — los cambios los registran Andrea o Alberto.', 'error'); return; }
   const c = (_cnuClientes || []).find(x => String(x.id) === document.getElementById('cnuf-cliente').value);
   const numero = document.getElementById('cnuf-numero').value.trim();
   const total = parseFloat(document.getElementById('cnuf-total').value) || 0;
@@ -7487,6 +7562,9 @@ async function cnuFactGuardar() {
 }
 // ── ✏️ Editar / 🚫 anular / 🗑️ borrar facturas históricas (solo andrea, 2026-07-22) ──
 function _cnuEsAdminCartera() { return !!(currentUser && currentUser.email === 'andrea'); }
+// v154: escritura en Cartera = SOLO Andrea y Alberto. Nelsy queda de consulta: ve todas
+// las pestañas, descarga los Excel y LEE las notas, pero sin botones que modifiquen.
+function _cnuPuedeEscribir() { return !!(currentUser && (currentUser.email === 'andrea' || currentUser.email === 'alberto')); }
 function _cnuNotaAuto(clienteId, texto) {
   if (!clienteId) return;
   sbCartera('POST', 'cartera_notas', [{ cliente_id: clienteId, nota: texto, usuario: (currentUser && currentUser.email) || '' }]).catch(() => {});
@@ -7555,6 +7633,7 @@ async function cnuFactBorrar() {
 }
 // ── Registrar pago / abono ──
 function cnuPago(id) {
+  if (!_cnuPuedeEscribir()) { showToast('Tu usuario es de consulta en Cartera — los pagos los registran Andrea o Alberto.', 'error'); return; }
   const f = (_cnuFacturas || []).find(x => x.id === id);
   if (!f) return;
   _cnuPagoFact = f;
@@ -7575,6 +7654,7 @@ function cnuPagoCalc() {
     : '🔸 Abono parcial — quedaría un saldo de ' + _cnuFmt(nuevo);
 }
 async function cnuPagoGuardar() {
+  if (!_cnuPuedeEscribir()) { showToast('Tu usuario es de consulta en Cartera.', 'error'); return; }
   if (!_cnuPagoFact) return;
   const v = parseFloat(document.getElementById('cnup-valor').value) || 0;
   const fecha = document.getElementById('cnup-fecha').value;
@@ -7614,10 +7694,11 @@ async function cnuRenderClientes() {
   cont.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:760px;">' +
     '<thead><tr><th style="' + th + '">CLIENTE</th><th style="' + th + '">NIT</th><th style="' + th + '">DÍAS</th><th style="' + th + '">VENDEDOR</th><th style="' + th + '">%</th><th style="' + th + '">CORREOS DE CARTERA</th><th style="' + th + '">CONTACTO</th><th style="' + th + '"></th></tr></thead><tbody>' +
     lista.map(c => '<tr><td style="' + td + 'font-weight:600;">' + c.nombre + '</td><td style="' + td + '">' + (c.nit || '—') + '</td><td style="' + td + '">' + (c.dias_pago || '—') + '</td><td style="' + td + '">' + (c.vendedor || '—') + '</td><td style="' + td + '">' + (c.pct_comision != null ? c.pct_comision + '%' : '—') + '</td><td style="' + td + 'font-size:11px;color:' + (c.correos ? 'inherit' : '#fb923c') + ';">' + (c.correos || 'sin correo aún') + '</td><td style="' + td + 'font-size:11px;">' + (c.contacto || '') + (c.telefono ? ' · ' + c.telefono : '') + '</td>' +
-    '<td style="' + td + 'white-space:nowrap;"><button class="btn-sm" onclick="cnuClienteEditar(' + c.id + ')" style="background:rgba(26,58,143,.35);border:1px solid #1A3A8F;color:#90cdf4;">✏️</button> <button class="btn-sm" onclick="cnuHistorial(' + c.id + ', ' + JSON.stringify(c.nombre).replace(/"/g, '&quot;') + ')" title="Historial completo de facturas (pagadas y pendientes)" style="background:rgba(148,163,184,.15);border:1px solid rgba(148,163,184,.4);color:#cbd5e1;">📚</button></td></tr>').join('') +
+    '<td style="' + td + 'white-space:nowrap;">' + (_cnuPuedeEscribir() ? '<button class="btn-sm" onclick="cnuClienteEditar(' + c.id + ')" style="background:rgba(26,58,143,.35);border:1px solid #1A3A8F;color:#90cdf4;">✏️</button> ' : '') + '<button class="btn-sm" onclick="cnuHistorial(' + c.id + ', ' + JSON.stringify(c.nombre).replace(/"/g, '&quot;') + ')" title="Historial completo de facturas (pagadas y pendientes)" style="background:rgba(148,163,184,.15);border:1px solid rgba(148,163,184,.4);color:#cbd5e1;">📚</button></td></tr>').join('') +
     '</tbody></table>';
 }
 async function cnuClienteEditar(id) {
+  if (!_cnuPuedeEscribir()) { showToast('Tu usuario es de consulta en Cartera — los clientes los administran Andrea o Alberto.', 'error'); return; }
   try { await cnuCargarClientes(); } catch(_) {}
   _cnuCliEdit = id ? (_cnuClientes || []).find(c => c.id === id) : null;
   document.getElementById('cnuc-titulo').textContent = _cnuCliEdit ? '✏️ ' + _cnuCliEdit.nombre : '➕ Nuevo cliente';
@@ -7633,6 +7714,7 @@ async function cnuClienteEditar(id) {
   openModal('modal-cnu-cliente');
 }
 async function cnuClienteGuardar() {
+  if (!_cnuPuedeEscribir()) { showToast('Tu usuario es de consulta en Cartera.', 'error'); return; }
   const nombre = document.getElementById('cnuc-nombre').value.trim();
   if (!nombre) { showToast('Falta el nombre del cliente.', 'error'); return; }
   const fila = {
@@ -7671,6 +7753,8 @@ function cnuNotasIdx(i) {
 async function cnuNotas(clienteId, nombre) {
   _cnuNotaCli = { id: clienteId, nombre };
   document.getElementById('cnun-titulo').textContent = '📝 Notas — ' + nombre;
+  // v154: solo-consulta (Nelsy) puede LEER las notas; el cajón de escribir se oculta
+  try { const w = document.getElementById('cnun-escritura'); if (w) w.style.display = _cnuPuedeEscribir() ? '' : 'none'; } catch(_) {}
   document.getElementById('cnun-texto').value = '';
   const cont = document.getElementById('cnun-lista');
   cont.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">⏳ Cargando…</div>';
@@ -7685,6 +7769,7 @@ async function cnuNotas(clienteId, nombre) {
   } catch(e) { cont.innerHTML = '<div style="color:#fca5a5;font-size:12px;">Error: ' + e.message + '</div>'; }
 }
 async function cnuNotaGuardar() {
+  if (!_cnuPuedeEscribir()) { showToast('Tu usuario es de consulta en Cartera — puedes leer las notas pero no crear nuevas.', 'error'); return; }
   const texto = document.getElementById('cnun-texto').value.trim();
   if (!texto) { showToast('Escribe la nota.', 'error'); return; }
   if (!_cnuNotaCli || !_cnuNotaCli.id) { showToast('Este cliente no tiene ficha en la BD — créalo primero en 👥 Clientes.', 'error'); return; }
@@ -7705,6 +7790,7 @@ function cnuLoteIdx(i) {
   if (c) cnuLoteAbrir(c);
 }
 function cnuLoteAbrir(c) {
+  if (!_cnuPuedeEscribir()) { showToast('Tu usuario es de consulta en Cartera — los pagos los registran Andrea o Alberto.', 'error'); return; }
   _cnuLote = { cli: c, fs: [] };
   document.getElementById('cnul-titulo').textContent = '💳 Pago en lote — ' + c.empresa;
   document.getElementById('cnul-valor').value = '';
@@ -7794,6 +7880,7 @@ function cnuLoteBuscar() {
   }
 }
 async function cnuLoteAplicar() {
+  if (!_cnuPuedeEscribir()) { showToast('Tu usuario es de consulta en Cartera.', 'error'); return; }
   if (!_cnuLote) return;
   const msg = document.getElementById('cnul-msg');
   const checked = _cnuLote.fs.map((f, i) => ({ f, i })).filter(x => (document.getElementById('cnul-cb-' + x.i) || {}).checked);
@@ -7951,7 +8038,7 @@ function _ccLogoCargar() {
     img.src = 'libs/logo-eyg.png';
   });
 }
-function cnuCCDesdeCom(i) { const e = (_cnuComLista || [])[i]; if (e) cnuCCAbrir(e[0], e[1].total); }
+function cnuCCDesdeCom(i) { if (!_cnuPuedeEscribir()) { showToast('Tu usuario es de consulta en Cartera.', 'error'); return; } const e = (_cnuComLista || [])[i]; if (e) cnuCCAbrir(e[0], e[1].total); }
 async function cnuCCAbrir(vendedor, total) {
   ['cnucc-id','cnucc-tel','cnucc-dir','cnucc-banco','cnucc-cuenta'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('cnucc-nombre').value = vendedor || '';
