@@ -2766,6 +2766,14 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <input type="text" id="remi-search" placeholder="Buscar N°, cliente, OC, descripción..." oninput="remiRenderLista()" style="flex:1;min-width:200px;">
             <input type="date" id="remi-desde" onchange="remiRenderLista()" title="Desde">
             <input type="date" id="remi-hasta" onchange="remiRenderLista()" title="Hasta">
+            <select id="remi-orden" onchange="remiRenderLista()" title="Cómo se ordena la lista" style="padding:8px 10px;font-size:12px;">
+              <option value="num-desc">🔢 N° ↓ (mayor a menor)</option>
+              <option value="num-asc">🔢 N° ↑ (menor a mayor)</option>
+              <option value="fecha-desc">📅 Fecha (más reciente)</option>
+              <option value="fecha-asc">📅 Fecha (más antigua)</option>
+            </select>
+            <input type="number" id="remi-num-desde" oninput="remiRenderLista()" placeholder="N° desde" title="Ver solo remisiones con número IGUAL O MAYOR a este" style="width:96px;padding:8px 10px;font-size:12px;">
+            <input type="number" id="remi-num-hasta" oninput="remiRenderLista()" placeholder="N° hasta" title="Ver solo remisiones con número IGUAL O MENOR a este" style="width:96px;padding:8px 10px;font-size:12px;">
             <button class="btn btn-ghost" onclick="remiCargar()" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
             <button class="btn btn-secondary" onclick="remiExportExcel()" style="padding:8px 14px;font-size:12px;background:#1e7e34;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ Exportar Excel</button>
             <button class="btn btn-secondary" id="remi-btn-bdcompleta" onclick="remiExportBDCompleta()" title="Descargar TODA la base de datos de remisiones (todo el histórico, sin filtros)" style="display:none;padding:8px 14px;font-size:12px;background:#1A3A8F;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ BD completa (todo)</button>
@@ -2777,7 +2785,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div id="remi-lista-count" class="abs-count"></div>
           <div class="abs-table-wrap">
             <table class="abs-table">
-              <thead><tr><th>N° Remisión</th><th>Fecha</th><th>Cliente</th><th># OC</th><th>Ítems</th><th>Acciones</th></tr></thead>
+              <thead><tr><th onclick="remiOrdenNumToggle()" title="Clic para ordenar por número (mayor↔menor)" style="cursor:pointer;user-select:none">N° Remisión <span id="remi-th-flecha" style="color:var(--gold)">↓</span></th><th>Fecha</th><th>Cliente</th><th># OC</th><th>Ítems</th><th>Acciones</th></tr></thead>
               <tbody id="remi-lista-tbody"><tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Cargando...</td></tr></tbody>
             </table>
           </div>
@@ -17983,6 +17991,15 @@ function remiGrupos(){
   Object.keys(m).forEach(k=>{ m[k]=_dedupLineas(m[k]); });
   return m;
 }
+// v159: partes numéricas del N° de remisión — "26215-1" → base 26215, sufijo 1.
+// Sirve para ordenar y filtrar por rango sin que los sufijos rompan el orden.
+function _remiNumBase(n){ const m=String(n||'').match(/\d+/); return m?parseInt(m[0],10):0; }
+function _remiNumSuf(n){ const p=String(n||'').split('-'); return p.length>1?(parseInt(String(p[1]).replace(/\D/g,''),10)||0):0; }
+function remiOrdenNumToggle(){
+  const s=document.getElementById('remi-orden'); if(!s) return;
+  s.value = (s.value==='num-desc') ? 'num-asc' : 'num-desc';
+  remiRenderLista();
+}
 function remiRenderLista(){
   const tb=document.getElementById('remi-lista-tbody'); if(!tb) return;
   const q=(document.getElementById('remi-search')?.value||'').toLowerCase();
@@ -17996,13 +18013,28 @@ function remiRenderLista(){
     return {remision:n, fecha:h.fecha||'', cliente:h.cliente||'', oc:h.oc||'', items:its.length, _match:matches,
       _txt:(n+' '+(h.cliente||'')+' '+(h.oc||'')+' '+its.map(x=>x.descripcion||'').join(' ')).toLowerCase()};
   });
+  // v159: rango por N° de remisión (ej: de la 26200 a la 26220)
+  const nDesde=parseFloat(document.getElementById('remi-num-desde')?.value||'');
+  const nHasta=parseFloat(document.getElementById('remi-num-hasta')?.value||'');
   lista=lista.filter(r=>{
     if(q&&!r._txt.includes(q)) return false;
     if(desde&&r.fecha<desde) return false;
     if(hasta&&r.fecha>hasta) return false;
+    if(!isNaN(nDesde)&&_remiNumBase(r.remision)<nDesde) return false;
+    if(!isNaN(nHasta)&&_remiNumBase(r.remision)>nHasta) return false;
     return true;
   });
-  lista.sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||'') || (parseInt(b.remision)||0)-(parseInt(a.remision)||0));
+  // v159: orden elegido por el usuario. Antes mandaba la FECHA y por eso los números
+  // se veían salteados (una remisión vieja con fecha nueva subía de puesto).
+  const orden=(document.getElementById('remi-orden')?.value)||'num-desc';
+  const cmpNum=(a,b)=> (_remiNumBase(a.remision)-_remiNumBase(b.remision)) || (_remiNumSuf(a.remision)-_remiNumSuf(b.remision)) || String(a.remision).localeCompare(String(b.remision));
+  const cmpFec=(a,b)=> (a.fecha||'').localeCompare(b.fecha||'');
+  if(orden==='num-asc')        lista.sort(cmpNum);
+  else if(orden==='fecha-asc') lista.sort((a,b)=> cmpFec(a,b) || cmpNum(a,b));
+  else if(orden==='fecha-desc')lista.sort((a,b)=> -cmpFec(a,b) || -cmpNum(a,b));
+  else                         lista.sort((a,b)=> -cmpNum(a,b));   // num-desc (por defecto)
+  const _fl=document.getElementById('remi-th-flecha');
+  if(_fl) _fl.textContent = orden==='num-asc' ? '↑' : orden==='num-desc' ? '↓' : '⇅';
   const cnt=document.getElementById('remi-lista-count'); if(cnt) cnt.textContent=lista.length+' remisiones';
   tb.innerHTML=lista.map(r=>`<tr>
     <td><strong style="color:var(--gold)">${_remiEsc(r.remision)}</strong></td>
