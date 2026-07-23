@@ -30678,7 +30678,7 @@
     "cliente": "INDUMEC",
     "contacto": "CAMILO DUQUE",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 6639878,
@@ -30863,12 +30863,13 @@
         "precioProveedor": 14840
       }
     ],
-    "fechaGuardado": "2026-07-21T20:51:51.768Z",
+    "fechaGuardado": "2026-07-23T19:40:59.782Z",
     "fechaEnvio": "2026-07-21T18:25:40.371Z",
+    "adjudicadaAt": "2026-07-23",
     "createdAt": "2026-07-21T16:43:55.997Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-21T20:51:51.768Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-07-23T19:40:59.782Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM1843",
@@ -35176,6 +35177,63 @@
     "createdBy": "sandra",
     "updatedAt": "2026-07-23T17:53:37.822Z",
     "updatedBy": "sandra"
+  },
+  {
+    "id": "LM1867",
+    "fecha": "2026-07-23",
+    "fechaVenc": "2026-07-31",
+    "cliente": "QCIEN",
+    "contacto": "DIEGO",
+    "correo": "",
+    "estado": "Adjudicada",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 366000,
+    "ivaVal": 69540,
+    "total": 435540,
+    "formaPago": "30 DIAS ",
+    "sitioEntrega": "CALI",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Sandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "desc": "esparragos de 1\" x 135mm  a-193/ 194 b7 2h ",
+        "udm": "EA",
+        "qty": 14,
+        "precio": 15000,
+        "marca": "JDF",
+        "proveedor": "MUNDIAL",
+        "precioProveedor": 9152,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "134a335b-5519-4b01-9a9b-7e9cf7cf3885"
+      },
+      {
+        "desc": "empaque flexitalico 14\" x 150 psi ss-304",
+        "udm": "EA",
+        "qty": 2,
+        "precio": 78000,
+        "marca": "SPIRAL PACK",
+        "proveedor": "SEGEFER",
+        "precioProveedor": 55000,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "6c0115b6-da6f-4e22-9222-7445237bad17"
+      }
+    ],
+    "fechaGuardado": "2026-07-23T16:20:54.195Z",
+    "adjudicadaAt": "2026-07-23",
+    "createdAt": "2026-07-23T16:20:54.196Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-23T16:20:54.196Z",
+    "updatedBy": "alexandra",
+    "numeroOriginal": "LM1864",
+    "renumeradaAt": "2026-07-23T19:41:01.370Z"
   },
   {
     "id": "LM629",
