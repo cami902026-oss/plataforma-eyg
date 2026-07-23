@@ -1660,7 +1660,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <div class="cotiz-tab-content" id="cotiz-tab-bd">
           <div class="bd-stats" id="bd-stats-bar"></div>
           <div style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;">
-            <input type="text" id="bd-search-input" placeholder="🔍 Buscar por cliente, número o contacto..." oninput="bdRender()" style="flex:1;min-width:200px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:#fff;font-size:13px;">
+            <input type="text" id="bd-search-input" placeholder="🔍 Cliente, número o contacto… o cliente + ítem (ej: petro + brida 4)" title="Escribe normal para buscar por cliente/número/contacto. Con + buscas por ÍTEM: 'petro + brida 4' = cotizaciones de petro que tengan un ítem con brida 4. También '+ brida 4' solo, para todos los clientes." oninput="bdRender()" style="flex:1;min-width:200px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:#fff;font-size:13px;">
             <select id="bd-filter-vendedor" onchange="bdRender()" style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:#fff;font-size:13px;min-width:160px;">
               <option value="">👤 Todos los vendedores</option>
             </select>
@@ -12011,6 +12011,43 @@ async function bdLoadRemisiones(force) {
   } catch (_) { _bdRemByCotiz = _bdRemByCotiz || {}; _bdRemsByCotiz = _bdRemsByCotiz || {}; }
   return _bdRemByCotiz;
 }
+/* ═══ v153: BÚSQUEDA POR ÍTEM EN LA BD ("cliente + ítem") ════════════════════
+   En la barra de búsqueda, lo que va después de un "+" es un término de ÍTEM:
+   la cotización debe tener al menos un ítem cuya descripción/marca contenga
+   TODAS las palabras del término. Las cotizaciones de plataforma se filtran en
+   local; las del LIBRO (📚) se consultan a Supabase (cotizacion_items) con
+   caché por término y re-render al llegar. Sin "+", la búsqueda es la de siempre. */
+function _bdItemTermMatch(it, term) {
+  if (!it) return false;
+  const txt = (String(it.desc || '') + ' ' + String(it.marca || '')).toLowerCase();
+  return term.split(/\s+/).filter(Boolean).every(w => txt.includes(w));
+}
+let _bdLibroItemCache = {};   // término -> { porCotiz: { ID_MAYUS: [{desc,qty,precio,marca}] } } (null = cargando)
+function _bdItemsLibroAsegurar(terms) {
+  (terms || []).forEach(term => {
+    if (_bdLibroItemCache[term] !== undefined) return;
+    _bdLibroItemCache[term] = null;   // marcado "cargando" para no repetir la consulta
+    const words = term.split(/\s+/).filter(Boolean).map(w => w.replace(/[%*,()"\\]/g, '')).filter(Boolean);
+    if (!words.length) { _bdLibroItemCache[term] = { porCotiz: {} }; return; }
+    const filtro = 'and=(' + words.map(w => 'or(descripcion.ilike.*' + encodeURIComponent(w) + '*,marca.ilike.*' + encodeURIComponent(w) + '*)').join(',') + ')';
+    absFetch('cotizacion_items?select=cotizacion_id,descripcion,marca,qty,v_unit&' + filtro + '&limit=2000').then(rows => {
+      const porCotiz = {};
+      (rows || []).forEach(r => {
+        const k = String(r.cotizacion_id || '').trim().toUpperCase(); if (!k) return;
+        (porCotiz[k] = porCotiz[k] || []).push({ desc: r.descripcion || '', marca: r.marca || '', qty: r.qty, precio: r.v_unit });
+      });
+      _bdLibroItemCache[term] = { porCotiz };
+      try { bdRender(); } catch(_) {}
+    }).catch(() => { _bdLibroItemCache[term] = { porCotiz: {} }; });
+  });
+}
+// Ítems del LIBRO que coinciden con un término para una cotización (null si aún carga)
+function _bdLibroMatch(c, term) {
+  const cch = _bdLibroItemCache[term];
+  if (!cch || !cch.porCotiz) return null;
+  return cch.porCotiz[String(c.id || '').trim().toUpperCase()] || null;
+}
+
 // v152: abrir una remisión específica (cuando la cotización tiene varias)
 function cotizAbrirRemisionNum(rem) {
   if (!rem) return;
@@ -12436,12 +12473,26 @@ function bdRender(filtro) {
     rfEl.innerHTML = '<option value="">🧑‍💼 Realizó (todos)</option>' + realizadores.map(v => `<option value="${v}"${v===curRF?' selected':''}>${v}</option>`).join('');
   }
 
-  const srch = ((document.getElementById('bd-search-input')||{}).value||'').toLowerCase().trim();
+  const srchRaw = ((document.getElementById('bd-search-input')||{}).value||'').toLowerCase().trim();
+  // v153: sintaxis "cliente + ítem" — lo anterior al "+" filtra como siempre (cliente/
+  // número/contacto); cada término después de un "+" exige un ítem que lo contenga.
+  let srch = srchRaw, _itemTerms = [];
+  if (srchRaw.includes('+')) {
+    const _parts = srchRaw.split('+').map(s => s.trim());
+    srch = _parts[0] || '';
+    _itemTerms = _parts.slice(1).filter(Boolean);
+  }
   const vfVal = isComercial ? cuName : ((document.getElementById('bd-filter-vendedor')||{}).value||'').trim();
   const rfVal = ((document.getElementById('bd-filter-realiza')||{}).value||'').trim();
   const _ef = _bdActiveFiltro;
   let lista = _ef && _ef !== 'todas' ? bdVisible.filter(c => c.estado === _ef) : [...bdVisible];
   if (srch) lista = lista.filter(c => (c.cliente||'').toLowerCase().includes(srch) || (c.id||'').toLowerCase().includes(srch) || (c.contacto||'').toLowerCase().includes(srch));
+  if (_itemTerms.length) {
+    _bdItemsLibroAsegurar(_itemTerms);   // dispara la consulta al LIBRO (async, re-render al llegar)
+    lista = lista.filter(c => _itemTerms.every(t =>
+      c._hist ? !!_bdLibroMatch(c, t) : (c.items || []).some(it => _bdItemTermMatch(it, t))
+    ));
+  }
   if (!isComercial && vfVal) lista = lista.filter(c => (c.vendedor||'') === vfVal);
   if (rfVal) lista = lista.filter(c => (c.realizadaPor||'') === rfVal);
 
@@ -12464,6 +12515,16 @@ function bdRender(filtro) {
 
   tbody.innerHTML = lista.map(c => {
     const cls = COTIZ_ESTADOS_COLOR[c.estado] || 'cotiz-estado-pendiente';
+    // v153: si se buscó por ítem, mostrar QUÉ ítem(s) coincidieron (desc + cant + precio)
+    let _matchHtml = '';
+    if (_itemTerms.length) {
+      let _mits = [];
+      if (!c._hist) _mits = (c.items || []).filter(it => _itemTerms.some(t => _bdItemTermMatch(it, t)));
+      else _itemTerms.forEach(t => { const arr = _bdLibroMatch(c, t); if (arr) arr.forEach(x => { if (_mits.indexOf(x) < 0) _mits.push(x); }); });
+      if (_mits.length) _matchHtml = '<div style="font-size:9.5px;color:#86efac;margin-top:3px;font-weight:400;line-height:1.7;">' +
+        _mits.slice(0, 3).map(it => '↳ ' + (it.qty != null ? it.qty : '?') + '× ' + String(it.desc || '').slice(0, 70).replace(/</g, '&lt;') + ((it.precio != null && +it.precio) ? (' — $' + (+it.precio).toLocaleString('es-CO')) : '')).join('<br>') +
+        (_mits.length > 3 ? ('<br>… y ' + (_mits.length - 3) + ' ítem(s) más') : '') + '</div>';
+    }
     const _h = c._hist;
     const onRow = _h ? `bdEditarHistorico('${c.id}')` : `bdCargar('${c.id}')`;
     const idCell = _h
@@ -12515,7 +12576,7 @@ function bdRender(filtro) {
     return `<tr onclick="${onRow}">
       <td style="color:var(--gold);font-weight:700">${idCell}</td>
       <td>${c.fecha||''}</td>
-      <td style="font-weight:600">${c.cliente||''}${c.updatedBy?`<div style="font-size:10px;color:var(--text-muted);font-weight:400;">✏️ ${_auditLabel(c)}</div>`:''}</td>
+      <td style="font-weight:600">${c.cliente||''}${_matchHtml}${c.updatedBy?`<div style="font-size:10px;color:var(--text-muted);font-weight:400;">✏️ ${_auditLabel(c)}</div>`:''}</td>
       <td style="color:var(--text-muted)">${c.contacto||''}</td>
       <td style="color:var(--text-muted);font-size:11px">${c.realizadaPor||''}</td>
       <td style="text-align:center">${_h?'':_bdSemaforo(c)}</td>
