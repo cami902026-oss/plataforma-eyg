@@ -30412,9 +30412,9 @@
         "precio": 0,
         "desvTec": "SE OFERTA X 150 PSI SCH STD RF A-105",
         "proveedor": "CODIFER",
-        "fotoGrande": false,
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 187940
+        "precioProveedor": 187940,
+        "fotoGrande": false
       },
       {
         "id": 2,
@@ -30443,20 +30443,6 @@
         "precioProveedor": 628830
       },
       {
-        "id": 9,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "c5b4b7a2-788e-4a07-ab35-d28925ff7b02",
-        "desc": "VÁLVULA MARIPOSA DE 8\" X 150\" INOX TIPO LUG",
-        "altDe": "eff7e0f9-fb28-477e-bdfb-165557a8454a",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "DOBY AND DISC SS304\nRPTFE SEAT\nSTEAM 17-4PH\nMARCA DOMBOR VALVES",
-        "proveedor": "",
-        "tiempoEntrega": "7 A 8  SEMANAS",
-        "precioProveedor": 5900000
-      },
-      {
         "id": 4,
         "qty": 3,
         "udm": "EA",
@@ -30468,20 +30454,6 @@
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 976180
-      },
-      {
-        "id": 10,
-        "qty": 3,
-        "udm": "EA",
-        "uid": "51989932-37a3-4e58-b95b-b5c50487d563",
-        "desc": "VÁLVULA MARIPOSA DE 10\" X 150\" INOX TIPO LUG",
-        "altDe": "0bad487e-489f-413d-bff3-9e3b3effee39",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "DOBY AND DISC SS304\nRPTFE SEAT\nSTEAM 17-4PH\nMARCA DOMBOR VALVES",
-        "proveedor": "",
-        "tiempoEntrega": "7 A 8  SEMANAS",
-        "precioProveedor": 7990000
       },
       {
         "id": 5,
@@ -30536,10 +30508,10 @@
         "precioProveedor": 37800
       }
     ],
-    "fechaGuardado": "2026-07-23T16:17:24.874Z",
+    "fechaGuardado": "2026-07-23T15:48:48.709Z",
     "createdAt": "2026-07-21T13:42:33.773Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-23T16:17:24.874Z",
+    "updatedAt": "2026-07-23T15:48:48.710Z",
     "updatedBy": "mario"
   },
   {
@@ -34988,6 +34960,61 @@
     "createdBy": "sandra",
     "updatedAt": "2026-07-23T15:33:56.072Z",
     "updatedBy": "sandra"
+  },
+  {
+    "id": "LM1864",
+    "fecha": "2026-07-23",
+    "fechaVenc": "2026-07-31",
+    "cliente": "QCIEN",
+    "contacto": "DIEGO",
+    "correo": "",
+    "estado": "Adjudicada",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 366000,
+    "ivaVal": 69540,
+    "total": 435540,
+    "formaPago": "30 DIAS ",
+    "sitioEntrega": "CALI",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Sandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "desc": "esparragos de 1\" x 135mm  a-193/ 194 b7 2h ",
+        "udm": "EA",
+        "qty": 14,
+        "precio": 15000,
+        "marca": "JDF",
+        "proveedor": "MUNDIAL",
+        "precioProveedor": 9152,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "134a335b-5519-4b01-9a9b-7e9cf7cf3885"
+      },
+      {
+        "desc": "empaque flexitalico 14\" x 150 psi ss-304",
+        "udm": "EA",
+        "qty": 2,
+        "precio": 78000,
+        "marca": "SPIRAL PACK",
+        "proveedor": "SEGEFER",
+        "precioProveedor": 55000,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "6c0115b6-da6f-4e22-9222-7445237bad17"
+      }
+    ],
+    "fechaGuardado": "2026-07-23T16:20:54.195Z",
+    "adjudicadaAt": "2026-07-23",
+    "createdAt": "2026-07-23T16:20:54.196Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-23T16:20:54.196Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM629",
