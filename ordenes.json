@@ -4913,5 +4913,52 @@
     "createdBy": "alexandra",
     "updatedAt": "2026-07-23T19:48:55.127Z",
     "updatedBy": "alexandra"
+  },
+  {
+    "id": "poc_1784836265039",
+    "num": "160726R3302",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1819-1 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-16",
+    "valor": 164220,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1819-1",
+    "createdAt": "2026-07-23T19:51:05.040Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-23T19:51:05.040Z",
+    "updatedBy": "alexandra"
   }
 ]
