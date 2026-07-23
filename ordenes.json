@@ -4772,5 +4772,52 @@
     "createdBy": "alexandra",
     "updatedAt": "2026-07-23T19:40:24.934Z",
     "updatedBy": "alexandra"
+  },
+  {
+    "id": "poc_1784835702704",
+    "num": "LM1842",
+    "cliente": "INDUMEC",
+    "desc": "Cotización LM1842 · 13 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-22",
+    "valor": 7901454.82,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-07-23",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1842",
+    "createdAt": "2026-07-23T19:41:42.705Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-23T19:41:42.705Z",
+    "updatedBy": "alexandra"
   }
 ]
