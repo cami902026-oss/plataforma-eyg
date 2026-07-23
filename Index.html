@@ -2771,6 +2771,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <button class="btn btn-secondary" id="remi-btn-bdcompleta" onclick="remiExportBDCompleta()" title="Descargar TODA la base de datos de remisiones (todo el histórico, sin filtros)" style="display:none;padding:8px 14px;font-size:12px;background:#1A3A8F;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ BD completa (todo)</button>
             <button class="btn btn-ghost" id="remi-btn-import" onclick="document.getElementById('remi-file-excel').click()" style="padding:8px 14px;font-size:12px;display:none;">📥 Importar Excel</button>
             <input type="file" id="remi-file-excel" accept=".xlsx,.xlsm,.xls" style="display:none" onchange="remiImportarExcel(this)">
+            <button class="btn btn-ghost" id="remi-btn-recuperar" onclick="remiRecuperar()" title="Volver a subir una remisión desde la copia local de este equipo (si desapareció del servidor)" style="padding:8px 14px;font-size:12px;background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.45);color:#fbbf24;">🛟 Recuperar</button>
             <button class="btn btn-primary" id="remi-btn-nueva" onclick="remiNueva()" style="padding:8px 16px;font-size:13px;">➕ Nueva remisión</button>
           </div>
           <div id="remi-lista-count" class="abs-count"></div>
@@ -18278,20 +18279,78 @@ async function remiGuardar(){
       observaciones:c.observaciones||'', contiene:c.contiene||'', recibido_por:c.cliente,
       created_by: currentUser?.name||'—'
     }));
+    // 🛟 v158 — CAJA NEGRA LOCAL: antes de tocar el servidor, la versión que se va a
+    // guardar queda en este equipo. Si algo sale mal (pasó con la 26215 de INDUMEC el
+    // 23-jul: el guardado borró y no insertó), se puede restaurar con 🛟 Recuperar.
+    try {
+      const cajaN = JSON.parse(localStorage.getItem('energy_remi_cajanegra')||'{}');
+      cajaN[num] = { ts:new Date().toISOString(), por:(currentUser?.name||'—'), rows:rows };
+      const claves = Object.keys(cajaN).sort((a,b)=> String((cajaN[a]||{}).ts||'').localeCompare(String((cajaN[b]||{}).ts||'')));
+      while (claves.length > 40) { delete cajaN[claves.shift()]; }   // guardar las 40 últimas
+      localStorage.setItem('energy_remi_cajanegra', JSON.stringify(cajaN));
+    } catch(_) {}
     const nuevas = await absFetch('remisiones',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(rows)});
     const nuevosIds = (Array.isArray(nuevas)?nuevas:[]).map(r=>r&&r.id).filter(x=>x!=null);
     if(nuevosIds.length){
       await absFetch('remisiones?remision=eq.'+encodeURIComponent(num)+'&id=not.in.('+nuevosIds.join(',')+')',{method:'DELETE',headers:{'Prefer':'return=minimal'}});
     }
-    // Si se renombró (ej: 1741 → 1741-1), borrar la versión con el número anterior AL FINAL
+    // Si se renombró (ej: 1741 → 1741-1), borrar la versión con el número anterior AL FINAL.
+    // v158: se avisa SIEMPRE, porque renombrar hace desaparecer el número anterior.
     if(!c.nueva && c.remisionOrig && c.remisionOrig!==num){
-      await absFetch('remisiones?remision=eq.'+encodeURIComponent(c.remisionOrig),{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+      if(confirm('⚠️ Cambiaste el número: '+c.remisionOrig+' → '+num+'.\n\nSi aceptas, la remisión '+c.remisionOrig+' DEJARÁ DE EXISTIR (queda solo la '+num+').\n\nAceptar = renombrar · Cancelar = dejar también la '+c.remisionOrig)){
+        await absFetch('remisiones?remision=eq.'+encodeURIComponent(c.remisionOrig),{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+      } else {
+        showToast('Se conservan AMBAS: la '+c.remisionOrig+' y la '+num,'info');
+      }
     }
+    // 🛟 v158 — VERIFICACIÓN DE SEGURIDAD: releer del servidor. Si la remisión quedó
+    // VACÍA (se borró y no se insertó), reinsertarla de una y avisar fuerte.
+    try {
+      const chk = await absFetch('remisiones?remision=eq.'+encodeURIComponent(num)+'&select=id&limit=1');
+      if (!Array.isArray(chk) || !chk.length) {
+        await absFetch('remisiones',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify(rows)});
+        const chk2 = await absFetch('remisiones?remision=eq.'+encodeURIComponent(num)+'&select=id&limit=1');
+        if (Array.isArray(chk2) && chk2.length) {
+          showToast('⚠️ El guardado había dejado la remisión '+num+' VACÍA en el servidor — se restauró automáticamente. Avisa a sistemas.','error',{durationMs:20000});
+        } else {
+          showToast('🚨 NO se pudo guardar la remisión '+num+' en el servidor. NO cierres esta pestaña: usa 🛟 Recuperar para volver a intentarlo.','error',{durationMs:30000});
+          return;   // no salir de la pantalla: los datos siguen en el formulario
+        }
+      }
+    } catch(_) {}
     showToast('Remisión '+c.remision+' guardada ✓','ok');
     c.nueva=false;
     await remiCargar();
     remiVolver();
   }catch(e){ showToast('Error: '+e.message,'error'); }
+}
+
+// 🛟 v158 — RECUPERAR desde la caja negra local (lo último que este equipo intentó
+// guardar). Sirve cuando una remisión desaparece del servidor: se vuelve a subir tal cual.
+async function remiRecuperar(){
+  if(!remiCanUse()) return showToast('No tienes permiso','error');
+  let caja={};
+  try { caja = JSON.parse(localStorage.getItem('energy_remi_cajanegra')||'{}'); } catch(_) {}
+  const nums = Object.keys(caja).sort((a,b)=> String((caja[b]||{}).ts||'').localeCompare(String((caja[a]||{}).ts||'')));
+  if(!nums.length) return showToast('Este equipo no tiene copias locales todavía (se crean al guardar una remisión).','info');
+  const lista = nums.slice(0,15).map(n=>{ const g=caja[n]||{}; return '  • '+n+' ('+((g.rows||[]).length)+' ítems · '+String(g.ts||'').slice(0,16).replace('T',' ')+' · '+(g.por||'—')+')'; }).join('\n');
+  const elegido = (prompt('🛟 Copias locales de este equipo:\n\n'+lista+'\n\nEscribe el N° de remisión que quieres volver a subir:', nums[0])||'').trim();
+  if(!elegido) return;
+  const g = caja[elegido];
+  if(!g || !Array.isArray(g.rows) || !g.rows.length) return showToast('No hay copia local de la remisión '+elegido,'error');
+  try{
+    const yaHay = await absFetch('remisiones?remision=eq.'+encodeURIComponent(elegido)+'&select=id&limit=1');
+    if(Array.isArray(yaHay) && yaHay.length){
+      if(!confirm('La remisión '+elegido+' YA existe en el servidor.\n\n¿Subir encima la copia local del '+String(g.ts).slice(0,16).replace('T',' ')+'? (se reemplaza)')) return;
+    }
+    const nuevas = await absFetch('remisiones',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(g.rows)});
+    const ids = (Array.isArray(nuevas)?nuevas:[]).map(r=>r&&r.id).filter(x=>x!=null);
+    if(ids.length){
+      await absFetch('remisiones?remision=eq.'+encodeURIComponent(elegido)+'&id=not.in.('+ids.join(',')+')',{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+    }
+    showToast('🛟 Remisión '+elegido+' restaurada ('+g.rows.length+' ítems)','ok');
+    await remiCargar();
+  }catch(e){ showToast('No se pudo restaurar: '+e.message,'error'); }
 }
 
 function remiPDF(){
