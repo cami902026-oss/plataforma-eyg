@@ -2815,7 +2815,7 @@
     "num": "ODC-AA-ELEC-SKID-469-24-564",
     "cliente": "SKID EXPERT",
     "desc": "Cotización LM1709 · 1 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-23",
     "valor": 15043225.6,
     "hojaEntrada": {
@@ -2826,12 +2826,12 @@
     "stages": [
       {
         "s": "done",
-        "f": "",
+        "f": "2026-07-23",
         "n": ""
       },
       {
         "s": "done",
-        "f": "",
+        "f": "0202-07-23",
         "n": "",
         "envio": "",
         "transp": "",
@@ -2854,9 +2854,7 @@
     "cotizacionId": "LM1709",
     "createdAt": "2026-07-23T22:32:17.272Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-23T23:42:32.545Z",
-    "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-23T23:42:32.545Z"
+    "updatedAt": "2026-07-23T23:42:43.642Z",
+    "updatedBy": "andrea"
   }
 ]
