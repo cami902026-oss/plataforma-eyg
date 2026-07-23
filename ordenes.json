@@ -74,13 +74,13 @@
     "num": "2026005441",
     "cliente": "NEW GRANADA",
     "desc": "Sumisitro",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-05-22",
     "valor": 0,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-07-15",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -104,15 +104,17 @@
         "n": "No aplica"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-07-15",
+        "n": "",
+        "factura": "518"
       }
     ],
+    "cotizacionId": "",
     "createdAt": "2026-05-22T17:09:06.912Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-01T18:23:13.519Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-07-15T22:05:18.193Z",
+    "updatedBy": "lina"
   },
   {
     "id": "poc_1777493314013",
@@ -1086,13 +1088,13 @@
     "num": "17824",
     "cliente": "CONSORCIO SKF - OMIA",
     "desc": "Suministro de Materiales y Accesorios para Estación Cartagena",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-10",
     "valor": 714595,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-07-17",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -1116,15 +1118,17 @@
         "n": "SERVIDOR"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-07-18",
+        "n": "",
+        "factura": "522"
       }
     ],
+    "cotizacionId": "",
     "createdAt": "2026-06-10T21:19:27.539Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-17T22:33:05.412Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-18T22:38:59.149Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1781713617271",
@@ -2776,7 +2780,7 @@
     ],
     "createdAt": "2026-06-18T17:40:32.020Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-24T02:00:01.409Z",
+    "updatedAt": "2026-07-06T18:16:34.369Z",
     "updatedBy": "andrea"
   },
   {
@@ -4674,5 +4678,52 @@
     "updatedBy": "alexandra",
     "lockedBy": "andrea",
     "lockedAt": "2026-07-22T16:45:23.990Z"
+  },
+  {
+    "id": "poc_1784824514372",
+    "num": "LM1864",
+    "cliente": "QCIEN",
+    "desc": "Cotización LM1864 · 2 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-23",
+    "valor": 435540,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1864",
+    "createdAt": "2026-07-23T16:35:14.373Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-23T16:35:14.373Z",
+    "updatedBy": "alexandra"
   }
 ]
