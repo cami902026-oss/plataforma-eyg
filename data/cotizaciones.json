@@ -36184,7 +36184,7 @@
     "cliente": "QCIEN",
     "contacto": "DIEGO",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 70000,
@@ -36202,22 +36202,23 @@
     "items": [
       {
         "id": 1,
-        "desc": "niple 1/2\" x 5\" sch 160 npt a-105",
-        "udm": "EA",
         "qty": 10,
+        "udm": "EA",
+        "uid": "5fed55e0-d79a-4dfc-9b84-953eb9f4f13b",
+        "desc": "niple 1/2\" x 5\" sch 160 npt a-105",
+        "marca": "MOLONG",
         "precio": 7000,
-        "tiempoEntrega": "1-2 DIAS",
         "desvTec": "",
-        "marca": "molong",
         "proveedor": "INSTRUGASES",
-        "precioProveedor": 4000,
-        "uid": "5fed55e0-d79a-4dfc-9b84-953eb9f4f13b"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 4000
       }
     ],
-    "fechaGuardado": "2026-07-23T21:18:29.725Z",
+    "fechaGuardado": "2026-07-23T21:18:55.460Z",
+    "fechaEnvio": "2026-07-23T21:18:55.460Z",
     "createdAt": "2026-07-23T21:18:29.725Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-23T21:18:29.725Z",
+    "updatedAt": "2026-07-23T21:18:55.460Z",
     "updatedBy": "sandra"
   },
   {
