@@ -21,39 +21,67 @@
   .btn-ghost { background:rgba(255,255,255,.07); border:1px solid var(--border); color:var(--light); }
   .btn-red { background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.45); color:var(--red); }
   .contador { font-size:12px; color:var(--muted); margin-left:auto; white-space:nowrap; }
-  #dropzone { border:2px dashed rgba(212,175,55,.5); border-radius:14px; padding:44px 20px; text-align:center; cursor:pointer; transition:background .2s, border-color .2s; margin-bottom:14px; }
+  #dropzone { border:2px dashed rgba(212,175,55,.5); border-radius:14px; padding:34px 20px; text-align:center; cursor:pointer; transition:background .2s, border-color .2s; margin-bottom:14px; }
   #dropzone:hover, #dropzone.arrastrando { background:rgba(212,175,55,.08); border-color:var(--gold); }
-  #dropzone .dz-icono { font-size:38px; }
+  #dropzone .dz-icono { font-size:34px; }
   #dropzone .dz-txt { font-size:14px; color:var(--light); margin-top:8px; font-weight:600; }
   #dropzone .dz-sub { font-size:11.5px; color:var(--muted); margin-top:4px; }
   #grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(158px,1fr)); gap:12px; }
-  .pagina { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px; cursor:grab; position:relative; transition:border-color .15s, transform .1s; }
+  .pagina { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px; cursor:grab; position:relative; transition:border-color .15s; }
   .pagina.sel { border-color:var(--gold); box-shadow:0 0 0 1px var(--gold); }
   .pagina.drag-over { border-color:var(--green); box-shadow:0 0 0 2px var(--green); }
   .pagina .thumbwrap { width:100%; aspect-ratio:3/4; display:flex; align-items:center; justify-content:center; background:#0d203a; border-radius:6px; overflow:hidden; }
   .pagina img.thumb { max-width:100%; max-height:100%; transition:transform .2s; }
   .pagina .meta { font-size:10px; color:var(--muted); margin-top:6px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .pagina .num { position:absolute; top:4px; left:4px; background:rgba(7,21,37,.85); color:var(--gold); font-size:10px; font-weight:700; border-radius:6px; padding:2px 7px; z-index:2; }
+  .pagina .edits { position:absolute; bottom:64px; right:10px; background:rgba(46,170,74,.9); color:#fff; font-size:9.5px; font-weight:700; border-radius:8px; padding:2px 7px; z-index:2; }
   .pagina .acciones { display:flex; gap:4px; margin-top:6px; align-items:center; }
   .pagina .acciones button { flex:1; background:rgba(255,255,255,.07); border:1px solid var(--border); color:var(--light); border-radius:6px; font-size:12px; padding:4px 0; cursor:pointer; }
   .pagina .acciones button:hover { background:rgba(255,255,255,.15); }
+  .pagina .acciones button.edit { background:rgba(212,175,55,.15); border-color:rgba(212,175,55,.45); color:var(--gold); }
   .pagina .acciones button.del:hover { background:rgba(239,68,68,.3); color:#fff; }
   .pagina input[type=checkbox] { position:absolute; top:6px; right:6px; width:17px; height:17px; accent-color:var(--gold); z-index:2; cursor:pointer; }
   #vacio { text-align:center; color:var(--muted); font-size:13px; padding:30px 10px; display:none; }
   .nota-privacidad { margin-top:18px; font-size:11px; color:var(--muted); text-align:center; line-height:1.6; }
-  #toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:#12294a; border:1px solid var(--border); border-left:4px solid var(--green); border-radius:10px; padding:11px 18px; font-size:13px; color:#fff; box-shadow:0 8px 32px rgba(0,0,0,.5); display:none; z-index:200; max-width:90vw; }
-  #cargando { position:fixed; inset:0; background:rgba(7,21,37,.75); display:none; align-items:center; justify-content:center; z-index:150; backdrop-filter:blur(2px); }
+  #toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:#12294a; border:1px solid var(--border); border-left:4px solid var(--green); border-radius:10px; padding:11px 18px; font-size:13px; color:#fff; box-shadow:0 8px 32px rgba(0,0,0,.5); display:none; z-index:400; max-width:90vw; }
+  #cargando { position:fixed; inset:0; background:rgba(7,21,37,.75); display:none; align-items:center; justify-content:center; z-index:300; backdrop-filter:blur(2px); }
   #cargando .caja { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px 30px; text-align:center; font-size:14px; }
   .spinner { width:26px; height:26px; border:3px solid var(--gold); border-top-color:transparent; border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 10px; }
   @keyframes spin { to { transform:rotate(360deg); } }
+  /* Modales */
+  .overlay { position:fixed; inset:0; background:rgba(7,21,37,.8); display:none; align-items:center; justify-content:center; z-index:200; backdrop-filter:blur(3px); padding:14px; }
+  .overlay.abierto { display:flex; }
+  .modal { background:var(--card); border:1px solid var(--border); border-radius:14px; max-width:640px; width:100%; max-height:94vh; overflow-y:auto; }
+  .modal.grande { max-width:1050px; }
+  .modal-head { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:2px solid var(--gold); position:sticky; top:0; background:var(--card); z-index:5; border-radius:14px 14px 0 0; }
+  .modal-head b { color:#fff; font-size:15px; }
+  .modal-head .cerrar { background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer; }
+  .modal-body { padding:16px 18px; }
+  .seccion { border:1px solid var(--border); border-radius:10px; padding:12px 14px; margin-bottom:12px; }
+  .seccion h4 { font-size:13px; color:var(--gold); margin-bottom:8px; }
+  .fila { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
+  .fila label { font-size:11.5px; color:var(--muted); display:flex; align-items:center; gap:5px; }
+  select, input[type=text], input[type=number] { background:rgba(255,255,255,.07); border:1px solid var(--border); border-radius:7px; color:var(--light); padding:7px 10px; font-size:12.5px; }
+  input[type=range] { accent-color:var(--gold); }
+  .pos-grid { display:grid; grid-template-columns:repeat(3,30px); gap:4px; }
+  .pos-grid button { width:30px; height:30px; border-radius:6px; border:1px solid var(--border); background:rgba(255,255,255,.06); color:var(--muted); cursor:pointer; font-size:11px; }
+  .pos-grid button.activo { background:rgba(212,175,55,.3); border-color:var(--gold); color:var(--gold); }
+  /* Editor de página */
+  #ed-wrap { position:relative; margin:0 auto; box-shadow:0 6px 30px rgba(0,0,0,.5); background:#fff; }
+  #ed-wrap canvas { display:block; }
+  .ed-item { position:absolute; cursor:move; user-select:none; white-space:pre; line-height:1.05; z-index:4; border:1px dashed transparent; }
+  .ed-item:hover { border-color:rgba(212,175,55,.8); background:rgba(212,175,55,.08); }
+  .ed-item img { display:block; pointer-events:none; }
+  #ed-hint { font-size:11.5px; color:var(--muted); text-align:center; margin:8px 0; }
 </style>
 </head>
 <body>
 <h1>📄 PDF Studio E&G <span class="badge">🔒 100% LOCAL — nada se sube a internet</span></h1>
-<div class="sub">Arrastra PDFs o imágenes, organiza las páginas (mover, rotar, borrar, seleccionar) y descarga el resultado. Unir varios PDFs = agregarlos y descargar; dividir = seleccionar páginas y "Descargar selección".</div>
+<div class="sub">Arrastra PDFs o imágenes; organiza (mover, rotar, borrar), <b>edita</b> (✏️ texto y firma sobre la página, 🏷️ sellos, marca de agua, membrete E&amp;G, numeración) y descarga el resultado.</div>
 
 <div class="toolbar">
   <button class="btn btn-green" onclick="document.getElementById('file-input').click()">➕ Agregar archivos</button>
+  <button class="btn btn-gold" id="btn-sellos" onclick="abrirSellos()" disabled>🏷️ Sellos y marca…</button>
   <button class="btn btn-blue" id="btn-todo" onclick="exportar(false)" disabled>⬇️ Descargar PDF</button>
   <button class="btn btn-gold" id="btn-sel" onclick="exportar(true)" disabled>⬇️ Descargar selección</button>
   <button class="btn btn-ghost" id="btn-marcar" onclick="marcarTodas()" disabled>☑ Todas</button>
@@ -67,29 +95,112 @@
 <div id="dropzone" onclick="document.getElementById('file-input').click()">
   <div class="dz-icono">📄🖼️</div>
   <div class="dz-txt">Arrastra aquí tus PDF o imágenes (o haz clic)</div>
-  <div class="dz-sub">PDF, JPG y PNG · puedes soltar varios a la vez · el orden en que los agregues es el orden inicial de las páginas</div>
+  <div class="dz-sub">PDF, JPG y PNG · puedes soltar varios a la vez · luego usa ✏️ Editar en cada página para escribir o firmar encima</div>
 </div>
 
 <div id="grid"></div>
 <div id="vacio">Sin páginas todavía — agrega archivos arriba 👆</div>
 
-<div class="nota-privacidad">🔒 Todo el procesamiento ocurre en este equipo. Los archivos <b>nunca</b> salen de tu PC.<br>E&amp;G Energy Group SAS · PDF Studio v1</div>
+<div class="nota-privacidad">🔒 Todo el procesamiento ocurre en este equipo. Los archivos <b>nunca</b> salen de tu PC.<br>E&amp;G Energy Group SAS · PDF Studio v2</div>
 
 <input type="file" id="file-input" multiple accept="application/pdf,image/jpeg,image/png" style="display:none" onchange="agregarArchivos(this.files); this.value='';">
+<input type="file" id="firma-input" accept="image/png,image/jpeg" style="display:none" onchange="cargarFirma(this.files[0]); this.value='';">
 <div id="toast"></div>
 <div id="cargando"><div class="caja"><div class="spinner"></div><span id="cargando-txt">Procesando…</span></div></div>
+
+<!-- 🏷️ Modal: sellos, marca de agua, membrete y numeración -->
+<div class="overlay" id="modal-sellos">
+  <div class="modal">
+    <div class="modal-head"><b>🏷️ Sellos, marca de agua y membrete</b><button class="cerrar" onclick="cerrarModal('modal-sellos')">✕</button></div>
+    <div class="modal-body">
+      <div class="seccion">
+        <h4>SELLO RÁPIDO <span style="color:var(--muted);font-weight:400;">(se estampa como texto en las páginas)</span></h4>
+        <div class="fila">
+          <select id="sello-texto" onchange="document.getElementById('sello-custom').style.display=this.value==='(otro)'?'':'none'">
+            <option>APROBADO</option><option>COPIA CONTROLADA</option><option>CONFIDENCIAL</option>
+            <option>ANULADO</option><option>RECIBIDO</option><option>URGENTE</option><option>BORRADOR</option><option>(otro)</option>
+          </select>
+          <input type="text" id="sello-custom" placeholder="Texto del sello" style="display:none;width:170px;">
+          <label>Fecha <input type="checkbox" id="sello-fecha"></label>
+        </div>
+        <div class="fila">
+          <label>Color
+            <select id="sello-color"><option value="#c62828">Rojo</option><option value="#1A3A8F">Azul</option><option value="#2EAA4A">Verde</option><option value="#b8860b">Dorado</option><option value="#555555">Gris</option></select>
+          </label>
+          <label>Tamaño
+            <select id="sello-tam"><option value="14">Pequeño</option><option value="22" selected>Mediano</option><option value="34">Grande</option></select>
+          </label>
+          <label>Posición</label>
+          <div class="pos-grid" id="sello-pos"></div>
+        </div>
+        <div class="fila">
+          <label><input type="radio" name="sello-dest" value="sel" checked> Páginas seleccionadas</label>
+          <label><input type="radio" name="sello-dest" value="todas"> Todas las páginas</label>
+          <button class="btn btn-gold" onclick="aplicarSello()" style="margin-left:auto;">🏷️ Estampar sello</button>
+        </div>
+      </div>
+      <div class="seccion">
+        <h4>MARCA DE AGUA <span style="color:var(--muted);font-weight:400;">(diagonal, en todas las páginas del PDF final)</span></h4>
+        <div class="fila">
+          <input type="text" id="marca-texto" placeholder="Ej: E&G ENERGY GROUP" value="E&G ENERGY GROUP" style="flex:1;min-width:180px;">
+          <label>Intensidad <input type="range" id="marca-op" min="6" max="40" value="14" style="width:90px;"></label>
+        </div>
+        <div class="fila">
+          <label><input type="checkbox" id="marca-on" onchange="render()"> Activar marca de agua</label>
+        </div>
+      </div>
+      <div class="seccion">
+        <h4>MEMBRETE Y NUMERACIÓN <span style="color:var(--muted);font-weight:400;">(en todas las páginas del PDF final)</span></h4>
+        <div class="fila">
+          <label><input type="checkbox" id="membrete-on" onchange="render()"> Membrete E&amp;G (logo y datos arriba + línea de pie)</label>
+        </div>
+        <div class="fila">
+          <label><input type="checkbox" id="numerar-on" onchange="render()"> Numerar páginas</label>
+          <select id="numerar-pos"><option value="der">Abajo derecha</option><option value="centro">Abajo centro</option></select>
+        </div>
+      </div>
+      <div class="fila" style="justify-content:flex-end;"><button class="btn btn-green" onclick="cerrarModal('modal-sellos')">Listo</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ✏️ Modal: editor visual de una página (texto y firma con clic) -->
+<div class="overlay" id="modal-editor">
+  <div class="modal grande">
+    <div class="modal-head"><b id="ed-titulo">✏️ Editar página</b><button class="cerrar" onclick="cerrarEditor()">✕</button></div>
+    <div class="modal-body">
+      <div class="fila" style="justify-content:center;">
+        <label><input type="radio" name="ed-modo" value="texto" checked> 📝 Texto</label>
+        <input type="text" id="ed-texto" placeholder="Escribe el texto y haz clic en la página" style="width:230px;">
+        <label>Tamaño <select id="ed-tam"><option value="9">9</option><option value="11">11</option><option value="14" selected>14</option><option value="18">18</option><option value="24">24</option><option value="34">34</option></select></label>
+        <label>Color <select id="ed-color"><option value="#000000">Negro</option><option value="#c62828">Rojo</option><option value="#1A3A8F">Azul</option><option value="#2EAA4A">Verde</option><option value="#ffffff">Blanco</option></select></label>
+        <label><input type="checkbox" id="ed-negrita"> Negrita</label>
+        <span style="color:var(--border);">|</span>
+        <label><input type="radio" name="ed-modo" value="firma"> 🖊️ Firma</label>
+        <button class="btn btn-ghost" onclick="document.getElementById('firma-input').click()" style="padding:6px 10px;font-size:11px;">📁 Cargar firma</button>
+        <label>Ancho firma <select id="ed-firma-tam"><option value="0.15">Pequeña</option><option value="0.25" selected>Mediana</option><option value="0.4">Grande</option></select></label>
+      </div>
+      <div id="ed-hint">Haz <b>clic</b> en la página para colocar · <b>arrastra</b> un elemento para moverlo · <b>doble clic</b> sobre un elemento para quitarlo</div>
+      <div id="ed-wrap"></div>
+      <div class="fila" style="justify-content:flex-end;margin-top:10px;"><button class="btn btn-green" onclick="cerrarEditor()">✔ Listo</button></div>
+    </div>
+  </div>
+</div>
 
 <script src="libs/pdf-lib.min.js"></script>
 <script src="libs/pdfjs/pdf.min.js"></script>
 <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'libs/pdfjs/pdf.worker.min.js';</script>
 <script>
 'use strict';
-/* ═══ PDF Studio E&G — Sesión 1: organizar páginas ═══════════════════════════
-   paginas[] = hoja de trabajo (cada entrada es UNA página de un PDF o UNA imagen).
-   fuentes{} = archivos originales en memoria (bytes para pdf-lib, doc pdf.js para
-   miniaturas). Exportar arma un PDF nuevo con pdf-lib copiando en el orden actual. */
+/* ═══ PDF Studio E&G — v2 (Sesión 1: organizar · Sesión 2: editar) ═══════════
+   paginas[] = hoja de trabajo. Cada página puede llevar items[] (textos y firmas
+   colocados con clic en el editor, guardados como fracciones 0-1 del ancho/alto
+   VISUAL de la página con origen abajo-izquierda). Ajustes globales (marca de
+   agua, membrete, numeración) se aplican a todas las páginas al exportar.
+   El paso visual→PDF respeta la rotación total de la página (base + delta). */
 let paginas = [];
 let fuentes = {};
+let firmaActual = null;   // { bytes, esPng, dataUrl }
 let _seq = 0;
 
 const $ = id => document.getElementById(id);
@@ -107,6 +218,8 @@ function cargando(msg) {
   $('cargando-txt').textContent = msg || 'Procesando…';
   c.style.display = 'flex';
 }
+function abrirModalId(id) { $(id).classList.add('abierto'); }
+function cerrarModal(id) { $(id).classList.remove('abierto'); }
 
 // ── Cargar archivos ──────────────────────────────────────────────────────────
 async function agregarArchivos(files) {
@@ -131,21 +244,20 @@ async function agregarArchivos(files) {
 async function agregarPdf(f) {
   const bytes = await f.arrayBuffer();
   const srcId = 's' + (++_seq);
-  // OJO: pdf.js "consume" el buffer que se le pasa — darle una COPIA y conservar
-  // el original intacto para pdf-lib al exportar.
+  // OJO: pdf.js "consume" el buffer — se le da una COPIA y el original queda para pdf-lib.
   const doc = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
   fuentes[srcId] = { nombre: f.name, bytes: bytes, pdfjsDoc: doc, libDoc: null };
   for (let i = 1; i <= doc.numPages; i++) {
     cargando('Miniaturas de "' + f.name + '" — página ' + i + ' de ' + doc.numPages);
     const thumb = await miniatura(doc, i);
-    paginas.push({ id: 'p' + (++_seq), srcId, pageIndex: i - 1, rot: 0, tipo: 'pdf', thumb, nombre: f.name, sel: false });
+    paginas.push({ id: 'p' + (++_seq), srcId, pageIndex: i - 1, rot: 0, tipo: 'pdf', thumb, nombre: f.name, sel: false, items: [] });
   }
 }
 async function agregarImagen(f) {
   const bytes = await f.arrayBuffer();
   const esPng = f.type === 'image/png' || /\.png$/i.test(f.name);
   const blobUrl = URL.createObjectURL(new Blob([bytes], { type: esPng ? 'image/png' : 'image/jpeg' }));
-  paginas.push({ id: 'p' + (++_seq), srcId: null, pageIndex: -1, rot: 0, tipo: 'img', imgBytes: bytes, imgTipo: esPng ? 'png' : 'jpg', thumb: blobUrl, nombre: f.name, sel: false });
+  paginas.push({ id: 'p' + (++_seq), srcId: null, pageIndex: -1, rot: 0, tipo: 'img', imgBytes: bytes, imgTipo: esPng ? 'png' : 'jpg', thumb: blobUrl, nombre: f.name, sel: false, items: [] });
 }
 async function miniatura(doc, num) {
   const page = await doc.getPage(num);
@@ -163,20 +275,26 @@ function render() {
   const grid = $('grid');
   $('vacio').style.display = paginas.length ? 'none' : 'block';
   const nSel = paginas.filter(p => p.sel).length;
-  $('contador').textContent = paginas.length ? (paginas.length + ' página(s)' + (nSel ? ' · ' + nSel + ' seleccionada(s)' : '')) : '';
-  ['btn-todo','btn-marcar','btn-limpiar'].forEach(id => { $(id).disabled = !paginas.length; });
+  const extras = [];
+  if ($('marca-on') && $('marca-on').checked) extras.push('marca de agua');
+  if ($('membrete-on') && $('membrete-on').checked) extras.push('membrete');
+  if ($('numerar-on') && $('numerar-on').checked) extras.push('numeración');
+  $('contador').textContent = paginas.length ? (paginas.length + ' página(s)' + (nSel ? ' · ' + nSel + ' sel.' : '') + (extras.length ? ' · 🏷️ ' + extras.join(' + ') : '')) : '';
+  ['btn-todo','btn-marcar','btn-limpiar','btn-sellos'].forEach(id => { $(id).disabled = !paginas.length; });
   ['btn-sel','btn-rotar','btn-quitar'].forEach(id => { $(id).disabled = !nSel; });
   $('btn-marcar').textContent = (nSel === paginas.length && paginas.length) ? '☐ Ninguna' : '☑ Todas';
   grid.innerHTML = paginas.map((p, i) =>
     '<div class="pagina' + (p.sel ? ' sel' : '') + '" draggable="true" data-i="' + i + '" ' +
       'ondragstart="dragIni(event,' + i + ')" ondragover="dragSobre(event,this)" ondragleave="this.classList.remove(\'drag-over\')" ondrop="dragFin(event,' + i + ',this)">' +
       '<span class="num">' + (i + 1) + '</span>' +
+      (p.items.length ? '<span class="edits">✍️ ' + p.items.length + '</span>' : '') +
       '<input type="checkbox"' + (p.sel ? ' checked' : '') + ' onclick="paginas[' + i + '].sel=this.checked;render()">' +
       '<div class="thumbwrap" onclick="paginas[' + i + '].sel=!paginas[' + i + '].sel;render()">' +
         '<img class="thumb" src="' + p.thumb + '" style="transform:rotate(' + p.rot + 'deg)' + ((p.rot % 180) ? ';max-width:75%;max-height:75%' : '') + '">' +
       '</div>' +
       '<div class="meta" title="' + p.nombre.replace(/"/g, '&quot;') + '">' + (p.tipo === 'img' ? '🖼️ ' : '📄 ') + p.nombre + (p.tipo === 'pdf' ? ' · pág ' + (p.pageIndex + 1) : '') + '</div>' +
       '<div class="acciones">' +
+        '<button class="edit" title="Editar: escribir texto o poner firma sobre esta página" onclick="abrirEditor(' + i + ')">✏️</button>' +
         '<button title="Rotar 90° a la izquierda" onclick="rotar(' + i + ',-90)">↺</button>' +
         '<button title="Rotar 90° a la derecha" onclick="rotar(' + i + ',90)">↻</button>' +
         '<button class="del" title="Quitar esta página" onclick="paginas.splice(' + i + ',1);render()">🗑</button>' +
@@ -205,32 +323,287 @@ function dragFin(ev, i, el) {
   render();
 }
 
-// ── Exportar (unir / dividir) ────────────────────────────────────────────────
+/* ── ✍️ SESIÓN 2 — Geometría visual→PDF ──────────────────────────────────────
+   Los elementos se guardan como (relX, relY) = fracción del ancho/alto VISUAL
+   (como el usuario VE la página, ya rotada), origen abajo-izquierda. Al dibujar
+   con pdf-lib hay que pasarlos al espacio de la página SIN rotar; estas
+   fórmulas cubren las 4 rotaciones y el texto se gira R° para verse derecho. */
+function dispAPagina(W, H, R, dx, dy) {
+  // W,H = tamaño real de la página (sin rotar); dx,dy en puntos del espacio visual
+  if (R === 90)  return { x: W - dy, y: dx };
+  if (R === 180) return { x: W - dx, y: H - dy };
+  if (R === 270) return { x: dy, y: H - dx };
+  return { x: dx, y: dy };
+}
+function dimsVisuales(W, H, R) { return (R % 180) ? { w: H, h: W } : { w: W, h: H }; }
+function rotTotalDe(pg, deltaRot) {
+  const base = (pg.getRotation && pg.getRotation().angle) || 0;
+  return ((base + deltaRot) % 360 + 360) % 360;
+}
+function hexARgb(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  const n = m ? parseInt(m[1], 16) : 0;
+  return PDFLib.rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
+}
+function textoSeguro(s) {
+  // Helvetica estándar solo acepta WinAnsi: quitar emojis/caracteres raros
+  return String(s || '').replace(/[^\x20-\x7EáéíóúÁÉÍÓÚñÑüÜ¿¡°ªº·€$%&@#().,;:\-_\/+*='"!?\[\]]/g, '').trim();
+}
+
+// ── ✏️ Editor visual de página ───────────────────────────────────────────────
+let edIdx = null, edVp = null, edEscala = 1;
+async function abrirEditor(i) {
+  edIdx = i;
+  const p = paginas[i];
+  $('ed-titulo').textContent = '✏️ Editar página ' + (i + 1) + ' — ' + p.nombre;
+  abrirModalId('modal-editor');
+  cargando('Abriendo la página…');
+  try {
+    const wrap = $('ed-wrap');
+    wrap.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    if (p.tipo === 'pdf') {
+      const doc = fuentes[p.srcId].pdfjsDoc;
+      const page = await doc.getPage(p.pageIndex + 1);
+      const rotTotal = ((page.rotate || 0) + p.rot) % 360;
+      const vp0 = page.getViewport({ scale: 1, rotation: rotTotal });
+      const maxW = Math.min(860, window.innerWidth - 90);
+      const maxH = window.innerHeight * 0.62;
+      edEscala = Math.min(maxW / vp0.width, maxH / vp0.height);
+      edVp = page.getViewport({ scale: edEscala, rotation: rotTotal });
+      canvas.width = Math.ceil(edVp.width); canvas.height = Math.ceil(edVp.height);
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: edVp }).promise;
+    } else {
+      // Imagen: pintarla directa (la rotación delta se aplica al exportar)
+      const img = new Image();
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = p.thumb; });
+      const maxW = Math.min(860, window.innerWidth - 90);
+      const maxH = window.innerHeight * 0.62;
+      const esc = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight, 1);
+      canvas.width = Math.ceil(img.naturalWidth * esc); canvas.height = Math.ceil(img.naturalHeight * esc);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      edEscala = canvas.width / img.naturalWidth;
+      edVp = null;
+    }
+    wrap.style.width = canvas.width + 'px';
+    wrap.style.height = canvas.height + 'px';
+    wrap.appendChild(canvas);
+    canvas.addEventListener('click', edClickCanvas);
+    edPintarItems();
+  } catch (e) { toast('No se pudo abrir la página: ' + (e && e.message || e), true); }
+  cargando(false);
+}
+function cerrarEditor() { cerrarModal('modal-editor'); edIdx = null; render(); }
+function edModo() { return document.querySelector('input[name=ed-modo]:checked').value; }
+function edClickCanvas(ev) {
+  if (edIdx === null) return;
+  const p = paginas[edIdx];
+  const rect = ev.currentTarget.getBoundingClientRect();
+  const relX = (ev.clientX - rect.left) / rect.width;
+  const relY = 1 - (ev.clientY - rect.top) / rect.height;   // origen abajo-izquierda
+  if (edModo() === 'texto') {
+    const txt = textoSeguro($('ed-texto').value);
+    if (!txt) { toast('Escribe primero el texto (arriba) y luego haz clic en la página.', true); return; }
+    p.items.push({ tipo: 'texto', relX, relY, texto: txt, size: parseInt($('ed-tam').value) || 14, color: $('ed-color').value, negrita: $('ed-negrita').checked });
+  } else {
+    if (!firmaActual) { toast('Carga primero la imagen de tu firma (📁 Cargar firma).', true); $('firma-input').click(); return; }
+    p.items.push({ tipo: 'firma', relX, relY, anchoRel: parseFloat($('ed-firma-tam').value) || 0.25 });
+  }
+  edPintarItems();
+}
+async function cargarFirma(f) {
+  if (!f) return;
+  const bytes = await f.arrayBuffer();
+  const esPng = f.type === 'image/png' || /\.png$/i.test(f.name);
+  firmaActual = { bytes, esPng, dataUrl: URL.createObjectURL(new Blob([bytes], { type: esPng ? 'image/png' : 'image/jpeg' })) };
+  toast('🖊️ Firma cargada — elige "Firma" y haz clic donde va. (Ideal PNG con fondo transparente)');
+}
+function edPintarItems() {
+  const wrap = $('ed-wrap');
+  wrap.querySelectorAll('.ed-item').forEach(n => n.remove());
+  if (edIdx === null) return;
+  const p = paginas[edIdx];
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  p.items.forEach((it, k) => {
+    const div = document.createElement('div');
+    div.className = 'ed-item';
+    div.style.left = (it.relX * W) + 'px';
+    div.style.bottom = (it.relY * H) + 'px';
+    if (it.tipo === 'texto') {
+      div.textContent = it.texto;
+      div.style.font = (it.negrita ? '700 ' : '400 ') + (it.size * edEscala) + 'px Helvetica, Arial, sans-serif';
+      div.style.color = it.color;
+    } else {
+      const img = document.createElement('img');
+      img.src = firmaActual ? firmaActual.dataUrl : '';
+      img.style.width = (it.anchoRel * W) + 'px';
+      div.appendChild(img);
+    }
+    div.title = 'Arrastra para mover · doble clic para quitar';
+    div.addEventListener('dblclick', () => { p.items.splice(k, 1); edPintarItems(); });
+    div.addEventListener('mousedown', ev => edDragItem(ev, it, div, W, H));
+    wrap.appendChild(div);
+  });
+}
+function edDragItem(ev, it, div, W, H) {
+  ev.preventDefault();
+  const x0 = ev.clientX, y0 = ev.clientY, relX0 = it.relX, relY0 = it.relY;
+  function mueve(e) {
+    it.relX = Math.min(1, Math.max(0, relX0 + (e.clientX - x0) / W));
+    it.relY = Math.min(1, Math.max(0, relY0 - (e.clientY - y0) / H));
+    div.style.left = (it.relX * W) + 'px';
+    div.style.bottom = (it.relY * H) + 'px';
+  }
+  function suelta() { document.removeEventListener('mousemove', mueve); document.removeEventListener('mouseup', suelta); }
+  document.addEventListener('mousemove', mueve);
+  document.addEventListener('mouseup', suelta);
+}
+
+// ── 🏷️ Sellos rápidos ───────────────────────────────────────────────────────
+let selloPos = 4;   // centro (grilla 3×3: 0..8)
+function abrirSellos() {
+  const g = $('sello-pos');
+  if (!g.children.length) {
+    for (let k = 0; k < 9; k++) {
+      const b = document.createElement('button');
+      b.textContent = '·';
+      b.onclick = () => { selloPos = k; g.querySelectorAll('button').forEach((x, j) => x.classList.toggle('activo', j === k)); };
+      if (k === selloPos) b.classList.add('activo');
+      g.appendChild(b);
+    }
+  }
+  abrirModalId('modal-sellos');
+}
+function aplicarSello() {
+  let txt = $('sello-texto').value === '(otro)' ? textoSeguro($('sello-custom').value) : $('sello-texto').value;
+  if (!txt) { toast('Escribe el texto del sello.', true); return; }
+  if ($('sello-fecha').checked) txt += ' · ' + new Date().toLocaleDateString('es-CO');
+  const dest = document.querySelector('input[name=sello-dest]:checked').value;
+  const objetivo = paginas.filter(p => dest === 'todas' || p.sel);
+  if (!objetivo.length) { toast('No hay páginas ' + (dest === 'sel' ? 'seleccionadas' : ''), true); return; }
+  const rel = [0.09, 0.5, 0.91];
+  const relX = rel[selloPos % 3], relY = [0.91, 0.5, 0.09][Math.floor(selloPos / 3)];
+  objetivo.forEach(p => p.items.push({ tipo: 'texto', relX, relY, texto: txt, size: parseInt($('sello-tam').value) || 22, color: $('sello-color').value, negrita: true, centrado: true }));
+  render();
+  toast('🏷️ Sello "' + txt + '" estampado en ' + objetivo.length + ' página(s). Con ✏️ lo puedes mover o quitar.');
+}
+
+// ── Exportar (arma el PDF con TODO: orden, rotación, items y ajustes) ────────
 async function libDocDe(srcId) {
   const f = fuentes[srcId];
   if (!f.libDoc) f.libDoc = await PDFLib.PDFDocument.load(f.bytes, { ignoreEncryption: true });
   return f.libDoc;
 }
+let _logoCache = null;
+async function logoBytes() {
+  if (_logoCache) return _logoCache;
+  try {
+    if (window._EYG_B64 && window._EYG_B64.logo) {
+      const s = atob(window._EYG_B64.logo); const u = new Uint8Array(s.length);
+      for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+      _logoCache = u.buffer;
+    } else {
+      _logoCache = await fetch('libs/logo-eyg.png').then(r => r.arrayBuffer());
+    }
+  } catch (_) { _logoCache = null; }
+  return _logoCache;
+}
+function dibujarTextoVisual(pg, R, relX, relY, texto, opts) {
+  // Dibuja texto donde el usuario lo VE (espacio visual) respetando la rotación
+  const sz = pg.getSize(); const W = sz.width, H = sz.height;
+  const dv = dimsVisuales(W, H, R);
+  let dx = relX * dv.w, dy = relY * dv.h;
+  const font = opts.font, size = opts.size;
+  const tw = font.widthOfTextAtSize(texto, size);
+  if (opts.centrado) { dx -= tw / 2; dy -= size / 2.6; }
+  if (opts.diagonal) {
+    const c = Math.cos(Math.PI / 4), s = Math.sin(Math.PI / 4);
+    dx = dv.w / 2 - (tw / 2) * c; dy = dv.h / 2 - (tw / 2) * s;
+  }
+  const pt = dispAPagina(W, H, R, dx, dy);
+  pg.drawText(texto, {
+    x: pt.x, y: pt.y, size: size, font: font,
+    color: opts.color, opacity: opts.opacity != null ? opts.opacity : 1,
+    rotate: PDFLib.degrees((R + (opts.diagonal ? 45 : 0)) % 360)
+  });
+}
 async function exportar(soloSeleccion) {
   const lista = paginas.filter(p => !soloSeleccion || p.sel);
   if (!lista.length) { toast(soloSeleccion ? 'No hay páginas seleccionadas.' : 'Agrega páginas primero.', true); return; }
+  if (lista.some(p => p.items.some(it => it.tipo === 'firma')) && !firmaActual) {
+    toast('Hay firmas colocadas pero no hay imagen de firma cargada — cárgala en ✏️ Editar.', true); return;
+  }
   cargando('Armando PDF con ' + lista.length + ' página(s)…');
   try {
     const out = await PDFLib.PDFDocument.create();
+    const fReg = await out.embedFont(PDFLib.StandardFonts.Helvetica);
+    const fNeg = await out.embedFont(PDFLib.StandardFonts.HelveticaBold);
+    let firmaImg = null;
+    if (firmaActual && lista.some(p => p.items.some(it => it.tipo === 'firma'))) {
+      firmaImg = firmaActual.esPng ? await out.embedPng(firmaActual.bytes) : await out.embedJpg(firmaActual.bytes);
+    }
+    const conMarca = $('marca-on').checked && textoSeguro($('marca-texto').value);
+    const conMembrete = $('membrete-on').checked;
+    const conNum = $('numerar-on').checked;
+    let logoImg = null;
+    if (conMembrete) {
+      const lb = await logoBytes();
+      if (lb) { try { logoImg = await out.embedPng(lb); } catch (_) {} }
+    }
+    let idx = 0;
     for (const p of lista) {
+      idx++;
+      let pg, R;
       if (p.tipo === 'pdf') {
         const src = await libDocDe(p.srcId);
-        const [pg] = await out.copyPages(src, [p.pageIndex]);
-        if (p.rot) {
-          const actual = (pg.getRotation() && pg.getRotation().angle) || 0;
-          pg.setRotation(PDFLib.degrees(((actual + p.rot) % 360 + 360) % 360));
-        }
+        const [cp] = await out.copyPages(src, [p.pageIndex]);
+        pg = cp;
+        R = rotTotalDe(pg, p.rot);
+        if (p.rot) pg.setRotation(PDFLib.degrees(R));
         out.addPage(pg);
       } else {
         const img = p.imgTipo === 'png' ? await out.embedPng(p.imgBytes) : await out.embedJpg(p.imgBytes);
-        const pg = out.addPage([img.width, img.height]);
+        pg = out.addPage([img.width, img.height]);
         pg.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
-        if (p.rot) pg.setRotation(PDFLib.degrees(p.rot));
+        R = ((p.rot % 360) + 360) % 360;
+        if (p.rot) pg.setRotation(PDFLib.degrees(R));
+      }
+      const sz = pg.getSize(); const dv = dimsVisuales(sz.width, sz.height, R);
+      // ✍️ Elementos colocados con clic (textos, sellos y firmas)
+      for (const it of (p.items || [])) {
+        if (it.tipo === 'texto') {
+          dibujarTextoVisual(pg, R, it.relX, it.relY, textoSeguro(it.texto), {
+            font: it.negrita ? fNeg : fReg, size: it.size, color: hexARgb(it.color), centrado: !!it.centrado
+          });
+        } else if (it.tipo === 'firma' && firmaImg) {
+          const w = it.anchoRel * dv.w;
+          const h = w * (firmaImg.height / firmaImg.width);
+          const pt = dispAPagina(sz.width, sz.height, R, it.relX * dv.w, it.relY * dv.h);
+          pg.drawImage(firmaImg, { x: pt.x, y: pt.y, width: w, height: h, rotate: PDFLib.degrees(R) });
+        }
+      }
+      // 🌊 Marca de agua diagonal
+      if (conMarca) {
+        const t = textoSeguro($('marca-texto').value);
+        const size = Math.max(28, Math.min(64, dv.w / (t.length * 0.6)));
+        dibujarTextoVisual(pg, R, 0.5, 0.5, t, { font: fNeg, size, color: hexARgb('#1A3A8F'), opacity: (parseInt($('marca-op').value) || 14) / 100, diagonal: true });
+      }
+      // 🏢 Membrete E&G (logo + datos arriba, línea y pie abajo) — sobre el espacio visual
+      if (conMembrete) {
+        const azul = hexARgb('#1A3A8F'); const dorado = hexARgb('#b8860b');
+        if (logoImg) {
+          const lw = 78, lh = lw * (logoImg.height / logoImg.width);
+          const pt = dispAPagina(sz.width, sz.height, R, 0.045 * dv.w, dv.h - 14 - lh);
+          pg.drawImage(logoImg, { x: pt.x, y: pt.y, width: lw, height: lh, rotate: PDFLib.degrees(R) });
+        }
+        dibujarTextoVisual(pg, R, 0.62, 1 - 22 / dv.h, 'E&G ENERGY GROUP SAS', { font: fNeg, size: 11, color: azul, centrado: true });
+        dibujarTextoVisual(pg, R, 0.62, 1 - 35 / dv.h, 'Carrera 7 # 12-61 Chia · Tel 3204947227 · comercial1@eygenergygroup.com', { font: fReg, size: 8, color: hexARgb('#444444'), centrado: true });
+        dibujarTextoVisual(pg, R, 0.5, 16 / dv.h, 'E&G Energy Group SAS · www.eygenergygroup.com', { font: fReg, size: 7.5, color: dorado, centrado: true });
+      }
+      // 🔢 Numeración
+      if (conNum) {
+        const relX = $('numerar-pos').value === 'centro' ? 0.5 : 0.92;
+        dibujarTextoVisual(pg, R, relX, 7 / dv.h, 'Página ' + idx + ' de ' + lista.length, { font: fReg, size: 8.5, color: hexARgb('#666666'), centrado: true });
       }
     }
     const bytes = await out.save();
@@ -255,7 +628,6 @@ const dz = $('dropzone');
 ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('arrastrando'); }));
 ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('arrastrando'); }));
 dz.addEventListener('drop', e => agregarArchivos(e.dataTransfer.files));
-// También se puede soltar en cualquier parte de la página
 document.body.addEventListener('dragover', e => e.preventDefault());
 document.body.addEventListener('drop', e => { if (e.target.closest('#dropzone')) return; e.preventDefault(); if (e.dataTransfer.files.length) agregarArchivos(e.dataTransfer.files); });
 
@@ -268,14 +640,15 @@ function _b64DeBuffer(buf) {
 async function descargarVersionPC() {
   cargando('Armando la Versión PC (un solo archivo, funciona sin internet)…');
   try {
-    const [propio, libA, libB, libW] = await Promise.all([
+    const [propio, libA, libB, libW, logo] = await Promise.all([
       fetch('pdf-studio.html', { cache: 'no-store' }).then(r => r.text()),
       fetch('libs/pdf-lib.min.js', { cache: 'no-store' }).then(r => r.arrayBuffer()),
       fetch('libs/pdfjs/pdf.min.js', { cache: 'no-store' }).then(r => r.arrayBuffer()),
-      fetch('libs/pdfjs/pdf.worker.min.js', { cache: 'no-store' }).then(r => r.arrayBuffer())
+      fetch('libs/pdfjs/pdf.worker.min.js', { cache: 'no-store' }).then(r => r.arrayBuffer()),
+      fetch('libs/logo-eyg.png', { cache: 'no-store' }).then(r => r.arrayBuffer())
     ]);
     const CIERRE = '<' + '/script>';
-    const boot = '<script id="eyg-libs-embebidas">window._EYG_STANDALONE=true;var _EYG_B64={a:"' + _b64DeBuffer(libA) + '",b:"' + _b64DeBuffer(libB) + '",w:"' + _b64DeBuffer(libW) + '"};' +
+    const boot = '<script id="eyg-libs-embebidas">window._EYG_STANDALONE=true;window._EYG_B64={a:"' + _b64DeBuffer(libA) + '",b:"' + _b64DeBuffer(libB) + '",w:"' + _b64DeBuffer(libW) + '",logo:"' + _b64DeBuffer(logo) + '"};' +
       'function _eygDec(b){var s=atob(b),u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return new TextDecoder().decode(u)}' +
       '(0,eval)(_eygDec(_EYG_B64.a));(0,eval)(_eygDec(_EYG_B64.b));' +
       'pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([_eygDec(_EYG_B64.w)],{type:"text/javascript"}));' + CIERRE;
@@ -290,7 +663,6 @@ async function descargarVersionPC() {
   }
   cargando(false);
 }
-// En la versión PC (o abierta como archivo) el botón de generarla no aplica
 if (window._EYG_STANDALONE || location.protocol === 'file:') {
   const b = $('btn-pc'); if (b) b.style.display = 'none';
 }
