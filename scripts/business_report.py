@@ -144,6 +144,8 @@ def fetch_cartera_facturacion():
             headers={'apikey': key, 'Authorization': 'Bearer ' + key})
         with urllib.request.urlopen(req, timeout=30) as resp:
             rows = json.loads(resp.read())
+        # Las ANULADAS no cuentan para facturación ni cartera (edición de históricos 2026-07-22)
+        rows = [f for f in rows if str(f.get('estado') or '').strip().upper() != 'ANULADA']
         facturas = [{
             'empresa': f.get('cliente_nombre') or '',
             'nit': f.get('nit') or '',

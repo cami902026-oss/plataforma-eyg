@@ -3142,7 +3142,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 <div class="modal-overlay" id="modal-cnu-factura">
   <div class="modal" style="max-width:560px;">
     <div class="modal-header">
-      <div class="modal-title">🧾 Nueva factura</div>
+      <div class="modal-title" id="cnuf-titulo">🧾 Nueva factura</div>
       <button class="close-btn" onclick="closeModal('modal-cnu-factura')">✕</button>
     </div>
     <div class="modal-body">
@@ -3183,8 +3183,19 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <div class="form-group"><label>Cotización ligada (opcional)</label><input type="text" id="cnuf-cotiz" placeholder="Ej: LM1740"></div>
         <div class="form-group"><label># OC (opcional)</label><input type="text" id="cnuf-oc" placeholder="Ej: ODC-4544"></div>
       </div>
+      <div class="form-row" id="cnuf-estado-row" style="display:none;">
+        <div class="form-group"><label>Estado</label>
+          <select id="cnuf-estado" onchange="cnuFactEstadoHint()">
+            <option value="PENDIENTE">PENDIENTE (se debe)</option>
+            <option value="PAGADA">PAGADA</option>
+            <option value="ANULADA">🚫 ANULADA (no suma en nada)</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Recibido a la fecha</label><input type="number" id="cnuf-recibido" disabled></div>
+      </div>
       <div id="cnuf-hint" style="font-size:11px;color:#86efac;margin-bottom:8px;"></div>
       <button class="btn btn-primary" id="cnuf-guardar-btn" onclick="cnuFactGuardar()" style="margin-top:4px;">💾 Guardar factura en la nube</button>
+      <button class="btn" id="cnuf-borrar-btn" onclick="cnuFactBorrar()" style="display:none;margin-top:8px;width:100%;background:rgba(220,60,60,.15);border:1px solid rgba(220,60,60,.5);color:#fca5a5;font-weight:700;">🗑️ Borrar esta factura de la nube</button>
     </div>
   </div>
 </div>
@@ -7102,7 +7113,7 @@ function cnuRenderTodo() {
 }
 // ── ✅ Pestaña Pagos: facturas pagadas filtradas por año/mes (2026-07-22) ──
 function _cnuPagRows() {
-  return (_cnuFacturas || []).filter(f => f.fecha_pago && parseFloat(f.valor_recibido || 0) > 0);
+  return (_cnuFacturas || []).filter(f => f.fecha_pago && parseFloat(f.valor_recibido || 0) > 0 && f.estado !== 'ANULADA');
 }
 function cnuPagAnios() {
   const sel = document.getElementById('cnu-pag-anio'); if (!sel) return;
@@ -7141,14 +7152,15 @@ function cnuRenderPagos() {
   const th = 'text-align:left;padding:6px 10px;color:var(--text-muted);font-size:10px;';
   const td = 'padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.05);';
   cont.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:680px;">' +
-    '<thead><tr><th style="' + th + '">FECHA PAGO</th><th style="' + th + '">CLIENTE</th><th style="' + th + '">FACTURA</th><th style="' + th + '">EMITIDA</th><th style="' + th + 'text-align:right;">TOTAL</th><th style="' + th + 'text-align:right;">RECIBIDO</th><th style="' + th + '">VENDEDOR</th></tr></thead><tbody>' +
+    '<thead><tr><th style="' + th + '">FECHA PAGO</th><th style="' + th + '">CLIENTE</th><th style="' + th + '">FACTURA</th><th style="' + th + '">EMITIDA</th><th style="' + th + 'text-align:right;">TOTAL</th><th style="' + th + 'text-align:right;">RECIBIDO</th><th style="' + th + '">VENDEDOR</th>' + (_cnuEsAdminCartera() ? '<th style="' + th + '"></th>' : '') + '</tr></thead><tbody>' +
     fs.map(f => '<tr><td style="' + td + 'color:#86efac;font-weight:600;">' + f.fecha_pago + '</td>' +
       '<td style="' + td + '">' + f.cliente_nombre + '</td>' +
       '<td style="' + td + '">#' + (f.numero || '—') + (f.cotizacion_id ? ' <span style="color:#c4b5fd;font-size:10px;">' + f.cotizacion_id + '</span>' : '') + '</td>' +
       '<td style="' + td + 'font-size:11px;">' + (f.fecha_facturacion || '—') + '</td>' +
       '<td style="' + td + 'text-align:right;">' + _cnuFmt(f.monto_total) + '</td>' +
       '<td style="' + td + 'text-align:right;color:#86efac;font-weight:600;">' + _cnuFmt(f.valor_recibido) + '</td>' +
-      '<td style="' + td + 'font-size:11px;">' + (f.vendedor || '—') + '</td></tr>').join('') +
+      '<td style="' + td + 'font-size:11px;">' + (f.vendedor || '—') + '</td>' +
+      (_cnuEsAdminCartera() ? '<td style="' + td + 'text-align:right;"><button class="btn-sm" onclick="cnuFactEditar(' + f.id + ')" title="Editar, anular o borrar esta factura" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:#fbbf24;">✏️</button></td>' : '') + '</tr>').join('') +
     '</tbody></table>';
 }
 function cnuExportPagos() {
@@ -7186,6 +7198,7 @@ function _cnuCatDe(m) {
 }
 function _cnuEsPendiente(f) {
   const ef = f.estado_financiero || '', e = f.estado || '';
+  if (e === 'ANULADA' || ef === 'ANULADA') return false;
   return (ef === 'SALDO POR PAGAR' || ef === 'POR PAGAR' || ef === 'PENDIENTE' || e === 'PENDIENTE') && parseFloat(f.saldo || 0) > 0;
 }
 function cnuAgrupar() {
@@ -7234,7 +7247,8 @@ function cnuRenderLista() {
       '<td style="' + td + 'text-align:right;color:var(--text-muted);font-size:11px;">' + _cnuFmt(f.monto_antes_iva) + '</td>' +
       '<td style="' + td + 'text-align:right;font-size:11px;">' + _cnuFmt(f.monto_total) + '</td>' +
       '<td style="' + td + 'text-align:right;font-weight:600;">' + _cnuFmt(f.saldo) + '</td>' +
-      '<td style="' + td + 'text-align:right;"><button class="btn-sm" onclick="event.stopPropagation();cnuPago(' + f.id + ')" title="Registrar pago o abono" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700;">💰 Pago</button></td></tr>';
+      '<td style="' + td + 'text-align:right;white-space:nowrap;"><button class="btn-sm" onclick="event.stopPropagation();cnuPago(' + f.id + ')" title="Registrar pago o abono" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700;">💰 Pago</button>' +
+      (_cnuEsAdminCartera() ? ' <button class="btn-sm" onclick="event.stopPropagation();cnuFactEditar(' + f.id + ')" title="Editar, anular o borrar esta factura" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:#fbbf24;">✏️</button>' : '') + '</td></tr>';
     }).join('');
     return '<div style="border:1px solid rgba(255,255,255,.09);border-left:4px solid ' + cc.color + ';border-radius:10px;margin-bottom:10px;overflow:hidden;">' +
       '<div onclick="const d=document.getElementById(\'cnu-emp-' + i + '\');d.style.display=d.style.display===\'none\'?\'\':\'none\';" style="display:flex;gap:10px;align-items:center;padding:12px 14px;cursor:pointer;flex-wrap:wrap;">' +
@@ -7324,6 +7338,7 @@ function cnuExportComisiones() {
 let _cnuClientes = null;
 let _cnuUltGrupo = null;
 let _cnuPagoFact = null;
+let _cnuFactEdit = null;   // factura en edición (✏️ solo andrea, 2026-07-22)
 let _cnuCliEdit = null;
 let _cnuNotaCli = null;
 const _CNU_MES_NOM = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
@@ -7346,6 +7361,11 @@ async function cnuCargarClientes(force) {
 async function cnuNuevaFactura(prefill) {
   prefill = prefill || {};
   try { await cnuCargarClientes(); } catch(e) { showToast('Sin conexión con la nube: ' + e.message, 'error'); return; }
+  _cnuFactEdit = null;
+  document.getElementById('cnuf-titulo').textContent = '🧾 Nueva factura';
+  document.getElementById('cnuf-guardar-btn').textContent = '💾 Guardar factura en la nube';
+  document.getElementById('cnuf-estado-row').style.display = 'none';
+  document.getElementById('cnuf-borrar-btn').style.display = 'none';
   const sel = document.getElementById('cnuf-cliente');
   sel.innerHTML = '<option value="">— Elige el cliente —</option>' + _cnuClientes.map(c => '<option value="' + c.id + '">' + c.nombre + '</option>').join('');
   ['cnuf-numero','cnuf-total','cnuf-antes','cnuf-comision','cnuf-oc','cnuf-cotiz','cnuf-vendedor','cnuf-dias','cnuf-venc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
@@ -7404,7 +7424,8 @@ async function cnuFactGuardar() {
   if (!fecha || !venc) { showToast('Faltan las fechas.', 'error'); return; }
   const btn = document.getElementById('cnuf-guardar-btn'); btn.disabled = true;
   try {
-    const dup = await sbCartera('GET', 'cartera_facturas?cliente_id=eq.' + c.id + '&numero=eq.' + encodeURIComponent(numero) + '&select=id');
+    const noYo = _cnuFactEdit ? '&id=neq.' + _cnuFactEdit.id : '';
+    const dup = await sbCartera('GET', 'cartera_facturas?cliente_id=eq.' + c.id + '&numero=eq.' + encodeURIComponent(numero) + noYo + '&select=id');
     if (dup && dup.length) { showToast('⛔ La factura #' + numero + ' de ' + c.nombre + ' YA está registrada en la nube.', 'error'); btn.disabled = false; return; }
     const oc = document.getElementById('cnuf-oc').value.trim();
     const fila = {
@@ -7421,11 +7442,111 @@ async function cnuFactGuardar() {
       reteica: document.getElementById('cnuf-reteica').value,
       vendedor: document.getElementById('cnuf-vendedor').value.trim().toUpperCase()
     };
-    await sbCartera('POST', 'cartera_facturas', [fila]);
-    closeModal('modal-cnu-factura');
-    showToast('🧾 Factura #' + numero + ' de ' + c.nombre + ' guardada en la nube (' + _cnuFmt(total) + ')', 'success');
+    if (_cnuFactEdit) {
+      // ── modo edición (✏️ solo andrea): PATCH conservando lo recibido ──
+      const v = _cnuFactEdit;
+      const estado = document.getElementById('cnuf-estado').value;
+      const recibido = parseFloat(v.valor_recibido || 0);
+      fila.valor_recibido = recibido;
+      if (estado === 'ANULADA') {
+        fila.estado = 'ANULADA'; fila.estado_financiero = 'ANULADA'; fila.saldo = 0;
+      } else if (estado === 'PAGADA') {
+        fila.estado = 'PAGADA'; fila.estado_financiero = 'PAGADA'; fila.saldo = 0;
+      } else {
+        fila.estado = 'PENDIENTE'; fila.estado_financiero = 'SALDO POR PAGAR';
+        fila.saldo = Math.max(0, Math.round((total - recibido) * 100) / 100);
+      }
+      fila.actualizado_en = new Date().toISOString();
+      await sbCartera('PATCH', 'cartera_facturas?id=eq.' + v.id, fila);
+      // notica automática en la bitácora del cliente con lo que cambió
+      const cambios = [];
+      if (String(v.numero || '') !== numero) cambios.push('número #' + (v.numero || '—') + ' → #' + numero);
+      if (parseFloat(v.monto_total || 0) !== total) cambios.push('total ' + _cnuFmt(v.monto_total) + ' → ' + _cnuFmt(total));
+      if ((v.fecha_facturacion || '') !== fecha) cambios.push('fecha ' + (v.fecha_facturacion || '—') + ' → ' + fecha);
+      if ((v.fecha_vencimiento || '') !== venc) cambios.push('vencimiento ' + (v.fecha_vencimiento || '—') + ' → ' + venc);
+      if ((v.estado || '') !== fila.estado) cambios.push('estado ' + (v.estado || '—') + ' → ' + fila.estado);
+      const notaTxt = fila.estado === 'ANULADA' && (v.estado || '') !== 'ANULADA'
+        ? '🤖 🚫 Factura #' + numero + ' marcada ANULADA (tenía saldo ' + _cnuFmt(v.saldo) + '). Ya no suma en cartera, comisiones ni informes.'
+        : '🤖 ✏️ Factura #' + (v.numero || numero) + ' editada: ' + (cambios.join(' · ') || 'sin cambios de datos');
+      if (cambios.length) _cnuNotaAuto(c.id, notaTxt);
+      closeModal('modal-cnu-factura');
+      showToast(fila.estado === 'ANULADA' ? '🚫 Factura #' + numero + ' ANULADA — quedó la nota en la bitácora' : '✏️ Factura #' + numero + ' actualizada', 'success');
+      _cnuFactEdit = null;
+    } else {
+      await sbCartera('POST', 'cartera_facturas', [fila]);
+      closeModal('modal-cnu-factura');
+      showToast('🧾 Factura #' + numero + ' de ' + c.nombre + ' guardada en la nube (' + _cnuFmt(total) + ')', 'success');
+    }
     cnuCargar(true);
   } catch(e) { showToast('Error guardando: ' + e.message, 'error'); }
+  btn.disabled = false;
+}
+// ── ✏️ Editar / 🚫 anular / 🗑️ borrar facturas históricas (solo andrea, 2026-07-22) ──
+function _cnuEsAdminCartera() { return !!(currentUser && currentUser.email === 'andrea'); }
+function _cnuNotaAuto(clienteId, texto) {
+  if (!clienteId) return;
+  sbCartera('POST', 'cartera_notas', [{ cliente_id: clienteId, nota: texto, usuario: (currentUser && currentUser.email) || '' }]).catch(() => {});
+}
+function cnuFactEstadoHint() {
+  const est = document.getElementById('cnuf-estado').value;
+  const h = document.getElementById('cnuf-hint');
+  if (est === 'ANULADA') { h.style.color = '#fca5a5'; h.textContent = '🚫 Al guardar, esta factura deja de sumar en cartera, comisiones e informes (queda la traza en el historial).'; }
+  else if (est === 'PAGADA') { h.style.color = '#fbbf24'; h.textContent = '💡 Para registrar un pago con fecha usa mejor el botón 💰 Pago — aquí solo se fuerza el estado.'; }
+  else { h.style.color = '#86efac'; h.textContent = ''; }
+}
+async function cnuFactEditar(id) {
+  if (!_cnuEsAdminCartera()) { showToast('Solo andrea puede editar facturas.', 'error'); return; }
+  try {
+    await cnuCargarClientes();
+    const rs = await sbCartera('GET', 'cartera_facturas?id=eq.' + id + '&select=*');
+    const f = rs && rs[0];
+    if (!f) { showToast('No encontré esa factura en la nube.', 'error'); return; }
+    _cnuFactEdit = f;
+    const sel = document.getElementById('cnuf-cliente');
+    sel.innerHTML = '<option value="">— Elige el cliente —</option>' + _cnuClientes.map(c => '<option value="' + c.id + '">' + c.nombre + '</option>').join('');
+    sel.value = f.cliente_id || '';
+    if (!sel.value && f.cliente_nombre) {
+      const c = _cnuClientes.find(x => x.nombre.trim().toUpperCase() === f.cliente_nombre.trim().toUpperCase());
+      if (c) sel.value = c.id;
+    }
+    document.getElementById('cnuf-titulo').textContent = '✏️ Editar factura #' + (f.numero || '');
+    document.getElementById('cnuf-guardar-btn').textContent = '💾 Guardar cambios';
+    document.getElementById('cnuf-numero').value = f.numero || '';
+    document.getElementById('cnuf-fecha').value = f.fecha_facturacion || '';
+    document.getElementById('cnuf-dias').value = f.dias_pago || '';
+    document.getElementById('cnuf-venc').value = f.fecha_vencimiento || '';
+    document.getElementById('cnuf-total').value = parseFloat(f.monto_total || 0) || '';
+    const antes = parseFloat(f.monto_antes_iva || 0), tot = parseFloat(f.monto_total || 0);
+    document.getElementById('cnuf-iva').value = (antes && tot && Math.abs(tot / antes - 1.19) < 0.02) ? '19' : (antes === tot ? '0' : '19');
+    document.getElementById('cnuf-antes').value = antes || '';
+    document.getElementById('cnuf-comision').value = parseFloat(f.comision || 0) || '';
+    document.getElementById('cnuf-vendedor').value = f.vendedor || '';
+    document.getElementById('cnuf-reteica').value = (f.reteica === 'SI') ? 'SI' : 'NO';
+    document.getElementById('cnuf-cotiz').value = f.cotizacion_id || '';
+    document.getElementById('cnuf-oc').value = f.oc || f.oc_num || '';
+    document.getElementById('cnuf-estado-row').style.display = '';
+    document.getElementById('cnuf-estado').value = (f.estado === 'PAGADA' || f.estado === 'ANULADA') ? f.estado : 'PENDIENTE';
+    document.getElementById('cnuf-recibido').value = parseFloat(f.valor_recibido || 0);
+    document.getElementById('cnuf-borrar-btn').style.display = '';
+    const h = document.getElementById('cnuf-hint'); h.style.color = '#86efac'; h.textContent = '';
+    cnuFactEstadoHint();
+    openModal('modal-cnu-factura');
+  } catch(e) { showToast('Error abriendo la factura: ' + e.message, 'error'); }
+}
+async function cnuFactBorrar() {
+  const f = _cnuFactEdit; if (!f) return;
+  if (!_cnuEsAdminCartera()) { showToast('Solo andrea puede borrar facturas.', 'error'); return; }
+  if (!confirm('¿Borrar la factura #' + (f.numero || '') + ' de ' + (f.cliente_nombre || '') + '?\n\nTotal ' + _cnuFmt(f.monto_total) + ' · Saldo ' + _cnuFmt(f.saldo))) return;
+  if (!confirm('⚠️ ¿SEGURA? Esta factura desaparecerá del todo de la nube.\n\nSi estaba anulada y quieres conservar la traza, mejor cancela y usa el estado ANULADA.')) return;
+  const btn = document.getElementById('cnuf-borrar-btn'); btn.disabled = true;
+  try {
+    await sbCartera('DELETE', 'cartera_facturas?id=eq.' + f.id);
+    _cnuNotaAuto(f.cliente_id, '🤖 🗑️ Factura #' + (f.numero || '—') + ' BORRADA de la nube (total ' + _cnuFmt(f.monto_total) + ', saldo ' + _cnuFmt(f.saldo) + ', emitida ' + (f.fecha_facturacion || '—') + ') — no debía existir.');
+    closeModal('modal-cnu-factura');
+    showToast('🗑️ Factura #' + (f.numero || '') + ' borrada — quedó la nota en la bitácora del cliente', 'success');
+    _cnuFactEdit = null;
+    cnuCargar(true);
+  } catch(e) { showToast('Error borrando: ' + e.message, 'error'); }
   btn.disabled = false;
 }
 // ── Registrar pago / abono ──
@@ -7730,27 +7851,32 @@ async function cnuHistorial(clienteId, nombre) {
     const filtro = clienteId ? 'cliente_id=eq.' + clienteId : 'cliente_nombre=eq.' + encodeURIComponent(nombre);
     const fs = await sbCartera('GET', 'cartera_facturas?' + filtro + '&select=*&order=fecha_facturacion.desc&limit=2000');
     if (!fs || !fs.length) { cont.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">Sin facturas registradas para este cliente.</div>'; return; }
-    const tot = fs.reduce((s, f) => s + parseFloat(f.monto_total || 0), 0);
-    const rec = fs.reduce((s, f) => s + parseFloat(f.valor_recibido || 0), 0);
-    const pend = fs.reduce((s, f) => s + parseFloat(f.saldo || 0), 0);
-    const pagadas = fs.filter(f => f.estado === 'PAGADA').length;
+    const vivas = fs.filter(f => f.estado !== 'ANULADA');   // las anuladas no suman en los totales
+    const tot = vivas.reduce((s, f) => s + parseFloat(f.monto_total || 0), 0);
+    const rec = vivas.reduce((s, f) => s + parseFloat(f.valor_recibido || 0), 0);
+    const pend = vivas.reduce((s, f) => s + parseFloat(f.saldo || 0), 0);
+    const pagadas = vivas.filter(f => f.estado === 'PAGADA').length;
+    const anuladas = fs.length - vivas.length;
+    const admin = _cnuEsAdminCartera();
     const card = (v, l, c) => '<div class="card" style="padding:10px;text-align:center;"><div style="font-size:14px;font-weight:800;color:' + (c || '#fff') + ';white-space:nowrap;">' + v + '</div><div style="font-size:9px;color:var(--text-muted);letter-spacing:.4px;">' + l + '</div></div>';
     const th = 'text-align:left;padding:6px 10px;color:var(--text-muted);font-size:10px;', td = 'padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.05);';
     cont.innerHTML =
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:12px;">' +
-      card(fs.length, 'FACTURAS') + card(pagadas, 'PAGADAS', '#86efac') + card(_cnuFmt(tot), 'FACTURADO HIST.') + card(_cnuFmt(rec), 'RECAUDADO', '#86efac') + card(_cnuFmt(pend), 'PENDIENTE', '#fbbf24') + '</div>' +
+      card(vivas.length, 'FACTURAS') + card(pagadas, 'PAGADAS', '#86efac') + card(_cnuFmt(tot), 'FACTURADO HIST.') + card(_cnuFmt(rec), 'RECAUDADO', '#86efac') + card(_cnuFmt(pend), 'PENDIENTE', '#fbbf24') + (anuladas ? card(anuladas, 'ANULADAS', '#94a3b8') : '') + '</div>' +
       '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:660px;">' +
-      '<thead><tr><th style="' + th + '">FACTURA</th><th style="' + th + '">EMITIDA</th><th style="' + th + '">VENCE</th><th style="' + th + '">ESTADO</th><th style="' + th + '">FECHA PAGO</th><th style="' + th + 'text-align:right;">TOTAL</th><th style="' + th + 'text-align:right;">RECIBIDO</th><th style="' + th + 'text-align:right;">SALDO</th></tr></thead><tbody>' +
+      '<thead><tr><th style="' + th + '">FACTURA</th><th style="' + th + '">EMITIDA</th><th style="' + th + '">VENCE</th><th style="' + th + '">ESTADO</th><th style="' + th + '">FECHA PAGO</th><th style="' + th + 'text-align:right;">TOTAL</th><th style="' + th + 'text-align:right;">RECIBIDO</th><th style="' + th + 'text-align:right;">SALDO</th>' + (admin ? '<th style="' + th + '"></th>' : '') + '</tr></thead><tbody>' +
       fs.map(f => {
-        const pag = f.estado === 'PAGADA';
-        return '<tr><td style="' + td + '">#' + (f.numero || '—') + (f.cotizacion_id ? ' <span style="color:#c4b5fd;font-size:10px;">' + f.cotizacion_id + '</span>' : '') + '</td>' +
+        const pag = f.estado === 'PAGADA', anu = f.estado === 'ANULADA';
+        const gris = anu ? 'text-decoration:line-through;opacity:.55;' : '';
+        return '<tr style="' + gris + '"><td style="' + td + '">#' + (f.numero || '—') + (f.cotizacion_id ? ' <span style="color:#c4b5fd;font-size:10px;">' + f.cotizacion_id + '</span>' : '') + '</td>' +
         '<td style="' + td + 'font-size:11px;">' + (f.fecha_facturacion || '—') + '</td>' +
         '<td style="' + td + 'font-size:11px;">' + (f.fecha_vencimiento || '—') + '</td>' +
-        '<td style="' + td + '"><span style="font-size:10px;font-weight:700;color:' + (pag ? '#86efac' : '#fbbf24') + ';background:' + (pag ? 'rgba(46,170,74,.12)' : 'rgba(232,160,32,.12)') + ';border-radius:10px;padding:2px 8px;">' + (f.estado || '') + '</span></td>' +
+        '<td style="' + td + '"><span style="font-size:10px;font-weight:700;color:' + (anu ? '#94a3b8' : pag ? '#86efac' : '#fbbf24') + ';background:' + (anu ? 'rgba(148,163,184,.14)' : pag ? 'rgba(46,170,74,.12)' : 'rgba(232,160,32,.12)') + ';border-radius:10px;padding:2px 8px;">' + (anu ? '🚫 ANULADA' : (f.estado || '')) + '</span></td>' +
         '<td style="' + td + 'font-size:11px;color:' + (pag ? '#86efac' : 'var(--text-muted)') + ';">' + (f.fecha_pago || '—') + '</td>' +
         '<td style="' + td + 'text-align:right;">' + _cnuFmt(f.monto_total) + '</td>' +
         '<td style="' + td + 'text-align:right;color:#86efac;">' + _cnuFmt(f.valor_recibido) + '</td>' +
-        '<td style="' + td + 'text-align:right;font-weight:600;color:' + (parseFloat(f.saldo || 0) > 0 ? '#fbbf24' : 'inherit') + ';">' + _cnuFmt(f.saldo) + '</td></tr>';
+        '<td style="' + td + 'text-align:right;font-weight:600;color:' + (!anu && parseFloat(f.saldo || 0) > 0 ? '#fbbf24' : 'inherit') + ';">' + _cnuFmt(f.saldo) + '</td>' +
+        (admin ? '<td style="' + td + 'text-align:right;"><button class="btn-sm" onclick="cnuFactEditar(' + f.id + ')" title="Editar, anular o borrar esta factura" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:#fbbf24;text-decoration:none;opacity:1;">✏️</button></td>' : '') + '</tr>';
       }).join('') + '</tbody></table></div>';
   } catch(e) { cont.innerHTML = '<div style="color:#fca5a5;font-size:12px;">Error: ' + e.message + '</div>'; }
 }
@@ -8078,7 +8204,7 @@ async function carteraMesCargar(force) {
     if (_cmesData) return;   // cnuCargar ya rearmó este tab vía cnuRenderTodo
     if (!_cnuFacturas) { st.textContent = '❌ Sin conexión con la nube.'; return; }
   }
-  _cmesData = _cnuFacturas.map(f => ({
+  _cmesData = _cnuFacturas.filter(f => f.estado !== 'ANULADA').map(f => ({
     empresa: f.cliente_nombre, factura: f.numero, fecha_facturacion: f.fecha_facturacion || '',
     fecha_pago: f.fecha_pago || '', monto_total: parseFloat(f.monto_total || 0),
     valor_recibido: parseFloat(f.valor_recibido || 0), saldo: parseFloat(f.saldo || 0), estado: f.estado || ''
