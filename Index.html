@@ -9549,6 +9549,19 @@ function cotizEstadoChange() {
     if (fld) fld.value = num.trim();
     _cotizEstadoPrev = 'Facturada';
     _cotizFacturaRefresh();
+    // v152: al facturar, revisar la cadena documental y avisar de una vez qué falta
+    try {
+      const _idFact = cotizEditId;
+      if (_idFact) bdLoadRemisiones().then(() => {
+        const tieneRem = !!(((_bdRemsByCotiz || {})[String(_idFact)] || []).length || (_bdRemByCotiz || {})[String(_idFact)]);
+        let tieneOC = false;
+        try { tieneOC = (typeof getPOC === 'function' ? getPOC() : []).some(o => o && String(o.cotizacionId) === String(_idFact)); } catch(_) {}
+        const faltan = [];
+        if (!tieneOC) faltan.push('OC');
+        if (!tieneRem) faltan.push('remisión');
+        if (faltan.length) showToast('⚠️ Esta cotización queda Facturada SIN ' + faltan.join(' ni ') + ' ligada(s). En la BD tienes los botones para crearlas y completar la trazabilidad.', 'info', { durationMs: 10000 });
+      }).catch(() => {});
+    } catch(_) {}
     // Auto-guardar la cotización para no depender de "Guardar". Al guardar,
     // _cotizPropagarFacturaOC escribe la factura+fecha en la OC ligada.
     const _cli = (document.getElementById('cotiz-cliente').value || '').trim();
@@ -11987,15 +12000,24 @@ let _bdHistLoading = false;
 
 // Trazabilidad: mapa cotización -> remisión ligada (desde Supabase, solo las que tienen enlace)
 let _bdRemByCotiz = null;
+let _bdRemsByCotiz = null;   // v152: TODAS las remisiones de cada cotización (puede haber varias)
 async function bdLoadRemisiones(force) {
   if (_bdRemByCotiz && !force) return _bdRemByCotiz;
   try {
-    const rows = await absFetch('remisiones?select=remision,cotizacion_id&cotizacion_id=not.is.null&limit=5000');
-    const m = {};
-    (rows || []).forEach(r => { if (r.cotizacion_id) m[String(r.cotizacion_id)] = r.remision; });
-    _bdRemByCotiz = m;
-  } catch (_) { _bdRemByCotiz = _bdRemByCotiz || {}; }
+    const rows = await absFetch('remisiones?select=remision,cotizacion_id&cotizacion_id=not.is.null&order=remision.asc&limit=5000');
+    const m = {}, ms = {};
+    (rows || []).forEach(r => { if (r.cotizacion_id) { const k = String(r.cotizacion_id); m[k] = r.remision; (ms[k] = ms[k] || []).push(r.remision); } });
+    _bdRemByCotiz = m; _bdRemsByCotiz = ms;
+  } catch (_) { _bdRemByCotiz = _bdRemByCotiz || {}; _bdRemsByCotiz = _bdRemsByCotiz || {}; }
   return _bdRemByCotiz;
+}
+// v152: abrir una remisión específica (cuando la cotización tiene varias)
+function cotizAbrirRemisionNum(rem) {
+  if (!rem) return;
+  if (typeof navigate === 'function') {
+    navigate('remisiones');
+    setTimeout(() => { try { remiAbrir(String(rem)); } catch (_) { showToast('Abre la remisión ' + rem + ' en el módulo Remisiones', 'info'); } }, 900);
+  } else showToast('Remisión ligada: ' + rem, 'info');
 }
 function cotizVerRemision(cotizId) {
   const rem = (_bdRemByCotiz || {})[String(cotizId)];
@@ -12447,19 +12469,31 @@ function bdRender(filtro) {
     const idCell = _h
       ? `${c.id} <span style="font-size:9px;background:rgba(144,205,244,.2);color:#90cdf4;border-radius:4px;padding:1px 4px;vertical-align:middle;">📚 LIBRO</span>`
       : c.id;
-    const _rem = (_bdRemByCotiz || {})[String(c.id)];
-    const remBtn = _rem
-      ? `<button class="btn-sm" onclick="event.stopPropagation();cotizVerRemision('${String(c.id).replace(/'/g,"\\'")}')" title="Ver la remisión ligada a esta cotización" style="background:rgba(232,160,32,.16);border:1px solid rgba(232,160,32,.5);color:#fbbf24;font-weight:700">📦 Rem ${String(_rem).replace(/</g,'&lt;')}</button>`
-      : (c.estado === 'Adjudicada'
-        ? `<button class="btn-sm" onclick="event.stopPropagation();cotizCrearRemision('${String(c.id).replace(/'/g,"\\'")}')" title="Crear la remisión de esta cotización adjudicada: eliges los ítems adjudicados y ajustas cantidades" style="background:rgba(232,160,32,.16);border:1px solid rgba(232,160,32,.5);color:#fbbf24;font-weight:700">🚚 Crear remisión</button>`
+    // v152: TODAS las remisiones de la cotización (antes solo se veía una); los botones
+    // "Crear remisión"/"Crear OC" salen también en Facturada para completar la cadena.
+    const _rems = ((_bdRemsByCotiz || {})[String(c.id)]) || ((_bdRemByCotiz || {})[String(c.id)] ? [(_bdRemByCotiz || {})[String(c.id)]] : []);
+    const remBtn = _rems.length
+      ? _rems.map(r => `<button class="btn-sm" onclick="event.stopPropagation();cotizAbrirRemisionNum('${String(r).replace(/'/g,"\\'")}')" title="Ver la remisión ${String(r).replace(/"/g,'&quot;')} ligada a esta cotización" style="background:rgba(232,160,32,.16);border:1px solid rgba(232,160,32,.5);color:#fbbf24;font-weight:700">📦 Rem ${String(r).replace(/</g,'&lt;')}</button>`).join('')
+      : ((c.estado === 'Adjudicada' || c.estado === 'Facturada')
+        ? `<button class="btn-sm" onclick="event.stopPropagation();cotizCrearRemision('${String(c.id).replace(/'/g,"\\'")}')" title="Crear la remisión de esta cotización: eliges los ítems y ajustas cantidades" style="background:rgba(232,160,32,.16);border:1px solid rgba(232,160,32,.5);color:#fbbf24;font-weight:700">🚚 Crear remisión</button>`
         : '');
     const _oc = _ocByCotiz[String(c.id)];
     const _ocNum = _oc ? String(_oc.num||_oc.id).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
     const ocBtn = _oc
       ? `<button class="btn-sm" onclick="event.stopPropagation();openPocModal('${_oc.id}')" title="Ver la Orden de Compra ${_ocNum} ligada a esta cotización" style="background:rgba(26,58,143,.35);border:1px solid #1A3A8F;color:#90cdf4;font-weight:700">🧾 OC ${_ocNum||'✓'}</button>`
-      : (c.estado === 'Adjudicada'
-        ? `<button class="btn-sm" onclick="event.stopPropagation();cotizCrearOC('${c.id}')" title="Crear Orden de Compra (Procesos OC) desde esta cotización adjudicada" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700">🧾 Crear OC</button>`
+      : ((c.estado === 'Adjudicada' || c.estado === 'Facturada')
+        ? `<button class="btn-sm" onclick="event.stopPropagation();cotizCrearOC('${c.id}')" title="Crear Orden de Compra (Procesos OC) desde esta cotización" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700">🧾 Crear OC</button>`
         : '');
+    // v152: cadena documental COMPLETA visible cuando la cotización está Facturada —
+    // OC, remisión(es) y factura con su número; lo que falte sale en rojo ⚠️.
+    const _esc = s => String(s).replace(/</g,'&lt;');
+    const cadenaDoc = c.estado === 'Facturada'
+      ? `<div style="font-size:9.5px;margin-top:3px;line-height:1.8;color:#9fb3c8;">
+          ${_oc ? '🧾 OC <b style="color:#90cdf4">' + _ocNum + '</b>' : '<span style="color:#f87171">🧾 ⚠️ sin OC</span>'}<br>
+          ${_rems.length ? '📦 Rem <b style="color:#fbbf24">' + _rems.map(_esc).join(', ') + '</b>' : '<span style="color:#f87171">📦 ⚠️ sin remisión</span>'}<br>
+          ${(c.factura||'').trim() ? '💳 Fact <b style="color:#fbbf24">' + _esc(c.factura) + '</b>' : '<span style="color:#f87171">💳 ⚠️ sin factura</span>'}
+        </div>`
+      : '';
     const compBtn = (c.estado === 'Adjudicada' || c.estado === 'Facturada')
       ? `<button class="btn-sm" onclick="event.stopPropagation();cotizCompararPlan('${c.id}')" title="Comparar lo cotizado vs lo adjudicado (Plan de Compras): ver qué se cayó y el % adjudicado" style="background:rgba(139,92,246,.18);border:1px solid rgba(139,92,246,.5);color:#c4b5fd;font-weight:700">⚖️ Comparar</button>`
       : '';
@@ -12487,7 +12521,7 @@ function bdRender(filtro) {
       <td style="text-align:center">${_h?'':_bdSemaforo(c)}</td>
       <td style="color:var(--gold);font-weight:600">$${(c.total||0).toLocaleString('es-CO',{minimumFractionDigits:0})}</td>
       <td style="color:var(--text-muted)">${c.fechaVenc||''}</td>
-      <td><span class="cotiz-estado-badge ${cls}">${c.estado}</span>${c.motivoRechazo?`<div style="font-size:9.5px;color:#f87171;margin-top:2px;">${String(c.motivoRechazo).replace(/</g,'&lt;')}</div>`:''}</td>
+      <td><span class="cotiz-estado-badge ${cls}">${c.estado}</span>${c.motivoRechazo?`<div style="font-size:9.5px;color:#f87171;margin-top:2px;">${String(c.motivoRechazo).replace(/</g,'&lt;')}</div>`:''}${cadenaDoc}</td>
       <td onclick="event.stopPropagation()">${acciones}</td>
     </tr>`;
   }).join('');
