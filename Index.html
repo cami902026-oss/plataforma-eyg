@@ -589,6 +589,10 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .cotiz-foto-thumb{width:34px;height:34px;object-fit:cover;border-radius:4px;border:1px solid var(--border);cursor:zoom-in;}
 .cotiz-foto-ctrl label{font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:3px;cursor:pointer;}
 .cotiz-foto-ctrl .foto-del{background:none;border:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;width:auto;min-width:0;}
+/* v151: fila ALTERNATIVA (ítem 3.1 = otra opción del ítem 3) — no suma al total */
+#cotiz-tbody tr.cotiz-fila-alt td{background:rgba(26,58,143,.14);border-top:1px dashed rgba(212,175,55,.45);}
+#cotiz-tbody tr.cotiz-fila-alt td:first-child{color:var(--gold)!important;font-weight:700;font-size:11px;white-space:nowrap;}
+.cotiz-alt-btn{background:none;border:1px solid rgba(212,175,55,.4);color:var(--gold);border-radius:5px;cursor:pointer;font-size:10px;padding:1px 5px;margin-top:3px;width:auto;min-width:0;}
 .cotiz-totals-box{display:flex;flex-direction:column;align-items:flex-end;gap:3px;margin-top:10px;}
 .cotiz-tot-row{display:flex;gap:16px;min-width:240px;justify-content:space-between;font-size:13px;padding:2px 0;}
 .cotiz-tot-row.grand{font-size:15px;font-weight:700;color:var(--gold);border-top:1px solid rgba(255,255,255,.15);padding-top:8px;margin-top:4px;}
@@ -10548,12 +10552,90 @@ async function cotizExtract() {
   }
 }
 
+/* ═══ v151: ALTERNATIVAS POR ÍTEM ════════════════════════════════════════════
+   Un ítem puede ofrecer otras opciones del mismo renglón (3 → 3.1, 3.2…).
+   La alternativa es un ítem normal con `altDe` = uid del ítem principal:
+   viaja igual por el guardado local, GitHub y Supabase (columna alt_de).
+   NO suma al subtotal/IVA/total: el cliente elige una de las opciones. */
+function _cotizEsAlt(it) { return !!(it && it.altDe); }
+// Números para pintar: principales 1,2,3… / alternativas 3.1, 3.2 (calculado, no se guarda)
+function _cotizNums(items) {
+  const nums = new Array(items.length); const numPorUid = {}; const uids = {}; let n = 0;
+  items.forEach(it => { if (it && it.uid) uids[it.uid] = 1; });
+  items.forEach((it, i) => {
+    const p = it && it.altDe;
+    if (!p || !uids[p]) { n++; nums[i] = String(n); if (it && it.uid) numPorUid[it.uid] = n; }
+  });
+  const sub = {};
+  items.forEach((it, i) => {
+    const p = it && it.altDe;
+    if (p && uids[p] && numPorUid[p] != null) { sub[p] = (sub[p] || 0) + 1; nums[i] = numPorUid[p] + '.' + sub[p]; }
+  });
+  items.forEach((it, i) => { if (nums[i] == null) { n++; nums[i] = String(n); } });
+  return nums;
+}
+// Mantener cada alternativa pegada debajo de su ítem principal (si Realtime u otro
+// flujo la dejó al final). Solo reordena cuando hay alternativas; no toca contenido.
+function _cotizAgruparAlts() {
+  try {
+    if (!Array.isArray(cotizItems) || !cotizItems.some(_cotizEsAlt)) return;
+    const uids = {}; cotizItems.forEach(it => { if (it && it.uid) uids[it.uid] = 1; });
+    // Huérfanas (su ítem principal ya no existe) → se promueven a ítem normal,
+    // para que numeración, subtotal y etiquetas queden consistentes.
+    cotizItems.forEach(it => { if (it && it.altDe && !uids[it.altDe]) it.altDe = null; });
+    const mains = [], altsPor = {};
+    cotizItems.forEach(it => {
+      const p = it && it.altDe;
+      if (p && uids[p]) (altsPor[p] = altsPor[p] || []).push(it); else mains.push(it);
+    });
+    const orden = [];
+    mains.forEach(it => { orden.push(it); const a = altsPor[it && it.uid]; if (a) orden.push.apply(orden, a); });
+    Object.keys(altsPor).forEach(p => altsPor[p].forEach(it => { if (orden.indexOf(it) < 0) orden.push(it); }));
+    if (orden.length === cotizItems.length) cotizItems.splice.apply(cotizItems, [0, cotizItems.length].concat(orden));
+  } catch(_) {}
+}
+// Subtotal SIN alternativas (regla acordada: la alternativa no suma — el cliente elige).
+// Solo se excluye si su ítem principal está presente; una huérfana cuenta como normal.
+function _cotizSubtotalSinAlts(items) {
+  const uids = {}; (items || []).forEach(it => { if (it && it.uid) uids[it.uid] = 1; });
+  return (items || []).reduce((s, it) => s + ((it && it.altDe && uids[it.altDe]) ? 0 : (it.qty || 0) * (it.precio || 0)), 0);
+}
+function cotizAddAlt(i) {
+  const padre = cotizItems[i]; if (!padre) return;
+  if (_cotizEsAlt(padre)) { showToast('Las alternativas se agregan desde el ítem principal', 'info'); return; }
+  const pUid = _cotizItemUid(padre);
+  let pos = i + 1;
+  while (pos < cotizItems.length && cotizItems[pos] && cotizItems[pos].altDe === pUid) pos++;
+  let maxId = 0; cotizItems.forEach(x => { const n = Number(x.id) || 0; if (n > maxId) maxId = n; });
+  const nuevo = { id: maxId + 1, altDe: pUid, desc: '', udm: padre.udm || 'EA', qty: padre.qty || 1, precio: 0,
+    tiempoEntrega: padre.tiempoEntrega || '', desvTec: '', marca: '', proveedor: '', precioProveedor: 0 };
+  _cotizItemUid(nuevo);
+  cotizItems.splice(pos, 0, nuevo);
+  cotizRender();
+  showToast('Alternativa agregada — su valor NO suma al total (el cliente elige una opción)', 'success');
+}
+// Borrar con cuidado: si el ítem principal tiene alternativas, se van con él (confirmando)
+function cotizDelItem(i) {
+  const it = cotizItems[i]; if (!it) return;
+  if (!_cotizEsAlt(it) && it.uid) {
+    const nAlts = cotizItems.filter(x => x && x.altDe === it.uid).length;
+    if (nAlts > 0) {
+      if (!confirm('Este ítem tiene ' + nAlts + ' alternativa(s) (' + (i + 1) + '.1…). Se borran junto con él. ¿Continuar?')) return;
+      cotizItems = cotizItems.filter((x, k) => k !== i && !(x && x.altDe === it.uid));
+      cotizRender(); return;
+    }
+  }
+  cotizItems.splice(i, 1); cotizRender();
+}
+
 function cotizRender() {
   const tbody = document.getElementById('cotiz-tbody');
   if (!tbody) return;
+  _cotizAgruparAlts();
   const provNames = (getData('bd_proveedores',[]) || []).map(p => p.nombre).filter(Boolean);
   const dl = document.getElementById('prov-dl');
   if (dl) dl.innerHTML = provNames.map(n => `<option value="${n.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">`).join('');
+  const _nums = _cotizNums(cotizItems);
   tbody.innerHTML = cotizItems.map((it,i) => {
     const vTotal = (it.qty||0) * (it.precio||0);
     const pprov = it.precioProveedor || 0;
@@ -10561,9 +10643,10 @@ function cotizRender() {
     const margenColor = margen === null ? 'var(--text-muted)' : margen >= 20 ? '#4ade80' : margen >= 0 ? 'var(--gold)' : '#f87171';
     // FACTOR = P.Proveedor ÷ V.Unitario (derivado; al escribirlo recalcula el V.Unitario). Solo gerencia.
     const factorVal = (pprov > 0 && it.precio > 0) ? Math.round((pprov / it.precio) * 1000) / 1000 : '';
+    const esAlt = _cotizEsAlt(it);
     return `
-    <tr data-uid="${it.uid||''}" data-idx="${i}">
-      <td style="color:var(--text-muted);text-align:center">${i+1}</td>
+    <tr data-uid="${it.uid||''}" data-idx="${i}"${esAlt?' class="cotiz-fila-alt" title="ALTERNATIVA del ítem '+_nums[i].split('.')[0]+' — no suma al total"':''}>
+      <td style="color:var(--text-muted);text-align:center">${esAlt?'↳ ':''}${_nums[i]}</td>
       <td><input value="${it.udm||'EA'}" oninput="cotizItems[${i}].udm=this.value" style="width:44px"></td>
       <td><input type="number" value="${it.qty}" min="0" oninput="cotizItems[${i}].qty=parseFloat(this.value)||0;cotizUpdateTotals()" style="width:50px"></td>
       <td class="desc-cell"><textarea rows="1" oninput="cotizItems[${i}].desc=this.value;_cotizAutoGrow(this)" style="min-width:170px" placeholder="Descripción del producto">${(it.desc||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
@@ -10583,7 +10666,7 @@ function cotizRender() {
       <td><input type="number" value="${pprov||''}" min="0" placeholder="Costo" oninput="cotizItems[${i}].precioProveedor=parseFloat(this.value)||0;_cotizRecalcRow(${i})" style="width:80px" title="Precio de costo del proveedor (interno)"></td>
       <td class="cotiz-col-factor"><input type="number" id="cotiz-factor-${i}" value="${factorVal}" step="0.01" min="0.3" max="0.99" placeholder="0.5–0.9" oninput="_cotizSetFactor(${i},this.value)" style="width:58px" title="V. Unitario = P. Proveedor ÷ Factor"></td>
       <td id="cotiz-margen-${i}" class="cotiz-col-margen" style="text-align:center;font-weight:700;font-size:11px;color:${margenColor};">${margen !== null ? margen+'%' : '—'}</td>
-      <td><button onclick="cotizItems.splice(${i},1);cotizRender()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px">×</button></td>
+      <td style="white-space:nowrap"><button onclick="cotizDelItem(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px" title="Borrar ítem">×</button>${esAlt?'':`<br><button type="button" class="cotiz-alt-btn" onclick="cotizAddAlt(${i})" title="Agregar una ALTERNATIVA de este ítem (${_nums[i]}.1) — otra opción que NO suma al total">⤵ Alt</button>`}</td>
     </tr>`;
   }).join('');
   // Ajustar el alto de cada descripción para que se vea el renglón completo
@@ -10736,15 +10819,17 @@ function _cotizRecalcRow(i, skipFactor) {
 
 function cotizUpdateTotals() {
   const iva = parseFloat(document.getElementById('cotiz-iva').value) || 0;
-  const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
+  const subtotal = _cotizSubtotalSinAlts(cotizItems);
   const ivaVal = subtotal * iva / 100;
   const total = subtotal + ivaVal;
   const el = document.getElementById('cotiz-totals');
   if (!el) return;
+  const hayAlts = Array.isArray(cotizItems) && cotizItems.some(_cotizEsAlt);
   el.innerHTML = `
     <div class="cotiz-tot-row"><span>SUBTOTAL</span><span>$${subtotal.toLocaleString('es-CO',{minimumFractionDigits:0})}</span></div>
     <div class="cotiz-tot-row"><span>IVA ${iva}%</span><span>$${ivaVal.toLocaleString('es-CO',{minimumFractionDigits:0})}</span></div>
-    <div class="cotiz-tot-row grand"><span>TOTAL</span><span>$${total.toLocaleString('es-CO',{minimumFractionDigits:0})}</span></div>`;
+    <div class="cotiz-tot-row grand"><span>TOTAL</span><span>$${total.toLocaleString('es-CO',{minimumFractionDigits:0})}</span></div>
+    ${hayAlts ? '<div style="font-size:10.5px;color:var(--gold);opacity:.85">↳ Las filas ALTERNATIVA no suman al total (el cliente elige una opción)</div>' : ''}`;
   try { utilSync(); } catch(_) {}   // 🧮 sincroniza la calculadora utilidad/flete (aditivo)
 }
 
@@ -11238,7 +11323,7 @@ async function _cotizGuardarBDCore() {
     return;
   }
   const iva = parseFloat(document.getElementById('cotiz-iva').value) || 0;
-  const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
+  const subtotal = _cotizSubtotalSinAlts(cotizItems);   // v151: las ALTERNATIVAS no suman
   const ivaVal = subtotal * iva / 100;
   const total = subtotal + ivaVal;
   const numCampo = cotizReadNum();
@@ -11417,7 +11502,7 @@ async function cotizGenerarPDF() {
   const team = getData('team', TEAM_DEFAULT) || [];
   const vendedorMember = vendedor ? team.find(m => m.name === vendedor) : null;
   const vendedorEmail = (vendedorMember && vendedorMember.email) ? vendedorMember.email : 'comercial1@eygenergygroup.com';
-  const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
+  const subtotal = _cotizSubtotalSinAlts(cotizItems);   // v151: las ALTERNATIVAS no suman
   const ivaVal = subtotal * iva / 100;
   const total = subtotal + ivaVal;
   const fmt = (n) => '$ ' + (n||0).toLocaleString('es-CO',{minimumFractionDigits:0,maximumFractionDigits:0});
@@ -11427,12 +11512,13 @@ async function cotizGenerarPDF() {
   // foto centrada (antes iba incrustada bajo la descripción y quedaba mal ubicada).
   // Cotizaciones sin fotos: cero columna, PDF idéntico al de antes.
   const hayFotos = cotizItems.some(it => it && it.fotoId && it.fotoEnPDF !== false && _cotizFotos[it.fotoId]);
+  const _numsPdf = _cotizNums(cotizItems);
   const itemsRows = cotizItems.map((it,i) => `
-    <tr>
-      <td class="c">${i+1}</td>
+    <tr${_cotizEsAlt(it)?' class="alt"':''}>
+      <td class="c">${_numsPdf[i]}</td>
       <td class="c">${it.udm||'EA'}</td>
       <td class="c">${it.qty||0}</td>
-      <td class="l">${(it.desc||'').replace(/</g,'&lt;')}</td>
+      <td class="l">${_cotizEsAlt(it)?'<b>ALTERNATIVA:</b> ':''}${(it.desc||'').replace(/</g,'&lt;')}</td>
       ${hayFotos ? `<td class="imgc">${(it.fotoId && it.fotoEnPDF !== false && _cotizFotos[it.fotoId]) ? `<img src="${_cotizFotos[it.fotoId]}" style="max-height:${it.fotoGrande?'230px':'90px'};max-width:${it.fotoGrande?'300px':'130px'};">` : ''}</td>` : ''}
       <td class="c">${it.tiempoEntrega||''}</td>
       <td class="c">${it.desvTec||''}</td>
@@ -11474,6 +11560,8 @@ async function cotizGenerarPDF() {
   /* v143: columna IMAGEN — foto centrada vertical y horizontalmente */
   table.items td.imgc { text-align:center; vertical-align:middle; }
   table.items td.imgc img { display:block; margin:4px auto; border:1px solid #ccc; border-radius:3px; }
+  /* v151: fila ALTERNATIVA (opción del ítem principal — no suma al total) */
+  table.items tr.alt td { background:#eef2fa; }
   .obs-tot { display:flex; }
   .obs-box { flex:1; border:1px solid #000; padding:8px; font-size:9px; }
   .obs-box .obs-lbl { background:#f5f5f5; font-weight:700; text-align:center; padding:6px; margin:-8px -8px 6px -8px; border-bottom:1px solid #000; }
@@ -11550,6 +11638,7 @@ async function cotizGenerarPDF() {
     </tr></thead>
     <tbody>${itemsRows}</tbody>
   </table>
+  ${cotizItems.some(_cotizEsAlt) ? '<div style="font-size:8px;padding:3px 2px;font-style:italic;">Los ítems marcados como ALTERNATIVA son opciones del ítem principal y NO están incluidos en el valor total de esta oferta.</div>' : ''}
   <div class="obs-tot">
     <div class="obs-box">
       <div class="obs-lbl">OBSERVACIONES</div>
@@ -11671,7 +11760,7 @@ function cotizDownloadExcel() {
   const formaPago = document.getElementById('cotiz-pago').value;
   const sitio = document.getElementById('cotiz-sitio').value;
   const validez = document.getElementById('cotiz-validez').value;
-  const subtotal = cotizItems.reduce((s,it) => s + (it.qty||0)*(it.precio||0), 0);
+  const subtotal = _cotizSubtotalSinAlts(cotizItems);   // v151: las ALTERNATIVAS no suman
   const ivaVal = subtotal * iva / 100;
   const total = subtotal + ivaVal;
 
@@ -11688,13 +11777,14 @@ function cotizDownloadExcel() {
     ['ITEM','UNIDAD DE MEDIDA','CANTIDAD','DESCRIPCION','TIEMPO DE ENTREGA','DESVIACION TECNICA','MARCA','VALOR UNITARIO','VALOR TOTAL','PROVEEDOR','PRECIO','APROBADO','',''],
   ];
 
-  // Items rows
+  // Items rows (v151: alternativas con número 3.1 y marcadas, no suman al total)
+  const _numsXls = _cotizNums(cotizItems);
   cotizItems.forEach((it, i) => {
     ws_data.push([
-      i+1,
+      _cotizEsAlt(it) ? _numsXls[i] : +_numsXls[i],
       it.udm || 'EA',
       it.qty || 0,
-      it.desc || '',
+      (_cotizEsAlt(it) ? 'ALTERNATIVA: ' : '') + (it.desc || ''),
       it.tiempoEntrega || '',
       it.desvTec || '',
       it.marca || '',
@@ -11764,7 +11854,7 @@ function exportCotizExcel(){
   if(!lista.length){ showToast('No hay cotizaciones en ese rango de fechas','info'); return; }
   const rows = lista.map(c => {
     let venta=0, costo=0;
-    (c.items||[]).forEach(it=>{ const q=+it.qty||0; venta+=q*(+it.precio||0); costo+=q*(+it.precioProveedor||0); });
+    (c.items||[]).forEach(it=>{ if(_cotizEsAlt(it))return; const q=+it.qty||0; venta+=q*(+it.precio||0); costo+=q*(+it.precioProveedor||0); });
     const margen = venta>0 ? Math.round((1 - costo/venta)*1000)/10 : '';
     let dias='';
     if(c.createdAt && c.updatedAt){ dias = Math.round((new Date(c.updatedAt)-new Date(c.createdAt))/86400000); }
@@ -11851,6 +11941,7 @@ async function exportCotizBDCompleta(){
   });
   // Activas
   activas.forEach(c=>{
+    const _numsUtil=_cotizNums(c.items||[]);
     (c.items||[]).forEach((it,i)=>{
       const q=+it.qty||0, pu=+it.precio||0;
       rows.push({
@@ -11858,8 +11949,8 @@ async function exportCotizBDCompleta(){
         'Fecha': c.fecha||'',
         'Cliente': c.cliente||'',
         'Estado': c.estado||'',
-        'Item': i+1,
-        'Descripción': it.desc||'',
+        'Item': _numsUtil[i]||String(i+1),
+        'Descripción': (_cotizEsAlt(it)?'ALTERNATIVA: ':'')+(it.desc||''),
         'UDM': it.udm||'',
         'Cantidad': it.qty!=null?it.qty:'',
         'Precio Unitario': Math.round(pu),
@@ -12057,7 +12148,7 @@ function _cotizItemUid(it) {
 }
 // Mapeo ítem web → fila Supabase (columnas estructuradas; el registro completo va en cab.extra)
 function _cotizItemRow(record, it, n) {
-  return {
+  const row = {
     cotizacion_id: record.id, uid: _cotizItemUid(it), item: n + 1,
     descripcion: it.desc || null, udm: it.udm || null,
     qty: (it.qty != null && it.qty !== '' ? +it.qty : null), v_unit: (it.precio != null ? +it.precio : null),
@@ -12067,6 +12158,10 @@ function _cotizItemRow(record, it, n) {
     foto_grande: (it.fotoGrande ? true : null),
     updated_by: (currentUser && (currentUser.email || currentUser.name)) || null
   };
+  // v151: la columna alt_de solo se envía cuando el ítem ES alternativa, para que las
+  // cotizaciones normales sigan sincronizando aunque la columna aún no exista en la BD.
+  if (it.altDe) row.alt_de = it.altDe;
+  return row;
 }
 async function _cotizSyncSupabase(record) {
   if (!record || !record.id) return false;
@@ -12141,7 +12236,7 @@ async function _cotizSyncSupabase(record) {
       if (borrarUids.length) await absFetch('cotizacion_items?cotizacion_id=eq.' + enc + '&uid=in.(' + borrarUids.map(u => '"' + u + '"').join(',') + ')', { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
       // ADOPTAR al registro local: versión del servidor para (a) ítems que no toqué y
       // otro cambió, (b) ítems en conflicto (ganó el servidor), (c) ítems nuevos de otros.
-      const rowAWeb = rw => ({ uid: rw.uid, desc: rw.descripcion || '', udm: rw.udm || '', qty: (rw.qty != null ? +rw.qty : 0), precio: (rw.v_unit != null ? +rw.v_unit : 0), marca: rw.marca || '', proveedor: rw.proveedor || '', precioProveedor: (rw.precio_proveedor != null ? +rw.precio_proveedor : null), tiempoEntrega: rw.tiempo_entrega || '', desvTec: rw.desviacion_tecnica || '', fotoGrande: !!rw.foto_grande });
+      const rowAWeb = rw => ({ uid: rw.uid, desc: rw.descripcion || '', udm: rw.udm || '', qty: (rw.qty != null ? +rw.qty : 0), precio: (rw.v_unit != null ? +rw.v_unit : 0), marca: rw.marca || '', proveedor: rw.proveedor || '', precioProveedor: (rw.precio_proveedor != null ? +rw.precio_proveedor : null), tiempoEntrega: rw.tiempo_entrega || '', desvTec: rw.desviacion_tecnica || '', fotoGrande: !!rw.foto_grande, altDe: rw.alt_de || null });
       const conflictUids = new Set(conflictos.filter(c => c.srv).map(c => c.srv.uid));
       let itemsMerge = (record.items || []).map(it => {
         const srv = freshByUid[it.uid];
@@ -12452,7 +12547,8 @@ function _cotizRowCanon(rw) {
     p: (rw.v_unit != null ? +rw.v_unit : null), m: rw.marca || null, pr: rw.proveedor || null,
     pp: (rw.precio_proveedor != null ? +rw.precio_proveedor : null),
     te: rw.tiempo_entrega || null, dt: rw.desviacion_tecnica || null,
-    fg: (rw.foto_grande ? true : null)
+    fg: (rw.foto_grande ? true : null),
+    al: rw.alt_de || null
   });
 }
 function _cotizSnapshotSet(id, rows) {
@@ -12551,13 +12647,13 @@ function _rtOnItem(payload) {
       if (dirty) return;
       if (borrado) { cotizItems.splice(idx, 1); delete _cotizSnap.porUid[rw.uid]; }
       else {
-        Object.assign(cotizItems[idx], { desc: rw.descripcion || '', udm: rw.udm || '', qty: (rw.qty != null ? +rw.qty : 0), precio: (rw.v_unit != null ? +rw.v_unit : 0), marca: rw.marca || '', proveedor: rw.proveedor || '', precioProveedor: (rw.precio_proveedor != null ? +rw.precio_proveedor : null), tiempoEntrega: rw.tiempo_entrega || '', desvTec: rw.desviacion_tecnica || '', fotoGrande: !!rw.foto_grande });
+        Object.assign(cotizItems[idx], { desc: rw.descripcion || '', udm: rw.udm || '', qty: (rw.qty != null ? +rw.qty : 0), precio: (rw.v_unit != null ? +rw.v_unit : 0), marca: rw.marca || '', proveedor: rw.proveedor || '', precioProveedor: (rw.precio_proveedor != null ? +rw.precio_proveedor : null), tiempoEntrega: rw.tiempo_entrega || '', desvTec: rw.desviacion_tecnica || '', fotoGrande: !!rw.foto_grande, altDe: rw.alt_de || null });
         _cotizSnap.porUid[rw.uid] = { updated_at: rw.updated_at || null, j: _cotizRowCanon(rw) };
       }
     } else if (!borrado) {
       if (rw.uid in _cotizSnap.porUid) return;  // yo lo borré localmente: se resuelve al guardar
       let maxId = 0; cotizItems.forEach(it => { if (+it.id > maxId) maxId = +it.id; });
-      cotizItems.push({ id: maxId + 1, uid: rw.uid, desc: rw.descripcion || '', udm: rw.udm || '', qty: (rw.qty != null ? +rw.qty : 0), precio: (rw.v_unit != null ? +rw.v_unit : 0), marca: rw.marca || '', proveedor: rw.proveedor || '', precioProveedor: (rw.precio_proveedor != null ? +rw.precio_proveedor : null), tiempoEntrega: rw.tiempo_entrega || '', desvTec: rw.desviacion_tecnica || '', fotoGrande: !!rw.foto_grande });
+      cotizItems.push({ id: maxId + 1, uid: rw.uid, desc: rw.descripcion || '', udm: rw.udm || '', qty: (rw.qty != null ? +rw.qty : 0), precio: (rw.v_unit != null ? +rw.v_unit : 0), marca: rw.marca || '', proveedor: rw.proveedor || '', precioProveedor: (rw.precio_proveedor != null ? +rw.precio_proveedor : null), tiempoEntrega: rw.tiempo_entrega || '', desvTec: rw.desviacion_tecnica || '', fotoGrande: !!rw.foto_grande, altDe: rw.alt_de || null });
       _cotizSnap.porUid[rw.uid] = { updated_at: rw.updated_at || null, j: _cotizRowCanon(rw) };
     }
     const quien = String(rw.updated_by || 'otra persona').split('@')[0];
