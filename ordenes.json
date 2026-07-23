@@ -4819,5 +4819,52 @@
     "createdBy": "alexandra",
     "updatedAt": "2026-07-23T19:41:42.705Z",
     "updatedBy": "alexandra"
+  },
+  {
+    "id": "poc_1784835867939",
+    "num": "4000000150",
+    "cliente": "ARROW",
+    "desc": "Cotización LM1698 · 43 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-22",
+    "valor": 202745205.76714596,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "2026-07-31",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-07-23",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1698",
+    "createdAt": "2026-07-23T19:44:27.940Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-23T19:44:27.940Z",
+    "updatedBy": "alexandra"
   }
 ]
