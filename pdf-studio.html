@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📄 PDF Studio E&G</title>
+<style>
+  :root { --navy:#0a1a2f; --card:#122947; --border:rgba(255,255,255,.12); --gold:#D4AF37; --green:#2EAA4A; --red:#f87171; --muted:#8ea3bd; --light:#dbe6f3; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--navy); color:var(--light); font-family:'Segoe UI',Arial,sans-serif; min-height:100vh; padding:16px; }
+  h1 { font-size:19px; color:#fff; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  h1 .badge { font-size:10px; background:rgba(46,170,74,.25); border:1px solid rgba(46,170,74,.5); color:#86efac; border-radius:20px; padding:3px 10px; font-weight:600; }
+  .sub { color:var(--muted); font-size:12px; margin:6px 0 14px; line-height:1.5; }
+  .toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:14px; position:sticky; top:8px; z-index:50; box-shadow:0 4px 18px rgba(0,0,0,.35); }
+  .btn { border:none; border-radius:8px; padding:9px 14px; font-size:12.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:filter .15s; color:#fff; }
+  .btn:hover { filter:brightness(1.15); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; }
+  .btn-green { background:var(--green); }
+  .btn-blue { background:#1A3A8F; }
+  .btn-gold { background:rgba(212,175,55,.18); border:1px solid rgba(212,175,55,.5); color:var(--gold); }
+  .btn-ghost { background:rgba(255,255,255,.07); border:1px solid var(--border); color:var(--light); }
+  .btn-red { background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.45); color:var(--red); }
+  .contador { font-size:12px; color:var(--muted); margin-left:auto; white-space:nowrap; }
+  #dropzone { border:2px dashed rgba(212,175,55,.5); border-radius:14px; padding:44px 20px; text-align:center; cursor:pointer; transition:background .2s, border-color .2s; margin-bottom:14px; }
+  #dropzone:hover, #dropzone.arrastrando { background:rgba(212,175,55,.08); border-color:var(--gold); }
+  #dropzone .dz-icono { font-size:38px; }
+  #dropzone .dz-txt { font-size:14px; color:var(--light); margin-top:8px; font-weight:600; }
+  #dropzone .dz-sub { font-size:11.5px; color:var(--muted); margin-top:4px; }
+  #grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(158px,1fr)); gap:12px; }
+  .pagina { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px; cursor:grab; position:relative; transition:border-color .15s, transform .1s; }
+  .pagina.sel { border-color:var(--gold); box-shadow:0 0 0 1px var(--gold); }
+  .pagina.drag-over { border-color:var(--green); box-shadow:0 0 0 2px var(--green); }
+  .pagina .thumbwrap { width:100%; aspect-ratio:3/4; display:flex; align-items:center; justify-content:center; background:#0d203a; border-radius:6px; overflow:hidden; }
+  .pagina img.thumb { max-width:100%; max-height:100%; transition:transform .2s; }
+  .pagina .meta { font-size:10px; color:var(--muted); margin-top:6px; line-height:1.4; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pagina .num { position:absolute; top:4px; left:4px; background:rgba(7,21,37,.85); color:var(--gold); font-size:10px; font-weight:700; border-radius:6px; padding:2px 7px; z-index:2; }
+  .pagina .acciones { display:flex; gap:4px; margin-top:6px; align-items:center; }
+  .pagina .acciones button { flex:1; background:rgba(255,255,255,.07); border:1px solid var(--border); color:var(--light); border-radius:6px; font-size:12px; padding:4px 0; cursor:pointer; }
+  .pagina .acciones button:hover { background:rgba(255,255,255,.15); }
+  .pagina .acciones button.del:hover { background:rgba(239,68,68,.3); color:#fff; }
+  .pagina input[type=checkbox] { position:absolute; top:6px; right:6px; width:17px; height:17px; accent-color:var(--gold); z-index:2; cursor:pointer; }
+  #vacio { text-align:center; color:var(--muted); font-size:13px; padding:30px 10px; display:none; }
+  .nota-privacidad { margin-top:18px; font-size:11px; color:var(--muted); text-align:center; line-height:1.6; }
+  #toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:#12294a; border:1px solid var(--border); border-left:4px solid var(--green); border-radius:10px; padding:11px 18px; font-size:13px; color:#fff; box-shadow:0 8px 32px rgba(0,0,0,.5); display:none; z-index:200; max-width:90vw; }
+  #cargando { position:fixed; inset:0; background:rgba(7,21,37,.75); display:none; align-items:center; justify-content:center; z-index:150; backdrop-filter:blur(2px); }
+  #cargando .caja { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px 30px; text-align:center; font-size:14px; }
+  .spinner { width:26px; height:26px; border:3px solid var(--gold); border-top-color:transparent; border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 10px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<h1>📄 PDF Studio E&G <span class="badge">🔒 100% LOCAL — nada se sube a internet</span></h1>
+<div class="sub">Arrastra PDFs o imágenes, organiza las páginas (mover, rotar, borrar, seleccionar) y descarga el resultado. Unir varios PDFs = agregarlos y descargar; dividir = seleccionar páginas y "Descargar selección".</div>
+
+<div class="toolbar">
+  <button class="btn btn-green" onclick="document.getElementById('file-input').click()">➕ Agregar archivos</button>
+  <button class="btn btn-blue" id="btn-todo" onclick="exportar(false)" disabled>⬇️ Descargar PDF</button>
+  <button class="btn btn-gold" id="btn-sel" onclick="exportar(true)" disabled>⬇️ Descargar selección</button>
+  <button class="btn btn-ghost" id="btn-marcar" onclick="marcarTodas()" disabled>☑ Todas</button>
+  <button class="btn btn-ghost" id="btn-rotar" onclick="rotarSeleccion()" disabled>↻ Rotar sel.</button>
+  <button class="btn btn-red" id="btn-quitar" onclick="quitarSeleccion()" disabled>🗑 Quitar sel.</button>
+  <button class="btn btn-red" id="btn-limpiar" onclick="limpiarTodo()" disabled>✖ Limpiar</button>
+  <button class="btn btn-gold" id="btn-pc" onclick="descargarVersionPC()" title="Descarga UN archivo HTML que funciona sin internet en cualquier PC (doble clic y listo)">💻 Versión PC</button>
+  <span class="contador" id="contador"></span>
+</div>
+
+<div id="dropzone" onclick="document.getElementById('file-input').click()">
+  <div class="dz-icono">📄🖼️</div>
+  <div class="dz-txt">Arrastra aquí tus PDF o imágenes (o haz clic)</div>
+  <div class="dz-sub">PDF, JPG y PNG · puedes soltar varios a la vez · el orden en que los agregues es el orden inicial de las páginas</div>
+</div>
+
+<div id="grid"></div>
+<div id="vacio">Sin páginas todavía — agrega archivos arriba 👆</div>
+
+<div class="nota-privacidad">🔒 Todo el procesamiento ocurre en este equipo. Los archivos <b>nunca</b> salen de tu PC.<br>E&amp;G Energy Group SAS · PDF Studio v1</div>
+
+<input type="file" id="file-input" multiple accept="application/pdf,image/jpeg,image/png" style="display:none" onchange="agregarArchivos(this.files); this.value='';">
+<div id="toast"></div>
+<div id="cargando"><div class="caja"><div class="spinner"></div><span id="cargando-txt">Procesando…</span></div></div>
+
+<script src="libs/pdf-lib.min.js"></script>
+<script src="libs/pdfjs/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'libs/pdfjs/pdf.worker.min.js';</script>
+<script>
+'use strict';
+/* ═══ PDF Studio E&G — Sesión 1: organizar páginas ═══════════════════════════
+   paginas[] = hoja de trabajo (cada entrada es UNA página de un PDF o UNA imagen).
+   fuentes{} = archivos originales en memoria (bytes para pdf-lib, doc pdf.js para
+   miniaturas). Exportar arma un PDF nuevo con pdf-lib copiando en el orden actual. */
+let paginas = [];
+let fuentes = {};
+let _seq = 0;
+
+const $ = id => document.getElementById(id);
+function toast(msg, esError) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.style.borderLeftColor = esError ? '#ef4444' : '#2EAA4A';
+  t.style.display = 'block';
+  clearTimeout(t._h);
+  t._h = setTimeout(() => { t.style.display = 'none'; }, 4200);
+}
+function cargando(msg) {
+  const c = $('cargando');
+  if (msg === false) { c.style.display = 'none'; return; }
+  $('cargando-txt').textContent = msg || 'Procesando…';
+  c.style.display = 'flex';
+}
+
+// ── Cargar archivos ──────────────────────────────────────────────────────────
+async function agregarArchivos(files) {
+  const lista = Array.from(files || []);
+  if (!lista.length) return;
+  cargando('Leyendo ' + lista.length + ' archivo(s)…');
+  let errores = 0;
+  for (const f of lista) {
+    try {
+      if (/\.pdf$/i.test(f.name) || f.type === 'application/pdf') await agregarPdf(f);
+      else if (/image\/(jpeg|png)/.test(f.type) || /\.(jpe?g|png)$/i.test(f.name)) await agregarImagen(f);
+      else { errores++; toast('"' + f.name + '" no es PDF ni imagen JPG/PNG', true); }
+    } catch (e) {
+      errores++;
+      toast('No se pudo leer "' + f.name + '": ' + (e && e.message || e), true);
+    }
+  }
+  cargando(false);
+  render();
+  if (!errores) toast('✅ Archivos agregados — total ' + paginas.length + ' página(s)');
+}
+async function agregarPdf(f) {
+  const bytes = await f.arrayBuffer();
+  const srcId = 's' + (++_seq);
+  // OJO: pdf.js "consume" el buffer que se le pasa — darle una COPIA y conservar
+  // el original intacto para pdf-lib al exportar.
+  const doc = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
+  fuentes[srcId] = { nombre: f.name, bytes: bytes, pdfjsDoc: doc, libDoc: null };
+  for (let i = 1; i <= doc.numPages; i++) {
+    cargando('Miniaturas de "' + f.name + '" — página ' + i + ' de ' + doc.numPages);
+    const thumb = await miniatura(doc, i);
+    paginas.push({ id: 'p' + (++_seq), srcId, pageIndex: i - 1, rot: 0, tipo: 'pdf', thumb, nombre: f.name, sel: false });
+  }
+}
+async function agregarImagen(f) {
+  const bytes = await f.arrayBuffer();
+  const esPng = f.type === 'image/png' || /\.png$/i.test(f.name);
+  const blobUrl = URL.createObjectURL(new Blob([bytes], { type: esPng ? 'image/png' : 'image/jpeg' }));
+  paginas.push({ id: 'p' + (++_seq), srcId: null, pageIndex: -1, rot: 0, tipo: 'img', imgBytes: bytes, imgTipo: esPng ? 'png' : 'jpg', thumb: blobUrl, nombre: f.name, sel: false });
+}
+async function miniatura(doc, num) {
+  const page = await doc.getPage(num);
+  const vp0 = page.getViewport({ scale: 1 });
+  const escala = 190 / vp0.width;
+  const vp = page.getViewport({ scale: escala });
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(vp.width); canvas.height = Math.ceil(vp.height);
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+  return canvas.toDataURL('image/jpeg', 0.82);
+}
+
+// ── Pintar la grilla ─────────────────────────────────────────────────────────
+function render() {
+  const grid = $('grid');
+  $('vacio').style.display = paginas.length ? 'none' : 'block';
+  const nSel = paginas.filter(p => p.sel).length;
+  $('contador').textContent = paginas.length ? (paginas.length + ' página(s)' + (nSel ? ' · ' + nSel + ' seleccionada(s)' : '')) : '';
+  ['btn-todo','btn-marcar','btn-limpiar'].forEach(id => { $(id).disabled = !paginas.length; });
+  ['btn-sel','btn-rotar','btn-quitar'].forEach(id => { $(id).disabled = !nSel; });
+  $('btn-marcar').textContent = (nSel === paginas.length && paginas.length) ? '☐ Ninguna' : '☑ Todas';
+  grid.innerHTML = paginas.map((p, i) =>
+    '<div class="pagina' + (p.sel ? ' sel' : '') + '" draggable="true" data-i="' + i + '" ' +
+      'ondragstart="dragIni(event,' + i + ')" ondragover="dragSobre(event,this)" ondragleave="this.classList.remove(\'drag-over\')" ondrop="dragFin(event,' + i + ',this)">' +
+      '<span class="num">' + (i + 1) + '</span>' +
+      '<input type="checkbox"' + (p.sel ? ' checked' : '') + ' onclick="paginas[' + i + '].sel=this.checked;render()">' +
+      '<div class="thumbwrap" onclick="paginas[' + i + '].sel=!paginas[' + i + '].sel;render()">' +
+        '<img class="thumb" src="' + p.thumb + '" style="transform:rotate(' + p.rot + 'deg)' + ((p.rot % 180) ? ';max-width:75%;max-height:75%' : '') + '">' +
+      '</div>' +
+      '<div class="meta" title="' + p.nombre.replace(/"/g, '&quot;') + '">' + (p.tipo === 'img' ? '🖼️ ' : '📄 ') + p.nombre + (p.tipo === 'pdf' ? ' · pág ' + (p.pageIndex + 1) : '') + '</div>' +
+      '<div class="acciones">' +
+        '<button title="Rotar 90° a la izquierda" onclick="rotar(' + i + ',-90)">↺</button>' +
+        '<button title="Rotar 90° a la derecha" onclick="rotar(' + i + ',90)">↻</button>' +
+        '<button class="del" title="Quitar esta página" onclick="paginas.splice(' + i + ',1);render()">🗑</button>' +
+      '</div>' +
+    '</div>').join('');
+}
+function rotar(i, delta) { paginas[i].rot = ((paginas[i].rot + delta) % 360 + 360) % 360; render(); }
+function rotarSeleccion() { paginas.forEach(p => { if (p.sel) p.rot = (p.rot + 90) % 360; }); render(); }
+function quitarSeleccion() { paginas = paginas.filter(p => !p.sel); render(); }
+function marcarTodas() { const todo = !paginas.every(p => p.sel); paginas.forEach(p => { p.sel = todo; }); render(); }
+function limpiarTodo() {
+  if (paginas.length && !confirm('¿Quitar TODAS las páginas y empezar de cero?')) return;
+  paginas = []; fuentes = {}; render();
+}
+
+// ── Arrastrar para reordenar ─────────────────────────────────────────────────
+let _dragIdx = null;
+function dragIni(ev, i) { _dragIdx = i; ev.dataTransfer.effectAllowed = 'move'; }
+function dragSobre(ev, el) { ev.preventDefault(); el.classList.add('drag-over'); }
+function dragFin(ev, i, el) {
+  ev.preventDefault(); el.classList.remove('drag-over');
+  if (_dragIdx === null || _dragIdx === i) return;
+  const [mov] = paginas.splice(_dragIdx, 1);
+  paginas.splice(i, 0, mov);
+  _dragIdx = null;
+  render();
+}
+
+// ── Exportar (unir / dividir) ────────────────────────────────────────────────
+async function libDocDe(srcId) {
+  const f = fuentes[srcId];
+  if (!f.libDoc) f.libDoc = await PDFLib.PDFDocument.load(f.bytes, { ignoreEncryption: true });
+  return f.libDoc;
+}
+async function exportar(soloSeleccion) {
+  const lista = paginas.filter(p => !soloSeleccion || p.sel);
+  if (!lista.length) { toast(soloSeleccion ? 'No hay páginas seleccionadas.' : 'Agrega páginas primero.', true); return; }
+  cargando('Armando PDF con ' + lista.length + ' página(s)…');
+  try {
+    const out = await PDFLib.PDFDocument.create();
+    for (const p of lista) {
+      if (p.tipo === 'pdf') {
+        const src = await libDocDe(p.srcId);
+        const [pg] = await out.copyPages(src, [p.pageIndex]);
+        if (p.rot) {
+          const actual = (pg.getRotation() && pg.getRotation().angle) || 0;
+          pg.setRotation(PDFLib.degrees(((actual + p.rot) % 360 + 360) % 360));
+        }
+        out.addPage(pg);
+      } else {
+        const img = p.imgTipo === 'png' ? await out.embedPng(p.imgBytes) : await out.embedJpg(p.imgBytes);
+        const pg = out.addPage([img.width, img.height]);
+        pg.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+        if (p.rot) pg.setRotation(PDFLib.degrees(p.rot));
+      }
+    }
+    const bytes = await out.save();
+    const fecha = new Date().toISOString().slice(0, 10);
+    descargarBytes(bytes, (soloSeleccion ? 'PDF_Seleccion_' : 'PDF_EYG_') + fecha + '.pdf', 'application/pdf');
+    toast('✅ PDF descargado (' + lista.length + ' páginas, ' + Math.round(bytes.length / 1024) + ' KB)');
+  } catch (e) {
+    toast('Error armando el PDF: ' + (e && e.message || e), true);
+  }
+  cargando(false);
+}
+function descargarBytes(bytes, nombre, tipo) {
+  const url = URL.createObjectURL(new Blob([bytes], { type: tipo }));
+  const a = document.createElement('a');
+  a.href = url; a.download = nombre;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+// ── Zona de arrastre de archivos ─────────────────────────────────────────────
+const dz = $('dropzone');
+['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('arrastrando'); }));
+['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('arrastrando'); }));
+dz.addEventListener('drop', e => agregarArchivos(e.dataTransfer.files));
+// También se puede soltar en cualquier parte de la página
+document.body.addEventListener('dragover', e => e.preventDefault());
+document.body.addEventListener('drop', e => { if (e.target.closest('#dropzone')) return; e.preventDefault(); if (e.dataTransfer.files.length) agregarArchivos(e.dataTransfer.files); });
+
+// ── 💻 Versión PC: genera UN archivo HTML autónomo (librerías embebidas) ─────
+function _b64DeBuffer(buf) {
+  const u = new Uint8Array(buf); let s = ''; const CH = 32768;
+  for (let i = 0; i < u.length; i += CH) s += String.fromCharCode.apply(null, u.subarray(i, i + CH));
+  return btoa(s);
+}
+async function descargarVersionPC() {
+  cargando('Armando la Versión PC (un solo archivo, funciona sin internet)…');
+  try {
+    const [propio, libA, libB, libW] = await Promise.all([
+      fetch('pdf-studio.html', { cache: 'no-store' }).then(r => r.text()),
+      fetch('libs/pdf-lib.min.js', { cache: 'no-store' }).then(r => r.arrayBuffer()),
+      fetch('libs/pdfjs/pdf.min.js', { cache: 'no-store' }).then(r => r.arrayBuffer()),
+      fetch('libs/pdfjs/pdf.worker.min.js', { cache: 'no-store' }).then(r => r.arrayBuffer())
+    ]);
+    const CIERRE = '<' + '/script>';
+    const boot = '<script id="eyg-libs-embebidas">window._EYG_STANDALONE=true;var _EYG_B64={a:"' + _b64DeBuffer(libA) + '",b:"' + _b64DeBuffer(libB) + '",w:"' + _b64DeBuffer(libW) + '"};' +
+      'function _eygDec(b){var s=atob(b),u=new Uint8Array(s.length);for(var i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return new TextDecoder().decode(u)}' +
+      '(0,eval)(_eygDec(_EYG_B64.a));(0,eval)(_eygDec(_EYG_B64.b));' +
+      'pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([_eygDec(_EYG_B64.w)],{type:"text/javascript"}));' + CIERRE;
+    let html = propio
+      .replace('<script src="libs/pdf-lib.min.js">' + CIERRE, boot)
+      .replace('<script src="libs/pdfjs/pdf.min.js">' + CIERRE, '')
+      .replace("<script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'libs/pdfjs/pdf.worker.min.js';" + CIERRE, '');
+    descargarBytes(new TextEncoder().encode(html), 'PDF_Studio_EYG.html', 'text/html');
+    toast('💻 Versión PC descargada — ábrela con doble clic en cualquier computador, sin internet.');
+  } catch (e) {
+    toast('No se pudo armar la Versión PC: ' + (e && e.message || e), true);
+  }
+  cargando(false);
+}
+// En la versión PC (o abierta como archivo) el botón de generarla no aplica
+if (window._EYG_STANDALONE || location.protocol === 'file:') {
+  const b = $('btn-pc'); if (b) b.style.display = 'none';
+}
+render();
+</script>
+</body>
+</html>
