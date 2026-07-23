@@ -10654,7 +10654,8 @@
     "cliente": "SKID EXPERT",
     "contacto": " JENNI",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
+    "factura": "",
     "iva": 19,
     "subtotal": 10676400,
     "ivaVal": 2028516,
@@ -10667,6 +10668,7 @@
     "realizadaPor": "Sheila Baron",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
+    "motivoRechazo": "",
     "items": [
       {
         "id": 1,
@@ -10678,15 +10680,16 @@
         "desvTec": "OFERTADO POR TUBO DE 6 METROS ",
         "marca": "",
         "proveedor": "",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "cc16917b-78e5-4d14-a52b-d674c2e4f1be"
       }
     ],
-    "fechaGuardado": "2026-06-23T19:38:15.989Z",
+    "fechaGuardado": "2026-07-23T22:30:15.948Z",
+    "adjudicadaAt": "2026-07-23",
     "createdAt": "2026-06-23T19:36:33.284Z",
     "createdBy": "lina",
-    "updatedAt": "2026-07-07T20:03:39.022Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-07-07T20:03:39.022Z"
+    "updatedAt": "2026-07-23T22:30:15.948Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1716",
