@@ -1929,21 +1929,21 @@
     "desc": "Cotización LM1535-1 · 58 ítems",
     "estado": "activo",
     "fechaIngreso": "2026-07-09",
-    "valor": 309108701.09000003,
+    "valor": 83478238,
     "hojaEntrada": {
       "requerida": true,
       "fecha": "",
-      "estado": "pendiente"
+      "estado": "recibida"
     },
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-07-09",
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-09",
         "n": "",
         "envio": "",
         "transp": "",
@@ -1952,24 +1952,22 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-09",
         "n": ""
       },
       {
         "s": "done",
-        "f": "2026-07-22",
+        "f": "2026-07-23",
         "n": "",
-        "factura": "528"
+        "factura": "530"
       }
     ],
     "cotizacionId": "LM1535-1",
     "createdAt": "2026-07-09T16:47:20.584Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-24T00:42:28.762Z",
-    "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-24T00:42:28.762Z"
+    "updatedAt": "2026-07-24T00:43:18.086Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1783627669786",
