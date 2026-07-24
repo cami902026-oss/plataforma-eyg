@@ -172,7 +172,7 @@
         "n": "438"
       }
     ],
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.455Z",
     "faltanFechas": true
   },
   {
@@ -494,7 +494,7 @@
     ],
     "createdAt": "2026-05-29T22:46:37.361Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.455Z",
     "updatedBy": "andrea",
     "faltanFechas": true
   },
@@ -540,7 +540,7 @@
     ],
     "createdAt": "2026-06-01T18:49:58.100Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.455Z",
     "updatedBy": "andrea",
     "faltanFechas": true
   },
@@ -856,7 +856,7 @@
     ],
     "createdAt": "2026-06-06T15:30:56.719Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.455Z",
     "updatedBy": "andrea",
     "faltanFechas": true
   },
@@ -1353,7 +1353,7 @@
     "cotizacionId": "",
     "createdAt": "2026-06-11T05:00:00.000Z",
     "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.456Z",
     "updatedBy": "lina",
     "faltanFechas": true
   },
@@ -1401,7 +1401,7 @@
     "cotizacionId": "",
     "createdAt": "2026-06-24T01:57:34.730Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.456Z",
     "updatedBy": "lina",
     "faltanFechas": true
   },
@@ -1449,7 +1449,7 @@
     "cotizacionId": "",
     "createdAt": "2026-06-24T01:01:01.638Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.456Z",
     "updatedBy": "lina",
     "faltanFechas": true
   },
@@ -1497,7 +1497,7 @@
     "cotizacionId": "",
     "createdAt": "2026-06-24T00:59:49.457Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.456Z",
     "updatedBy": "lina",
     "faltanFechas": true
   },
@@ -1918,32 +1918,32 @@
     "cotizacionId": "LM1781",
     "createdAt": "2026-07-08T22:08:25.564Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.456Z",
     "updatedBy": "andrea",
     "faltanFechas": true
   },
   {
     "id": "poc_1783615640584",
-    "num": "ODC-AA-MEC-SKID-469-24-578",
+    "num": "ODC-AA-MEC-SKID-469-24-598",
     "cliente": "SKID EXPERTS",
     "desc": "Cotización LM1535-1 · 58 ítems",
     "estado": "activo",
     "fechaIngreso": "2026-07-09",
-    "valor": 83478238,
+    "valor": 309108701.09000003,
     "hojaEntrada": {
       "requerida": true,
       "fecha": "",
-      "estado": "recibida"
+      "estado": "pendiente"
     },
     "stages": [
       {
-        "s": "done",
+        "s": "active",
         "f": "2026-07-09",
         "n": ""
       },
       {
-        "s": "done",
-        "f": "2026-07-09",
+        "s": "pending",
+        "f": "",
         "n": "",
         "envio": "",
         "transp": "",
@@ -1952,21 +1952,21 @@
         "resp": ""
       },
       {
-        "s": "done",
-        "f": "2026-07-09",
+        "s": "pending",
+        "f": "",
         "n": ""
       },
       {
         "s": "done",
-        "f": "2026-07-23",
+        "f": "2026-07-22",
         "n": "",
-        "factura": "530"
+        "factura": "528"
       }
     ],
     "cotizacionId": "LM1535-1",
     "createdAt": "2026-07-09T16:47:20.584Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-24T00:43:18.086Z",
+    "updatedAt": "2026-07-23T02:03:45.793Z",
     "updatedBy": "andrea"
   },
   {
@@ -2060,7 +2060,7 @@
     "cotizacionId": "LM1790-1",
     "createdAt": "2026-07-10T21:54:51.105Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.456Z",
     "updatedBy": "andrea",
     "faltanFechas": true
   },
@@ -2204,7 +2204,7 @@
     "cotizacionId": "LM1807",
     "createdAt": "2026-07-15T02:28:17.945Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.456Z",
     "updatedBy": "andrea",
     "faltanFechas": true
   },
@@ -2346,7 +2346,7 @@
     "cotizacionId": "LM1740",
     "createdAt": "2026-07-22T01:06:27.079Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.456Z",
     "updatedBy": "andrea",
     "faltanFechas": true
   },
@@ -2394,7 +2394,7 @@
     "cotizacionId": "LM1740",
     "createdAt": "2026-07-22T01:08:05.492Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.456Z",
     "updatedBy": "andrea",
     "faltanFechas": true
   },
@@ -2529,17 +2529,17 @@
         "n": ""
       },
       {
-        "s": "done",
-        "f": "2026-07-23",
+        "s": "pending",
+        "f": "",
         "n": "",
-        "factura": "532"
+        "factura": ""
       }
     ],
     "cotizacionId": "LM1864",
     "createdAt": "2026-07-23T16:35:14.373Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-24T00:58:06.834Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-07-23T16:35:14.373Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "poc_1784835624933",
@@ -2585,11 +2585,8 @@
     "cotizacionId": "LM1818-1",
     "createdAt": "2026-07-23T19:40:24.934Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T23:53:45.985Z",
-    "updatedBy": "alexandra",
-    "deleted": true,
-    "deletedAt": "2026-07-23T23:53:45.965Z",
-    "deletedBy": "andrea"
+    "updatedAt": "2026-07-23T19:40:24.934Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "poc_1784835702704",
@@ -2606,15 +2603,15 @@
     },
     "stages": [
       {
-        "s": "done",
+        "s": "active",
         "f": "2026-07-23",
-        "n": "CODIFER\nINDUVACOL\nBODEGA"
+        "n": ""
       },
       {
-        "s": "active",
-        "f": "2026-07-24",
+        "s": "pending",
+        "f": "",
         "n": "",
-        "envio": "camion_energy",
+        "envio": "",
         "transp": "",
         "guia": "",
         "dest": "",
@@ -2635,8 +2632,8 @@
     "cotizacionId": "LM1842",
     "createdAt": "2026-07-23T19:41:42.705Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T23:53:29.918Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-07-23T19:41:42.705Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "poc_1784835867939",
@@ -2700,8 +2697,8 @@
     },
     "stages": [
       {
-        "s": "done",
-        "f": "2026-07-23",
+        "s": "active",
+        "f": "",
         "n": ""
       },
       {
@@ -2729,55 +2726,8 @@
     "cotizacionId": "LM1782",
     "createdAt": "2026-07-23T19:48:55.127Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T23:52:56.934Z",
-    "updatedBy": "andrea"
-  },
-  {
-    "id": "poc_1784845570814",
-    "num": "ODC-AA-MEC-SKID-469-24-635",
-    "cliente": "SKID EXPERT",
-    "desc": "Cotización LM1865 · 1 ítems",
-    "estado": "activo",
-    "fechaIngreso": "2026-07-23",
-    "valor": 53550,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "2026-07-30",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-07-23",
-        "n": ""
-      },
-      {
-        "s": "active",
-        "f": "2026-07-24",
-        "n": "",
-        "envio": "moto",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": "",
-        "factura": ""
-      }
-    ],
-    "cotizacionId": "LM1865",
-    "createdAt": "2026-07-23T22:26:10.814Z",
-    "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T23:42:16.868Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-07-23T19:48:55.127Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "poc_1784836265039",
@@ -2809,8 +2759,8 @@
         "resp": ""
       },
       {
-        "s": "done",
-        "f": "2026-07-23",
+        "s": "pending",
+        "f": "",
         "n": ""
       },
       {
@@ -2823,10 +2773,8 @@
     "cotizacionId": "LM1819-1",
     "createdAt": "2026-07-23T19:51:05.040Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T23:43:55.632Z",
-    "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-23T23:43:55.632Z"
+    "updatedAt": "2026-07-23T19:51:05.040Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "poc_1777926438588",
@@ -3012,7 +2960,7 @@
     "updatedAt": "2026-06-12T21:08:03.843Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1780065847891",
@@ -3059,7 +3007,7 @@
     "updatedAt": "2026-06-19T21:47:04.915Z",
     "updatedBy": "lina",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1781116679153",
@@ -3151,7 +3099,7 @@
     "updatedAt": "2026-06-12T21:35:09.298Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1779461337230",
@@ -3198,7 +3146,7 @@
     "updatedAt": "2026-06-05T21:34:53.546Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1780339680449",
@@ -3245,7 +3193,7 @@
     "updatedAt": "2026-06-05T21:34:32.068Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "LM1320",
@@ -3361,7 +3309,7 @@
     "updatedAt": "2026-05-22T17:10:32.702Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1777493972827",
@@ -3573,7 +3521,7 @@
     ],
     "updatedAt": "2026-05-22T21:56:25.580Z",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1778258217718",
@@ -3735,7 +3683,7 @@
     "updatedAt": "2026-06-12T21:18:16.482Z",
     "updatedBy": "lina",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1778781419239",
@@ -3782,7 +3730,7 @@
     "updatedAt": "2026-05-25T17:20:52.680Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1778873095177",
@@ -3828,7 +3776,7 @@
     "updatedAt": "2026-05-22T21:50:54.203Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1778878196034",
@@ -3909,7 +3857,7 @@
     "updatedAt": "2026-05-22T21:46:16.368Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1781279696156",
@@ -3958,7 +3906,7 @@
     "lockedBy": "lina",
     "lockedAt": "2026-06-12T21:12:01.056Z",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1781300058074",
@@ -4005,7 +3953,7 @@
     "updatedAt": "2026-06-17T22:32:58.385Z",
     "updatedBy": "alexandra",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1781804395600",
@@ -4097,7 +4045,7 @@
     "updatedAt": "2026-06-22T21:20:50.056Z",
     "updatedBy": "lina",
     "archivada": true,
-    "archivadaAt": "2026-07-24T00:09:05.271Z"
+    "archivadaAt": "2026-07-24T12:25:25.487Z"
   },
   {
     "id": "poc_1782231414655",
@@ -5055,6 +5003,53 @@
     "updatedAt": "✅ Facturado"
   },
   {
+    "id": "poc_1784845570814",
+    "num": "",
+    "cliente": "SKID EXPERT",
+    "desc": "Cotización LM1865 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-23",
+    "valor": 53550,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "2026-07-30",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1865",
+    "createdAt": "2026-07-23T22:26:10.814Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-23T22:26:10.814Z",
+    "updatedBy": "alexandra"
+  },
+  {
     "id": "poc_1784845937272",
     "num": "ODC-AA-ELEC-SKID-469-24-564",
     "cliente": "SKID EXPERT",
@@ -5098,7 +5093,7 @@
     "cotizacionId": "LM1709",
     "createdAt": "2026-07-23T22:32:17.272Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-24T00:04:28.696Z",
+    "updatedAt": "2026-07-24T12:25:25.456Z",
     "updatedBy": "andrea",
     "faltanFechas": true
   }
