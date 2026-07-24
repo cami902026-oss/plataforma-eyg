@@ -2585,8 +2585,11 @@
     "cotizacionId": "LM1818-1",
     "createdAt": "2026-07-23T19:40:24.934Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T19:40:24.934Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-23T23:53:45.985Z",
+    "updatedBy": "alexandra",
+    "deleted": true,
+    "deletedAt": "2026-07-23T23:53:45.965Z",
+    "deletedBy": "andrea"
   },
   {
     "id": "poc_1784835702704",
@@ -2603,15 +2606,15 @@
     },
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-07-23",
-        "n": ""
+        "n": "CODIFER\nINDUVACOL\nBODEGA"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "active",
+        "f": "2026-07-24",
         "n": "",
-        "envio": "",
+        "envio": "camion_energy",
         "transp": "",
         "guia": "",
         "dest": "",
@@ -2632,8 +2635,8 @@
     "cotizacionId": "LM1842",
     "createdAt": "2026-07-23T19:41:42.705Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T19:41:42.705Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-23T23:53:29.918Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1784835867939",
@@ -2697,8 +2700,8 @@
     },
     "stages": [
       {
-        "s": "active",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-23",
         "n": ""
       },
       {
@@ -2726,8 +2729,8 @@
     "cotizacionId": "LM1782",
     "createdAt": "2026-07-23T19:48:55.127Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T19:48:55.127Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-23T23:52:56.934Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1784836265039",
@@ -2759,8 +2762,8 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-23",
         "n": ""
       },
       {
@@ -2773,8 +2776,10 @@
     "cotizacionId": "LM1819-1",
     "createdAt": "2026-07-23T19:51:05.040Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T19:51:05.040Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-23T23:43:55.632Z",
+    "updatedBy": "andrea",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-07-23T23:43:55.632Z"
   },
   {
     "id": "poc_1777926438588",
@@ -2958,7 +2963,9 @@
     "createdAt": "2026-05-22T20:38:55.909Z",
     "createdBy": "andrea",
     "updatedAt": "2026-06-12T21:08:03.843Z",
-    "updatedBy": "andrea"
+    "updatedBy": "andrea",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1780065847891",
@@ -3003,7 +3010,9 @@
     "createdAt": "2026-05-29T15:27:15.070Z",
     "createdBy": "andrea",
     "updatedAt": "2026-06-19T21:47:04.915Z",
-    "updatedBy": "lina"
+    "updatedBy": "lina",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1781116679153",
@@ -3093,7 +3102,9 @@
     "createdAt": "2026-06-10T05:00:00.000Z",
     "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
     "updatedAt": "2026-06-12T21:35:09.298Z",
-    "updatedBy": "andrea"
+    "updatedBy": "andrea",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1779461337230",
@@ -3138,7 +3149,9 @@
     "createdAt": "2026-05-22T17:02:47.733Z",
     "createdBy": "andrea",
     "updatedAt": "2026-06-05T21:34:53.546Z",
-    "updatedBy": "andrea"
+    "updatedBy": "andrea",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1780339680449",
@@ -3183,7 +3196,9 @@
     "createdAt": "2026-06-01T18:48:00.449Z",
     "createdBy": "andrea",
     "updatedAt": "2026-06-05T21:34:32.068Z",
-    "updatedBy": "andrea"
+    "updatedBy": "andrea",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "LM1320",
@@ -3297,7 +3312,9 @@
     "createdAt": "2026-05-22T17:10:32.702Z",
     "createdBy": "andrea",
     "updatedAt": "2026-05-22T17:10:32.702Z",
-    "updatedBy": "andrea"
+    "updatedBy": "andrea",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1777493972827",
@@ -3507,7 +3524,9 @@
         "n": "441"
       }
     ],
-    "updatedAt": "2026-05-22T21:56:25.580Z"
+    "updatedAt": "2026-05-22T21:56:25.580Z",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1778258217718",
@@ -3667,7 +3686,9 @@
     "createdAt": "2026-06-12T21:18:16.482Z",
     "createdBy": "lina",
     "updatedAt": "2026-06-12T21:18:16.482Z",
-    "updatedBy": "lina"
+    "updatedBy": "lina",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1778781419239",
@@ -3712,7 +3733,9 @@
     "createdAt": "2026-05-22T17:08:29.063Z",
     "createdBy": "andrea",
     "updatedAt": "2026-05-25T17:20:52.680Z",
-    "updatedBy": "andrea"
+    "updatedBy": "andrea",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1778873095177",
@@ -3756,7 +3779,9 @@
     "createdAt": "2026-05-22T21:50:54.203Z",
     "createdBy": "andrea",
     "updatedAt": "2026-05-22T21:50:54.203Z",
-    "updatedBy": "andrea"
+    "updatedBy": "andrea",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1778878196034",
@@ -3835,7 +3860,9 @@
     "createdAt": "2026-05-22T21:46:16.368Z",
     "createdBy": "andrea",
     "updatedAt": "2026-05-22T21:46:16.368Z",
-    "updatedBy": "andrea"
+    "updatedBy": "andrea",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1781279696156",
@@ -3882,7 +3909,9 @@
     "updatedAt": "2026-06-12T21:12:01.056Z",
     "updatedBy": "andrea",
     "lockedBy": "lina",
-    "lockedAt": "2026-06-12T21:12:01.056Z"
+    "lockedAt": "2026-06-12T21:12:01.056Z",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1781300058074",
@@ -3927,7 +3956,9 @@
     "createdAt": "2026-06-12T21:34:18.075Z",
     "createdBy": "andrea",
     "updatedAt": "2026-06-17T22:32:58.385Z",
-    "updatedBy": "alexandra"
+    "updatedBy": "alexandra",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1781804395600",
@@ -4017,7 +4048,9 @@
     "createdAt": "2026-06-19T18:06:29.551Z",
     "createdBy": "andrea",
     "updatedAt": "2026-06-22T21:20:50.056Z",
-    "updatedBy": "lina"
+    "updatedBy": "lina",
+    "archivada": true,
+    "archivadaAt": "2026-07-24T13:22:34.057Z"
   },
   {
     "id": "poc_1782231414655",
