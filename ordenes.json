@@ -5148,5 +5148,52 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-24T15:40:49.372Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1784907677442",
+    "num": "240726V3482",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1848 · 7 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-24",
+    "valor": 4674701,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-07-24",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1848",
+    "createdAt": "2026-07-24T15:41:17.442Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-24T15:41:17.442Z",
+    "updatedBy": "andrea"
   }
 ]
