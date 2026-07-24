@@ -90,6 +90,7 @@
 <div class="toolbar">
   <button class="btn btn-green" onclick="document.getElementById('file-input').click()">➕ Agregar archivos</button>
   <button class="btn btn-gold" id="btn-sellos" onclick="abrirSellos()" disabled>🏷️ Sellos y marca…</button>
+  <button class="btn btn-gold" id="btn-form" onclick="abrirFormulario()" disabled title="Rellenar los campos que ya trae el PDF">📋 Formulario</button>
   <button class="btn btn-blue" id="btn-todo" onclick="exportar(false)" disabled>⬇️ Descargar PDF</button>
   <button class="btn btn-gold" id="btn-sel" onclick="exportar(true)" disabled>⬇️ Descargar selección</button>
   <button class="btn btn-ghost" id="btn-marcar" onclick="marcarTodas()" disabled>☑ Todas</button>
@@ -109,7 +110,7 @@
 <div id="grid"></div>
 <div id="vacio">Sin páginas todavía — agrega archivos arriba 👆</div>
 
-<div class="nota-privacidad">🔒 Todo el procesamiento ocurre en este equipo. Los archivos <b>nunca</b> salen de tu PC.<br>E&amp;G Energy Group SAS · PDF Studio v3</div>
+<div class="nota-privacidad">🔒 Todo el procesamiento ocurre en este equipo. Los archivos <b>nunca</b> salen de tu PC.<br>E&amp;G Energy Group SAS · PDF Studio v4</div>
 
 <input type="file" id="file-input" multiple accept="application/pdf,image/jpeg,image/png" style="display:none" onchange="agregarArchivos(this.files); this.value='';">
 <input type="file" id="firma-input" accept="image/png,image/jpeg" style="display:none" onchange="cargarFirma(this.files[0]); this.value='';">
@@ -188,9 +189,33 @@
         <button class="btn btn-ghost" onclick="document.getElementById('firma-input').click()" style="padding:6px 10px;font-size:11px;">📁 Cargar firma</button>
         <label>Ancho firma <select id="ed-firma-tam"><option value="0.15">Pequeña</option><option value="0.25" selected>Mediana</option><option value="0.4">Grande</option></select></label>
       </div>
+      <div class="fila" style="justify-content:center;border-top:1px solid var(--border);padding-top:8px;">
+        <label title="Crea una casilla rellenable: el PDF final se puede llenar en el computador (formatos SGC, actas…)"><input type="radio" name="ed-modo" value="campo"> 📋 Campo rellenable</label>
+        <input type="text" id="ed-campo-nombre" placeholder="Nombre del campo (ej: Responsable)" style="width:210px;">
+        <label>Tipo <select id="ed-campo-tipo"><option value="texto">Texto</option><option value="check">Casilla ☑</option></select></label>
+        <span style="font-size:11px;color:var(--muted);">arrastra sobre la página para definir el tamaño</span>
+      </div>
       <div id="ed-hint">Haz <b>clic</b> en la página para colocar · <b>arrastra</b> un elemento para moverlo · <b>doble clic</b> sobre un elemento para quitarlo</div>
       <div id="ed-wrap"></div>
       <div class="fila" style="justify-content:flex-end;margin-top:10px;"><button class="btn btn-green" onclick="cerrarEditor()">✔ Listo</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- 📋 Modal: rellenar los campos que el PDF ya trae -->
+<div class="overlay" id="modal-form">
+  <div class="modal">
+    <div class="modal-head"><b>📋 Rellenar formulario</b><button class="cerrar" onclick="cerrarModal('modal-form')">✕</button></div>
+    <div class="modal-body">
+      <div id="form-lista"></div>
+      <div class="seccion" style="margin-top:4px;">
+        <label style="font-size:12px;color:var(--light);display:flex;align-items:center;gap:7px;">
+          <input type="checkbox" id="form-editable" onchange="formMarcarCambio()">
+          Dejar el formulario <b>editable</b> (quien lo reciba puede seguir escribiendo)
+        </label>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5;">Sin marcar, las respuestas quedan <b>fijas</b> en el PDF (recomendado para enviar a un cliente: nadie las puede cambiar y se ven igual en cualquier programa).</div>
+      </div>
+      <div class="fila" style="justify-content:flex-end;"><button class="btn btn-green" onclick="cerrarModal('modal-form')">✔ Listo</button></div>
     </div>
   </div>
 </div>
@@ -285,7 +310,11 @@ async function agregarPdf(f) {
   const srcId = 's' + (++_seq);
   // OJO: pdf.js "consume" el buffer — se le da una COPIA y el original queda para pdf-lib.
   const doc = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
-  fuentes[srcId] = { nombre: f.name, bytes: bytes, pdfjsDoc: doc, libDoc: null };
+  fuentes[srcId] = { nombre: f.name, bytes: bytes, pdfjsDoc: doc, libDoc: null, campos: [], valores: {} };
+  try { await _detectarCampos(srcId); } catch(_) {}          // 📋 ¿trae campos de formulario?
+  if ((fuentes[srcId].campos || []).length) {
+    toast('📋 "' + f.name + '" trae ' + fuentes[srcId].campos.length + ' campo(s) de formulario — usa el botón 📋 Formulario para llenarlos.', false);
+  }
   for (let i = 1; i <= doc.numPages; i++) {
     cargando('Miniaturas de "' + f.name + '" — página ' + i + ' de ' + doc.numPages);
     const mt = await miniatura(doc, i);
@@ -389,6 +418,15 @@ async function vistaDe(p, idx, total) {
       } else { ctx.strokeStyle = '#999'; ctx.setLineDash([4, 3]); ctx.strokeRect(it.relX * w, h - it.relY * h - fw * 0.3, fw, fw * 0.3); ctx.setLineDash([]); }
     }
   }
+  // 📋 Campos rellenables: recuadro azul en la vista previa
+  (p.campos || []).forEach(cm => {
+    ctx.save();
+    ctx.strokeStyle = '#60a5fa'; ctx.fillStyle = 'rgba(96,165,250,.15)'; ctx.lineWidth = Math.max(1, s * 0.8);
+    ctx.setLineDash([4, 3]);
+    const x = cm.relX * w, y = h - (cm.relY + cm.relH) * h, ww = cm.relW * w, hh = cm.relH * h;
+    ctx.fillRect(x, y, ww, hh); ctx.strokeRect(x, y, ww, hh);
+    ctx.restore();
+  });
   await pintarGlobales(ctx, w, h, s, idx, total);
   return c.toDataURL('image/jpeg', 0.85);
 }
@@ -419,6 +457,7 @@ function render() {
   if ($('numerar-on') && $('numerar-on').checked) extras.push('numeración');
   $('contador').textContent = paginas.length ? (paginas.length + ' página(s)' + (nSel ? ' · ' + nSel + ' sel.' : '') + (extras.length ? ' · 🏷️ ' + extras.join(' + ') : '')) : '';
   ['btn-todo','btn-marcar','btn-limpiar','btn-sellos'].forEach(id => { $(id).disabled = !paginas.length; });
+  const _bf = $('btn-form'); if (_bf) { _bf.disabled = !_hayFormularios(); _bf.style.display = _hayFormularios() ? '' : 'none'; }
   ['btn-sel','btn-rotar','btn-quitar'].forEach(id => { $(id).disabled = !nSel; });
   $('btn-marcar').textContent = (nSel === paginas.length && paginas.length) ? '☐ Ninguna' : '☑ Todas';
   grid.innerHTML = paginas.map((p, i) =>
@@ -511,9 +550,14 @@ async function abrirEditor(i) {
       const maxW = Math.min(860, window.innerWidth - 90);
       const maxH = window.innerHeight * 0.62;
       edEscala = Math.min(maxW / vp0.width, maxH / vp0.height);
+      // Se dibuja a MÁS resolución de la que se muestra → se ve nítido al ampliar
+      const NIT = Math.min(2.5, (window.devicePixelRatio || 1) * 1.6);
       edVp = page.getViewport({ scale: edEscala, rotation: rotTotal });
-      canvas.width = Math.ceil(edVp.width); canvas.height = Math.ceil(edVp.height);
-      await page.render({ canvasContext: canvas.getContext('2d'), viewport: edVp }).promise;
+      const vpNit = page.getViewport({ scale: edEscala * NIT, rotation: rotTotal });
+      canvas.width = Math.ceil(vpNit.width); canvas.height = Math.ceil(vpNit.height);
+      canvas.style.width = Math.ceil(edVp.width) + 'px'; canvas.style.height = Math.ceil(edVp.height) + 'px';
+      canvas._nit = NIT;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: vpNit }).promise;
     } else {
       // Imagen: pintarla YA rotada (igual que se verá en el PDF final)
       const img = await cargarImgEl(p.thumb);
@@ -529,12 +573,14 @@ async function abrirEditor(i) {
       edEscala = canvas.width / ((rot % 180) ? p.hpt : p.wpt);
       edVp = null;
     }
-    wrap.style.width = canvas.width + 'px';
-    wrap.style.height = canvas.height + 'px';
+    const _dw = parseInt(canvas.style.width) || canvas.width, _dh = parseInt(canvas.style.height) || canvas.height;
+    wrap.style.width = _dw + 'px';
+    wrap.style.height = _dh + 'px';
     wrap.appendChild(canvas);
     canvas.addEventListener('click', edClickCanvas);
+    canvas.addEventListener('mousedown', edDragCampo);   // 📋 crear campos arrastrando
     // Los "globales" (marca de agua, membrete, numeración) también se ven aquí
-    try { await pintarGlobales(canvas.getContext('2d'), canvas.width, canvas.height, edEscala, i + 1, paginas.length); } catch (_) {}
+    try { await pintarGlobales(canvas.getContext('2d'), canvas.width, canvas.height, edEscala * (canvas._nit || 1), i + 1, paginas.length); } catch (_) {}
     edPintarItems();
   } catch (e) { toast('No se pudo abrir la página: ' + (e && e.message || e), true); }
   cargando(false);
@@ -543,6 +589,7 @@ function cerrarEditor() { cerrarModal('modal-editor'); edIdx = null; render(); a
 function edModo() { return document.querySelector('input[name=ed-modo]:checked').value; }
 function edClickCanvas(ev) {
   if (edIdx === null) return;
+  if (edModo() === 'campo') return;      // los campos se crean arrastrando (edDragCampo)
   const p = paginas[edIdx];
   const rect = ev.currentTarget.getBoundingClientRect();
   const relX = (ev.clientX - rect.left) / rect.width;
@@ -556,6 +603,43 @@ function edClickCanvas(ev) {
     p.items.push({ tipo: 'firma', relX, relY, anchoRel: parseFloat($('ed-firma-tam').value) || 0.25 });
   }
   edPintarItems();
+}
+// 📋 Crear un campo rellenable arrastrando sobre la página
+function edDragCampo(ev) {
+  if (edIdx === null || edModo() !== 'campo') return;
+  const canvas = $('ed-wrap').querySelector('canvas'); if (!canvas) return;
+  ev.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const x0 = (ev.clientX - rect.left) / rect.width, y0 = 1 - (ev.clientY - rect.top) / rect.height;
+  const guia = document.createElement('div');
+  guia.className = 'lp-rect'; guia.style.background = 'rgba(96,165,250,.25)'; guia.style.borderColor = '#60a5fa';
+  $('ed-wrap').appendChild(guia);
+  const W = $('ed-wrap').clientWidth, H = $('ed-wrap').clientHeight;
+  const mueve = e => {
+    const x1 = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    const y1 = Math.min(1, Math.max(0, 1 - (e.clientY - rect.top) / rect.height));
+    guia.style.left = (Math.min(x0, x1) * W) + 'px'; guia.style.bottom = (Math.min(y0, y1) * H) + 'px';
+    guia.style.width = (Math.abs(x1 - x0) * W) + 'px'; guia.style.height = (Math.abs(y1 - y0) * H) + 'px';
+  };
+  const suelta = e => {
+    document.removeEventListener('mousemove', mueve); document.removeEventListener('mouseup', suelta);
+    guia.remove();
+    const x1 = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    const y1 = Math.min(1, Math.max(0, 1 - (e.clientY - rect.top) / rect.height));
+    let w = Math.abs(x1 - x0), h = Math.abs(y1 - y0);
+    if (w < 0.01) w = 0.25;                       // clic simple → tamaño cómodo por defecto
+    if (h < 0.008) h = 0.028;
+    const p = paginas[edIdx];
+    p.campos = p.campos || [];
+    const tipo = $('ed-campo-tipo').value === 'check' ? 'check' : 'texto';
+    let nombre = textoSeguro($('ed-campo-nombre').value) || (tipo === 'check' ? 'Casilla' : 'Campo');
+    const usados = paginas.reduce((s, pp) => s + ((pp.campos || []).length), 0);
+    p.campos.push({ tipo: tipo, nombre: nombre, relX: Math.min(x0, x1), relY: Math.min(y0, y1), relW: w, relH: h, orden: usados + 1 });
+    $('ed-campo-nombre').value = '';
+    edPintarItems();
+    toast('📋 Campo "' + nombre + '" creado — quien reciba el PDF podrá escribir ahí');
+  };
+  document.addEventListener('mousemove', mueve); document.addEventListener('mouseup', suelta);
 }
 async function cargarFirma(f) {
   if (!f) return;
@@ -572,6 +656,21 @@ function edPintarItems() {
   if (edIdx === null) return;
   const p = paginas[edIdx];
   const W = wrap.clientWidth, H = wrap.clientHeight;
+  // 📋 Campos rellenables creados (recuadro azul con su nombre; doble clic quita)
+  (p.campos || []).forEach((c, k) => {
+    const d = document.createElement('div');
+    d.className = 'ed-item';
+    d.style.left = (c.relX * W) + 'px'; d.style.bottom = (c.relY * H) + 'px';
+    d.style.width = (c.relW * W) + 'px'; d.style.height = (c.relH * H) + 'px';
+    d.style.border = '1.5px dashed #60a5fa'; d.style.background = 'rgba(96,165,250,.14)';
+    d.style.color = '#93c5fd'; d.style.fontSize = '10px'; d.style.overflow = 'hidden';
+    d.style.display = 'flex'; d.style.alignItems = 'center'; d.style.padding = '0 3px';
+    d.textContent = (c.tipo === 'check' ? '☑ ' : '') + c.nombre;
+    d.title = 'Campo rellenable "' + c.nombre + '" · arrastra para moverlo · doble clic para quitarlo';
+    d.addEventListener('dblclick', ev => { ev.stopPropagation(); p.campos.splice(k, 1); edPintarItems(); });
+    d.addEventListener('mousedown', ev => { ev.stopPropagation(); edDragItem(ev, c, d, W, H); });
+    wrap.appendChild(d);
+  });
   p.items.forEach((it, k) => {
     const div = document.createElement('div');
     div.className = 'ed-item';
@@ -674,7 +773,7 @@ async function _rasterLimpio(p, escala) {
 }
 
 // ── Modal de limpieza ────────────────────────────────────────────────────────
-let lpIdx = null, _lpBase = null, _lpCanvas = null;
+let lpIdx = null, _lpBase = null, _lpCanvas = null, _lpDisp = { w: 0, h: 0 };
 async function abrirLimpiar(i) {
   lpIdx = i;
   const p = paginas[i]; const l = _limpDe(p);
@@ -685,23 +784,42 @@ async function abrirLimpiar(i) {
   $('lp-color').checked = l.marca.color !== false;
   $('lp-bn').checked = !!l.marca.bn;
   abrirModalId('modal-limpiar');
-  cargando('Abriendo la página…');
+  cargando('Abriendo la página en alta calidad…');
   try {
-    const img = await cargarImgEl(p.thumb);
     const rot = ((p.rot % 360) + 360) % 360;
-    const w0 = img.naturalWidth, h0 = img.naturalHeight;
-    const wv = (rot % 180) ? h0 : w0, hv = (rot % 180) ? w0 : h0;
-    const esc = Math.min(Math.min(820, window.innerWidth - 90) / wv, window.innerHeight * 0.5 / hv, 3);
     const c = document.createElement('canvas');
-    c.width = Math.ceil(wv * esc); c.height = Math.ceil(hv * esc);
     const cx = c.getContext('2d');
-    cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);
-    cx.save(); cx.translate(c.width / 2, c.height / 2); cx.rotate(rot * Math.PI / 180);
-    cx.drawImage(img, -w0 * esc / 2, -h0 * esc / 2, w0 * esc, h0 * esc); cx.restore();
+    const NIT = Math.min(2.5, (window.devicePixelRatio || 1) * 1.6);   // nitidez extra (retina)
+    let dispW, dispH;
+    if (p.tipo === 'pdf') {
+      // Se REDIBUJA la página del PDF (antes se ampliaba la miniatura y salía borrosa)
+      const page = await fuentes[p.srcId].pdfjsDoc.getPage(p.pageIndex + 1);
+      const rotTotal = ((page.rotate || 0) + p.rot) % 360;
+      const v1 = page.getViewport({ scale: 1, rotation: rotTotal });
+      const escDisp = Math.min(Math.min(880, window.innerWidth - 90) / v1.width, (window.innerHeight * 0.52) / v1.height);
+      dispW = Math.ceil(v1.width * escDisp); dispH = Math.ceil(v1.height * escDisp);
+      const vp = page.getViewport({ scale: escDisp * NIT, rotation: rotTotal });
+      c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+      cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);
+      await page.render({ canvasContext: cx, viewport: vp }).promise;
+    } else {
+      const img = await cargarImgEl(p.thumb);        // en imágenes, p.thumb ya es el original
+      const w0 = img.naturalWidth, h0 = img.naturalHeight;
+      const wv = (rot % 180) ? h0 : w0, hv = (rot % 180) ? w0 : h0;
+      const escDisp = Math.min(Math.min(880, window.innerWidth - 90) / wv, (window.innerHeight * 0.52) / hv, 1);
+      dispW = Math.ceil(wv * escDisp); dispH = Math.ceil(hv * escDisp);
+      c.width = Math.ceil(dispW * NIT); c.height = Math.ceil(dispH * NIT);
+      cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);
+      const k = (c.width / wv);
+      cx.save(); cx.translate(c.width / 2, c.height / 2); cx.rotate(rot * Math.PI / 180);
+      cx.drawImage(img, -w0 * k / 2, -h0 * k / 2, w0 * k, h0 * k); cx.restore();
+    }
+    c.style.width = dispW + 'px'; c.style.height = dispH + 'px';   // se ve nítido en pantalla
+    _lpDisp = { w: dispW, h: dispH };
     _lpBase = cx.getImageData(0, 0, c.width, c.height);   // copia limpia para previsualizar
     _lpCanvas = c;
     const wrap = $('lp-wrap');
-    wrap.innerHTML = ''; wrap.style.width = c.width + 'px'; wrap.style.height = c.height + 'px';
+    wrap.innerHTML = ''; wrap.style.width = dispW + 'px'; wrap.style.height = dispH + 'px';
     wrap.appendChild(c);
     wrap.onmousedown = lpDragIni;
     lpPreview();
@@ -728,10 +846,10 @@ function lpPreview() {
   wrap.querySelectorAll('.lp-rect').forEach(n => n.remove());
   (l.rects || []).forEach(r => {
     const d = document.createElement('div'); d.className = 'lp-rect';
-    d.style.left = (r.x * _lpCanvas.width) + 'px';
-    d.style.bottom = (r.y * _lpCanvas.height) + 'px';
-    d.style.width = (r.w * _lpCanvas.width) + 'px';
-    d.style.height = (r.h * _lpCanvas.height) + 'px';
+    d.style.left = (r.x * _lpDisp.w) + 'px';
+    d.style.bottom = (r.y * _lpDisp.h) + 'px';
+    d.style.width = (r.w * _lpDisp.w) + 'px';
+    d.style.height = (r.h * _lpDisp.h) + 'px';
     wrap.appendChild(d);
   });
   $('lp-nrects').textContent = (l.rects || []).length ? ((l.rects.length) + ' área(s) tapada(s)') : '';
@@ -745,10 +863,10 @@ function lpDragIni(ev) {
   const mueve = e => {
     const x1 = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
     const y1 = Math.min(1, Math.max(0, 1 - (e.clientY - rect.top) / rect.height));
-    guia.style.left = (Math.min(x0, x1) * _lpCanvas.width) + 'px';
-    guia.style.bottom = (Math.min(y0, y1) * _lpCanvas.height) + 'px';
-    guia.style.width = (Math.abs(x1 - x0) * _lpCanvas.width) + 'px';
-    guia.style.height = (Math.abs(y1 - y0) * _lpCanvas.height) + 'px';
+    guia.style.left = (Math.min(x0, x1) * _lpDisp.w) + 'px';
+    guia.style.bottom = (Math.min(y0, y1) * _lpDisp.h) + 'px';
+    guia.style.width = (Math.abs(x1 - x0) * _lpDisp.w) + 'px';
+    guia.style.height = (Math.abs(y1 - y0) * _lpDisp.h) + 'px';
   };
   const suelta = e => {
     document.removeEventListener('mousemove', mueve); document.removeEventListener('mouseup', suelta);
@@ -811,11 +929,98 @@ function aplicarSello() {
   toast('🏷️ Sello "' + txt + '" estampado en ' + objetivo.length + ' página(s) — míralo en las miniaturas. Con ✏️ lo mueves o quitas.');
 }
 
+/* ── 📋 SESIÓN 3: FORMULARIOS ────────────────────────────────────────────────
+   (a) Rellenar los campos que el PDF YA trae (formatos de clientes/proveedores).
+   (b) Crear campos rellenables sobre cualquier página (formatos SGC de E&G).
+   100% aditivo: si un PDF no tiene campos y nadie crea ninguno, la exportación
+   sigue exactamente el mismo camino de siempre. */
+function _tipoCampo(f) {
+  try {
+    if (typeof f.setText === 'function') return 'texto';
+    if (typeof f.check === 'function') return 'check';
+    if (typeof f.select === 'function') return 'lista';
+  } catch(_) {}
+  return 'otro';
+}
+async function _detectarCampos(srcId) {
+  const f = fuentes[srcId]; if (!f) return;
+  f.campos = []; f.valores = {};
+  try {
+    const doc = await libDocDe(srcId);
+    const form = doc.getForm();
+    (form.getFields() || []).forEach(fl => {
+      try {
+        const tipo = _tipoCampo(fl);
+        if (tipo === 'otro') return;
+        const c = { nombre: fl.getName(), tipo: tipo };
+        if (tipo === 'lista') { try { c.opciones = fl.getOptions() || []; } catch(_) { c.opciones = []; } }
+        f.campos.push(c);
+      } catch(_) {}
+    });
+  } catch(_) { f.campos = []; }
+}
+function _hayFormularios() { return Object.keys(fuentes).some(k => (fuentes[k].campos || []).length); }
+function abrirFormulario() {
+  const cont = $('form-lista');
+  const conCampos = Object.keys(fuentes).filter(k => (fuentes[k].campos || []).length);
+  if (!conCampos.length) { toast('Ninguno de los PDF cargados trae campos de formulario. Para crear campos usa ✏️ Editar → 📋 Campo.', true); return; }
+  cont.innerHTML = conCampos.map(k => {
+    const f = fuentes[k];
+    return '<div class="seccion"><h4>📄 ' + f.nombre.replace(/</g, '&lt;') + ' <span style="color:var(--muted);font-weight:400;">(' + f.campos.length + ' campo(s))</span></h4>' +
+      f.campos.map((c, j) => {
+        const val = (f.valores || {})[c.nombre];
+        const et = '<label style="min-width:150px;font-size:11.5px;color:var(--muted);">' + String(c.nombre).replace(/</g, '&lt;') + '</label>';
+        if (c.tipo === 'check') return '<div class="fila">' + et + '<input type="checkbox" ' + (val ? 'checked' : '') + ' onchange="formSet(\'' + k + '\',' + j + ',this.checked)"></div>';
+        if (c.tipo === 'lista') return '<div class="fila">' + et + '<select onchange="formSet(\'' + k + '\',' + j + ',this.value)"><option value="">—</option>' +
+          (c.opciones || []).map(o => '<option' + (val === o ? ' selected' : '') + '>' + String(o).replace(/</g, '&lt;') + '</option>').join('') + '</select></div>';
+        return '<div class="fila">' + et + '<input type="text" style="flex:1;min-width:160px;" value="' + String(val == null ? '' : val).replace(/"/g, '&quot;') + '" oninput="formSet(\'' + k + '\',' + j + ',this.value)"></div>';
+      }).join('') + '</div>';
+  }).join('');
+  abrirModalId('modal-form');
+}
+function formSet(srcId, idx, valor) {
+  const f = fuentes[srcId]; if (!f || !f.campos[idx]) return;
+  f.valores = f.valores || {};
+  f.valores[f.campos[idx].nombre] = valor;
+  f.libDocRelleno = null;      // invalida el documento ya rellenado
+}
+function formMarcarCambio() { Object.keys(fuentes).forEach(k => { fuentes[k].libDocRelleno = null; }); }
+
 // ── Exportar (arma el PDF con TODO: orden, rotación, items y ajustes) ────────
 async function libDocDe(srcId) {
   const f = fuentes[srcId];
   if (!f.libDoc) f.libDoc = await PDFLib.PDFDocument.load(f.bytes, { ignoreEncryption: true });
   return f.libDoc;
+}
+// Documento del que se copian las páginas. Si NADIE rellenó campos devuelve
+// exactamente el mismo de siempre (comportamiento idéntico al anterior).
+async function _libDocParaCopiar(srcId) {
+  const f = fuentes[srcId];
+  const vals = (f && f.valores) || {};
+  const llenos = Object.keys(vals).filter(k => vals[k] !== '' && vals[k] != null && vals[k] !== false);
+  if (!llenos.length) return libDocDe(srcId);
+  if (f.libDocRelleno) return f.libDocRelleno;
+  try {
+    const doc = await PDFLib.PDFDocument.load(f.bytes, { ignoreEncryption: true });
+    const form = doc.getForm();
+    llenos.forEach(nombre => {
+      try {
+        const fld = form.getField(nombre);
+        const v = vals[nombre];
+        if (typeof fld.setText === 'function') fld.setText(String(v));
+        else if (typeof fld.check === 'function') { v ? fld.check() : fld.uncheck(); }
+        else if (typeof fld.select === 'function') fld.select(String(v));
+      } catch(_) {}
+    });
+    const editable = $('form-editable') && $('form-editable').checked;
+    if (!editable) { try { form.flatten(); } catch(_) {} }   // respuestas fijas
+    else { try { form.updateFieldAppearances(); } catch(_) {} }   // que se vean en cualquier visor
+    f.libDocRelleno = doc;
+    return doc;
+  } catch (e) {
+    toast('No se pudo rellenar el formulario de "' + f.nombre + '" — sale sin llenar (' + (e && e.message || e) + ')', true);
+    return libDocDe(srcId);
+  }
 }
 let _logoCache = null;
 async function logoBytes() {
@@ -873,6 +1078,7 @@ async function exportar(soloSeleccion) {
       const lb = await logoBytes();
       if (lb) { try { logoImg = await out.embedPng(lb); } catch (_) {} }
     }
+    const _camposUsados = {};   // nombres de campo ya usados (no se pueden repetir en un PDF)
     let idx = 0;
     for (const p of lista) {
       idx++;
@@ -891,7 +1097,7 @@ async function exportar(soloSeleccion) {
         pg.drawImage(img, { x: 0, y: 0, width: wpt, height: hpt });
         R = 0;
       } else if (p.tipo === 'pdf') {
-        const src = await libDocDe(p.srcId);
+        const src = await _libDocParaCopiar(p.srcId);   // 📋 con el formulario relleno si aplica
         const [cp] = await out.copyPages(src, [p.pageIndex]);
         pg = cp;
         R = rotTotalDe(pg, p.rot);
@@ -935,6 +1141,30 @@ async function exportar(soloSeleccion) {
         dibujarTextoVisual(pg, R, 0.62, 1 - 22 / dv.h, 'E&G ENERGY GROUP SAS', { font: fNeg, size: 11, color: azul, centrado: true });
         dibujarTextoVisual(pg, R, 0.62, 1 - 35 / dv.h, 'Carrera 7 # 12-61 Chia · Tel 3204947227 · comercial1@eygenergygroup.com', { font: fReg, size: 8, color: hexARgb('#444444'), centrado: true });
         dibujarTextoVisual(pg, R, 0.5, 16 / dv.h, 'E&G Energy Group SAS · www.eygenergygroup.com', { font: fReg, size: 7.5, color: dorado, centrado: true });
+      }
+      // 📋 Campos rellenables creados en esta página (quedan EDITABLES en el PDF final)
+      for (const cmp of (p.campos || [])) {
+        try {
+          const form2 = out.getForm();
+          const pt = dispAPagina(sz.width, sz.height, R, cmp.relX * dv.w, cmp.relY * dv.h);
+          const anchoPt = cmp.relW * dv.w, altoPt = cmp.relH * dv.h;
+          const w2 = (R % 180) ? altoPt : anchoPt, h2 = (R % 180) ? anchoPt : altoPt;
+          const base = textoSeguro(cmp.nombre) || 'Campo';
+          let nombre = base, n = 2;
+          while (_camposUsados[nombre]) { nombre = base + ' ' + (n++); }
+          _camposUsados[nombre] = true;
+          if (cmp.tipo === 'check') {
+            const cb = form2.createCheckBox(nombre);
+            const lado = Math.min(w2, h2) || 12;
+            cb.addToPage(pg, { x: pt.x, y: pt.y, width: lado, height: lado });
+          } else {
+            const tf = form2.createTextField(nombre);
+            // La fuente (fReg) es obligatoria; y setFontSize DEBE ir DESPUÉS de addToPage
+            // (al revés pdf-lib deja el campo sin apariencia y algunos visores fallan).
+            tf.addToPage(pg, { x: pt.x, y: pt.y, width: w2 || 120, height: h2 || 16, borderWidth: 1, font: fReg });
+            try { tf.setFontSize(Math.max(7, Math.min(14, h2 * 0.62))); } catch(_) {}
+          }
+        } catch (e) { toast('No se pudo crear el campo "' + (cmp.nombre || '') + '": ' + (e && e.message || e), true); }
       }
       // 🔢 Numeración
       if (conNum) {
