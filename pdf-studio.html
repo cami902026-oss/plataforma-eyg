@@ -73,11 +73,19 @@
   .ed-item:hover { border-color:rgba(212,175,55,.8); background:rgba(212,175,55,.08); }
   .ed-item img { display:block; pointer-events:none; }
   #ed-hint { font-size:11.5px; color:var(--muted); text-align:center; margin:8px 0; }
+  /* 🧽 Limpieza: tapar datos y quitar marcas de agua */
+  #lp-wrap { position:relative; margin:0 auto; box-shadow:0 6px 30px rgba(0,0,0,.5); background:#fff; cursor:crosshair; }
+  #lp-wrap canvas { display:block; }
+  .lp-rect { position:absolute; background:rgba(220,38,38,.35); border:1.5px solid #ef4444; pointer-events:none; }
+  .lp-ctrl { display:flex; gap:14px; flex-wrap:wrap; align-items:center; justify-content:center; margin-bottom:10px; }
+  .lp-ctrl label { font-size:12px; color:var(--light); display:flex; align-items:center; gap:6px; }
+  .lp-aviso { font-size:11.5px; color:#fbbf24; background:rgba(232,160,32,.12); border:1px solid rgba(232,160,32,.35); border-radius:8px; padding:8px 12px; margin:8px 0; line-height:1.5; }
+  .pagina .limp { position:absolute; bottom:64px; left:10px; background:rgba(239,68,68,.9); color:#fff; font-size:9.5px; font-weight:700; border-radius:8px; padding:2px 7px; z-index:2; }
 </style>
 </head>
 <body>
 <h1>📄 PDF Studio E&G <span class="badge">🔒 100% LOCAL — nada se sube a internet</span></h1>
-<div class="sub">Arrastra PDFs o imágenes; organiza (mover, rotar, borrar) y <b>edita viendo el resultado en vivo</b>: ✏️ (o doble clic) para escribir texto y firmar sobre la página, 🏷️ para sellos, marca de agua, membrete E&amp;G y numeración — las miniaturas muestran TODO tal como saldrá el PDF.</div>
+<div class="sub">Arrastra PDFs o imágenes; organiza (mover, rotar, borrar) y <b>edita viendo el resultado en vivo</b>: ✏️ (o doble clic) para escribir texto y firmar, 🧽 para <b>tapar datos y quitar marcas de agua</b>, 🏷️ para sellos, membrete E&amp;G y numeración — las miniaturas muestran TODO tal como saldrá el PDF.</div>
 
 <div class="toolbar">
   <button class="btn btn-green" onclick="document.getElementById('file-input').click()">➕ Agregar archivos</button>
@@ -101,7 +109,7 @@
 <div id="grid"></div>
 <div id="vacio">Sin páginas todavía — agrega archivos arriba 👆</div>
 
-<div class="nota-privacidad">🔒 Todo el procesamiento ocurre en este equipo. Los archivos <b>nunca</b> salen de tu PC.<br>E&amp;G Energy Group SAS · PDF Studio v2</div>
+<div class="nota-privacidad">🔒 Todo el procesamiento ocurre en este equipo. Los archivos <b>nunca</b> salen de tu PC.<br>E&amp;G Energy Group SAS · PDF Studio v3</div>
 
 <input type="file" id="file-input" multiple accept="application/pdf,image/jpeg,image/png" style="display:none" onchange="agregarArchivos(this.files); this.value='';">
 <input type="file" id="firma-input" accept="image/png,image/jpeg" style="display:none" onchange="cargarFirma(this.files[0]); this.value='';">
@@ -183,6 +191,36 @@
       <div id="ed-hint">Haz <b>clic</b> en la página para colocar · <b>arrastra</b> un elemento para moverlo · <b>doble clic</b> sobre un elemento para quitarlo</div>
       <div id="ed-wrap"></div>
       <div class="fila" style="justify-content:flex-end;margin-top:10px;"><button class="btn btn-green" onclick="cerrarEditor()">✔ Listo</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- 🧽 Modal: tapar datos (redacción) y quitar marca de agua / fondo -->
+<div class="overlay" id="modal-limpiar">
+  <div class="modal grande">
+    <div class="modal-head"><b id="lp-titulo">🧽 Limpiar página</b><button class="cerrar" onclick="cerrarLimpiar()">✕</button></div>
+    <div class="modal-body">
+      <div class="lp-ctrl">
+        <b style="color:var(--gold);font-size:12px;">🔒 TAPAR DATOS</b>
+        <span style="font-size:11.5px;color:var(--muted);">Arrastra sobre la página para tapar (precios, datos del proveedor…)</span>
+        <button class="btn btn-ghost" onclick="lpDeshacerRect()" style="padding:5px 10px;font-size:11px;">↶ Quitar último</button>
+        <button class="btn btn-ghost" onclick="lpBorrarRects()" style="padding:5px 10px;font-size:11px;">✖ Quitar todos</button>
+        <span id="lp-nrects" style="font-size:11.5px;color:#f87171;font-weight:700;"></span>
+      </div>
+      <div class="lp-ctrl" style="border-top:1px solid var(--border);padding-top:10px;">
+        <b style="color:var(--gold);font-size:12px;">🧽 QUITAR MARCA DE AGUA / FONDO</b>
+        <label><input type="checkbox" id="lp-on" onchange="lpPreview()"> Activar</label>
+        <label title="Más a la derecha = borra más (si se come el texto, muévelo a la izquierda)">Fuerza <input type="range" id="lp-umbral" min="120" max="250" value="170" oninput="lpPreview()" style="width:120px;"> <span id="lp-umbral-val" style="color:var(--muted);font-size:11px;">38%</span></label>
+        <label title="Borra sellos y marcas de colores claros (rojo, azul, verde…) dejando el texto negro"><input type="checkbox" id="lp-color" checked onchange="lpPreview()"> Quitar marcas de color</label>
+        <label title="Deja la hoja en blanco y negro puro — útil para escaneos sucios"><input type="checkbox" id="lp-bn" onchange="lpPreview()"> Blanco y negro</label>
+        <button class="btn btn-gold" onclick="lpAplicarATodas()" style="padding:6px 12px;font-size:11.5px;">📄 Aplicar esta limpieza a TODAS</button>
+      </div>
+      <div class="lp-aviso">⚠️ Al aplicar, <b>esta página se convierte en imagen</b>: lo tapado desaparece de verdad del archivo (nadie puede copiarlo ni buscarlo), pero el texto deja de ser seleccionable. Las páginas que no toques quedan intactas.</div>
+      <div id="lp-wrap"></div>
+      <div class="fila" style="justify-content:space-between;margin-top:10px;">
+        <button class="btn btn-red" onclick="lpQuitarTodo()">🗑 Quitar la limpieza de esta página</button>
+        <button class="btn btn-green" onclick="cerrarLimpiar()">✔ Listo</button>
+      </div>
     </div>
   </div>
 </div>
@@ -338,6 +376,7 @@ async function vistaDe(p, idx, total) {
   const ctx = c.getContext('2d');
   ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
   ctx.save(); ctx.translate(w / 2, h / 2); ctx.rotate(rot * Math.PI / 180); ctx.drawImage(img, -w0 / 2, -h0 / 2, w0, h0); ctx.restore();
+  _aplicarLimpiezaCanvas(ctx, w, h, p.limp);   // 🧽 tapados y marca de agua, tal como saldrán
   const visualWpt = (rot % 180) ? p.hpt : p.wpt;
   const s = w / visualWpt;
   const texto = _pintor(ctx, w, h, s);
@@ -387,6 +426,7 @@ function render() {
       'ondragstart="dragIni(event,' + i + ')" ondragover="dragSobre(event,this)" ondragleave="this.classList.remove(\'drag-over\')" ondrop="dragFin(event,' + i + ',this)">' +
       '<span class="num">' + (i + 1) + '</span>' +
       (p.items.length ? '<span class="edits">✍️ ' + p.items.length + '</span>' : '') +
+      (_tieneLimpieza(p) ? '<span class="limp">🧽 ' + ((p.limp.rects || []).length ? (p.limp.rects.length + ' tapado(s)') : 'limpia') + '</span>' : '') +
       '<input type="checkbox"' + (p.sel ? ' checked' : '') + ' onclick="paginas[' + i + '].sel=this.checked;render()">' +
       '<div class="thumbwrap" onclick="paginas[' + i + '].sel=!paginas[' + i + '].sel;render()" ondblclick="abrirEditor(' + i + ')" title="Clic = seleccionar · doble clic = editar">' +
         '<img class="thumb" src="' + (p.vista || p.thumb) + '"' + (p.vista ? '' : ' style="transform:rotate(' + p.rot + 'deg)' + ((p.rot % 180) ? ';max-width:75%;max-height:75%' : '') + '"') + '>' +
@@ -394,6 +434,7 @@ function render() {
       '<div class="meta" title="' + p.nombre.replace(/"/g, '&quot;') + '">' + (p.tipo === 'img' ? '🖼️ ' : '📄 ') + p.nombre + (p.tipo === 'pdf' ? ' · pág ' + (p.pageIndex + 1) : '') + '</div>' +
       '<div class="acciones">' +
         '<button class="edit" title="Editar: escribir texto o poner firma sobre esta página" onclick="abrirEditor(' + i + ')">✏️</button>' +
+        '<button title="Tapar datos (precios, proveedor…) y quitar marca de agua o fondo" onclick="abrirLimpiar(' + i + ')" style="background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:#fca5a5">🧽</button>' +
         '<button title="Rotar 90° a la izquierda" onclick="rotar(' + i + ',-90)">↺</button>' +
         '<button title="Rotar 90° a la derecha" onclick="rotar(' + i + ',90)">↻</button>' +
         '<button class="del" title="Quitar esta página" onclick="paginas.splice(' + i + ',1);render()">🗑</button>' +
@@ -566,6 +607,180 @@ function edDragItem(ev, it, div, W, H) {
   document.addEventListener('mouseup', suelta);
 }
 
+/* ── 🧽 SESIÓN 4: TAPAR DATOS (redacción real) Y QUITAR MARCAS DE AGUA ───────
+   `p.limp = { rects:[{x,y,w,h}...], marca:{on,umbral,color,bn} }` en fracciones
+   0-1 del espacio VISUAL. Al exportar, la página con limpieza se RASTERIZA: lo
+   tapado desaparece del archivo de verdad (no es un rectángulo encima). */
+function _tieneLimpieza(p) {
+  const l = p && p.limp; if (!l) return false;
+  return (l.rects && l.rects.length > 0) || !!(l.marca && l.marca.on);
+}
+function _limpDe(p) {
+  if (!p.limp) p.limp = { rects: [], marca: { on: false, umbral: 200, color: true, bn: false } };
+  if (!p.limp.rects) p.limp.rects = [];
+  if (!p.limp.marca) p.limp.marca = { on: false, umbral: 200, color: true, bn: false };
+  return p.limp;
+}
+// Motor de píxeles: blanquea lo claro (marca de agua/fondo) y lo de color claro
+// (sellos rojos/azules), conservando el texto oscuro. Función pura → testeable.
+function _limpiarPixeles(d, cfg) {
+  const umbral = cfg.umbral != null ? cfg.umbral : 200;
+  const quitarColor = cfg.color !== false, bn = !!cfg.bn;
+  for (let i = 0; i < d.length; i += 4) {
+    const r = d[i], g = d[i + 1], b = d[i + 2];
+    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+    const max = r > g ? (r > b ? r : b) : (g > b ? g : b);
+    const min = r < g ? (r < b ? r : b) : (g < b ? g : b);
+    const colorido = (max - min) > 28;
+    let blanco = lum >= umbral;                                   // fondo/marca clara
+    if (!blanco && quitarColor && colorido && lum > umbral - 60) blanco = true;  // sello de color
+    if (blanco) { d[i] = d[i + 1] = d[i + 2] = 255; }
+    else if (bn) { const v = lum < umbral - 40 ? 0 : 255; d[i] = d[i + 1] = d[i + 2] = v; }
+  }
+  return d;
+}
+// Aplica limpieza sobre un canvas ya pintado (tapados + marca de agua)
+function _aplicarLimpiezaCanvas(ctx, w, h, limp) {
+  if (!limp) return;
+  if (limp.marca && limp.marca.on) {
+    try { const im = ctx.getImageData(0, 0, w, h); _limpiarPixeles(im.data, limp.marca); ctx.putImageData(im, 0, 0); } catch(_) {}
+  }
+  (limp.rects || []).forEach(r => {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(r.x * w, (1 - r.y - r.h) * h, r.w * w, r.h * h);   // origen abajo-izquierda
+  });
+}
+// Rasteriza una página CON la limpieza aplicada, en orientación visual
+async function _rasterLimpio(p, escala) {
+  const rot = ((p.rot % 360) + 360) % 360;
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (p.tipo === 'pdf') {
+    const page = await fuentes[p.srcId].pdfjsDoc.getPage(p.pageIndex + 1);
+    const rotTotal = ((page.rotate || 0) + p.rot) % 360;
+    const vp = page.getViewport({ scale: escala || 2, rotation: rotTotal });
+    canvas.width = Math.ceil(vp.width); canvas.height = Math.ceil(vp.height);
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+  } else {
+    const img = await cargarImgEl(p.thumb);
+    const w0 = img.naturalWidth, h0 = img.naturalHeight;
+    canvas.width = Math.ceil((rot % 180) ? h0 : w0); canvas.height = Math.ceil((rot % 180) ? w0 : h0);
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.save(); ctx.translate(canvas.width / 2, canvas.height / 2); ctx.rotate(rot * Math.PI / 180); ctx.drawImage(img, -w0 / 2, -h0 / 2); ctx.restore();
+  }
+  _aplicarLimpiezaCanvas(ctx, canvas.width, canvas.height, p.limp);
+  return canvas;
+}
+
+// ── Modal de limpieza ────────────────────────────────────────────────────────
+let lpIdx = null, _lpBase = null, _lpCanvas = null;
+async function abrirLimpiar(i) {
+  lpIdx = i;
+  const p = paginas[i]; const l = _limpDe(p);
+  $('lp-titulo').textContent = '🧽 Limpiar página ' + (i + 1) + ' — ' + p.nombre;
+  $('lp-on').checked = !!l.marca.on;
+  // El control va al revés del umbral interno: derecha = más agresivo (umbral más bajo)
+  $('lp-umbral').value = 370 - (l.marca.umbral || 200);
+  $('lp-color').checked = l.marca.color !== false;
+  $('lp-bn').checked = !!l.marca.bn;
+  abrirModalId('modal-limpiar');
+  cargando('Abriendo la página…');
+  try {
+    const img = await cargarImgEl(p.thumb);
+    const rot = ((p.rot % 360) + 360) % 360;
+    const w0 = img.naturalWidth, h0 = img.naturalHeight;
+    const wv = (rot % 180) ? h0 : w0, hv = (rot % 180) ? w0 : h0;
+    const esc = Math.min(Math.min(820, window.innerWidth - 90) / wv, window.innerHeight * 0.5 / hv, 3);
+    const c = document.createElement('canvas');
+    c.width = Math.ceil(wv * esc); c.height = Math.ceil(hv * esc);
+    const cx = c.getContext('2d');
+    cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);
+    cx.save(); cx.translate(c.width / 2, c.height / 2); cx.rotate(rot * Math.PI / 180);
+    cx.drawImage(img, -w0 * esc / 2, -h0 * esc / 2, w0 * esc, h0 * esc); cx.restore();
+    _lpBase = cx.getImageData(0, 0, c.width, c.height);   // copia limpia para previsualizar
+    _lpCanvas = c;
+    const wrap = $('lp-wrap');
+    wrap.innerHTML = ''; wrap.style.width = c.width + 'px'; wrap.style.height = c.height + 'px';
+    wrap.appendChild(c);
+    wrap.onmousedown = lpDragIni;
+    lpPreview();
+  } catch (e) { toast('No se pudo abrir la página: ' + (e && e.message || e), true); }
+  cargando(false);
+}
+function cerrarLimpiar() { cerrarModal('modal-limpiar'); lpIdx = null; _lpBase = null; _lpCanvas = null; render(); actualizarVistas(); }
+function lpLeerCfg() {
+  const p = paginas[lpIdx]; if (!p) return null;
+  const l = _limpDe(p);
+  const v = parseInt($('lp-umbral').value) || 170;          // 120..250 (derecha = más fuerza)
+  l.marca = { on: $('lp-on').checked, umbral: 370 - v, color: $('lp-color').checked, bn: $('lp-bn').checked };
+  $('lp-umbral-val').textContent = Math.round((v - 120) / 1.3) + '%';
+  return l;
+}
+function lpPreview() {
+  if (lpIdx === null || !_lpCanvas || !_lpBase) return;
+  const l = lpLeerCfg(); if (!l) return;
+  const ctx = _lpCanvas.getContext('2d');
+  ctx.putImageData(_lpBase, 0, 0);                       // partir siempre del original
+  _aplicarLimpiezaCanvas(ctx, _lpCanvas.width, _lpCanvas.height, l);
+  // rectángulos marcados en rojo encima (guía visual, el negro real ya está pintado)
+  const wrap = $('lp-wrap');
+  wrap.querySelectorAll('.lp-rect').forEach(n => n.remove());
+  (l.rects || []).forEach(r => {
+    const d = document.createElement('div'); d.className = 'lp-rect';
+    d.style.left = (r.x * _lpCanvas.width) + 'px';
+    d.style.bottom = (r.y * _lpCanvas.height) + 'px';
+    d.style.width = (r.w * _lpCanvas.width) + 'px';
+    d.style.height = (r.h * _lpCanvas.height) + 'px';
+    wrap.appendChild(d);
+  });
+  $('lp-nrects').textContent = (l.rects || []).length ? ((l.rects.length) + ' área(s) tapada(s)') : '';
+}
+function lpDragIni(ev) {
+  if (lpIdx === null || !_lpCanvas) return;
+  ev.preventDefault();
+  const rect = _lpCanvas.getBoundingClientRect();
+  const x0 = (ev.clientX - rect.left) / rect.width, y0 = 1 - (ev.clientY - rect.top) / rect.height;
+  const guia = document.createElement('div'); guia.className = 'lp-rect'; $('lp-wrap').appendChild(guia);
+  const mueve = e => {
+    const x1 = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    const y1 = Math.min(1, Math.max(0, 1 - (e.clientY - rect.top) / rect.height));
+    guia.style.left = (Math.min(x0, x1) * _lpCanvas.width) + 'px';
+    guia.style.bottom = (Math.min(y0, y1) * _lpCanvas.height) + 'px';
+    guia.style.width = (Math.abs(x1 - x0) * _lpCanvas.width) + 'px';
+    guia.style.height = (Math.abs(y1 - y0) * _lpCanvas.height) + 'px';
+  };
+  const suelta = e => {
+    document.removeEventListener('mousemove', mueve); document.removeEventListener('mouseup', suelta);
+    const x1 = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    const y1 = Math.min(1, Math.max(0, 1 - (e.clientY - rect.top) / rect.height));
+    const w = Math.abs(x1 - x0), h = Math.abs(y1 - y0);
+    guia.remove();
+    if (w > 0.004 && h > 0.004) {
+      _limpDe(paginas[lpIdx]).rects.push({ x: Math.min(x0, x1), y: Math.min(y0, y1), w: w, h: h });
+      lpPreview();
+    }
+  };
+  document.addEventListener('mousemove', mueve); document.addEventListener('mouseup', suelta);
+}
+function lpDeshacerRect() { if (lpIdx === null) return; _limpDe(paginas[lpIdx]).rects.pop(); lpPreview(); }
+function lpBorrarRects() { if (lpIdx === null) return; _limpDe(paginas[lpIdx]).rects = []; lpPreview(); }
+function lpQuitarTodo() {
+  if (lpIdx === null) return;
+  paginas[lpIdx].limp = null;
+  toast('Limpieza quitada — la página vuelve a su original');
+  cerrarLimpiar();
+}
+function lpAplicarATodas() {
+  if (lpIdx === null) return;
+  const l = lpLeerCfg(); if (!l) return;
+  if (!l.marca.on) { toast('Activa primero "Quitar marca de agua / fondo".', true); return; }
+  let n = 0;
+  paginas.forEach((p, k) => { if (k === lpIdx) return; const li = _limpDe(p); li.marca = JSON.parse(JSON.stringify(l.marca)); n++; });
+  toast('🧽 Limpieza aplicada a ' + n + ' página(s) más (las áreas tapadas son de cada página).');
+  render(); actualizarVistas();
+}
+
 // ── 🏷️ Sellos rápidos ───────────────────────────────────────────────────────
 let selloPos = 4;   // centro (grilla 3×3: 0..8)
 function abrirSellos() {
@@ -662,7 +877,20 @@ async function exportar(soloSeleccion) {
     for (const p of lista) {
       idx++;
       let pg, R;
-      if (p.tipo === 'pdf') {
+      if (_tieneLimpieza(p)) {
+        // 🧽 v162: la página se RASTERIZA con lo tapado ya borrado (el dato desaparece
+        // del archivo de verdad) y en orientación visual, así que R queda en 0.
+        cargando('Limpiando página ' + idx + ' de ' + lista.length + '…');
+        const cv = await _rasterLimpio(p, 2.2);
+        const jpg = await new Promise(res => cv.toBlob(b => b.arrayBuffer().then(res), 'image/jpeg', 0.9));
+        const img = await out.embedJpg(jpg);
+        let wpt, hpt;
+        if (p.tipo === 'pdf') { const dv0 = dimsVisuales(p.wpt, p.hpt, ((p.rot % 360) + 360) % 360); wpt = dv0.w; hpt = dv0.h; }
+        else { const dv0 = dimsVisuales(p.wpt, p.hpt, ((p.rot % 360) + 360) % 360); wpt = dv0.w; hpt = dv0.h; }
+        pg = out.addPage([wpt, hpt]);
+        pg.drawImage(img, { x: 0, y: 0, width: wpt, height: hpt });
+        R = 0;
+      } else if (p.tipo === 'pdf') {
         const src = await libDocDe(p.srcId);
         const [cp] = await out.copyPages(src, [p.pageIndex]);
         pg = cp;
