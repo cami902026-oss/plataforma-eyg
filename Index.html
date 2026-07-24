@@ -3194,8 +3194,16 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         </div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Antes de IVA (auto)</label><input type="number" id="cnuf-antes" oninput="cnuFactComision()"></div>
+        <div class="form-group"><label>Antes de IVA (base)</label><input type="number" id="cnuf-antes" oninput="cnuFactBaseManual()" title="Base gravable. Se calcula sola, pero si la factura tiene ítems sin IVA puedes escribir la base real y el IVA se ajusta."></div>
+        <div class="form-group"><label>IVA $ <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(debe cuadrar con la factura)</span></label><input type="number" id="cnuf-ivaval" oninput="cnuFactIvaManual()" title="Escribe aquí el IVA EXACTO de la factura y la base se recalcula sola (total − IVA)."></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Retefuente % <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(0 = no aplica)</span></label><input type="number" id="cnuf-rf-pct" step="0.1" min="0" placeholder="2.5" oninput="cnuFactRetePct()" title="% de retención en la fuente que aplica el cliente sobre la base. Se guarda por cliente para la próxima."></div>
+        <div class="form-group"><label>Retefuente $ <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(la descuenta el cliente)</span></label><input type="number" id="cnuf-rf-val" min="0" oninput="cnuFactRete(true)" title="Valor que el cliente retiene y NO va a pagar. Puedes corregirlo a mano."></div>
+      </div>
+      <div class="form-row">
         <div class="form-group"><label>Comisión (auto)</label><input type="number" id="cnuf-comision"></div>
+        <div class="form-group"><label>NETO a cobrar <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(lo que entra)</span></label><input type="number" id="cnuf-neto" readonly style="font-weight:700;color:#86efac;background:rgba(46,170,74,.08)" title="Total − retefuente. Es el saldo que queda en cartera: al recibir este valor, la factura se cierra sola."></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Vendedor</label><input type="text" id="cnuf-vendedor" placeholder="SHEILA"></div>
@@ -7336,7 +7344,9 @@ function cnuRenderLista() {
   cont.innerHTML = g.map((c, i) => {
     const cc = _CNU_CAT[c.catMax];
     const facs = c.facturas.slice().sort((a, b) => ((b.mora === null ? -9999 : b.mora) - (a.mora === null ? -9999 : a.mora))).map(f => {
-      const cadena = (f.cotizacion_id ? ' <span style="color:#c4b5fd;font-size:10px;">' + f.cotizacion_id + '</span>' : '') + (f.oc ? ' <span style="color:var(--text-muted);font-size:10px;">OC ' + f.oc + '</span>' : '');
+      const _rfF = parseFloat(f.retefuente || 0) || 0;   // v161: retención que el cliente NO paga
+      const cadena = (f.cotizacion_id ? ' <span style="color:#c4b5fd;font-size:10px;">' + f.cotizacion_id + '</span>' : '') + (f.oc ? ' <span style="color:var(--text-muted);font-size:10px;">OC ' + f.oc + '</span>' : '')
+        + (_rfF ? ' <span style="color:#fbbf24;font-size:10px;" title="Retefuente que descuenta el cliente — por eso el saldo es menor que el total">RF −' + _cnuFmt(_rfF) + '</span>' : '');
       return '<tr><td style="' + td + '">#' + (f.numero || '—') + cadena + '</td>' +
       '<td style="' + td + 'font-size:11px;">' + (f.fecha_facturacion || '—') + '</td>' +
       '<td style="' + td + 'font-size:11px;">' + (f.fecha_vencimiento || '—') + '</td>' +
@@ -7466,7 +7476,8 @@ async function cnuNuevaFactura(prefill) {
   document.getElementById('cnuf-borrar-btn').style.display = 'none';
   const sel = document.getElementById('cnuf-cliente');
   sel.innerHTML = '<option value="">— Elige el cliente —</option>' + _cnuClientes.map(c => '<option value="' + c.id + '">' + c.nombre + '</option>').join('');
-  ['cnuf-numero','cnuf-total','cnuf-antes','cnuf-comision','cnuf-oc','cnuf-cotiz','cnuf-vendedor','cnuf-dias','cnuf-venc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['cnuf-numero','cnuf-total','cnuf-antes','cnuf-ivaval','cnuf-rf-pct','cnuf-rf-val','cnuf-neto','cnuf-comision','cnuf-oc','cnuf-cotiz','cnuf-vendedor','cnuf-dias','cnuf-venc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  cnuFactResetFlags();
   document.getElementById('cnuf-fecha').value = _cnuHoy();
   document.getElementById('cnuf-iva').value = '19';
   document.getElementById('cnuf-reteica').value = 'NO';
@@ -7489,7 +7500,10 @@ function cnuFactClienteChange() {
   if (!c) return;
   document.getElementById('cnuf-dias').value = c.dias_pago || 30;
   if (c.vendedor) document.getElementById('cnuf-vendedor').value = c.vendedor;
-  cnuFactVencAuto(); cnuFactComision();
+  // v161: % de retefuente que suele aplicar ese cliente (si está guardado)
+  const rfp = document.getElementById('cnuf-rf-pct');
+  if (rfp && !rfp.value && c.pct_retefuente != null && c.pct_retefuente !== '') { rfp.value = c.pct_retefuente; _cnuRfManual = false; }
+  cnuFactVencAuto(); cnuFactRete(false); cnuFactComision();
 }
 function cnuFactVencAuto() {
   const f = document.getElementById('cnuf-fecha').value;
@@ -7498,15 +7512,60 @@ function cnuFactVencAuto() {
   const v = new Date(f + 'T12:00:00'); v.setDate(v.getDate() + d);
   document.getElementById('cnuf-venc').value = v.getFullYear() + '-' + String(v.getMonth() + 1).padStart(2, '0') + '-' + String(v.getDate()).padStart(2, '0');
 }
-function cnuFactCalc() {
-  const tot = parseFloat(document.getElementById('cnuf-total').value) || 0;
+/* ═══ v161: BASE/IVA REALES + RETEFUENTE ═════════════════════════════════════
+   Antes: la base salía siempre de total÷1,19 (mal si la factura tiene ítems sin
+   IVA) y el saldo quedaba por el TOTAL, así que al pagar con retefuente
+   descontada quedaba un saldo fantasma que nunca cerraba.
+   Ahora: total = base + IVA (cualquiera de los dos se puede escribir a mano) y
+   el saldo en cartera es el NETO (total − retefuente). */
+const _cnuN = id => parseFloat((document.getElementById(id) || {}).value) || 0;
+let _cnuBaseManual = false, _cnuRfManual = false;
+function cnuFactResetFlags() { _cnuBaseManual = false; _cnuRfManual = false; }
+function cnuFactCalc() {           // cambió el TOTAL o el % de IVA
+  const tot = _cnuN('cnuf-total');
   const iva = parseFloat(document.getElementById('cnuf-iva').value) || 0;
-  document.getElementById('cnuf-antes').value = tot ? (tot / (1 + iva / 100)).toFixed(2) : '';
-  cnuFactComision();
+  if (!_cnuBaseManual) {
+    document.getElementById('cnuf-antes').value = tot ? (tot / (1 + iva / 100)).toFixed(2) : '';
+  }
+  document.getElementById('cnuf-ivaval').value = tot ? (tot - _cnuN('cnuf-antes')).toFixed(2) : '';
+  cnuFactRete(false); cnuFactComision();
+}
+function cnuFactBaseManual() {     // el usuario escribió la BASE → el IVA se ajusta
+  _cnuBaseManual = true;
+  const tot = _cnuN('cnuf-total');
+  document.getElementById('cnuf-ivaval').value = tot ? (tot - _cnuN('cnuf-antes')).toFixed(2) : '';
+  cnuFactRete(false); cnuFactComision();
+}
+function cnuFactIvaManual() {      // el usuario escribió el IVA REAL → la base se ajusta
+  _cnuBaseManual = true;
+  const tot = _cnuN('cnuf-total');
+  document.getElementById('cnuf-antes').value = tot ? (tot - _cnuN('cnuf-ivaval')).toFixed(2) : '';
+  cnuFactRete(false); cnuFactComision();
+}
+function cnuFactRetePct() { _cnuRfManual = false; cnuFactRete(false); }
+function cnuFactRete(manual) {     // recalcula retefuente y NETO
+  if (manual) _cnuRfManual = true;
+  const base = _cnuN('cnuf-antes'), tot = _cnuN('cnuf-total'), pct = _cnuN('cnuf-rf-pct');
+  if (!manual && !_cnuRfManual) {
+    document.getElementById('cnuf-rf-val').value = (base && pct) ? (base * pct / 100).toFixed(2) : '';
+  }
+  const rf = _cnuN('cnuf-rf-val');
+  document.getElementById('cnuf-neto').value = tot ? (Math.round((tot - rf) * 100) / 100).toFixed(2) : '';
+  // Aviso si el IVA escrito no cuadra con el % elegido (facturas con ítems exentos)
+  const h = document.getElementById('cnuf-hint');
+  if (h && tot) {
+    const ivaPct = parseFloat(document.getElementById('cnuf-iva').value) || 0;
+    const ivaEsperado = tot - tot / (1 + ivaPct / 100);
+    const ivaReal = _cnuN('cnuf-ivaval');
+    if (ivaPct > 0 && Math.abs(ivaReal - ivaEsperado) > 1) {
+      h.style.color = '#fbbf24';
+      h.textContent = 'ℹ️ El IVA (' + _cnuFmt(ivaReal) + ') no es el ' + ivaPct + '% del total — se usará tal cual (factura con ítems sin IVA).';
+    } else if (String(h.textContent).startsWith('ℹ️ El IVA')) { h.textContent = ''; }
+  }
 }
 function cnuFactComision() {
   const c = (_cnuClientes || []).find(x => String(x.id) === document.getElementById('cnuf-cliente').value);
-  const antes = parseFloat(document.getElementById('cnuf-antes').value) || 0;
+  const antes = _cnuN('cnuf-antes');
   const pct = c ? parseFloat(c.pct_comision || 0) : 0;
   if (antes && pct) document.getElementById('cnuf-comision').value = (antes * pct / 100).toFixed(2);
 }
@@ -7527,6 +7586,9 @@ async function cnuFactGuardar() {
     const dup = await sbCartera('GET', 'cartera_facturas?cliente_id=eq.' + c.id + '&numero=eq.' + encodeURIComponent(numero) + noYo + '&select=id');
     if (dup && dup.length) { showToast('⛔ La factura #' + numero + ' de ' + c.nombre + ' YA está registrada en la nube.', 'error'); btn.disabled = false; return; }
     const oc = document.getElementById('cnuf-oc').value.trim();
+    // v161: la retefuente NO la paga el cliente → el saldo de cartera es el NETO
+    const _rf = Math.max(0, _cnuN('cnuf-rf-val'));
+    const _neto = Math.round((total - _rf) * 100) / 100;
     const fila = {
       cliente_id: c.id, cliente_nombre: c.nombre, nit: c.nit || '', numero,
       oc, oc_num: oc,
@@ -7534,13 +7596,16 @@ async function cnuFactGuardar() {
       fecha_facturacion: fecha, fecha_vencimiento: venc,
       dias_pago: parseInt(document.getElementById('cnuf-dias').value) || null,
       monto_antes_iva: parseFloat(document.getElementById('cnuf-antes').value) || 0,
-      monto_total: total, valor_recibido: 0, saldo: total,
+      monto_total: total, valor_recibido: 0, saldo: _neto,
       estado: 'PENDIENTE', estado_financiero: 'SALDO POR PAGAR',
       mes_facturacion: _CNU_MES_NOM[parseInt(fecha.slice(5, 7)) - 1] || '',
       comision: parseFloat(document.getElementById('cnuf-comision').value) || 0,
       reteica: document.getElementById('cnuf-reteica').value,
       vendedor: document.getElementById('cnuf-vendedor').value.trim().toUpperCase()
     };
+    // La columna `retefuente` es nueva: solo se envía cuando aplica, para que las
+    // facturas sin retención se sigan guardando aunque el SQL aún no se haya corrido.
+    if (_rf > 0) fila.retefuente = _rf;
     if (_cnuFactEdit) {
       // ── modo edición (✏️ solo andrea): PATCH conservando lo recibido ──
       const v = _cnuFactEdit;
@@ -7553,7 +7618,7 @@ async function cnuFactGuardar() {
         fila.estado = 'PAGADA'; fila.estado_financiero = 'PAGADA'; fila.saldo = 0;
       } else {
         fila.estado = 'PENDIENTE'; fila.estado_financiero = 'SALDO POR PAGAR';
-        fila.saldo = Math.max(0, Math.round((total - recibido) * 100) / 100);
+        fila.saldo = Math.max(0, Math.round((total - _rf - recibido) * 100) / 100);   // v161: neto − recibido
       }
       fila.actualizado_en = new Date().toISOString();
       await sbCartera('PATCH', 'cartera_facturas?id=eq.' + v.id, fila);
@@ -7577,7 +7642,12 @@ async function cnuFactGuardar() {
       showToast('🧾 Factura #' + numero + ' de ' + c.nombre + ' guardada en la nube (' + _cnuFmt(total) + ')', 'success');
     }
     cnuCargar(true);
-  } catch(e) { showToast('Error guardando: ' + e.message, 'error'); }
+  } catch(e) {
+    // La columna `retefuente` es nueva: si aún no existe en Supabase, decirlo claro
+    if (/retefuente/i.test(e.message || '')) {
+      showToast('⚠️ Falta crear la columna de retefuente en la base. Pídele a sistemas correr:  alter table cartera_facturas add column if not exists retefuente numeric default 0;  (mientras tanto, guarda la factura con retefuente en 0)', 'error', { durationMs: 25000 });
+    } else showToast('Error guardando: ' + e.message, 'error');
+  }
   btn.disabled = false;
 }
 // ── ✏️ Editar / 🚫 anular / 🗑️ borrar facturas históricas (solo andrea, 2026-07-22) ──
@@ -7621,6 +7691,15 @@ async function cnuFactEditar(id) {
     const antes = parseFloat(f.monto_antes_iva || 0), tot = parseFloat(f.monto_total || 0);
     document.getElementById('cnuf-iva').value = (antes && tot && Math.abs(tot / antes - 1.19) < 0.02) ? '19' : (antes === tot ? '0' : '19');
     document.getElementById('cnuf-antes').value = antes || '';
+    // v161: base/IVA reales de la factura y retefuente ya registrada
+    cnuFactResetFlags();
+    _cnuBaseManual = true;   // respetar la base guardada, no recalcularla con ÷1,19
+    document.getElementById('cnuf-ivaval').value = (tot && antes) ? (Math.round((tot - antes) * 100) / 100).toFixed(2) : '';
+    const _rfGuardada = parseFloat(f.retefuente || 0) || 0;
+    document.getElementById('cnuf-rf-val').value = _rfGuardada || '';
+    document.getElementById('cnuf-rf-pct').value = (_rfGuardada && antes) ? (Math.round(_rfGuardada / antes * 1000) / 10) : '';
+    if (_rfGuardada) _cnuRfManual = true;
+    cnuFactRete(false);
     document.getElementById('cnuf-comision').value = parseFloat(f.comision || 0) || '';
     document.getElementById('cnuf-vendedor').value = f.vendedor || '';
     document.getElementById('cnuf-reteica').value = (f.reteica === 'SI') ? 'SI' : 'NO';
