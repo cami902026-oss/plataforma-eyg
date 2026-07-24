@@ -1924,26 +1924,26 @@
   },
   {
     "id": "poc_1783615640584",
-    "num": "ODC-AA-MEC-SKID-469-24-598",
+    "num": "ODC-AA-MEC-SKID-469-24-578",
     "cliente": "SKID EXPERTS",
     "desc": "Cotización LM1535-1 · 58 ítems",
     "estado": "activo",
     "fechaIngreso": "2026-07-09",
-    "valor": 309108701.09000003,
+    "valor": 83478238,
     "hojaEntrada": {
       "requerida": true,
       "fecha": "",
-      "estado": "pendiente"
+      "estado": "recibida"
     },
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-07-09",
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-09",
         "n": "",
         "envio": "",
         "transp": "",
@@ -1952,21 +1952,21 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-09",
         "n": ""
       },
       {
         "s": "done",
-        "f": "2026-07-22",
+        "f": "2026-07-23",
         "n": "",
-        "factura": "528"
+        "factura": "530"
       }
     ],
     "cotizacionId": "LM1535-1",
     "createdAt": "2026-07-09T16:47:20.584Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T02:03:45.793Z",
+    "updatedAt": "2026-07-24T00:43:18.086Z",
     "updatedBy": "andrea"
   },
   {
@@ -2529,17 +2529,17 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-23",
         "n": "",
-        "factura": ""
+        "factura": "532"
       }
     ],
     "cotizacionId": "LM1864",
     "createdAt": "2026-07-23T16:35:14.373Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T16:35:14.373Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-24T00:58:06.834Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1784835624933",
@@ -5101,5 +5101,52 @@
     "updatedAt": "2026-07-24T13:17:28.358Z",
     "updatedBy": "andrea",
     "faltanFechas": true
+  },
+  {
+    "id": "poc_1784907649372",
+    "num": "230726K1286",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1848 · 7 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-24",
+    "valor": 9828790,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-07-24",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1848",
+    "createdAt": "2026-07-24T15:40:49.372Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-24T15:40:49.372Z",
+    "updatedBy": "andrea"
   }
 ]
