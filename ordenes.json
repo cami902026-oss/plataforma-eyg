@@ -39,7 +39,14 @@
     "num": "300426M7131",
     "cliente": "CIAM",
     "desc": "PLATINAS ORIFICIO",
-    "estado": "activo",
+    "estado": "completado",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -57,19 +64,23 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-05-09",
         "n": ""
       },
       {
         "s": "done",
         "f": "2026-05-09",
-        "n": "429"
+        "n": "429",
+        "factura": ""
       }
     ],
-    "updatedAt": "2026-07-25T14:43:45.802Z",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-25T14:43:45.802Z"
+    "cotizacionId": "",
+    "createdAt": "2026-07-25T14:43:54.236Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-25T14:43:54.236Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false
   },
   {
     "id": "poc_1777493314013",
