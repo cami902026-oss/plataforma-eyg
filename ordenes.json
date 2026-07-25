@@ -5170,5 +5170,52 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-25T13:47:12.021Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1784987911412",
+    "num": "240726C5524",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1858 · 10 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-25",
+    "valor": 1728713,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1858",
+    "createdAt": "2026-07-25T13:58:31.412Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-25T13:58:31.412Z",
+    "updatedBy": "andrea"
   }
 ]
