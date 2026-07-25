@@ -5232,5 +5232,52 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-25T13:58:31.412Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1784990915217",
+    "num": "ODC-AA-MEC-SIK-469-24-636",
+    "cliente": "SKID EXPERT",
+    "desc": "Cotización LM1869 · 3 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-25",
+    "valor": 1558459.7,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-07-26",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1869",
+    "createdAt": "2026-07-25T14:48:35.217Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-25T14:48:35.217Z",
+    "updatedBy": "andrea"
   }
 ]
