@@ -750,7 +750,7 @@
     "num": "13134",
     "cliente": "HIDROCASANARE",
     "desc": "Conector tipo GAR 3\" y Spiral Wnd Gkt - Consumibles de mantenimiento",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-05",
     "valor": 0,
     "hojaEntrada": {
@@ -775,22 +775,25 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-09",
         "n": ""
       },
       {
         "s": "done",
         "f": "2026-06-09",
-        "n": "470"
+        "n": "470",
+        "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "",
     "createdAt": "2026-06-05T21:32:19.250Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-27T03:18:32.092Z",
+    "updatedAt": "2026-07-27T03:18:36.639Z",
     "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-27T03:18:32.092Z"
+    "faltanFechas": false
   },
   {
     "id": "poc_1780685275512",
