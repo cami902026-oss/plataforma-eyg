@@ -1731,5 +1731,54 @@
     "deleted": true,
     "deletedAt": "2026-07-27T02:51:16.202Z",
     "deletedBy": "andrea"
+  },
+  {
+    "id": "poc_1785123684788",
+    "num": "LM1870",
+    "cliente": "QCIEN",
+    "desc": "Cotización LM1870 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-27",
+    "valor": 83300,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-24",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-25",
+        "n": "",
+        "envio": "taquilla_bus",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-26",
+        "n": "",
+        "factura": "535"
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1870",
+    "createdAt": "2026-07-27T03:41:24.788Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-27T03:41:24.788Z",
+    "updatedBy": "andrea"
   }
 ]
