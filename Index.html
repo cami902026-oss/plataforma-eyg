@@ -1193,11 +1193,12 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div class="poc-stats" id="poc-stats-bar"></div>
           <div class="poc-top">
             <div class="poc-filters">
-              <button class="poc-filter-btn active" onclick="pocFilterFn('activo',this)" title="Las que requieren acción — ordenadas por urgencia">🔴 Activas</button>
-              <button class="poc-filter-btn" onclick="pocFilterFn('todos',this)">Todas</button>
-              <button class="poc-filter-btn" onclick="pocFilterFn('completado',this)" title="Terminaron todas sus etapas — listas para archivar">✅ Completadas</button>
-              <button class="poc-filter-btn" onclick="pocFilterFn('cancelado',this)">Canceladas</button>
-              <button class="poc-filter-btn" onclick="pocFilterFn('archivada',this)" title="Completadas que ya se archivaron (no se borran, solo salen de la lista)">📦 Archivadas</button>
+              <button class="poc-filter-btn active" data-filter="activo" onclick="pocFilterFn('activo',this)" title="Las que requieren acción — ordenadas por urgencia">🔴 Activas</button>
+              <button class="poc-filter-btn" data-filter="sinfacturar" onclick="pocFilterFn('sinfacturar',this)" title="Entregadas o parciales que aún NO se han facturado — revisa la observación del por qué">⚠️ Sin facturar</button>
+              <button class="poc-filter-btn" data-filter="todos" onclick="pocFilterFn('todos',this)">Todas</button>
+              <button class="poc-filter-btn" data-filter="completado" onclick="pocFilterFn('completado',this)" title="Terminaron todas sus etapas — listas para archivar">✅ Completadas</button>
+              <button class="poc-filter-btn" data-filter="cancelado" onclick="pocFilterFn('cancelado',this)">Canceladas</button>
+              <button class="poc-filter-btn" data-filter="archivada" onclick="pocFilterFn('archivada',this)" title="Completadas que ya se archivaron (no se borran, solo salen de la lista)">📦 Archivadas</button>
               <div class="poc-stage-dropdown" id="poc-stage-dd">
                 <button class="poc-filter-btn poc-stage-dd-btn" onclick="pocToggleStageDD()" id="poc-stage-dd-label">🔽 Por etapa</button>
                 <div class="poc-stage-dd-menu" id="poc-stage-dd-menu" style="display:none;">
@@ -1211,6 +1212,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button id="btn-nueva-oc" class="btn btn-primary" onclick="openPocModal(null)">+ Nueva O.C.</button>
+              <button id="poc-view-toggle" class="btn" style="background:#334155;color:#fff;border:none" onclick="pocToggleView()" title="Cambiar entre tarjetas y tabla compacta (N° · Cliente · Estado · Observación)">📊 Ver como tabla</button>
               <button class="btn" style="background:#1d7a3a;color:#fff;border:none" onclick="exportPocExcel()">📊 Exportar Excel</button>
               <button class="btn" style="background:#8b1a1a;color:#fff;border:none" onclick="generarInformePDF()">📄 Generar Informe PDF</button>
               <button class="btn" style="background:#0f9d58;color:#fff;border:none" onclick="window.open('https://docs.google.com/spreadsheets/d/1QjeJiCQ8fND57r0MNw1vRNdcnukqpBNHDfxjbeW7Lq0/edit','_blank')">🗂️ Ver en Google Sheets</button>
@@ -1245,6 +1247,10 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div class="form-group" style="margin-top:10px">
               <label>Descripción / Objeto</label>
               <textarea id="poc-desc" rows="2" placeholder="Descripción de la orden..."></textarea>
+            </div>
+            <div class="form-group" style="margin-top:10px">
+              <label>📝 Observaciones <span style="color:var(--text-muted);font-size:10px;">(motivo/pendientes, ej. no se ha facturado porque...)</span></label>
+              <textarea id="poc-observaciones" rows="2" placeholder="Ej. No se ha facturado porque falta la OC del cliente..."></textarea>
             </div>
             <div class="form-group" style="margin-top:10px">
               <label>Estado General</label>
@@ -8527,6 +8533,29 @@ const POC_DEFAULT = [];
 let pocCurrentFilter = 'activo';
 let pocStageFilter = null;
 let pocEditId = null;
+let pocViewMode = 'cards';   // 'cards' | 'tabla' (vista compacta para escanear rápido)
+
+// ─── Estado de FACTURACIÓN + OBSERVACIONES de la O.C. (aditivo) ──────────────
+// Estado de facturación: automático desde la etapa 3 (Facturación); si tiene
+// fecha o N° de factura → "Facturada". Se puede forzar a mano (o.facturacion:
+// 'facturada' | 'parcial' | 'sin_facturar'; '' o ausente = automático).
+function _pocFactEstado(o){
+  const f = o && o.facturacion;
+  if (f==='facturada' || f==='parcial' || f==='sin_facturar') return f;
+  const st = ((o && o.stages) || [])[3] || {};
+  return (st.f || st.factura) ? 'facturada' : 'sin_facturar';
+}
+function _pocFactLabel(e){ return {facturada:'Facturada', parcial:'Facturada parcial', sin_facturar:'Sin facturar'}[e] || e; }
+function _pocEntregada(o){ return _pocEtapaHecha(o, 1); }   // etapa Entrega marcada
+// "Problema de facturación" = ya se entregó pero no se ha facturado, o quedó parcial.
+// Es lo que debe saltar a la vista (rojo + filtro).
+function _pocProblemaFact(o){
+  if (!o || o.estado==='cancelado' || o.archivada) return false;
+  const e = _pocFactEstado(o);
+  if (e==='parcial') return true;
+  if (e==='sin_facturar' && _pocEntregada(o)) return true;
+  return false;
+}
 
 function getPOC(includeDeleted) {
   try {
@@ -8676,11 +8705,13 @@ function renderProcesos() {
   const cancelados = vivas.filter(o=>o.estado==='cancelado').length;
   const archivadas = list.filter(o=>o.archivada).length;
   const vencidas = vivas.filter(o=>o.estado==='activo' && _pocUrgencia(o).vencida).length;
+  const sinFacturar = vivas.filter(o=>_pocProblemaFact(o)).length;
   const valorActivas = vivas.filter(o=>o.estado==='activo').reduce((s,o)=>s+(parseFloat(o.valor)||0),0);
   const fmtValor = valorActivas>=1000000 ? '$'+(valorActivas/1000000).toFixed(1)+'M' : valorActivas>=1000 ? '$'+Math.round(valorActivas/1000)+'K' : valorActivas?'$'+valorActivas.toLocaleString('es-CO'):'$0';
   document.getElementById('poc-stats-bar').innerHTML =
     `<div class="poc-stat green" style="cursor:pointer" onclick="pocFilterFn('activo',document.querySelector('.poc-filter-btn'))"><div class="poc-stat-num">${activos}</div><div class="poc-stat-label">Activas</div></div>`
    +`<div class="poc-stat" style="border-left:3px solid ${vencidas?'var(--red)':'rgba(255,255,255,.15)'}"><div class="poc-stat-num" style="color:${vencidas?'#f87171':'inherit'}">${vencidas}</div><div class="poc-stat-label">${vencidas?'🚨 ':''}Vencidas</div></div>`
+   +`<div class="poc-stat" style="border-left:3px solid ${sinFacturar?'#ef4444':'rgba(255,255,255,.15)'};cursor:pointer" onclick="pocFilterFn('sinfacturar',null)" title="Entregadas o parciales que aún no se han facturado"><div class="poc-stat-num" style="color:${sinFacturar?'#fca5a5':'inherit'}">${sinFacturar}</div><div class="poc-stat-label">${sinFacturar?'🚩 ':''}Sin facturar</div></div>`
    +`<div class="poc-stat gold"><div class="poc-stat-num">${completados}</div><div class="poc-stat-label">Completadas${completados?' (archivables)':''}</div></div>`
    +`<div class="poc-stat blue"><div class="poc-stat-num">${total}</div><div class="poc-stat-label">Total en curso</div></div>`
    +`<div class="poc-stat" style="border-left:3px solid var(--red)"><div class="poc-stat-num">${cancelados}</div><div class="poc-stat-label">Canceladas</div></div>`
@@ -8688,7 +8719,9 @@ function renderProcesos() {
    +`<div class="poc-stat" style="border-left:3px solid var(--green)"><div class="poc-stat-num" style="font-size:15px;">${fmtValor}</div><div class="poc-stat-label">Valor activas</div></div>`;
   // El filtro 📦 Archivadas muestra SOLO archivadas; los demás filtros las excluyen
   const base = pocCurrentFilter==='archivada' ? list.filter(o=>o.archivada) : vivas;
-  let filtered = (pocCurrentFilter==='todos'||pocCurrentFilter==='archivada') ? base : base.filter(o=>o.estado===pocCurrentFilter);
+  let filtered = (pocCurrentFilter==='todos'||pocCurrentFilter==='archivada') ? base
+               : pocCurrentFilter==='sinfacturar' ? base.filter(o=>_pocProblemaFact(o))
+               : base.filter(o=>o.estado===pocCurrentFilter);
   if (pocStageFilter !== null) {
     filtered = filtered.filter(o => {
       const st = (o.stages || [])[pocStageFilter];
@@ -8699,6 +8732,7 @@ function renderProcesos() {
   if(!filtered.length){
     const msg = pocCurrentFilter==='activo' ? '🎉 No hay O.C. activas — todo al día'
               : pocCurrentFilter==='archivada' ? 'No hay O.C. archivadas todavía'
+              : pocCurrentFilter==='sinfacturar' ? '🎉 Nada pendiente por facturar — todo facturado'
               : pocCurrentFilter==='todos' ? 'No hay órdenes registradas' : 'No hay órdenes en este estado';
     el.innerHTML = `<div class="poc-empty"><div class="poc-empty-icon">📋</div><div>${msg}</div><div style="margin-top:8px;font-size:12px">Crea una nueva O.C. con el botón superior${pocCurrentFilter==='activo'?' · usa <b>Todas</b> para ver el resto':''}</div></div>`;
     return;
@@ -8714,6 +8748,8 @@ function renderProcesos() {
     if(fa&&fb&&fa!==fb) return fa.localeCompare(fb);
     return _ordCreada(b)-_ordCreada(a);
   });
+  // Vista de TABLA compacta (N° · Cliente · Estado facturación · Observación)
+  if (pocViewMode==='tabla') { el.innerHTML = _pocRenderTabla(filtered); return; }
   el.innerHTML = filtered.map(o => {
     const stages = o.stages || [{s:'pending',f:'',n:''},{s:'pending',f:'',n:''},{s:'pending',f:'',n:''},{s:'pending',f:'',n:''}];
     const _heReq = !!(o.hojaEntrada?.requerida);
@@ -8801,7 +8837,20 @@ function renderProcesos() {
     const archLine = o.archivada
       ? `<div style="display:inline-block;margin-top:5px;padding:3px 9px;background:rgba(100,116,139,.2);border-radius:5px;font-size:11px;color:#cbd5e1;">📦 Archivada${o.archivadaAt?' el '+new Date(o.archivadaAt).toLocaleDateString('es-CO'):''}</div>`
       : '';
-    const bordeUrg = o.estado==='activo' ? `border-left:4px solid ${_urg.color};` : o.archivada ? 'border-left:4px solid #64748b;opacity:.85;' : '';
+    // v166: estado de facturación (chip) + observación destacada + resalte rojo si hay problema
+    const _fe = _pocFactEstado(o);
+    const _feProblema = _pocProblemaFact(o);
+    const _feCol = { facturada:['#86efac','rgba(46,170,74,.15)','rgba(46,170,74,.5)'],
+                     parcial:['#fbbf24','rgba(232,160,32,.15)','rgba(232,160,32,.5)'],
+                     sin_facturar:[_feProblema?'#fca5a5':'#cbd5e1', _feProblema?'rgba(239,68,68,.18)':'rgba(100,116,139,.18)', _feProblema?'rgba(239,68,68,.55)':'rgba(148,163,184,.4)'] }[_fe] || ['#cbd5e1','rgba(100,116,139,.18)','rgba(148,163,184,.4)'];
+    const factChip = (o.estado==='cancelado') ? '' :
+      `<div style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:3px 10px;border-radius:20px;background:${_feCol[1]};border:1px solid ${_feCol[2]};font-size:11.5px;font-weight:700;color:${_feCol[0]};cursor:pointer" onclick="pocEditFact('${o.id}')" title="Estado de facturación · clic para cambiar">${(_feProblema&&_fe==='sin_facturar')?'🚩':'🧾'} ${_pocFactLabel(_fe)} ✎</div>`;
+    const obsBox = o.observaciones
+      ? `<div style="margin-top:8px;padding:7px 11px;background:rgba(232,160,32,.12);border-left:3px solid var(--gold);border-radius:6px;font-size:12px;color:#fde68a;cursor:pointer" onclick="pocEditObs('${o.id}')" title="Clic para editar la observación"><b>📝 Obs:</b> ${String(o.observaciones).replace(/</g,'&lt;')}</div>`
+      : '';
+    const bordeUrg = _feProblema ? 'border-left:4px solid #ef4444;background:rgba(239,68,68,.06);'
+                   : o.estado==='activo' ? `border-left:4px solid ${_urg.color};`
+                   : o.archivada ? 'border-left:4px solid #64748b;opacity:.85;' : '';
     const btnArchivar = (o.estado==='completado' && !o.archivada)
       ? `<button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;background:rgba(100,116,139,.25);border:1px solid rgba(148,163,184,.45);color:#cbd5e1;" onclick="pocArchivar('${o.id}')" title="Sacarla de la lista sin borrarla — queda en el filtro 📦 Archivadas">📦 Archivar</button>`
       : o.archivada
@@ -8812,14 +8861,16 @@ function renderProcesos() {
         <div>
           <div class="poc-title">${o.num||'Sin número'} — ${o.cliente||'Sin cliente'}</div>
           <div class="poc-sub">${o.desc?o.desc.substring(0,80)+(o.desc.length>80?'…':''):'Sin descripción'}</div>
-          ${urgLine}${ingresoLine}${valorLine}${heLine}${faltanFechasLine}${archLine}
+          ${urgLine}${factChip}${ingresoLine}${valorLine}${heLine}${faltanFechasLine}${archLine}
         </div>
         <span class="poc-badge ${badgeClass}">${badgeTxt}</span>
       </div>
+      ${obsBox}
       ${lockBanner}
       <div class="poc-tl">${tl}</div>
       <div class="poc-actions">
         <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="openPocModal('${o.id}')">✏️ Editar</button>
+        <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;color:#fbbf24;" onclick="pocEditObs('${o.id}')" title="Escribir el motivo (ej. no facturada porque falta la OC del cliente)">📝 ${o.observaciones?'Editar obs.':'Observación'}</button>
         <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;color:#93c5fd;" onclick="viewPocReport('${o.id}')">📄 Ver Informe</button>
         ${btnArchivar}
       </div>
@@ -8829,10 +8880,72 @@ function renderProcesos() {
   }).join('');
 }
 
+// Cambia entre vista de tarjetas y tabla compacta
+function pocToggleView(){
+  pocViewMode = (pocViewMode==='tabla') ? 'cards' : 'tabla';
+  const b = document.getElementById('poc-view-toggle');
+  if (b) b.textContent = pocViewMode==='tabla' ? '🗂️ Ver como tarjetas' : '📊 Ver como tabla';
+  renderProcesos();
+}
+// Guarda un cambio puntual en una O.C. (observación / estado de facturación) y sincroniza.
+function _pocUpdateField(id, patch){
+  const list = getPOCAll();
+  const idx = list.findIndex(o => o.id===id || String(o.id)===String(id));
+  if (idx < 0) { showToast('O.C. no encontrada (recarga la página)','error'); return false; }
+  Object.assign(list[idx], patch, { updatedAt:new Date().toISOString(), updatedBy:_pocLockUser() });
+  savePOCData(list);   // local + Google Sheets + GitHub
+  renderProcesos();
+  return true;
+}
+// Editar la OBSERVACIÓN (motivo). Editable por todo el equipo.
+function pocEditObs(id){
+  const o = getPOCAll().find(x => x.id===id || String(x.id)===String(id));
+  if (!o) { showToast('O.C. no encontrada (recarga la página)','error'); return; }
+  const val = prompt('Observación de la O.C. '+(o.num||'')+' — '+(o.cliente||'')+':\n(ej. "No se ha facturado porque falta la OC del cliente")', o.observaciones||'');
+  if (val === null) return; // canceló
+  if (_pocUpdateField(id, { observaciones: val.trim() })) showToast('Observación guardada ✓','ok');
+}
+// Cambiar el ESTADO DE FACTURACIÓN a mano (F/P/S/A).
+function pocEditFact(id){
+  const o = getPOCAll().find(x => x.id===id || String(x.id)===String(id));
+  if (!o) { showToast('O.C. no encontrada (recarga la página)','error'); return; }
+  const resp = prompt('Estado de facturación de '+(o.num||'')+' — '+(o.cliente||'')+'\n\nEscribe una opción:\n  F = Facturada\n  P = Facturada parcial\n  S = Sin facturar\n  A = Automático (según la etapa de Facturación)\n\nActual: '+_pocFactLabel(_pocFactEstado(o)), '');
+  if (resp === null) return;
+  const r = (resp.trim().toUpperCase()[0]) || '';
+  const map = { F:'facturada', P:'parcial', S:'sin_facturar', A:'' };
+  if (!(r in map)) { showToast('Opción no válida (usa F, P, S o A)','error'); return; }
+  if (_pocUpdateField(id, { facturacion: map[r] })) showToast('Estado de facturación actualizado ✓','ok');
+}
+// Tabla compacta: N° · Cliente · Descripción · Estado facturación · Observación
+function _pocRenderTabla(rows){
+  const esc = s => String(s==null?'':s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const head = `<tr>
+    <th style="text-align:left">N°</th><th style="text-align:left">Cliente</th>
+    <th style="text-align:left">Descripción</th><th style="text-align:left">Estado facturación</th>
+    <th style="text-align:left">Observaciones</th><th></th></tr>`;
+  const body = rows.map(o => {
+    const fe = _pocFactEstado(o), prob = _pocProblemaFact(o), lbl = _pocFactLabel(fe);
+    const col = fe==='facturada' ? '#86efac' : fe==='parcial' ? '#fbbf24' : (prob ? '#fca5a5' : '#cbd5e1');
+    const rowBg = prob ? 'background:rgba(239,68,68,.08);' : '';
+    return `<tr style="${rowBg}">
+      <td style="font-weight:700;color:var(--gold);white-space:nowrap">${esc(o.num||'—')}</td>
+      <td style="white-space:nowrap">${esc(o.cliente||'—')}</td>
+      <td style="font-size:12px;color:var(--text-muted)">${esc((o.desc||'').substring(0,55))}</td>
+      <td style="font-weight:700;color:${col};white-space:nowrap;cursor:pointer" onclick="pocEditFact('${o.id}')" title="Clic para cambiar">${(prob&&fe==='sin_facturar')?'🚩 ':''}${lbl} ✎</td>
+      <td style="font-size:12px;cursor:pointer;color:${o.observaciones?'#fde68a':'var(--text-muted)'}" onclick="pocEditObs('${o.id}')" title="Clic para editar">${o.observaciones?esc(o.observaciones):'+ agregar'}</td>
+      <td style="white-space:nowrap"><button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="openPocModal('${o.id}')">✏️</button></td>
+    </tr>`;
+  }).join('');
+  return `<div class="abs-table-wrap" style="overflow-x:auto"><table class="abs-table" style="width:100%">
+    <thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+}
+
 function pocFilterFn(f, btn) {
   pocCurrentFilter = f;
   document.querySelectorAll('.poc-filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  // btn puede venir null (p.ej. al hacer clic en la tarjeta de estadística): buscamos el botón del filtro.
+  if (!btn) btn = document.querySelector('.poc-filter-btn[data-filter="'+f+'"]');
+  if (btn) btn.classList.add('active');
   renderProcesos();
 }
 function pocToggleStageDD() {
@@ -8952,6 +9065,7 @@ function openPocModal(id) {
   document.getElementById('poc-num').value = order?.num||'';
   document.getElementById('poc-cliente').value = order?.cliente||'';
   document.getElementById('poc-desc').value = order?.desc||'';
+  { const _obsEl = document.getElementById('poc-observaciones'); if(_obsEl) _obsEl.value = order?.observaciones||''; }
   document.getElementById('poc-estado').value = order?.estado||'activo';
   const stages = order?.stages || Array(4).fill({s:'pending',f:'',n:''});
   [0,1].forEach(i=>{
@@ -9038,6 +9152,11 @@ function savePoc() {
       estado: document.getElementById('poc-he-estado')?.value||'pendiente'
     },
     stages,
+    // v166: preservar (o leer del modal si existe el campo) la observación y el
+    // estado de facturación manual — antes se reconstruía la orden sin estos campos
+    // y una edición en el modal los borraba.
+    observaciones: (document.getElementById('poc-observaciones')?.value ?? existingOrder?.observaciones ?? '').toString().trim(),
+    facturacion: existingOrder?.facturacion || '',
     // Enlace de vuelta a la cotización. El flag manda cuando se creó desde cotizCrearOC
     // o se ligó/cambió a mano con pocLigarCotizacion; si no, conserva el de la OC.
     cotizacionId: window._cotizOCsource || existingOrder?.cotizacionId || '',
@@ -9601,6 +9720,8 @@ function exportPocExcel() {
     return {
       'Número OC': o.num||'', 'Cliente / Proyecto': o.cliente||'', 'Descripción': o.desc||'',
       'Estado': {activo:'Activo',completado:'Completado',cancelado:'Cancelado'}[o.estado]||o.estado||'',
+      'Estado Facturación': _pocFactLabel(_pocFactEstado(o)),
+      'Observaciones': o.observaciones||'',
       'Compra – Fecha': compra.f||'', 'Compra – Notas': compra.n||'',
       'Entrega – Fecha': entrega.f||'', 'Entrega – Medio': ENVIO_LABELS[entrega.envio]||entrega.envio||'',
       'Entrega – Guía': entrega.guia||'', 'Entrega – Destinatario': entrega.dest||'',
