@@ -193,13 +193,13 @@
     "num": "NGEC-2026005442",
     "cliente": "NEW GRANADA ENERGY CORPORATION SUCURSAL COLOMBIANA",
     "desc": "Niples, bridas, codos, válvulas de bola y cortina para campo Dorotea",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-05-22",
     "valor": 0,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-07-10",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -229,13 +229,14 @@
         "factura": "514"
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "",
     "createdAt": "2026-05-22T17:09:02.939Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-27T03:17:44.639Z",
-    "updatedBy": "lina",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-27T03:17:44.639Z"
+    "updatedAt": "2026-07-27T03:17:51.631Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false
   },
   {
     "id": "poc_1778168100636",
