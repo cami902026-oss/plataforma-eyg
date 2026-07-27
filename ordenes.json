@@ -565,7 +565,7 @@
     "num": "4900006720",
     "cliente": "NIKOIL ENERGY",
     "desc": "Canecas de 5 galones de grasa Bestolife 2000 para tubing",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-01",
     "valor": 4974200,
     "hojaEntrada": {
@@ -590,22 +590,25 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-05",
         "n": ""
       },
       {
         "s": "done",
         "f": "2026-06-05",
-        "n": "462"
+        "n": "462",
+        "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "",
     "createdAt": "2026-06-01T20:01:37.378Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-27T03:18:12.013Z",
+    "updatedAt": "2026-07-27T03:18:16.795Z",
     "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-27T03:18:12.013Z"
+    "faltanFechas": false
   },
   {
     "id": "poc_1780498017972",
