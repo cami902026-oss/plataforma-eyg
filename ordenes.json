@@ -2172,7 +2172,7 @@
     "stages": [
       {
         "s": "active",
-        "f": "2026-07-14",
+        "f": "2026-07-28",
         "n": "TALLECTRO"
       },
       {
@@ -2200,7 +2200,7 @@
     "cotizacionId": "LM1805",
     "createdAt": "2026-07-14T15:57:30.418Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-14T15:58:55.913Z",
+    "updatedAt": "2026-07-25T14:41:46.811Z",
     "updatedBy": "andrea"
   },
   {
@@ -2391,8 +2391,10 @@
     "cotizacionId": "LM1804",
     "createdAt": "2026-07-17T22:06:31.849Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-17T22:06:31.849Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-07-27T20:49:28.097Z",
+    "updatedBy": "andrea",
+    "lockedBy": "andrea",
+    "lockedAt": "2026-07-27T20:49:28.097Z"
   },
   {
     "id": "poc_1777926438588",
@@ -3613,13 +3615,13 @@
     },
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-07-17",
         "n": "CODIFER\nBODEGA"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "active",
+        "f": "2026-07-28",
         "n": "",
         "envio": "",
         "transp": "",
@@ -3642,7 +3644,7 @@
     "cotizacionId": "LM1785",
     "createdAt": "2026-07-17T22:45:44.191Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-17T22:46:45.626Z",
+    "updatedAt": "2026-07-25T14:43:14.230Z",
     "updatedBy": "andrea"
   },
   {
@@ -3748,7 +3750,7 @@
     "desc": "Cotización LM1816 · 1 ítems",
     "estado": "activo",
     "fechaIngreso": "2026-07-22",
-    "valor": 511700,
+    "valor": 1200000,
     "hojaEntrada": {
       "requerida": true,
       "fecha": "",
@@ -3756,13 +3758,13 @@
     },
     "stages": [
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-07-24",
+        "n": "CODIFER"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "active",
+        "f": "2026-07-28",
         "n": "",
         "envio": "",
         "transp": "",
@@ -3782,13 +3784,13 @@
         "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "LM1816",
     "createdAt": "2026-07-22T13:39:07.251Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-22T16:45:23.990Z",
-    "updatedBy": "alexandra",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-22T16:45:23.990Z"
+    "updatedAt": "2026-07-27T03:10:43.551Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1784824514372",
@@ -3907,7 +3909,7 @@
         "n": "CODIFER\nINDUVACOL\nBODEGA"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-07-24",
         "n": "",
         "envio": "camion_energy",
@@ -3922,16 +3924,18 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-24",
         "n": "",
-        "factura": ""
+        "factura": "533"
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "LM1842",
     "createdAt": "2026-07-23T19:41:42.705Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T23:53:29.918Z",
+    "updatedAt": "2026-07-27T03:15:08.876Z",
     "updatedBy": "andrea"
   },
   {
@@ -3950,7 +3954,7 @@
     "stages": [
       {
         "s": "active",
-        "f": "2026-07-23",
+        "f": "2026-07-28",
         "n": ""
       },
       {
@@ -3978,8 +3982,8 @@
     "cotizacionId": "LM1698",
     "createdAt": "2026-07-23T19:44:27.940Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T19:44:27.940Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-07-25T14:59:26.417Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1784836135127",
@@ -5174,6 +5178,245 @@
     "createdAt": "2026-07-24T15:41:17.442Z",
     "createdBy": "andrea",
     "updatedAt": "2026-07-24T15:41:17.442Z",
+    "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1785158635122",
+    "num": "240726K0370",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1846 · 13 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-27",
+    "valor": 10085131,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-25",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1846",
+    "createdAt": "2026-07-27T13:23:55.123Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-27T13:23:55.123Z",
+    "updatedBy": "alexandra"
+  },
+  {
+    "id": "poc_1784987232021",
+    "num": "240726K0370",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1846 · 13 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-25",
+    "valor": 3033310,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1846",
+    "createdAt": "2026-07-25T13:47:12.021Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-25T13:47:12.021Z",
+    "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1784987911412",
+    "num": "240726C5524",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1858 · 10 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-25",
+    "valor": 1728713,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1858",
+    "createdAt": "2026-07-25T13:58:31.412Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-25T13:58:31.412Z",
+    "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1784990915217",
+    "num": "ODC-AA-MEC-SIK-469-24-636",
+    "cliente": "SKID EXPERT",
+    "desc": "Cotización LM1869 · 3 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-25",
+    "valor": 1558459.7,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-07-26",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1869",
+    "createdAt": "2026-07-25T14:48:35.217Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-25T15:05:39.700Z",
+    "updatedBy": "andrea"
+  },
+  {
+    "id": "poc_1785123684788",
+    "num": "LM1870",
+    "cliente": "QCIEN",
+    "desc": "Cotización LM1870 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-27",
+    "valor": 83300,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-24",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-25",
+        "n": "",
+        "envio": "taquilla_bus",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-26",
+        "n": "",
+        "factura": "535"
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1870",
+    "createdAt": "2026-07-27T03:41:24.788Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-27T03:41:36.031Z",
     "updatedBy": "andrea"
   }
 ]
