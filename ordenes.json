@@ -2040,12 +2040,12 @@
     "num": "ODC-AA-MEC-SKID-469-24-578",
     "cliente": "SKID EXPERTS",
     "desc": "Cotización LM1535-1 · 58 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-09",
     "valor": 83478238,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
+      "fecha": "2026-07-23",
       "estado": "recibida"
     },
     "stages": [
@@ -2076,13 +2076,14 @@
         "factura": "530"
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "LM1535-1",
     "createdAt": "2026-07-09T16:47:20.584Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-27T03:04:38.421Z",
+    "updatedAt": "2026-07-27T03:04:42.674Z",
     "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-27T03:04:38.421Z"
+    "faltanFechas": false
   },
   {
     "id": "poc_1783627669786",
