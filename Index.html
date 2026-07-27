@@ -18009,7 +18009,10 @@ function absCartRender() {
   if(cnt) cnt.textContent=abs_cart.length?('('+abs_cart.length+' producto'+(abs_cart.length>1?'s':'')+')'):'';
   const esSalida=abs_cart_tipo==='SALIDA';
   const btnAlist=document.getElementById('abs-cart-alistar');
-  if(btnAlist) btnAlist.style.display=(esSalida&&abs_cart.length)?'inline-block':'none';
+  if(btnAlist){
+    btnAlist.style.display=abs_cart.length?'inline-block':'none';
+    btnAlist.textContent=esSalida?'🖨️ Hoja de alistamiento':'🖨️ Comprobante de entrada';
+  }
   if(!abs_cart.length){
     tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">'+(abs_cart_tipo?'Busca y agrega productos arriba &uarr;':'Elige ENTRADA o SALIDA para empezar')+'</td></tr>';
     return;
@@ -18112,7 +18115,7 @@ function absRenderKardex() {
     <td style="font-size:12px">${k.responsable}</td>
     <td style="font-size:11px;color:var(--text-muted)">${k.remision||'—'}</td>
     <td style="font-size:11px;color:var(--text-muted)">${k.lote||k.colada||'—'}</td>
-    <td>${k.tipo==='SALIDA'?`<button onclick="absAlistKardex('${k.id}')" title="Hoja de alistamiento para bodega (junta todas las salidas de esta remisión)" style="background:rgba(46,170,74,.15);border:1px solid rgba(46,170,74,.4);color:#86efac;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">🖨️</button>`:''}</td>
+    <td>${(k.tipo==='SALIDA'||k.tipo==='ENTRADA')?`<button onclick="absAlistKardex('${k.id}')" title="${k.tipo==='SALIDA'?'Hoja de alistamiento (junta las salidas de esta remisión)':'Comprobante de entrada (junta las entradas de este lote)'}" style="background:rgba(46,170,74,.15);border:1px solid rgba(46,170,74,.4);color:#86efac;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">🖨️</button>`:''}</td>
     ${canEd?`<td><button onclick="absEditarKardex('${k.id}')" title="Editar colada/remisión/lote/notas" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:var(--gold);padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">✏️</button></td>`:''}
   </tr>`).join('')||'<tr><td colspan="12" style="text-align:center;color:var(--text-muted);padding:24px">Sin resultados</td></tr>';
 }
@@ -18161,15 +18164,31 @@ function absKardexLimpiarFiltros(){
   absRenderKardex();
 }
 
-// ─── 🖨️ HOJA DE ALISTAMIENTO (para bodega) ──────────────────────
-// Documento imprimible para entregar en bodega y alistar un despacho.
-// 100% aditivo y de SOLO LECTURA: arma la hoja desde el carrito de SALIDA
-// (antes de registrar) o desde las salidas ya registradas en el kardex
-// (agrupadas por remisión). No escribe nada ni altera la lógica de movimientos.
-// Trae casillas para marcar lo alistado, columna de cantidad alistada y firmas.
+// ─── 🖨️ COMPROBANTE DE MOVIMIENTO (para bodega) ─────────────────
+// Documento imprimible para bodega. Se adapta al tipo de movimiento:
+//   · SALIDA  → HOJA DE ALISTAMIENTO (referencia = remisión, para despachar)
+//   · ENTRADA → COMPROBANTE DE ENTRADA / RECEPCIÓN (referencia = lote)
+// 100% aditivo y de SOLO LECTURA: arma la hoja desde el carrito (antes de
+// registrar) o desde el kardex (agrupando por remisión en salidas / por lote
+// en entradas). No escribe nada ni altera la lógica de movimientos.
+// Trae casillas para marcar, columna de cantidad real y firmas.
 function _absAlistHtml(meta, items){
   const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const fmtFecha=s=>s?String(s).split('-').reverse().join('/'):'';
+  const esEntrada=meta.tipo==='ENTRADA';
+  // Textos según el tipo de movimiento
+  const T={
+    titulo   : esEntrada?'Comprobante de entrada':'Hoja de alistamiento',
+    docLbl   : esEntrada?'COMPROBANTE DE ENTRADA':'HOJA DE ALISTAMIENTO',
+    refLbl   : esEntrada?'Lote / Referencia':'Remisión / Cliente',
+    porLbl   : esEntrada?'Registrado por':'Solicitado por',
+    colReal  : esEntrada?'Cant.<br>recibida':'Cant.<br>alistada',
+    colPide  : esEntrada?'Cant.<br>ingresada':'Cant.<br>solicitada',
+    totLbl   : esEntrada?'Total unidades ingresadas':'Total unidades solicitadas',
+    f1       : esEntrada?'Recibido por (nombre y firma)':'Alistado por (nombre y firma)',
+    f2       : 'Revisado por (nombre y firma)',
+    f3       : esEntrada?'Fecha y hora de recepción':'Fecha y hora de entrega'
+  };
   const rows=items.map((it,i)=>`
     <tr>
       <td class="chk">&#9744;</td>
@@ -18184,7 +18203,7 @@ function _absAlistHtml(meta, items){
   const totalItems=items.length;
   const totalUnid=items.reduce((s,it)=>s+(parseFloat(it.cantidad)||0),0);
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-<title>Hoja de alistamiento${meta.remision?(' — '+esc(meta.remision)):''}</title>
+<title>${T.titulo}${meta.ref?(' — '+esc(meta.ref)):''}</title>
 <style>
  @page{ size:letter portrait; margin:0; }
  *{box-sizing:border-box;}
@@ -18226,54 +18245,68 @@ function _absAlistHtml(meta, items){
  <div class="hdr">
    <div class="hdr-logo"><img src="https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png" alt="E&amp;G"></div>
    <div class="hdr-emp"><div class="em-1">E&amp;G ENERGY GROUP SAS · CARRERA 7 # 12-61 CHIA · TELEFONO 320 494 7227</div><div>www.eygenergygroup.com</div></div>
-   <div class="hdr-doc"><div class="doc-lbl">HOJA DE ALISTAMIENTO</div><div class="doc-num">${esc(meta.remision||'—')}</div></div>
+   <div class="hdr-doc"><div class="doc-lbl">${T.docLbl}</div><div class="doc-num">${esc(meta.ref||'—')}</div></div>
  </div>
  <table class="meta">
-   <tr><td class="lbl">Remisión / Cliente</td><td>${esc(meta.remision||'—')}</td><td class="lbl">Fecha</td><td>${fmtFecha(meta.fecha)}</td></tr>
-   <tr><td class="lbl">Solicitado por</td><td>${esc(meta.responsable||'—')}</td><td class="lbl">N.º de ítems</td><td>${totalItems}</td></tr>
+   <tr><td class="lbl">${T.refLbl}</td><td>${esc(meta.ref||'—')}</td><td class="lbl">Fecha</td><td>${fmtFecha(meta.fecha)}</td></tr>
+   <tr><td class="lbl">${T.porLbl}</td><td>${esc(meta.responsable||'—')}</td><td class="lbl">N.º de ítems</td><td>${totalItems}</td></tr>
  </table>
  <table class="items"><thead><tr>
    <th style="width:34px">✓</th><th style="width:26px">#</th><th style="width:92px">Código</th>
    <th>Descripción</th><th style="width:90px">Marca</th><th style="width:82px">Lote / Colada</th>
-   <th style="width:66px">Cant.<br>solicitada</th><th style="width:78px">Cant.<br>alistada</th>
+   <th style="width:66px">${T.colPide}</th><th style="width:78px">${T.colReal}</th>
  </tr></thead><tbody>${rows}</tbody></table>
- <div class="totrow">Total ítems: ${totalItems} &nbsp;·&nbsp; Total unidades solicitadas: ${totalUnid}</div>
+ <div class="totrow">Total ítems: ${totalItems} &nbsp;·&nbsp; ${T.totLbl}: ${totalUnid}</div>
  ${meta.notas?`<div class="nota"><b>Observaciones:</b> ${esc(meta.notas)}</div>`:''}
  <div class="firmas">
-   <div class="firma"><div class="line"></div>Alistado por (nombre y firma)</div>
-   <div class="firma"><div class="line"></div>Revisado por (nombre y firma)</div>
-   <div class="firma"><div class="line"></div>Fecha y hora de entrega</div>
+   <div class="firma"><div class="line"></div>${T.f1}</div>
+   <div class="firma"><div class="line"></div>${T.f2}</div>
+   <div class="firma"><div class="line"></div>${T.f3}</div>
  </div>
 </body></html>`;
 }
 function _absAlistShow(meta, items){
-  if(!items||!items.length) return showToast('No hay ítems para alistar','error');
+  if(!items||!items.length) return showToast('No hay ítems para imprimir','error');
   const html=_absAlistHtml(meta, items);
-  if(typeof _pdfOverlay==='function') _pdfOverlay(html,'Hoja de alistamiento'+(meta.remision?(' — '+meta.remision):''));
+  const tit=(meta.tipo==='ENTRADA'?'Comprobante de entrada':'Hoja de alistamiento')+(meta.ref?(' — '+meta.ref):'');
+  if(typeof _pdfOverlay==='function') _pdfOverlay(html,tit);
   else { const w=window.open('','_blank'); if(w){ w.document.write(html); w.document.close(); } else showToast('Habilita las ventanas emergentes para ver la hoja','error'); }
 }
-// Desde el carrito de SALIDA (antes de registrar): imprime lo que se va a despachar
+// Desde el carrito (antes de registrar): imprime lo que se va a despachar (SALIDA)
+// o el comprobante de recepción (ENTRADA), con todos los ítems del carrito.
 function absAlistFromCart(){
-  if(abs_cart_tipo!=='SALIDA') return showToast('La hoja de alistamiento es solo para SALIDAS','info');
+  if(!abs_cart_tipo) return showToast('Elige ENTRADA o SALIDA','info');
   if(!abs_cart.length) return showToast('El carrito está vacío','error');
-  const remision=(document.getElementById('abs-cart-remision')?.value||'').trim();
   const notas=(document.getElementById('abs-cart-notas')?.value||'').trim();
+  let ref;
+  if(abs_cart_tipo==='SALIDA'){
+    ref=(document.getElementById('abs-cart-remision')?.value||'').trim();
+  }else{ // ENTRADA: la referencia es el lote (si todos comparten el mismo)
+    const lotes=[...new Set(abs_cart.map(it=>(it.lote||'').trim()).filter(Boolean))];
+    ref=lotes.length===1?lotes[0]:'';
+  }
   const items=abs_cart.map(it=>({codigo:it.codigo,descripcion:it.descripcion,marca:it.marca||'',lote:it.colada||it.lote||'',cantidad:it.cantidad}));
-  _absAlistShow({remision,notas,fecha:new Date().toISOString().split('T')[0],responsable:(typeof currentUser!=='undefined'&&currentUser?.name)||''}, items);
+  _absAlistShow({tipo:abs_cart_tipo,ref,notas,fecha:new Date().toISOString().split('T')[0],responsable:(typeof currentUser!=='undefined'&&currentUser?.name)||''}, items);
 }
-// Desde el Kardex: junta todas las SALIDAS de la misma remisión (o el ítem solo si no tiene)
+// Desde el Kardex: SALIDA junta por remisión · ENTRADA junta por lote
+// (o el ítem solo si no tiene referencia).
 function absAlistKardex(id){
   const k=abs_kardex.find(x=>String(x.id)===String(id));
   if(!k) return showToast('Movimiento no encontrado (recarga la página)','error');
-  const rem=(k.remision||'').trim();
-  const movs=rem
-    ? abs_kardex.filter(x=>x.tipo==='SALIDA'&&(x.remision||'').trim().toLowerCase()===rem.toLowerCase())
-    : [k];
+  const tipo=k.tipo;
+  let ref, movs;
+  if(tipo==='SALIDA'){
+    ref=(k.remision||'').trim();
+    movs=ref?abs_kardex.filter(x=>x.tipo==='SALIDA'&&(x.remision||'').trim().toLowerCase()===ref.toLowerCase()):[k];
+  }else{ // ENTRADA (y demás): agrupar por lote
+    ref=(k.lote||'').trim();
+    movs=ref?abs_kardex.filter(x=>x.tipo===tipo&&(x.lote||'').trim().toLowerCase()===ref.toLowerCase()):[k];
+  }
   const items=movs.map(m=>{
     const p=abs_productos.find(x=>x.codigo===m.codigo_producto);
     return {codigo:m.codigo_producto,descripcion:m.descripcion_producto,marca:(p&&p.marca)||'',lote:m.colada||m.lote||'',cantidad:m.cantidad};
   });
-  _absAlistShow({remision:rem,notas:k.notas||'',fecha:k.fecha,responsable:k.responsable||''}, items);
+  _absAlistShow({tipo,ref,notas:k.notas||'',fecha:k.fecha,responsable:k.responsable||''}, items);
 }
 
 // ─── ROTACIÓN ────────────────────────────────────────────────────
