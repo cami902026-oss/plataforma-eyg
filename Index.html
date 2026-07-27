@@ -8859,7 +8859,7 @@ function renderProcesos() {
     return `<div class="poc-card" style="${bordeUrg}">
       <div class="poc-ch">
         <div>
-          <div class="poc-title">${o.num||'Sin número'} — ${o.cliente||'Sin cliente'}</div>
+          <div class="poc-title" style="cursor:pointer" onclick="pocVerItems('${o.id}')" title="Clic para ver los ítems de esta orden">${o.num||'Sin número'} — ${o.cliente||'Sin cliente'} <span style="font-size:12px;opacity:.7">🔍</span></div>
           <div class="poc-sub">${o.desc?o.desc.substring(0,80)+(o.desc.length>80?'…':''):'Sin descripción'}</div>
           ${urgLine}${factChip}${ingresoLine}${valorLine}${heLine}${faltanFechasLine}${archLine}
         </div>
@@ -8869,6 +8869,7 @@ function renderProcesos() {
       ${lockBanner}
       <div class="poc-tl">${tl}</div>
       <div class="poc-actions">
+        <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;color:#90cdf4;" onclick="pocVerItems('${o.id}')" title="Ver los ítems de esta orden (desde la cotización ligada)">🔍 Ítems</button>
         <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px" onclick="openPocModal('${o.id}')">✏️ Editar</button>
         <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;color:#fbbf24;" onclick="pocEditObs('${o.id}')" title="Escribir el motivo (ej. no facturada porque falta la OC del cliente)">📝 ${o.observaciones?'Editar obs.':'Observación'}</button>
         <button class="btn btn-ghost" style="padding:6px 14px;font-size:12px;color:#93c5fd;" onclick="viewPocReport('${o.id}')">📄 Ver Informe</button>
@@ -8928,7 +8929,7 @@ function _pocRenderTabla(rows){
     const col = fe==='facturada' ? '#86efac' : fe==='parcial' ? '#fbbf24' : (prob ? '#fca5a5' : '#cbd5e1');
     const rowBg = prob ? 'background:rgba(239,68,68,.08);' : '';
     return `<tr style="${rowBg}">
-      <td style="font-weight:700;color:var(--gold);white-space:nowrap">${esc(o.num||'—')}</td>
+      <td style="font-weight:700;color:var(--gold);white-space:nowrap;cursor:pointer" onclick="pocVerItems('${o.id}')" title="Ver los ítems de esta orden">${esc(o.num||'—')} 🔍</td>
       <td style="white-space:nowrap">${esc(o.cliente||'—')}</td>
       <td style="font-size:12px;color:var(--text-muted)">${esc((o.desc||'').substring(0,55))}</td>
       <td style="font-weight:700;color:${col};white-space:nowrap;cursor:pointer" onclick="pocEditFact('${o.id}')" title="Clic para cambiar">${(prob&&fe==='sin_facturar')?'🚩 ':''}${lbl} ✎</td>
@@ -8938,6 +8939,58 @@ function _pocRenderTabla(rows){
   }).join('');
   return `<div class="abs-table-wrap" style="overflow-x:auto"><table class="abs-table" style="width:100%">
     <thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+}
+
+// v167: al hacer clic en una O.C. se muestran sus ÍTEMS (de la cotización ligada,
+// tabla Supabase cotizacion_items) para identificar rápidamente cuál es. Solo lectura.
+const _pocItemsCache = {};
+async function pocVerItems(id){
+  const o = getPOCAll().find(x => x.id===id || String(x.id)===String(id));
+  if (!o) { showToast('O.C. no encontrada (recarga la página)','error'); return; }
+  const esc = s => String(s==null?'':s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const cotizId = o.cotizacionId || '';
+  const prev = document.getElementById('poc-items-modal'); if (prev) prev.remove();
+  const ov = document.createElement('div');
+  ov.id = 'poc-items-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;';
+  ov.onclick = ev => { if (ev.target===ov) ov.remove(); };
+  const header = `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;">
+      <div><span style="color:var(--gold);font-weight:800;font-size:18px;">${esc(o.num||'Sin número')}</span>
+      <div style="font-size:15px;font-weight:700;margin-top:4px;">${esc(o.cliente||'')}</div>
+      ${o.desc?`<div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${esc(o.desc)}</div>`:''}</div>
+      <button onclick="document.getElementById('poc-items-modal').remove()" style="background:rgba(255,255,255,.08);border:1px solid var(--border,#234);border-radius:8px;color:#fff;font-size:18px;width:34px;height:34px;cursor:pointer;flex-shrink:0;">✕</button>
+    </div>`;
+  const shell = inner => `<div style="background:var(--dark,#071525);border:1px solid var(--border,#234);border-radius:12px;max-width:820px;width:100%;max-height:88vh;overflow:auto;padding:22px;color:#fff;">${header}${inner}</div>`;
+  if (!cotizId) {
+    ov.innerHTML = shell(`<div style="padding:16px;text-align:center;color:var(--text-muted);">Esta O.C. no está ligada a una cotización, por eso no tiene lista de ítems.<br>Puedes ligarla desde <b>✏️ Editar</b> para ver sus ítems aquí.</div>`);
+    document.body.appendChild(ov); return;
+  }
+  ov.innerHTML = shell(`<div id="poc-items-body" style="padding:16px;text-align:center;color:var(--text-muted);">Cargando ítems de la cotización ${esc(cotizId)}…</div>`);
+  document.body.appendChild(ov);
+  let its = _pocItemsCache[cotizId];
+  try {
+    if (!its) { its = (await absFetch('cotizacion_items?cotizacion_id=eq.'+encodeURIComponent(cotizId)+'&order=item.asc&limit=2000')) || []; _pocItemsCache[cotizId] = its; }
+  } catch(e) {
+    const b = document.getElementById('poc-items-body');
+    if (b) b.innerHTML = '<span style="color:#fca5a5">No se pudieron cargar los ítems: '+esc(e&&e.message||'')+'</span>';
+    return;
+  }
+  const body = document.getElementById('poc-items-body'); if (!body) return;
+  if (!its.length) { body.innerHTML = '<span style="color:var(--text-muted)">La cotización '+esc(cotizId)+' no tiene ítems cargados.</span>'; return; }
+  const filas = its.map(it => `<tr style="border-bottom:1px solid var(--border,#234);">
+      <td style="padding:5px 6px;text-align:center;color:var(--text-muted);">${esc(it.item??'')}</td>
+      <td style="padding:5px 6px;">${esc(it.descripcion||'')}</td>
+      <td style="padding:5px 6px;color:#90cdf4;">${esc(it.marca||'')}</td>
+      <td style="padding:5px 6px;text-align:center;">${esc(it.udm||'')}</td>
+      <td style="padding:5px 6px;text-align:right;font-weight:700;">${esc(it.qty??'')}</td>
+    </tr>`).join('');
+  body.style.textAlign = 'left'; body.style.color = '#fff';
+  body.innerHTML = `<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">🔗 Cotización ${esc(cotizId)} · ${its.length} ítem(s)</div>
+    <div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead><tr style="border-bottom:2px solid var(--gold);">
+      <th style="padding:6px;text-align:center;">#</th><th style="padding:6px;text-align:left;">Descripción</th>
+      <th style="padding:6px;text-align:left;">Marca</th><th style="padding:6px;">UDM</th><th style="padding:6px;text-align:right;">Cant.</th>
+    </tr></thead><tbody>${filas}</tbody></table></div>`;
 }
 
 function pocFilterFn(f, btn) {
