@@ -8728,28 +8728,32 @@ function renderProcesos() {
    +`<div class="poc-stat" style="border-left:3px solid #64748b"><div class="poc-stat-num">${archivadas}</div><div class="poc-stat-label">📦 Archivadas</div></div>`
    +`<div class="poc-stat" style="border-left:3px solid var(--green)"><div class="poc-stat-num" style="font-size:15px;">${fmtValor}</div><div class="poc-stat-label">Valor activas</div></div>`;
   // El filtro 📦 Archivadas muestra SOLO archivadas; los demás filtros las excluyen
-  const base = pocCurrentFilter==='archivada' ? list.filter(o=>o.archivada) : vivas;
-  let filtered = (pocCurrentFilter==='todos'||pocCurrentFilter==='archivada') ? base
-               : pocCurrentFilter==='sinfacturar' ? base.filter(o=>_pocPendienteFact(o))
-               : base.filter(o=>o.estado===pocCurrentFilter);
-  if (pocStageFilter !== null) {
-    filtered = filtered.filter(o => {
-      const st = (o.stages || [])[pocStageFilter];
-      return st && st.s !== 'done';
-    });
-  }
-  // Buscador: palabras en cualquier orden sobre N° / cliente / descripción / observación.
+  // Búsqueda GLOBAL: cuando hay texto busca en TODAS las órdenes (activas, completadas,
+  // canceladas y ARCHIVADAS) sin importar el filtro. "+" y espacios separan palabras
+  // (ej. "skid ++ 611" = skid Y 611, en cualquier orden). Sin texto, aplica el filtro normal.
+  let filtered;
   if (pocSearchQuery) {
-    const toks = pocSearchQuery.split(/\s+/).filter(Boolean);
-    filtered = filtered.filter(o => {
+    const toks = pocSearchQuery.split(/[\s+]+/).filter(Boolean);
+    filtered = list.filter(o => {
       const hay = ((o.num||'')+' '+(o.cliente||'')+' '+(o.desc||'')+' '+(o.observaciones||'')).toLowerCase();
       return toks.every(t => hay.includes(t));
     });
+  } else {
+    const base = pocCurrentFilter==='archivada' ? list.filter(o=>o.archivada) : vivas;
+    filtered = (pocCurrentFilter==='todos'||pocCurrentFilter==='archivada') ? base
+             : pocCurrentFilter==='sinfacturar' ? base.filter(o=>_pocPendienteFact(o))
+             : base.filter(o=>o.estado===pocCurrentFilter);
+    if (pocStageFilter !== null) {
+      filtered = filtered.filter(o => {
+        const st = (o.stages || [])[pocStageFilter];
+        return st && st.s !== 'done';
+      });
+    }
   }
   const el = document.getElementById('poc-list');
   if(!filtered.length){
     if (pocSearchQuery) {
-      el.innerHTML = `<div class="poc-empty"><div class="poc-empty-icon">🔍</div><div>Sin resultados para "<b>${pocSearchQuery.replace(/</g,'&lt;')}</b>" en este filtro</div><div style="margin-top:8px;font-size:12px">Prueba con <b>Todas</b> o borra la búsqueda</div></div>`;
+      el.innerHTML = `<div class="poc-empty"><div class="poc-empty-icon">🔍</div><div>Sin resultados para "<b>${pocSearchQuery.replace(/</g,'&lt;')}</b>"</div><div style="margin-top:8px;font-size:12px">Se buscó en TODAS las órdenes (incl. archivadas). Revisa que esté bien escrito o borra la búsqueda.</div></div>`;
       return;
     }
     const msg = pocCurrentFilter==='activo' ? '🎉 No hay O.C. activas — todo al día'
@@ -8944,15 +8948,19 @@ function _pocRenderTabla(rows){
   const esc = s => String(s==null?'':s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   const head = `<tr>
     <th style="text-align:left">N°</th><th style="text-align:left">Cliente</th>
+    <th style="text-align:left">Estado</th>
     <th style="text-align:left">Descripción</th><th style="text-align:left">Estado facturación</th>
     <th style="text-align:left">Observaciones</th><th></th></tr>`;
   const body = rows.map(o => {
     const fe = _pocFactEstado(o), prob = _pocProblemaFact(o), lbl = _pocFactLabel(fe);
     const col = fe==='facturada' ? '#86efac' : fe==='parcial' ? '#fbbf24' : (prob ? '#fca5a5' : '#cbd5e1');
     const rowBg = prob ? 'background:rgba(239,68,68,.08);' : '';
+    const estLbl = o.archivada ? '📦 Archivada' : ({activo:'Activa',completado:'Completada',cancelado:'Cancelada'}[o.estado]||o.estado||'—');
+    const estCol = o.archivada ? '#94a3b8' : o.estado==='activo' ? '#86efac' : o.estado==='completado' ? '#fbbf24' : o.estado==='cancelado' ? '#fca5a5' : '#cbd5e1';
     return `<tr style="${rowBg}">
       <td style="font-weight:700;color:var(--gold);white-space:nowrap;cursor:pointer" onclick="pocVerItems('${o.id}')" title="Ver los ítems de esta orden">${esc(o.num||'—')} 🔍</td>
       <td style="white-space:nowrap">${esc(o.cliente||'—')}</td>
+      <td style="white-space:nowrap;font-weight:700;color:${estCol}">${estLbl}</td>
       <td style="font-size:12px;color:var(--text-muted)">${esc((o.desc||'').substring(0,55))}</td>
       <td style="font-weight:700;color:${col};white-space:nowrap;cursor:pointer" onclick="pocEditFact('${o.id}')" title="Clic para cambiar">${(prob&&fe==='sin_facturar')?'🚩 ':''}${lbl} ✎</td>
       <td style="font-size:12px;cursor:pointer;color:${o.observaciones?'#fde68a':'var(--text-muted)'}" onclick="pocEditObs('${o.id}')" title="Clic para editar">${o.observaciones?esc(o.observaciones):'+ agregar'}</td>
