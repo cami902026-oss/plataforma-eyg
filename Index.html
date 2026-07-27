@@ -1194,7 +1194,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div class="poc-top">
             <div class="poc-filters">
               <button class="poc-filter-btn active" data-filter="activo" onclick="pocFilterFn('activo',this)" title="Las que requieren acción — ordenadas por urgencia">🔴 Activas</button>
-              <button class="poc-filter-btn" data-filter="sinfacturar" onclick="pocFilterFn('sinfacturar',this)" title="Entregadas o parciales que aún NO se han facturado — revisa la observación del por qué">⚠️ Sin facturar</button>
+              <button class="poc-filter-btn" data-filter="sinfacturar" onclick="pocFilterFn('sinfacturar',this)" title="TODAS las pendientes de facturación (sin facturar o parciales). Las 🚩 rojas ya se entregaron = urgente. Escribe en Observaciones el por qué.">⚠️ Sin facturar</button>
               <button class="poc-filter-btn" data-filter="todos" onclick="pocFilterFn('todos',this)">Todas</button>
               <button class="poc-filter-btn" data-filter="completado" onclick="pocFilterFn('completado',this)" title="Terminaron todas sus etapas — listas para archivar">✅ Completadas</button>
               <button class="poc-filter-btn" data-filter="cancelado" onclick="pocFilterFn('cancelado',this)">Canceladas</button>
@@ -8556,6 +8556,13 @@ function _pocProblemaFact(o){
   if (e==='sin_facturar' && _pocEntregada(o)) return true;
   return false;
 }
+// "Pendiente de facturación" = cualquiera que aún no está Facturada (sin facturar o
+// parcial), sin importar si ya se entregó. Es lo que muestra el filtro/contador.
+// El resalte rojo 🚩 (_pocProblemaFact) es el subconjunto urgente: ya entregada.
+function _pocPendienteFact(o){
+  if (!o || o.estado==='cancelado' || o.archivada) return false;
+  return _pocFactEstado(o) !== 'facturada';
+}
 
 function getPOC(includeDeleted) {
   try {
@@ -8705,13 +8712,14 @@ function renderProcesos() {
   const cancelados = vivas.filter(o=>o.estado==='cancelado').length;
   const archivadas = list.filter(o=>o.archivada).length;
   const vencidas = vivas.filter(o=>o.estado==='activo' && _pocUrgencia(o).vencida).length;
-  const sinFacturar = vivas.filter(o=>_pocProblemaFact(o)).length;
+  const sinFacturar = vivas.filter(o=>_pocPendienteFact(o)).length;
+  const sinFacturarUrge = vivas.filter(o=>_pocProblemaFact(o)).length;
   const valorActivas = vivas.filter(o=>o.estado==='activo').reduce((s,o)=>s+(parseFloat(o.valor)||0),0);
   const fmtValor = valorActivas>=1000000 ? '$'+(valorActivas/1000000).toFixed(1)+'M' : valorActivas>=1000 ? '$'+Math.round(valorActivas/1000)+'K' : valorActivas?'$'+valorActivas.toLocaleString('es-CO'):'$0';
   document.getElementById('poc-stats-bar').innerHTML =
     `<div class="poc-stat green" style="cursor:pointer" onclick="pocFilterFn('activo',document.querySelector('.poc-filter-btn'))"><div class="poc-stat-num">${activos}</div><div class="poc-stat-label">Activas</div></div>`
    +`<div class="poc-stat" style="border-left:3px solid ${vencidas?'var(--red)':'rgba(255,255,255,.15)'}"><div class="poc-stat-num" style="color:${vencidas?'#f87171':'inherit'}">${vencidas}</div><div class="poc-stat-label">${vencidas?'🚨 ':''}Vencidas</div></div>`
-   +`<div class="poc-stat" style="border-left:3px solid ${sinFacturar?'#ef4444':'rgba(255,255,255,.15)'};cursor:pointer" onclick="pocFilterFn('sinfacturar',null)" title="Entregadas o parciales que aún no se han facturado"><div class="poc-stat-num" style="color:${sinFacturar?'#fca5a5':'inherit'}">${sinFacturar}</div><div class="poc-stat-label">${sinFacturar?'🚩 ':''}Sin facturar</div></div>`
+   +`<div class="poc-stat" style="border-left:3px solid ${sinFacturarUrge?'#ef4444':sinFacturar?'#e8a020':'rgba(255,255,255,.15)'};cursor:pointer" onclick="pocFilterFn('sinfacturar',null)" title="Todas las pendientes de facturación (sin facturar o parciales)${sinFacturarUrge?' · '+sinFacturarUrge+' ya entregada(s) = urgente(s) 🚩':''}"><div class="poc-stat-num" style="color:${sinFacturarUrge?'#fca5a5':sinFacturar?'#fbbf24':'inherit'}">${sinFacturar}</div><div class="poc-stat-label">Sin facturar${sinFacturarUrge?' · 🚩'+sinFacturarUrge:''}</div></div>`
    +`<div class="poc-stat gold"><div class="poc-stat-num">${completados}</div><div class="poc-stat-label">Completadas${completados?' (archivables)':''}</div></div>`
    +`<div class="poc-stat blue"><div class="poc-stat-num">${total}</div><div class="poc-stat-label">Total en curso</div></div>`
    +`<div class="poc-stat" style="border-left:3px solid var(--red)"><div class="poc-stat-num">${cancelados}</div><div class="poc-stat-label">Canceladas</div></div>`
@@ -8720,7 +8728,7 @@ function renderProcesos() {
   // El filtro 📦 Archivadas muestra SOLO archivadas; los demás filtros las excluyen
   const base = pocCurrentFilter==='archivada' ? list.filter(o=>o.archivada) : vivas;
   let filtered = (pocCurrentFilter==='todos'||pocCurrentFilter==='archivada') ? base
-               : pocCurrentFilter==='sinfacturar' ? base.filter(o=>_pocProblemaFact(o))
+               : pocCurrentFilter==='sinfacturar' ? base.filter(o=>_pocPendienteFact(o))
                : base.filter(o=>o.estado===pocCurrentFilter);
   if (pocStageFilter !== null) {
     filtered = filtered.filter(o => {
