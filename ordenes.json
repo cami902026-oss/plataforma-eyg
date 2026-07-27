@@ -3776,7 +3776,7 @@
     "desc": "Cotización LM1816 · 1 ítems",
     "estado": "activo",
     "fechaIngreso": "2026-07-22",
-    "valor": 511700,
+    "valor": 1200000,
     "hojaEntrada": {
       "requerida": true,
       "fecha": "",
@@ -3784,9 +3784,9 @@
     },
     "stages": [
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-07-24",
+        "n": "CODIFER"
       },
       {
         "s": "pending",
@@ -3810,13 +3810,13 @@
         "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "LM1816",
     "createdAt": "2026-07-22T13:39:07.251Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-27T03:05:18.330Z",
-    "updatedBy": "alexandra",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-27T03:05:18.330Z"
+    "updatedAt": "2026-07-27T03:05:48.696Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "poc_1784824514372",
