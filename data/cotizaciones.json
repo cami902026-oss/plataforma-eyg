@@ -17285,8 +17285,8 @@
     "cliente": "SKID EXPERTS",
     "contacto": "JENNY ARIAS",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "524",
     "iva": 19,
     "subtotal": 1200000,
     "ivaVal": 228000,
@@ -17303,23 +17303,24 @@
     "items": [
       {
         "id": 1,
-        "desc": "CAP 24\" SCH STD A-234 WPB",
-        "udm": "EA",
         "qty": 1,
-        "precio": 1200000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "3d3f7a33-a6e2-4a1a-8c8d-7114377ecf59",
+        "desc": "CAP 24\" SCH STD A-234 WPB",
         "marca": " ZIBO",
+        "precio": 1200000,
+        "desvTec": "",
         "proveedor": "TUVAPOR",
-        "precioProveedor": 847220,
-        "uid": "3d3f7a33-a6e2-4a1a-8c8d-7114377ecf59"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 847220
       }
     ],
-    "fechaGuardado": "2026-07-15T18:56:03.498Z",
+    "fechaGuardado": "2026-07-27T03:03:01.528Z",
+    "facturadaAt": "2026-07-26",
     "adjudicadaAt": "2026-07-15",
     "createdAt": "2026-07-06T20:33:30.944Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-15T18:56:03.499Z",
+    "updatedAt": "2026-07-27T03:03:01.528Z",
     "updatedBy": "andrea"
   },
   {
