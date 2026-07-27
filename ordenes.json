@@ -2321,13 +2321,13 @@
     "num": "ODC-AA-MEC-SKID-469-24-618",
     "cliente": "SKID EXPERTS",
     "desc": "Cotización LM1769 · 1 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-15",
     "valor": 1428000,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-07-21",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -2336,8 +2336,8 @@
         "n": "TUVAPOR"
       },
       {
-        "s": "active",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-15",
         "n": "",
         "envio": "",
         "transp": "",
@@ -2351,10 +2351,10 @@
         "n": "ENVIADO CLIENTE"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-21",
         "n": "",
-        "factura": ""
+        "factura": "524"
       }
     ],
     "observaciones": "",
@@ -2362,10 +2362,9 @@
     "cotizacionId": "LM1769",
     "createdAt": "2026-07-15T18:57:13.977Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-27T03:02:08.874Z",
+    "updatedAt": "2026-07-27T03:02:50.869Z",
     "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-27T03:02:08.874Z"
+    "faltanFechas": false
   },
   {
     "id": "poc_1784325991849",
