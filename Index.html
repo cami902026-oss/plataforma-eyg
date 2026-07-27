@@ -1193,6 +1193,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div class="poc-stats" id="poc-stats-bar"></div>
           <div class="poc-top">
             <div class="poc-filters">
+              <input type="text" id="poc-search" placeholder="🔍 Buscar N°, cliente, descripción u observación..." oninput="pocSearchFn()" style="flex:1;min-width:220px;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:#fff;font-size:13px;font-family:'Open Sans',sans-serif;">
               <button class="poc-filter-btn active" data-filter="activo" onclick="pocFilterFn('activo',this)" title="Las que requieren acción — ordenadas por urgencia">🔴 Activas</button>
               <button class="poc-filter-btn" data-filter="sinfacturar" onclick="pocFilterFn('sinfacturar',this)" title="TODAS las pendientes de facturación (sin facturar o parciales). Las 🚩 rojas ya se entregaron = urgente. Escribe en Observaciones el por qué.">⚠️ Sin facturar</button>
               <button class="poc-filter-btn" data-filter="todos" onclick="pocFilterFn('todos',this)">Todas</button>
@@ -8534,6 +8535,7 @@ let pocCurrentFilter = 'activo';
 let pocStageFilter = null;
 let pocEditId = null;
 let pocViewMode = 'cards';   // 'cards' | 'tabla' (vista compacta para escanear rápido)
+let pocSearchQuery = '';     // búsqueda por N°, cliente, descripción u observación
 
 // ─── Estado de FACTURACIÓN + OBSERVACIONES de la O.C. (aditivo) ──────────────
 // Estado de facturación: automático desde la etapa 3 (Facturación); si tiene
@@ -8736,8 +8738,20 @@ function renderProcesos() {
       return st && st.s !== 'done';
     });
   }
+  // Buscador: palabras en cualquier orden sobre N° / cliente / descripción / observación.
+  if (pocSearchQuery) {
+    const toks = pocSearchQuery.split(/\s+/).filter(Boolean);
+    filtered = filtered.filter(o => {
+      const hay = ((o.num||'')+' '+(o.cliente||'')+' '+(o.desc||'')+' '+(o.observaciones||'')).toLowerCase();
+      return toks.every(t => hay.includes(t));
+    });
+  }
   const el = document.getElementById('poc-list');
   if(!filtered.length){
+    if (pocSearchQuery) {
+      el.innerHTML = `<div class="poc-empty"><div class="poc-empty-icon">🔍</div><div>Sin resultados para "<b>${pocSearchQuery.replace(/</g,'&lt;')}</b>" en este filtro</div><div style="margin-top:8px;font-size:12px">Prueba con <b>Todas</b> o borra la búsqueda</div></div>`;
+      return;
+    }
     const msg = pocCurrentFilter==='activo' ? '🎉 No hay O.C. activas — todo al día'
               : pocCurrentFilter==='archivada' ? 'No hay O.C. archivadas todavía'
               : pocCurrentFilter==='sinfacturar' ? '🎉 Nada pendiente por facturar — todo facturado'
@@ -8999,6 +9013,12 @@ async function pocVerItems(id){
       <th style="padding:6px;text-align:center;">#</th><th style="padding:6px;text-align:left;">Descripción</th>
       <th style="padding:6px;text-align:left;">Marca</th><th style="padding:6px;">UDM</th><th style="padding:6px;text-align:right;">Cant.</th>
     </tr></thead><tbody>${filas}</tbody></table></div>`;
+}
+
+// Búsqueda por palabras (en cualquier orden) sobre N° / cliente / descripción / observación.
+function pocSearchFn(){
+  pocSearchQuery = (document.getElementById('poc-search')?.value || '').trim().toLowerCase();
+  renderProcesos();
 }
 
 function pocFilterFn(f, btn) {
