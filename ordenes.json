@@ -1639,7 +1639,7 @@
     "num": "1107",
     "cliente": "EIKOS",
     "desc": "Cotización LM1736 · 4 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-30",
     "valor": 3426962,
     "hojaEntrada": {
@@ -1664,22 +1664,25 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-30",
         "n": ""
       },
       {
         "s": "done",
         "f": "2026-06-30",
-        "n": "503"
+        "n": "503",
+        "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "",
     "createdAt": "2026-06-30T23:16:36.338Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-27T03:19:16.422Z",
+    "updatedAt": "2026-07-27T03:19:23.634Z",
     "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-27T03:19:16.422Z"
+    "faltanFechas": false
   },
   {
     "id": "poc_1782876574385",
