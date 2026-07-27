@@ -2232,23 +2232,23 @@
     "num": "ODC-AA-MEC-SKID-469-24-572 Rv1",
     "cliente": "SKID EXPERTS",
     "desc": "Cotización LM1738-1 · 27 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-14",
     "valor": 10109764,
     "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
+      "requerida": true,
+      "fecha": "2026-07-14",
       "estado": "pendiente"
     },
     "stages": [
       {
-        "s": "active",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-14",
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-14",
         "n": "",
         "envio": "",
         "transp": "",
@@ -2257,15 +2257,15 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-14",
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-14",
         "n": "",
-        "factura": ""
+        "factura": "513"
       }
     ],
     "observaciones": "",
@@ -2273,10 +2273,9 @@
     "cotizacionId": "LM1738-1",
     "createdAt": "2026-07-14T16:23:50.252Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-27T03:09:42.668Z",
+    "updatedAt": "2026-07-27T03:10:11.766Z",
     "updatedBy": "andrea",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-27T03:09:42.668Z"
+    "faltanFechas": false
   },
   {
     "id": "poc_1784082497944",
