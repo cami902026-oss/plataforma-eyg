@@ -4198,12 +4198,19 @@ async function _sbWriteRaw(path, method, bodyStr, prefer, ms) {
 
 async function _saveDataGH_viaProxy(proxyURL, filename, data, label) {
   // Apps Script: usar text/plain para evitar preflight CORS
+  const body = JSON.stringify({ file: filename, content: data, label: label, secret: _proxySecret() });
+  // TIMEOUT ADAPTATIVO (2026-07-27): antes eran 20s FIJOS. Con cotizaciones.json ya
+  // en ~1,4 MB, subirlo por el proxy pasa de 20s → el navegador aborta, cree que
+  // falló y deja el cambio "sin subir" para siempre (aunque el commit SÍ se ejecutó).
+  // Ahora el límite crece con el tamaño: archivos pequeños siguen en 20s; los
+  // grandes obtienen hasta 90s, suficiente para que la subida complete.
+  const ms = Math.min(90000, Math.max(20000, Math.round(body.length / 30)));
   const resp = await _fetchT(proxyURL, {
     method:'POST',
     headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-    body: JSON.stringify({ file: filename, content: data, label: label, secret: _proxySecret() }),
+    body: body,
     redirect:'follow'
-  }, 20000);
+  }, ms);
   const j = await resp.json();
   if (!j.ok) throw new Error(j.error || 'Proxy GitHub error');
   if (j.sha) _ghShaCache[filename] = j.sha;
