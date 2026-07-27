@@ -787,12 +787,12 @@
     "num": "ODC-AA-MEC-SKID-469-24-549",
     "cliente": "SKID EXPERTS",
     "desc": "Tubería acero inoxidable SMLS y accesorios filtros",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-05",
     "valor": 2654209,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
+      "fecha": "2026-06-19",
       "estado": "pendiente"
     },
     "stages": [
@@ -819,15 +819,18 @@
       {
         "s": "done",
         "f": "2026-06-19",
-        "n": "485"
+        "n": "485",
+        "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "",
     "createdAt": "2026-06-05T21:37:33.462Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-27T03:04:27.957Z",
-    "updatedBy": "lina",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-27T03:04:27.957Z"
+    "updatedAt": "2026-07-27T03:04:35.993Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false
   },
   {
     "id": "poc_1780759794347",
