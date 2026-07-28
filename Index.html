@@ -9832,14 +9832,14 @@ function _showHistoricoModal(moduleId, yyyymm, data) {
   document.body.appendChild(overlay);
 }
 
-function cerrarMesOC() {
+async function cerrarMesOC() {
   const list = getPOC();
-  const completadas = list.filter(o => o.estado === 'completado');
-  const canceladas  = list.filter(o => o.estado === 'cancelado');
+  const completadas = list.filter(o => o.estado === 'completado' && !o.archivada);
+  const canceladas  = list.filter(o => o.estado === 'cancelado'  && !o.archivada);
   const archivar    = [...completadas, ...canceladas];
 
   if (archivar.length === 0) {
-    showToast('No hay órdenes completadas ni canceladas para archivar', 'info');
+    showToast('No hay órdenes completadas ni canceladas por archivar', 'info');
     return;
   }
 
@@ -9850,7 +9850,8 @@ function cerrarMesOC() {
     `Se archivarán:\n` +
     `• ${completadas.length} orden(es) completada(s)\n` +
     `• ${canceladas.length} orden(es) cancelada(s)\n\n` +
-    `Quedarán solo las órdenes ACTIVAS en la lista.\n\n¿Confirmar?`
+    `Quedarán solo las órdenes ACTIVAS en la lista.\n\n` +
+    `NO se borran: siguen en el filtro 📦 Archivadas, en el histórico y en los informes.\n\n¿Confirmar?`
   );
   if (!confirm1) return;
 
@@ -9862,22 +9863,29 @@ function cerrarMesOC() {
   historial.unshift(entrada);
   localStorage.setItem(histKey, JSON.stringify(historial));
 
-  // 1.5 NUEVO: subir a GitHub data/historico/ordenes-YYYY-MM.json
-  // para que TODO el equipo lo vea en el módulo "📚 Históricos"
-  (async () => {
+  // 1.5 Subir a GitHub data/historico/ordenes-YYYY-MM.json
+  // para que TODO el equipo lo vea en el módulo "📚 Históricos".
+  // v172: ANTES esto se lanzaba sin esperar y el error solo salía en la consola.
+  // El 26-jul-2026 el respaldo no se escribió y el botón archivó igual. Ahora se
+  // espera de verdad (_saveDataGH lanza si falla) y sin respaldo no se sigue.
+  const yyyymm = _yyyymmPrev(); // mismo formato que los demás módulos
+  const histFile = `data/historico/ordenes-${yyyymm}.json`;
+  try {
+    let prev = [];
     try {
-      const yyyymm = _yyyymmPrev(); // mismo formato que los demás módulos
-      const histFile = `data/historico/ordenes-${yyyymm}.json`;
-      let prev = [];
-      try {
-        const remoto = await _loadDataGH(histFile);
-        if (Array.isArray(remoto)) prev = remoto;
-      } catch(_){}
-      const merged = [...prev, ...archivar];
-      await _saveDataGH(histFile, merged, `📦 Histórico Órdenes ${yyyymm}`);
-      console.log('[ENERGY] Histórico OPs sincronizado al equipo:', histFile, merged.length);
-    } catch(e) { console.warn('Hist OPs GitHub:', e); }
-  })();
+      const remoto = await _loadDataGH(histFile);
+      if (Array.isArray(remoto)) prev = remoto;
+    } catch(_){}
+    // No duplicar las que ya estén en el histórico de ese mes
+    const yaEstan = new Set(prev.map(o => o && o.id).filter(Boolean));
+    const merged = [...prev, ...archivar.filter(o => !yaEstan.has(o.id))];
+    await _saveDataGH(histFile, merged, `📦 Histórico Órdenes ${yyyymm}`);
+    console.log('[ENERGY] Histórico OPs sincronizado al equipo:', histFile, merged.length);
+  } catch(e) {
+    console.warn('Hist OPs GitHub:', e);
+    showToast('⚠️ No se pudo guardar el histórico del mes — no se archivó nada. Revisa la pastilla de sincronización e intenta de nuevo.', 'error', { durationMs: 12000 });
+    return;
+  }
 
   // 2. Enviar completadas a pestaña Historial en Google Sheets
   if (GS_SCRIPT_URL) {
@@ -9892,15 +9900,23 @@ function cerrarMesOC() {
     } catch(e) { console.warn('GS archive error:', e); }
   }
 
-  // 3. Dejar solo las activas en la lista principal — preservando la papelera
-  const activas = list.filter(o => o.estado === 'activo');
-  const trash = getPOCTrash(); // los borrados no se tocan al cerrar mes
-  // v172: este SÍ es un retiro intencional — se salta la fusión con el repo,
-  // que si no volvería a traer las archivadas. (Comportamiento igual al de antes.)
-  window._ocSaltarFusion = true;
-  try { savePOCData([...activas, ...trash]); } finally { window._ocSaltarFusion = false; }
+  // 3. Sacarlas de la lista SIN BORRARLAS.
+  // v172: antes esto hacía savePOCData([...activas, ...trash]), o sea ELIMINABA de
+  // ordenes.json todo lo completado y cancelado. El 26-jul-2026 se llevó 86 O.C. y
+  // el respaldo que debía salvarlas nunca se escribió. Ahora solo se marcan como
+  // archivadas: desaparecen de la lista (el filtro ya las excluye desde v160) pero
+  // siguen en el archivo, en 📦 Archivadas, en el histórico y en los informes.
+  const aArchivar = new Set(archivar.map(o => o.id));
+  const todas = getPOCAll();
+  const nowISO = now.toISOString();
+  let n = 0;
+  todas.forEach(o => {
+    if (!o || !aArchivar.has(o.id) || o.archivada) return;
+    o.archivada = true; o.archivadaAt = nowISO; o.updatedAt = nowISO; n++;
+  });
+  savePOCData(todas);
   renderProcesos();
-  showToast(`📦 Mes cerrado — ${archivar.length} órdenes archivadas`, 'success');
+  showToast(`📦 Mes cerrado — ${n} órdenes archivadas (siguen guardadas, las ves en el filtro 📦 Archivadas)`, 'success', { durationMs: 9000 });
 }
 
 function exportPocExcel() {
