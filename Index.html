@@ -18119,14 +18119,44 @@ async function absAjustarStock(codigo) {
   const nuevo=parseFloat(String(entrada).replace(',','.'));
   if(isNaN(nuevo)||nuevo<0) return showToast('Cantidad inválida','error');
   if(nuevo===actual) return showToast('Sin cambios (igual al sistema)','info');
+  // v172: motivo opcional; si cancela el prompt el ajuste igual continúa
+  const _mot=prompt('Motivo del ajuste (opcional):\n\nEj: conteo físico, avería, producto no encontrado, error de digitación.','conteo físico')||'';
   try{
     await absFetch('productos?codigo=eq.'+encodeURIComponent(codigo),{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify({stock_actual:nuevo,updated_at:new Date().toISOString()})});
     p.stock_actual=nuevo;
     const dif=nuevo-actual;
+    await _absKardexAjuste(p,actual,nuevo,_mot);   // v172: deja rastro en el Kardex
     showToast('Stock de '+p.codigo+' ajustado: '+actual+' → '+nuevo+' ('+(dif>0?'+':'')+dif+') ✓','ok');
     absRenderStock(); absRenderDashboard();
+    if(typeof absRenderKardex==='function') absRenderKardex();
     if(typeof absCheckStockCritico==='function') absCheckStockCritico();
   }catch(e){ showToast('Error: '+e.message,'error'); }
+}
+
+// v172: registra el ajuste manual de stock en el Kardex para que quede trazabilidad.
+// Es AUXILIAR y no crítica: si falla, el ajuste de stock (que ya se aplicó) NO se revierte
+// ni se muestra error bloqueante — solo se avisa que el kardex quedó sin la fila.
+async function _absKardexAjuste(p,actual,nuevo,motivo) {
+  try{
+    const dif=nuevo-actual;
+    const mov={
+      fecha:new Date().toISOString().split('T')[0],
+      hora:new Date().toTimeString().split(' ')[0],
+      codigo_producto:p.codigo,
+      descripcion_producto:p.descripcion,
+      tipo:dif>0?'ENTRADA':'SALIDA',
+      cantidad:Math.abs(dif),
+      stock_resultante:nuevo,
+      costo:p.costo_compra||0,
+      responsable:currentUser?.name||'SISTEMA',
+      lote:'', colada:'', remision:'AJUSTE',
+      notas:'AJUSTE DE INVENTARIO: sistema '+actual+' → real '+nuevo+' (dif '+(dif>0?'+':'')+dif+')'+(motivo?' · '+motivo:'')
+    };
+    await absFetch('kardex',{method:'POST',body:JSON.stringify(mov)});
+    if(Array.isArray(abs_kardex)) abs_kardex.unshift({...mov,id:Date.now()});
+  }catch(e){
+    showToast('Stock ajustado, pero no se pudo registrar en el Kardex: '+e.message,'error');
+  }
 }
 
 // ─── MOVIMIENTOS ─────────────────────────────────────────────────
