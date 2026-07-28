@@ -39835,9 +39835,9 @@
     "estado": "Revisión gerencia",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 150277320,
+    "ivaVal": 28552690.8,
+    "total": 178830010.8,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "GUAMAL",
     "validez": "8 DÍAS",
@@ -39855,8 +39855,8 @@
         "uid": "7efa8f5d-a21a-439f-93ba-8a5ad9d2ca9c",
         "desc": "2\" Ball valve, trunnion, API 6D, Class 1500, RTJ flanged end, Full Port, Side Entry 2-3 Pieces, Bolted Cover, DBB, Lever Operator, ASTM A216 Grade WCB, Lever Operator, SS 316 Ball, SS 316 Stem, Reinforced Nylon Seats Inserts, Viton Seals, Fire safe Per API 607\t\t\t\t\t\n",
         "marca": "OVC",
-        "precio": 0,
-        "desvTec": "Válvula de bola de 2 in x 1500 trunnion3 PC TM API6D BV A105/LF2",
+        "precio": 11500000,
+        "desvTec": "VALVULA BOLA TIPO TRUNNION 3PCS, DIAMETRO 2” CLASE 1500 RTJ, TM API6D FS, CUERPO A105 / ESFERA E INT LF2",
         "proveedor": "HOUSTON",
         "tiempoEntrega": "2 SEMANAS ",
         "precioProveedor": 11500000
@@ -39868,11 +39868,13 @@
         "uid": "037d9a2e-007b-472f-8709-4119353d2249",
         "desc": "2\" Ball valve, trunnion, API 6D, Class 1500, RTJ flanged end, Full Port, Side Entry 2-3 Pieces, Bolted Cover, ASTM A216 Grade WCB, Lever Operator, SS 316 Ball, SS 316 Stem, Reinforced Nylon Seats, Fire safe Per API 6FA\t\t\t\t\t\n",
         "marca": "",
-        "precio": 0,
-        "desvTec": "",
+        "precio": 11500000,
+        "desvTec": "VALVULA BOLA TIPO TRUNNION 3PCS, DIAMETRO 2” CLASE 1500 RTJ, TM API6D FS, CUERPO A105 / ESFERA E INT LF2",
         "proveedor": "",
         "tiempoEntrega": "2 SEMANAS",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 3,
@@ -39881,11 +39883,13 @@
         "uid": "e66b5fb7-b91a-4df9-b877-ec9010d218a2",
         "desc": "2\" Ball valve, floating, API 6D, 300#, RF Flg, Full Port, Side Entry 2-3 Pieces, Bolted Cvr, DBB, ASTM A216 Grade WCB, Lever Op, SS 316 Ball , SS 316 Stem , RPTFE Seats Inserts , HNBR Seals, API 6FA\t\t\t\t\t\n",
         "marca": "WKM ",
-        "precio": 0,
-        "desvTec": "BALL 2\"X 300 WCC RF 316 FP FS FL",
+        "precio": 3500000,
+        "desvTec": "VALVULA BOLA TIPO TRUNNION 3PCS, DIAMETRO 2” CLASE 300 RF API6D FP, FIRE SAFE API607, CUERPO WCC / ESFERA E INT SS316",
         "proveedor": "HOUSTON",
         "tiempoEntrega": "2-SEMANAS",
-        "precioProveedor": 3500000
+        "precioProveedor": 3500000,
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 4,
@@ -39894,11 +39898,13 @@
         "uid": "7e165244-9bf3-40c0-9f73-73b81e3e36a7",
         "desc": "2\" Check valve, swing, API 594, 300#, RF Flg, Bolted Cvr, ASTM A216 Grade WCB, API Trim 12, Renewable Seat\t\t\t\t\t\n",
         "marca": "KITZ",
-        "precio": 0,
+        "precio": 4990000,
         "desvTec": "SWING CK 2\" X 300 WCB RF 316 HFS BC",
         "proveedor": "HOUSTEN ",
         "tiempoEntrega": "2 SEMANAS ",
-        "precioProveedor": 4990000
+        "precioProveedor": 4990000,
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 5,
@@ -39907,18 +39913,20 @@
         "uid": "0cfbf87d-9735-4874-b187-eb4e58979e0b",
         "desc": "2\", Blind flange, ASME B16.5, 1500#, RTJ Flanged end, ASTM A105\t\t\t\t\t\n",
         "marca": "LUDA",
-        "precio": 0,
+        "precio": 153660,
         "desvTec": "900/1500  RTJ A-105",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 153660
+        "precioProveedor": 153660,
+        "fotoGrande": false,
+        "altDe": null
       }
     ],
-    "fechaGuardado": "2026-07-28T14:11:04.791Z",
+    "fechaGuardado": "2026-07-28T14:22:15.278Z",
     "createdAt": "2026-07-22T15:59:55.228Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-28T14:11:04.791Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-07-28T14:22:15.278Z",
+    "updatedBy": "mario"
   },
   {
     "id": "LM1885",
@@ -43017,49 +43025,6 @@
     "createdBy": "sandra",
     "updatedAt": "2026-07-28T13:34:36.768Z",
     "updatedBy": "sandra"
-  },
-  {
-    "id": "LM1895",
-    "fecha": "2026-07-28",
-    "fechaVenc": "2026-08-05",
-    "cliente": "TOP DRILLING COMPANY SUCURSAL COLOMBIA",
-    "contacto": "Jairo Garzon Escalante",
-    "correo": "j.garzon@topdco.com",
-    "estado": "Borrador",
-    "factura": "",
-    "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
-    "formaPago": "30 DÍAS",
-    "sitioEntrega": "",
-    "validez": "8 DÍAS",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "vendedor": "Sheila Baron",
-    "realizadaPor": "Alexandra",
-    "aprobadaPor": "Alberto",
-    "solicitudId": "",
-    "motivoRechazo": "",
-    "items": [
-      {
-        "id": 1,
-        "desc": "RING JOINT GASKET BX159",
-        "udm": "EA",
-        "qty": 1,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS HABILES",
-        "desvTec": "",
-        "marca": "CHENSEA / DINASEAL",
-        "proveedor": "COLIMPORTADOS",
-        "precioProveedor": 299420,
-        "uid": "d27056e0-2c5e-4ab6-8961-c44b2d2a767b"
-      }
-    ],
-    "fechaGuardado": "2026-07-28T14:19:31.173Z",
-    "createdAt": "2026-07-28T14:19:31.173Z",
-    "createdBy": "alexandra",
-    "updatedAt": "2026-07-28T14:19:31.173Z",
-    "updatedBy": "alexandra"
   },
   {
     "id": "LM629",
