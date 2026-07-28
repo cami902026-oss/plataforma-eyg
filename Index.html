@@ -3841,6 +3841,111 @@ let _ordenesFileSHA = '';
 function _ghToken() {
   return localStorage.getItem('gh_pat_token') || '';
 }
+
+/* ═══ v172 — MERGE DE O.C. QUE NUNCA PIERDE AVANCE ═══════════════════════════
+   Qué se rompía (26 y 27 de julio de 2026): al fusionar, se elegía el REGISTRO
+   COMPLETO cuyo updatedAt fuera más nuevo. Pero ese sello se mueve sin que nadie
+   edite nada (abrir y cerrar una O.C. toma y suelta el lock, archivar, el barrido
+   de completadas) y además 46 órdenes lo tienen corrupto con texto
+   ("✅ Facturado") en vez de fecha. Resultado: un navegador con una copia vieja
+   pisaba el trabajo bueno de otro — se perdieron facturas y etapas ya cerradas,
+   dos días seguidos, incluida una reparación que duró 20 segundos.
+   Cómo queda: se fusiona CAMPO POR CAMPO y en todo lo que es avance (etapas,
+   fechas, facturas, hoja de entrada) nunca gana el dato más pobre; el sello solo
+   decide los textos. Además se re-lee el repo ANTES de subir, para que una lista
+   vieja no pueda sobrescribir la buena.
+   Alcance: SOLO el módulo de O.C. No toca cotizaciones, cartera ni el proxy. */
+function _ocTs(v) { const t = new Date(v || 0).getTime(); return isFinite(t) ? t : 0; } // sello corrupto ⇒ 0
+function _ocLleno(v) { return !(v === undefined || v === null || v === ''); }
+
+// Fusiona UNA etapa quedándose con el dato más completo de cada lado.
+function _ocMergeStage(a, b, i) {
+  a = a || {}; b = b || {};
+  const out = Object.assign({}, a, b);
+  ['f','n','envio','transp','guia','dest','resp','factura'].forEach(k => {
+    if (_ocLleno(a[k]) && !_ocLleno(b[k])) out[k] = a[k];
+    else if (_ocLleno(b[k])) out[k] = b[k];
+  });
+  // Certificado y Facturación (i>=2) los manda la fecha — misma regla que _pocEtapaHecha.
+  out.s = (i >= 2) ? (out.f ? 'done' : 'pending')
+                   : ((a.s === 'done' || b.s === 'done') ? 'done' : (b.s || a.s || 'pending'));
+  return out;
+}
+
+function _ocMergeHE(a, b) {
+  a = a || {}; b = b || {};
+  const out = Object.assign({}, a, b);
+  out.requerida = !!(a.requerida || b.requerida);
+  out.fecha  = _ocLleno(b.fecha) ? b.fecha : (a.fecha || '');
+  out.estado = (a.estado === 'recibida' || b.estado === 'recibida') ? 'recibida'
+             : (b.estado || a.estado || 'pendiente');
+  return out;
+}
+
+// Fusiona dos versiones de la MISMA O.C. (mismo id). Nunca devuelve menos avance.
+function _ocMergeOrden(a, b) {
+  if (!a) return b;
+  if (!b) return a;
+  const nuevo = _ocTs(a.updatedAt) >= _ocTs(b.updatedAt) ? a : b; // sello VÁLIDO más nuevo
+  const viejo = nuevo === a ? b : a;
+  const out = Object.assign({}, viejo, nuevo);
+  // Nunca vaciar un dato que el otro lado sí tiene.
+  ['num','cliente','desc','valor','cotizacionId','facturacion','observaciones',
+   'createdAt','createdBy','origenCorreo','fechaIngreso']
+    .forEach(k => { if (!_ocLleno(out[k]) && _ocLleno(viejo[k])) out[k] = viejo[k]; });
+  if (_ocTs(nuevo.updatedAt) === 0 && _ocTs(viejo.updatedAt) > 0) out.updatedAt = viejo.updatedAt;
+  // Avance: etapa por etapa + hoja de entrada.
+  const sa = a.stages || [], sb = b.stages || [], n = Math.max(sa.length, sb.length);
+  if (n) { out.stages = []; for (let i = 0; i < n; i++) out.stages.push(_ocMergeStage(sa[i], sb[i], i)); }
+  if (a.hojaEntrada || b.hojaEntrada) out.hojaEntrada = _ocMergeHE(a.hojaEntrada, b.hojaEntrada);
+  // Estado: se RECALCULA con la regla de siempre sobre el avance ya fusionado
+  // (la misma de pocSave), en vez de copiarlo de una versión que puede venir vieja.
+  if (nuevo.estado === 'cancelado' || viejo.estado === 'cancelado') out.estado = 'cancelado';
+  else if (_pocTodasHechas(out) && _pocHeOK(out)) out.estado = 'completado';
+  else out.estado = 'activo';
+  out.faltanFechas = out.estado === 'completado' ? _pocFaltanFechas(out) : false;
+  if (out.estado === 'activo') out.archivada = false;
+  // Un lock vencido que llegue en una copia vieja no debe bloquear a nadie.
+  try {
+    if (out.lockedAt && (Date.now() - _ocTs(out.lockedAt)) > POC_LOCK_TIMEOUT_MS) {
+      delete out.lockedBy; delete out.lockedAt;
+    }
+  } catch(_) {}
+  return out;
+}
+
+// Fusiona dos LISTAS de O.C. por id. Los ids que estén solo en un lado se conservan.
+function _ocMergeListas(remota, local) {
+  const porId = new Map();
+  (remota || []).forEach(o => { if (o && o.id) porId.set(o.id, o); });
+  (local  || []).forEach(o => {
+    if (!o || !o.id) return;
+    porId.set(o.id, porId.has(o.id) ? _ocMergeOrden(porId.get(o.id), o) : o);
+  });
+  return Array.from(porId.values());
+}
+
+// Antes de subir, relee lo que hay en el repo y fusiona: así un navegador con una
+// copia vieja ya no puede borrar el avance de otro. Los borrados INTENCIONALES
+// (Cerrar Mes, purga de papelera) levantan _ocSaltarFusion y pasan derecho.
+async function _ocFusionarConRemoto(arr) {
+  try {
+    if (window._ocSaltarFusion) return arr;
+    if (!Array.isArray(arr) || !arr.length) return arr;
+    const r = await fetch(
+      `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/ordenes.json?t=${Date.now()}`,
+      { cache: 'no-store' }
+    );
+    if (!r.ok) return arr;
+    const remota = await r.json();
+    if (!Array.isArray(remota) || !remota.length) return arr;
+    const fus = _ocMergeListas(remota, arr);
+    if (fus.length < arr.length) return arr; // por si acaso: nunca subir menos de lo que traíamos
+    try { localStorage.setItem('procesos_oc', JSON.stringify(fus)); } catch(_) {}
+    return fus;
+  } catch(_) { return arr; }
+}
+
 async function _loadOrdenesGH() {
   try {
     let arr = null;
@@ -3864,17 +3969,10 @@ async function _loadOrdenesGH() {
       if (Array.isArray(arr) && arr.length > 0) {
         // Si hubo guardado local reciente (<60s), no sobreescribir
         if (Date.now() - _pocLastSave < 60000) { ocRenderSafe(); return; }
-        // Merge: keep the most recent version of each order
-        const local = getPOC();
-        const merged = arr.map(ghOrder => {
-          const loc = local.find(o => o.id === ghOrder.id);
-          if (!loc) return ghOrder;
-          const ghTime = new Date(ghOrder.updatedAt || 0).getTime();
-          const locTime = new Date(loc.updatedAt || 0).getTime();
-          return locTime > ghTime ? loc : ghOrder;
-        });
-        // Add local-only orders not in GitHub yet
-        local.forEach(lo => { if (!merged.find(o => o.id === lo.id)) merged.push(lo); });
+        // v172: merge campo por campo que nunca pierde avance (ver _ocMergeOrden).
+        // Antes ganaba el registro completo con el updatedAt más nuevo y una copia
+        // vieja podía borrar facturas y etapas ya cerradas.
+        const merged = _ocMergeListas(arr, getPOCAll());
         // Normalize stages 2&3 status derived from date
         merged.forEach(o => { if(o.stages) o.stages = o.stages.map((st,i)=>i>=2?{...st,s:st.f?'done':'pending'}:st); });
         localStorage.setItem('procesos_oc', JSON.stringify(merged));
@@ -3885,6 +3983,10 @@ async function _loadOrdenesGH() {
 }
 async function _saveOrdenesGH(arr) {
   try {
+    // v172: releer el repo y fusionar ANTES de subir. Sin esto, un navegador con
+    // la lista vieja en localStorage sobrescribe el archivo entero y borra el
+    // avance de los demás (fue lo que pasó el 26 y el 27 de julio de 2026).
+    arr = await _ocFusionarConRemoto(arr);
     // Si este equipo NO tiene PAT local pero sí hay proxy, guardar por el proxy
     // (su token vive en el servidor y no caduca como el PAT del navegador).
     if (!_ghToken() && _ghWriteProxyURL()) {
@@ -3975,21 +4077,11 @@ function _loadOrdenesGS() {
       if (res && res.ok && Array.isArray(res.data) && res.data.length > 0) {
         // Si hubo guardado local reciente (<60s), no sobreescribir
         if (Date.now() - _pocLastSave < 60000) { ocRenderSafe(); return; }
-        // Fusionar GS con local: gana la versión más reciente según updatedAt
+        // v172: mismo merge que en GitHub — campo por campo, sin perder avance.
         let local = [];
         try { local = JSON.parse(localStorage.getItem('procesos_oc') || '[]'); } catch(_) {}
-        const merged = res.data.map(gsOrder => {
-          const localOrder = local.find(o => o.id === gsOrder.id || o.num === gsOrder.num);
-          if (localOrder) {
-            const gsTime   = gsOrder.updatedAt    ? new Date(gsOrder.updatedAt).getTime()    : 0;
-            const localTime = localOrder.updatedAt ? new Date(localOrder.updatedAt).getTime() : 0;
-            return localTime > gsTime ? localOrder : gsOrder;
-          }
-          return gsOrder;
-        });
-        const gsIds = new Set(res.data.map(o => o.id));
-        const soloLocal = local.filter(o => !gsIds.has(o.id));
-        const finalData = [...merged, ...soloLocal];
+        const finalData = _ocMergeListas(res.data, local);
+        const soloLocal = local.filter(o => !res.data.some(g => g && g.id === o.id));
         localStorage.setItem('procesos_oc', JSON.stringify(finalData));
         ocRenderSafe();
         console.log('✅ Órdenes cargadas desde Google Sheets:', res.data.length, '| Solo local:', soloLocal.length);
@@ -8598,7 +8690,9 @@ function _pocAutoPurge(daysKeep) {
       localStorage.setItem('procesos_oc', JSON.stringify(kept));
       console.log('🗑️ Papelera: purgadas', all.length - kept.length, 'OPs >'+daysKeep+'d');
       // Sync a GitHub para que el cleanup quede compartido
-      try { _saveOrdenesGH(kept); } catch(_){}
+      // (v172: purga intencional — se salta la fusión, si no volverían los purgados)
+      window._ocSaltarFusion = true;
+      try { _saveOrdenesGH(kept); } catch(_){} finally { window._ocSaltarFusion = false; }
     }
   } catch(_){}
 }
@@ -9801,7 +9895,10 @@ function cerrarMesOC() {
   // 3. Dejar solo las activas en la lista principal — preservando la papelera
   const activas = list.filter(o => o.estado === 'activo');
   const trash = getPOCTrash(); // los borrados no se tocan al cerrar mes
-  savePOCData([...activas, ...trash]);
+  // v172: este SÍ es un retiro intencional — se salta la fusión con el repo,
+  // que si no volvería a traer las archivadas. (Comportamiento igual al de antes.)
+  window._ocSaltarFusion = true;
+  try { savePOCData([...activas, ...trash]); } finally { window._ocSaltarFusion = false; }
   renderProcesos();
   showToast(`📦 Mes cerrado — ${archivar.length} órdenes archivadas`, 'success');
 }
