@@ -41,7 +41,14 @@
     "num": "300426M7131",
     "cliente": "CIAM",
     "desc": "PLATINAS ORIFICIO",
-    "estado": "activo",
+    "estado": "completado",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -59,19 +66,25 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-05-09",
         "n": ""
       },
       {
         "s": "done",
         "f": "2026-05-09",
-        "n": "429"
+        "n": "429",
+        "factura": ""
       }
     ],
-    "updatedAt": "✅ Facturado",
+    "cotizacionId": "",
+    "createdAt": "2026-07-25T14:43:54.236Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
+    "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1777926438588",
@@ -236,13 +249,13 @@
     "num": "NGEC-2026005442",
     "cliente": "NEW GRANADA ENERGY CORPORATION SUCURSAL COLOMBIANA",
     "desc": "Niples, bridas, codos, válvulas de bola y cortina para campo Dorotea",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-05-22",
     "valor": 0,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-07-10",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -272,13 +285,16 @@
         "factura": "514"
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "",
     "createdAt": "2026-05-22T17:09:02.939Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-14T22:44:40.747Z",
-    "updatedBy": "lina",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
+    "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1778168100636",
@@ -619,7 +635,7 @@
     "num": "4900006720",
     "cliente": "NIKOIL ENERGY",
     "desc": "Canecas de 5 galones de grasa Bestolife 2000 para tubing",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-01",
     "valor": 4974200,
     "hojaEntrada": {
@@ -644,22 +660,27 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-05",
         "n": ""
       },
       {
         "s": "done",
         "f": "2026-06-05",
-        "n": "462"
+        "n": "462",
+        "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "",
     "createdAt": "2026-06-01T20:01:37.378Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-04T21:31:02.135Z",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1780498017972",
@@ -807,7 +828,7 @@
     "num": "13134",
     "cliente": "HIDROCASANARE",
     "desc": "Conector tipo GAR 3\" y Spiral Wnd Gkt - Consumibles de mantenimiento",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-05",
     "valor": 0,
     "hojaEntrada": {
@@ -832,34 +853,39 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-09",
         "n": ""
       },
       {
         "s": "done",
         "f": "2026-06-09",
-        "n": "470"
+        "n": "470",
+        "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "",
     "createdAt": "2026-06-05T21:32:19.250Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-10T15:55:24.839Z",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1780685275512",
     "num": "ODC-AA-MEC-SKID-469-24-549",
     "cliente": "SKID EXPERTS",
     "desc": "Tubería acero inoxidable SMLS y accesorios filtros",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-05",
     "valor": 2654209,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
+      "fecha": "2026-06-19",
       "estado": "pendiente"
     },
     "stages": [
@@ -886,15 +912,20 @@
       {
         "s": "done",
         "f": "2026-06-19",
-        "n": "485"
+        "n": "485",
+        "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "",
     "createdAt": "2026-06-05T21:37:33.462Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-19T21:26:20.402Z",
-    "updatedBy": "lina",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
+    "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1780759794347",
@@ -947,7 +978,7 @@
     "num": "LM1650",
     "cliente": "WILLER",
     "desc": "ESPARRAGO DE 1/2 X 5\" INOX CON DOBLE TUERCA",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-09",
     "valor": 159936,
     "hojaEntrada": {
@@ -962,7 +993,7 @@
         "n": "MUNDIAL"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "",
         "n": "",
         "envio": "transportadora",
@@ -972,29 +1003,34 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-10",
         "n": ""
       },
       {
         "s": "done",
         "f": "2026-06-10",
-        "n": "472"
+        "n": "472",
+        "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "",
     "createdAt": "2026-06-10T15:44:11.916Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-17T22:48:10.519Z",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": false
+    "faltanFechas": true,
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1781024695284",
     "num": "LM1647",
     "cliente": "WILLER",
     "desc": "Tramo de tubería de 3\" x 50 cm SCH 160 A-106",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-10",
     "valor": 255850,
     "hojaEntrada": {
@@ -1009,7 +1045,7 @@
         "n": "TODO TUBOS"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "",
         "n": "",
         "envio": "flota",
@@ -1019,22 +1055,27 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-10",
         "n": ""
       },
       {
         "s": "done",
         "f": "0206-06-10",
-        "n": "471"
+        "n": "471",
+        "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "",
     "createdAt": "2026-06-10T15:45:03.699Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-10T15:45:44.683Z",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": false
+    "faltanFechas": true,
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1781034415013",
@@ -1088,7 +1129,7 @@
     "num": "LM1656",
     "cliente": "MORRISON",
     "desc": "TE DE 6 SCH 80 A-234 WPB (2 unidades)",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-10",
     "valor": 0,
     "hojaEntrada": {
@@ -1113,22 +1154,27 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-11",
         "n": ""
       },
       {
         "s": "done",
         "f": "2026-06-11",
-        "n": "476"
+        "n": "476",
+        "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "",
     "createdAt": "2026-06-10T17:07:00.390Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-12T15:51:39.729Z",
-    "updatedBy": "alexandra",
-    "faltanFechas": false,
-    "archivada": false
+    "updatedAt": "2026-07-27T21:16:05.000Z",
+    "updatedBy": "andrea",
+    "faltanFechas": true,
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1781126215905",
@@ -1703,7 +1749,7 @@
     "num": "1107",
     "cliente": "EIKOS",
     "desc": "Cotización LM1736 · 4 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-06-30",
     "valor": 3426962,
     "hojaEntrada": {
@@ -1728,22 +1774,27 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-30",
         "n": ""
       },
       {
         "s": "done",
         "f": "2026-06-30",
-        "n": "503"
+        "n": "503",
+        "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "",
     "createdAt": "2026-06-30T23:16:36.338Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-06-30T23:46:30.950Z",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1782876574385",
@@ -3042,17 +3093,20 @@
     "cotizacionId": "LM1603",
     "createdAt": "2026-07-01T22:21:41.501Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-01T22:21:41.501Z",
+    "updatedAt": "2026-07-27T02:51:16.206Z",
     "updatedBy": "alexandra",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": false,
+    "deleted": true,
+    "deletedAt": "2026-07-27T02:51:16.202Z",
+    "deletedBy": "andrea"
   },
   {
     "id": "poc_1783020744499",
     "num": "",
     "cliente": "COPCOL",
     "desc": "Cotización LM1749-1 · 3 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-02",
     "valor": 414120,
     "hojaEntrada": {
@@ -3067,7 +3121,7 @@
         "n": ""
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "",
         "n": "",
         "envio": "",
@@ -3077,8 +3131,8 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-02",
         "n": ""
       },
       {
@@ -3088,13 +3142,16 @@
         "factura": "505"
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "LM1749-1",
     "createdAt": "2026-07-02T19:32:24.499Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-02T20:47:12.189Z",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": false
+    "faltanFechas": true,
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1776469165261",
@@ -4281,12 +4338,12 @@
     "num": "ODC-AA-MEC-SKID-469-24-578",
     "cliente": "SKID EXPERTS",
     "desc": "Cotización LM1535-1 · 58 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-09",
     "valor": 83478238,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
+      "fecha": "2026-07-23",
       "estado": "recibida"
     },
     "stages": [
@@ -4317,13 +4374,16 @@
         "factura": "530"
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "LM1535-1",
     "createdAt": "2026-07-09T16:47:20.584Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-24T00:43:18.086Z",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1783627669786",
@@ -4438,7 +4498,7 @@
     "stages": [
       {
         "s": "done",
-        "f": "2026-07-14",
+        "f": "2026-07-28",
         "n": "TALLECTRO"
       },
       {
@@ -4475,26 +4535,26 @@
   },
   {
     "id": "poc_1784046230252",
-    "num": "LM1738-1",
+    "num": "ODC-AA-MEC-SKID-469-24-572 Rv1",
     "cliente": "SKID EXPERTS",
     "desc": "Cotización LM1738-1 · 27 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-14",
     "valor": 10109764,
     "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
+      "requerida": true,
+      "fecha": "2026-07-14",
       "estado": "pendiente"
     },
     "stages": [
       {
-        "s": "active",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-14",
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-14",
         "n": "",
         "envio": "",
         "transp": "",
@@ -4503,24 +4563,27 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-14",
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-14",
         "n": "",
-        "factura": ""
+        "factura": "513"
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "LM1738-1",
     "createdAt": "2026-07-14T16:23:50.252Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-14T22:40:58.497Z",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1784082497944",
@@ -4572,16 +4635,16 @@
   },
   {
     "id": "poc_1784141833977",
-    "num": "LM1769",
+    "num": "ODC-AA-MEC-SKID-469-24-618",
     "cliente": "SKID EXPERTS",
     "desc": "Cotización LM1769 · 1 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-15",
     "valor": 1428000,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
+      "fecha": "2026-07-21",
+      "estado": "recibida"
     },
     "stages": [
       {
@@ -4590,8 +4653,8 @@
         "n": "TUVAPOR"
       },
       {
-        "s": "active",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-15",
         "n": "",
         "envio": "",
         "transp": "",
@@ -4605,19 +4668,22 @@
         "n": "ENVIADO CLIENTE"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-26",
         "n": "",
-        "factura": ""
+        "factura": "524"
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "LM1769",
     "createdAt": "2026-07-15T18:57:13.977Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-15T18:57:26.633Z",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1784328344190",
@@ -4639,7 +4705,7 @@
         "n": "CODIFER\nBODEGA"
       },
       {
-        "s": "pending",
+        "s": "active",
         "f": "2026-07-28",
         "n": "",
         "envio": "",
@@ -4769,7 +4835,7 @@
     "num": "PO4888",
     "cliente": "Disico",
     "desc": "Cotización LM1804 · 1 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-17",
     "valor": 1276275,
     "hojaEntrada": {
@@ -4779,30 +4845,30 @@
     },
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-07-17",
         "n": "VALVECO"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-17",
         "n": "",
-        "envio": "",
+        "envio": "moto",
         "transp": "",
         "guia": "",
         "dest": "",
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-17",
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-17",
         "n": "",
-        "factura": ""
+        "factura": "523"
       }
     ],
     "cotizacionId": "LM1804",
@@ -4811,6 +4877,7 @@
     "updatedAt": "2026-07-27T21:18:44.627Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
     "archivada": false
   },
   {
@@ -4833,7 +4900,7 @@
         "n": "CODIFER"
       },
       {
-        "s": "pending",
+        "s": "active",
         "f": "2026-07-28",
         "n": "",
         "envio": "",
@@ -4854,13 +4921,13 @@
         "factura": ""
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "LM1816",
     "createdAt": "2026-07-22T13:39:07.251Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-07-27T03:10:43.551Z",
     "updatedBy": "andrea",
-    "observaciones": "",
-    "facturacion": "",
     "faltanFechas": false,
     "archivada": false
   },
@@ -5006,13 +5073,13 @@
         "factura": "533"
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "LM1842",
     "createdAt": "2026-07-23T19:41:42.705Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-07-27T03:15:08.876Z",
     "updatedBy": "andrea",
-    "observaciones": "",
-    "facturacion": "",
     "faltanFechas": false,
     "archivada": false
   },
@@ -5032,7 +5099,7 @@
     "stages": [
       {
         "s": "active",
-        "f": "2026-07-23",
+        "f": "2026-07-28",
         "n": ""
       },
       {
@@ -5119,7 +5186,7 @@
     "num": "160726R3302",
     "cliente": "CIAM",
     "desc": "Cotización LM1819-1 · 1 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-16",
     "valor": 164220,
     "hojaEntrada": {
@@ -5149,23 +5216,26 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-26",
         "n": "",
-        "factura": ""
+        "factura": "520"
       }
     ],
+    "observaciones": "",
+    "facturacion": "",
     "cotizacionId": "LM1819-1",
     "createdAt": "2026-07-23T19:51:05.040Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T23:43:55.632Z",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": false
+    "faltanFechas": true,
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1784845570814",
-    "num": "",
+    "num": "ODC-AA-MEC-SKID-469-24-635",
     "cliente": "SKID EXPERT",
     "desc": "Cotización LM1865 · 1 ítems",
     "estado": "activo",
@@ -5178,13 +5248,13 @@
     },
     "stages": [
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-07-23",
+        "n": "CODIFER"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-23",
         "n": "",
         "envio": "",
         "transp": "",
@@ -5193,8 +5263,8 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-26",
         "n": ""
       },
       {
@@ -5204,13 +5274,16 @@
         "factura": ""
       }
     ],
+    "observaciones": "REMISION ENVIADA A CLIENTE 24/07",
+    "facturacion": "",
     "cotizacionId": "LM1865",
     "createdAt": "2026-07-23T22:26:10.814Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-07-23T22:26:10.814Z",
-    "updatedBy": "alexandra",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
+    "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1784845937272",
@@ -5405,7 +5478,9 @@
     "createdAt": "2026-07-27T13:23:55.123Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-07-27T13:23:55.123Z",
-    "updatedBy": "alexandra"
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
   },
   {
     "id": "poc_1784987911412",
@@ -5452,7 +5527,9 @@
     "createdAt": "2026-07-25T13:58:31.412Z",
     "createdBy": "andrea",
     "updatedAt": "2026-07-25T13:58:31.412Z",
-    "updatedBy": "andrea"
+    "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false
   },
   {
     "id": "poc_1784990915217",
@@ -5499,7 +5576,9 @@
     "createdAt": "2026-07-25T14:48:35.217Z",
     "createdBy": "andrea",
     "updatedAt": "2026-07-25T15:05:39.700Z",
-    "updatedBy": "andrea"
+    "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false
   },
   {
     "id": "poc_1785123684788",
@@ -5548,6 +5627,57 @@
     "createdAt": "2026-07-27T03:41:24.788Z",
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T03:41:36.031Z",
-    "updatedBy": "andrea"
+    "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1784987232021",
+    "num": "240726K0370",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1846 · 13 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-25",
+    "valor": 3033310,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1846",
+    "createdAt": "2026-07-25T13:47:12.021Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-25T13:47:12.021Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false
   }
 ]
