@@ -18393,6 +18393,125 @@ function absCartRender() {
   }).join('');
 }
 
+// ─── v173: CONFIRMACIÓN VISUAL ANTES DE REGISTRAR UNA SALIDA ─────────────────
+// Nace de 3 errores reales (jul-2026): se sacó 300L en vez de 150L, TEE de 3" en
+// vez de 2", y un código de CODIFER en vez del de importación. Muestra grande el
+// código + la medida + el proveedor, y avisa si existe un producto casi idéntico
+// con OTRA medida o del OTRO proveedor. Es 100% aditiva: solo intercepta el clic.
+function _absEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Deja la descripción "sin medidas" para poder comparar productos hermanos
+function _absEsqueleto(s){
+  return String(s||'').toUpperCase()
+    .replace(/[”“]/g,'"')
+    .replace(/-[A-Z]{2,4}-/g,' ')                        // marcadores tipo -CH-
+    .replace(/\b\d+(?:[.,]\d+)?(?:\/\d+)?\s*"/g,'#')     // 2", 1/2", 6"
+    .replace(/\b\d{2,4}\s*L\b/g,'#')                     // 150L, 300L, 3000L
+    .replace(/\bS(?:CH)?\s*\d{2,3}\b/g,'#')              // SCH 40, S80, S160
+    .replace(/[^A-Z0-9# ]/g,' ').replace(/\s+/g,' ').trim();
+}
+function _absMedidas(s){
+  const d=String(s||'').toUpperCase().replace(/[”“]/g,'"'), t=[];
+  (d.match(/\b\d+(?:[.,]\d+)?(?:\/\d+)?\s*"/g)||[]).forEach(x=>t.push(x.replace(/\s+/g,'')));
+  (d.match(/\b\d{2,4}\s*L\b/g)||[]).forEach(x=>t.push(x.replace(/\s+/g,'')));
+  (d.match(/\bS(?:CH)?\s*\d{2,3}\b/g)||[]).forEach(x=>t.push(x.replace(/\s+/g,'')));
+  return t;
+}
+function _absResalta(desc){
+  return _absEsc(desc).replace(/(\b\d+(?:[.,]\d+)?(?:\/\d+)?\s*&quot;|\b\d+(?:[.,]\d+)?(?:\/\d+)?\s*"|\b\d{2,4}\s*L\b|\bS(?:CH)?\s*\d{2,3}\b)/gi,
+    m=>'<b style="color:#E8A020">'+m+'</b>');
+}
+// Cuántos tokens de medida cambian entre dos productos (un solo cambio = 2)
+function _absDifMed(a,b){
+  const A=[...a].sort(), rest=[...b].sort(); let d=0;
+  for(const x of A){ const i=rest.indexOf(x); if(i>=0) rest.splice(i,1); else d++; }
+  return d+rest.length;
+}
+// Productos parecidos: mismo esqueleto pero distinta medida, o el mismo ítem de
+// otro proveedor. Se ordenan por CERCANÍA de medida (los que cambian en una sola
+// dimensión primero) y luego por stock — probado contra los 3 errores de julio.
+function _absParecidos(codigo){
+  const p=(abs_productos||[]).find(x=>x.codigo===codigo);
+  if(!p) return {otraMedida:[],otroProv:[]};
+  const esq=_absEsqueleto(p.descripcion), med=_absMedidas(p.descripcion), mk=med.join('|');
+  const otraMedida=[], otroProv=[];
+  for(const q of (abs_productos||[])){
+    if(q.codigo===codigo || q.activo===false) continue;
+    if(_absEsqueleto(q.descripcion)!==esq) continue;
+    const qm=_absMedidas(q.descripcion);
+    if(qm.join('|')!==mk) otraMedida.push({q,d:_absDifMed(med,qm)});
+    else otroProv.push(q);
+  }
+  otraMedida.sort((x,y)=> x.d-y.d || (y.q.stock_actual||0)-(x.q.stock_actual||0));
+  return { otraMedida:otraMedida.slice(0,6).map(x=>x.q), otroProv:otroProv.slice(0,4) };
+}
+
+function _absConfirmSalida(items, remision){
+  return new Promise(resolve=>{
+    const prev=document.getElementById('_absConfirmOv'); if(prev) prev.remove();
+    let filas='';
+    items.forEach((it,i)=>{
+      const p=(abs_productos||[]).find(x=>x.codigo===it.codigo)||it;
+      const par=_absParecidos(it.codigo);
+      const rest=(p.stock_actual||0)-it.cantidad;
+      let av='';
+      // Informativo, NO alarma: casi todo accesorio tiene hermanos de otra medida,
+      // así que una alerta roja aquí se volvería ruido y dejaría de leerse.
+      if(par.otraMedida.length){
+        av+='<div style="margin-top:7px;border-top:1px dashed #1e3a6e;padding-top:6px;font-size:11.5px;color:#8899bb">'
+          + 'Otras medidas de este ítem en bodega: '
+          + par.otraMedida.map(q=>'<span style="display:inline-block;background:#122a4d;border-radius:4px;padding:1px 6px;margin:2px 3px 0 0;white-space:nowrap">'
+              + '<b style="color:#E8A020">'+_absEsc(_absMedidas(q.descripcion).join(' ')||'?')+'</b> '
+              + '<span style="font-family:Consolas,monospace;color:#cbd5ff">'+_absEsc(q.codigo)+'</span> '
+              + '<span style="color:#6b7c9c">st '+(q.stock_actual||0)+'</span></span>').join('')
+          + '</div>';
+      }
+      if(par.otroProv.length){
+        av+='<div style="margin-top:4px;font-size:11.5px;color:#8899bb">Mismo ítem de otro proveedor: '
+          + par.otroProv.map(q=>'<span style="font-family:Consolas,monospace;color:#cbd5ff">'+_absEsc(q.codigo)+'</span> ('+_absEsc(q.proveedor||'—')+', stock '+(q.stock_actual||0)+')').join(' · ')
+          + '</div>';
+      }
+      filas+='<div style="border:1px solid #1e3a6e;border-radius:8px;padding:10px 12px;margin-bottom:9px;background:#0d1f3c">'
+        + '<div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">'
+        +   '<div style="flex:1;min-width:260px">'
+        +     '<div style="font-family:Consolas,monospace;font-size:16px;font-weight:800;color:#E8A020;letter-spacing:.5px">'+_absEsc(it.codigo)+'</div>'
+        +     '<div style="font-size:14px;color:#F0F4FF;margin-top:2px">'+_absResalta(it.descripcion)+'</div>'
+        +     '<div style="font-size:11.5px;color:#8899bb;margin-top:3px">Marca <b style="color:#cbd5ff">'+_absEsc(p.marca||'—')+'</b> · Proveedor <b style="color:#cbd5ff">'+_absEsc(p.proveedor||'—')+'</b> · Ubicación <b style="color:#cbd5ff">'+_absEsc(p.ubicacion||'—')+'</b> · Colada <b style="color:#cbd5ff">'+_absEsc(it.colada||'(sin colada)')+'</b></div>'
+        +   '</div>'
+        +   '<div style="text-align:center;min-width:78px">'
+        +     '<div style="font-size:9px;color:#8899bb;text-transform:uppercase;letter-spacing:1px">Salen</div>'
+        +     '<div style="font-size:26px;font-weight:800;color:#2EAA4A;line-height:1.1">'+it.cantidad+'</div>'
+        +   '</div>'
+        +   '<div style="text-align:center;min-width:104px">'
+        +     '<div style="font-size:9px;color:#8899bb;text-transform:uppercase;letter-spacing:1px">Stock</div>'
+        +     '<div style="font-size:14px;font-weight:700;color:#cbd5ff;line-height:1.5">'+(p.stock_actual||0)+' → <span style="color:'+(rest<0?'#e53e3e':'#F0F4FF')+'">'+rest+'</span></div>'
+        +   '</div>'
+        + '</div>'+av+'</div>';
+    });
+    const totU=items.reduce((a,b)=>a+(Number(b.cantidad)||0),0);
+    const ov=document.createElement('div');
+    ov.id='_absConfirmOv';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(4,10,22,.93);z-index:100001;display:flex;align-items:center;justify-content:center;padding:18px;';
+    ov.innerHTML='<div style="background:#071525;border:1px solid #1e3a6e;border-radius:12px;max-width:900px;width:100%;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 18px 50px rgba(0,0,0,.6)">'
+      + '<div style="padding:14px 18px;border-bottom:2px solid #E8A020;flex-shrink:0">'
+      +   '<div style="font-size:17px;font-weight:800;color:#F0F4FF;letter-spacing:.3px">⚠️ Confirma lo que va a SALIR de bodega</div>'
+      +   '<div style="font-size:12.5px;color:#8899bb;margin-top:3px">Remisión <b style="color:#E8A020;font-size:14px">'+_absEsc(remision||'(sin remisión)')+'</b> · '+items.length+' ítem(s) · '+totU+' unidad(es) · <span style="color:#cbd5ff">revisa la medida resaltada en dorado</span></div>'
+      + '</div>'
+      + '<div style="padding:14px 18px;overflow:auto;flex:1">'+filas+'</div>'
+      + '<div style="padding:12px 18px;border-top:1px solid #1e3a6e;display:flex;gap:10px;justify-content:flex-end;flex-shrink:0">'
+      +   '<button id="_absCfNo" style="background:#243b63;color:#cbd5ff;border:none;border-radius:8px;padding:11px 20px;font-weight:700;cursor:pointer;font-size:14px">✖ Revisar</button>'
+      +   '<button id="_absCfSi" style="background:#2EAA4A;color:#fff;border:none;border-radius:8px;padding:11px 24px;font-weight:800;cursor:pointer;font-size:14px">✅ Sí, registrar la salida</button>'
+      + '</div></div>';
+    document.body.appendChild(ov);
+    const cerrar=v=>{ document.removeEventListener('keydown',onKey); ov.remove(); resolve(v); };
+    const onKey=e=>{ if(e.key==='Escape') cerrar(false); };
+    document.addEventListener('keydown',onKey);
+    ov.querySelector('#_absCfNo').onclick=()=>cerrar(false);
+    ov.querySelector('#_absCfSi').onclick=()=>cerrar(true);
+    ov.querySelector('#_absCfSi').focus();
+  });
+}
+
 async function absCartGuardar() {
   if(!abs_cart_tipo) return showToast('Elige ENTRADA o SALIDA','error');
   if(abs_cart_tipo==='ENTRADA'&&!abs_canEntrada()) return showToast('No tienes permiso para registrar entradas','error');
@@ -18405,6 +18524,13 @@ async function absCartGuardar() {
   const remision=abs_cart_tipo==='SALIDA'?(document.getElementById('abs-cart-remision')?.value?.trim()||''):'';
   // v137: si la remisión ya tiene salidas, avisar y esperar un 2º clic deliberado
   if(abs_cart_tipo==='SALIDA'&&await _absAvisarRemisionDoble(remision)) return;
+  // v173: confirmación visual antes de descontar del inventario (solo SALIDA)
+  if(abs_cart_tipo==='SALIDA'){
+    let _okConf=true;
+    try{ _okConf=await _absConfirmSalida(abs_cart,remision); }
+    catch(e){ _okConf=true; }   // si el modal fallara, no bloquear el registro
+    if(!_okConf) return;
+  }
   const notas=document.getElementById('abs-cart-notas')?.value?.trim()||'';
   const btn=document.getElementById('abs-cart-registrar'); if(btn) btn.disabled=true;
   const prog=document.getElementById('abs-cart-progreso');
