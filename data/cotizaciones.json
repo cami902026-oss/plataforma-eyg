@@ -45261,10 +45261,10 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-07-29T19:35:35.094Z",
+    "fechaGuardado": "2026-07-29T16:58:20.363Z",
     "createdAt": "2026-07-28T21:58:08.252Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-29T19:35:35.094Z",
+    "updatedAt": "2026-07-29T16:58:20.363Z",
     "updatedBy": "sandra"
   },
   {
@@ -45359,9 +45359,9 @@
     "estado": "Enviada",
     "factura": "",
     "iva": 19,
-    "subtotal": 442000,
-    "ivaVal": 83980,
-    "total": 525980,
+    "subtotal": 474000,
+    "ivaVal": 90060,
+    "total": 564060,
     "formaPago": "45 DÍAS",
     "sitioEntrega": "TAME",
     "validez": "8 DÍAS",
@@ -45400,23 +45400,36 @@
       },
       {
         "id": 3,
-        "desc": "codos de 4 sch std a-234 wpb",
-        "udm": "EA",
         "qty": 4,
+        "udm": "EA",
+        "uid": "e0669cc2-e158-41ee-bdc1-eb2b8a6b2dc8",
+        "desc": "codos de 4 sch std a-234 wpb",
+        "marca": "xf",
         "precio": 33000,
+        "desvTec": "",
+        "proveedor": "CODIFER",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 2690
+      },
+      {
+        "id": 4,
+        "desc": "NIPLE DE  1 X 20CM SCH 80 INOX UNA SOLA ROSCA",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 32000,
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": "",
-        "marca": "xf",
-        "proveedor": "CODIFER",
-        "precioProveedor": 2690,
-        "uid": "e0669cc2-e158-41ee-bdc1-eb2b8a6b2dc8"
+        "marca": "SW",
+        "proveedor": "INSTRUGASES",
+        "precioProveedor": 20000,
+        "uid": "2024a5ff-1397-4dff-96bd-cee688538e0c"
       }
     ],
-    "fechaGuardado": "2026-07-29T18:26:48.933Z",
+    "fechaGuardado": "2026-07-29T19:37:20.961Z",
     "fechaEnvio": "2026-07-29T14:32:46.882Z",
     "createdAt": "2026-07-29T14:32:03.596Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-07-29T18:26:48.933Z",
+    "updatedAt": "2026-07-29T19:37:20.961Z",
     "updatedBy": "sheila"
   },
   {
