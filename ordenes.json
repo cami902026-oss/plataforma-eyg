@@ -5683,5 +5683,54 @@
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1785289955752",
+    "num": "LM1378",
+    "cliente": "HIDROCASANARE",
+    "desc": "Cotización LM1378",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-29",
+    "valor": 13045583,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-07-28",
+        "n": "BODEGA \nCOLIMPORTADOS\nMUNDIAL\nINSTRUGASES"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1378",
+    "createdAt": "2026-07-29T01:52:35.752Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-29T01:52:35.752Z",
+    "updatedBy": "andrea"
   }
 ]
