@@ -5789,5 +5789,54 @@
     "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1785344821441",
+    "num": "OC-1-13148",
+    "cliente": "SOFORESTA",
+    "desc": "Cotización LM1861 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-27",
+    "valor": 3934930.16,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "active",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1861",
+    "createdAt": "2026-07-29T17:07:01.441Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-29T17:07:01.441Z",
+    "updatedBy": "alexandra"
   }
 ]
