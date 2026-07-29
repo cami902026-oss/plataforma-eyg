@@ -5679,5 +5679,54 @@
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1785289702503",
+    "num": "LM1378",
+    "cliente": "HIDROCASANARE",
+    "desc": "Cotización LM1378 · 61 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-28",
+    "valor": 13045583,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "O.C. abierta con el N° de la cotización LM1378 mientras el cliente formaliza su orden de compra. Reemplazar \"num\" por la O.C. real cuando Hidrocasanare la emita.",
+    "facturacion": "",
+    "cotizacionId": "LM1378",
+    "createdAt": "2026-07-28T21:00:00.000Z",
+    "createdBy": "carga-historico",
+    "updatedAt": "2026-07-28T21:00:00.000Z",
+    "updatedBy": "carga-historico"
   }
 ]
