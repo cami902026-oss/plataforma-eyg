@@ -5536,8 +5536,6 @@
     "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false,
-    "lockedBy": "alexandra",
-    "lockedAt": "2026-07-29T17:34:22.304Z",
     "observaciones": "",
     "facturacion": ""
   },
@@ -5895,5 +5893,54 @@
     "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1785362362821",
+    "num": "LM1904",
+    "cliente": "WILLER",
+    "desc": "Cotización LM1904 · 4 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-29",
+    "valor": 564060,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1904",
+    "createdAt": "2026-07-29T21:59:22.821Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-29T21:59:22.821Z",
+    "updatedBy": "alexandra"
   }
 ]
