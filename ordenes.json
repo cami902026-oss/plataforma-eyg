@@ -5951,5 +5951,54 @@
     "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1785444440612",
+    "num": "ODC-AA-MEC-SKID-469-24-631",
+    "cliente": "SKID EXPERT",
+    "desc": "Cotización LM1894 · 10 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-30",
+    "valor": 182695.94,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1894",
+    "createdAt": "2026-07-30T20:47:20.612Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-30T20:47:20.612Z",
+    "updatedBy": "alexandra"
   }
 ]
