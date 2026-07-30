@@ -44224,7 +44224,7 @@
     "cliente": "CIAM",
     "contacto": "DALADIER",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 1648000,
@@ -44242,24 +44242,25 @@
     "items": [
       {
         "id": 1,
-        "desc": "TUBO RECTANGULAR DE 50 X 100   2.25 MM ",
-        "udm": "EA",
         "qty": 8,
-        "precio": 206000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "SE OFERTA EN 2.5 MM",
+        "udm": "EA",
+        "uid": "a49f49dd-a377-406e-ace6-ae9d81af638b",
+        "desc": "TUBO RECTANGULAR DE 50 X 100   2.25 MM ",
         "marca": "IMPORTADO",
+        "precio": 206000,
+        "desvTec": "SE OFERTA EN 2.5 MM",
         "proveedor": "ACEROS MAPA",
-        "precioProveedor": 143673,
-        "uid": "a49f49dd-a377-406e-ace6-ae9d81af638b"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 143673
       }
     ],
-    "fechaGuardado": "2026-07-28T17:22:24.901Z",
+    "fechaGuardado": "2026-07-30T13:42:58.459Z",
     "fechaEnvio": "2026-07-28T17:22:24.901Z",
+    "adjudicadaAt": "2026-07-30",
     "createdAt": "2026-07-28T17:14:21.850Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-28T17:22:24.901Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-07-30T13:42:58.459Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM1898",
