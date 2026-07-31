@@ -6161,5 +6161,55 @@
     "updatedAt": "2026-07-31T22:48:06.925Z",
     "updatedBy": "andrea",
     "faltanFechas": false
+  },
+  {
+    "id": "poc_1785538208510",
+    "num": "280726R7574",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1897 · 1 ítems",
+    "estado": "completado",
+    "fechaIngreso": "2026-07-31",
+    "valor": 1961120,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-30",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-30",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-30",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-30",
+        "n": "",
+        "factura": "547"
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1897",
+    "createdAt": "2026-07-31T22:50:08.510Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-31T22:50:08.510Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false
   }
 ]
