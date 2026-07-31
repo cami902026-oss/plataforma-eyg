@@ -6061,5 +6061,55 @@
     "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1785538022986",
+    "num": "280726N1281",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1898 · 1 ítems",
+    "estado": "completado",
+    "fechaIngreso": "2026-07-31",
+    "valor": 3365320,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-31",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-31",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-31",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-31",
+        "n": "",
+        "factura": "548"
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1898",
+    "createdAt": "2026-07-31T22:47:02.987Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-31T22:47:02.987Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false
   }
 ]
