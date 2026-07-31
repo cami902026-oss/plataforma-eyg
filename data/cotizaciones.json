@@ -46502,7 +46502,7 @@
     "cliente": "New Granada Energy Corporation Sucursal Colombiana (NGEC-SC)",
     "contacto": "LUCAS CORTES",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Borrador",
     "factura": "",
     "iva": 19,
     "subtotal": 23374744,
@@ -46777,12 +46777,11 @@
         "precioProveedor": 97141
       }
     ],
-    "fechaGuardado": "2026-07-31T21:23:33.691Z",
-    "fechaEnvio": "2026-07-31T21:23:33.691Z",
+    "fechaGuardado": "2026-07-31T16:30:02.706Z",
     "createdAt": "2026-07-30T22:18:03.948Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-31T21:23:33.691Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-07-31T16:30:02.706Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM1918",
@@ -47341,7 +47340,7 @@
     "cliente": "INGENIERIA Y SISTEMAS",
     "contacto": "ROBEN VILLAMIL ",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Borrador",
     "factura": "",
     "iva": 19,
     "subtotal": 2324000,
@@ -47371,11 +47370,10 @@
         "precioProveedor": 814000
       }
     ],
-    "fechaGuardado": "2026-07-31T21:21:57.259Z",
-    "fechaEnvio": "2026-07-31T21:21:57.259Z",
+    "fechaGuardado": "2026-07-31T18:14:44.540Z",
     "createdAt": "2026-07-31T18:05:06.908Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-31T21:21:57.259Z",
+    "updatedAt": "2026-07-31T18:14:44.540Z",
     "updatedBy": "sandra"
   },
   {
@@ -47509,7 +47507,7 @@
     "cliente": "IMC",
     "contacto": "JOSE",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Revisión gerencia",
     "factura": "",
     "iva": 19,
     "subtotal": 14479508,
@@ -47531,14 +47529,14 @@
         "udm": "EA",
         "uid": "6d7e1b06-be70-4e0e-a626-af10e4733a95",
         "desc": "BRIDA WN 12\" X 300 PSI SCH 80 RF A-105",
-        "altDe": null,
         "marca": "XF-RN",
         "precio": 666667,
         "desvTec": "",
         "proveedor": "INDUVACOL",
-        "fotoGrande": false,
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 500000
+        "precioProveedor": 500000,
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 2,
@@ -47546,14 +47544,14 @@
         "udm": "EA",
         "uid": "a4923639-6cf9-48f6-97b7-ac822c8081f2",
         "desc": "BRIDA CIEGA 12\" X 300 PSI ",
-        "altDe": null,
         "marca": "XF",
         "precio": 605035,
         "desvTec": "",
         "proveedor": "CODIFER",
-        "fotoGrande": false,
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 514280
+        "precioProveedor": 514280,
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 3,
@@ -47561,21 +47559,20 @@
         "udm": "EA",
         "uid": "8302fd27-bd37-4a70-87ff-9653ded5e961",
         "desc": "TUBO 12\" SCH 80 A-106 API 5L X42 X 6 MTR",
-        "altDe": null,
         "marca": "TIANDA",
         "precio": 11936104,
         "desvTec": "",
         "proveedor": "TUVAPOR",
-        "fotoGrande": false,
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 9190800
+        "precioProveedor": 9190800,
+        "fotoGrande": false,
+        "altDe": null
       }
     ],
-    "fechaGuardado": "2026-07-31T21:22:54.698Z",
-    "fechaEnvio": "2026-07-31T21:22:54.698Z",
+    "fechaGuardado": "2026-07-31T21:16:57.718Z",
     "createdAt": "2026-07-31T20:44:41.449Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-31T21:22:54.698Z",
+    "updatedAt": "2026-07-31T21:16:57.718Z",
     "updatedBy": "sandra"
   },
   {
@@ -47585,12 +47582,12 @@
     "cliente": "SOFORESTA",
     "contacto": "ANDRES",
     "correo": "",
-    "estado": "Revisión gerencia",
+    "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 6526790,
+    "ivaVal": 1240090.1,
+    "total": 7766880.1,
     "formaPago": "CONTADO",
     "sitioEntrega": "NEIVA",
     "validez": "8 DÍAS",
@@ -47608,7 +47605,7 @@
         "uid": "8a393be7-da7f-4372-a7cb-f9f5485d4850",
         "desc": "TUBO A/C API5LX42 PSL2 6 SCH 80 X MTS",
         "marca": "BAOLAI",
-        "precio": 0,
+        "precio": 2165806,
         "desvTec": "BINORMA TUBO X 6 MTR",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -47621,18 +47618,18 @@
         "uid": "f1e41505-0fa0-4bd2-acd9-b12177b77c65",
         "desc": "BUSHING A/C 1/4 X 3/4 X 9000 NPT",
         "marca": "XF-BOTHWEL",
-        "precio": 0,
+        "precio": 7343,
         "desvTec": "SE OFERTA X 6000 PSI",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 5140
       }
     ],
-    "fechaGuardado": "2026-07-31T21:20:55.879Z",
+    "fechaGuardado": "2026-07-31T21:23:36.349Z",
     "createdAt": "2026-07-31T21:20:43.180Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-31T21:20:55.879Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-07-31T21:23:36.349Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM629",
