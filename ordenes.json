@@ -5655,7 +5655,7 @@
     "num": "240726K0370",
     "cliente": "CIAM",
     "desc": "Cotización LM1846 · 13 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-25",
     "valor": 3033310,
     "hojaEntrada": {
@@ -5680,8 +5680,8 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-31",
         "n": ""
       },
       {
@@ -5694,14 +5694,12 @@
     "cotizacionId": "LM1846",
     "createdAt": "2026-07-25T13:47:12.021Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-31T14:59:08.524Z",
+    "updatedAt": "2026-07-31T14:59:13.451Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false,
     "observaciones": "",
-    "facturacion": "",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-31T14:59:08.524Z"
+    "facturacion": ""
   },
   {
     "id": "poc_1785289955752",
