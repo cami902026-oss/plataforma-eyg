@@ -5502,7 +5502,7 @@
     "num": "240726C5524",
     "cliente": "CIAM",
     "desc": "Cotización LM1858 · 10 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-25",
     "valor": 1728713,
     "hojaEntrada": {
@@ -5512,8 +5512,8 @@
     },
     "stages": [
       {
-        "s": "active",
-        "f": "",
+        "s": "done",
+        "f": "2026-07-29",
         "n": ""
       },
       {
@@ -5541,14 +5541,12 @@
     "cotizacionId": "LM1858",
     "createdAt": "2026-07-25T13:58:31.412Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-31T15:00:46.254Z",
+    "updatedAt": "2026-07-31T15:00:58.643Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false,
     "observaciones": "",
-    "facturacion": "",
-    "lockedBy": "andrea",
-    "lockedAt": "2026-07-31T15:00:46.254Z"
+    "facturacion": ""
   },
   {
     "id": "poc_1784990915217",
@@ -5566,7 +5564,7 @@
     "stages": [
       {
         "s": "active",
-        "f": "2026-08-02",
+        "f": "2026-07-26",
         "n": ""
       },
       {
@@ -5594,8 +5592,8 @@
     "cotizacionId": "LM1869",
     "createdAt": "2026-07-25T14:48:35.217Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-31T15:01:16.493Z",
-    "updatedBy": "andrea",
+    "updatedAt": "2026-07-29T16:59:26.381Z",
+    "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false,
     "observaciones": "",
@@ -5749,10 +5747,12 @@
     "cotizacionId": "LM1378",
     "createdAt": "2026-07-29T01:52:35.752Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-29T01:52:35.752Z",
+    "updatedAt": "2026-07-31T15:01:21.377Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": false,
+    "lockedBy": "andrea",
+    "lockedAt": "2026-07-31T15:01:21.377Z"
   },
   {
     "id": "poc_1785338861488",
