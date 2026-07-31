@@ -47275,7 +47275,7 @@
     "cliente": "SKID EXPERT",
     "contacto": "JENNY ARIAS",
     "correo": "abastecimiento2@skidexperts.com",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 94000,
@@ -47293,35 +47293,36 @@
     "items": [
       {
         "id": 1,
-        "desc": "BRIDA SLIPON 2\" X 150 PSI A-105",
-        "udm": "EA",
         "qty": 2,
-        "precio": 28000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "bc67804c-1d04-4cea-92d5-1b66e5c4ed9f",
+        "desc": "BRIDA SLIPON 2\" X 150 PSI A-105",
         "marca": "XF",
+        "precio": 28000,
+        "desvTec": "",
         "proveedor": "CODIFER",
-        "precioProveedor": 17670,
-        "uid": "bc67804c-1d04-4cea-92d5-1b66e5c4ed9f"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 17670
       },
       {
         "id": 2,
-        "desc": "BRIDA SLIPON 3\" X 150 PSI A-105",
-        "udm": "EA",
         "qty": 1,
-        "precio": 38000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "f0ade3ce-ea00-4086-9fdf-d747b17a70d6",
+        "desc": "BRIDA SLIPON 3\" X 150 PSI A-105",
         "marca": "XF",
+        "precio": 38000,
+        "desvTec": "",
         "proveedor": "CODIFER",
-        "precioProveedor": 26590,
-        "uid": "f0ade3ce-ea00-4086-9fdf-d747b17a70d6"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 26590
       }
     ],
-    "fechaGuardado": "2026-07-31T17:54:48.849Z",
+    "fechaGuardado": "2026-07-31T17:55:10.965Z",
+    "fechaEnvio": "2026-07-31T17:55:10.965Z",
     "createdAt": "2026-07-31T17:54:48.849Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-31T17:54:48.849Z",
+    "updatedAt": "2026-07-31T17:55:10.965Z",
     "updatedBy": "sandra"
   },
   {
