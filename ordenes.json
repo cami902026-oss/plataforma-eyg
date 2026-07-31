@@ -6006,5 +6006,54 @@
     "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1785509223486",
+    "num": "LM1916",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1916 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-31",
+    "valor": 89250,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-30",
+        "n": ""
+      },
+      {
+        "s": "active",
+        "f": "2026-08-01",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "INTERRAPIDISIMO",
+        "guia": "70021080415",
+        "dest": "ASTRID CAMPILLO",
+        "resp": "ALEXANDRA"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1916",
+    "createdAt": "2026-07-31T14:47:03.486Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-31T14:47:03.486Z",
+    "updatedBy": "alexandra"
   }
 ]
