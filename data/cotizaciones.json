@@ -779,7 +779,8 @@
     "cliente": "SKF OMIA",
     "contacto": "",
     "correo": "",
-    "estado": "Adjudicada",
+    "estado": "Facturada",
+    "factura": "552",
     "iva": 19,
     "subtotal": 6712490,
     "ivaVal": 1275373.1,
@@ -791,7 +792,8 @@
     "vendedor": "Sheila Baron",
     "realizadaPor": "Alexandra",
     "aprobadaPor": "Alberto",
-    "solicitudId": "SOL-20260610-882",
+    "solicitudId": "",
+    "motivoRechazo": "",
     "items": [
       {
         "id": 1,
@@ -803,7 +805,8 @@
         "desvTec": "SCH 80",
         "marca": "XF",
         "proveedor": "CODIFER",
-        "precioProveedor": 6820
+        "precioProveedor": 6820,
+        "uid": "4bcccdd8-1a58-4857-b288-d287f45493f6"
       },
       {
         "id": 2,
@@ -815,7 +818,8 @@
         "desvTec": "SCH 40",
         "marca": "XF",
         "proveedor": "CODIFER",
-        "precioProveedor": 256530
+        "precioProveedor": 256530,
+        "uid": "7817ccad-5329-4a05-9e45-b88b43b8646a"
       },
       {
         "id": 3,
@@ -827,7 +831,8 @@
         "desvTec": "",
         "marca": "",
         "proveedor": "",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "81af897a-82a9-4e71-815a-4bc8d59264c4"
       },
       {
         "id": 4,
@@ -839,7 +844,8 @@
         "desvTec": "A-234",
         "marca": "XF",
         "proveedor": "BODEGA",
-        "precioProveedor": 127840
+        "precioProveedor": 127840,
+        "uid": "7dccfac6-d6dd-41c3-929d-b02aa9d1c31c"
       },
       {
         "id": 5,
@@ -851,7 +857,8 @@
         "desvTec": "INSERCION EN GRAFITO",
         "marca": "SPIRAL PACK",
         "proveedor": "COLIMPORTADOS",
-        "precioProveedor": 12850
+        "precioProveedor": 12850,
+        "uid": "58d0723f-af0c-4fd6-b19f-5b3792746cba"
       },
       {
         "id": 6,
@@ -863,7 +870,8 @@
         "desvTec": "INSERCION EN GRAFITO",
         "marca": "SPIRAL PACK",
         "proveedor": "COLIMPORTADOS",
-        "precioProveedor": 3460
+        "precioProveedor": 3460,
+        "uid": "cb42c858-bba9-4562-8f83-165e567d176d"
       },
       {
         "id": 7,
@@ -875,7 +883,8 @@
         "desvTec": "INSERCION EN GRAFITO",
         "marca": "SPIRAL PACK",
         "proveedor": "COLIMPORTADOS",
-        "precioProveedor": 2350
+        "precioProveedor": 2350,
+        "uid": "59d40d5d-c895-4f9a-aa52-1d4cf05c97de"
       },
       {
         "id": 8,
@@ -887,7 +896,8 @@
         "desvTec": " SE OFERTA 1\" X 7\", GRADO B A193, 2H 194",
         "marca": "JDF",
         "proveedor": "MUNDIAL",
-        "precioProveedor": 13927
+        "precioProveedor": 13927,
+        "uid": "68a9f9be-bbfc-48cd-9c4d-331d43b89402"
       },
       {
         "id": 9,
@@ -899,7 +909,8 @@
         "desvTec": "",
         "marca": "",
         "proveedor": "",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "uid": "2fe1d8ea-925e-4000-9431-b5b67fa5c35f"
       },
       {
         "id": 10,
@@ -911,7 +922,8 @@
         "desvTec": "SCH80",
         "marca": "XF",
         "proveedor": "CODIFER",
-        "precioProveedor": 293430
+        "precioProveedor": 293430,
+        "uid": "f2e60125-20a9-4da0-b799-3aa4a105ae4c"
       },
       {
         "id": 11,
@@ -923,7 +935,8 @@
         "desvTec": " SIN PRUEBA DE IMPACTO, FIGURA EN 8 A516 GR70 6\" 600L  RF",
         "marca": "NACIONAL",
         "proveedor": "INDUVACOL",
-        "precioProveedor": 630000
+        "precioProveedor": 630000,
+        "uid": "58137fda-52c0-456a-a9a1-8bb427726de9"
       },
       {
         "id": 12,
@@ -935,14 +948,16 @@
         "desvTec": "SE OFERTA 1\" X 8-1/2\", GRADO B A193, 2H 194",
         "marca": "JDF",
         "proveedor": "TORNILOS Y PARTES",
-        "precioProveedor": 11312
+        "precioProveedor": 11312,
+        "uid": "fd94440c-18dc-4ea8-98e9-73e0bb5d164d"
       }
     ],
-    "fechaGuardado": "2026-06-10T21:32:24.261Z",
+    "fechaGuardado": "2026-08-01T23:52:06.918Z",
+    "facturadaAt": "2026-08-01",
     "createdAt": "2026-06-10T21:32:24.261Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-06-10T21:32:24.261Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-01T23:52:06.918Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1464",
