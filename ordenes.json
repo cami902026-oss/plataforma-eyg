@@ -1218,14 +1218,14 @@
         "s": "done",
         "f": "2026-07-18",
         "n": "",
-        "factura": "552"
+        "factura": "522"
       }
     ],
+    "cotizacionId": "",
     "createdAt": "2026-06-10T21:19:27.539Z",
     "createdBy": "andrea",
     "updatedAt": "2026-08-01T23:51:48.738Z",
     "updatedBy": "andrea",
-    "cotizacionId": "",
     "faltanFechas": false,
     "observaciones": "",
     "facturacion": "",
@@ -1366,7 +1366,6 @@
         "factura": ""
       }
     ],
-    "cotizacionId": "",
     "createdAt": "2026-06-18T02:09:30.622Z",
     "createdBy": "andrea",
     "updatedAt": "2026-07-29T01:51:25.090Z",
@@ -1374,7 +1373,8 @@
     "faltanFechas": false,
     "archivada": false,
     "observaciones": "",
-    "facturacion": ""
+    "facturacion": "",
+    "cotizacionId": ""
   },
   {
     "id": "poc_1781749319612",
@@ -4511,7 +4511,7 @@
     "stages": [
       {
         "s": "done",
-        "f": "2026-07-14",
+        "f": "2026-07-28",
         "n": "TALLECTRO"
       },
       {
@@ -4718,7 +4718,7 @@
         "n": "CODIFER\nBODEGA"
       },
       {
-        "s": "pending",
+        "s": "active",
         "f": "2026-07-28",
         "n": "",
         "envio": "",
@@ -5340,7 +5340,7 @@
         "s": "done",
         "f": "2026-07-23",
         "n": "",
-        "factura": "FV2-545"
+        "factura": "FV2-529"
       }
     ],
     "cotizacionId": "LM1709",
@@ -5419,7 +5419,7 @@
     "stages": [
       {
         "s": "done",
-        "f": "2026-07-27",
+        "f": "2026-07-24",
         "n": ""
       },
       {
