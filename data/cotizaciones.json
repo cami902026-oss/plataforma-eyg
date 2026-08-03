@@ -18386,7 +18386,7 @@
     "cliente": "ANDES OPERATING",
     "contacto": "YENNY MORENO",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 15168098,
@@ -18400,6 +18400,7 @@
     "realizadaPor": "Alexandra",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
+    "motivoRechazo": "",
     "items": [
       {
         "id": 1,
@@ -18410,7 +18411,8 @@
         "tiempoEntrega": "1-2 DIAS",
         "desvTec": "",
         "marca": "",
-        "proveedor": ""
+        "proveedor": "",
+        "uid": "20f68e61-d0f6-42b4-9b17-a00f52b50fbd"
       },
       {
         "id": 2,
@@ -18422,7 +18424,8 @@
         "desvTec": "X 50 KILOS",
         "marca": "ARGOS",
         "proveedor": "HOME CENTER",
-        "precioProveedor": 32600
+        "precioProveedor": 32600,
+        "uid": "b1c2c567-04fa-4f8a-bbe1-050fadf59dc3"
       },
       {
         "id": 3,
@@ -18434,7 +18437,8 @@
         "desvTec": "X 2 METROS ",
         "marca": "NACIONAL",
         "proveedor": "MARIN",
-        "precioProveedor": 43697
+        "precioProveedor": 43697,
+        "uid": "cf6cdf44-4579-4a6a-8c62-f8544a51a51f"
       },
       {
         "id": 4,
@@ -18446,7 +18450,8 @@
         "desvTec": "LADRILLO PRENSADO 24,5x12x6cm 2.2K 56 u/m2 ",
         "marca": "",
         "proveedor": "HOME CENTER",
-        "precioProveedor": 1400
+        "precioProveedor": 1400,
+        "uid": "936b1ffb-349a-4206-836d-1048126d9f34"
       },
       {
         "id": 5,
@@ -18458,7 +18463,8 @@
         "desvTec": "ACEITE MOBIL 15W40 FULL PROTECCION SINTETICO 3.78LT",
         "marca": "MOBIL",
         "proveedor": "AUBEN - https://auben.com.co/producto/aceite-mobil-15w40-full-proteccion-sintetico-3-78lt/?gad_source=1&gad_campaignid=21820953484&gbraid=0AAAAA9dtb02lskRqlugflSNNq_xpT4DAn&gclid=EAIaIQobChMIp6DZ3L6-lQMVH5NaBR1wfAUnEAQYASABEgKukfD_BwE",
-        "precioProveedor": 150000
+        "precioProveedor": 150000,
+        "uid": "badc8c65-7279-4aea-9e9d-4976c3c7be11"
       },
       {
         "id": 6,
@@ -18470,7 +18476,8 @@
         "desvTec": "CURVA PVC 3/4 ",
         "marca": "PLASTIMEC/TECNOSA",
         "proveedor": "MARIN ",
-        "precioProveedor": 436
+        "precioProveedor": 436,
+        "uid": "2c5204ff-27e7-440c-a868-b42276a0fb39"
       },
       {
         "id": 7,
@@ -18482,7 +18489,8 @@
         "desvTec": "CURVA PVC 2\" ",
         "marca": "PLASTIMEC/TECNOSA",
         "proveedor": "MARIN",
-        "precioProveedor": 3275
+        "precioProveedor": 3275,
+        "uid": "fbbd47d5-c726-4e53-a679-9b89fd2b4c53"
       },
       {
         "id": 8,
@@ -18494,7 +18502,8 @@
         "desvTec": "TUBO CONDUIT PVC 2\" X 3 MTS",
         "marca": "PLASTIMEC",
         "proveedor": "MARIN",
-        "precioProveedor": 11522
+        "precioProveedor": 11522,
+        "uid": "b06eaf51-5fb5-4b4a-8ae0-a99911361a66"
       },
       {
         "id": 9,
@@ -18506,7 +18515,8 @@
         "desvTec": "TUBO CONDUIT PVC 3/4\" X 3 MTS ",
         "marca": "PLASTIMEC",
         "proveedor": "MARIN",
-        "precioProveedor": 4093
+        "precioProveedor": 4093,
+        "uid": "f4b91e71-25ce-46d0-8dde-91f14a7d096e"
       },
       {
         "id": 10,
@@ -18518,7 +18528,8 @@
         "desvTec": "TOMA CORRIENTE CHINA 220-250V 20AMP BEIGE ",
         "marca": "LEVITON ",
         "proveedor": "MARIN",
-        "precioProveedor": 18182
+        "precioProveedor": 18182,
+        "uid": "d78439f2-8e73-4742-b5a2-c521883e2469"
       },
       {
         "id": 11,
@@ -18530,7 +18541,8 @@
         "desvTec": "BASE ADHESIVA BLANCA 25MMX25MM PQT X 100 UND ",
         "marca": "ECO",
         "proveedor": "MARIN",
-        "precioProveedor": 15966
+        "precioProveedor": 15966,
+        "uid": "692fbd54-964c-40e5-840d-c6ba30ea7da0"
       },
       {
         "id": 12,
@@ -18542,7 +18554,8 @@
         "desvTec": "REFLECTOR LED JETA PRO 300W 6000K 100-227V 36000LM ",
         "marca": "SYLVANIA",
         "proveedor": "MARIN",
-        "precioProveedor": 425449
+        "precioProveedor": 425449,
+        "uid": "9c940cfe-f694-45c1-8fa4-dd301f23e0b4"
       },
       {
         "id": 13,
@@ -18554,7 +18567,8 @@
         "desvTec": "CABLE ENCAUCHETADO 2X12 THNN",
         "marca": "CONALCABLES/PROCABLES",
         "proveedor": "MARIN",
-        "precioProveedor": 6872
+        "precioProveedor": 6872,
+        "uid": "fb778dd3-304e-4ede-8460-d05ebb1ae6d8"
       },
       {
         "id": 14,
@@ -18566,15 +18580,16 @@
         "desvTec": "TUBO LED T8X32W",
         "marca": "TITANIUM",
         "proveedor": "MARIN",
-        "precioProveedor": 8000
+        "precioProveedor": 8000,
+        "uid": "b04c152f-60df-4705-9afa-911ff82ab3eb"
       }
     ],
-    "fechaGuardado": "2026-07-07T18:25:38.247Z",
+    "fechaGuardado": "2026-08-03T16:56:13.866Z",
+    "adjudicadaAt": "2026-08-03",
     "createdAt": "2026-07-06T16:32:33.340Z",
     "createdBy": "lina",
-    "updatedAt": "2026-07-15T02:29:37.416Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-07-15T02:29:37.416Z"
+    "updatedAt": "2026-08-03T16:56:13.866Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM1770",
