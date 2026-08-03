@@ -6380,26 +6380,6 @@
   "updated_at": "2026-07-16T23:28:36.043796+00:00"
  },
  {
-  "id": 362,
-  "codigo": "IMP-220101",
-  "descripcion": "FLANCHE SLIPON AC 150L 3\"",
-  "marca": "XF",
-  "familia_id": 4,
-  "colada": "",
-  "lote": "EG2-260307",
-  "fecha_ingreso": "2026-07-01",
-  "entradas": 20,
-  "salidas": 0,
-  "stock_actual": 20,
-  "costo_compra": 20477.93,
-  "precio_venta": 0,
-  "proveedor": "IMP",
-  "ubicacion": "A2",
-  "activo": true,
-  "created_at": "2026-08-01T23:59:05.014798+00:00",
-  "updated_at": "2026-08-01T23:59:05.014798+00:00"
- },
- {
   "id": 168,
   "codigo": "19000147",
   "descripcion": "TEE REDU SCH 40 6X3",
@@ -6860,6 +6840,26 @@
   "updated_at": "2026-07-15T16:51:52.335+00:00"
  },
  {
+  "id": 361,
+  "codigo": "IMP-220112",
+  "descripcion": "FLANCHE SLIPON AC 150L 2\"",
+  "marca": "XF",
+  "familia_id": 4,
+  "colada": "",
+  "lote": "EG2-260307",
+  "fecha_ingreso": "2026-07-01",
+  "entradas": 20,
+  "salidas": 2,
+  "stock_actual": 18,
+  "costo_compra": 12196.0,
+  "precio_venta": 0,
+  "proveedor": "IMP",
+  "ubicacion": "A2",
+  "activo": true,
+  "created_at": "2026-08-01T23:59:00.488189+00:00",
+  "updated_at": "2026-08-03T02:32:53.751+00:00"
+ },
+ {
   "id": 175,
   "codigo": "19000154",
   "descripcion": "TEE REDU SCH 80 4X2",
@@ -6918,6 +6918,26 @@
   "activo": true,
   "created_at": "2026-05-29T17:45:51.90313+00:00",
   "updated_at": "2026-07-16T16:05:09.60717+00:00"
+ },
+ {
+  "id": 362,
+  "codigo": "IMP-220101",
+  "descripcion": "FLANCHE SLIPON AC 150L 3\"",
+  "marca": "XF",
+  "familia_id": 4,
+  "colada": "",
+  "lote": "EG2-260307",
+  "fecha_ingreso": "2026-07-01",
+  "entradas": 20,
+  "salidas": 1,
+  "stock_actual": 19,
+  "costo_compra": 20477.93,
+  "precio_venta": 0,
+  "proveedor": "IMP",
+  "ubicacion": "A2",
+  "activo": true,
+  "created_at": "2026-08-01T23:59:05.014798+00:00",
+  "updated_at": "2026-08-03T02:33:06.284+00:00"
  },
  {
   "id": 336,
@@ -7158,25 +7178,5 @@
   "activo": true,
   "created_at": "2026-05-29T17:45:51.90313+00:00",
   "updated_at": "2026-07-27T19:52:27.626+00:00"
- },
- {
-  "id": 361,
-  "codigo": "IMP-220112",
-  "descripcion": "FLANCHE SLIPON AC 150L 2\"",
-  "marca": "XF",
-  "familia_id": 4,
-  "colada": "",
-  "lote": "EG2-260307",
-  "fecha_ingreso": "2026-07-01",
-  "entradas": 20,
-  "salidas": 0,
-  "stock_actual": 20,
-  "costo_compra": 12196.0,
-  "precio_venta": 0,
-  "proveedor": "IMP",
-  "ubicacion": "A2",
-  "activo": true,
-  "created_at": "2026-08-01T23:59:00.488189+00:00",
-  "updated_at": "2026-08-01T23:59:00.488189+00:00"
  }
 ]
