@@ -50412,7 +50412,7 @@
     "cliente": "BOBINADOS",
     "contacto": "JESUS",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Revisión gerencia",
     "factura": "",
     "iva": 19,
     "subtotal": 0,
@@ -50460,11 +50460,12 @@
         "udm": "Und.",
         "uid": "06910177-366d-41dc-b9e1-d83c119a9571",
         "desc": "Kit de aislamiento class 150  4\"",
-        "marca": "",
+        "marca": "DURLON",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "desvTec": "KIT DE AISL TIPO F, D8500, M-MY / A-G11-ZPS, 4 X 150 Lbs Kit de aislamiento dieléctrico REF: FSSI-DUALSERVICE-D8500 Material Empaque: Fibras aramidas con aglutinante en nitrilo (NBR), marca Durlon Ref. 8500, espesor de 1/8 (3.2 mm) Material Arandelas Aislantes: Resina Epoxica Reforzada con tejido de Fibra de Vidrio, Grado Nema G-11, espesor de 1/8 (3.2 mm) Material Arandelas Metálicas: Acero al Carbono Zincadas - F-436, espesor de 1/8 (3.2 mm) Material Bujes Aislantes: Material LE MYLAR, espesor 1 mm, instalar en espárragos B7 y Tuerca 2H Marca Ofertada: Ensamble nacional / Junta DURLON Instalar en Bridas: ASME B16.5 RF/RF SCH STD",
+        "proveedor": "FSS INTER",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 151700
       },
       {
         "id": 4,
@@ -50532,10 +50533,54 @@
         "precioProveedor": 48980
       }
     ],
-    "fechaGuardado": "2026-08-03T21:56:20.431Z",
+    "fechaGuardado": "2026-08-03T22:03:27.451Z",
     "createdAt": "2026-08-03T21:15:20.779Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-03T21:56:20.431Z",
+    "updatedAt": "2026-08-03T22:03:27.451Z",
+    "updatedBy": "sandra"
+  },
+  {
+    "id": "LM1931",
+    "fecha": "2026-08-03",
+    "fechaVenc": "2026-08-11",
+    "cliente": "HIDROCASANARE",
+    "contacto": "FREDY RIVERA",
+    "correo": "",
+    "estado": "Enviada",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 2400000,
+    "ivaVal": 456000,
+    "total": 2856000,
+    "formaPago": "30 DÍAS",
+    "sitioEntrega": "YOPAL ",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Sandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "id": 1,
+        "qty": 4,
+        "udm": "EA",
+        "uid": "a7c8e4d1-083f-4fff-b3ab-0529944cc8b3",
+        "desc": "filtros en Y, A216 WCB de 4” #150RF, malla mesh 40",
+        "marca": "GQV",
+        "precio": 600000,
+        "desvTec": "SE OFERTA FILTRO Y AC A216+WCB 150# RF 4\"  MESH 26",
+        "proveedor": "GRANADA",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 433600
+      }
+    ],
+    "fechaGuardado": "2026-08-03T22:18:03.829Z",
+    "fechaEnvio": "2026-08-03T22:01:02.473Z",
+    "createdAt": "2026-08-03T22:00:39.799Z",
+    "createdBy": "sandra",
+    "updatedAt": "2026-08-03T22:18:03.829Z",
     "updatedBy": "sandra"
   },
   {
