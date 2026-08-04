@@ -2609,7 +2609,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <th id="abs-th-costo" style="display:none">Costo Compra</th>
           <th id="abs-th-precio" style="display:none">Precio Venta</th>
           <th id="abs-th-ajuste" style="display:none">Ajuste</th>
-          <th id="abs-th-editar" style="display:none">Editar</th>
+          <th id="abs-th-editar" style="display:none">Acciones</th>
         </tr></thead>
         <tbody id="abs-stock-tbody"><tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px">Cargando...</td></tr></tbody>
       </table>
@@ -18309,7 +18309,7 @@ function absRenderStock() {
   const q=(document.getElementById('abs-search')?.value||'').toLowerCase();
   const fam=document.getElementById('abs-familia-filter')?.value||'';
   const sf=document.getElementById('abs-stock-filter')?.value||'';
-  const showC=abs_showCosto(), showP=abs_showPrecio(), showAj=abs_canAjuste(), showEd=abs_canSalida();
+  const showC=abs_showCosto(), showP=abs_showPrecio(), showAj=abs_canAjuste(), showEd=abs_canSalida(), showBo=abs_canAjuste();
   // v138: búsqueda inteligente (palabras en cualquier orden + equivalencias)
   let _qOk=null;
   if(q){ const _qt=_absQTokens(q); _qOk={}; abs_productos.forEach(p=>{ if(_absScore(p,_qt,q.trim())>0) _qOk[p.codigo]=1; }); }
@@ -18334,7 +18334,7 @@ function absRenderStock() {
       ${showC?`<td style="font-size:12px">${p.costo_compra?'$'+Number(p.costo_compra).toLocaleString('es-CO'):'—'}</td>`:''}
       ${showP?`<td style="font-size:12px">${p.precio_venta?'$'+Number(p.precio_venta).toLocaleString('es-CO'):'—'}</td>`:''}
       ${showAj?`<td><button onclick="absAjustarStock('${p.codigo}')" title="Ajustar inventario físico" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:var(--gold);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;white-space:nowrap">✏️ Ajustar</button></td>`:''}
-      ${showEd?`<td><button onclick="absEditarProductoModal('${String(p.codigo).replace(/'/g,"\\'")}')" title="Editar precio, ubicación y demás datos" style="background:rgba(46,170,74,.15);border:1px solid rgba(46,170,74,.4);color:#68d391;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;white-space:nowrap">📝 Editar</button></td>`:''}
+      ${showEd?`<td style="white-space:nowrap"><button onclick="absEditarProductoModal('${String(p.codigo).replace(/'/g,"\\'")}')" title="Editar precio, ubicación y demás datos" style="background:rgba(46,170,74,.15);border:1px solid rgba(46,170,74,.4);color:#68d391;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">📝 Editar</button>${showBo?` <button onclick="absBorrarProducto('${String(p.codigo).replace(/'/g,"\\'")}')" title="Borrar el producto (si tiene movimientos, se archiva)" style="background:rgba(229,62,62,.15);border:1px solid rgba(229,62,62,.4);color:#fc8181;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer;">🗑️</button>`:''}</td>`:''}
     </tr>`;
   }).join('')||'<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:32px">Sin resultados</td></tr>';
 }
@@ -21474,6 +21474,51 @@ function absEditarProductoModal(codigo) {
 }
 
 function absEditarClose(){ const m=document.getElementById('abs-edit-modal'); if(m) m.remove(); }
+
+// ═══ BORRAR UN PRODUCTO ═══════════════════════════════════════════════════
+// Caso típico: se creó dos veces el mismo (pasó el 4-ago con PZ-48000005/06).
+// Antes de borrar se mira el KARDEX:
+//   · Sin movimientos → se borra de verdad. Es un producto que nunca se movió.
+//   · Con movimientos → NO se borra: se ARCHIVA (activo=false). El kardex guarda
+//     los movimientos por código, así que borrar la ficha dejaría ese historial
+//     sin producto al que apuntar. Archivado desaparece de la lista y del buscador
+//     pero el historial sigue completo.
+async function absBorrarProducto(codigo) {
+  if (!abs_canAjuste()) return showToast('Solo Andrea y Alberto pueden borrar productos','error');
+  const p = abs_productos.find(x => String(x.codigo) === String(codigo));
+  if (!p) return showToast('No encuentro el producto '+codigo,'error');
+  let movs = [];
+  try {
+    showToast('Revisando el historial…','info');
+    movs = await absFetch('kardex?codigo_producto=eq.'+encodeURIComponent(codigo)+'&select=id,fecha,tipo,cantidad&limit=200') || [];
+  } catch(e) {
+    return showToast('No pude revisar el kardex, no borro nada por seguridad: '+e.message,'error');
+  }
+  const ficha = codigo + '  —  ' + p.descripcion + '\nStock: ' + p.stock_actual;
+  if (movs.length) {
+    const ok = confirm('ESTE PRODUCTO TIENE HISTORIAL\n\n' + ficha + '\nMovimientos en el kardex: ' + movs.length +
+      '\n\nNo se puede borrar del todo: el kardex guarda los movimientos por código y quedarían sin producto.' +
+      '\n\n¿Lo ARCHIVO? Desaparece de la lista y del buscador, pero el historial queda intacto y se puede revivir.');
+    if (!ok) return;
+    try {
+      await absFetch('productos?id=eq.'+encodeURIComponent(p.id), {method:'PATCH', headers:{'Prefer':'return=minimal'}, body:JSON.stringify({activo:false})});
+      showToast('📦 '+codigo+' archivado (conserva sus '+movs.length+' movimientos)','ok');
+      _absCodigosTodos = null;
+      await absCargar();
+    } catch(e){ showToast('Error: '+e.message,'error'); }
+    return;
+  }
+  const ok = confirm('BORRAR PRODUCTO\n\n' + ficha + '\nMovimientos en el kardex: ninguno' +
+    '\n\nSe borra definitivamente. ¿Seguro?');
+  if (!ok) return;
+  try {
+    showToast('Borrando…','info');
+    await absFetch('productos?id=eq.'+encodeURIComponent(p.id), {method:'DELETE', headers:{'Prefer':'return=minimal'}});
+    showToast('🗑️ '+codigo+' borrado','ok');
+    _absCodigosTodos = null;   // el catálogo cambió: se relee al crear el próximo
+    await absCargar();
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+}
 
 async function absGuardarEdicionProducto(codigo) {
   if (!abs_canSalida()) return showToast('Sin permiso','error');
