@@ -21229,9 +21229,11 @@ async function absNuevaFamiliaModal() {
 // sus productos son prefijo + consecutivo: 19000101, 19000102… Unas familias usan 5
 // dígitos de consecutivo (3000001) y otras 6 (19000101), así que se respeta el largo
 // que ya usa cada una.
-// Origen: '' = nacional, 'IMP' = lo importamos nosotros, 'PZ' = comprado en plaza
-// (Codifer, Mundial, Colimportados…). La marca va ADELANTE y NO cambia la numeración:
-// el número sale del mismo consecutivo de la familia, lleve marca o no.
+// Origen (obligatorio, no manejamos nacional): 'IMP' = lo importamos nosotros,
+// 'PZ' = comprado en plaza (Codifer, Mundial, Colimportados…). La marca va ADELANTE y
+// NO cambia la numeración: el número sale del mismo consecutivo de la familia, así que
+// IMP-22000145 y 22000146 nunca chocan. Los códigos sin marca son los viejos (299 que
+// ya existían antes del 4-ago-2026) y se siguen respetando.
 function _absNumCodigo(c) {
   const s = String(c||'').trim().toUpperCase().replace(/^(IMP|PZ|NP)-/, '');
   return /^[0-9]+$/.test(s) ? s : '';
@@ -21289,10 +21291,12 @@ function absRecalcularCodigo() {
   const famId  = (document.getElementById('abs-np-familia')||{}).value || '';
   const origen = (document.getElementById('abs-np-origen')||{}).value || '';
   const hint = document.getElementById('abs-np-codigo-hint');
-  if (!famId) {
+  if (!famId || !origen) {
     inp.value = '';
-    inp.placeholder = 'Elige la familia y sale solo';
-    if (hint) hint.textContent = 'El código se genera al escoger la familia.';
+    inp.placeholder = 'Elige familia y origen y sale solo';
+    if (hint) hint.textContent = !famId
+      ? 'Escoge la familia y el origen (IMP o PZ) para que salga el código.'
+      : 'Falta el origen: IMP si lo importamos nosotros, PZ si es de plaza.';
     return;
   }
   const sug = _absSiguienteCodigo(famId, origen);
@@ -21332,19 +21336,19 @@ function absNuevoProductoModal() {
           <select id="abs-np-familia" onchange="absRecalcularCodigo()" style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:#fff;font-size:13px;">${famOpts}</select>
         </div>
         <div style="flex:1;margin-bottom:10px;">
-          <label style="display:block;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Origen</label>
+          <label style="display:block;font-size:11px;color:#8899bb;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Origen *</label>
           <select id="abs-np-origen" onchange="absRecalcularCodigo()" style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:#fff;font-size:13px;">
-            <option value="">Nacional — sin marca</option>
+            <option value="">— Escoge —</option>
             <option value="IMP">IMP — lo importamos nosotros</option>
             <option value="PZ">PZ — plaza (Codifer, Mundial, Colimportados…)</option>
           </select>
         </div>
       </div>
       <div style="display:flex;gap:10px;">
-        <div style="flex:1">${fld('Código','abs-np-codigo','oninput="this.dataset.manual=\'1\'" placeholder="Elige la familia y sale solo"')}</div>
+        <div style="flex:1">${fld('Código','abs-np-codigo','oninput="this.dataset.manual=\'1\'" placeholder="Elige familia y origen y sale solo"')}</div>
         <div style="flex:1">${fld('Stock inicial','abs-np-stock','type="number" step="0.01" value="0"')}</div>
       </div>
-      <p id="abs-np-codigo-hint" style="color:#8899bb;font-size:11px;margin:-4px 0 10px;">El código se genera al escoger la familia.</p>
+      <p id="abs-np-codigo-hint" style="color:#8899bb;font-size:11px;margin:-4px 0 10px;">Escoge la familia y el origen (IMP o PZ) para que salga el código.</p>
       <div style="display:flex;gap:10px;">
         <div style="flex:1">${fld('Marca','abs-np-marca')}</div>
         <div style="flex:1">${fld('Proveedor','abs-np-prov')}</div>
@@ -21378,10 +21382,13 @@ async function absGuardarNuevoProducto() {
   const desc = val('abs-np-desc');
   if (!desc) return showToast('La descripción es obligatoria','error');
   const famId = val('abs-np-familia');
+  const origen = val('abs-np-origen');
   let codigo = val('abs-np-codigo');
-  if (!codigo) return showToast(famId
-    ? 'Esa familia no tiene prefijo, así que el código no sale solo: escríbelo a mano'
-    : 'Escoge la familia para que salga el código, o escríbelo a mano','error');
+  if (!codigo) {
+    if (!famId)  return showToast('Escoge la familia para que salga el código, o escríbelo a mano','error');
+    if (!origen) return showToast('Falta el origen: IMP si lo importamos nosotros, PZ si es de plaza','error');
+    return showToast('Esa familia no tiene prefijo, así que el código no sale solo: escríbelo a mano','error');
+  }
   // El duplicado se busca contra TODO el catálogo (incluidos los inactivos), no solo
   // contra lo que está cargado en pantalla.
   const universo = _absCodigosTodos || abs_productos;
