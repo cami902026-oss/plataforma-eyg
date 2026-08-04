@@ -2155,7 +2155,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               tbody.innerHTML='<tr><td colspan="7"><div class="inv-empty"><div class="ie-icon">&#128270;</div><p>No se encontraron productos</p></div></td></tr>';
               return;
             }
-            const _fotosInv = (function(){ try { return JSON.parse(localStorage.getItem('energy_fotos_inv')||'{}'); } catch(_){ return {}; } })();
+            const _fotosInv = (typeof fotosInvAll === 'function') ? fotosInvAll() : {};
             tbody.innerHTML = filtered.map(p => {
               const s = Number(p['STOCK ACTUAL']);
               const bc = s>0?'ok':'out';
@@ -3783,8 +3783,8 @@ const _NETLIFY_HOST = /\.netlify\.app$/i.test(location.hostname) || location.hos
   const _CACHES_REGENERABLES = [
     'energy_cotiz_items_undo',   // deshacer de ítems: solo sirve dentro de la sesión
     'inv_data_onedrive',         // caché del Excel de inventario (se rebaja de OneDrive)
-    'energy_cotiz_fotos',        // respaldadas en data/cotiz_fotos.json
-    'energy_fotos_inv'           // respaldadas en data/fotos_inv.json
+    'energy_cotiz_fotos',        // sobrante viejo: las fotos ya viven en IndexedDB
+    'energy_fotos_inv'           // sobrante viejo: las fotos ya viven en IndexedDB
   ];
   function _hayPendientesSinSubir(){
     // Ante la duda decimos que SÍ hay pendientes (no borrar fotos que quizá no subieron).
@@ -3847,6 +3847,12 @@ const _NETLIFY_HOST = /\.netlify\.app$/i.test(location.hostname) || location.hos
     filas.sort((a, b) => b.KB - a.KB);
     try { console.table(filas.slice(0, 25)); } catch(_){}
     console.log('TOTAL usado ≈ ' + Math.round(total/1024*10)/10 + ' MB (el navegador da ~5 MB). Pendientes sin subir: ' + (_hayPendientesSinSubir() ? 'SÍ — no borres fotos todavía' : 'no'));
+    // Las fotos ya no cuentan aquí: viven en IndexedDB, que tiene mucho más espacio.
+    try {
+      navigator.storage.estimate().then(e => {
+        console.log('IndexedDB + cachés (donde están las fotos): ' + Math.round(e.usage/1048576*10)/10 + ' MB usados de ' + Math.round(e.quota/1048576) + ' MB disponibles.');
+      }).catch(() => {});
+    } catch(_){}
     return total;
   };
   window.liberarEyg = function(){
@@ -3855,6 +3861,114 @@ const _NETLIFY_HOST = /\.netlify\.app$/i.test(location.hostname) || location.hos
     return kb;
   };
 })();
+
+// ===== FOTOS EN INDEXEDDB (v175) ==========================================
+// Las fotos en base64 eran lo más pesado del localStorage: 'energy_cotiz_fotos' y
+// 'energy_fotos_inv' se comían casi 1 MB de los ~5 MB que da el navegador — por eso
+// el 4-ago-2026 a Sandra se le llenó el equipo cotizando. IndexedDB da cientos de MB,
+// así que las fotos viven ahí y el localStorage queda para los datos de los módulos.
+// Lo COMPARTIDO no cambia: la fuente sigue siendo el servidor (data/cotiz_fotos.json
+// y data/fotos_inv.json). Esto solo cambia DÓNDE guarda cada equipo su copia local.
+// Si IndexedDB no está disponible (modo incógnito, políticas), todo cae de vuelta a
+// localStorage solo — se comporta como antes, sin romperse.
+const _IDB_NOMBRE = 'eyg_fotos';
+const _IDB_STORE  = 'kv';
+let _idbPromesa = null;
+function _idbAbrir() {
+  if (_idbPromesa) return _idbPromesa;
+  _idbPromesa = new Promise((resolve, reject) => {
+    try {
+      if (!window.indexedDB) { reject(new Error('sin IndexedDB')); return; }
+      const req = indexedDB.open(_IDB_NOMBRE, 1);
+      req.onupgradeneeded = () => { try { req.result.createObjectStore(_IDB_STORE); } catch(_){} };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror   = () => reject(req.error || new Error('IndexedDB no abrió'));
+      req.onblocked = () => reject(new Error('IndexedDB bloqueada'));
+    } catch(e) { reject(e); }
+  });
+  return _idbPromesa;
+}
+function _idbGet(clave) {
+  return _idbAbrir().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(_IDB_STORE, 'readonly');
+    const r  = tx.objectStore(_IDB_STORE).get(clave);
+    r.onsuccess = () => resolve(r.result);
+    r.onerror   = () => reject(r.error);
+  }));
+}
+function _idbSet(clave, valor) {
+  return _idbAbrir().then(db => new Promise((resolve, reject) => {
+    const tx = db.transaction(_IDB_STORE, 'readwrite');
+    tx.objectStore(_IDB_STORE).put(valor, clave);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror    = () => reject(tx.error);
+    tx.onabort    = () => reject(tx.error || new Error('transacción abortada'));
+  }));
+}
+
+// ---- Fotos de INVENTARIO ------------------------------------------------
+// El render de la tabla las lee de forma SÍNCRONA, así que se mantiene una copia en
+// memoria (_FOTOS_INV): IndexedDB solo la hidrata al abrir y la persiste al cambiar.
+let _FOTOS_INV = {};
+let _fotosInvListo = false;
+let _fotosInvPromesa = null;
+// Lectura SÍNCRONA para el render. Si todavía no se hidrató desde IndexedDB, la
+// dispara y vuelve a pintar cuando llegue — así el módulo nunca se queda sin fotos
+// aunque alguien abra Inventario en el primer segundo.
+function fotosInvAll() {
+  if (!_fotosInvListo) {
+    _fotosInvCargar().then(() => { try { if (typeof invRender === 'function') invRender(); } catch(_){} });
+  }
+  return _FOTOS_INV;
+}
+async function _fotosInvGuardar(obj) {
+  _FOTOS_INV = (obj && typeof obj === 'object') ? obj : {};
+  try { await _idbSet('fotos_inv', _FOTOS_INV); return true; }
+  catch(_) {
+    // Sin IndexedDB: se guarda como antes (puede fallar por cuota, ya está avisado)
+    try { localStorage.setItem('energy_fotos_inv', JSON.stringify(_FOTOS_INV)); } catch(__){}
+    return false;
+  }
+}
+// Una sola carga aunque la llamen varios a la vez (el render, el poll y el arranque).
+function _fotosInvCargar() {
+  if (_fotosInvListo) return Promise.resolve(_FOTOS_INV);
+  if (!_fotosInvPromesa) _fotosInvPromesa = _fotosInvCargarReal();
+  return _fotosInvPromesa;
+}
+async function _fotosInvCargarReal() {
+  try {
+    const desdeIDB = await _idbGet('fotos_inv');
+    if (desdeIDB && typeof desdeIDB === 'object') _FOTOS_INV = desdeIDB;
+  } catch(_) {}
+  // MIGRACIÓN de una sola vez: lo que quedó en localStorage se pasa a IndexedDB y se
+  // libera ese espacio. Solo se borra del localStorage si la escritura en IDB funcionó.
+  try {
+    const viejo = localStorage.getItem('energy_fotos_inv');
+    if (viejo) {
+      const o = JSON.parse(viejo);
+      if (o && typeof o === 'object' && !Array.isArray(o)) {
+        const fusion = Object.assign({}, _FOTOS_INV, o);
+        if (await _fotosInvGuardar(fusion)) {
+          localStorage.removeItem('energy_fotos_inv');
+          try { console.log('[fotos] inventario migrado a IndexedDB: ' + Math.round(viejo.length/1024) + ' KB liberados'); } catch(_){}
+        }
+      }
+    }
+  } catch(_) {}
+  _fotosInvListo = true;
+  return _FOTOS_INV;
+}
+// Aplica lo que llegó del servidor. Lo LOCAL gana (puede ser una foto recién tomada
+// que aún no sube). Devuelve true solo si algo cambió, para no re-renderizar de más.
+async function _fotosInvAplicarRemoto(remoto) {
+  if (!remoto || typeof remoto !== 'object' || Array.isArray(remoto)) return false;
+  await _fotosInvCargar();
+  const fusion = Object.assign({}, remoto, _FOTOS_INV);
+  if (JSON.stringify(fusion) === JSON.stringify(_FOTOS_INV)) return false;
+  await _fotosInvGuardar(fusion);
+  return true;
+}
 
 function setData(key, val) {
   localStorage.setItem('max_'+key, JSON.stringify(val));
@@ -4703,6 +4817,10 @@ async function resetearDatosLocales() {
   if (!confirm('Esto borrará tus datos locales (tareas, OPs, reuniones, proyectos, equipo, cotizaciones, visitas y mensajería) y los volverá a descargar desde el servidor. ¿Continuar?')) return;
   const keys = ['max_tasks','max_meetings','max_minutas','max_projects','max_team','max_bd_cotizaciones','procesos_oc','energy_visitas','energy_mensajeria','energy_fotos_inv',SYNC_QUEUE_KEY];
   keys.forEach(k => localStorage.removeItem(k));
+  // Las fotos ya no están en localStorage: también hay que soltar la copia de IndexedDB
+  // (se vuelven a bajar del servidor en la recarga de abajo).
+  try { await _idbSet('fotos_inv', {}); _FOTOS_INV = {}; _fotosInvListo = false; _fotosInvPromesa = null; } catch(_) {}
+  try { await _idbSet('cotiz_fotos', {}); _cotizFotos = {}; _cotizFotosLoaded = false; } catch(_) {}
   // Limpiar etags para forzar re-fetch
   Object.keys(_pollEtags).forEach(k => delete _pollEtags[k]);
   showToast('Limpiando…','info');
@@ -4811,6 +4929,12 @@ window.addEventListener('offline', () => _refreshSyncBadge());
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => { _refreshSyncBadge(); _drainSyncQueue().then(_refreshSyncBadge); }, 2000);
   setTimeout(_paintVersion, 800);
+  // Pasar las fotos de localStorage a IndexedDB apenas abre, aunque quien entre no use
+  // Inventario ni Cotizaciones: es lo que le devuelve el espacio al navegador.
+  setTimeout(() => {
+    _fotosInvCargar().catch(() => {});
+    _cotizFotosMigrar().catch(() => {});
+  }, 3000);
 });
 // Muestra la versión REAL instalada en este equipo (lee el nombre de caché del
 // service worker). Así cualquiera confirma en qué versión está y soporte detecta
@@ -5056,7 +5180,7 @@ const POLL_TARGETS = [
   { file:'data/sabados_plan.json', storageKey:'energy_sabados_plan', renderFn: () => { try{ _refreshSabPlanIfOpen(); }catch(_){} }, mergeBy:'id' },
   { file:'data/programacion_equipo.json', storageKey:'energy_prog_equipo', renderFn: () => { try{ _refreshPEIfOpen(); }catch(_){} }, mergeBy:'id' },
   { file:'data/mensajeria.json',   storageKey:'energy_mensajeria',   renderFn: () => { _refreshMensajeriaIfOpen(); }, mergeBy:'id' },
-  { file:'data/fotos_inv.json',    storageKey:'energy_fotos_inv',    renderFn: () => { try{ if(typeof invRender==='function') invRender(); }catch(_){} }, mergeBy:'__obj__' },
+  { file:'data/fotos_inv.json',    storageKey:null, apply: (r) => _fotosInvAplicarRemoto(r), renderFn: () => { try{ if(typeof invRender==='function') invRender(); }catch(_){} }, mergeBy:'__obj__' },
   { file:'data/config.json',       storageKey:null,                  renderFn: () => {}, mergeBy:null },
 ];
 
@@ -5103,6 +5227,13 @@ async function _pollOne(target) {
     // Caso especial: archivo es un OBJETO (ej. fotos_inv.json indexado por código)
     if (target.mergeBy === '__obj__') {
       if (!remote || typeof remote !== 'object' || Array.isArray(remote)) return false;
+      // Objetos que ya NO viven en localStorage (fotos → IndexedDB) traen su propio
+      // aplicador; solo se re-renderiza si de verdad cambió algo.
+      if (typeof target.apply === 'function') {
+        const cambio = await target.apply(remote);
+        if (cambio) target.renderFn();
+        return cambio;
+      }
       const localRaw = localStorage.getItem(target.storageKey);
       let local = {};
       try { local = localRaw ? JSON.parse(localRaw) : {}; } catch(_) { local = {}; }
@@ -5353,13 +5484,10 @@ async function _loadAllBackupsGH() {
     { storageKey:'energy_remi_cajas',   file:'data/remisiones_cajas.json' },
     { storageKey:'energy_mensajeria',   file:'data/mensajeria.json' }
   ];
-  // Fotos de inventario (es un objeto, no un array → tratamiento especial)
+  // Fotos de inventario (objeto, no array, y viven en IndexedDB → tratamiento especial)
   try {
     const fotosRemote = await _loadDataGH('data/fotos_inv.json');
-    if (fotosRemote && typeof fotosRemote === 'object' && !Array.isArray(fotosRemote)) {
-      const localFotos = JSON.parse(localStorage.getItem('energy_fotos_inv')||'{}');
-      const merged = Object.assign({}, fotosRemote, localFotos); // local sobrescribe ediciones recientes
-      localStorage.setItem('energy_fotos_inv', JSON.stringify(merged));
+    if (await _fotosInvAplicarRemoto(fotosRemote)) {
       try { if (typeof invRender === 'function') invRender(); } catch(_){}
     }
   } catch(_){}
@@ -11420,9 +11548,35 @@ async function _cotizFotosEnsure() {
     const remoto = await _loadDataGH('data/cotiz_fotos.json');
     if (remoto && typeof remoto === 'object' && !Array.isArray(remoto)) _cotizFotos = Object.assign({}, remoto, _cotizFotos);
   } catch(_) {}
-  try { const l = JSON.parse(localStorage.getItem('energy_cotiz_fotos') || '{}'); _cotizFotos = Object.assign({}, _cotizFotos, l); } catch(_) {}
+  // Copia local: ahora en IndexedDB (antes 'energy_cotiz_fotos' en localStorage).
+  try {
+    const local = await _idbGet('cotiz_fotos');
+    if (local && typeof local === 'object' && !Array.isArray(local)) _cotizFotos = Object.assign({}, _cotizFotos, local);
+  } catch(_) {}
+  await _cotizFotosMigrar();
 }
-function _cotizFotosPersistLocal() { try { localStorage.setItem('energy_cotiz_fotos', JSON.stringify(_cotizFotos)); } catch(_) {} }
+// MIGRACIÓN de una sola vez: si quedaron fotos en localStorage, se suman, se pasan a
+// IndexedDB y solo entonces se borra la clave vieja (si la escritura falló, no se toca).
+async function _cotizFotosMigrar() {
+  try {
+    const viejo = localStorage.getItem('energy_cotiz_fotos');
+    if (!viejo) return;
+    const o = JSON.parse(viejo);
+    if (o && typeof o === 'object' && !Array.isArray(o)) _cotizFotos = Object.assign({}, _cotizFotos, o);
+    if (await _cotizFotosPersistLocal()) {
+      localStorage.removeItem('energy_cotiz_fotos');
+      try { console.log('[fotos] cotizaciones migradas a IndexedDB: ' + Math.round(viejo.length/1024) + ' KB liberados'); } catch(_){}
+    }
+  } catch(_) {}
+}
+async function _cotizFotosPersistLocal() {
+  try { await _idbSet('cotiz_fotos', _cotizFotos); return true; }
+  catch(_) {
+    // Sin IndexedDB: se guarda como siempre (el aviso de cuota ya está cubierto)
+    try { localStorage.setItem('energy_cotiz_fotos', JSON.stringify(_cotizFotos)); } catch(__){}
+    return false;
+  }
+}
 
 // Comprime la imagen a JPEG (máx. lado largo + calidad) para que pese poco
 function _compressImage(file, maxDim, quality) {
@@ -16160,10 +16314,10 @@ function visPreview(input,previewId,phId){const file=input.files[0];if(!file)ret
 // Stubs para compatibilidad con código viejo (el módulo ya no existe)
 function fotoinvPreview(){}
 function fotoinvRenderGaleria(){}
-function fotoinvEliminar(cod){
-  const f=JSON.parse(localStorage.getItem('energy_fotos_inv')||'{}');
+async function fotoinvEliminar(cod){
+  const f = Object.assign({}, await _fotosInvCargar());
   delete f[cod];
-  localStorage.setItem('energy_fotos_inv',JSON.stringify(f));
+  await _fotosInvGuardar(f);
   _scheduleBackupGHCustom('energy_fotos_inv','data/fotos_inv.json','📷 Fotos Inventario',f);
   if (typeof invRender==='function') invRender();
   showToast('Foto eliminada','info');
@@ -16171,7 +16325,7 @@ function fotoinvEliminar(cod){
 
 // ===== FOTOS DE INVENTARIO (dentro del módulo Inventario) =====
 // Cada producto tiene su propia celda de foto. Se almacena por CODIGO PRODUCTO
-// en localStorage 'energy_fotos_inv' como { codigo: { foto: base64, fecha, registradoPor } }
+// en IndexedDB (clave 'fotos_inv') como { codigo: { foto: base64, fecha, registradoPor } }
 // y se sincroniza a data/fotos_inv.json en GitHub para que TODOS la vean.
 function invFotoUpload(codigo) {
   // Crear input file dinámico (no podemos preinsertarlo en cada fila)
@@ -16185,14 +16339,14 @@ function invFotoUpload(codigo) {
     showToast('Comprimiendo y guardando…','info');
     try {
       const b64 = await compressImage(file, 1024, 0.72);
-      const fotos = JSON.parse(localStorage.getItem('energy_fotos_inv')||'{}');
+      const fotos = Object.assign({}, await _fotosInvCargar());
       const who = currentUser ? (currentUser.email||currentUser.name) : 'system';
       fotos[codigo] = {
         foto: b64,
         fecha: new Date().toISOString(),
         registradoPor: who
       };
-      localStorage.setItem('energy_fotos_inv', JSON.stringify(fotos));
+      await _fotosInvGuardar(fotos);
       // Sincronizar al equipo via GitHub
       _scheduleBackupGHCustom('energy_fotos_inv', 'data/fotos_inv.json', '📷 Fotos Inventario', fotos);
       showToast('✅ Foto guardada y compartida con el equipo','success');
@@ -16205,7 +16359,7 @@ function invFotoUpload(codigo) {
 }
 
 function invFotoVer(codigo) {
-  const fotos = JSON.parse(localStorage.getItem('energy_fotos_inv')||'{}');
+  const fotos = fotosInvAll();
   const entry = fotos[codigo];
   if (!entry) { invFotoUpload(codigo); return; }
   const src = entry.foto || entry;
