@@ -2,13 +2,16 @@
   "usuario": "sandra",
   "nombre": "Sandra",
   "rol": "COLABORADOR",
-  "ts": 1785871865709,
-  "tsLegible": "4/8/2026, 2:31:05 p. m.",
+  "ts": 1785872465714,
+  "tsLegible": "4/8/2026, 2:41:05 p. m.",
   "online": true,
   "tienePAT": false,
   "patEstado": "sin_pat",
   "proxyConfigurado": true,
-  "pendientes": 0,
-  "pendientesArch": [],
+  "pendientes": 2,
+  "pendientesArch": [
+    "data/clientes.json",
+    "data/cotizaciones.json"
+  ],
   "navegador": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151."
 }
