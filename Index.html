@@ -3765,25 +3765,94 @@ function _auditLabel(item) {
 }
 // Solo aplica cuando la plataforma corre en Netlify (donde existen las functions).
 const _NETLIFY_HOST = /\.netlify\.app$/i.test(location.hostname) || location.hostname === 'localhost';
-// AVISO DE CUOTA LLENA (plan de sostenibilidad): el navegador da ~5-10MB de
-// almacenamiento local. Antes, al llenarse, TODOS los guardados locales fallaban
-// EN SILENCIO (los try/catch los tragaban) y se perdían cambios sin que nadie lo
-// supiera. Se envuelve setItem UNA sola vez: si el navegador rechaza por espacio,
-// sale un aviso grande (máx. 1 vez cada 30s para no inundar).
+// CUOTA LLENA — AUTO-LIBERACIÓN + NO TUMBAR EL GUARDADO AL SERVIDOR.
+// El navegador da ~5-10MB de almacenamiento local. Al llenarse pasaban DOS cosas malas:
+//   1) el aviso salía pero el equipo seguía lleno hasta que alguien lo limpiara a mano;
+//   2) peor: `localStorage.setItem` LANZABA la excepción y cortaba la función que estaba
+//      guardando ANTES de subir a GitHub (ej. `setData` → `_scheduleBackupGH`), así que el
+//      cambio no quedaba ni local ni en el servidor. Se perdía de verdad.
+// Ahora, cuando el navegador rechaza por espacio: se sueltan solas las cachés que se
+// pueden volver a bajar del servidor, se reintenta, y si aun así no cabe se avisa pero
+// NO se lanza la excepción → el resto del guardado (la subida al servidor) sí corre.
 (function(){
   const _setItemOrig = Storage.prototype.setItem;
   let _cuotaAvisada = 0;
+  // Cachés BORRABLES sin perder nada: todo esto se vuelve a bajar al recargar.
+  // NUNCA se toca 'energy_sync_queue' (cambios pendientes de subir), ni la sesión,
+  // ni los tokens, ni los datos de los módulos.
+  const _CACHES_REGENERABLES = [
+    'energy_cotiz_items_undo',   // deshacer de ítems: solo sirve dentro de la sesión
+    'inv_data_onedrive',         // caché del Excel de inventario (se rebaja de OneDrive)
+    'energy_cotiz_fotos',        // respaldadas en data/cotiz_fotos.json
+    'energy_fotos_inv'           // respaldadas en data/fotos_inv.json
+  ];
+  function _hayPendientesSinSubir(){
+    // Ante la duda decimos que SÍ hay pendientes (no borrar fotos que quizá no subieron).
+    try { const q = JSON.parse(localStorage.getItem('energy_sync_queue') || '[]'); return !Array.isArray(q) || q.length > 0; }
+    catch(_) { return true; }
+  }
+  function _liberarEspacio(){
+    const conPendientes = _hayPendientesSinSubir();
+    let liberados = 0;
+    for (const k of _CACHES_REGENERABLES) {
+      try {
+        const v = localStorage.getItem(k);
+        if (v === null) continue;
+        // Con cambios sin subir, las FOTOS no se tocan: podrían no estar aún en el servidor.
+        if (conPendientes && (k === 'energy_cotiz_fotos' || k === 'energy_fotos_inv')) continue;
+        localStorage.removeItem(k);
+        liberados += v.length;
+      } catch(_){}
+    }
+    return liberados;
+  }
   Storage.prototype.setItem = function(k, v){
     try { return _setItemOrig.call(this, k, v); }
     catch(e){
       const esCuota = e && (e.name === 'QuotaExceededError' || e.code === 22 || e.name === 'NS_ERROR_DOM_QUOTA_REACHED');
-      if (esCuota && Date.now() - _cuotaAvisada > 30000) {
+      if (!esCuota) throw e;
+      const liberados = _liberarEspacio();
+      if (liberados > 0) {
+        try {
+          const r = _setItemOrig.call(this, k, v);
+          try { console.warn('[cuota] localStorage lleno: liberados', Math.round(liberados/1024), 'KB de cachés; el guardado siguió bien.'); } catch(_){}
+          if (Date.now() - _cuotaAvisada > 30000) {
+            _cuotaAvisada = Date.now();
+            try { showToast('🧹 El navegador se había llenado: se liberaron ' + Math.round(liberados/1024) + ' KB de cachés (fotos e inventario, están a salvo en el servidor) y tu cambio SÍ quedó guardado. Recarga con Ctrl+F5 cuando puedas.', 'info', { durationMs: 15000 }); } catch(_){}
+          }
+          return r;
+        } catch(_){ /* sigue sin caber → aviso de abajo */ }
+      }
+      if (Date.now() - _cuotaAvisada > 30000) {
         _cuotaAvisada = Date.now();
-        try { showToast('🛑 ALMACENAMIENTO DEL NAVEGADOR LLENO — los cambios NO se están guardando en este equipo. Lo ya sincronizado al servidor está a salvo, pero avisa a Andrea/soporte YA (hay que archivar fotos e históricos).', 'error', { durationMs: 20000 }); } catch(_){}
+        try { showToast('🛑 ALMACENAMIENTO DEL NAVEGADOR LLENO — este equipo ya no guarda copia local, pero tus cambios SÍ se están subiendo al servidor. Avisa a Andrea/soporte y recarga con Ctrl+F5.', 'error', { durationMs: 20000 }); } catch(_){}
         try { console.error('[cuota] localStorage lleno al guardar', k, 'bytes:', (v || '').length); } catch(_){}
       }
-      throw e;
+      // NO relanzamos: la excepción cortaba la subida al servidor y ahí sí se perdía todo.
+      return undefined;
     }
+  };
+  // Herramientas de soporte (se llaman desde la consola, F12):
+  //   espacioEyg()   → muestra cuánto pesa cada cosa y cuánto se puede liberar
+  //   liberarEyg()   → suelta las cachés regenerables (fotos, inventario, deshacer)
+  window.espacioEyg = function(){
+    const filas = [];
+    let total = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      const kb = Math.round(((localStorage.getItem(k) || '').length) / 1024);
+      total += kb;
+      filas.push({ clave: k, KB: kb, borrable: _CACHES_REGENERABLES.indexOf(k) >= 0 ? 'sí (se rebaja del servidor)' : '' });
+    }
+    filas.sort((a, b) => b.KB - a.KB);
+    try { console.table(filas.slice(0, 25)); } catch(_){}
+    console.log('TOTAL usado ≈ ' + Math.round(total/1024*10)/10 + ' MB (el navegador da ~5 MB). Pendientes sin subir: ' + (_hayPendientesSinSubir() ? 'SÍ — no borres fotos todavía' : 'no'));
+    return total;
+  };
+  window.liberarEyg = function(){
+    const kb = Math.round(_liberarEspacio()/1024);
+    console.log('Liberados ' + kb + ' KB. Recarga con Ctrl+F5.');
+    return kb;
   };
 })();
 
