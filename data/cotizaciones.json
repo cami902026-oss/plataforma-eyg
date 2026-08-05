@@ -11517,7 +11517,8 @@
     "cliente": "SKID EXPERTS",
     "contacto": "JENNY",
     "correo": "",
-    "estado": "Adjudicada",
+    "estado": "Facturada",
+    "factura": "557",
     "iva": 19,
     "subtotal": 368400,
     "ivaVal": 69996,
@@ -11530,6 +11531,7 @@
     "realizadaPor": "Sheila Baron",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
+    "motivoRechazo": "",
     "items": [
       {
         "id": 1,
@@ -11541,14 +11543,16 @@
         "desvTec": "",
         "marca": "JDF",
         "proveedor": "MUNDIAL",
-        "precioProveedor": 21500
+        "precioProveedor": 21500,
+        "uid": "01ecdfb0-6424-43e2-86fd-dfb9095805bf"
       }
     ],
-    "fechaGuardado": "2026-06-25T15:24:10.369Z",
+    "fechaGuardado": "2026-08-05T02:04:01.729Z",
+    "facturadaAt": "2026-08-04",
     "createdAt": "2026-06-25T15:24:10.369Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-06-25T15:24:10.369Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-05T02:04:01.729Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1723",
