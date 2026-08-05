@@ -6370,5 +6370,55 @@
     "updatedAt": "2026-08-05T02:04:01.744Z",
     "updatedBy": "andrea",
     "faltanFechas": false
+  },
+  {
+    "id": "poc_1785896258785",
+    "num": "ODC-AA-MEC-SKID-469-24-611",
+    "cliente": "SKID EXPERT",
+    "desc": "Cotización LM1729 · 11 ítems",
+    "estado": "completado",
+    "fechaIngreso": "2026-10-07",
+    "valor": 10109764,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-10",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-10",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-10",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-04",
+        "n": "",
+        "factura": "558"
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1729",
+    "createdAt": "2026-08-05T02:17:38.785Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-05T02:17:38.785Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false
   }
 ]
