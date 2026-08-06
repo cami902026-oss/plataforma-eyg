@@ -6470,5 +6470,55 @@
     "updatedAt": "2026-08-05T02:37:22.902Z",
     "updatedBy": "andrea",
     "faltanFechas": false
+  },
+  {
+    "id": "poc_1785981236609",
+    "num": "15403",
+    "cliente": "BOBINADOS",
+    "desc": "Cotización LM1930 · 8 ítems",
+    "estado": "completado",
+    "fechaIngreso": "2026-08-05",
+    "valor": 576763,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-08-05",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-05",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-05",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-05",
+        "n": "",
+        "factura": "564"
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1930",
+    "createdAt": "2026-08-06T01:53:56.609Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-06T01:53:56.609Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false
   }
 ]
