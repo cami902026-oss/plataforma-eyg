@@ -127,6 +127,10 @@ def load_cotizaciones_supabase():
         out.append({
             'id': cid, 'fecha': c.get('fecha') or '', 'cliente': c.get('cliente') or '',
             'estado': c.get('estado') or '', 'total': c.get('total') or 0,
+            # Lo REALMENTE adjudicado (6-ago-2026): cuando se registra una
+            # adjudicacion parcial, el informe debe contar eso y no el total
+            # cotizado. Si esta vacio (cotizaciones viejas) se usa el total.
+            'valor_adj': (c.get('valor_adjudicado') if c.get('valor_adjudicado') is not None else (c.get('total') or 0)),
             'items': by.get(cid, []),
             'updatedAt': c.get('updated_at') or '', 'createdAt': c.get('created_at') or '',
         })
@@ -225,6 +229,7 @@ def unify_cotizaciones(historicas, plataforma):
         cots[cid] = {'id': cid, 'fecha': str(c0.get('fecha') or '')[:10],
                      'cliente': c0.get('cliente') or '', 'estado': c0.get('estado') or '',
                      'total': float(c0.get('total') or 0), 'n_items': len(c0.get('items') or []),
+            'valor_adj': float(c0.get('valorAdjudicado') if c0.get('valorAdjudicado') is not None else (c0.get('total') or 0)),
                      'fuente': 'Plataforma', 'venta': venta, 'costo': costo,
                      'updatedAt': str(c0.get('updatedAt') or ''), 'createdAt': str(c0.get('createdAt') or '')}
     return list(cots.values())
@@ -251,7 +256,7 @@ def kpis_mes(cots, ym):
     emitidas = len(mes) - len(borradores)
     return {
         'n': len(mes), 'monto': sum(c['total'] for c in mes),
-        'n_ganadas': len(ganadas), 'monto_ganado': sum(c['total'] for c in ganadas),
+        'n_ganadas': len(ganadas), 'monto_ganado': sum(c.get('valor_adj', c['total']) for c in ganadas),
         'n_borradores': len(borradores), 'n_emitidas': emitidas,
         # Conversión = ganadas / emitidas (excluye borradores no enviados)
         'conv': (len(ganadas) / emitidas * 100) if emitidas else 0,
