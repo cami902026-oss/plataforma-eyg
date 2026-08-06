@@ -6517,11 +6517,60 @@
     "cotizacionId": "LM1930",
     "createdAt": "2026-08-06T01:53:56.609Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-08-06T01:54:35.765Z",
+    "updatedAt": "2026-08-06T01:54:35.770Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
     "deleted": true,
     "deletedAt": "2026-08-06T01:54:35.765Z",
     "deletedBy": "andrea"
+  },
+  {
+    "id": "poc_1786056625525",
+    "num": "LM1949",
+    "cliente": "ALBEN CHITIVA",
+    "desc": "Cotización LM1949 · 2 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-06",
+    "valor": 297500,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-08-06",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1949",
+    "createdAt": "2026-08-06T22:50:25.525Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-06T22:50:25.525Z",
+    "updatedBy": "andrea"
   }
 ]
