@@ -5995,7 +5995,7 @@ function buildAlerts() {
   });
 
   // --- Tareas vencidas o para hoy ---
-  const tasks = getData('tasks', TASKS_DEFAULT).filter(t=>t.estado!=='Completado'&&t.fecha);
+  const tasks = _taskVisibles(getData('tasks', TASKS_DEFAULT)).filter(t=>t.estado!=='Completado'&&t.fecha);
   tasks.forEach(t=>{
     const d = new Date(t.fecha); d.setHours(0,0,0,0);
     if(d < today){
@@ -6161,14 +6161,14 @@ document.addEventListener('click', function(e){
 
 function renderDashboard() {
   let meetings = getData('meetings', MEETINGS_DEFAULT);
-  let tasks = getData('tasks', TASKS_DEFAULT);
+  let tasks = _taskVisibles(getData('tasks', TASKS_DEFAULT));
   const projects = getProjects(); // filtra deleted
-  // Vista filtrada: colaborador solo ve lo suyo
+  // Las REUNIONES siguen con la regla de siempre (filteredView); las tareas ya
+  // vienen filtradas por _taskVisibles.
   if (currentUser && currentPerms().filteredView) {
     const team = getData('team', TEAM_DEFAULT);
     const myTeam = team.find(m=>m.name===currentUser.name);
     if (myTeam) meetings = meetings.filter(m=>m.participantes.includes(myTeam.id));
-    tasks = tasks.filter(t=>t.responsable===currentUser.name||t.responsable.includes(currentUser.name));
   }
   const todayMeetings = meetings.filter(m=>m.fecha===todayStr);
   const pendingTasks = tasks.filter(t=>t.estado!=='Completado');
@@ -6244,7 +6244,7 @@ function _actividadReciente(){
   }catch(_){} }); };
   try{ add(JSON.parse(localStorage.getItem('max_bd_cotizaciones')||'[]').filter(c=>c&&!c.deleted), '📄',
     c=>'Cotización '+c.id+(c.cliente?' ('+c.cliente+')':'')+' — '+(c.estado||'')+(c.updatedBy&&c.updatedBy!=='auto'?' · '+String(c.updatedBy).split('@')[0]:'')); }catch(_){}
-  try{ add(getData('tasks', []), '✅', t=>'Tarea "'+(t.titulo||'')+'" — '+(t.estado||'')+(t.responsable?' · '+t.responsable:'')); }catch(_){}
+  try{ add(_taskVisibles(getData('tasks', [])), '✅', t=>'Tarea "'+(t.titulo||'')+'" — '+(t.estado||'')+(t.responsable?' · '+t.responsable:'')); }catch(_){}
   try{ add(getData('meetings', []), '📅', m=>'Reunión "'+(m.titulo||'')+'"'+(m.fecha?' ('+m.fecha+')':'')); }catch(_){}
   try{ add(getPOC(), '🏭', o=>'O.C. '+(o.numero||o.id||'')+(o.cliente?' — '+o.cliente:'')); }catch(_){}
   try{ add(JSON.parse(localStorage.getItem('energy_visitas')||'[]'), '🤝', v=>'Visita: '+(v.empresa||v.cliente||'')); }catch(_){}
@@ -6256,12 +6256,11 @@ function _actividadReciente(){
 // ===== CALENDAR =====
 function renderCalendar() {
   let meetings = getData('meetings', MEETINGS_DEFAULT);
-  let tasks = getData('tasks', TASKS_DEFAULT);
+  let tasks = _taskVisibles(getData('tasks', TASKS_DEFAULT));
   if (currentUser && currentPerms().filteredView) {
     const team = getData('team', TEAM_DEFAULT);
     const myTeam = team.find(m=>m.name===currentUser.name);
     if (myTeam) meetings = meetings.filter(m=>m.participantes.includes(myTeam.id));
-    tasks = tasks.filter(t=>t.responsable===currentUser.name||t.responsable.includes(currentUser.name));
   }
   if (!window._calMes) window._calMes = new Date(today.getFullYear(), today.getMonth(), 1);
   const year = window._calMes.getFullYear(), month = window._calMes.getMonth();
@@ -6385,6 +6384,30 @@ function _taskEsMia(t){
   return String(t.responsable||'').split(',').map(function(s){return s.trim();}).indexOf(currentUser.name)>=0;
 }
 function _taskPuedeTocar(t){ return _taskEsDireccion()||_taskEsMia(t); }
+// ── QUIÉN VE QUÉ TAREA (regla fijada el 6-ago-2026) ──────────────────────
+// Dirección (Andrea ADMIN / Alberto JEFE) ve TODAS. Los demás ven las suyas
+// MÁS las que ellos mismos crearon para otro (si no, al delegar una tarea se
+// le desaparecía al que la pidió).
+// Antes esto dependía de `filteredView`, un interruptor guardado en el
+// localStorage de CADA computador: si en un equipo quedaba apagado, esa
+// persona veía las tareas de todos y nadie se enteraba (caso de Mario). Ahora
+// la regla vive en el código y es igual en cualquier equipo.
+// OJO: esto es solo para MOSTRAR. Las funciones que guardan (moveTask,
+// deleteTask, editTask, quickCompleteTask, saveTarea) siguen leyendo la lista
+// COMPLETA: si se filtrara ahí, al guardar se borrarían las tareas de los demás.
+function _taskLaCree(t){
+  if(!currentUser||!t) return false;
+  const autor=String(t.createdBy||'').toLowerCase().split('@')[0];
+  if(!autor) return false;
+  return [currentUser.name,currentUser.email].filter(Boolean)
+    .some(function(y){ return String(y).toLowerCase().split('@')[0]===autor; });
+}
+function _taskVisible(t){ return _taskEsDireccion()||_taskEsMia(t)||_taskLaCree(t); }
+function _taskVisibles(arr){
+  if(!Array.isArray(arr)) return [];
+  if(_taskEsDireccion()) return arr;
+  return arr.filter(_taskVisible);
+}
 const TASK_COLORS_PALETA=['#E8A020','#db2777','#9333ea','#0891b2','#2EAA4A','#e53e3e','#6366f1','#f59e0b','#14b8a6','#8b5cf6'];
 function _taskColor(nombre){
   const primero=String(nombre||'').split(',')[0].trim();
@@ -6393,19 +6416,15 @@ function _taskColor(nombre){
   return ix<0?'#94a3b8':TASK_COLORS_PALETA[ix%TASK_COLORS_PALETA.length];
 }
 function renderKanban(filter) {
-  let tasks = getData('tasks', TASKS_DEFAULT);
+  let tasks = _taskVisibles(getData('tasks', TASKS_DEFAULT));
   const p = currentPerms();
-  // Vista filtrada: colaborador solo ve sus propias tareas
-  if (currentUser && p.filteredView) {
-    tasks = tasks.filter(t=>t.responsable===currentUser.name||t.responsable.includes(currentUser.name));
-  }
   if(filter==='mine') tasks=tasks.filter(t=>t.responsable===currentUser.name);
   else if(filter==='alta') tasks=tasks.filter(t=>t.prioridad==='Alta');
   // v150: leyenda de colores por persona (solo en la vista completa de dirección)
   try{
     let leg=document.getElementById('kanban-leyenda');
     if(!leg){ const kb=document.getElementById('kanban-board'); leg=document.createElement('div'); leg.id='kanban-leyenda'; leg.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;'; kb.parentNode.insertBefore(leg,kb); }
-    if(currentUser && !p.filteredView){
+    if(currentUser && _taskEsDireccion()){
       const conTarea={};
       tasks.forEach(function(t){ String(t.responsable||'').split(',').forEach(function(s){ s=s.trim(); if(s) conTarea[s]=true; }); });
       leg.innerHTML=Object.keys(conTarea).sort().map(function(nom){
@@ -6848,7 +6867,7 @@ function _computeKPIsMiembro(member) {
   const today = new Date(); today.setHours(0,0,0,0);
 
   // Tareas
-  const tasks = getData('tasks', []) || [];
+  const tasks = _taskVisibles(getData('tasks', []) || []);
   const mias = tasks.filter(t => {
     if (!t || t.deleted) return false;
     const r = t.responsable || '';
@@ -15460,7 +15479,7 @@ function initChat() {
 }
 
 function _briefingDelDia() {
-  const tasks = getData('tasks', TASKS_DEFAULT);
+  const tasks = _taskVisibles(getData('tasks', TASKS_DEFAULT));
   const meetings = getData('meetings', MEETINGS_DEFAULT);
   const ops = getPOC().filter(o => o.estado === 'activo');
   const today = new Date(); today.setHours(0,0,0,0);
@@ -15509,7 +15528,7 @@ function addUserMsg(text) {
 // Construye un contexto rico: tareas, reuniones, O.C. activas (etapa pendiente), cotizaciones, equipo.
 // Limitado en tamaño para no inflar el prompt.
 function _buildChatContext() {
-  const tasks = getData('tasks', TASKS_DEFAULT).filter(t => t.estado !== 'Completado').slice(0, 30);
+  const tasks = _taskVisibles(getData('tasks', TASKS_DEFAULT)).filter(t => t.estado !== 'Completado').slice(0, 30);
   const meetings = getData('meetings', MEETINGS_DEFAULT).filter(m => m.fecha >= todayStr).slice(0, 15);
   const ops = getPOC().filter(o => o.estado === 'activo').slice(0, 30);
   const cotz = (function(){ try { return JSON.parse(localStorage.getItem('max_bd_cotizaciones')||'[]'); } catch(_) { return []; }})().slice(-15);
