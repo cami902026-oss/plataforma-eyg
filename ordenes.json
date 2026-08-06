@@ -5564,53 +5564,51 @@
     "num": "ODC-AA-MEC-SIK-469-24-636",
     "cliente": "SKID EXPERT",
     "desc": "Cotización LM1869 · 3 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-25",
     "valor": 1558459.7,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "2026-08-03",
-      "estado": "pendiente"
+      "fecha": "2026-08-05",
+      "estado": "recibida"
     },
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-07-26",
         "n": ""
       },
       {
-        "s": "pending",
+        "s": "done",
         "f": "",
         "n": "",
-        "envio": "",
+        "envio": "camion_energy",
         "transp": "",
         "guia": "",
         "dest": "",
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-08-03",
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-08-05",
         "n": "",
-        "factura": ""
+        "factura": "563"
       }
     ],
     "cotizacionId": "LM1869",
     "createdAt": "2026-07-25T14:48:35.217Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-08-06T14:27:47.941Z",
-    "updatedBy": "andrea",
-    "faltanFechas": false,
+    "updatedAt": "2026-08-06T14:33:56.132Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": true,
     "archivada": false,
     "observaciones": "",
-    "facturacion": "",
-    "lockedBy": "alexandra",
-    "lockedAt": "2026-08-06T14:27:47.941Z"
+    "facturacion": ""
   },
   {
     "id": "poc_1785123684788",
