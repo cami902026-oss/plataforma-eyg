@@ -51832,7 +51832,7 @@
     "cliente": "KELIS",
     "contacto": "LEONARDO RICAUERTE",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 32956644,
@@ -51849,23 +51849,24 @@
     "motivoRechazo": "",
     "items": [
       {
-        "desc": "Tubo petrolero de 3 pulgadas o 2 ciete octavos 200 unidades de 2.50 metros",
-        "udm": "EA",
         "qty": 83,
-        "precio": 397068,
+        "udm": "EA",
+        "uid": "608f3488-d2d8-4acd-933d-0324a1b75685",
+        "desc": "Tubo petrolero de 3 pulgadas o 2 ciete octavos 200 unidades de 2.50 metros",
         "marca": "BAOLAI - MOLONG ",
-        "proveedor": "TUVACOL",
-        "precioProveedor": 270006,
-        "tiempoEntrega": "1-2 DIAS",
+        "precio": 397068,
         "desvTec": "TUBO 3\" SCH 40 A-106 API 5L X 6 MTR BINORMA (ESPESOR 5.49 MM) ",
-        "uid": "608f3488-d2d8-4acd-933d-0324a1b75685"
+        "proveedor": "TUVACOL",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 270006
       }
     ],
-    "fechaGuardado": "2026-08-06T23:13:34.042Z",
+    "fechaGuardado": "2026-08-06T23:17:20.808Z",
+    "fechaEnvio": "2026-08-06T23:17:20.808Z",
     "createdAt": "2026-08-06T23:07:54.981Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-06T23:13:34.042Z",
-    "updatedBy": "alberto"
+    "updatedAt": "2026-08-06T23:17:20.808Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM1944",
