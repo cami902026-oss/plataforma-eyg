@@ -122,7 +122,8 @@ const SB_URL = 'https://juprjevxkcitqpsnemto.supabase.co/rest/v1';
 // Solo las tablas de la plataforma; cualquier otra se rechaza.
 const SB_TABLAS = ['productos','kardex','familias','conteos','conteo_items',
                    'remisiones','cotizaciones','cotizacion_items',
-                   'plan_compras','oc_compras','proveedores'];
+                   'plan_compras','oc_compras','proveedores',
+                   'verificacion_despacho'];   // SIG-CAL-FR-009 (6-ago-2026)
 
 function _handleSupabaseWrite(sb) {
   const key = PROPS.getProperty('SUPABASE_SECRET');

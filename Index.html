@@ -2838,6 +2838,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="btn btn-secondary" onclick="remiPDF()" style="width:auto;">📄 Descargar PDF</button>
               <button class="btn btn-secondary" onclick="remiExcel()" style="width:auto;">📊 Descargar Excel</button>
               <button class="btn btn-secondary" onclick="remiRotulo()" style="width:auto;">🏷️ Rótulo</button>
+              <button class="btn btn-secondary" onclick="vdAbrir()" style="width:auto;background:rgba(46,170,74,.18);border:1px solid rgba(46,170,74,.45);color:#86efac;">📋 Lista de verificación</button>
             </div>
           </div>
         </div>
@@ -19679,6 +19680,418 @@ function _remiRotuloPrint(c, cajas){
   <script>window.onload=function(){setTimeout(function(){window.print();},600);}<\/script></body></html>`;
   const w=window.open('','_blank'); if(!w){showToast('Permite ventanas emergentes','error');return;}
   w.document.write(html); w.document.close();
+}
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║  SIG-CAL-FR-009 · LISTA DE VERIFICACIÓN PARA REVISIÓN Y DESPACHO       ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+// Se abre desde la remisión con 📋 Lista de verificación. Trae los ítems ya
+// cargados, se diligencia en pantalla, se guarda en Supabase (tabla
+// verificacion_despacho, una por remisión) y se descarga en Excel con el
+// diseño del formato. Las firmas van en blanco: se firman sobre el impreso.
+const VD_ASPECTOS = [
+  'El producto coincide en referencia, cantidad y marca con la remisión y la orden de compra.',
+  'El producto no presenta daños, corrosión, golpes ni defectos visibles.',
+  'Las roscas, conexiones y acabados están en buen estado y protegidos.',
+  'Certificados de calidad / coladas / trazabilidad adjuntos cuando el ítem lo requiere.',
+  'Elementos completos: accesorios, tapas, empaques y protectores incluidos.',
+  'Embalaje adecuado y suficiente para el transporte y manipulación.',
+  'Cada bulto rotulado (cliente, OC, remisión, N° de bulto / total).',
+  'Documentos que acompañan el despacho: remisión, factura y certificados aplicables.',
+  'Hoja de seguridad (SDS) incluida cuando se despachan químicos o insumos peligrosos.',
+  'Vehículo y transportador identificados; carga asegurada y estibada correctamente.',
+  'Se verificó la dirección y contacto de entrega con el cliente.'
+];
+let _vdDatos = null;      // la lista que se está diligenciando
+let _vdId    = null;      // id en Supabase si ya existía
+
+function _vdEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Abrir ────────────────────────────────────────────────────────────────
+async function vdAbrir(){
+  if(!remiCanUse()) return showToast('No tienes permiso','error');
+  if(!remi_current) return showToast('Abre primero una remisión','error');
+  if(typeof remiSyncHeader==='function') remiSyncHeader();
+  const c = remi_current;
+  const num = String(c.remision||'').trim();
+  if(!num) return showToast('La remisión no tiene número: guárdala primero','error');
+  const items = (c.items||[]).filter(it=>String(it.descripcion||'').trim()!=='');
+  if(!items.length) return showToast('La remisión no tiene ítems','error');
+
+  showToast('Buscando la lista de esta remisión…','info');
+  let guardada = null;
+  try {
+    const r = await absFetch('verificacion_despacho?remision=eq.'+encodeURIComponent(num)+'&select=*');
+    if(Array.isArray(r) && r.length) guardada = r[0];
+  } catch(e){
+    return showToast('No pude consultar la lista guardada: '+(e&&e.message||''),'error');
+  }
+  _vdId = guardada ? guardada.id : null;
+  // Los ítems SIEMPRE se refrescan desde la remisión (es la fuente), pero se
+  // conserva lo ya diligenciado de cada uno emparejando por número de ítem.
+  const previos = guardada && Array.isArray(guardada.items) ? guardada.items : [];
+  _vdDatos = {
+    remision: num,
+    fecha_despacho: (guardada && guardada.fecha_despacho) || c.fecha || '',
+    cliente: c.cliente || '',
+    oc: c.oc || '',
+    lugar_entrega: c.lugar || '',
+    transportador: (guardada && guardada.transportador) || '',
+    placa: (guardada && guardada.placa) || '',
+    guia_bultos: (guardada && guardada.guia_bultos) || '',
+    items: items.map((it,i)=>{
+      const p = previos.find(x=>Number(x.item)===i+1) || {};
+      return {
+        item: i+1,
+        descripcion: String(it.descripcion||'').trim(),
+        cant_remision: (it.cantidad===''||it.cantidad==null)?null:parseFloat(it.cantidad),
+        marca: it.marca || '',
+        cant_fisica: p.cant_fisica!=null ? p.cant_fisica : '',
+        insp_visual: p.insp_visual || '',
+        insp_documental: p.insp_documental || '',
+        conforme: p.conforme || '',
+        observacion: p.observacion || ''
+      };
+    }),
+    chequeos: VD_ASPECTOS.map((_,i)=>{
+      const p = (guardada && Array.isArray(guardada.chequeos) ? guardada.chequeos : []).find(x=>Number(x.n)===i+1) || {};
+      return { n:i+1, valor:p.valor||'', observacion:p.observacion||'' };
+    }),
+    resultado: (guardada && guardada.resultado) || '',
+    observaciones: (guardada && guardada.observaciones) || '',
+    estado: (guardada && guardada.estado) || 'borrador'
+  };
+  _vdRender(!!guardada);
+}
+
+// ── Ventana ──────────────────────────────────────────────────────────────
+function _vdRender(existia){
+  const d = _vdDatos;
+  const old = document.getElementById('vd-modal'); if(old) old.remove();
+  const inp = (val,attrs) => `<input value="${_vdEsc(val)}" ${attrs} style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:6px;padding:5px 7px;color:#fff;font-size:12px;">`;
+  const filas = d.items.map((it,i)=>`<tr>
+    <td style="padding:4px 6px;text-align:center;color:var(--text-muted);font-size:11px;">${it.item}</td>
+    <td style="padding:4px 6px;font-size:12px;">${_vdEsc(it.descripcion)}</td>
+    <td style="padding:4px 6px;text-align:center;font-weight:700;">${it.cant_remision==null?'—':it.cant_remision}</td>
+    <td style="padding:4px 6px;width:74px;">${inp(it.cant_fisica,`type="number" step="0.01" oninput="_vdSet(${i},'cant_fisica',this.value)" placeholder="cuenta"`)}</td>
+    <td style="padding:4px 6px;font-size:11px;color:var(--text-muted);">${_vdEsc(it.marca)||'—'}</td>
+    <td style="padding:4px 6px;width:90px;">${inp(it.insp_visual,`oninput="_vdSet(${i},'insp_visual',this.value)" placeholder="OK"`)}</td>
+    <td style="padding:4px 6px;width:120px;">${inp(it.insp_documental,`oninput="_vdSet(${i},'insp_documental',this.value)" placeholder="Certificado"`)}</td>
+    <td style="padding:4px 6px;width:74px;">
+      <select onchange="_vdSet(${i},'conforme',this.value)" style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:6px;padding:5px;color:#fff;font-size:12px;">
+        <option value=""${it.conforme?'':' selected'}>—</option>
+        <option value="C"${it.conforme==='C'?' selected':''}>C</option>
+        <option value="NC"${it.conforme==='NC'?' selected':''}>NC</option>
+      </select></td>
+    <td style="padding:4px 6px;">${inp(it.observacion,`oninput="_vdSet(${i},'observacion',this.value)"`)}</td>
+  </tr>`).join('');
+
+  const chks = VD_ASPECTOS.map((txt,i)=>{
+    const v = d.chequeos[i].valor;
+    const rb = (val,lbl)=>`<label style="cursor:pointer;font-size:12px;margin-right:9px;white-space:nowrap;"><input type="radio" name="vdchk${i}" value="${val}"${v===val?' checked':''} onchange="_vdChk(${i},'${val}')" style="vertical-align:-1px;"> ${lbl}</label>`;
+    return `<tr>
+      <td style="padding:5px 6px;text-align:center;color:var(--text-muted);font-size:11px;">${i+1}</td>
+      <td style="padding:5px 6px;font-size:12px;">${_vdEsc(txt)}</td>
+      <td style="padding:5px 6px;white-space:nowrap;">${rb('SI','Sí')}${rb('NO','No')}${rb('NA','N.A.')}</td>
+      <td style="padding:5px 6px;width:200px;">${inp(d.chequeos[i].observacion,`oninput="_vdChkObs(${i},this.value)" placeholder="Observación"`)}</td>
+    </tr>`;
+  }).join('');
+
+  const th = t=>`<th style="text-align:left;padding:6px;font-size:10px;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,.15);text-transform:uppercase;letter-spacing:.3px;">${t}</th>`;
+  const ov = document.createElement('div');
+  ov.id='vd-modal';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9500;display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto;';
+  ov.innerHTML = `<div style="background:#0f2034;border:1px solid var(--border);border-radius:14px;max-width:1180px;width:100%;padding:20px;margin:auto;">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px;">
+      <h3 style="margin:0;color:#fff;font-family:Montserrat,sans-serif;">📋 Lista de verificación para despacho</h3>
+      <span style="background:rgba(31,58,143,.35);color:#cbd5ff;padding:3px 10px;border-radius:20px;font-size:12px;">Remisión ${_vdEsc(d.remision)}</span>
+      ${existia?`<span style="background:rgba(46,170,74,.2);color:#86efac;padding:3px 10px;border-radius:20px;font-size:12px;">Ya existía · ${_vdEsc(d.estado)}</span>`:''}
+      <button onclick="vdCerrar()" style="margin-left:auto;background:none;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:6px;padding:4px 12px;cursor:pointer;">✖ Cerrar</button>
+    </div>
+    <p style="color:var(--text-muted);font-size:12px;margin:0 0 14px;">SIG-CAL-FR-009 · Cliente <b>${_vdEsc(d.cliente)||'—'}</b> · OC ${_vdEsc(d.oc)||'—'} · Entrega en ${_vdEsc(d.lugar_entrega)||'—'}. Transportador, placa y guía van en blanco para llenar a mano.</p>
+
+    <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">1 · Identificación del despacho</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:150px;"><label style="font-size:11px;color:#8899bb;">Fecha de despacho</label>${inp(d.fecha_despacho,`type="date" oninput="_vdCab('fecha_despacho',this.value)"`)}</div>
+        <div style="flex:1;min-width:150px;"><label style="font-size:11px;color:#8899bb;">Transportador <span style="opacity:.6">(opcional)</span></label>${inp(d.transportador,`oninput="_vdCab('transportador',this.value)"`)}</div>
+        <div style="flex:1;min-width:120px;"><label style="font-size:11px;color:#8899bb;">Placa <span style="opacity:.6">(opcional)</span></label>${inp(d.placa,`oninput="_vdCab('placa',this.value)"`)}</div>
+        <div style="flex:1;min-width:150px;"><label style="font-size:11px;color:#8899bb;">Guía / N° de bultos <span style="opacity:.6">(opcional)</span></label>${inp(d.guia_bultos,`oninput="_vdCab('guia_bultos',this.value)"`)}</div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">2 · Verificación ítem por ítem <span style="text-transform:none;letter-spacing:0;">— la cantidad física es obligatoria, hay que contar</span></div>
+    <div style="overflow-x:auto;border:1px solid rgba(255,255,255,.08);border-radius:10px;margin-bottom:16px;">
+      <table style="width:100%;border-collapse:collapse;min-width:900px;"><thead><tr>
+        ${th('Ítem')}${th('Descripción')}${th('Cant. rem.')}${th('Cant. física')}${th('Marca')}${th('Insp. visual')}${th('Insp. documental')}${th('Conforme')}${th('Observación')}
+      </tr></thead><tbody>${filas}</tbody></table>
+    </div>
+
+    <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">3 · Verificación general de alistamiento</div>
+    <div style="overflow-x:auto;border:1px solid rgba(255,255,255,.08);border-radius:10px;margin-bottom:16px;">
+      <table style="width:100%;border-collapse:collapse;min-width:760px;"><thead><tr>
+        ${th('N°')}${th('Aspecto a verificar')}${th('Sí / No / N.A.')}${th('Observación')}
+      </tr></thead><tbody>${chks}</tbody></table>
+    </div>
+
+    <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">4 · Resultado</div>
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+      <label style="cursor:pointer;font-size:13px;"><input type="radio" name="vdres" value="APROBADO"${d.resultado==='APROBADO'?' checked':''} onchange="_vdCab('resultado','APROBADO')"> ✅ Aprobado para despacho</label>
+      <label style="cursor:pointer;font-size:13px;"><input type="radio" name="vdres" value="RECHAZADO"${d.resultado==='RECHAZADO'?' checked':''} onchange="_vdCab('resultado','RECHAZADO')"> ⛔ Rechazado / retenido</label>
+    </div>
+    <div style="margin-bottom:16px;"><label style="font-size:11px;color:#8899bb;">Observaciones / no conformidades</label>
+      <textarea oninput="_vdCab('observaciones',this.value)" rows="2" style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:6px;padding:7px;color:#fff;font-size:12px;font-family:'Open Sans',sans-serif;">${_vdEsc(d.observaciones)}</textarea></div>
+
+    <div id="vd-aviso" style="display:none;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);border-radius:8px;padding:9px 13px;margin-bottom:12px;font-size:12.5px;color:#fca5a5;"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+      <button onclick="vdCerrar()" style="background:transparent;border:1px solid var(--border);color:#cbd5ff;padding:9px 16px;border-radius:7px;font-size:13px;cursor:pointer;">Cancelar</button>
+      <button onclick="vdGuardar('borrador')" style="background:rgba(232,160,32,.18);border:1px solid rgba(232,160,32,.45);color:var(--gold);padding:9px 16px;border-radius:7px;font-size:13px;cursor:pointer;">💾 Guardar borrador</button>
+      <button onclick="vdGuardar('completa')" style="background:rgba(46,170,74,.3);border:1px solid rgba(46,170,74,.5);color:#86efac;padding:9px 18px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;">✅ Guardar completa</button>
+      <button onclick="vdDescargar()" style="background:rgba(31,58,143,.4);border:1px solid rgba(120,150,255,.5);color:#cbd5ff;padding:9px 18px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;">📊 Descargar Excel</button>
+    </div>
+  </div>`;
+  ov.addEventListener('click', e=>{ if(e.target===ov) vdCerrar(); });
+  document.body.appendChild(ov);
+}
+function vdCerrar(){ const m=document.getElementById('vd-modal'); if(m) m.remove(); }
+// Se escribe directo en el objeto (sin repintar) para no perder el cursor
+function _vdSet(i,campo,val){ if(_vdDatos&&_vdDatos.items[i]) _vdDatos.items[i][campo]=val; }
+function _vdChk(i,val){ if(_vdDatos) _vdDatos.chequeos[i].valor=val; }
+function _vdChkObs(i,val){ if(_vdDatos) _vdDatos.chequeos[i].observacion=val; }
+function _vdCab(campo,val){ if(_vdDatos) _vdDatos[campo]=val; }
+
+// ── Qué falta para poder darla por completa ──────────────────────────────
+function _vdFaltantes(){
+  const d=_vdDatos, f=[];
+  const sinContar = d.items.filter(it=>it.cant_fisica===''||it.cant_fisica==null).length;
+  if(sinContar) f.push(sinContar+' ítem(s) sin cantidad física');
+  const sinConf = d.items.filter(it=>!it.conforme).length;
+  if(sinConf) f.push(sinConf+' ítem(s) sin marcar conforme (C/NC)');
+  const sinChk = d.chequeos.filter(c=>!c.valor).length;
+  if(sinChk) f.push(sinChk+' aspecto(s) de la sección 3 sin marcar');
+  if(!d.resultado) f.push('falta el resultado (aprobado o rechazado)');
+  return f;
+}
+function _vdAviso(txt){
+  const a=document.getElementById('vd-aviso'); if(!a) return;
+  if(!txt){ a.style.display='none'; return; }
+  a.style.display=''; a.innerHTML=txt; a.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+// ── Guardar ──────────────────────────────────────────────────────────────
+async function vdGuardar(estado){
+  if(!remiCanUse()) return showToast('No tienes permiso','error');
+  if(!_vdDatos) return;
+  if(estado==='completa'){
+    const f=_vdFaltantes();
+    if(f.length) return _vdAviso('Para darla por completa falta: '+f.join(' · ')+'. Puedes guardarla como borrador y terminarla después.');
+  }
+  _vdAviso('');
+  const d=_vdDatos;
+  const cuerpo = {
+    remision: d.remision,
+    fecha_despacho: d.fecha_despacho || null,
+    cliente: d.cliente || null, oc: d.oc || null, lugar_entrega: d.lugar_entrega || null,
+    transportador: d.transportador || null, placa: d.placa || null, guia_bultos: d.guia_bultos || null,
+    items: d.items.map(it=>({ ...it, cant_fisica: (it.cant_fisica===''||it.cant_fisica==null)?null:parseFloat(it.cant_fisica) })),
+    chequeos: d.chequeos,
+    resultado: d.resultado || null,
+    observaciones: d.observaciones || null,
+    estado: estado,
+    diligenciada_por: (currentUser&&(currentUser.name||currentUser.email))||'—',
+    diligenciada_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+  try{
+    showToast('Guardando la lista…','info');
+    if(_vdId){
+      await absFetch('verificacion_despacho?id=eq.'+encodeURIComponent(_vdId),{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify(cuerpo)});
+    } else {
+      cuerpo.created_by = (currentUser&&(currentUser.name||currentUser.email))||'—';
+      const r = await absFetch('verificacion_despacho',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(cuerpo)});
+      if(Array.isArray(r)&&r[0]&&r[0].id) _vdId=r[0].id;
+    }
+    _vdDatos.estado=estado;
+    showToast(estado==='completa'?'✅ Lista de verificación guardada como completa':'💾 Borrador guardado — puedes terminarla después','ok');
+  }catch(e){ showToast('Error guardando: '+(e&&e.message||''),'error'); }
+}
+
+// ── Excel ────────────────────────────────────────────────────────────────
+// ExcelJS pesa cerca de 1 MB: se carga SOLO cuando alguien va a descargar,
+// para no volver más lenta la plataforma de todos los días.
+function _vdCargarExcelJS(){
+  if(window.ExcelJS) return Promise.resolve();
+  return new Promise((ok,err)=>{
+    const s=document.createElement('script');
+    s.src='libs/exceljs.min.js';
+    s.onload=()=>ok(); s.onerror=()=>err(new Error('no se pudo cargar la librería de Excel'));
+    document.head.appendChild(s);
+  });
+}
+async function vdDescargar(){
+  if(!_vdDatos) return;
+  const f=_vdFaltantes();
+  if(f.length && !confirm('La lista está incompleta:\n\n· '+f.join('\n· ')+'\n\n¿Descargar así para terminar de llenarla a mano?')) return;
+  try{
+    showToast('Armando el Excel…','info');
+    await _vdCargarExcelJS();
+    let logo=null;
+    try{ const r=await fetch('libs/logo-sig.png'); if(r.ok) logo=await r.arrayBuffer(); }catch(_){}
+    const wb=new ExcelJS.Workbook();
+    wb.creator='E&G Energy Group · Plataforma';
+    _vdConstruir(wb,_vdDatos,logo,0);
+    const buf=await wb.xlsx.writeBuffer();
+    const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='SIG-CAL-FR-009 Remisión '+_vdDatos.remision+'.xlsx';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+    showToast('📊 Excel descargado','ok');
+  }catch(e){ showToast('No se pudo generar el Excel: '+(e&&e.message||''),'error'); }
+}
+
+// ── Construcción del Excel (mismo diseño del formato, tipo ACORDEÓN) ─────
+// El bloque de ítems crece o se encoge según la remisión y todo lo de abajo
+// se corre solo: 4 ítems no dejan 17 renglones vacíos y 39 no se desbordan
+// encima de la sección 3. Por eso se arma por bloques en vez de rellenar una
+// plantilla fija: al insertar filas sobre la plantilla se rompen las celdas
+// combinadas del formato.
+const VD_AZUL='FF1F3A8F', VD_VERDE='FF2EA65D', VD_GRIS='FF58595B', VD_AMAR='FFFFF2CC', VD_GRISCL='FFF2F2F2';
+const VD_PIE='E&G ENERGY GROUP S.A.S.  ·  NIT 900.745.984-4  ·  Carrera 7 # 12-61, Chía (Cundinamarca)  ·  Cel. 310 757 4110 · info@eygenergygroup.com';
+const _vdBorde={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+function _vdCelda(ws,ref,valor,o){
+  o=o||{};
+  const c=ws.getCell(ref);
+  if(valor!==undefined&&valor!==null) c.value=valor;
+  c.font={name:'Calibri',size:o.size||8.5,bold:!!o.bold,color:{argb:o.color||'FF000000'}};
+  if(o.fill) c.fill={type:'pattern',pattern:'solid',fgColor:{argb:o.fill}};
+  c.alignment={horizontal:o.h||'left',vertical:o.v||'middle',wrapText:o.wrap!==false};
+  c.border=_vdBorde;
+  return c;
+}
+function _vdSeccion(ws,fila,texto){
+  ws.mergeCells('A'+fila+':J'+fila);
+  _vdCelda(ws,'A'+fila,texto,{size:10,bold:true,color:'FFFFFFFF',fill:VD_AZUL});
+  ws.getRow(fila).height=18;
+}
+function _vdBordearFila(ws,fila,fill){
+  for(let col=1;col<=10;col++){
+    const c=ws.getRow(fila).getCell(col);
+    c.border=_vdBorde;
+    if(fill&&!c.fill) c.fill={type:'pattern',pattern:'solid',fgColor:{argb:fill}};
+  }
+}
+function _vdConstruir(wb,d,logoBuf,blancos){
+  const items=Array.isArray(d.items)?d.items:[];
+  const chequeos=Array.isArray(d.chequeos)?d.chequeos:[];
+  const nFilas=Math.max(1,items.length+Math.max(0,blancos||0));
+  const ws=wb.addWorksheet('Revisión y Despacho',{pageSetup:{
+    orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:0,scale:72,
+    margins:{left:0.3,right:0.3,top:0.4,bottom:0.4,header:0.2,footer:0.2}}});
+  [10.44,40,9,13,12,11.55,10.22,10,10,26].forEach((w,i)=>{ ws.getColumn(i+1).width=w; });
+
+  ws.mergeCells('A1:B4'); ws.mergeCells('C1:F2'); ws.mergeCells('G1:J2'); ws.mergeCells('C3:J4');
+  _vdCelda(ws,'A1',null,{});
+  _vdCelda(ws,'C1','LISTA DE VERIFICACIÓN PARA REVISIÓN Y DESPACHO DE PRODUCTO',{size:12,bold:true,color:VD_AZUL,h:'center'});
+  _vdCelda(ws,'G1','E&G ENERGY GROUP S.A.S.\nNIT 900.745.984-4',{size:8,color:VD_GRIS,h:'center'});
+  _vdCelda(ws,'C3','Código: SIG-CAL-FR-009   |   Versión: 01   |   Fecha de emisión: 2025-04-16',{size:9,color:VD_GRIS,h:'center'});
+  for(let f=1;f<=4;f++) _vdBordearFila(ws,f);
+  ws.getRow(1).height=14.4;
+  if(logoBuf){
+    try{
+      const img=wb.addImage({buffer:logoBuf,extension:'png'});
+      ws.addImage(img,{tl:{col:0.15,row:0.15},ext:{width:118,height:92}});
+    }catch(_){}
+  }
+
+  let f=6;
+  _vdSeccion(ws,f,'1. IDENTIFICACIÓN DEL DESPACHO'); f++;
+  const ident=[
+    ['Remisión N°',d.remision,'Fecha de despacho',d.fecha_despacho],
+    ['Cliente',d.cliente,'Orden de compra (OC)',d.oc],
+    ['Lugar de entrega',d.lugar_entrega,'Transportador',d.transportador],
+    ['Placa vehículo',d.placa,'Guía / N° de bultos',d.guia_bultos]
+  ];
+  for(const par of ident){
+    ws.mergeCells('B'+f+':D'+f); ws.mergeCells('F'+f+':J'+f);
+    _vdCelda(ws,'A'+f,par[0],{size:9,bold:true,color:VD_AZUL});
+    _vdCelda(ws,'B'+f,par[1]||'',{size:9,fill:par[1]?null:VD_AMAR});
+    _vdCelda(ws,'E'+f,par[2],{size:9,bold:true,color:VD_AZUL});
+    _vdCelda(ws,'F'+f,par[3]||'',{size:9,fill:par[3]?null:VD_AMAR});
+    _vdBordearFila(ws,f); ws.getRow(f).height=24; f++;
+  }
+
+  f++;
+  _vdSeccion(ws,f,'2. VERIFICACIÓN ÍTEM POR ÍTEM (contra remisión y orden de compra)'); f++;
+  ['Ítem','Descripción del producto','Cant.\nremisión','Cant.\nfísica','Marca','Inspección visual','Inspección Documental','Conforme\n(C / NC)','Inspección Visual','Observación']
+    .forEach((t,i)=>_vdCelda(ws,ws.getRow(f).getCell(i+1).address,t,{bold:true,color:'FFFFFFFF',fill:VD_VERDE,h:'center'}));
+  ws.getRow(f).height=30; f++;
+  for(let i=0;i<nFilas;i++){
+    const it=items[i]||{};
+    const hay=!!items[i];
+    _vdCelda(ws,'A'+f,hay?(it.item!=null?it.item:i+1):'',{h:'center'});
+    _vdCelda(ws,'B'+f,it.descripcion||'');
+    _vdCelda(ws,'C'+f,it.cant_remision!=null?it.cant_remision:'',{h:'center'});
+    _vdCelda(ws,'D'+f,it.cant_fisica!=null&&it.cant_fisica!==''?it.cant_fisica:'',{h:'center',fill:VD_AMAR});
+    _vdCelda(ws,'E'+f,it.marca||'',{h:'center'});
+    _vdCelda(ws,'F'+f,it.insp_visual||'',{h:'center',fill:VD_AMAR});
+    _vdCelda(ws,'G'+f,it.insp_documental||'',{h:'center',fill:VD_AMAR});
+    _vdCelda(ws,'H'+f,it.conforme||'',{h:'center',fill:VD_AMAR});
+    _vdCelda(ws,'I'+f,'',{h:'center',fill:VD_AMAR});
+    _vdCelda(ws,'J'+f,it.observacion||'',{fill:VD_AMAR});
+    f++;
+  }
+
+  f++;
+  _vdSeccion(ws,f,'3. VERIFICACIÓN GENERAL DE ALISTAMIENTO Y DESPACHO'); f++;
+  ws.mergeCells('B'+f+':D'+f);
+  _vdCelda(ws,'A'+f,'N°',{bold:true,color:'FFFFFFFF',fill:VD_VERDE,h:'center'});
+  _vdCelda(ws,'B'+f,'Aspecto a verificar',{bold:true,color:'FFFFFFFF',fill:VD_VERDE,h:'center'});
+  [['E','Sí'],['F','No'],['G',''],['H','N.A.'],['I',''],['J','Observación']].forEach(function(p){
+    _vdCelda(ws,p[0]+f,p[1],{bold:true,color:'FFFFFFFF',fill:VD_VERDE,h:'center'}); });
+  _vdBordearFila(ws,f,VD_VERDE); ws.getRow(f).height=20; f++;
+  VD_ASPECTOS.forEach(function(texto,i){
+    const ch=chequeos.filter(function(x){return Number(x.n)===i+1;})[0]||{};
+    const v=String(ch.valor||'').toUpperCase();
+    ws.mergeCells('B'+f+':D'+f);
+    _vdCelda(ws,'A'+f,i+1,{h:'center'});
+    _vdCelda(ws,'B'+f,texto);
+    _vdCelda(ws,'E'+f,v==='SI'?'X':'',{h:'center',fill:VD_AMAR});
+    _vdCelda(ws,'F'+f,v==='NO'?'X':'',{h:'center',fill:VD_AMAR});
+    _vdCelda(ws,'G'+f,'',{h:'center',fill:VD_AMAR});
+    _vdCelda(ws,'H'+f,v==='NA'?'X':'',{h:'center',fill:VD_AMAR});
+    _vdCelda(ws,'I'+f,'',{h:'center',fill:VD_AMAR});
+    _vdCelda(ws,'J'+f,ch.observacion||'',{fill:VD_AMAR});
+    ws.getRow(f).height=24; f++;
+  });
+
+  f++;
+  _vdSeccion(ws,f,'4. RESULTADO DE LA REVISIÓN'); f++;
+  const mk=function(op){ return String(d.resultado||'').toUpperCase()===op?'☑':'☐'; };
+  ws.mergeCells('A'+f+':J'+f);
+  _vdCelda(ws,'A'+f,'   APROBADO PARA DESPACHO  '+mk('APROBADO')+'        RECHAZADO / RETENIDO  '+mk('RECHAZADO'),{size:9,bold:true,color:VD_AZUL});
+  ws.getRow(f).height=22.1; f++;
+  ws.mergeCells('A'+f+':J'+f);
+  _vdCelda(ws,'A'+f,'Observaciones / no conformidades (registrar en SIG-CAL-FR-001 si aplica):'+(d.observaciones?('\n'+d.observaciones):''),{size:9,color:VD_GRIS,v:'top'});
+  ws.getRow(f).height=40; f++;
+
+  f++;
+  const bloques=[['A','B'],['C','D'],['E','F'],['H','J']];
+  const rotulos=['Alistó — Bodega','Revisó — Calidad/Comercial','Autorizó despacho','Recibió a satisfacción — Cliente'];
+  bloques.forEach(function(b,i){ ws.mergeCells(b[0]+f+':'+b[1]+f);
+    _vdCelda(ws,b[0]+f,rotulos[i],{bold:true,color:VD_AZUL,fill:VD_GRISCL,h:'center'}); });
+  _vdBordearFila(ws,f); ws.getRow(f).height=19.9; f++;
+  bloques.forEach(function(b){ ws.mergeCells(b[0]+f+':'+b[1]+f); _vdCelda(ws,b[0]+f,'',{}); });
+  _vdBordearFila(ws,f); ws.getRow(f).height=42; f++;
+  bloques.forEach(function(b){ ws.mergeCells(b[0]+f+':'+b[1]+f);
+    _vdCelda(ws,b[0]+f,'Nombre / C.C. / Fecha / Hora',{size:7.5,color:VD_GRIS,h:'center'}); });
+  _vdBordearFila(ws,f); f++;
+
+  ws.mergeCells('A'+f+':J'+f);
+  _vdCelda(ws,'A'+f,VD_PIE,{size:7.5,color:VD_GRIS,h:'center'});
+  ws.pageSetup.printArea='A1:J'+f;
+  return ws;
 }
 
 // ═══ REMISIONES: IMPORTAR EXCEL Y COMPARAR CON LA BASE DE DATOS ═══
