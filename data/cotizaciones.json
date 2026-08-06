@@ -52412,9 +52412,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 35000,
-    "ivaVal": 6650,
-    "total": 41650,
+    "subtotal": 85000,
+    "ivaVal": 16150,
+    "total": 101150,
     "formaPago": "CONTADO ",
     "sitioEntrega": "BCA UPIA",
     "validez": "8 DÍAS",
@@ -52437,12 +52437,25 @@
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 23500
+      },
+      {
+        "id": 2,
+        "desc": "FLANCHE CIEGO AC 300L 3\"",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 50000,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "XF ",
+        "proveedor": "CODIFER",
+        "precioProveedor": 45230,
+        "uid": "fa82f94f-85b4-4553-99da-9268f2da458a"
       }
     ],
-    "fechaGuardado": "2026-08-06T20:33:36.714Z",
+    "fechaGuardado": "2026-08-06T20:56:14.642Z",
     "createdAt": "2026-08-06T20:25:51.736Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-06T20:33:36.714Z",
+    "updatedAt": "2026-08-06T20:56:14.642Z",
     "updatedBy": "sandra"
   },
   {
