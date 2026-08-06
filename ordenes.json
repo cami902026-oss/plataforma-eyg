@@ -5111,23 +5111,23 @@
     },
     "stages": [
       {
-        "s": "active",
+        "s": "done",
         "f": "2026-07-28",
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "active",
+        "f": "2026-08-10",
         "n": "",
-        "envio": "",
-        "transp": "",
+        "envio": "camion_externo",
+        "transp": "TRASNPORTES BENAVIDEZ",
         "guia": "",
         "dest": "",
-        "resp": ""
+        "resp": "Alexandra"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-08-03",
         "n": ""
       },
       {
@@ -5140,14 +5140,12 @@
     "cotizacionId": "LM1698",
     "createdAt": "2026-07-23T19:44:27.940Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-06T14:35:43.741Z",
-    "updatedBy": "andrea",
+    "updatedAt": "2026-08-06T17:23:24.979Z",
+    "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false,
     "observaciones": "",
-    "facturacion": "",
-    "lockedBy": "alexandra",
-    "lockedAt": "2026-08-06T14:35:43.741Z"
+    "facturacion": ""
   },
   {
     "id": "poc_1784836135127",
