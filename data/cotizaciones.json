@@ -52412,9 +52412,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 95000,
-    "ivaVal": 18050,
-    "total": 113050,
+    "subtotal": 250000,
+    "ivaVal": 47500,
+    "total": 297500,
     "formaPago": "CONTADO ",
     "sitioEntrega": "BCA UPIA",
     "validez": "8 DÍAS",
@@ -52427,7 +52427,7 @@
     "items": [
       {
         "id": 1,
-        "qty": 1,
+        "qty": 2,
         "udm": "EA",
         "uid": "bd29a88b-7ac7-4da3-b593-84daaeee45e6",
         "desc": "FLANCHE CIEGO AC 300L 2\"",
@@ -52440,22 +52440,22 @@
       },
       {
         "id": 2,
-        "desc": "FLANCHE CIEGO AC 300L 3\"",
+        "qty": 3,
         "udm": "EA",
-        "qty": 1,
-        "precio": 60000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "uid": "2e56f5d4-5961-40bd-b07e-6c73047b6b49",
+        "desc": "FLANCHE CIEGO AC 300L 3\"",
         "marca": "XF ",
+        "precio": 60000,
+        "desvTec": "",
         "proveedor": "CODIFER",
-        "precioProveedor": 45230,
-        "uid": "2e56f5d4-5961-40bd-b07e-6c73047b6b49"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 45230
       }
     ],
-    "fechaGuardado": "2026-08-06T21:25:29.804Z",
+    "fechaGuardado": "2026-08-06T22:34:10.603Z",
     "createdAt": "2026-08-06T20:25:51.736Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-06T21:25:29.804Z",
+    "updatedAt": "2026-08-06T22:34:10.603Z",
     "updatedBy": "sandra"
   },
   {
