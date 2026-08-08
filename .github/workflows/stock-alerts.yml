@@ -1,10 +1,12 @@
 name: ⚠️ Alertas de Stock Crítico
 
 on:
-  schedule:
-    # 9:00 AM Colombia (14:00 UTC) y 2:00 PM Colombia (19:00 UTC) — L-V
-    - cron: '0 14 * * 1-5'
-    - cron: '0 19 * * 1-5'
+  # ⏸️ SUSPENDIDO 8-ago-2026 por Andrea: sale del mismo inventario desactualizado.
+  # Para reactivar, quitar el '#' de las líneas del cron.
+  # schedule:
+  #   # 9:00 AM Colombia (14:00 UTC) y 2:00 PM Colombia (19:00 UTC) — L-V
+  #   - cron: '0 14 * * 1-5'
+  #   - cron: '0 19 * * 1-5'
   workflow_dispatch:
 
 jobs:

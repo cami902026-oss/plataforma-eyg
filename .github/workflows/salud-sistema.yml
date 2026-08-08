@@ -1,11 +1,13 @@
 name: 🩺 Salud del Sistema
 
 on:
-  schedule:
-    # Informe completo: día 1 de cada mes, 7:00 AM Colombia (12:00 UTC)
-    - cron: '0 12 1 * *'
-    # Chequeo silencioso: lunes 7:00 AM Colombia (solo envía correo si hay alertas)
-    - cron: '0 12 * * 1'
+  # ⏸️ SUSPENDIDO 8-ago-2026 por Andrea (solo debe quedar el Resumen de Pagos).
+  # Para reactivar, quitar el '#' de las líneas del cron.
+  # schedule:
+  #   # Informe completo: día 1 de cada mes, 7:00 AM Colombia (12:00 UTC)
+  #   - cron: '0 12 1 * *'
+  #   # Chequeo silencioso: lunes 7:00 AM Colombia (solo envía correo si hay alertas)
+  #   - cron: '0 12 * * 1'
   workflow_dispatch:
     inputs:
       modo:

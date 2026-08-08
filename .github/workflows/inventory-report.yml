@@ -1,9 +1,11 @@
 name: 📦 Reporte Diario de Inventario
 
 on:
-  schedule:
-    # Lunes a Viernes a las 5:00 PM Colombia (UTC-5 = 22:00 UTC)
-    - cron: '0 22 * * 1-5'
+  # ⏸️ SUSPENDIDO 8-ago-2026 por Andrea: los valores de inventario no están actualizados.
+  # Para reactivar, quitar el '#' de la línea del cron.
+  # schedule:
+  #   # Lunes a Viernes a las 5:00 PM Colombia (UTC-5 = 22:00 UTC)
+  #   - cron: '0 22 * * 1-5'
 
   # Permite ejecutar manualmente desde GitHub para pruebas
   workflow_dispatch:

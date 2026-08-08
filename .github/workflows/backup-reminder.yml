@@ -1,9 +1,11 @@
 name: 💾 Recordatorio Backup Inventario (Viernes)
 
 on:
-  schedule:
-    # Viernes 4:45 PM Colombia (UTC-5 = 21:45 UTC)
-    - cron: '45 21 * * 5'
+  # ⏸️ SUSPENDIDO 8-ago-2026 por Andrea.
+  # Para reactivar, quitar el '#' de la línea del cron.
+  # schedule:
+  #   # Viernes 4:45 PM Colombia (UTC-5 = 21:45 UTC)
+  #   - cron: '45 21 * * 5'
   workflow_dispatch:
 
 jobs:
