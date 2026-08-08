@@ -53473,7 +53473,7 @@
     "cliente": "INDUMEC",
     "contacto": "PEDRO",
     "correo": "--------------3-",
-    "estado": "Borrador",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 924000,
@@ -53532,11 +53532,28 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-08-08T00:05:08.097Z",
+    "fechaGuardado": "2026-08-08T00:05:27.213Z",
     "adjudicadaAt": "2026-08-08",
+    "valorAdjudicado": 924000,
+    "itemsAdjudicados": [
+      {
+        "uid": "8561c720-5de9-49d7-8976-2c94e30b314e",
+        "qty": 10
+      },
+      {
+        "uid": "9141954f-cafe-488e-96eb-d412d22c904a",
+        "qty": 20
+      },
+      {
+        "uid": "b3df0554-5bcb-4379-8af9-fea242bd7b17",
+        "qty": 3
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-08T00:05:24.312Z",
     "createdAt": "2026-08-07T18:45:55.837Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-08-08T00:05:08.097Z",
+    "updatedAt": "2026-08-08T00:05:27.213Z",
     "updatedBy": "andrea"
   },
   {
