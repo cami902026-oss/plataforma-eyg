@@ -53007,7 +53007,7 @@
     "cliente": "ANDES Operating Company",
     "contacto": "Yenny Moreno Ríos",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 16157665,
@@ -53154,11 +53154,25 @@
         "precioProveedor": 20060
       }
     ],
-    "fechaGuardado": "2026-08-09T01:46:55.057Z",
+    "fechaGuardado": "2026-08-10T21:12:34.501Z",
     "fechaEnvio": "2026-08-09T01:46:55.057Z",
+    "adjudicadaAt": "2026-08-10",
+    "valorAdjudicado": 3230769,
+    "itemsAdjudicados": [
+      {
+        "uid": "0c0717d9-5f44-432f-a134-f219b4141356",
+        "qty": 3
+      },
+      {
+        "uid": "bd19d492-1108-4cce-a1c6-b4b85b456f88",
+        "qty": 3
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-10T21:12:31.512Z",
     "createdAt": "2026-08-05T17:38:21.865Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-09T01:46:55.057Z",
+    "updatedAt": "2026-08-10T21:12:34.501Z",
     "updatedBy": "alexandra"
   },
   {
