@@ -53232,7 +53232,7 @@
     "cliente": "MYD MONTAJES",
     "contacto": "GUILLERMO ",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Revisión gerencia",
     "factura": "",
     "iva": 19,
     "subtotal": 0,
@@ -53284,9 +53284,9 @@
         "precio": 0,
         "desvTec": "ASTM A-36",
         "proveedor": "ACEROS MAPA ",
+        "obsProveedor": "IMPERIAL 153090",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 182600,
-        "obsProveedor": "IMPERIAL 153090"
+        "precioProveedor": 182600
       },
       {
         "id": 4,
@@ -53452,7 +53452,7 @@
         "desc": "Brida 18\", WN, CS, SCH XS, #150, RF, ASTM A105, ASME B16.5",
         "marca": "",
         "precio": 0,
-        "desvTec": "ASTM A105, ASME B16.5",
+        "desvTec": "",
         "proveedor": "",
         "tiempoEntrega": "1-2 DIAS"
       },
@@ -53609,7 +53609,8 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "MUNDIAL",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 16731
       },
       {
         "id": 29,
@@ -53617,11 +53618,12 @@
         "udm": "UND",
         "uid": "e19228df-6165-418b-9990-20c9ba34d9c9",
         "desc": "U-bolt Tubería 6\", Acero Hot dipped",
-        "marca": "",
+        "marca": "NACIONAL",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "proveedor": "FILLER",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 20000
       },
       {
         "id": 30,
@@ -53629,11 +53631,12 @@
         "udm": "UND",
         "uid": "8392197e-f631-4f39-9fd6-db58fbca167e",
         "desc": "U-bolt Tubería 3\", Acero Hot dipped",
-        "marca": "",
+        "marca": "NACIONAL",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "proveedor": "FILLEE",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 10000
       },
       {
         "id": 31,
@@ -53643,7 +53646,7 @@
         "desc": "Lámina Garlock Bluegard 3000",
         "marca": "",
         "precio": 0,
-        "desvTec": "",
+        "desvTec": "CONFIRMAR ESPESOR",
         "proveedor": "",
         "tiempoEntrega": "1-2 DIAS"
       },
@@ -53665,17 +53668,18 @@
         "udm": "ML",
         "uid": "327168e1-2bea-4e41-9023-8cee5af69a6c",
         "desc": "Barra Redonda, 5/8\", CS, ASTM A-36",
-        "marca": "",
+        "marca": "IMPORTADA",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "desvTec": "LISA",
+        "proveedor": "STECKER",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 33986
       }
     ],
-    "fechaGuardado": "2026-08-10T16:04:32.163Z",
+    "fechaGuardado": "2026-08-10T17:36:39.429Z",
     "createdAt": "2026-08-06T23:39:37.330Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-10T16:04:32.164Z",
+    "updatedAt": "2026-08-10T17:36:39.429Z",
     "updatedBy": "sandra"
   },
   {
@@ -54309,7 +54313,7 @@
         "precio": 0,
         "desvTec": "A-105",
         "proveedor": "INDUVACOL",
-        "obsProveedor": "",
+        "obsProveedor": "SOLO HAY 20 UND",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 228000
       },
@@ -54339,7 +54343,7 @@
         "proveedor": "INSTRUGASES",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 3500
       },
       {
         "id": 26,
@@ -54353,7 +54357,7 @@
         "proveedor": "INSTRUGASES",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 3500
       },
       {
         "id": 27,
@@ -54370,10 +54374,10 @@
         "precioProveedor": 101570
       }
     ],
-    "fechaGuardado": "2026-08-10T17:19:27.252Z",
+    "fechaGuardado": "2026-08-10T17:27:52.020Z",
     "createdAt": "2026-08-08T16:32:50.592Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-10T17:19:27.252Z",
+    "updatedAt": "2026-08-10T17:27:52.020Z",
     "updatedBy": "sandra"
   },
   {
