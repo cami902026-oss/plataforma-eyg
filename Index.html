@@ -2354,12 +2354,12 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <button class="btn btn-secondary" onclick="sabExportMes()" title="Descargar los s&aacute;bados del mes en .ics para tu calendario de Outlook/Teams" style="padding:8px 14px;font-size:13px;">&#128197; Exportar mes</button>
-      <button class="btn btn-primary" id="sab-btn-generar" onclick="sabGenerar()" title="Programa autom&aacute;ticamente los s&aacute;bados que falten hasta fin de a&ntilde;o siguiendo la rotaci&oacute;n Alexandra &rarr; Lina &rarr; Sandra" style="padding:8px 16px;font-size:13px;display:none;">&#9881;&#65039; Generar rotaci&oacute;n</button>
+      <button class="btn btn-primary" id="sab-btn-generar" onclick="sabGenerar()" title="Programa autom&aacute;ticamente los s&aacute;bados que falten hasta fin de a&ntilde;o siguiendo la rotaci&oacute;n Alexandra &rarr; Sandra" style="padding:8px 16px;font-size:13px;display:none;">&#9881;&#65039; Generar rotaci&oacute;n</button>
     </div>
   </div>
   <div id="sab-plan-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;"></div>
   <div id="sab-plan-resumen" style="margin-top:18px;"></div>
-  <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Rotaci&oacute;n continua Alexandra &rarr; Lina &rarr; Sandra (no se reinicia cada mes). Si un s&aacute;bado se marca &quot;No laboral&quot;, la rotaci&oacute;n se corre y nadie pierde turno. Todo el equipo ve qui&eacute;n trabaja el s&aacute;bado en la tarjeta del Dashboard.</p>
+  <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">Rotaci&oacute;n continua Alexandra &rarr; Sandra (no se reinicia cada mes). Si un s&aacute;bado se marca &quot;No laboral&quot;, la rotaci&oacute;n se corre y nadie pierde turno. Todo el equipo ve qui&eacute;n trabaja el s&aacute;bado en la tarjeta del Dashboard.</p>
 </div>
 
 <!-- Pestaña EQUIPO (roster editable) -->
@@ -3497,10 +3497,9 @@ const ALL_MODULES = [
   { id:'configuracion', label:'⚙️ Configuración' }
 ];
 const DEFAULT_USER_MODULES = {
-  // Por defecto Alexandra, Nelsy y Lina NO ven Visitas Comerciales
+  // Por defecto Alexandra y Nelsy NO ven Visitas Comerciales
   'alexandra': ['visitas'],
-  'nelsy':     ['visitas'],
-  'lina':      ['visitas']
+  'nelsy':     ['visitas']
 };
 function getUserModules() {
   try { return Object.assign({}, DEFAULT_USER_MODULES, JSON.parse(localStorage.getItem('energy_user_modules')||'{}')); }
@@ -3700,7 +3699,6 @@ const USERS = [
   { email:'alexandra', name:'Alexandra', role:'COLABORADOR', wa:'+573144858382' },
   { email:'nelsy',  name:'Nelsy',           role:'COLABORADOR', wa:'+573125099056' },
   { email:'yesid',  name:'Yesid Quintero',  role:'COLABORADOR', wa:'+573108893898' },
-  { email:'lina',   name:'Lina Cifuentes',  role:'COLABORADOR', wa:'+573144858382' },
   { email:'mario',  name:'Mario',           role:'COLABORADOR', wa:'+573108893898' },
   { email:'sandra', name:'Sandra',          role:'COLABORADOR', wa:'+573162348780' }
 ];
@@ -3712,7 +3710,6 @@ const TEAM_DEFAULT = [
   { id:5, name:'Andrea',          role:'Administrativa y Compras',    email:'andrea.bernal@eygenergygroup.com',                     wa:'+573107574110', color:'#0891b2' },
   { id:6, name:'Nelsy',           role:'Contabilidad',                email:'contabilidad@eygenergygroup.com',                      wa:'+573125099056', color:'#dc2626' },
   { id:7, name:'Yesid Quintero',  role:'Bodega y Abastecimiento',     email:'bodega@eygenergygroup.com',                            wa:'+573108893898', color:'#7c3aed' },
-  { id:8, name:'Lina Cifuentes',  role:'Auxiliar Contable Administrativo', email:'auxiliarcontableadministrativo@eygenergygroup.com', wa:'+573144858382', color:'#db2777' },
   { id:9, name:'Mario',           role:'Coordinador Comercial',       email:'director.comercial@eygenergygroup.com',                wa:'+573108893898', color:'#0e7490' },
   { id:10, name:'Sandra',         role:'Asistente Comercial',         email:'asistente.comercial@eygenergygroup.com',               wa:'+573162348780', color:'#9333ea' }
 ];
@@ -14962,7 +14959,7 @@ const ENERGY_TOOLS = [
       type: 'object',
       properties: {
         titulo:      { type: 'string', description: 'Título corto de la tarea' },
-        responsable: { type: 'string', description: 'Nombre del responsable. Debe ser uno del equipo: Alberto, Andrea, Sheila Baron, Alexandra, Nelsy, Lina Cifuentes, Yesid Quintero, Mario, Sandra' },
+        responsable: { type: 'string', description: 'Nombre del responsable. Debe ser uno del equipo: Alberto, Andrea, Sheila Baron, Alexandra, Nelsy, Yesid Quintero, Mario, Sandra' },
         fecha:       { type: 'string', description: 'Fecha límite en formato YYYY-MM-DD' },
         prioridad:   { type: 'string', enum: ['Alta','Media','Baja'], description: 'Prioridad' },
         desc:        { type: 'string', description: 'Descripción opcional' }
@@ -17258,19 +17255,20 @@ function visPlanExportSemana(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SÁBADOS — rotación de asistentes (Alexandra → Lina → Sandra)
+// SÁBADOS — rotación de asistentes (Alexandra → Sandra)
+// 10-ago-2026: sale Lina Cifuentes (ya no labora); la rotación queda de a dos.
 // Un registro por sábado (id determinístico 'sab_'+fecha) en
 // data/sabados_plan.json, con el mismo merge anti-pisadas del semanario.
 // Editan solo ADMIN/JEFE + mario (director comercial); el resto ve todo.
 // ═══════════════════════════════════════════════════════════════
 const SAB_PLAN_KEY='energy_sabados_plan';
 const SAB_PLAN_FILE='data/sabados_plan.json';
-const SAB_COLORS={alexandra:'#E8A020', lina:'#db2777', sandra:'#9333ea'};
+const SAB_COLORS={alexandra:'#E8A020', sandra:'#9333ea'};
 let _sabPlan=[];
 let _sabMes=null;   // Date del día 1 del mes visible
 
 function sabAsistentes(){
-  const emails=['alexandra','lina','sandra'];
+  const emails=['alexandra','sandra'];
   const list=(typeof USERS!=='undefined'?USERS:[]);
   return emails.map(e=>{ const u=list.find(x=>x.email===e); return {email:e, name:u?u.name:e}; });
 }
@@ -17491,7 +17489,7 @@ async function sabGenerar(){
     .sort((a,b)=>a.fecha<b.fecha?1:-1)[0];
   let idx = prev ? (emails.indexOf(prev.asistente)+1)%emails.length : 0;
   const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  if(!confirm('Se programarán los sábados que falten desde '+MESES[_sabMes.getMonth()]+' hasta diciembre de '+y+',\nsiguiendo la rotación Alexandra → Lina → Sandra.\n\nLos sábados ya asignados NO se modifican. ¿Continuar?')) return;
+  if(!confirm('Se programarán los sábados que falten desde '+MESES[_sabMes.getMonth()]+' hasta diciembre de '+y+',\nsiguiendo la rotación Alexandra → Sandra.\n\nLos sábados ya asignados NO se modifican. ¿Continuar?')) return;
   let creados=0;
   for(const d of sats){
     const ds=_visPlanFmt(d);
@@ -17548,7 +17546,6 @@ const PE_ROSTER_DEFAULT=[
   {nombre:'Nelsy',     tipo:'presencial'},
   {nombre:'Yesid',     tipo:'presencial'},
   {nombre:'Alexandra', tipo:'presencial'},
-  {nombre:'Lina',      tipo:'presencial'},
   {nombre:'Nicolás',   tipo:'presencial'},
   {nombre:'Mario',     tipo:'hibrido'},
   {nombre:'Sandra',    tipo:'hibrido'},
