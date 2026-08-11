@@ -6574,5 +6574,55 @@
     "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1786413897279",
+    "num": "0053/2026",
+    "cliente": "INDUMEC",
+    "desc": "Cotización LM1955 · 3 ítems",
+    "estado": "completado",
+    "fechaIngreso": "2026-08-09",
+    "valor": 1099560,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-08-10",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-10",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-10",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-10",
+        "n": "",
+        "factura": "565"
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1955",
+    "createdAt": "2026-08-11T02:04:57.279Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-11T02:04:57.279Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false
   }
 ]
