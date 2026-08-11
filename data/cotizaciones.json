@@ -40400,8 +40400,8 @@
     "cliente": "SKID EXPERT",
     "contacto": "JENNY ARIAS",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "568",
     "iva": 19,
     "subtotal": 1309630,
     "ivaVal": 248829.7,
@@ -40456,12 +40456,42 @@
         "precioProveedor": 215000
       }
     ],
-    "fechaGuardado": "2026-07-25T14:46:54.329Z",
+    "fechaGuardado": "2026-08-11T02:43:15.107Z",
     "fechaEnvio": "2026-07-23T20:45:54.017Z",
+    "facturadaAt": "2026-08-10",
     "adjudicadaAt": "2026-07-25",
+    "valorAdjudicado": 4522248,
+    "itemsAdjudicados": [
+      {
+        "uid": "57fdc515-5de2-423c-94f5-e8606a216ec7",
+        "qty": 4
+      },
+      {
+        "uid": "fbdfb194-41f5-4232-b54a-efeff63afdcd",
+        "qty": 24
+      },
+      {
+        "uid": "bec50027-2f5c-4f81-a81e-8b2876ccf740",
+        "qty": 4
+      },
+      {
+        "uid": "f8583882-d758-4f03-844b-52b793cbb3af",
+        "qty": 36
+      },
+      {
+        "uid": "b20fbc95-1fea-4ee9-b10e-f13aa8ddb781",
+        "qty": 4
+      },
+      {
+        "uid": "26aa820c-ef42-4dc9-9899-a64675b3fa44",
+        "qty": 6
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-11T02:34:28.743Z",
     "createdAt": "2026-07-23T20:06:37.610Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-25T14:46:54.329Z",
+    "updatedAt": "2026-08-11T02:43:15.108Z",
     "updatedBy": "andrea"
   },
   {
