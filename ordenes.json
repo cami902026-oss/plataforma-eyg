@@ -71,6 +71,8 @@
       }
     ],
     "updatedAt": "2026-07-27T21:16:05.000Z",
+    "faltanFechas": false,
+    "archivada": false,
     "fechaIngreso": "",
     "valor": 0,
     "hojaEntrada": {
@@ -82,8 +84,6 @@
     "createdAt": "2026-07-25T14:43:54.236Z",
     "createdBy": "andrea",
     "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": false,
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -290,10 +290,10 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
-    "observaciones": "",
-    "facturacion": "",
     "faltanFechas": false,
     "archivada": false,
+    "observaciones": "",
+    "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -675,11 +675,11 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false,
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "faltanFechas": false,
-    "archivada": false,
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -872,11 +872,11 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false,
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "faltanFechas": false,
-    "archivada": false,
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -924,11 +924,11 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false,
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "faltanFechas": false,
-    "archivada": false,
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -1022,11 +1022,11 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
+    "faltanFechas": true,
+    "archivada": false,
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "faltanFechas": true,
-    "archivada": false,
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -1074,11 +1074,11 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
+    "faltanFechas": true,
+    "archivada": false,
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "faltanFechas": true,
-    "archivada": false,
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -1173,11 +1173,11 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
+    "faltanFechas": true,
+    "archivada": false,
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "faltanFechas": true,
-    "archivada": false,
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -1221,11 +1221,11 @@
         "factura": "522"
       }
     ],
+    "cotizacionId": "",
     "createdAt": "2026-06-10T21:19:27.539Z",
     "createdBy": "andrea",
     "updatedAt": "2026-08-01T23:51:48.738Z",
     "updatedBy": "andrea",
-    "cotizacionId": "",
     "faltanFechas": false,
     "observaciones": "",
     "facturacion": "",
@@ -1366,13 +1366,13 @@
         "factura": ""
       }
     ],
-    "cotizacionId": "",
     "createdAt": "2026-06-18T02:09:30.622Z",
     "createdBy": "andrea",
     "updatedAt": "2026-07-29T01:51:25.090Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false,
+    "cotizacionId": "",
     "observaciones": "",
     "facturacion": ""
   },
@@ -1800,11 +1800,11 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false,
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "faltanFechas": false,
-    "archivada": false,
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -2547,7 +2547,7 @@
       {
         "s": "done",
         "f": "2026-05-09",
-        "n": "428"
+        "n": "428N/C 445"
       }
     ],
     "updatedAt": "2026-06-25T16:24:09.266Z",
@@ -2629,7 +2629,7 @@
       {
         "s": "done",
         "f": "2026-05-14",
-        "n": "436"
+        "n": "479"
       }
     ],
     "updatedAt": "2026-06-12T21:18:16.482Z",
@@ -3160,10 +3160,10 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
-    "observaciones": "",
-    "facturacion": "",
     "faltanFechas": true,
     "archivada": false,
+    "observaciones": "",
+    "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -4392,10 +4392,10 @@
     "createdBy": "alexandra",
     "updatedAt": "2026-07-29T16:03:36.741Z",
     "updatedBy": "andrea",
-    "observaciones": "",
-    "facturacion": "",
     "faltanFechas": false,
     "archivada": false,
+    "observaciones": "",
+    "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -4511,7 +4511,7 @@
     "stages": [
       {
         "s": "done",
-        "f": "2026-07-14",
+        "f": "2026-07-28",
         "n": "TALLECTRO"
       },
       {
@@ -4592,10 +4592,10 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-29T15:45:37.723Z",
     "updatedBy": "andrea",
-    "observaciones": "",
-    "facturacion": "",
     "faltanFechas": false,
     "archivada": false,
+    "observaciones": "",
+    "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -4692,10 +4692,10 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
-    "observaciones": "",
-    "facturacion": "",
     "faltanFechas": false,
     "archivada": false,
+    "observaciones": "",
+    "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -4892,8 +4892,8 @@
     "updatedAt": "2026-07-29T16:04:28.390Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivada": false
+    "archivada": false,
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
     "id": "poc_1784727547251",
@@ -5246,10 +5246,10 @@
     "createdBy": "alexandra",
     "updatedAt": "2026-07-29T16:02:25.409Z",
     "updatedBy": "andrea",
-    "observaciones": "",
-    "facturacion": "",
     "faltanFechas": true,
     "archivada": false,
+    "observaciones": "",
+    "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -5298,10 +5298,10 @@
     "createdBy": "alexandra",
     "updatedAt": "2026-08-05T02:22:03.318Z",
     "updatedBy": "andrea",
-    "observaciones": "REMISION ENVIADA A CLIENTE 24/07",
-    "facturacion": "",
     "faltanFechas": false,
     "archivada": false,
+    "observaciones": "REMISION ENVIADA A CLIENTE 24/07",
+    "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
   },
   {
@@ -5342,7 +5342,7 @@
         "s": "done",
         "f": "2026-07-23",
         "n": "",
-        "factura": "FV2-545"
+        "factura": "FV2-529"
       }
     ],
     "cotizacionId": "LM1709",
@@ -5421,7 +5421,7 @@
     "stages": [
       {
         "s": "done",
-        "f": "2026-07-27",
+        "f": "2026-07-24",
         "n": ""
       },
       {
