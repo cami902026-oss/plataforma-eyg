@@ -55650,7 +55650,7 @@
     "cliente": "SKID EXPERT",
     "contacto": "JENNY ARIAS",
     "correo": "abastecimiento2@skidexperts.com",
-    "estado": "Adjudicada",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 2713600,
@@ -55786,26 +55786,12 @@
         "precioProveedor": 54890
       }
     ],
-    "fechaGuardado": "2026-08-11T20:36:10.879Z",
+    "fechaGuardado": "2026-08-10T19:53:08.765Z",
     "fechaEnvio": "2026-08-10T19:53:08.765Z",
-    "adjudicadaAt": "2026-08-11",
-    "valorAdjudicado": 921051,
-    "itemsAdjudicados": [
-      {
-        "uid": "39a143af-a56d-4b2b-b7cc-921224ce3731",
-        "qty": 1
-      },
-      {
-        "uid": "236e66f3-d9e1-4f50-8fcb-f89a751a9a89",
-        "qty": 6
-      }
-    ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-08-11T20:36:07.696Z",
     "createdAt": "2026-08-06T22:33:43.670Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-11T20:36:10.880Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-10T19:53:08.765Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM1953",
@@ -59523,7 +59509,7 @@
     "cliente": "CHEVRON PETROLEUM",
     "contacto": "ING WILLIAM AMORTEGUI",
     "correo": "wamortegui@chevron.com",
-    "estado": "Enviada",
+    "estado": "Borrador",
     "factura": "",
     "iva": 19,
     "subtotal": 6183114,
@@ -59624,11 +59610,10 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-08-11T20:52:55.488Z",
-    "fechaEnvio": "2026-08-11T20:52:55.488Z",
+    "fechaGuardado": "2026-08-10T21:46:09.182Z",
     "createdAt": "2026-08-10T14:48:31.512Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-11T20:52:55.488Z",
+    "updatedAt": "2026-08-10T21:46:09.182Z",
     "updatedBy": "alexandra"
   },
   {
@@ -61449,9 +61434,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 5318892,
-    "ivaVal": 1010589.48,
-    "total": 6329481.48,
+    "subtotal": 8234892,
+    "ivaVal": 1564629.48,
+    "total": 9799521.48,
     "formaPago": "45 DÍAS",
     "sitioEntrega": "TAME",
     "validez": "8 DÍAS",
@@ -61651,7 +61636,7 @@
         "uid": "45c8c8d7-d9bc-4615-be0b-d5b6044dd441",
         "desc": "Flex. 6\" 300# =",
         "marca": "SPIRAL PACK",
-        "precio": 0,
+        "precio": 16500,
         "desvTec": "SS-304",
         "proveedor": "COLIMPORTADOS",
         "obsProveedor": "",
@@ -61665,7 +61650,7 @@
         "uid": "00305761-3397-4a99-9d9a-2d835c3ee5bd",
         "desc": "Flex. 4\" 300# =",
         "marca": "SPIRAL PACK",
-        "precio": 0,
+        "precio": 9900,
         "desvTec": "SS-304",
         "proveedor": "COLIMPORTADOS",
         "obsProveedor": "",
@@ -61707,7 +61692,7 @@
         "uid": "39217988-42fd-406b-9eb7-7dbd877c435e",
         "desc": "Tee 4\"×4\" STD",
         "marca": "XF ",
-        "precio": 0,
+        "precio": 50500,
         "desvTec": "A-234 WPB",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -61721,7 +61706,7 @@
         "uid": "6a456b51-83b3-4af4-9e43-c8ad3fe5fe3c",
         "desc": "Tubo 4\" STD × 6m",
         "marca": "BAOLAI-MOLONG",
-        "precio": 0,
+        "precio": 530000,
         "desvTec": "A-106 API 5L BINORMA TUBO X 6 MTR",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -61735,7 +61720,7 @@
         "uid": "d3113860-e2b5-4e48-8936-eb4a14e665a1",
         "desc": "Tubo 6\" STD × 6m",
         "marca": "BAOLAI-MOLONG",
-        "precio": 0,
+        "precio": 900000,
         "desvTec": "A-106 API 5L BINORMA TUBO X 6 MTR",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -61749,7 +61734,7 @@
         "uid": "f2a342ae-a82d-427e-80d5-238d25955104",
         "desc": "Threadolet 1/2\"×3000",
         "marca": "BOTHWELL-XF",
-        "precio": 0,
+        "precio": 16000,
         "desvTec": "A-105",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -61763,12 +61748,12 @@
         "uid": "055cb3f7-9668-4544-a130-12153e3d652c",
         "desc": "Niple 1/2\"×4\" SCH 80 =",
         "marca": "MOLONG",
-        "precio": 0,
+        "precio": 4500,
         "desvTec": "A-106 ",
-        "proveedor": "",
+        "proveedor": "INSTRUGASES",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 2500
       },
       {
         "id": 23,
@@ -61777,7 +61762,7 @@
         "uid": "c9400424-5f61-4700-9620-a25f125685d6",
         "desc": "Valv. Bola 1/2\" NPT 3000",
         "marca": "SIO",
-        "precio": 0,
+        "precio": 116000,
         "desvTec": "A-105",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -61791,7 +61776,7 @@
         "uid": "7bc56cd2-e6f5-4f0d-903c-2ae0c56221ce",
         "desc": "Tapon 1/2\"×3000 ",
         "marca": "BOTHWELL-XF",
-        "precio": 0,
+        "precio": 7000,
         "desvTec": "A-105",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -61799,10 +61784,10 @@
         "precioProveedor": 4950
       }
     ],
-    "fechaGuardado": "2026-08-11T20:37:56.121Z",
+    "fechaGuardado": "2026-08-11T20:55:26.499Z",
     "createdAt": "2026-08-11T20:00:28.907Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-11T20:37:56.121Z",
+    "updatedAt": "2026-08-11T20:55:26.500Z",
     "updatedBy": "sandra"
   },
   {
