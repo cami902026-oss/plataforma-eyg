@@ -9643,7 +9643,7 @@
     "cliente": "ARROW",
     "contacto": "TENDER LLANOS",
     "correo": "tenderllanos@arrowexploration.com",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 170374122.49339998,
@@ -10176,12 +10176,33 @@
         "precioProveedor": null
       }
     ],
-    "fechaGuardado": "2026-08-11T22:49:21.589Z",
+    "fechaGuardado": "2026-08-11T22:52:35.491Z",
     "fechaEnvio": "2026-08-11T22:49:21.589Z",
     "adjudicadaAt": "2026-07-23",
+    "valorAdjudicado": 22173500,
+    "itemsAdjudicados": [
+      {
+        "uid": "abb41ba0-ff24-4e17-8796-337dded03dce",
+        "qty": 20
+      },
+      {
+        "uid": "73d82e42-158a-44f0-ba6e-643217ed3f6d",
+        "qty": 5
+      },
+      {
+        "uid": "6dd8fc23-8b4c-490d-94cc-e5536b2ad3b4",
+        "qty": 5
+      },
+      {
+        "uid": "e0d7cb0d-a33c-4fe3-9f29-d3ba8fc21f1a",
+        "qty": 100
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-11T22:52:27.522Z",
     "createdAt": "2026-07-23T19:43:50.610Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-11T22:49:21.589Z",
+    "updatedAt": "2026-08-11T22:52:35.491Z",
     "updatedBy": "andrea"
   },
   {
