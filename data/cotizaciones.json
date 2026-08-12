@@ -22388,7 +22388,7 @@
     "cliente": "SKID EXPERT",
     "contacto": "JENNY ARIAS",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 31367089,
@@ -22925,14 +22925,42 @@
         "precioProveedor": 132500
       }
     ],
-    "fechaGuardado": "2026-08-11T02:31:41.949Z",
+    "fechaGuardado": "2026-08-12T02:49:59.003Z",
     "fechaEnvio": "2026-07-09T22:47:18.755Z",
     "adjudicadaAt": "2026-07-17",
+    "valorAdjudicado": 4219845.52,
+    "itemsAdjudicados": [
+      {
+        "uid": "57fdc515-5de2-423c-94f5-e8606a216ec7",
+        "qty": 4
+      },
+      {
+        "uid": "b5681dc5-ba53-4455-805d-aeef1483f936",
+        "qty": 25.84
+      },
+      {
+        "uid": "fbdfb194-41f5-4232-b54a-efeff63afdcd",
+        "qty": 24
+      },
+      {
+        "uid": "bec50027-2f5c-4f81-a81e-8b2876ccf740",
+        "qty": 4
+      },
+      {
+        "uid": "f8583882-d758-4f03-844b-52b793cbb3af",
+        "qty": 34.8
+      },
+      {
+        "uid": "26aa820c-ef42-4dc9-9899-a64675b3fa44",
+        "qty": 6
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-12T02:49:55.186Z",
     "createdAt": "2026-07-09T13:23:07.555Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-11T12:53:54.473Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-08-11T12:53:54.473Z"
+    "updatedAt": "2026-08-12T02:49:59.003Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1785-1",
