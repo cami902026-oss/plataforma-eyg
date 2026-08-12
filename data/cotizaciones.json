@@ -65636,9 +65636,9 @@
     "estado": "Revisión gerencia",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 5548368,
+    "ivaVal": 1054189.92,
+    "total": 6602557.92,
     "formaPago": "CONTADO",
     "sitioEntrega": "BOGOTA",
     "validez": "8 DÍAS",
@@ -65650,39 +65650,35 @@
     "motivoRechazo": "",
     "items": [
       {
-        "id": 1,
-        "qty": 2,
-        "udm": "EA",
-        "uid": "f5419ab2-e852-40bd-a1f2-325787833e4a",
         "desc": "BRIDA WN 10\" X 1500 SCH 80 RTJ A-105",
+        "udm": "EA",
+        "qty": 2,
+        "precio": 2161582,
         "marca": "XF",
-        "precio": 0,
-        "desvTec": "",
         "proveedor": "CODIFER",
-        "obsProveedor": "",
+        "precioProveedor": 2118350,
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 2118350
+        "desvTec": "",
+        "uid": "ba4d6d6a-3f3a-42d5-a837-76794deb4f89"
       },
       {
-        "id": 2,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "92cf3c0b-41c1-4c4d-9710-b4d2bb9c01e9",
         "desc": "BRIDA WN 8\" X 1500 SCH 80 RTJ A-105",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 1225204,
         "marca": "XF",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "CODIFER ",
-        "obsProveedor": "",
+        "proveedor": "CODIFER",
+        "precioProveedor": 1200700,
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 1200700
+        "desvTec": "",
+        "uid": "66626cc6-0598-4b65-a2ea-7f8be39466c7"
       }
     ],
-    "fechaGuardado": "2026-08-12T17:52:45.869Z",
+    "fechaGuardado": "2026-08-12T17:54:13.324Z",
     "createdAt": "2026-08-12T17:44:09.179Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-12T17:52:45.869Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-12T17:54:13.324Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM629",
