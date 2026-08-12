@@ -2947,7 +2947,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             </div>
             <div style="overflow-x:auto;">
               <table class="abs-table" id="pcom-items-table"><thead><tr>
-                <th style="width:34px">#</th><th>Descripción</th><th style="width:64px">UDM</th><th style="width:70px">Cant.</th><th style="width:150px">Proveedor</th><th style="width:110px">Costo Unit.</th><th style="width:110px">Subtotal</th><th style="width:64px"></th>
+                <th style="width:34px">#</th><th>Descripción</th><th style="width:170px" title="Desviación técnica de la cotización. Baja sola y se imprime en la OC del proveedor.">Desv. técnica / Nota</th><th style="width:64px">UDM</th><th style="width:70px">Cant.</th><th style="width:150px">Proveedor</th><th style="width:110px">Costo Unit.</th><th style="width:110px">Subtotal</th><th style="width:64px"></th>
               </tr></thead><tbody id="pcom-items-tbody"></tbody></table>
             </div>
             <datalist id="pcom-prov-datalist"></datalist>
@@ -10424,13 +10424,15 @@ function _cotizAdjRender(){
   const old=document.getElementById('cotiz-adj-modal'); if(old) old.remove();
   const filas=d.sel.map(function(x,i){
     const vc=(+x.ref.qty||0)*(+x.ref.precio||0), va=_cotizAdjValorItem(x.ref,x.qty);
-    return '<tr style="opacity:'+(x.marcado?'1':'.45')+'">'
+    // Los id de fila/cantidad/valor permiten repintar SOLO lo que cambió, sin
+    // reconstruir el modal (ver _cotizAdjPintar).
+    return '<tr id="cadj-tr-'+i+'" style="opacity:'+(x.marcado?'1':'.45')+'">'
       +'<td style="padding:5px 6px;text-align:center;"><input type="checkbox" '+(x.marcado?'checked':'')+' onchange="_cotizAdjSet('+i+',\'marcado\',this.checked)"></td>'
       +'<td style="padding:5px 6px;font-size:12px;">'+esc(x.ref.desc)+'</td>'
-      +'<td style="padding:5px 6px;text-align:center;color:var(--text-muted);font-size:12px;">'+(+x.ref.qty||0)+'</td>'
-      +'<td style="padding:5px 6px;"><input type="number" min="0" step="0.01" value="'+x.qty+'" '+(x.marcado?'':'disabled')+' oninput="_cotizAdjSet('+i+',\'qty\',this.value)" style="width:74px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:6px;padding:4px 6px;color:#fff;font-size:12px;"></td>'
+      +'<td style="padding:5px 6px;text-align:center;color:var(--text-muted);font-size:12px;">'+_cadjNum(x.ref.qty)+'</td>'
+      +'<td style="padding:5px 6px;"><input type="number" id="cadj-qty-'+i+'" min="0" step="any" value="'+x.qty+'" '+(x.marcado?'':'disabled')+' oninput="_cotizAdjSet('+i+',\'qty\',this.value)" onchange="this.value=_cadjNum(this.value)" style="width:74px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:6px;padding:4px 6px;color:#fff;font-size:12px;"></td>'
       +'<td style="padding:5px 6px;text-align:right;color:var(--text-muted);font-size:12px;white-space:nowrap;">$'+Math.round(vc).toLocaleString('es-CO')+'</td>'
-      +'<td style="padding:5px 6px;text-align:right;font-weight:700;font-size:12px;white-space:nowrap;color:'+(x.marcado?'#86efac':'var(--text-muted)')+';">$'+Math.round(x.marcado?va:0).toLocaleString('es-CO')+'</td></tr>';
+      +'<td id="cadj-va-'+i+'" style="padding:5px 6px;text-align:right;font-weight:700;font-size:12px;white-space:nowrap;color:'+(x.marcado?'#86efac':'var(--text-muted)')+';">$'+Math.round(x.marcado?va:0).toLocaleString('es-CO')+'</td></tr>';
   }).join('');
   const cab=['','Descripción','Cotizado','Adjudicado','V. cotizado','V. adjudicado'].map(function(h){
     return '<th style="text-align:left;padding:6px;font-size:10px;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,.15);text-transform:uppercase;">'+h+'</th>'; }).join('');
@@ -10444,20 +10446,72 @@ function _cotizAdjRender(){
     +'<table style="width:100%;border-collapse:collapse;min-width:640px;"><thead><tr>'+cab+'</tr></thead><tbody>'+filas+'</tbody></table></div>'
     +'<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-bottom:14px;font-size:13px;">'
     +'<span style="color:var(--text-muted);">Cotizado: <b style="color:#cbd5ff;">$'+Math.round(totalCot).toLocaleString('es-CO')+'</b></span>'
-    +'<span style="color:var(--text-muted);">Adjudicado: <b style="color:#86efac;">$'+Math.round(totalAdj).toLocaleString('es-CO')+'</b></span>'
-    +'<span style="background:'+(parcial?'rgba(232,160,32,.2)':'rgba(46,170,74,.2)')+';color:'+(parcial?'var(--gold)':'#86efac')+';padding:3px 12px;border-radius:20px;font-weight:700;">'+pct+'% de lo cotizado</span></div>'
-    +(parcial?('<div style="background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.4);border-radius:8px;padding:9px 13px;margin-bottom:12px;font-size:12.5px;color:var(--gold);">⚠️ Adjudicación PARCIAL: quedan $'+Math.round(totalCot-totalAdj).toLocaleString('es-CO')+' sin adjudicar. Se registran como perdidos.</div>'):'')
+    +'<span style="color:var(--text-muted);">Adjudicado: <b id="cadj-tot-adj" style="color:#86efac;">$'+Math.round(totalAdj).toLocaleString('es-CO')+'</b></span>'
+    +'<span id="cadj-tot-pct" style="background:'+(parcial?'rgba(232,160,32,.2)':'rgba(46,170,74,.2)')+';color:'+(parcial?'var(--gold)':'#86efac')+';padding:3px 12px;border-radius:20px;font-weight:700;">'+pct+'% de lo cotizado</span></div>'
+    // El contenedor del aviso va SIEMPRE (aunque vacío) para poder actualizarlo
+    // sin reconstruir el modal.
+    +'<div id="cadj-warn">'+(parcial?('<div style="background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.4);border-radius:8px;padding:9px 13px;margin-bottom:12px;font-size:12.5px;color:var(--gold);">⚠️ Adjudicación PARCIAL: quedan $'+Math.round(totalCot-totalAdj).toLocaleString('es-CO')+' sin adjudicar. Se registran como perdidos.</div>'):'')+'</div>'
     +'<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">'
     +'<button onclick="_cotizAdjCancelar()" style="background:transparent;border:1px solid var(--border);color:#cbd5ff;padding:9px 16px;border-radius:7px;font-size:13px;cursor:pointer;">Cancelar</button>'
     +'<button onclick="_cotizAdjConfirmar()" style="background:rgba(46,170,74,.3);border:1px solid rgba(46,170,74,.5);color:#86efac;padding:9px 20px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;">Confirmar adjudicación</button></div></div>';
   ov.addEventListener('click', function(e){ if(e.target===ov) _cotizAdjCancelar(); });
   document.body.appendChild(ov);
 }
+// Cantidad a 3 decimales. Los metros de tubería vienen de conversiones pie→metro
+// (×0,3048) y arrastran la cola de punto flotante (34.727000000000004); con el
+// step viejo de 0,01 la flechita además subía de centésima en centésima.
+// NO se fuerza a entero: hay ítems legítimos en metros y kilos.
+function _cadjNum(v){
+  if(v===''||v==null) return '';
+  const n=parseFloat(v);
+  return isFinite(n) ? Math.round(n*1000)/1000 : '';
+}
+// ANTES: cada clic en un checkbox llamaba a _cotizAdjRender(), que borra el modal
+// entero y lo vuelve a crear. Con eso se perdía el scroll (al marcar un ítem de
+// abajo la vista saltaba al principio) y el foco (al escribir una cantidad, el
+// oninput reconstruía todo tras la primera tecla). Ahora se repinta SOLO la fila
+// tocada y los totales; el modal no se toca.
 function _cotizAdjSet(i,campo,val){
   const d=_cotizAdjPend; if(!d||!d.sel[i]) return;
-  if(campo==='marcado'){ d.sel[i].marcado=!!val; if(val&&!(+d.sel[i].qty)) d.sel[i].qty=(+d.sel[i].ref.qty||0); }
-  else d.sel[i].qty=(val===''?'':(parseFloat(val)||0));
-  _cotizAdjRender();
+  const x=d.sel[i];
+  if(campo==='marcado'){
+    x.marcado=!!val;
+    if(val&&!(+x.qty)) x.qty=(+x.ref.qty||0);
+    const inp=document.getElementById('cadj-qty-'+i);
+    if(inp){ inp.disabled=!x.marcado; inp.value=x.qty; }
+  } else {
+    x.qty=_cadjNum(val);
+  }
+  _cotizAdjPintar(i);
+}
+function _cotizAdjPintar(i){
+  const d=_cotizAdjPend; if(!d) return;
+  const x=d.sel[i];
+  if(x){
+    const tr=document.getElementById('cadj-tr-'+i);
+    if(tr) tr.style.opacity = x.marcado?'1':'.45';
+    const va=document.getElementById('cadj-va-'+i);
+    if(va){
+      va.textContent='$'+Math.round(x.marcado?_cotizAdjValorItem(x.ref,x.qty):0).toLocaleString('es-CO');
+      va.style.color = x.marcado?'#86efac':'var(--text-muted)';
+    }
+  }
+  const totalCot=d.items.reduce(function(a,it){ return a+(+it.qty||0)*(+it.precio||0); },0);
+  const totalAdj=d.sel.reduce(function(a,y){ return a+(y.marcado?_cotizAdjValorItem(y.ref,y.qty):0); },0);
+  const pct=totalCot?Math.round(totalAdj/totalCot*100):0;
+  const parcial=totalAdj < totalCot-0.5;
+  const eAdj=document.getElementById('cadj-tot-adj');
+  if(eAdj) eAdj.textContent='$'+Math.round(totalAdj).toLocaleString('es-CO');
+  const ePct=document.getElementById('cadj-tot-pct');
+  if(ePct){
+    ePct.textContent=pct+'% de lo cotizado';
+    ePct.style.background=parcial?'rgba(232,160,32,.2)':'rgba(46,170,74,.2)';
+    ePct.style.color=parcial?'var(--gold)':'#86efac';
+  }
+  const eW=document.getElementById('cadj-warn');
+  if(eW) eW.innerHTML = parcial
+    ? ('<div style="background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.4);border-radius:8px;padding:9px 13px;margin-bottom:12px;font-size:12.5px;color:var(--gold);">⚠️ Adjudicación PARCIAL: quedan $'+Math.round(totalCot-totalAdj).toLocaleString('es-CO')+' sin adjudicar. Se registran como perdidos.</div>')
+    : '';
 }
 function _cotizAdjCancelar(){
   const m=document.getElementById('cotiz-adj-modal'); if(m) m.remove();
@@ -10487,6 +10541,22 @@ function _cotizAdjConfirmar(){
 function _cotizValorReal(c){
   if(!c) return 0;
   return (c.valorAdjudicado!=null && !isNaN(+c.valorAdjudicado)) ? +c.valorAdjudicado : (+c.total||0);
+}
+// Mapa uid -> cantidad adjudicada, a partir de lo que quedó registrado en el modal.
+// Devuelve null si la cotización NO tiene adjudicación registrada (las viejas y las
+// que aún no se han adjudicado): en ese caso aguas abajo entra todo, como siempre.
+function _cotizAdjMapa(c){
+  if(!c || !Array.isArray(c.itemsAdjudicados) || !c.itemsAdjudicados.length) return null;
+  const m={};
+  c.itemsAdjudicados.forEach(function(x){ if(x && x.uid) m[x.uid] = (+x.qty||0); });
+  return Object.keys(m).length ? m : null;
+}
+// ¿Fue parcial? (se registró adjudicación y quedaron ítems por fuera o con menos cantidad)
+function _cotizEsParcial(c){
+  const m=_cotizAdjMapa(c); if(!m) return false;
+  const items=(c.items||[]).filter(function(it){ return it && !_cotizEsAlt(it); });
+  if(items.length !== Object.keys(m).length) return true;
+  return items.some(function(it){ return m[it.uid]!=null && (+m[it.uid]) < (+it.qty||0); });
 }
 
 function cotizEstadoChange() {
@@ -12956,6 +13026,13 @@ async function exportCotizBDCompleta(){
       'Total Cotización': h.total!=null?Math.round(h.total):'',
       'Valor Adjudicado': '',
       '% Adjudicado': '',
+      // El LIBRO histórico nunca registró la adjudicación por ítem: van vacías a
+      // propósito, para no confundirlas con un "no adjudicado".
+      'Adjudicación': '',
+      'Ítem Adjudicado': '',
+      'Cant. Adjudicada': '',
+      'Valor Adj. Línea': '',
+      'Valor No Adjudicado': '',
       'Forma Pago': h.forma_pago||'',
       'Factura': h.factura||'',
       'Clasificación': h.clasificacion||'',
@@ -12965,8 +13042,15 @@ async function exportCotizBDCompleta(){
   // Activas
   activas.forEach(c=>{
     const _numsUtil=_cotizNums(c.items||[]);
+    // Adjudicación POR LÍNEA: permite analizar QUÉ ítems se caen, no solo cuánta
+    // plata. Sin registro (`_map` null) las columnas van vacías, no en "NO".
+    const _map=_cotizAdjMapa(c);
+    const _tipoAdj=_map ? (_cotizEsParcial(c)?'Parcial':'Total') : '';
     (c.items||[]).forEach((it,i)=>{
       const q=+it.qty||0, pu=+it.precio||0;
+      const _esAlt=_cotizEsAlt(it);
+      const _entra=_map ? (_map[it.uid]!=null) : null;   // null = sin registro
+      const _qAdj=_entra ? (+_map[it.uid]||0) : 0;
       rows.push({
         '# Cotización': c.id||'',
         'Fecha': c.fecha||'',
@@ -12986,6 +13070,12 @@ async function exportCotizBDCompleta(){
         // el análisis debe seguir usando el total como hasta ahora.
         'Valor Adjudicado': (c.valorAdjudicado!=null?Math.round(c.valorAdjudicado):''),
         '% Adjudicado': (c.valorAdjudicado!=null && +c.total ? Math.round(c.valorAdjudicado/(+c.total)*100)+'%' : ''),
+        // ── Detalle por línea: qué ítem entró y cuál se cayó ──
+        'Adjudicación': _tipoAdj,
+        'Ítem Adjudicado': (_entra===null ? '' : (_esAlt ? 'ALTERNATIVA' : (_entra?'SI':'NO'))),
+        'Cant. Adjudicada': (_entra ? _qAdj : (_entra===null?'':0)),
+        'Valor Adj. Línea': (_entra ? Math.round(_qAdj*pu) : (_entra===null?'':0)),
+        'Valor No Adjudicado': (_entra===null ? '' : Math.round(q*pu - (_entra?_qAdj*pu:0))),
         'Forma Pago': c.formaPago||'',
         'Factura': '',
         'Clasificación': '',
@@ -12998,7 +13088,10 @@ async function exportCotizBDCompleta(){
   try{
     const wb=XLSX.utils.book_new();
     const ws=XLSX.utils.json_to_sheet(rows);
-    ws['!cols']=[{wch:13},{wch:11},{wch:26},{wch:13},{wch:6},{wch:50},{wch:7},{wch:9},{wch:14},{wch:15},{wch:10},{wch:16},{wch:18},{wch:18},{wch:16},{wch:12},{wch:12},{wch:12},{wch:13},{wch:9}];
+    // 25 columnas: las 5 nuevas son el detalle de adjudicación POR LÍNEA.
+    ws['!cols']=[{wch:13},{wch:11},{wch:26},{wch:13},{wch:6},{wch:50},{wch:7},{wch:9},{wch:14},{wch:15},{wch:10},{wch:16},{wch:18},{wch:18},{wch:16},{wch:12},
+      {wch:13},{wch:15},{wch:16},{wch:16},{wch:19},
+      {wch:12},{wch:12},{wch:13},{wch:9}];
     XLSX.utils.book_append_sheet(wb,ws,'Cotizaciones');
     XLSX.writeFile(wb,'BD_Cotizaciones_Completa_'+new Date().toISOString().substring(0,10)+'.xlsx');
     showToast('✅ '+rows.length+' líneas exportadas (histórico completo)','success');
@@ -20443,19 +20536,29 @@ async function remiCotizElegir(id){
           items:its.map(it=>({ desc:it.descripcion||'', marca:it.marca||'', desvTec:it.desviacion_tecnica||'', qty:(it.qty==null?'':it.qty) })) };
     }catch(e){ return showToast('Error al cargar ítems de '+id+': '+(e&&e.message||e),'error'); }
   }
+  // Si la adjudicación fue PARCIAL, el modal llega ya filtrado con lo adjudicado y
+  // su cantidad. Sin adjudicación registrada, entra todo como siempre.
+  const _map=_cotizAdjMapa(c);
+  const _parcial=_map && _cotizEsParcial(c);
+  const _todos=c.items||[];
+  const _items=_parcial ? _todos.filter(it=>_map[it.uid]!=null) : _todos;
+  const _omitidos=_todos.length-_items.length;
+  c=Object.assign({}, c, { items:_items });   // los índices del modal deben cuadrar
   remi_cotiz_sel=c;
   remiCotizBuscar(); // refresca la lista para resaltar la elegida
   const tb=document.getElementById('remi-cotiz-items-tbody'); if(!tb) return;
   const inS='padding:4px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:5px;color:#fff;font-size:12px;width:64px';
   tb.innerHTML=(c.items||[]).map((it,i)=>`<tr>
     <td style="text-align:center"><input type="checkbox" class="remi-cotiz-chk" value="${i}" checked></td>
-    <td><input type="number" min="0" step="any" id="remi-cotiz-qty-${i}" value="${_remiEsc(it.qty==null?'':it.qty)}" style="${inS}"></td>
+    <td><input type="number" min="0" step="any" id="remi-cotiz-qty-${i}" value="${_remiEsc(_parcial?(+_map[it.uid]||0):(it.qty==null?'':it.qty))}" style="${inS}"></td>
     <td style="font-size:12.5px">${_remiEsc(it.desc)}</td>
     <td style="font-size:12px">${_remiEsc(it.marca)||'—'}</td>
     <td style="font-size:12px">${_remiEsc(it.desvTec)||'—'}</td>
   </tr>`).join('');
   const t=document.getElementById('remi-cotiz-items-titulo');
-  if(t) t.textContent='Ítems de '+c.id+(c.cliente?(' — '+c.cliente):'')+' · marca los que van y ajusta cantidades si la entrega es parcial';
+  if(t) t.textContent='Ítems de '+c.id+(c.cliente?(' — '+c.cliente):'')+
+    (_parcial ? (' · ⚠️ ADJUDICACIÓN PARCIAL: se omitieron '+_omitidos+' ítem(s) que el cliente no adjudicó')
+              : ' · marca los que van y ajusta cantidades si la entrega es parcial');
   document.getElementById('remi-cotiz-items').style.display='';
   document.getElementById('remi-cotiz-btn-agregar').style.display='';
 }
@@ -20622,20 +20725,34 @@ function pcomCotizElegir(id){
   if(pcom_rows.some(r=>String(r.cotizacion)===String(id))){
     if(!confirm('La cotización '+id+' ya tiene un plan de compras. ¿Crear OTRO plan para la misma cotización?')) return;
   }
+  // Si la adjudicación fue PARCIAL, el plan trae solo lo que el cliente adjudicó y
+  // con la cantidad adjudicada: no tiene sentido salir a comprar lo que no nos
+  // compraron. Sin adjudicación registrada (cotizaciones viejas) entra todo, igual
+  // que siempre. La desviación técnica del ítem baja como nota y llega a la OC.
+  const _map=_cotizAdjMapa(c);
+  const _parcial=_map && _cotizEsParcial(c);
+  const _todos=(c.items||[]).filter(it=>String(it.desc||'').trim());
+  const _base=_parcial ? _todos.filter(it=>_map[it.uid]!=null) : _todos;
+  const _omitidos=_todos.length-_base.length;
   pcom_current = { nueva:true, cc:pcomCC(c.id, c.cliente), cotizacion:String(c.id), cliente:c.cliente||'',
     fecha:new Date().toISOString().split('T')[0],
-    items:(c.items||[]).filter(it=>String(it.desc||'').trim()).map(it=>({
-      descripcion:String(it.desc||'').trim(), udm:it.udm||'EA', cantidad:(it.qty==null?'':it.qty),
+    items:_base.map(it=>({
+      descripcion:String(it.desc||'').trim(), udm:it.udm||'EA',
+      cantidad:(_parcial ? (+_map[it.uid]||0) : (it.qty==null?'':it.qty)),
+      nota:String(it.desvTec||'').trim(),
       proveedor:it.proveedor||'', costo_unit:(it.precioProveedor==null?'':it.precioProveedor), pago:'PENDIENTE', sin_oc:false
     })) };
-  if(!pcom_current.items.length) pcom_current.items.push({descripcion:'',udm:'EA',cantidad:'',proveedor:'',costo_unit:'',pago:'PENDIENTE',sin_oc:false});
+  if(!pcom_current.items.length) pcom_current.items.push({descripcion:'',udm:'EA',cantidad:'',nota:'',proveedor:'',costo_unit:'',pago:'PENDIENTE',sin_oc:false});
   pcomCotizCerrar();
   pcomAbrirEditor('Plan de compras — '+pcom_current.cc+' (nuevo)');
+  if(_parcial) showToast('⚠️ '+c.id+' fue ADJUDICACIÓN PARCIAL: se trajeron '+_base.length+
+    ' ítem(s) adjudicados y se omitieron '+_omitidos+'. Si necesitas comprar algo más, agrégalo con ➕.',
+    'info', { durationMs: 9000 });
 }
 function pcomCrearVacio(){
   pcom_current = { nueva:true, cc:'CC-MANUAL-'+Date.now().toString().slice(-5), cotizacion:'', cliente:'',
     fecha:new Date().toISOString().split('T')[0],
-    items:[{descripcion:'',udm:'EA',cantidad:'',proveedor:'',costo_unit:'',pago:'PENDIENTE',sin_oc:false}] };
+    items:[{descripcion:'',udm:'EA',cantidad:'',nota:'',proveedor:'',costo_unit:'',pago:'PENDIENTE',sin_oc:false}] };
   pcomCotizCerrar();
   pcomAbrirEditor('Plan de compras manual (nuevo)');
 }
@@ -20644,7 +20761,7 @@ function pcomAbrir(cc){
   const h = its[0];
   pcom_current = { nueva:false, cc:String(cc), cotizacion:h.cotizacion||'', cliente:h.cliente||'', fecha:h.fecha||'',
     items: its.slice().sort((a,b)=>(a.item||0)-(b.item||0)).map(r=>({
-      descripcion:r.descripcion||'', udm:r.udm||'', cantidad:(r.cantidad==null?'':r.cantidad),
+      descripcion:r.descripcion||'', udm:r.udm||'', cantidad:(r.cantidad==null?'':r.cantidad), nota:r.nota||'',
       proveedor:r.proveedor||'', costo_unit:(r.costo_unit==null?'':r.costo_unit), pago:r.pago||'PENDIENTE', sin_oc:!!r.sin_oc
     })) };
   pcomAbrirEditor('Plan de compras — '+cc);
@@ -20773,6 +20890,7 @@ function pcomRenderItems(){
     return `<tr>
     <td style="text-align:center;color:var(--text-muted);font-size:11px">${i+1}</td>
     <td><input type="text" value="${_remiEsc(it.descripcion).replace(/"/g,'&quot;')}" onchange="pcomUpd(${i},'descripcion',this.value)" style="width:100%;min-width:220px;${inS}"></td>
+    <td><input type="text" value="${_remiEsc(it.nota).replace(/"/g,'&quot;')}" onchange="pcomUpd(${i},'nota',this.value)" placeholder="Desviación / nota" title="Baja de la desviación técnica de la cotización y se imprime en la OC." style="width:160px;${inS}"></td>
     <td><input type="text" value="${_remiEsc(it.udm).replace(/"/g,'&quot;')}" onchange="pcomUpd(${i},'udm',this.value)" style="width:52px;${inS}"></td>
     <td><input type="number" min="0" step="any" value="${_remiEsc(it.cantidad)}" onchange="pcomUpd(${i},'cantidad',this.value)" style="width:62px;${inS}"></td>
     <td><input type="text" list="pcom-prov-datalist" value="${_remiEsc(it.proveedor).replace(/"/g,'&quot;')}" onchange="pcomUpd(${i},'proveedor',this.value)" style="width:140px;${inS}"></td>
@@ -20782,16 +20900,16 @@ function pcomRenderItems(){
       <button onclick="pcomDividir(${i})" title="Dividir línea en otro proveedor" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:13px">✂️</button>
       <button onclick="pcomDelItem(${i})" title="Quitar" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px">×</button>
     </td>
-  </tr>`;}).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:16px">Agrega líneas con el botón de arriba ↑</td></tr>';
+  </tr>`;}).join('')||'<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:16px">Agrega líneas con el botón de arriba ↑</td></tr>';
   pcomRenderResumen();
   pcomRenderOCs();
 }
-function pcomAddItem(){ if(!pcom_current)return; pcom_current.items.push({descripcion:'',udm:'EA',cantidad:'',proveedor:'',costo_unit:'',pago:'PENDIENTE',sin_oc:false}); pcomRenderItems(); }
+function pcomAddItem(){ if(!pcom_current)return; pcom_current.items.push({descripcion:'',udm:'EA',cantidad:'',nota:'',proveedor:'',costo_unit:'',pago:'PENDIENTE',sin_oc:false}); pcomRenderItems(); }
 function pcomDelItem(i){ if(!pcom_current)return; pcom_current.items.splice(i,1); pcomRenderItems(); }
 function pcomDividir(i){
   if(!pcom_current)return;
   const it = pcom_current.items[i]; if(!it) return;
-  pcom_current.items.splice(i+1, 0, { descripcion:it.descripcion, udm:it.udm, cantidad:'', proveedor:'', costo_unit:'', pago:'PENDIENTE', sin_oc:false });
+  pcom_current.items.splice(i+1, 0, { descripcion:it.descripcion, udm:it.udm, cantidad:'', nota:it.nota||'', proveedor:'', costo_unit:'', pago:'PENDIENTE', sin_oc:false });
   pcomRenderItems();
   showToast('Línea dividida: pon la cantidad y el proveedor de la nueva parte (y baja la cantidad de la original)','info');
 }
@@ -20932,6 +21050,7 @@ async function pcomGuardar(silencioso){
       cantidad:(it.cantidad===''||it.cantidad==null)?null:parseFloat(it.cantidad),
       proveedor:String(it.proveedor||'').trim(),
       costo_unit:(it.costo_unit===''||it.costo_unit==null)?null:parseFloat(it.costo_unit),
+      nota:String(it.nota||'').trim()||null,
       pago:it.pago||'PENDIENTE', sin_oc:!!it.sin_oc,
       created_by: currentUser?.name||'—'
     }));
@@ -21001,7 +21120,7 @@ async function pcomOCConfirmar(){
         lugar: document.getElementById('pcom-oc-lugar').value.trim(),
         observaciones: document.getElementById('pcom-oc-observaciones').value.trim()
       },
-      items: lineas.map(it=>({ descripcion:it.descripcion, udm:it.udm||'EA', cantidad:parseFloat(it.cantidad)||0,
+      items: lineas.map(it=>({ descripcion:it.descripcion, udm:it.udm||'EA', cantidad:parseFloat(it.cantidad)||0, nota:String(it.nota||'').trim(),
         costo_unit:parseFloat(it.costo_unit)||0, subtotal:(parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0) })),
       subtotal:x.subtotal, iva:x.iva, retencion:x.rete, total:x.total,
       created_by: currentUser?.name||'—'
@@ -21027,7 +21146,7 @@ function pcomOCPrint(o){
   const logo = 'https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png';
   const fechaFmt = o.fecha?String(o.fecha).split('-').reverse().join('/'):'';
   const filas = (o.items||[]).map((it,i)=>`<tr>
-    <td style="text-align:center">${i+1}</td><td>${_remiEsc(it.descripcion)}</td><td></td>
+    <td style="text-align:center">${i+1}</td><td>${_remiEsc(it.descripcion)}</td><td style="font-size:9px">${_remiEsc(it.nota||'')}</td>
     <td style="text-align:center">${_remiEsc(it.udm)}</td><td style="text-align:center">${_remiEsc(it.cantidad)}</td>
     <td style="text-align:right">${_pcomMoney(it.costo_unit)}</td><td style="text-align:right">${_pcomMoney(it.subtotal)}</td>
   </tr>`).join('');
