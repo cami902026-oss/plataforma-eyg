@@ -4405,7 +4405,7 @@
     "num": "LM1787",
     "cliente": "WILLER",
     "desc": "Cotización LM1787 · 13 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-09",
     "valor": 4788322,
     "hojaEntrada": {
@@ -4420,7 +4420,7 @@
         "n": "CODIFER\nBODEGA\nCOLIMPORTADOS"
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "",
         "n": "",
         "envio": "",
@@ -4430,8 +4430,8 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-08-12",
         "n": ""
       },
       {
@@ -4444,12 +4444,12 @@
     "cotizacionId": "LM1787",
     "createdAt": "2026-07-09T20:07:49.786Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-08-13T15:18:53.188Z",
-    "updatedBy": "andrea",
-    "faltanFechas": false,
+    "updatedAt": "2026-08-13T15:19:07.411Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": true,
     "archivada": false,
-    "lockedBy": "alexandra",
-    "lockedAt": "2026-08-13T15:18:53.188Z"
+    "observaciones": "",
+    "facturacion": ""
   },
   {
     "id": "poc_1783720491105",
