@@ -67003,7 +67003,7 @@
     "cliente": "PETRORIOS",
     "contacto": "LUIS ANGEL",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 290398,
@@ -67066,7 +67066,7 @@
         "qty": 2,
         "udm": "EA",
         "uid": "a5f4826b-1718-4938-8e22-2a59ff9490a1",
-        "desc": "union 1/22 x 3000 psi npt a-105",
+        "desc": "union 1/2 x 3000 psi npt a-105",
         "marca": "BOTHWELL-XF",
         "precio": 5388,
         "desvTec": "",
@@ -67090,12 +67090,38 @@
         "precioProveedor": 19100
       }
     ],
-    "fechaGuardado": "2026-08-13T15:36:32.392Z",
+    "fechaGuardado": "2026-08-13T17:04:55.940Z",
     "fechaEnvio": "2026-08-13T15:34:32.438Z",
+    "adjudicadaAt": "2026-08-13",
+    "valorAdjudicado": 290398,
+    "itemsAdjudicados": [
+      {
+        "uid": "8c703385-b74a-4f07-9c20-987518f905f2",
+        "qty": 1
+      },
+      {
+        "uid": "792f9690-481a-4bb6-965c-ed00915ce820",
+        "qty": 2
+      },
+      {
+        "uid": "ce275641-df8c-4480-9177-c2e0b0c9e023",
+        "qty": 2
+      },
+      {
+        "uid": "a5f4826b-1718-4938-8e22-2a59ff9490a1",
+        "qty": 2
+      },
+      {
+        "uid": "47a91858-8c92-4e03-897d-0418997c02a3",
+        "qty": 1
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-13T17:04:51.194Z",
     "createdAt": "2026-08-13T14:53:30.013Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-13T15:36:32.393Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-13T17:04:55.940Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1985",
