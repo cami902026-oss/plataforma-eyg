@@ -6836,5 +6836,54 @@
     "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1786634836511",
+    "num": "0038/2026",
+    "cliente": "INDUMEC",
+    "desc": "Cotización LM1818-1 · 29 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-13",
+    "valor": 14261494.31,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-23",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": "533"
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1818-1",
+    "createdAt": "2026-08-13T15:27:16.512Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-13T15:27:16.512Z",
+    "updatedBy": "alexandra"
   }
 ]
