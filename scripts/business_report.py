@@ -131,6 +131,9 @@ def load_cotizaciones_supabase():
             # adjudicacion parcial, el informe debe contar eso y no el total
             # cotizado. Si esta vacio (cotizaciones viejas) se usa el total.
             'valor_adj': (c.get('valor_adjudicado') if c.get('valor_adjudicado') is not None else (c.get('total') or 0)),
+            # adj_reg distingue "no se registró adjudicación" de "se adjudicó justo
+            # el total". Sin esto las columnas del Excel mienten.
+            'adj_reg': c.get('valor_adjudicado') is not None,
             'items': by.get(cid, []),
             'updatedAt': c.get('updated_at') or '', 'createdAt': c.get('created_at') or '',
         })
@@ -190,6 +193,18 @@ def fetch_cartera_facturacion():
     return None
 
 
+def _va_de(c0):
+    """Valor adjudicado efectivo de un registro de cotización, venga del JSON local
+    (clave 'valorAdjudicado') o de Supabase (clave 'valor_adj'). Si no hay ninguno,
+    el total de siempre."""
+    v = c0.get('valorAdjudicado')
+    if v is None:
+        v = c0.get('valor_adj')
+    if v is None:
+        v = c0.get('total') or 0
+    return v
+
+
 def unify_cotizaciones(historicas, plataforma):
     """Une ambas fuentes a nivel COTIZACIÓN: {id, fecha, cliente, estado, total, fuente}."""
     cots = {}
@@ -229,7 +244,11 @@ def unify_cotizaciones(historicas, plataforma):
         cots[cid] = {'id': cid, 'fecha': str(c0.get('fecha') or '')[:10],
                      'cliente': c0.get('cliente') or '', 'estado': c0.get('estado') or '',
                      'total': float(c0.get('total') or 0), 'n_items': len(c0.get('items') or []),
-            'valor_adj': float(c0.get('valorAdjudicado') if c0.get('valorAdjudicado') is not None else (c0.get('total') or 0)),
+                     # OJO: los registros de Supabase traen la clave 'valor_adj' y los
+                     # del JSON local 'valorAdjudicado'. Como Supabase pisa al JSON, leer
+                     # solo 'valorAdjudicado' hacía que TODO cayera al total en silencio.
+                     'valor_adj': float(_va_de(c0)),
+                     'adj_reg': (c0.get('valorAdjudicado') is not None) or bool(c0.get('adj_reg')),
                      'fuente': 'Plataforma', 'venta': venta, 'costo': costo,
                      'updatedAt': str(c0.get('updatedAt') or ''), 'createdAt': str(c0.get('createdAt') or '')}
     return list(cots.values())
@@ -285,7 +304,8 @@ def top_clientes(cots, year, top=5):
         cli = (c['cliente'] or '—').strip().upper()
         acc[cli]['n_cot'] += 1
         if clasifica(c['estado']) == 'GANADA':
-            acc[cli]['ganado'] += c['total']
+            # Lo REALMENTE adjudicado. Sin registro (históricas) cae al total, como antes.
+            acc[cli]['ganado'] += c.get('valor_adj', c['total'])
             acc[cli]['n_ganadas'] += 1
     lista = sorted(acc.items(), key=lambda kv: -kv[1]['ganado'])
     return lista[:top]
@@ -418,10 +438,18 @@ def generate_excel(cots, lineas_hist, cots_plataforma, remisiones, planes, ocs, 
         ws.column_dimensions[col].width = 16
 
     # Cotizaciones (1 fila por cotización, ambas fuentes)
+    # 'Adjudicado' y '% Adj' solo se llenan cuando la adjudicación se registró en el
+    # modal; vacías = sin registro (no confundir con adjudicado en cero).
+    def _adj_cols(c):
+        if not c.get('adj_reg') or clasifica(c['estado']) != 'GANADA':
+            return ['', '']
+        va = float(c.get('valor_adj') or 0)
+        return [round(va), (round(va / c['total'] * 100, 1) if c['total'] else '')]
     _sheet_from_rows(wb, 'Cotizaciones',
-        ['ID', 'Fecha', 'Cliente', 'Estado', 'Clasificación', 'Total', 'Ítems', 'Venta', 'Costo', 'Margen %', 'Fuente'],
+        ['ID', 'Fecha', 'Cliente', 'Estado', 'Clasificación', 'Total', 'Adjudicado', '% Adj',
+         'Ítems', 'Venta', 'Costo', 'Margen %', 'Fuente'],
         [[c['id'], c['fecha'], c['cliente'], c['estado'], clasifica(c['estado']),
-          round(c['total']), c['n_items'], round(c['venta']), round(c['costo']),
+          round(c['total'])] + _adj_cols(c) + [c['n_items'], round(c['venta']), round(c['costo']),
           (round((1 - c['costo']/c['venta'])*100, 1) if c['venta'] and c['costo'] else ''),
           c['fuente']]
          for c in sorted(cots, key=lambda x: x['fecha'] or '', reverse=True)])
@@ -445,11 +473,13 @@ def generate_excel(cots, lineas_hist, cots_plataforma, remisiones, planes, ocs, 
         [[r.get('remision'), r.get('fecha'), r.get('cliente'), r.get('oc'), r.get('item'),
           r.get('descripcion'), r.get('cantidad'), r.get('marca'), r.get('created_by')] for r in remisiones])
 
+    # 'Desv. técnica' = columna `nota`: la desviación que baja de la cotización y se
+    # imprime en la OC del proveedor. Vacía en los planes anteriores a agosto-2026.
     _sheet_from_rows(wb, 'Plan_Compras',
-        ['CC', 'Cotización', 'Cliente', 'Fecha', 'Ítem', 'Descripción', 'UDM', 'Cant', 'Proveedor',
+        ['CC', 'Cotización', 'Cliente', 'Fecha', 'Ítem', 'Descripción', 'Desv. técnica', 'UDM', 'Cant', 'Proveedor',
          'Costo unit', 'Pago', 'Sin OC', 'Creado por'],
         [[p.get('cc'), p.get('cotizacion'), p.get('cliente'), p.get('fecha'), p.get('item'),
-          p.get('descripcion'), p.get('udm'), p.get('cantidad'), p.get('proveedor'),
+          p.get('descripcion'), p.get('nota') or '', p.get('udm'), p.get('cantidad'), p.get('proveedor'),
           p.get('costo_unit'), p.get('pago'), ('SI' if p.get('sin_oc') else ''), p.get('created_by')] for p in planes])
 
     _sheet_from_rows(wb, 'OCs_Compra',
@@ -865,11 +895,16 @@ if __name__ == '__main__':
     fac_mes = [o for o in ordenes if _oc_fact(o)[:7] == ym]
     def _suma(lst, k):
         return sum(float(x.get(k) or 0) for x in lst)
+    # ADJUDICADO = lo que de verdad entró, no el total cotizado. Cuando la
+    # adjudicación fue parcial la diferencia es enorme (LM1698 ARROW: se cotizaron
+    # $202,7M y se adjudicaron $22,2M). Sin registro cae al total, como antes.
+    def _suma_adj(lst):
+        return sum(float(x.get('valor_adj', x.get('total')) or 0) for x in lst)
     resumen = {
         'cot_hoy_n': len(cot_hoy), 'cot_hoy_m': _suma(cot_hoy, 'total'),
         'cot_mes_n': len(cot_mes), 'cot_mes_m': _suma(cot_mes, 'total'),
-        'adj_hoy_n': len(adj_hoy), 'adj_hoy_m': _suma(adj_hoy, 'total'),
-        'adj_mes_n': len(adj_mes), 'adj_mes_m': _suma(adj_mes, 'total'),
+        'adj_hoy_n': len(adj_hoy), 'adj_hoy_m': _suma_adj(adj_hoy),
+        'adj_mes_n': len(adj_mes), 'adj_mes_m': _suma_adj(adj_mes),
         'fac_hoy_n': len(fac_hoy), 'fac_hoy_m': _suma(fac_hoy, 'valor'),
         'fac_mes_n': len(fac_mes), 'fac_mes_m': _suma(fac_mes, 'valor'),
     }
