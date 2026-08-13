@@ -4254,7 +4254,7 @@
     "num": "LM1780",
     "cliente": "SERSOLCA",
     "desc": "Cotización LM1780 · 2 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-08",
     "valor": 610608.04,
     "hojaEntrada": {
@@ -4279,8 +4279,8 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-08-11",
         "n": ""
       },
       {
@@ -4293,12 +4293,12 @@
     "cotizacionId": "LM1780",
     "createdAt": "2026-07-08T22:07:23.483Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-13T15:18:17.987Z",
-    "updatedBy": "lina",
-    "faltanFechas": false,
+    "updatedAt": "2026-08-13T15:18:33.603Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": true,
     "archivada": false,
-    "lockedBy": "alexandra",
-    "lockedAt": "2026-08-13T15:18:17.987Z"
+    "observaciones": "",
+    "facturacion": ""
   },
   {
     "id": "poc_1783548505564",
