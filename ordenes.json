@@ -5872,7 +5872,7 @@
     "num": "LM1877",
     "cliente": "CONSTRUCCIONES Y MONTAJES WELDER S.A.S",
     "desc": "Cotización LM1877 · 5 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-29",
     "valor": 1076559.68,
     "hojaEntrada": {
@@ -5887,7 +5887,7 @@
         "n": ""
       },
       {
-        "s": "active",
+        "s": "done",
         "f": "",
         "n": "",
         "envio": "",
@@ -5897,8 +5897,8 @@
         "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-08-03",
         "n": ""
       },
       {
@@ -5913,12 +5913,10 @@
     "cotizacionId": "LM1877",
     "createdAt": "2026-07-29T17:18:52.415Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-13T15:16:39.236Z",
+    "updatedAt": "2026-08-13T15:16:58.966Z",
     "updatedBy": "alexandra",
-    "faltanFechas": false,
-    "archivada": false,
-    "lockedBy": "alexandra",
-    "lockedAt": "2026-08-13T15:16:39.236Z"
+    "faltanFechas": true,
+    "archivada": false
   },
   {
     "id": "poc_1785362362821",
