@@ -10406,10 +10406,19 @@ function _cotizAdjAbrir(){
   if(!items.length){ showToast('La cotización no tiene ítems','error'); return; }
   const prev = (window._cotizAdjGuardado && Array.isArray(window._cotizAdjGuardado.items))
     ? window._cotizAdjGuardado.items : null;
-  const sel = items.map(function(it){
+  // v184 — N° de ítem TAL COMO SALE EN EL PDF que vio el cliente. Se calcula sobre
+  // cotizItems COMPLETO (con alternativas) y se mapea por uid, para que al marcar
+  // qué le adjudicaron se hable del mismo número en cotizaciones largas ("el 47").
+  var _numPorUid = {};
+  try{
+    var _numsAll = _cotizNums(cotizItems||[]);
+    (cotizItems||[]).forEach(function(it,k){ var u=_cotizItemUid(it); if(u) _numPorUid[u]=_numsAll[k]; });
+  }catch(_){ _numPorUid = {}; }
+  const sel = items.map(function(it,i){
     const uid = _cotizItemUid(it);
     const p = prev ? prev.filter(function(x){ return x && x.uid===uid; })[0] : null;
-    return { uid:uid, ref:it, marcado: prev ? !!p : true, qty: p ? p.qty : (+it.qty||0) };
+    return { uid:uid, ref:it, num:(_numPorUid[uid]!=null?String(_numPorUid[uid]):String(i+1)),
+             marcado: prev ? !!p : true, qty: p ? p.qty : (+it.qty||0) };
   });
   _cotizAdjPend = { sel:sel, items:items };
   _cotizAdjRender();
@@ -10428,13 +10437,14 @@ function _cotizAdjRender(){
     // reconstruir el modal (ver _cotizAdjPintar).
     return '<tr id="cadj-tr-'+i+'" style="opacity:'+(x.marcado?'1':'.45')+'">'
       +'<td style="padding:5px 6px;text-align:center;"><input type="checkbox" '+(x.marcado?'checked':'')+' onchange="_cotizAdjSet('+i+',\'marcado\',this.checked)"></td>'
+      +'<td style="padding:5px 6px;text-align:center;font-weight:700;color:var(--gold);font-size:12px;">'+esc(x.num)+'</td>'
       +'<td style="padding:5px 6px;font-size:12px;">'+esc(x.ref.desc)+'</td>'
       +'<td style="padding:5px 6px;text-align:center;color:var(--text-muted);font-size:12px;">'+_cadjNum(x.ref.qty)+'</td>'
       +'<td style="padding:5px 6px;"><input type="number" id="cadj-qty-'+i+'" min="0" step="any" value="'+x.qty+'" '+(x.marcado?'':'disabled')+' oninput="_cotizAdjSet('+i+',\'qty\',this.value)" onchange="this.value=_cadjNum(this.value)" style="width:74px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:6px;padding:4px 6px;color:#fff;font-size:12px;"></td>'
       +'<td style="padding:5px 6px;text-align:right;color:var(--text-muted);font-size:12px;white-space:nowrap;">$'+Math.round(vc).toLocaleString('es-CO')+'</td>'
       +'<td id="cadj-va-'+i+'" style="padding:5px 6px;text-align:right;font-weight:700;font-size:12px;white-space:nowrap;color:'+(x.marcado?'#86efac':'var(--text-muted)')+';">$'+Math.round(x.marcado?va:0).toLocaleString('es-CO')+'</td></tr>';
   }).join('');
-  const cab=['','Descripción','Cotizado','Adjudicado','V. cotizado','V. adjudicado'].map(function(h){
+  const cab=['','Ítem','Descripción','Cotizado','Adjudicado','V. cotizado','V. adjudicado'].map(function(h){
     return '<th style="text-align:left;padding:6px;font-size:10px;color:var(--text-muted);border-bottom:1px solid rgba(255,255,255,.15);text-transform:uppercase;">'+h+'</th>'; }).join('');
   const ov=document.createElement('div');
   ov.id='cotiz-adj-modal';
