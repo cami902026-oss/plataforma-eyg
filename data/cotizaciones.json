@@ -68395,7 +68395,7 @@
     "cliente": "INDUMEC",
     "contacto": "PEDRO",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 1710000,
@@ -68413,23 +68413,24 @@
     "items": [
       {
         "id": 1,
-        "desc": "valvula bola 1 1/2\" x 3000 psi npt a-105",
-        "udm": "EA",
         "qty": 2,
+        "udm": "EA",
+        "uid": "92b7a827-b225-4692-b9a0-064ef010934f",
+        "desc": "valvula bola 1 1/2\" x 3000 psi npt a-105",
+        "marca": "FBK-YDF",
         "precio": 855000,
-        "tiempoEntrega": "1-2 DIAS",
         "desvTec": "",
-        "marca": "FBK",
         "proveedor": "GRANADA",
-        "precioProveedor": 774900,
         "obsProveedor": "470000 INDUVACOL YDF",
-        "uid": "92b7a827-b225-4692-b9a0-064ef010934f"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 774900
       }
     ],
-    "fechaGuardado": "2026-08-14T14:48:39.848Z",
+    "fechaGuardado": "2026-08-14T14:49:10.788Z",
+    "fechaEnvio": "2026-08-14T14:49:10.788Z",
     "createdAt": "2026-08-14T14:48:39.848Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-14T14:48:39.848Z",
+    "updatedAt": "2026-08-14T14:49:10.788Z",
     "updatedBy": "sandra"
   },
   {
