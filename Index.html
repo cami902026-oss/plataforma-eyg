@@ -2830,7 +2830,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             </div>
             <div style="overflow-x:auto;">
               <table class="abs-table" id="remi-items-table"><thead><tr>
-                <th style="width:60px">Cant.</th><th>Descripción</th><th style="width:110px">Marca</th><th style="width:100px"># Colada</th><th style="width:110px">Desviación</th><th style="width:36px"></th>
+                <th style="width:62px" title="N° del ítem en la cotización adjudicada">Ítem cot.</th><th style="width:60px">Cant.</th><th>Descripción</th><th style="width:110px">Marca</th><th style="width:100px"># Colada</th><th style="width:110px">Desviación</th><th style="width:36px"></th>
               </tr></thead><tbody id="remi-items-tbody"></tbody></table>
             </div>
             <div class="form-group" style="margin-top:12px"><label>Observaciones</label><input type="text" id="remi-obs" placeholder="Observaciones..."></div>
@@ -2875,7 +2875,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div id="remi-cotiz-items" style="display:none;margin-top:12px;overflow-y:auto;flex:1;border:1px solid rgba(255,255,255,.08);border-radius:8px;">
               <div id="remi-cotiz-items-titulo" style="font-size:12px;font-weight:700;color:var(--gold);padding:8px 10px;"></div>
               <table class="abs-table" style="margin:0">
-                <thead><tr><th style="width:34px;text-align:center"><input type="checkbox" checked onchange="remiCotizToggleTodos(this.checked)"></th><th style="width:80px">Cant.</th><th>Descripción</th><th style="width:110px">Marca</th><th style="width:120px">Desviación</th></tr></thead>
+                <thead><tr><th style="width:34px;text-align:center"><input type="checkbox" checked onchange="remiCotizToggleTodos(this.checked)"></th><th style="width:58px;text-align:center" title="N° del ítem en la cotización">Ítem</th><th style="width:80px">Cant.</th><th>Descripción</th><th style="width:110px">Marca</th><th style="width:120px">Desviación</th></tr></thead>
                 <tbody id="remi-cotiz-items-tbody"></tbody>
               </table>
             </div>
@@ -19527,7 +19527,7 @@ function remiAbrir(remision, pdf){
   const h=its[0];
   remi_current={ nueva:false, remision:String(remision), remisionOrig:String(remision), fecha:h.fecha||'', cliente:h.cliente||'', lugar:h.lugar||'',
     oc:h.oc||'', contiene:h.contiene||'', observaciones:h.observaciones||'', cotizacionId:h.cotizacion_id||'',
-    items: its.slice().sort((a,b)=>(a.item||0)-(b.item||0)).map(r=>({cantidad:(r.cantidad==null?'':r.cantidad),descripcion:r.descripcion||'',marca:r.marca||'',colada:r.colada||'',desviacion:r.desviacion||''})) };
+    items: its.slice().sort((a,b)=>(a.item||0)-(b.item||0)).map(r=>({itemCot:(r.item_cot==null?'':String(r.item_cot)),cantidad:(r.cantidad==null?'':r.cantidad),descripcion:r.descripcion||'',marca:r.marca||'',colada:r.colada||'',desviacion:r.desviacion||''})) };
   remiAbrirEditor('Remisión '+remision);
   if(pdf) setTimeout(remiPDF, 250);
 }
@@ -19575,20 +19575,31 @@ function remiSyncHeader(){
   c.contiene=document.getElementById('remi-contiene').value.trim();
   c.observaciones=document.getElementById('remi-obs').value.trim();
 }
+// v183 — ¿el servidor ya tiene la columna item_cot (N° de ítem de la cotización)?
+// Se pregunta UNA vez por sesión. Si no existe, todo sigue funcionando como antes:
+// simplemente no se envía ese campo al guardar (nada se rompe ni se pierde).
+let _remiItemCotOK=null;
+async function _remiItemCotOn(){
+  if(_remiItemCotOK!==null) return _remiItemCotOK;
+  try{ await absFetch('remisiones?select=item_cot&limit=1'); _remiItemCotOK=true; }
+  catch(_){ _remiItemCotOK=false; }
+  return _remiItemCotOK;
+}
 function remiRenderItems(){
   const tb=document.getElementById('remi-items-tbody'); if(!tb||!remi_current) return;
   const cnt=document.getElementById('remi-item-count'); if(cnt) cnt.textContent=remi_current.items.length?('('+remi_current.items.length+')'):'';
   const inS='padding:5px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:5px;color:#fff;font-size:12px';
   tb.innerHTML=remi_current.items.map((it,i)=>`<tr>
+    <td><input type="text" value="${_remiEsc(it.itemCot).replace(/"/g,'&quot;')}" onchange="remi_current.items[${i}].itemCot=this.value" title="N° del ítem en la cotización adjudicada" placeholder="—" style="width:46px;text-align:center;color:var(--gold);font-weight:700;${inS}"></td>
     <td><input type="number" min="0" step="any" value="${_remiEsc(it.cantidad)}" onchange="remi_current.items[${i}].cantidad=this.value" style="width:56px;${inS}"></td>
     <td><input type="text" value="${_remiEsc(it.descripcion).replace(/"/g,'&quot;')}" onchange="remi_current.items[${i}].descripcion=this.value" style="width:100%;min-width:200px;${inS}"></td>
     <td><input type="text" value="${_remiEsc(it.marca).replace(/"/g,'&quot;')}" onchange="remi_current.items[${i}].marca=this.value" style="width:100px;${inS}"></td>
     <td><input type="text" value="${_remiEsc(it.colada).replace(/"/g,'&quot;')}" onchange="remi_current.items[${i}].colada=this.value" style="width:90px;${inS}"></td>
     <td><input type="text" value="${_remiEsc(it.desviacion).replace(/"/g,'&quot;')}" onchange="remi_current.items[${i}].desviacion=this.value" style="width:100px;${inS}"></td>
     <td><button onclick="remiDelItem(${i})" title="Quitar" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px">×</button></td>
-  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:16px">Agrega ítems con el botón de arriba ↑</td></tr>';
+  </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:16px">Agrega ítems con el botón de arriba ↑</td></tr>';
 }
-function remiAddItem(){ if(!remi_current)return; remi_current.items.push({cantidad:'',descripcion:'',marca:'',colada:'',desviacion:''}); remiRenderItems(); }
+function remiAddItem(){ if(!remi_current)return; remi_current.items.push({itemCot:'',cantidad:'',descripcion:'',marca:'',colada:'',desviacion:''}); remiRenderItems(); }
 function remiDelItem(i){ if(!remi_current)return; remi_current.items.splice(i,1); remiRenderItems(); }
 
 async function remiGuardar(){
@@ -19625,9 +19636,14 @@ async function remiGuardar(){
     // remisión desaparecía. Ahora: 1º se INSERTAN las filas nuevas, 2º se borran
     // las viejas (id not.in). Si algo falla a mitad, lo peor es una duplicación
     // temporal que el siguiente guardado limpia — nunca una pérdida.
+    // v183 — N° de ítem de la cotización: solo se manda si la columna existe en el
+    // servidor (se comprueba una vez). Si todavía no está, el guardado va exactamente
+    // igual que antes: el dato queda en pantalla/PDF pero no se persiste.
+    const _icOn = await _remiItemCotOn();
     const rows=items.map((it,idx)=>({
       remision:String(c.remision), fecha:c.fecha||null, cliente:c.cliente, lugar:c.lugar, oc:c.oc,
       cotizacion_id:c.cotizacionId||null,
+      ...( _icOn ? { item_cot:(String(it.itemCot||'').trim()||null) } : {} ),
       item:idx+1, descripcion:String(it.descripcion).trim(),
       cantidad:(it.cantidad===''||it.cantidad==null)?null:parseFloat(it.cantidad),
       marca:it.marca||'', colada:String(it.colada||''), desviacion:it.desviacion||'',
@@ -19711,7 +19727,10 @@ async function remiRecuperar(){
 function remiPDF(){
   if(!remi_current) return; remiSyncHeader(); const c=remi_current;
   const items=c.items.filter(it=>String(it.descripcion||'').trim()!=='');
-  const filas=items.map((it,i)=>`<tr><td style="text-align:center">${i+1}</td><td style="text-align:center">${_remiEsc(it.cantidad)}</td><td>${_remiEsc(it.descripcion)}</td><td>${_remiEsc(it.marca)}</td><td>${_remiEsc(it.colada)}</td><td>${_remiEsc(it.desviacion)}</td></tr>`).join('');
+  // v183 — la columna "Ítem cot." SOLO sale si algún ítem trae el número de la
+  // cotización. Remisiones sin cotización: PDF idéntico al de siempre.
+  const hayItemCot=items.some(it=>String(it.itemCot||'').trim()!=='');
+  const filas=items.map((it,i)=>`<tr><td style="text-align:center">${i+1}</td>${hayItemCot?`<td style="text-align:center;font-weight:700">${_remiEsc(it.itemCot)||'—'}</td>`:''}<td style="text-align:center">${_remiEsc(it.cantidad)}</td><td>${_remiEsc(it.descripcion)}</td><td>${_remiEsc(it.marca)}</td><td>${_remiEsc(it.colada)}</td><td>${_remiEsc(it.desviacion)}</td></tr>`).join('');
   const logo='https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png';
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Remisión ${_remiEsc(c.remision)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19762,7 +19781,7 @@ function remiPDF(){
       <div class="fld"><div class="l">Contiene</div><div class="v">${_remiEsc(c.contiene)||'—'}</div></div>
     </div>
     <div class="sec">Elementos entregados</div>
-    <table class="it"><thead><tr><th style="width:36px;text-align:center">Ítem</th><th style="width:48px;text-align:center">Cant.</th><th>Descripción</th><th style="width:90px">Marca</th><th style="width:76px;text-align:center"># Colada</th><th style="width:92px">Desviación</th></tr></thead><tbody>${filas}</tbody></table>
+    <table class="it"><thead><tr><th style="width:36px;text-align:center">Ítem</th>${hayItemCot?`<th style="width:52px;text-align:center">Ítem cot.${c.cotizacionId?('<br><span style="font-size:7.5px;font-weight:400;text-transform:none;letter-spacing:0">'+_remiEsc(c.cotizacionId)+'</span>'):''}</th>`:''}<th style="width:48px;text-align:center">Cant.</th><th>Descripción</th><th style="width:90px">Marca</th><th style="width:76px;text-align:center"># Colada</th><th style="width:92px">Desviación</th></tr></thead><tbody>${filas}</tbody></table>
     <div class="sec">Observaciones</div>
     <div class="obs">${_remiEsc(c.observaciones)||'—'}</div>
     <div class="firma">
@@ -19780,8 +19799,8 @@ function remiPDF(){
 function remiExcel(){
   if(!remi_current) return; remiSyncHeader(); const c=remi_current;
   const items=c.items.filter(it=>String(it.descripcion||'').trim()!=='');
-  let t='<table border="1"><tr><th>REMISION</th><th>FECHA</th><th>CLIENTE</th><th>LUGAR</th><th>OC</th><th>ITEM</th><th>DESCRIPCION</th><th>CANTIDAD</th><th>MARCA</th><th>COLADA</th><th>DESVIACION</th><th>OBSERVACIONES</th></tr>';
-  items.forEach((it,i)=>{ t+=`<tr><td>${_remiEsc(c.remision)}</td><td>${_remiEsc(c.fecha)}</td><td>${_remiEsc(c.cliente)}</td><td>${_remiEsc(c.lugar)}</td><td>${_remiEsc(c.oc)}</td><td>${i+1}</td><td>${_remiEsc(it.descripcion)}</td><td>${_remiEsc(it.cantidad)}</td><td>${_remiEsc(it.marca)}</td><td>${_remiEsc(it.colada)}</td><td>${_remiEsc(it.desviacion)}</td><td>${_remiEsc(c.observaciones)}</td></tr>`; });
+  let t='<table border="1"><tr><th>REMISION</th><th>FECHA</th><th>CLIENTE</th><th>LUGAR</th><th>OC</th><th>ITEM</th><th>ITEM COTIZACION</th><th>DESCRIPCION</th><th>CANTIDAD</th><th>MARCA</th><th>COLADA</th><th>DESVIACION</th><th>OBSERVACIONES</th></tr>';
+  items.forEach((it,i)=>{ t+=`<tr><td>${_remiEsc(c.remision)}</td><td>${_remiEsc(c.fecha)}</td><td>${_remiEsc(c.cliente)}</td><td>${_remiEsc(c.lugar)}</td><td>${_remiEsc(c.oc)}</td><td>${i+1}</td><td>${_remiEsc(it.itemCot)}</td><td>${_remiEsc(it.descripcion)}</td><td>${_remiEsc(it.cantidad)}</td><td>${_remiEsc(it.marca)}</td><td>${_remiEsc(it.colada)}</td><td>${_remiEsc(it.desviacion)}</td><td>${_remiEsc(c.observaciones)}</td></tr>`; });
   t+='</table>';
   const blob=new Blob(['﻿<html><head><meta charset="UTF-8"></head><body>'+t+'</body></html>'],{type:'application/vnd.ms-excel'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Remision_'+c.remision+'.xls';
@@ -20533,14 +20552,22 @@ async function remiCotizElegir(id){
       showToast('Cargando ítems de '+id+'…','info');
       const its=(await absFetch('cotizacion_items?cotizacion_id=eq.'+encodeURIComponent(id)+'&order=item.asc&limit=2000'))||[];
       c={ id:h.id, cliente:h.cliente, fecha:h.fecha, estado:h.estado,
-          items:its.map(it=>({ desc:it.descripcion||'', marca:it.marca||'', desvTec:it.desviacion_tecnica||'', qty:(it.qty==null?'':it.qty) })) };
+          items:its.map(it=>({ desc:it.descripcion||'', marca:it.marca||'', desvTec:it.desviacion_tecnica||'', qty:(it.qty==null?'':it.qty), _numCot:(it.item==null?'':String(it.item)) })) };
     }catch(e){ return showToast('Error al cargar ítems de '+id+': '+(e&&e.message||e),'error'); }
   }
   // Si la adjudicación fue PARCIAL, el modal llega ya filtrado con lo adjudicado y
   // su cantidad. Sin adjudicación registrada, entra todo como siempre.
   const _map=_cotizAdjMapa(c);
   const _parcial=_map && _cotizEsParcial(c);
-  const _todos=c.items||[];
+  // v183 — N° de ítem TAL COMO SALE EN LA COTIZACIÓN (el mismo del PDF que vio el
+  // cliente, incluidas las alternativas 3.1/3.2). Se calcula sobre la lista COMPLETA
+  // y ANTES de filtrar lo adjudicado, para que en una adjudicación parcial el ítem 47
+  // siga llamándose 47 y no se renumere. No modifica la cotización: solo la copia.
+  let _nums=[]; try{ _nums=(typeof _cotizNums==='function')?_cotizNums(c.items||[]):[]; }catch(_){ _nums=[]; }
+  const _todos=(c.items||[]).map((it,i)=>Object.assign({}, it, {
+    _numCot: (it&&it._numCot!=null&&it._numCot!=='') ? String(it._numCot)
+           : (_nums[i]!=null ? String(_nums[i]) : String(i+1))
+  }));
   const _items=_parcial ? _todos.filter(it=>_map[it.uid]!=null) : _todos;
   const _omitidos=_todos.length-_items.length;
   c=Object.assign({}, c, { items:_items });   // los índices del modal deben cuadrar
@@ -20550,6 +20577,7 @@ async function remiCotizElegir(id){
   const inS='padding:4px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:5px;color:#fff;font-size:12px;width:64px';
   tb.innerHTML=(c.items||[]).map((it,i)=>`<tr>
     <td style="text-align:center"><input type="checkbox" class="remi-cotiz-chk" value="${i}" checked></td>
+    <td style="text-align:center;font-weight:700;color:var(--gold);font-size:12.5px">${_remiEsc(it._numCot)}</td>
     <td><input type="number" min="0" step="any" id="remi-cotiz-qty-${i}" value="${_remiEsc(_parcial?(+_map[it.uid]||0):(it.qty==null?'':it.qty))}" style="${inS}"></td>
     <td style="font-size:12.5px">${_remiEsc(it.desc)}</td>
     <td style="font-size:12px">${_remiEsc(it.marca)||'—'}</td>
@@ -20571,7 +20599,7 @@ function remiCotizAgregar(){
   const nuevos=sel.map(i=>{
     const it=(c.items||[])[i]||{};
     const q=document.getElementById('remi-cotiz-qty-'+i)?.value;
-    return { cantidad:(q===''||q==null)?'':q, descripcion:String(it.desc||'').trim(), marca:it.marca||'', colada:'', desviacion:it.desvTec||'' };
+    return { itemCot:String(it._numCot||''), cantidad:(q===''||q==null)?'':q, descripcion:String(it.desc||'').trim(), marca:it.marca||'', colada:'', desviacion:it.desvTec||'' };
   }).filter(n=>n.descripcion);
   if(!nuevos.length) return showToast('Los ítems elegidos no tienen descripción','error');
   // Quitar filas totalmente vacías (la fila inicial en blanco de "Nueva remisión")
