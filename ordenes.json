@@ -5111,7 +5111,7 @@
     "num": "4000000150",
     "cliente": "ARROW",
     "desc": "Cotización LM1698 · 43 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-22",
     "valor": 202745205.76714596,
     "hojaEntrada": {
@@ -5141,17 +5141,17 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-08-15",
         "n": "",
-        "factura": ""
+        "factura": "573"
       }
     ],
     "cotizacionId": "LM1698",
     "createdAt": "2026-07-23T19:44:27.940Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-11T15:03:27.813Z",
-    "updatedBy": "alexandra",
+    "updatedAt": "2026-08-15T14:49:41.794Z",
+    "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false,
     "observaciones": "",
