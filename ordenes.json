@@ -6889,5 +6889,55 @@
     "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1786804238255",
+    "num": "130826A1661",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1972-2 · 3 ítems",
+    "estado": "completado",
+    "fechaIngreso": "2026-08-13",
+    "valor": 48774268.2,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-08-13",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-14",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-14",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-15",
+        "n": "",
+        "factura": "572"
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1972-2",
+    "createdAt": "2026-08-15T14:30:38.255Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-15T14:30:38.255Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false
   }
 ]
