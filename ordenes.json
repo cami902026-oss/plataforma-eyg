@@ -6989,5 +6989,54 @@
     "updatedAt": "2026-08-15T15:09:12.893Z",
     "updatedBy": "andrea",
     "faltanFechas": false
+  },
+  {
+    "id": "poc_1786806672656",
+    "num": "LM1984",
+    "cliente": "PETRORIOS",
+    "desc": "Cotización LM1984 · 5 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-13",
+    "valor": 345573.62,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-13",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-13",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-13",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1984",
+    "createdAt": "2026-08-15T15:11:12.656Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-15T15:11:12.656Z",
+    "updatedBy": "andrea"
   }
 ]
