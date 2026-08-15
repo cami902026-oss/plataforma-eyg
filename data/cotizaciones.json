@@ -68728,7 +68728,7 @@
     "cliente": "INDUMEC",
     "contacto": "PEDRO",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 1710000,
@@ -68759,12 +68759,22 @@
         "precioProveedor": 774900
       }
     ],
-    "fechaGuardado": "2026-08-14T14:49:56.105Z",
+    "fechaGuardado": "2026-08-15T15:07:31.556Z",
     "fechaEnvio": "2026-08-14T14:49:10.788Z",
+    "adjudicadaAt": "2026-08-15",
+    "valorAdjudicado": 1710000,
+    "itemsAdjudicados": [
+      {
+        "uid": "92b7a827-b225-4692-b9a0-064ef010934f",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-15T15:07:29.221Z",
     "createdAt": "2026-08-14T14:48:39.848Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-14T14:49:56.105Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-15T15:07:31.556Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1991",
