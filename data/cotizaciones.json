@@ -64106,7 +64106,7 @@
     "cliente": "CIAM",
     "contacto": "ELIAS CASTELLANOS",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 40986780,
@@ -64163,12 +64163,30 @@
         "precioProveedor": 7335320
       }
     ],
-    "fechaGuardado": "2026-08-12T23:47:33.370Z",
+    "fechaGuardado": "2026-08-15T14:29:32.238Z",
     "fechaEnvio": "2026-08-12T23:29:57.666Z",
+    "adjudicadaAt": "2026-08-15",
+    "valorAdjudicado": 40986780,
+    "itemsAdjudicados": [
+      {
+        "uid": "080fb60e-5a69-4263-af2a-c433fde427ea",
+        "qty": 3
+      },
+      {
+        "uid": "018ae0aa-6a23-490f-8160-f38801541f0b",
+        "qty": 20
+      },
+      {
+        "uid": "f12bf4eb-c408-4874-9db5-5d3bd0b17bfe",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-15T14:29:30.707Z",
     "createdAt": "2026-08-12T23:29:57.666Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-08-12T23:47:33.370Z",
-    "updatedBy": "alberto"
+    "updatedAt": "2026-08-15T14:29:32.239Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1973",
