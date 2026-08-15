@@ -64538,7 +64538,7 @@
     "cliente": "CIAM",
     "contacto": "ELIAS CASTELLANOS",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 18965800,
@@ -64850,39 +64850,137 @@
       },
       {
         "id": 23,
-        "desc": "Brida socketweld o slip-on de 1-1/4 SCH 80 CS, ASME 16.5,#300",
-        "udm": "EA",
         "qty": 8,
-        "precio": 190000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "BRIDA SW 1 1/4\" X 300 SCH 80 A-105",
+        "udm": "EA",
+        "uid": "742546d5-3e9e-4a2d-aa20-52a0148c924b",
+        "desc": "Brida socketweld o slip-on de 1-1/4 SCH 80 CS, ASME 16.5,#300",
         "marca": "",
+        "precio": 190000,
+        "desvTec": "BRIDA SW 1 1/4\" X 300 SCH 80 A-105",
         "proveedor": "SEGEFER",
-        "precioProveedor": 120000,
         "obsProveedor": "",
-        "uid": "742546d5-3e9e-4a2d-aa20-52a0148c924b"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 120000
       },
       {
         "id": 24,
-        "desc": "Kit Aislamiento,1-1/4\",CL300",
-        "udm": "EA",
         "qty": 9,
-        "precio": 98000,
-        "tiempoEntrega": "3-4 DIAS ",
-        "desvTec": "KIT DE AISL TIPO F, D8500, M-MY / A-G11-ZPS, 11/4 X 300 Lbs\nKit de aislamiento dieléctrico REF: FSSI-DUALSERVICE-D8500\nMaterial Empaque: Fibras aramidas con aglutinante en nitrilo (NBR), marca Durlon Ref. 8500, espesor de 1/8 (3.2 mm) Material Arandelas Aislantes: Resina Epoxica Reforzada con tejido de Fibra de Vidrio, Grado Nema G-11, espesor de 1/8 (3.2 mm) Material Arandelas Metálicas: Acero al Carbono Zincadas - F-436, espesor de 1/8 (3.2 mm) Material Bujes Aislantes: Material LE MYLAR, espesor 1 mm, instalar en espárragos B7 y Tuerca 2H Marca Ofertada: Ensamble nacional / Junta DURLON Instalar en Bridas: ASME B16.5 RF/RF SCH STD",
+        "udm": "EA",
+        "uid": "e059d705-24f5-4489-b1c4-28fa288cc98a",
+        "desc": "Kit Aislamiento,1-1/4\",CL300",
         "marca": "",
+        "precio": 98000,
+        "desvTec": "KIT DE AISL TIPO F, D8500, M-MY / A-G11-ZPS, 11/4 X 300 Lbs\nKit de aislamiento dieléctrico REF: FSSI-DUALSERVICE-D8500\nMaterial Empaque: Fibras aramidas con aglutinante en nitrilo (NBR), marca Durlon Ref. 8500, espesor de 1/8 (3.2 mm) Material Arandelas Aislantes: Resina Epoxica Reforzada con tejido de Fibra de Vidrio, Grado Nema G-11, espesor de 1/8 (3.2 mm) Material Arandelas Metálicas: Acero al Carbono Zincadas - F-436, espesor de 1/8 (3.2 mm) Material Bujes Aislantes: Material LE MYLAR, espesor 1 mm, instalar en espárragos B7 y Tuerca 2H Marca Ofertada: Ensamble nacional / Junta DURLON Instalar en Bridas: ASME B16.5 RF/RF SCH STD",
         "proveedor": "FSS INTER",
-        "precioProveedor": 65000,
         "obsProveedor": "",
-        "uid": "e059d705-24f5-4489-b1c4-28fa288cc98a"
+        "tiempoEntrega": "3-4 DIAS ",
+        "precioProveedor": 65000
       }
     ],
-    "fechaGuardado": "2026-08-13T15:54:10.816Z",
+    "fechaGuardado": "2026-08-15T15:21:52.935Z",
     "fechaEnvio": "2026-08-13T13:40:05.169Z",
+    "adjudicadaAt": "2026-08-15",
+    "valorAdjudicado": 18965800,
+    "itemsAdjudicados": [
+      {
+        "uid": "326a0381-990b-449e-8c1e-1b9a2746ce70",
+        "qty": 4
+      },
+      {
+        "uid": "fe1e4923-def9-4299-a51a-bb9c0048f808",
+        "qty": 4
+      },
+      {
+        "uid": "01180d87-f183-4517-9d7a-0418a75219e6",
+        "qty": 2
+      },
+      {
+        "uid": "cfddb73d-b81f-4f79-9df4-361c256abdbc",
+        "qty": 15
+      },
+      {
+        "uid": "7c8f6eed-070c-4b5b-b4a1-9dc72435e59f",
+        "qty": 15
+      },
+      {
+        "uid": "bd6aca31-1650-4480-84be-e06d6dc362d1",
+        "qty": 32
+      },
+      {
+        "uid": "aeef8499-1c9f-459a-b23b-e195ea268f3a",
+        "qty": 320
+      },
+      {
+        "uid": "abfe0819-3e1f-4fa6-ac32-78302ffbf911",
+        "qty": 30
+      },
+      {
+        "uid": "201ec101-2349-40da-9c4c-4fb466d4bfdc",
+        "qty": 4
+      },
+      {
+        "uid": "eb7f49ec-c22e-472a-919e-6b11dba135e9",
+        "qty": 8
+      },
+      {
+        "uid": "19b8d07d-465f-4ff9-a067-1e35efd1cfee",
+        "qty": 8
+      },
+      {
+        "uid": "b6ebb963-ae64-4ee6-91e7-321f52a23701",
+        "qty": 6
+      },
+      {
+        "uid": "17f5b24d-337e-4180-8bcd-39307c629010",
+        "qty": 10
+      },
+      {
+        "uid": "6f641f6a-622b-4495-a0fe-d53cfaa863ea",
+        "qty": 4
+      },
+      {
+        "uid": "b6302bc3-83b0-456e-8435-4d32d42c8da1",
+        "qty": 4
+      },
+      {
+        "uid": "7a3ac56c-c6ee-4e9c-8c34-fbd4fc1c776e",
+        "qty": 4
+      },
+      {
+        "uid": "995f768a-390f-403b-bf5f-2f5b6bf51ff5",
+        "qty": 12
+      },
+      {
+        "uid": "a64495c5-3e93-44fd-8b59-c2f81b65759a",
+        "qty": 8
+      },
+      {
+        "uid": "02022311-6e8a-4504-89da-794e2e4350fc",
+        "qty": 4
+      },
+      {
+        "uid": "b5f12bbe-7923-4c8e-9b8c-53bbedd0cddf",
+        "qty": 4
+      },
+      {
+        "uid": "c4425e33-bed4-4ed8-807a-dc896151e28d",
+        "qty": 40
+      },
+      {
+        "uid": "742546d5-3e9e-4a2d-aa20-52a0148c924b",
+        "qty": 8
+      },
+      {
+        "uid": "e059d705-24f5-4489-b1c4-28fa288cc98a",
+        "qty": 9
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-15T15:21:46.335Z",
     "createdAt": "2026-08-13T13:40:05.169Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-13T15:54:10.816Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-15T15:21:52.935Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1974",
