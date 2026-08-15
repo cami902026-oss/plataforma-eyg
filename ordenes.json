@@ -7040,5 +7040,54 @@
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1786807376050",
+    "num": "130826G9313",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1973-1 · 23 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-13",
+    "valor": 22569302,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-08-13",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-13",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1973-1",
+    "createdAt": "2026-08-15T15:22:56.050Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-15T15:22:56.050Z",
+    "updatedBy": "andrea"
   }
 ]
