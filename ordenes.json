@@ -6939,5 +6939,55 @@
     "updatedAt": "2026-08-15T14:30:51.248Z",
     "updatedBy": "andrea",
     "faltanFechas": false
+  },
+  {
+    "id": "poc_1786806506054",
+    "num": "LM1990",
+    "cliente": "INDUMEC",
+    "desc": "Cotización LM1990 · 1 ítems",
+    "estado": "completado",
+    "fechaIngreso": "2026-08-15",
+    "valor": 2034900,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-08-15",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-15",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-15",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-15",
+        "n": "",
+        "factura": "574"
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1990",
+    "createdAt": "2026-08-15T15:08:26.054Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-15T15:08:26.054Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false
   }
 ]
