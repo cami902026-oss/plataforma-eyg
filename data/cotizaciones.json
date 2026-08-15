@@ -69228,7 +69228,7 @@
     "cliente": "CIAM",
     "contacto": "ELIAS CASTELLANOS",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 8100000,
@@ -69259,12 +69259,22 @@
         "precioProveedor": 430000
       }
     ],
-    "fechaGuardado": "2026-08-14T22:22:32.674Z",
+    "fechaGuardado": "2026-08-15T18:53:40.023Z",
     "fechaEnvio": "2026-08-14T22:22:32.674Z",
+    "adjudicadaAt": "2026-08-15",
+    "valorAdjudicado": 8100000,
+    "itemsAdjudicados": [
+      {
+        "uid": "98bdc970-0f5a-4f9a-a836-377cd049022a",
+        "qty": 12
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-15T18:53:29.444Z",
     "createdAt": "2026-08-14T17:36:31.015Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-14T22:22:32.674Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-15T18:53:40.023Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1995",
