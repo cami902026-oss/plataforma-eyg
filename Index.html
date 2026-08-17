@@ -2840,6 +2840,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="btn btn-secondary" onclick="remiExcel()" style="width:auto;">📊 Descargar Excel</button>
               <button class="btn btn-secondary" onclick="remiRotulo()" style="width:auto;">🏷️ Rótulo</button>
               <button class="btn btn-secondary" onclick="vdAbrir()" style="width:auto;background:rgba(46,170,74,.18);border:1px solid rgba(46,170,74,.45);color:#86efac;">📋 Lista de verificación</button>
+              <button class="btn btn-secondary" onclick="remiViajeAbrir()" style="width:auto;background:rgba(126,179,255,.16);border:1px solid rgba(126,179,255,.45);color:#7eb3ff;">🚚 Planilla de viaje</button>
             </div>
           </div>
         </div>
@@ -2901,6 +2902,88 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div style="display:flex;gap:10px;padding:14px 22px 20px;flex-wrap:wrap;flex:0 0 auto;border-top:1px solid rgba(255,255,255,.08);">
               <button class="btn btn-primary" onclick="remiRotuloImprimir()" style="flex:1;min-width:150px;">🖨️ Guardar e imprimir</button>
               <button class="btn btn-ghost" onclick="remiRotuloCerrar()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== 🚚 PLANILLA DE TRANSPORTE DE MERCANCÍA (VIAJE) ===== -->
+        <style>
+          #remi-viaje-modal .vj-sec{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1.6px;margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid rgba(232,160,32,.28);}
+          #remi-viaje-modal .vj-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
+          #remi-viaje-modal .vj-grid .form-group{margin-bottom:10px;}
+          #remi-viaje-modal .vj-grid label{font-size:11px;}
+          @media(max-width:600px){#remi-viaje-modal .vj-grid{grid-template-columns:1fr;}}
+        </style>
+        <div id="remi-viaje-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
+          <div style="background:var(--card-bg,#0f1d33);border:1px solid rgba(255,255,255,.12);border-radius:14px;max-width:760px;width:100%;max-height:92vh;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 6px;">
+              <h3 style="margin:0;font-family:'Montserrat',sans-serif;color:#fff;font-size:17px;">🚚 Planilla de viaje — Remisión <span id="remi-vj-remision" style="color:var(--gold)">—</span></h3>
+              <button onclick="remiViajeCerrar()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;">&times;</button>
+            </div>
+            <div style="padding:0 22px;overflow-y:auto;flex:1 1 auto;">
+              <p style="font-size:11.5px;color:var(--text-muted);margin:2px 0 12px;">Los datos del cliente, destino y carga vienen de la remisión. Solo confirma vehículo, conductor y horas. <b>Se puede generar una planilla por cada viaje</b> (Viaje 1, Viaje 2…) si la remisión sale en varios despachos.</p>
+
+              <div class="vj-sec">Información general</div>
+              <div class="vj-grid">
+                <div class="form-group"><label>N° de viaje de esta remisión</label><input type="number" id="vj-viaje" min="1" value="1" style="width:90px"></div>
+                <div class="form-group"><label>Dirección de origen</label><input type="text" id="vj-origen" value="BODEGA CHIA CUNDINAMARCA"></div>
+                <div class="form-group" style="grid-column:1/-1"><label>Destino</label><input type="text" id="vj-destino" placeholder="Cliente — ciudad / dirección"></div>
+                <div class="form-group"><label>Fecha de salida</label><input type="date" id="vj-fsalida"></div>
+                <div class="form-group"><label>Hora de salida</label><input type="time" id="vj-hsalida" value="03:00"></div>
+                <div class="form-group"><label>Fecha estimada de llegada</label><input type="date" id="vj-fllegada"></div>
+                <div class="form-group"><label>Hora estimada de llegada</label><input type="time" id="vj-hllegada" value="17:00"></div>
+              </div>
+
+              <div class="vj-sec">Datos del vehículo</div>
+              <div class="vj-grid">
+                <div class="form-group" style="grid-column:1/-1"><label>Vehículo</label><select id="vj-vehiculo" onchange="remiViajeVehiculoSel()"></select></div>
+                <div class="form-group"><label>Tipo de vehículo</label><input type="text" id="vj-tipo" placeholder="CAMION"></div>
+                <div class="form-group"><label>Placa</label><input type="text" id="vj-placa" placeholder="ABC123" style="text-transform:uppercase"></div>
+                <div class="form-group" style="grid-column:1/-1"><label>Propietario</label><input type="text" id="vj-propietario"></div>
+                <div class="form-group"><label>SOAT vigente</label><select id="vj-soat"><option>SI</option><option>NO</option></select></div>
+                <div class="form-group"><label>Revisión técnico-mecánica vigente</label><select id="vj-rtm"><option>SI</option><option>NO</option></select></div>
+              </div>
+
+              <div class="vj-sec">Datos del conductor</div>
+              <div class="vj-grid">
+                <div class="form-group" style="grid-column:1/-1"><label>Conductor</label><select id="vj-conductor" onchange="remiViajeConductorSel()"></select></div>
+                <div class="form-group" style="grid-column:1/-1"><label>Nombre completo</label><input type="text" id="vj-cond-nombre" style="text-transform:uppercase"></div>
+                <div class="form-group"><label>Cédula</label><input type="text" id="vj-cond-cedula"></div>
+                <div class="form-group"><label>Licencia de conducción</label><input type="text" id="vj-cond-licencia"></div>
+                <div class="form-group"><label>Teléfono de contacto</label><input type="text" id="vj-cond-tel"></div>
+                <div class="form-group" style="display:flex;align-items:flex-end">
+                  <button type="button" class="btn btn-ghost" onclick="remiViajeGuardarCond()" style="width:auto;padding:8px 14px;font-size:12px;">💾 Guardar este conductor</button>
+                </div>
+              </div>
+
+              <div class="vj-sec">Detalles de la carga</div>
+              <div class="vj-grid">
+                <div class="form-group" style="grid-column:1/-1"><label>Descripción del material</label><input type="text" id="vj-material" placeholder="MATERIAL MECANICO"></div>
+                <div class="form-group"><label>Cantidad</label><input type="text" id="vj-cantidad"></div>
+                <div class="form-group"><label>Valor estimado</label><input type="text" id="vj-valor" placeholder="15.000.000"></div>
+                <div class="form-group" style="grid-column:1/-1"><label>Condiciones especiales</label><input type="text" id="vj-condiciones" value="NINGUNA"></div>
+              </div>
+
+              <div class="vj-sec">Documentación adjunta</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:#dbe6f5;margin-bottom:6px;">
+                <label style="display:flex;gap:7px;align-items:center;cursor:pointer"><input type="checkbox" id="vj-doc-factura"> Factura de la mercancía</label>
+                <label style="display:flex;gap:7px;align-items:center;cursor:pointer"><input type="checkbox" id="vj-doc-remision" checked> Remisión</label>
+                <label style="display:flex;gap:7px;align-items:center;cursor:pointer"><input type="checkbox" id="vj-doc-guia"> Guía de transporte</label>
+                <label style="display:flex;gap:7px;align-items:center;cursor:pointer"><input type="checkbox" id="vj-doc-origen"> Certificado de origen (si aplica)</label>
+                <label style="display:flex;gap:7px;align-items:center;cursor:pointer"><input type="checkbox" id="vj-doc-autoriz" checked> Autorización de despacho</label>
+              </div>
+
+              <div class="vj-sec">Firma autorización</div>
+              <div class="vj-grid">
+                <div class="form-group"><label>Responsable logístico</label><input type="text" id="vj-responsable" value="Andrea Bernal"></div>
+                <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:10px">
+                  <label style="display:flex;gap:7px;align-items:center;cursor:pointer;font-size:13px;color:#dbe6f5"><input type="checkbox" id="vj-firma" checked> Estampar firma y sello</label>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;padding:14px 22px 20px;flex-wrap:wrap;flex:0 0 auto;border-top:1px solid rgba(255,255,255,.08);">
+              <button class="btn btn-primary" onclick="remiViajeImprimir()" style="flex:1;min-width:170px;">🖨️ Generar planilla PDF</button>
+              <button class="btn btn-ghost" onclick="remiViajeCerrar()">Cancelar</button>
             </div>
           </div>
         </div>
@@ -19379,6 +19462,7 @@ function remiRenderLista(){
       <button onclick="remiAbrir('${_remiEsc(r.remision)}')" style="background:rgba(26,58,143,.4);border:1px solid rgba(26,58,143,.6);color:#90cdf4;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">👁 Ver</button>
       <button onclick="remiAbrir('${_remiEsc(r.remision)}',true)" title="Descargar PDF" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:var(--gold);padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">📄</button>
       <button onclick="remiVerSalidas('${_remiEsc(r.remision)}')" title="Salidas de bodega asociadas a esta remisión (kardex)" style="background:rgba(46,170,74,.15);border:1px solid rgba(46,170,74,.4);color:#86efac;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">📦</button>
+      <button onclick="remiViajeAbrir('${_remiEsc(r.remision)}')" title="Planilla de transporte de mercancía (viaje)" style="background:rgba(126,179,255,.15);border:1px solid rgba(126,179,255,.4);color:#7eb3ff;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">🚚</button>
     </td>
   </tr>${(r._match&&r._match.length)?`<tr><td></td><td colspan="5" style="padding:2px 8px 10px;font-size:11.5px;color:var(--text-muted);border-top:none">${r._match.map(it=>`↳ ${it.cantidad!=null?('<b style="color:var(--gold)">'+_remiEsc(it.cantidad)+'</b> × '):''}${_remiEsc(it.descripcion)}${it.marca?(' · <i>'+_remiEsc(it.marca)+'</i>'):''}`).join('<br>')}</td></tr>`:''}`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Sin remisiones</td></tr>';
 }
@@ -19956,6 +20040,293 @@ function _remiRotuloPrint(c, cajas){
   <button class="noprint" onclick="window.print()" style="display:block;margin:6mm auto;padding:9px 18px;background:${AZUL};color:#fff;border:none;border-radius:6px;cursor:pointer">🖨️ Imprimir (${n} caja${n>1?'s':''}, ${Math.ceil(n/2)} hoja${n>2?'s':''})</button>
   <script>window.onload=function(){setTimeout(function(){window.print();},600);}<\/script></body></html>`;
   const w=window.open('','_blank'); if(!w){showToast('Permite ventanas emergentes','error');return;}
+  w.document.write(html); w.document.close();
+}
+
+// ╔════════════════════════════════════════════════════════════════════════╗
+// ║  🚚 PLANILLA DE TRANSPORTE DE MERCANCÍA — una por VIAJE (v185)         ║
+// ╚════════════════════════════════════════════════════════════════════════╝
+// Se abre desde la remisión (botón 🚚 Planilla de viaje, o el 🚚 de la lista).
+// Trae solos el destino, el material y la cantidad desde la remisión; el
+// vehículo y el conductor salen de una lista guardada en el equipo, así que
+// normalmente solo hay que confirmar las horas y darle generar.
+//   · NO guarda historial: genera el PDF y listo (así lo pidió logística).
+//   · Una remisión puede salir en varios despachos: se cambia el "N° de viaje"
+//     y se genera otra planilla (Viaje 1, Viaje 2…).
+//   · Si aparece un conductor o un camión nuevo, se escribe una sola vez y con
+//     "💾 Guardar este conductor" (o al generar) queda en la lista del equipo.
+
+// Camiones y conductores de fábrica. Lo que el usuario edite o agregue se
+// guarda encima de esto en localStorage (energy_viaje_cat).
+const VJ_VEHICULOS_BASE = [
+  { placa:'JUK167', tipo:'CAMION', nombre:'Chevrolet NHR 2023', propietario:'ASSET INVESTMENT GLOBAL', soat:'SI', rtm:'SI' },
+  { placa:'KMZ301', tipo:'CAMION', nombre:'Hino FS500',         propietario:'ASSET INVESTMENT GLOBAL', soat:'SI', rtm:'SI' }
+];
+const VJ_CONDUCTORES_BASE = [
+  { nombre:'NICOLAS PEÑA', cedula:'1.025.323.092', licencia:'1.025.323.092', telefono:'' }
+];
+// Firma + sello de autorización de despacho (el mismo del formato original).
+const VJ_FIRMA = 'data:image/png;base64,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';
+
+function _vjCat(){
+  let g={}; try{ g=JSON.parse(localStorage.getItem('energy_viaje_cat')||'{}')||{}; }catch(_){ g={}; }
+  const veh=VJ_VEHICULOS_BASE.map(v=>Object.assign({},v));
+  (g.vehiculos||[]).forEach(x=>{
+    const i=veh.findIndex(v=>String(v.placa).toUpperCase()===String(x.placa||'').toUpperCase());
+    if(i>=0) Object.assign(veh[i],x); else veh.push(x);
+  });
+  const con=VJ_CONDUCTORES_BASE.map(c=>Object.assign({},c));
+  (g.conductores||[]).forEach(x=>{
+    const i=con.findIndex(c=>String(c.nombre).toUpperCase()===String(x.nombre||'').toUpperCase());
+    if(i>=0) Object.assign(con[i],x); else con.push(x);
+  });
+  return { vehiculos:veh, conductores:con };
+}
+function _vjCatGuardar(cat){
+  try{ localStorage.setItem('energy_viaje_cat', JSON.stringify({vehiculos:cat.vehiculos, conductores:cat.conductores})); }catch(_){}
+}
+// Recuerda el vehículo/conductor tal como quedó (aprende de lo que se corrige).
+function _vjRecordarVehiculo(v){
+  if(!v || !String(v.placa||'').trim()) return;
+  const cat=_vjCat();
+  const i=cat.vehiculos.findIndex(x=>String(x.placa).toUpperCase()===String(v.placa).toUpperCase());
+  if(i>=0) Object.assign(cat.vehiculos[i], v); else cat.vehiculos.push(v);
+  _vjCatGuardar(cat);
+}
+function _vjRecordarConductor(c){
+  if(!c || !String(c.nombre||'').trim()) return;
+  const cat=_vjCat();
+  const i=cat.conductores.findIndex(x=>String(x.nombre).toUpperCase()===String(c.nombre).toUpperCase());
+  if(i>=0) Object.assign(cat.conductores[i], c); else cat.conductores.push(c);
+  _vjCatGuardar(cat);
+}
+
+// Datos de la remisión: desde la lista (por número) o desde el editor abierto.
+function _vjDatosRemision(remision){
+  if(remision){
+    const its=(typeof remiGrupos==='function'?remiGrupos():{})[String(remision)]||[];
+    if(!its.length) return null;
+    const h=its[0];
+    return { remision:String(remision), fecha:h.fecha||'', cliente:h.cliente||'', lugar:h.lugar||'',
+             oc:h.oc||'', contiene:h.contiene||'',
+             items: its.map(r=>({cantidad:r.cantidad, descripcion:r.descripcion||''})) };
+  }
+  if(typeof remiSyncHeader==='function') remiSyncHeader();
+  const c=remi_current; if(!c) return null;
+  return { remision:c.remision, fecha:c.fecha, cliente:c.cliente, lugar:c.lugar, oc:c.oc, contiene:c.contiene,
+           items:(c.items||[]).map(i=>({cantidad:i.cantidad, descripcion:i.descripcion})) };
+}
+function _vjSet(id,val){ const el=document.getElementById(id); if(el) el.value=(val==null?'':val); }
+function _vjGet(id){ const el=document.getElementById(id); return el?String(el.value||'').trim():''; }
+function _vjChk(id){ const el=document.getElementById(id); return !!(el&&el.checked); }
+function _vjHoy(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function _vjFechaES(f){ return f?String(f).split('-').reverse().join('/'):'—'; }
+function _vjHoraES(h){ return h?String(h)+':00':'—'; }
+
+let _vjRemi=null;   // remisión con la que se abrió el modal
+
+function remiViajeAbrir(remision){
+  const c=_vjDatosRemision(remision);
+  if(!c) return showToast('Remisión no encontrada','error');
+  _vjRemi=c;
+  const cat=_vjCat();
+  // Listas desplegables
+  const selV=document.getElementById('vj-vehiculo');
+  selV.innerHTML=cat.vehiculos.map(v=>`<option value="${_remiEsc(v.placa)}">${_remiEsc(v.placa)} — ${_remiEsc(v.nombre||v.tipo||'')}</option>`).join('')
+               + '<option value="__otro__">➕ Otro vehículo (escribir)</option>';
+  const selC=document.getElementById('vj-conductor');
+  selC.innerHTML=cat.conductores.map(x=>`<option value="${_remiEsc(x.nombre)}">${_remiEsc(x.nombre)}</option>`).join('')
+               + '<option value="__otro__">➕ Otro conductor (escribir)</option>';
+  remiViajeVehiculoSel(); remiViajeConductorSel();
+
+  document.getElementById('remi-vj-remision').textContent=c.remision||'—';
+  _vjSet('vj-viaje',1);
+  _vjSet('vj-origen','BODEGA CHIA CUNDINAMARCA');
+  _vjSet('vj-destino',[c.cliente,c.lugar].filter(x=>String(x||'').trim()).join(' — '));
+  const fecha=c.fecha||_vjHoy();
+  _vjSet('vj-fsalida',fecha); _vjSet('vj-fllegada',fecha);
+  // Carga: lo que dice la remisión en "Contiene"; si está vacío, el primer ítem.
+  const its=(c.items||[]).filter(i=>String(i.descripcion||'').trim()!=='');
+  _vjSet('vj-material',(c.contiene||its.map(i=>i.descripcion)[0]||'').toUpperCase());
+  // Cantidad = suma de las cantidades de los ítems (si no son números, cuenta ítems).
+  let suma=0, hayNum=false;
+  its.forEach(i=>{ const n=parseFloat(String(i.cantidad).replace(',','.')); if(isFinite(n)){ suma+=n; hayNum=true; } });
+  _vjSet('vj-cantidad', hayNum ? String(Math.round(suma*100)/100) : String(its.length||''));
+  _vjSet('vj-condiciones','NINGUNA');
+  _vjSet('vj-responsable', (currentUser && currentUser.name) || 'Andrea Bernal');
+  document.getElementById('remi-viaje-modal').style.display='flex';
+}
+function remiViajeCerrar(){ document.getElementById('remi-viaje-modal').style.display='none'; }
+
+function remiViajeVehiculoSel(){
+  const val=_vjGet('vj-vehiculo');
+  if(val==='__otro__'){ _vjSet('vj-tipo','CAMION'); _vjSet('vj-placa',''); _vjSet('vj-propietario',''); _vjSet('vj-soat','SI'); _vjSet('vj-rtm','SI');
+    const p=document.getElementById('vj-placa'); if(p) p.focus(); return; }
+  const v=_vjCat().vehiculos.find(x=>String(x.placa)===val); if(!v) return;
+  _vjSet('vj-tipo',v.tipo||'CAMION'); _vjSet('vj-placa',v.placa); _vjSet('vj-propietario',v.propietario||'');
+  _vjSet('vj-soat',v.soat||'SI'); _vjSet('vj-rtm',v.rtm||'SI');
+}
+function remiViajeConductorSel(){
+  const val=_vjGet('vj-conductor');
+  if(val==='__otro__'){ _vjSet('vj-cond-nombre',''); _vjSet('vj-cond-cedula',''); _vjSet('vj-cond-licencia',''); _vjSet('vj-cond-tel','');
+    const n=document.getElementById('vj-cond-nombre'); if(n) n.focus(); return; }
+  const c=_vjCat().conductores.find(x=>String(x.nombre)===val); if(!c) return;
+  _vjSet('vj-cond-nombre',c.nombre); _vjSet('vj-cond-cedula',c.cedula||'');
+  _vjSet('vj-cond-licencia',c.licencia||c.cedula||''); _vjSet('vj-cond-tel',c.telefono||'');
+}
+function remiViajeGuardarCond(){
+  const nombre=_vjGet('vj-cond-nombre').toUpperCase();
+  if(!nombre) return showToast('Escribe el nombre del conductor','error');
+  _vjRecordarConductor({nombre, cedula:_vjGet('vj-cond-cedula'), licencia:_vjGet('vj-cond-licencia'), telefono:_vjGet('vj-cond-tel')});
+  const cat=_vjCat(), selC=document.getElementById('vj-conductor');
+  selC.innerHTML=cat.conductores.map(x=>`<option value="${_remiEsc(x.nombre)}">${_remiEsc(x.nombre)}</option>`).join('')
+               + '<option value="__otro__">➕ Otro conductor (escribir)</option>';
+  selC.value=nombre;
+  showToast('Conductor guardado: '+nombre,'success');
+}
+
+function remiViajeImprimir(){
+  if(!_vjRemi) return;
+  if(!_vjGet('vj-placa'))       return showToast('Falta la placa del vehículo','error');
+  if(!_vjGet('vj-cond-nombre')) return showToast('Falta el nombre del conductor','error');
+  const v={ tipo:_vjGet('vj-tipo').toUpperCase(), placa:_vjGet('vj-placa').toUpperCase(), propietario:_vjGet('vj-propietario'),
+            soat:_vjGet('vj-soat'), rtm:_vjGet('vj-rtm'),
+            nombre:(_vjCat().vehiculos.find(x=>String(x.placa).toUpperCase()===_vjGet('vj-placa').toUpperCase())||{}).nombre||'' };
+  const cond={ nombre:_vjGet('vj-cond-nombre').toUpperCase(), cedula:_vjGet('vj-cond-cedula'),
+               // Si no escribieron la licencia va la cédula: en las licencias colombianas
+               // el número es el mismo documento (así venía el formato original).
+               licencia:_vjGet('vj-cond-licencia')||_vjGet('vj-cond-cedula'), telefono:_vjGet('vj-cond-tel') };
+  _vjRecordarVehiculo(v); _vjRecordarConductor(cond);   // aprende lo que se corrigió
+  const datos={
+    viaje:_vjGet('vj-viaje')||'1', origen:_vjGet('vj-origen'), destino:_vjGet('vj-destino'),
+    fsalida:_vjGet('vj-fsalida'), hsalida:_vjGet('vj-hsalida'), fllegada:_vjGet('vj-fllegada'), hllegada:_vjGet('vj-hllegada'),
+    vehiculo:v, conductor:cond,
+    material:_vjGet('vj-material'), cantidad:_vjGet('vj-cantidad'), valor:_vjGet('vj-valor'), condiciones:_vjGet('vj-condiciones'),
+    docs:{ factura:_vjChk('vj-doc-factura'), remision:_vjChk('vj-doc-remision'), guia:_vjChk('vj-doc-guia'),
+           origen:_vjChk('vj-doc-origen'), autoriz:_vjChk('vj-doc-autoriz') },
+    responsable:_vjGet('vj-responsable'), firma:_vjChk('vj-firma')
+  };
+  _remiViajePrint(_vjRemi, datos);
+  remiViajeCerrar();
+}
+
+// El PDF: mismo formato SIG de la planilla de transporte, con los colores de E&G.
+function _remiViajePrint(c, d){
+  const logo='https://eygenergygroup.com/wp-content/uploads/2026/03/LOGO-removebg-preview-2.png';
+  const AZUL='#0F2B5B', DORADO='#E8A020', VERDE='#2EAA4A';
+  const E=_remiEsc;
+  const fila=(l,v)=>`<tr><td class="l">${l}</td><td class="v">${E(v)||'—'}</td></tr>`;
+  const doc=(marcado,txt)=>`<tr><td class="cx">${marcado?'X':'&nbsp;'}</td><td class="ct">${txt}</td></tr>`;
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>Planilla de viaje ${E(c.remision)}${d.viaje&&d.viaje!=='1'?(' - viaje '+E(d.viaje)):''}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    @page{ size: letter portrait; margin: 0; }
+    *{box-sizing:border-box} html,body{margin:0;padding:0}
+    body{font-family:'Inter',Arial,Helvetica,sans-serif;color:#1f2a37;font-size:11px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .page{width:8.5in;margin:0 auto;padding:0.42in 0.55in;background:#fff}
+    .marco{border:1.6px solid ${AZUL};border-radius:4px;overflow:hidden}
+    .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 16px;border-bottom:1.6px solid ${AZUL}}
+    .hd img{height:0.52in;object-fit:contain}
+    .hd .tt{flex:1;text-align:center}
+    .hd .tt .t1{font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;color:${AZUL};letter-spacing:1.2px;line-height:1.15}
+    .hd .tt .t2{font-size:8.5px;color:#6b7785;letter-spacing:2px;text-transform:uppercase;margin-top:3px}
+    .sec{background:${AZUL};color:#fff;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:2.2px;text-transform:uppercase;text-align:center;padding:5px 0;border-top:1.2px solid ${AZUL};position:relative}
+    .sec:after{content:'';position:absolute;left:0;bottom:0;height:2px;width:100%;background:linear-gradient(90deg,${VERDE} 0%,${DORADO} 100%)}
+    .cuerpo{padding:9px 16px 11px}
+    table.d{border-collapse:collapse;width:100%}
+    table.d td{padding:2.6px 0;vertical-align:top}
+    td.l{width:2.05in;font-weight:700;color:${AZUL};font-size:10.5px}
+    td.v{font-size:11px;color:#1f2a37;border-bottom:1px dotted #cfd8e6}
+    .cols{display:flex;gap:26px}
+    .cols>div{flex:1}
+    table.dc{border-collapse:separate;border-spacing:0 3px;margin:2px 0 0}
+    td.cx{width:0.62in;height:0.2in;border:1.2px solid ${AZUL};text-align:center;font-weight:800;color:${VERDE};font-size:11.5px}
+    td.ct{padding-left:15px;font-weight:600;font-size:10.5px;color:#1f2a37}
+    .fmz{display:flex;align-items:flex-end;gap:30px;padding:4px 0 2px}
+    .fmz .campo{font-size:10.5px}
+    .fmz .campo b{color:${AZUL}}
+    .fmz .sello{text-align:center}
+    .fmz .sello img{height:0.72in;display:block}
+    .fmz .sello .ln{border-top:1px solid #1f2a37;width:2.2in;margin-top:2px;padding-top:3px;font-size:8.5px;color:#6b7785;text-align:center}
+    .pie{margin-top:9px;text-align:center;font-size:8px;color:#9aa6b4;letter-spacing:.4px}
+    .noprint{display:block;margin:6mm auto;padding:9px 18px;background:${AZUL};color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px}
+    @media print{.noprint{display:none} .page{padding:0.3in 0.45in}}
+  </style></head><body>
+  <div class="page"><div class="marco">
+    <div class="hd">
+      <img src="${logo}" alt="E&amp;G">
+      <div class="tt">
+        <div class="t1">PLANILLA DE TRANSPORTE DE MERCANCÍA</div>
+        <div class="t2">Remisión ${E(c.remision)||'—'}${c.oc?(' &middot; OC '+E(c.oc)):''} &middot; Viaje ${E(d.viaje)}</div>
+      </div>
+      <img src="${logo}" alt="E&amp;G">
+    </div>
+
+    <div class="sec">Información general</div>
+    <div class="cuerpo"><table class="d">
+      ${fila('Empresa remitente:','E&G ENERGY GROUP SAS')}
+      ${fila('NIT:','900745984-4')}
+      ${fila('Dirección de origen:',d.origen)}
+      ${fila('Destino:',d.destino)}
+      ${fila('Fecha de salida:',_vjFechaES(d.fsalida))}
+      ${fila('Hora de salida:',_vjHoraES(d.hsalida))}
+      ${fila('Fecha estimada de llegada:',_vjFechaES(d.fllegada))}
+      ${fila('Hora estimada de llegada:',_vjHoraES(d.hllegada))}
+    </table></div>
+
+    <div class="sec">Datos del vehículo</div>
+    <div class="cuerpo"><table class="d">
+      ${fila('Tipo de vehículo:',d.vehiculo.tipo)}
+      ${fila('Placa:',d.vehiculo.placa)}
+      ${fila('Propietario:',d.vehiculo.propietario)}
+      ${fila('SOAT vigente:',d.vehiculo.soat)}
+      ${fila('Revisión técnico-mecánica vigente:',d.vehiculo.rtm)}
+    </table></div>
+
+    <div class="sec">Datos del conductor</div>
+    <div class="cuerpo"><table class="d">
+      ${fila('Nombre completo:',d.conductor.nombre)}
+      ${fila('Cédula:',d.conductor.cedula)}
+      ${fila('Licencia de conducción:',d.conductor.licencia)}
+      ${fila('Teléfono de contacto:',d.conductor.telefono)}
+    </table></div>
+
+    <div class="sec">Detalles de la carga</div>
+    <div class="cuerpo"><table class="d">
+      ${fila('Descripción del material:',d.material)}
+      ${fila('Cantidad:',d.cantidad)}
+      ${fila('Valor estimado:',d.valor)}
+      ${fila('Condiciones especiales:',d.condiciones)}
+    </table></div>
+
+    <div class="sec">Documentación adjunta</div>
+    <div class="cuerpo"><table class="dc">
+      ${doc(d.docs.factura,'Factura de la mercancía')}
+      ${doc(d.docs.remision,'Remisión'+(c.remision?(' N° '+E(c.remision)):''))}
+      ${doc(d.docs.guia,'Guía de transporte')}
+      ${doc(d.docs.origen,'Certificado de origen (si aplica)')}
+      ${doc(d.docs.autoriz,'Autorización de despacho')}
+    </table></div>
+
+    <div class="sec">Firma autorización</div>
+    <div class="cuerpo">
+      <div class="fmz">
+        <div class="campo"><b>Responsable logístico:</b> ${E(d.responsable)||'—'}<br><br><b>Fecha:</b> ${_vjFechaES(d.fsalida)}</div>
+        <div class="sello">
+          ${d.firma?`<img src="${VJ_FIRMA}" alt="firma">`:'<div style="height:0.72in"></div>'}
+          <div class="ln">Firma y sello &mdash; E&amp;G Energy Group SAS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pie">E&amp;G ENERGY GROUP SAS &middot; NIT 900745984-4 &middot; Carrera 7 # 12-61, Chía, Cundinamarca &middot; +57 320 494 7227 &middot; www.eygenergygroup.com</div>
+  </div>
+  <button class="noprint" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+  <script>window.onload=function(){setTimeout(function(){window.print();},700);}<\/script>
+  </body></html>`;
+  const w=window.open('','_blank'); if(!w){ showToast('Permite ventanas emergentes','error'); return; }
   w.document.write(html); w.document.close();
 }
 
