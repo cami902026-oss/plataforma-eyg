@@ -60086,7 +60086,7 @@
     "cliente": "CIAM",
     "contacto": "OSCAR GUERRERO",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 4976000,
@@ -60156,13 +60156,34 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-08-13T19:35:21.039Z",
+    "fechaGuardado": "2026-08-18T17:51:44.620Z",
     "fechaEnvio": "2026-08-13T19:33:59.771Z",
+    "adjudicadaAt": "2026-08-18",
+    "valorAdjudicado": 4976000,
+    "itemsAdjudicados": [
+      {
+        "uid": "f73646c9-e665-45c2-9542-dddc57893a50",
+        "qty": 4
+      },
+      {
+        "uid": "f43f6d37-fdb3-42b1-8093-fc566c731f0f",
+        "qty": 48
+      },
+      {
+        "uid": "d4ff5cf0-e624-4c1c-aef3-b4104080d89b",
+        "qty": 4
+      },
+      {
+        "uid": "8bc6fc21-db06-4bbd-a320-1aaccd48f293",
+        "qty": 4
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-18T17:51:41.549Z",
     "createdAt": "2026-08-13T19:33:59.772Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-14T02:07:54.112Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-08-14T02:07:54.112Z"
+    "updatedAt": "2026-08-18T17:51:44.620Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM1946",
