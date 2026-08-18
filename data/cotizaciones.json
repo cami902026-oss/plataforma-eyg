@@ -69931,7 +69931,7 @@
     "cliente": "PETRORIOS",
     "contacto": "LUIS ANGEL",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 19679994,
@@ -69948,23 +69948,24 @@
     "motivoRechazo": "",
     "items": [
       {
-        "desc": "TUBERIA DE 12 SCH 40 S/C ASTM A53/A-106 B ",
-        "udm": "MTRS",
         "qty": 18,
-        "precio": 1093333,
+        "udm": "MTRS",
+        "uid": "ec7918d8-7d6b-4e2f-85ab-7fef9595623e",
+        "desc": "TUBERIA DE 12 SCH 40 S/C ASTM A53/A-106 B ",
         "marca": "ST-PANJIN-BAOLAI",
-        "proveedor": "TUVACOL",
-        "precioProveedor": 820000,
-        "tiempoEntrega": "1-2 DIAS",
+        "precio": 1093333,
         "desvTec": "",
-        "uid": "ec7918d8-7d6b-4e2f-85ab-7fef9595623e"
+        "proveedor": "TUVACOL",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 820000
       }
     ],
-    "fechaGuardado": "2026-08-18T13:27:36.020Z",
+    "fechaGuardado": "2026-08-18T13:48:40.780Z",
+    "fechaEnvio": "2026-08-18T13:48:40.780Z",
     "createdAt": "2026-08-18T13:27:36.020Z",
     "createdBy": "alberto",
-    "updatedAt": "2026-08-18T13:27:36.020Z",
-    "updatedBy": "alberto"
+    "updatedAt": "2026-08-18T13:48:40.780Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM2002",
