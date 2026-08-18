@@ -60701,7 +60701,7 @@
     "cliente": "CIAM",
     "contacto": "JEISON YANES",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 3012000,
@@ -60943,13 +60943,70 @@
         "precioProveedor": 18000
       }
     ],
-    "fechaGuardado": "2026-08-06T22:36:46.581Z",
+    "fechaGuardado": "2026-08-18T17:50:38.695Z",
     "fechaEnvio": "2026-08-06T22:36:46.581Z",
+    "adjudicadaAt": "2026-08-18",
+    "valorAdjudicado": 2852000,
+    "itemsAdjudicados": [
+      {
+        "uid": "87aa549f-8688-4fa4-b655-a72f885346bc",
+        "qty": 1
+      },
+      {
+        "uid": "492096cb-e4c6-4b04-9eb6-71aa14216d9e",
+        "qty": 3
+      },
+      {
+        "uid": "d4968f7d-a72b-430c-9783-bc281aac7b22",
+        "qty": 2
+      },
+      {
+        "uid": "8cc38ef4-22f5-4324-9960-4bc140ab36e6",
+        "qty": 4
+      },
+      {
+        "uid": "5491385d-abd9-4249-a8c9-b3c0ae09310c",
+        "qty": 2
+      },
+      {
+        "uid": "9012d4fa-fd7d-421e-b546-f76ba4a9fdcd",
+        "qty": 2
+      },
+      {
+        "uid": "b7248a2c-4f04-440a-95ac-b72be4e00a34",
+        "qty": 1
+      },
+      {
+        "uid": "cae1b284-fe7c-4994-8916-2165bbe56a00",
+        "qty": 1
+      },
+      {
+        "uid": "a542b711-2884-41aa-aba4-d1b3b2461298",
+        "qty": 4
+      },
+      {
+        "uid": "96287712-ed96-468a-9780-bf7154861687",
+        "qty": 2
+      },
+      {
+        "uid": "060df76c-b0d5-4a7e-97bf-d2af1aabfa37",
+        "qty": 12
+      },
+      {
+        "uid": "7c10b6c0-0665-4221-9d31-6ee10c6a7c43",
+        "qty": 4
+      },
+      {
+        "uid": "8e155d17-25da-4207-9227-56a175338917",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-18T17:49:26.849Z",
     "createdAt": "2026-08-06T20:54:14.242Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-15T12:49:19.696Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-08-15T12:49:19.696Z"
+    "updatedAt": "2026-08-18T17:50:38.695Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM1951",
