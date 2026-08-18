@@ -7139,6 +7139,57 @@
     "createdAt": "2026-08-18T15:14:35.260Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-08-18T15:14:35.260Z",
-    "updatedBy": "alexandra"
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1787075057533",
+    "num": "140826T5282",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1994 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-14",
+    "valor": 9639000,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-08-14",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-14",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1994",
+    "createdAt": "2026-08-18T17:44:17.533Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-18T17:44:17.533Z",
+    "updatedBy": "andrea"
   }
 ]
