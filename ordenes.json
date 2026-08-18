@@ -7091,5 +7091,54 @@
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1787066075259",
+    "num": "LM1885-2",
+    "cliente": "CMU",
+    "desc": "Cotización LM1885-2 · 165 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-18",
+    "valor": 415347155.37,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "active",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1885-2",
+    "createdAt": "2026-08-18T15:14:35.260Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-18T15:14:35.260Z",
+    "updatedBy": "alexandra"
   }
 ]
