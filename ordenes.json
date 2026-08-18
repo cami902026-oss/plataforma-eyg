@@ -7190,6 +7190,57 @@
     "createdAt": "2026-08-18T17:44:17.533Z",
     "createdBy": "andrea",
     "updatedAt": "2026-08-18T17:45:18.770Z",
-    "updatedBy": "andrea"
+    "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1787075467161",
+    "num": "OC 140826P1505",
+    "cliente": "CIAM",
+    "desc": "Cotización LM1950 · 15 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-18",
+    "valor": 3584280,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1950",
+    "createdAt": "2026-08-18T17:51:07.161Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-18T17:51:07.161Z",
+    "updatedBy": "alexandra"
   }
 ]
