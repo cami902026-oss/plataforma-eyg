@@ -69934,9 +69934,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 19679994,
+    "ivaVal": 3739198.86,
+    "total": 23419192.86,
     "formaPago": "CONTADO",
     "sitioEntrega": "BOGOTA",
     "validez": "8 DÍAS",
@@ -69948,25 +69948,23 @@
     "motivoRechazo": "",
     "items": [
       {
-        "id": 1,
-        "qty": 18,
-        "udm": "MTRS",
-        "uid": "5029c82a-79b5-44c7-b979-bac28defa7d1",
         "desc": "TUBERIA DE 12 SCH 40 S/C ASTM A53/A-106 B ",
+        "udm": "MTRS",
+        "qty": 18,
+        "precio": 1093333,
         "marca": "ST-PANJIN-BAOLAI",
-        "precio": 0,
-        "desvTec": "",
         "proveedor": "TUVACOL",
-        "obsProveedor": "",
+        "precioProveedor": 820000,
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 820000
+        "desvTec": "",
+        "uid": "ec7918d8-7d6b-4e2f-85ab-7fef9595623e"
       }
     ],
-    "fechaGuardado": "2026-08-18T13:26:29.734Z",
-    "createdAt": "2026-08-18T13:25:59.965Z",
-    "createdBy": "sheila",
-    "updatedAt": "2026-08-18T13:26:29.734Z",
-    "updatedBy": "sheila"
+    "fechaGuardado": "2026-08-18T13:27:36.020Z",
+    "createdAt": "2026-08-18T13:27:36.020Z",
+    "createdBy": "alberto",
+    "updatedAt": "2026-08-18T13:27:36.020Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM629",
