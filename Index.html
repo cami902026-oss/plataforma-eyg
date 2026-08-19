@@ -18394,6 +18394,10 @@ const ABS_KEY = 'sb_publishable_zZrmpmvqbz4AJCGHRHQ8Xw_8tnf5ObM';
 let abs_productos = [], abs_kardex = [], abs_familias = [];
 let abs_loaded = false, abs_mov_tipo = null, abs_mov_producto = null;
 let abs_conteo_activo = null, abs_rotacion = [];
+// v189 — Los productos ARCHIVADOS (activo=false) salen de la lista y del buscador,
+// pero su historial SÍ cuenta para el análisis de rotación (el usuario lo usa para
+// decidir qué se mueve y qué no). Por eso se cargan aparte y solo Rotación los usa.
+let abs_prod_archivados = [];
 
 async function absFetch(endpoint, opts={}) {
   // RLS cerrada (2026-07-13): las ESCRITURAS ya no van directas — pasan por el
@@ -18517,9 +18521,14 @@ async function absCargar() {
     const [fams,prods,kard] = await Promise.all([
       absFetch('familias?order=nombre'),
       absFetch('productos?order=descripcion&activo=eq.true'),
-      absFetch('kardex?order=fecha.desc,hora.desc&limit=600')
+      // v189: el tope de 600 ya rozaba el total de movimientos (599). Con 600 el
+      // informe de rotación habría empezado a perder historial en silencio.
+      absFetch('kardex?order=fecha.desc,hora.desc&limit=20000')
     ]);
     abs_familias=fams||[]; abs_productos=prods||[]; abs_kardex=kard||[];
+    // Archivados: solo para Rotación. Si falla, no estorba el resto del módulo.
+    try{ abs_prod_archivados = (await absFetch('productos?order=descripcion&activo=eq.false')) || []; }
+    catch(_){ abs_prod_archivados = []; }
     abs_loaded=true;
     absRenderFamiliaFilter(); absRenderStock(); absRenderKardex();
     absRenderDashboard(); absCargarConteoHistorial(); absApplyPermisos();
@@ -22075,7 +22084,10 @@ async function descargarRespaldo(){
 
 function absCalcularRotacion() {
   const hoy=new Date();
-  abs_rotacion=abs_productos.map(p=>{
+  // v189: entran también los archivados, marcados, para que el análisis de rotación
+  // no pierda lo que ya salió de la lista (repetidos apagados, productos viejos).
+  const universo = abs_productos.concat((abs_prod_archivados||[]).map(p=>({...p, __arch:true})));
+  abs_rotacion=universo.map(p=>{
     const salidas=abs_kardex.filter(k=>k.codigo_producto===p.codigo&&k.tipo==='SALIDA');
     const total=salidas.reduce((s,k)=>s+(k.cantidad||0),0);
     let ultima=null,dias=9999;
@@ -22111,9 +22123,9 @@ function absRenderRotacion() {
   const rows=filtro?abs_rotacion.filter(r=>r.diag===filtro):abs_rotacion;
   const dc={ESTRELLA:'var(--green)',NORMAL:'#3b82f6',LENTO:'var(--yellow)',OBSOLETO:'var(--red)',NUNCA:'#6b7280'};
   const di={ESTRELLA:'⭐',NORMAL:'✅',LENTO:'🟡',OBSOLETO:'🔴',NUNCA:'⚫'};
-  tbody.innerHTML=rows.map(r=>`<tr>
+  tbody.innerHTML=rows.map(r=>`<tr${r.__arch?' style="opacity:.75"':''}>
     <td><code style="color:var(--gold);font-size:11px">${r.codigo}</code></td>
-    <td style="font-size:12px">${r.descripcion}</td>
+    <td style="font-size:12px">${r.__arch?'<span title="Producto archivado: ya no sale en la lista ni en el buscador, pero su historial cuenta para la rotación" style="font-size:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#aab;padding:1px 6px;border-radius:8px;margin-right:6px">📦 archivado</span>':''}${r.descripcion}</td>
     <td style="font-weight:700;color:${r.stock_actual>0?'var(--green)':'var(--red)'}">${r.stock_actual}</td>
     <td style="font-weight:600">${r.totalSalidas}</td>
     <td style="font-size:12px;color:var(--text-muted)">${r.ultimaSalida||'Nunca'}</td>
