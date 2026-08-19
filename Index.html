@@ -3043,7 +3043,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Resumen por proveedor <span style="font-size:11px;font-weight:400;text-transform:none">(IVA 19% · Retefuente 2,5% si la compra ≥ $523.740 y no es autoretenedor)</span></div>
               <div style="overflow-x:auto;">
                 <table class="abs-table"><thead><tr>
-                  <th>Proveedor</th><th style="width:110px">Subtotal</th><th style="width:100px">IVA 19%</th><th style="width:100px">Retefuente</th><th style="width:120px">Total a pagar</th><th style="width:110px">Pago</th><th style="width:110px">Orden de compra</th>
+                  <th>Proveedor</th><th style="width:110px">Subtotal</th><th style="width:100px">IVA 19%</th><th style="width:100px">Retefuente</th><th style="width:120px">Total a pagar</th><th style="width:110px">Pago</th><th style="width:120px" title="Marca todas las líneas de ese proveedor como compradas. Útil sobre todo para los proveedores a los que NO se les manda OC.">Compra</th><th style="width:110px">Orden de compra</th>
                 </tr></thead><tbody id="pcom-resumen-tbody"></tbody></table>
               </div>
             </div>
@@ -21120,8 +21120,10 @@ function pcomCalcRows(items){
   (items||[]).forEach(it=>{
     const sub = (parseFloat(it.cantidad)||0) * (parseFloat(it.costo_unit)||0);
     const p = (String(it.proveedor||'').trim().toUpperCase()) || '(SIN PROVEEDOR)';
-    if(!provs[p]) provs[p] = { subtotal:0, pago:'PAGADO', sinOC:false };
+    if(!provs[p]) provs[p] = { subtotal:0, pago:'PAGADO', sinOC:false, nLineas:0, nComp:0 };
     provs[p].subtotal += sub;
+    provs[p].nLineas++;                       // v186
+    if(it.comprado) provs[p].nComp++;         // v186
     if(String(it.pago||'PENDIENTE').toUpperCase()!=='PAGADO') provs[p].pago = 'PENDIENTE';
     if(it.sin_oc) provs[p].sinOC = true;
   });
@@ -21489,10 +21491,11 @@ function pcomRenderResumen(){
     <td style="font-size:12px;white-space:nowrap;color:${x.aplicaRete?'#fc8181':'var(--text-muted)'}">${x.aplicaRete?('-'+_pcomMoney(x.rete)):'—'}</td>
     <td style="font-size:12.5px;white-space:nowrap"><b style="color:var(--gold)">${_pcomMoney(x.total)}</b></td>
     <td><button onclick="pcomTogglePago('${_remiEsc(p).replace(/'/g,"\\'")}')" style="background:${x.pago==='PAGADO'?'rgba(46,170,74,.25)':'rgba(232,160,32,.15)'};border:1px solid ${x.pago==='PAGADO'?'rgba(46,170,74,.6)':'rgba(232,160,32,.4)'};color:${x.pago==='PAGADO'?'#68d391':'var(--gold)'};padding:4px 10px;border-radius:6px;font-size:10.5px;cursor:pointer;font-weight:700">${x.pago==='PAGADO'?'✓ PAGADO':'PENDIENTE'}</button></td>
+    <td style="white-space:nowrap"><button onclick="pcomToggleCompradoProv('${_remiEsc(p).replace(/'/g,"\\'")}')" title="Marcar/desmarcar como COMPRADO todas las líneas de este proveedor" style="background:${x.nComp===x.nLineas?'rgba(46,170,74,.25)':'rgba(232,160,32,.12)'};border:1px solid ${x.nComp===x.nLineas?'rgba(46,170,74,.6)':'rgba(232,160,32,.4)'};color:${x.nComp===x.nLineas?'#68d391':'var(--gold)'};padding:4px 10px;border-radius:6px;font-size:10.5px;cursor:pointer;font-weight:700">${x.nComp===x.nLineas?'✔ COMPRADO':'🛒 '+x.nComp+'/'+x.nLineas}</button></td>
     <td style="white-space:nowrap">${p==='(SIN PROVEEDOR)'?'—': x.sinOC
       ? `<span style="font-size:11px;color:var(--text-muted)">🚫 No requiere OC</span> <button onclick="pcomToggleSinOC('${_remiEsc(p).replace(/'/g,"\\'")}')" title="Volver a permitir OC" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px">↩</button>`
       : `<button onclick="pcomOCModal('${_remiEsc(p).replace(/'/g,"\\'")}')" style="background:rgba(26,58,143,.4);border:1px solid rgba(26,58,143,.6);color:#90cdf4;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">🧾 ${ocPrev?'Otra OC':'Generar OC'}</button> <button onclick="pcomToggleSinOC('${_remiEsc(p).replace(/'/g,"\\'")}')" title="Marcar que este proveedor NO requiere OC" style="background:none;border:1px solid rgba(255,255,255,.15);color:var(--text-muted);padding:3px 6px;border-radius:6px;font-size:10px;cursor:pointer">🚫</button>`}</td>
-  </tr>`;}).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:14px">Sin líneas con proveedor todavía</td></tr>';
+  </tr>`;}).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:14px">Sin líneas con proveedor todavía</td></tr>';
   // Fila de totales generales
   if(provs.length){
     tb.innerHTML += `<tr style="border-top:2px solid rgba(232,160,32,.5)">
@@ -21501,8 +21504,23 @@ function pcomRenderResumen(){
       <td style="font-size:12px;font-weight:700;white-space:nowrap">${_pcomMoney(calc.tot.iva)}</td>
       <td style="font-size:12px;font-weight:700;white-space:nowrap;color:#fc8181">${calc.tot.rete?('-'+_pcomMoney(calc.tot.rete)):'—'}</td>
       <td style="font-size:13px;font-weight:800;white-space:nowrap;color:var(--gold)">${_pcomMoney(calc.tot.total)}</td>
-      <td></td><td></td></tr>`;
+      <td></td><td></td><td></td></tr>`;
   }
+}
+// v186 — Marcar COMPRADO todas las líneas de un proveedor de un solo clic.
+// Hace falta sobre todo para los proveedores marcados 🚫 "No requiere OC": a esos
+// nunca se les genera OC, así que la marca automática nunca les llegaría.
+async function pcomToggleCompradoProv(prov){
+  if(!pcom_current) return;
+  const p = String(prov).trim().toUpperCase();
+  const lineas = pcom_current.items.filter(it=>((String(it.proveedor||'').trim().toUpperCase())||'(SIN PROVEEDOR)')===p);
+  if(!lineas.length) return;
+  const nuevo = !lineas.every(it=>!!it.comprado);   // si ya estaban todas, desmarca
+  lineas.forEach(it=>{ it.comprado = nuevo; });
+  pcomRenderItems();
+  if(!pcom_current.nueva){ await pcomGuardarCola(); }
+  showToast(prov+(nuevo?(' marcado como COMPRADO ('+lineas.length+' línea/s)'):' vuelve a "Por comprar"')+
+    (pcom_current.nueva?' (recuerda guardar el plan)':' ✓'),'ok');
 }
 async function pcomToggleSinOC(prov){
   if(!pcom_current) return;
