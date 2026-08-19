@@ -6234,13 +6234,13 @@
     "num": "ODC-AA-MEC-SKID-469-24-644",
     "cliente": "SKID EXPERT",
     "desc": "Cotización LM1922 · 2 ítems",
-    "estado": "activo",
+    "estado": "completado",
     "fechaIngreso": "2026-07-31",
     "valor": 111860,
     "hojaEntrada": {
       "requerida": true,
-      "fecha": "",
-      "estado": "recibida"
+      "fecha": "2026-08-10",
+      "estado": "pendiente"
     },
     "stages": [
       {
@@ -6275,9 +6275,9 @@
     "cotizacionId": "LM1922",
     "createdAt": "2026-08-01T13:57:52.556Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-19T15:32:49.573Z",
+    "updatedAt": "2026-08-19T15:32:59.100Z",
     "updatedBy": "andrea",
-    "faltanFechas": false,
+    "faltanFechas": true,
     "archivada": false
   },
   {
