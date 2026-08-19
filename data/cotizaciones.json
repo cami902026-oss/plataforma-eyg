@@ -21131,7 +21131,7 @@
     "cliente": "ANDES OPERATING",
     "contacto": "YENNY MORENO",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 15168098,
@@ -21329,14 +21329,42 @@
         "precioProveedor": 8000
       }
     ],
-    "fechaGuardado": "2026-08-03T17:37:58.810Z",
+    "fechaGuardado": "2026-08-19T22:08:00.828Z",
     "fechaEnvio": "2026-08-03T17:37:58.810Z",
     "adjudicadaAt": "2026-08-03",
+    "valorAdjudicado": 476931,
+    "itemsAdjudicados": [
+      {
+        "uid": "cf6cdf44-4579-4a6a-8c62-f8544a51a51f",
+        "qty": 4
+      },
+      {
+        "uid": "936b1ffb-349a-4206-836d-1048126d9f34",
+        "qty": 32
+      },
+      {
+        "uid": "2c5204ff-27e7-440c-a868-b42276a0fb39",
+        "qty": 4
+      },
+      {
+        "uid": "fbbd47d5-c726-4e53-a679-9b89fd2b4c53",
+        "qty": 4
+      },
+      {
+        "uid": "692fbd54-964c-40e5-840d-c6ba30ea7da0",
+        "qty": 1
+      },
+      {
+        "uid": "b04c152f-60df-4705-9afa-911ff82ab3eb",
+        "qty": 10
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-19T22:07:54.711Z",
     "createdAt": "2026-07-06T16:32:33.340Z",
     "createdBy": "lina",
-    "updatedAt": "2026-08-03T17:40:04.806Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-08-03T17:40:04.806Z"
+    "updatedAt": "2026-08-19T22:08:00.828Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM1770",
