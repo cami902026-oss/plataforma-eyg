@@ -3006,8 +3006,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div id="pcom-lista-count" class="abs-count"></div>
           <div class="abs-table-wrap">
             <table class="abs-table">
-              <thead><tr><th>Centro de Costos</th><th>Fecha</th><th>Cliente</th><th>Líneas</th><th>Total a pagar</th><th>Pagos</th><th>Acciones</th></tr></thead>
-              <tbody id="pcom-lista-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">Cargando...</td></tr></tbody>
+              <thead><tr><th>Centro de Costos</th><th>Fecha</th><th>Cliente</th><th>Líneas</th><th>Total a pagar</th><th>Pagos</th><th title="Líneas ya compradas y líneas ya recibidas completas">Compras</th><th>Acciones</th></tr></thead>
+              <tbody id="pcom-lista-tbody"><tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px">Cargando...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -3026,11 +3026,16 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px;flex-wrap:wrap;gap:8px;">
               <div style="font-size:13px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;">Líneas de compra <span id="pcom-item-count" style="color:var(--gold)"></span></div>
-              <button class="btn btn-secondary" onclick="pcomAddItem()" style="padding:6px 14px;font-size:12px;">➕ Agregar línea</button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <!-- v186: un plan puede juntar ítems de VARIAS cotizaciones (cada línea recuerda de cuál viene) -->
+                <button class="btn btn-secondary" onclick="pcomTraerCotiz()" style="padding:6px 14px;font-size:12px;" title="Agrega a este mismo plan los ítems de otra cotización. Cada línea guarda de qué cotización viene.">📄 Traer de otra cotización</button>
+                <button class="btn btn-secondary" onclick="pcomAddItem()" style="padding:6px 14px;font-size:12px;">➕ Agregar línea</button>
+              </div>
             </div>
+            <div id="pcom-progreso" style="margin:0 0 10px"></div>
             <div style="overflow-x:auto;">
               <table class="abs-table" id="pcom-items-table"><thead><tr>
-                <th style="width:34px">#</th><th>Descripción</th><th style="width:170px" title="Desviación técnica de la cotización. Baja sola y se imprime en la OC del proveedor.">Desv. técnica / Nota</th><th style="width:64px">UDM</th><th style="width:70px">Cant.</th><th style="width:150px">Proveedor</th><th style="width:110px">Costo Unit.</th><th style="width:110px">Subtotal</th><th style="width:64px"></th>
+                <th style="width:34px">#</th><th style="width:78px" title="Cotización de la que viene esta línea">Cotiz.</th><th>Descripción</th><th style="width:170px" title="Desviación técnica de la cotización. Baja sola y se imprime en la OC del proveedor.">Desv. técnica / Nota</th><th style="width:64px">UDM</th><th style="width:70px">Cant.</th><th style="width:150px">Proveedor</th><th style="width:110px">Costo Unit.</th><th style="width:110px">Subtotal</th><th style="width:56px" title="Marcar cuando YA se le compró al proveedor (OC puesta). Se marca sola al generar la OC.">✔ Compró</th><th style="width:70px" title="Cantidad que ya llegó de esa línea. Cuando iguala la cantidad, la línea queda COMPLETA.">Recibida</th><th style="width:104px">Estado</th><th style="width:64px"></th>
               </tr></thead><tbody id="pcom-items-tbody"></tbody></table>
             </div>
             <datalist id="pcom-prov-datalist"></datalist>
@@ -3062,13 +3067,13 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         <div id="pcom-cotiz-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
           <div style="background:var(--card-bg,#0f1d33);border:1px solid rgba(255,255,255,.12);border-radius:14px;max-width:760px;width:100%;max-height:85vh;display:flex;flex-direction:column;padding:20px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <h3 style="margin:0;font-family:'Montserrat',sans-serif;color:#fff;">🛒 Nuevo plan desde una cotización</h3>
+              <h3 id="pcom-cotiz-modal-titulo" style="margin:0;font-family:'Montserrat',sans-serif;color:#fff;">🛒 Nuevo plan desde una cotización</h3>
               <button onclick="pcomCotizCerrar()" style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer">×</button>
             </div>
             <input type="text" id="pcom-cotiz-search" placeholder="Buscar por N° de cotización o cliente..." oninput="pcomCotizBuscar()" style="padding:9px 12px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:13px;margin-bottom:10px;">
             <div id="pcom-cotiz-lista" style="overflow-y:auto;flex:1;max-height:380px;border:1px solid rgba(255,255,255,.08);border-radius:8px;"></div>
             <div style="display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:14px;">
-              <button class="btn btn-ghost" onclick="pcomCrearVacio()" style="width:auto;padding:8px 16px;font-size:12px;">➕ Empezar plan vacío (sin cotización)</button>
+              <button class="btn btn-ghost" id="pcom-cotiz-btn-vacio" onclick="pcomCrearVacio()" style="width:auto;padding:8px 16px;font-size:12px;">➕ Empezar plan vacío (sin cotización)</button>
               <button class="btn btn-ghost" onclick="pcomCotizCerrar()" style="width:auto;padding:8px 16px;">Cancelar</button>
             </div>
           </div>
@@ -21007,6 +21012,65 @@ const PCOM_TASA_IVA = 0.19;
 const PCOM_OC_INICIO = 26026;                // el consecutivo de OC arranca en 26027
 let pcom_rows = [], pcom_ocs = [], pcom_prov = [], pcom_current = null;
 let pcom_pagos = [], pcom_entregas = [], pcom_pagosCC = null;   // pagos/entregas parciales por OC
+// v186 — Seguimiento de compra por línea + planes con varias cotizaciones.
+//  · comprado (bool): ya se le compró al proveedor (OC puesta). Lo marcamos a mano; se marca solo al generar la OC.
+//  · recibida (número): cuánto de esa línea ya llegó. Si iguala la cantidad, la línea queda COMPLETA.
+//  · cotizacion por línea: un plan puede traer ítems de varias cotizaciones (la columna ya existía en la tabla).
+// Si la base todavía no tiene las columnas, la plataforma NO se rompe: avisa y guarda lo demás igual.
+let pcom_hasCheck = null;      // null = sin averiguar, true/false = la base tiene (o no) comprado/recibida
+let pcom_cotizModo = 'nuevo';  // 'nuevo' = crear plan desde cotización · 'agregar' = traer a un plan abierto
+
+function _pcomNum(v){ return (v===''||v==null)?0:(parseFloat(v)||0); }
+// Estado de una línea: por comprar → comprado → parcial → completo
+function pcomEstadoLinea(it){
+  const cant = _pcomNum(it.cantidad), rec = _pcomNum(it.recibida);
+  if(cant>0 && rec>=cant)  return {k:'completo', txt:'✅ Completo',              col:'#68d391',          bg:'rgba(46,170,74,.13)'};
+  if(rec>0)                return {k:'parcial',  txt:'📦 Parcial '+rec+'/'+(cant||'?'), col:'#90cdf4',  bg:'rgba(26,58,143,.20)'};
+  if(it.comprado)          return {k:'comprado', txt:'🛒 Comprado',              col:'var(--gold)',      bg:'rgba(232,160,32,.10)'};
+  return                          {k:'pendiente',txt:'— Por comprar',            col:'var(--text-muted)',bg:'transparent'};
+}
+// Todas las cotizaciones que alimentan un plan (la principal primero)
+function pcomCotizIds(c){
+  const out=[]; const add=v=>{ v=String(v||'').trim(); if(v && v!=='—' && out.indexOf(v)<0) out.push(v); };
+  add(c&&c.cotizacion); (c&&c.items||[]).forEach(it=>add(it.cotizacion));
+  return out;
+}
+function pcomSyncCotizHeader(){
+  const el=document.getElementById('pcom-cotiz'); if(!el||!pcom_current) return;
+  const ids=pcomCotizIds(pcom_current);
+  el.value = ids.length?ids.join('  +  '):'—';
+  el.title = ids.length>1 ? ('Este plan junta '+ids.length+' cotizaciones') : '';
+}
+// Barra de avance del plan abierto
+function pcomRenderProgreso(){
+  const el=document.getElementById('pcom-progreso'); if(!el||!pcom_current) return;
+  const its=pcom_current.items.filter(it=>String(it.descripcion||'').trim());
+  const n=its.length;
+  const comp=its.filter(it=>!!it.comprado).length;
+  const reci=its.filter(it=>pcomEstadoLinea(it).k==='completo').length;
+  const pct=n?Math.round(reci*100/n):0;
+  const aviso = (pcom_hasCheck===false)
+    ? '<div style="background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.45);border-radius:8px;padding:7px 11px;font-size:11.5px;color:var(--gold);margin-bottom:8px">⚠️ El check de compra todavía no está habilitado en la base de datos: puedes marcarlo, pero <b>no se guardará</b> hasta que se agreguen las columnas <code>comprado</code> y <code>recibida</code> a la tabla <code>plan_compras</code>.</div>'
+    : '';
+  el.innerHTML = aviso + (n? `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px">
+    <span style="color:var(--gold);font-weight:700">🛒 ${comp}/${n} compradas</span>
+    <span style="color:${reci===n?'#68d391':'#90cdf4'};font-weight:700">📦 ${reci}/${n} recibidas completas</span>
+    <div style="flex:1;min-width:140px;height:8px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden">
+      <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#1F7A3D,#2eaa4a)"></div>
+    </div>
+    <span style="color:var(--text-muted)">${pct}%</span>
+  </div>`:'');
+}
+// Pinta solo el estado de una fila (sin reconstruir la tabla: no se pierde el foco — ver v182)
+function pcomPintarEstado(i){
+  const it=pcom_current&&pcom_current.items[i]; if(!it) return;
+  const e=pcomEstadoLinea(it);
+  const cel=document.getElementById('pcom-est-'+i);
+  if(cel){ cel.innerHTML='<span style="font-size:11px;font-weight:700;color:'+e.col+'">'+e.txt+'</span>'; }
+  const fila=document.getElementById('pcom-fila-'+i);
+  if(fila){ fila.style.background=e.bg; }
+  pcomRenderProgreso();
+}
 
 function pcomCanUse(){ return currentUser && (currentUser.email||'').toLowerCase() !== 'nelsy'; }
 function _pcomMoney(n){ n = Math.round(parseFloat(n)||0); return '$ ' + n.toLocaleString('es-CO'); }
@@ -21025,6 +21089,11 @@ async function pcomCargar(){
       absFetch('proveedores?order=nombre.asc&limit=500')
     ]);
     pcom_rows = rows||[]; pcom_ocs = ocs||[]; pcom_prov = provs||[];
+    // v186: ¿la base ya tiene las columnas del seguimiento de compra?
+    if(pcom_hasCheck===null){
+      try{ await absFetch('plan_compras?select=id,comprado,recibida&limit=1'); pcom_hasCheck=true; }
+      catch(_){ pcom_hasCheck=false; console.warn('[pcom] faltan columnas comprado/recibida en plan_compras'); }
+    }
     const dl = document.getElementById('pcom-prov-datalist');
     if(dl) dl.innerHTML = pcom_prov.map(p=>`<option value="${_remiEsc(p.nombre)}">`).join('');
     pcomRenderLista();
@@ -21077,8 +21146,10 @@ function pcomRenderLista(){
     const calc = pcomCalcRows(its);
     const provKeys = Object.keys(calc.provs);
     const pagados = provKeys.filter(p=>calc.provs[p].pago==='PAGADO').length;
+    const comprados = its.filter(x=>!!x.comprado).length;
+    const recibidos = its.filter(x=>pcomEstadoLinea(x).k==='completo').length;
     return { cc, fecha:h.fecha||'', cliente:h.cliente||'', cotizacion:h.cotizacion||'', lineas:its.length,
-      total:calc.tot.total, provs:provKeys.length, pagados,
+      total:calc.tot.total, provs:provKeys.length, pagados, comprados, recibidos,
       _txt:(cc+' '+(h.cotizacion||'')+' '+(h.cliente||'')+' '+its.map(x=>(x.descripcion||'')+' '+(x.proveedor||'')).join(' ')).toLowerCase() };
   });
   if(q) lista = lista.filter(r=>r._txt.includes(q));
@@ -21091,8 +21162,9 @@ function pcomRenderLista(){
     <td style="text-align:center">${r.lineas}</td>
     <td style="font-size:12.5px;white-space:nowrap">${_pcomMoney(r.total)}</td>
     <td style="font-size:11.5px;white-space:nowrap"><span style="color:${r.pagados===r.provs?'#68d391':'var(--gold)'}">${r.pagados}/${r.provs} pagados</span></td>
+    <td style="font-size:11px;white-space:nowrap" title="Líneas compradas · líneas recibidas completas"><span style="color:var(--gold)">🛒 ${r.comprados}/${r.lineas}</span><br><span style="color:${r.recibidos===r.lineas&&r.lineas?'#68d391':'#90cdf4'}">📦 ${r.recibidos}/${r.lineas}</span></td>
     <td><button onclick="pcomAbrir('${_remiEsc(r.cc)}')" style="background:rgba(26,58,143,.4);border:1px solid rgba(26,58,143,.6);color:#90cdf4;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">✏️ Abrir</button></td>
-  </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">Sin planes de compra. Crea el primero con "🛒 Nuevo plan".</td></tr>';
+  </tr>`).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px">Sin planes de compra. Crea el primero con "🛒 Nuevo plan".</td></tr>';
 }
 function pcomVolver(){
   pcom_current = null;
@@ -21106,13 +21178,23 @@ function pcomCC(cotizId, cliente){
 // ── Nuevo plan desde cotización ──
 function pcomNuevo(){
   if(!pcomCanUse()) return showToast('No tienes permiso','error');
+  pcom_cotizModo='nuevo';
   const m = document.getElementById('pcom-cotiz-modal'); if(!m) return;
+  _pcomCotizModalUI();
   m.style.display='flex';
   const s = document.getElementById('pcom-cotiz-search'); if(s) s.value='';
   pcomCotizBuscar();
   setTimeout(()=>{ try{ s.focus(); }catch(_){} },60);
 }
-function pcomCotizCerrar(){ const m=document.getElementById('pcom-cotiz-modal'); if(m) m.style.display='none'; }
+// v186 — el mismo buscador sirve para CREAR un plan y para TRAER otra cotización a uno abierto
+function _pcomCotizModalUI(){
+  const t=document.getElementById('pcom-cotiz-modal-titulo');
+  const v=document.getElementById('pcom-cotiz-btn-vacio');
+  const agregar = pcom_cotizModo==='agregar';
+  if(t) t.textContent = agregar ? ('📄 Traer otra cotización al plan '+((pcom_current&&pcom_current.cc)||'')) : '🛒 Nuevo plan desde una cotización';
+  if(v) v.style.display = agregar ? 'none' : '';   // en modo agregar no puede arrancar un plan vacío encima
+}
+function pcomCotizCerrar(){ pcom_cotizModo='nuevo'; const m=document.getElementById('pcom-cotiz-modal'); if(m) m.style.display='none'; }
 function pcomCotizBuscar(){
   const q = (document.getElementById('pcom-cotiz-search')?.value||'').trim().toLowerCase();
   const cont = document.getElementById('pcom-cotiz-lista'); if(!cont) return;
@@ -21131,37 +21213,78 @@ function pcomCotizBuscar(){
 function pcomCotizElegir(id){
   const c = (typeof remiCotizData==='function'?remiCotizData():[]).find(x=>String(x.id)===String(id));
   if(!c) return;
+  if(pcom_cotizModo==='agregar') return pcomCotizAgregar(c);   // v186: traer a un plan ya abierto
   if(pcom_rows.some(r=>String(r.cotizacion)===String(id))){
     if(!confirm('La cotización '+id+' ya tiene un plan de compras. ¿Crear OTRO plan para la misma cotización?')) return;
   }
-  // Si la adjudicación fue PARCIAL, el plan trae solo lo que el cliente adjudicó y
-  // con la cantidad adjudicada: no tiene sentido salir a comprar lo que no nos
-  // compraron. Sin adjudicación registrada (cotizaciones viejas) entra todo, igual
-  // que siempre. La desviación técnica del ítem baja como nota y llega a la OC.
+  const res = _pcomLineasDeCotiz(c);
+  pcom_current = { nueva:true, cc:pcomCC(c.id, c.cliente), cotizacion:String(c.id), cliente:c.cliente||'',
+    fecha:new Date().toISOString().split('T')[0], items:res.items };
+  if(!pcom_current.items.length) pcom_current.items.push(_pcomLineaVacia());
+  pcomCotizCerrar();
+  pcomAbrirEditor('Plan de compras — '+pcom_current.cc+' (nuevo)');
+  if(res.parcial) showToast('⚠️ '+c.id+' fue ADJUDICACIÓN PARCIAL: se trajeron '+res.items.length+
+    ' ítem(s) adjudicados y se omitieron '+res.omitidos+'. Si necesitas comprar algo más, agrégalo con ➕.',
+    'info', { durationMs: 9000 });
+}
+// Ítems que bajan de una cotización. Si la adjudicación fue PARCIAL, solo lo adjudicado y
+// con la cantidad adjudicada: no tiene sentido salir a comprar lo que no nos compraron. Sin
+// adjudicación registrada (cotizaciones viejas) entra todo, igual que siempre. La desviación
+// técnica baja como nota y llega a la OC. v186: cada línea recuerda de qué cotización viene.
+function _pcomLineasDeCotiz(c){
   const _map=_cotizAdjMapa(c);
   const _parcial=_map && _cotizEsParcial(c);
   const _todos=(c.items||[]).filter(it=>String(it.desc||'').trim());
   const _base=_parcial ? _todos.filter(it=>_map[it.uid]!=null) : _todos;
-  const _omitidos=_todos.length-_base.length;
-  pcom_current = { nueva:true, cc:pcomCC(c.id, c.cliente), cotizacion:String(c.id), cliente:c.cliente||'',
-    fecha:new Date().toISOString().split('T')[0],
+  return { parcial:!!_parcial, omitidos:_todos.length-_base.length,
     items:_base.map(it=>({
       descripcion:String(it.desc||'').trim(), udm:it.udm||'EA',
       cantidad:(_parcial ? (+_map[it.uid]||0) : (it.qty==null?'':it.qty)),
       nota:String(it.desvTec||'').trim(),
-      proveedor:it.proveedor||'', costo_unit:(it.precioProveedor==null?'':it.precioProveedor), pago:'PENDIENTE', sin_oc:false
+      proveedor:it.proveedor||'', costo_unit:(it.precioProveedor==null?'':it.precioProveedor),
+      pago:'PENDIENTE', sin_oc:false, comprado:false, recibida:'', cotizacion:String(c.id)
     })) };
-  if(!pcom_current.items.length) pcom_current.items.push({descripcion:'',udm:'EA',cantidad:'',nota:'',proveedor:'',costo_unit:'',pago:'PENDIENTE',sin_oc:false});
+}
+function _pcomLineaVacia(){
+  return { descripcion:'', udm:'EA', cantidad:'', nota:'', proveedor:'', costo_unit:'', pago:'PENDIENTE',
+    sin_oc:false, comprado:false, recibida:'', cotizacion:(pcom_current&&pcom_current.cotizacion)||'' };
+}
+// v186 — Traer los ítems de OTRA cotización al plan que está abierto (un plan puede
+// juntar varias cotizaciones del mismo cliente para comprarlas de una sola vez).
+function pcomTraerCotiz(){
+  if(!pcomCanUse()) return showToast('No tienes permiso','error');
+  if(!pcom_current) return;
+  pcom_cotizModo='agregar';
+  const m=document.getElementById('pcom-cotiz-modal'); if(!m) return;
+  _pcomCotizModalUI();
+  m.style.display='flex';
+  const s=document.getElementById('pcom-cotiz-search'); if(s) s.value='';
+  pcomCotizBuscar();
+  setTimeout(()=>{ try{ s.focus(); }catch(_){} },60);
+}
+function pcomCotizAgregar(c){
+  pcom_cotizModo='nuevo';
+  if(!pcom_current){ pcomCotizCerrar(); return; }
+  const res=_pcomLineasDeCotiz(c);
+  if(!res.items.length){ pcomCotizCerrar(); return showToast('La cotización '+c.id+' no tiene ítems para traer','error'); }
+  const key=x=>String(x.cotizacion||'')+'|'+String(x.descripcion||'').trim().toLowerCase();
+  const ya={}; pcom_current.items.forEach(x=>{ ya[key(x)]=1; });
+  const add=res.items.filter(x=>!ya[key(x)]);
+  // se quitan las líneas en blanco que nadie llenó, para no dejar huecos en la mitad
+  pcom_current.items = pcom_current.items.filter(it=>String(it.descripcion||'').trim()||String(it.proveedor||'').trim()||_pcomNum(it.cantidad)).concat(add);
+  if(!String(pcom_current.cotizacion||'').trim()) pcom_current.cotizacion=String(c.id);
+  const cli=document.getElementById('pcom-cliente');
+  if(cli && !String(cli.value||'').trim() && c.cliente){ cli.value=c.cliente; pcom_current.cliente=c.cliente; }
   pcomCotizCerrar();
-  pcomAbrirEditor('Plan de compras — '+pcom_current.cc+' (nuevo)');
-  if(_parcial) showToast('⚠️ '+c.id+' fue ADJUDICACIÓN PARCIAL: se trajeron '+_base.length+
-    ' ítem(s) adjudicados y se omitieron '+_omitidos+'. Si necesitas comprar algo más, agrégalo con ➕.',
-    'info', { durationMs: 9000 });
+  pcomRenderItems();
+  showToast(add.length+' ítem(s) de '+c.id+' agregados al plan'+
+    ((res.items.length-add.length)?' ('+(res.items.length-add.length)+' ya estaban)':'')+
+    (res.parcial?' · era adjudicación PARCIAL':'')+'. Recuerda 💾 Guardar plan.','ok',{durationMs:8000});
 }
 function pcomCrearVacio(){
   pcom_current = { nueva:true, cc:'CC-MANUAL-'+Date.now().toString().slice(-5), cotizacion:'', cliente:'',
     fecha:new Date().toISOString().split('T')[0],
-    items:[{descripcion:'',udm:'EA',cantidad:'',nota:'',proveedor:'',costo_unit:'',pago:'PENDIENTE',sin_oc:false}] };
+    items:[{descripcion:'',udm:'EA',cantidad:'',nota:'',proveedor:'',costo_unit:'',pago:'PENDIENTE',sin_oc:false,comprado:false,recibida:'',cotizacion:''}] };
   pcomCotizCerrar();
   pcomAbrirEditor('Plan de compras manual (nuevo)');
 }
@@ -21171,7 +21294,8 @@ function pcomAbrir(cc){
   pcom_current = { nueva:false, cc:String(cc), cotizacion:h.cotizacion||'', cliente:h.cliente||'', fecha:h.fecha||'',
     items: its.slice().sort((a,b)=>(a.item||0)-(b.item||0)).map(r=>({
       descripcion:r.descripcion||'', udm:r.udm||'', cantidad:(r.cantidad==null?'':r.cantidad), nota:r.nota||'',
-      proveedor:r.proveedor||'', costo_unit:(r.costo_unit==null?'':r.costo_unit), pago:r.pago||'PENDIENTE', sin_oc:!!r.sin_oc
+      proveedor:r.proveedor||'', costo_unit:(r.costo_unit==null?'':r.costo_unit), pago:r.pago||'PENDIENTE', sin_oc:!!r.sin_oc,
+      comprado:!!r.comprado, recibida:(r.recibida==null?'':r.recibida), cotizacion:r.cotizacion||h.cotizacion||''
     })) };
   pcomAbrirEditor('Plan de compras — '+cc);
 }
@@ -21201,19 +21325,26 @@ function pcomUtilidad(){
   if(!pcomEsGerencia()){ showToast('Solo gerencia y Andrea pueden ver la utilidad','error'); return; }
   const c = pcom_current; if(!c){ return; }
   if(typeof pcomSyncHeader==='function') pcomSyncHeader();
-  const cotId = String(c.cotizacion||'').trim();
-  let cotItems = [];
-  if(cotId && cotId!=='—'){
-    const cot = (typeof remiCotizData==='function'?remiCotizData():[]).find(x=>String(x.id)===cotId);
-    if(cot && Array.isArray(cot.items)) cotItems = cot.items;
-  }
-  if(!cotItems.length){
+  // v186 — el plan puede venir de VARIAS cotizaciones: se arma el precio de venta de cada una
+  // y cada línea busca primero en la suya; si no aparece, busca en las demás (fallback).
+  const cotIds = pcomCotizIds(c);
+  const _data = (typeof remiCotizData==='function'?remiCotizData():[]);
+  const norm = s => String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
+  const ventaPorCotiz = {}, ventaGlobal = {};
+  cotIds.forEach(id=>{
+    const cot = _data.find(x=>String(x.id)===String(id));
+    if(!cot || !Array.isArray(cot.items)) return;
+    const m = ventaPorCotiz[String(id)] = {};
+    cot.items.forEach(it=>{ const k=norm(it.desc); if(!k) return;
+      if(m[k]==null) m[k]=Number(it.precio)||0;
+      if(ventaGlobal[k]==null) ventaGlobal[k]=Number(it.precio)||0; });
+  });
+  if(!Object.keys(ventaPorCotiz).length){
     showToast('Este plan no está ligado a una cotización con precios de venta; no se puede calcular la utilidad.','error');
     return;
   }
-  const norm = s => String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
-  const ventaPorDesc = {};
-  cotItems.forEach(it=>{ const k=norm(it.desc); if(k && ventaPorDesc[k]==null) ventaPorDesc[k]=Number(it.precio)||0; });
+  const cotId = cotIds.join(' + ');
+  const _varias = cotIds.length>1;
 
   const aoa = [];
   aoa.push(['E&G ENERGY GROUP SAS  ·  REPORTE DE UTILIDAD POR PLAN']);
@@ -21227,9 +21358,12 @@ function pcomUtilidad(){
     const desc = it.descripcion||'';
     const cant = parseFloat(it.cantidad)||0;
     const costo = (it.costo_unit===''||it.costo_unit==null)?null:(parseFloat(it.costo_unit)||0);
-    const vu = ventaPorDesc[norm(desc)];
-    let nota='', vt=null, ct=null, ut=null, pc=null;
-    if(vu==null){ nota='REVISAR - sin precio de venta en cotización'; sinVenta++; }
+    const _k = norm(desc);
+    const _mCot = ventaPorCotiz[String(it.cotizacion||'').trim()];
+    const vu = (_mCot && _mCot[_k]!=null) ? _mCot[_k] : ventaGlobal[_k];
+    let nota = (_varias && it.cotizacion) ? ('['+it.cotizacion+'] ') : '';
+    let vt=null, ct=null, ut=null, pc=null;
+    if(vu==null){ nota+='REVISAR - sin precio de venta en cotización'; sinVenta++; }
     if(costo==null){ nota=(nota?nota+' | ':'')+'REVISAR - sin costo cargado'; sinCosto++; }
     if(vu!=null && costo!=null){
       vt=vu*cant; ct=costo*cant; ut=vt-ct; pc=vt?((vt-ct)/vt):0;
@@ -21285,19 +21419,33 @@ function pcomSyncHeader(){
 }
 function pcomUpd(i, campo, valor){
   if(!pcom_current||!pcom_current.items[i]) return;
-  pcom_current.items[i][campo] = valor;
+  const it = pcom_current.items[i];
+  it[campo] = valor;
+  // v186: si ya llegó algo del proveedor, esa línea estaba comprada por definición
+  if(campo==='recibida' && _pcomNum(valor)>0 && !it.comprado){
+    it.comprado = true;
+    const chk = document.getElementById('pcom-chk-'+i); if(chk) chk.checked = true;
+  }
   pcomRenderResumen();
   const sub = document.getElementById('pcom-sub-'+i);
-  if(sub){ const it = pcom_current.items[i]; sub.textContent = _pcomMoney((parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0)); }
+  if(sub){ sub.textContent = _pcomMoney((parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0)); }
+  if(campo==='comprado' || campo==='recibida' || campo==='cantidad'){
+    pcomPintarEstado(i);   // repinta SOLO la fila (v182: no reconstruir todo, se pierde el foco)
+    // el check se guarda solo, igual que el botón de PAGADO, para que no se pierda la marca
+    if(campo!=='cantidad' && !pcom_current.nueva) pcomGuardarCola();
+  }
 }
 function pcomRenderItems(){
   const tb = document.getElementById('pcom-items-tbody'); if(!tb||!pcom_current) return;
   const cnt = document.getElementById('pcom-item-count'); if(cnt) cnt.textContent = pcom_current.items.length?('('+pcom_current.items.length+')'):'';
   const inS = 'padding:5px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:5px;color:#fff;font-size:12px';
+  const varias = pcomCotizIds(pcom_current).length>1;   // v186: plan con varias cotizaciones
   tb.innerHTML = pcom_current.items.map((it,i)=>{
     const sub = (parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0);
-    return `<tr>
+    const e = pcomEstadoLinea(it);
+    return `<tr id="pcom-fila-${i}" style="background:${e.bg}">
     <td style="text-align:center;color:var(--text-muted);font-size:11px">${i+1}</td>
+    <td style="font-size:10.5px;white-space:nowrap;color:${varias?'var(--gold)':'var(--text-muted)'};font-weight:${varias?'700':'400'}" title="Cotización de la que salió esta línea">${_remiEsc(it.cotizacion)||'—'}</td>
     <td><input type="text" value="${_remiEsc(it.descripcion).replace(/"/g,'&quot;')}" onchange="pcomUpd(${i},'descripcion',this.value)" style="width:100%;min-width:220px;${inS}"></td>
     <td><input type="text" value="${_remiEsc(it.nota).replace(/"/g,'&quot;')}" onchange="pcomUpd(${i},'nota',this.value)" placeholder="Desviación / nota" title="Baja de la desviación técnica de la cotización y se imprime en la OC." style="width:160px;${inS}"></td>
     <td><input type="text" value="${_remiEsc(it.udm).replace(/"/g,'&quot;')}" onchange="pcomUpd(${i},'udm',this.value)" style="width:52px;${inS}"></td>
@@ -21305,20 +21453,25 @@ function pcomRenderItems(){
     <td><input type="text" list="pcom-prov-datalist" value="${_remiEsc(it.proveedor).replace(/"/g,'&quot;')}" onchange="pcomUpd(${i},'proveedor',this.value)" style="width:140px;${inS}"></td>
     <td><input type="number" min="0" step="any" value="${_remiEsc(it.costo_unit)}" onchange="pcomUpd(${i},'costo_unit',this.value)" style="width:100px;${inS}"></td>
     <td id="pcom-sub-${i}" style="font-size:12px;white-space:nowrap">${_pcomMoney(sub)}</td>
+    <td style="text-align:center"><input type="checkbox" id="pcom-chk-${i}" ${it.comprado?'checked':''} onchange="pcomUpd(${i},'comprado',this.checked)" title="Marcar cuando ya se le compró al proveedor" style="width:17px;height:17px;cursor:pointer;accent-color:#2eaa4a"></td>
+    <td><input type="number" min="0" step="any" id="pcom-rec-${i}" value="${_remiEsc(it.recibida)}" onchange="pcomUpd(${i},'recibida',this.value)" placeholder="0" title="Cantidad que ya llegó" style="width:60px;${inS}"></td>
+    <td id="pcom-est-${i}"><span style="font-size:11px;font-weight:700;color:${e.col}">${e.txt}</span></td>
     <td style="white-space:nowrap">
       <button onclick="pcomDividir(${i})" title="Dividir línea en otro proveedor" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:13px">✂️</button>
       <button onclick="pcomDelItem(${i})" title="Quitar" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px">×</button>
     </td>
-  </tr>`;}).join('')||'<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:16px">Agrega líneas con el botón de arriba ↑</td></tr>';
+  </tr>`;}).join('')||'<tr><td colspan="13" style="text-align:center;color:var(--text-muted);padding:16px">Agrega líneas con el botón de arriba ↑</td></tr>';
   pcomRenderResumen();
   pcomRenderOCs();
+  pcomSyncCotizHeader();
+  pcomRenderProgreso();
 }
-function pcomAddItem(){ if(!pcom_current)return; pcom_current.items.push({descripcion:'',udm:'EA',cantidad:'',nota:'',proveedor:'',costo_unit:'',pago:'PENDIENTE',sin_oc:false}); pcomRenderItems(); }
+function pcomAddItem(){ if(!pcom_current)return; pcom_current.items.push(_pcomLineaVacia()); pcomRenderItems(); }
 function pcomDelItem(i){ if(!pcom_current)return; pcom_current.items.splice(i,1); pcomRenderItems(); }
 function pcomDividir(i){
   if(!pcom_current)return;
   const it = pcom_current.items[i]; if(!it) return;
-  pcom_current.items.splice(i+1, 0, { descripcion:it.descripcion, udm:it.udm, cantidad:'', nota:it.nota||'', proveedor:'', costo_unit:'', pago:'PENDIENTE', sin_oc:false });
+  pcom_current.items.splice(i+1, 0, { descripcion:it.descripcion, udm:it.udm, cantidad:'', nota:it.nota||'', proveedor:'', costo_unit:'', pago:'PENDIENTE', sin_oc:false, comprado:false, recibida:'', cotizacion:it.cotizacion||'' });
   pcomRenderItems();
   showToast('Línea dividida: pon la cantidad y el proveedor de la nueva parte (y baja la cantidad de la original)','info');
 }
@@ -21359,7 +21512,7 @@ async function pcomToggleSinOC(prov){
   const nuevo = !lineas[0].sin_oc;
   lineas.forEach(it=>it.sin_oc=nuevo);
   pcomRenderResumen();
-  if(!pcom_current.nueva){ await pcomGuardar(true); }
+  if(!pcom_current.nueva){ await pcomGuardarCola(); }
   showToast(prov+(nuevo?' marcado como NO requiere OC':' vuelve a permitir OC')+(pcom_current.nueva?' (recuerda guardar el plan)':' ✓'),'ok');
 }
 // Cambia si un proveedor RETIENE retefuente o es AUTORETENEDOR (afecta el cálculo de impuestos).
@@ -21409,7 +21562,7 @@ async function pcomTogglePago(prov){
   const nuevo = String(lineas[0].pago||'PENDIENTE').toUpperCase()==='PAGADO' ? 'PENDIENTE' : 'PAGADO';
   lineas.forEach(it=>it.pago=nuevo);
   pcomRenderResumen();
-  if(!pcom_current.nueva){ await pcomGuardar(true); }
+  if(!pcom_current.nueva){ await pcomGuardarCola(); }
   showToast(prov+' marcado como '+nuevo+(pcom_current.nueva?' (recuerda guardar el plan)':' ✓'),'ok');
 }
 function pcomRenderOCs(){
@@ -21454,7 +21607,7 @@ async function pcomGuardar(silencioso){
     // nuevas y borrar las viejas después (id not.in). Si la red falla en medio,
     // lo peor es duplicación temporal — nunca se pierde el plan.
     const rows = items.map((it,idx)=>({
-      cc:c.cc, cotizacion:c.cotizacion||'', cliente:c.cliente, fecha:c.fecha||null,
+      cc:c.cc, cotizacion:String(it.cotizacion||c.cotizacion||''), cliente:c.cliente, fecha:c.fecha||null,
       item:idx+1, descripcion:String(it.descripcion).trim(), udm:it.udm||'',
       cantidad:(it.cantidad===''||it.cantidad==null)?null:parseFloat(it.cantidad),
       proveedor:String(it.proveedor||'').trim(),
@@ -21463,7 +21616,28 @@ async function pcomGuardar(silencioso){
       pago:it.pago||'PENDIENTE', sin_oc:!!it.sin_oc,
       created_by: currentUser?.name||'—'
     }));
-    const nuevasPC = await absFetch('plan_compras',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(rows)});
+    // v186 — seguimiento de compra por línea. Solo se envía si la base ya tiene las columnas;
+    // si no las tiene, el plan se guarda igual (sin la marca) en vez de fallar.
+    if(pcom_hasCheck!==false){
+      rows.forEach((r,ix)=>{
+        const it = items[ix];
+        r.comprado = !!it.comprado;
+        r.recibida = (it.recibida===''||it.recibida==null) ? null : parseFloat(it.recibida);
+      });
+    }
+    let nuevasPC;
+    try{
+      nuevasPC = await absFetch('plan_compras',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(rows)});
+    }catch(errCols){
+      const _m = String((errCols&&errCols.message)||errCols);
+      if(pcom_hasCheck!==false && /comprado|recibida|PGRST204|column/i.test(_m)){
+        pcom_hasCheck = false;
+        rows.forEach(r=>{ delete r.comprado; delete r.recibida; });
+        nuevasPC = await absFetch('plan_compras',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(rows)});
+        pcomRenderProgreso();
+        showToast('Plan guardado, pero el check de compra todavía no existe en la base de datos (esa marca no se guardó).','info',{durationMs:9000});
+      } else { throw errCols; }
+    }
     const idsPC = (Array.isArray(nuevasPC)?nuevasPC:[]).map(r=>r&&r.id).filter(x=>x!=null);
     if(idsPC.length){
       await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc)+'&id=not.in.('+idsPC.join(',')+')',{method:'DELETE',headers:{'Prefer':'return=minimal'}});
@@ -21474,12 +21648,32 @@ async function pcomGuardar(silencioso){
     if(!silencioso){ showToast('Plan '+c.cc+' guardado ✓','ok'); pcomRenderLista(); }
   }catch(e){ showToast('Error guardando: '+e.message,'error'); }
 }
+// v186 — cola de guardado (ver comentario arriba): un guardado a la vez por plan.
+let _pcomSaving = null, _pcomSaveAgain = false;
+function pcomGuardarCola(){
+  if(_pcomSaving){ _pcomSaveAgain = true; return _pcomSaving; }
+  _pcomSaving = (async ()=>{
+    try{ await pcomGuardar(true); }
+    finally{
+      _pcomSaving = null;
+      if(_pcomSaveAgain){ _pcomSaveAgain = false; pcomGuardarCola(); }
+    }
+  })();
+  return _pcomSaving;
+}
 // ── Órdenes de compra ──
 let pcom_oc_prov = null;
 function pcomNextOC(){
   let mx = PCOM_OC_INICIO;
   pcom_ocs.forEach(o=>{ const n=parseInt(o.oc); if(!isNaN(n)&&n>mx) mx=n; });
   return mx+1;
+}
+// v186 — un plan puede juntar varias cotizaciones: la OC lleva las de sus propias líneas
+function _pcomCotizDeLineas(lineas){
+  const out=[];
+  (lineas||[]).forEach(it=>{ const v=String(it.cotizacion||'').trim(); if(v && out.indexOf(v)<0) out.push(v); });
+  if(!out.length && pcom_current && pcom_current.cotizacion) out.push(String(pcom_current.cotizacion));
+  return out.join(' / ');
 }
 function pcomOCModal(prov){
   if(!pcom_current) return;
@@ -21521,7 +21715,7 @@ async function pcomOCConfirmar(){
     const calc = pcomCalcRows(pcom_current.items);
     const x = calc.provs[p] || {subtotal:0,iva:0,rete:0,total:0,aplicaRete:false};
     const oc = {
-      oc: pcomNextOC(), cc: pcom_current.cc, cotizacion: pcom_current.cotizacion||'',
+      oc: pcomNextOC(), cc: pcom_current.cc, cotizacion: _pcomCotizDeLineas(lineas),
       proveedor: pcom_oc_prov, fecha: new Date().toISOString().split('T')[0],
       condiciones: {
         plazo: document.getElementById('pcom-oc-plazo').value.trim(),
@@ -21537,8 +21731,11 @@ async function pcomOCConfirmar(){
     const saved = await absFetch('oc_compras',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify([oc])});
     const ocRow = (saved&&saved[0])||oc;
     pcom_ocs.unshift(ocRow);
+    // v186: lo que se le acaba de pedir al proveedor queda marcado como COMPRADO
+    lineas.forEach(it=>{ it.comprado = true; });
     pcomOCCerrar();
-    pcomRenderResumen(); pcomRenderOCs();
+    pcomRenderItems();
+    if(!pcom_current.nueva) await pcomGuardarCola();
     showToast('OC #'+ocRow.oc+' generada ✓','ok');
     pcomOCPrint(ocRow);
   }catch(e){ showToast('Error: '+e.message,'error'); }
@@ -21636,6 +21833,8 @@ function pcomOCPrint(o){
 // Cuerpo HTML del Plan de Compras (tablas). Fuente única para PDF y Excel.
 function _pcomPlanBodyHTML(c){
   const calc = pcomCalcRows(c.items);
+  const _cotIds = pcomCotizIds(c);            // v186: el plan puede venir de varias cotizaciones
+  const _multiCot = _cotIds.length>1;
   const items = c.items.filter(it=>String(it.descripcion||'').trim());
   const filas = items.map((it,i)=>{
     const p = (String(it.proveedor||'').trim().toUpperCase())||'(SIN PROVEEDOR)';
@@ -21643,11 +21842,15 @@ function _pcomPlanBodyHTML(c){
     const sub = (parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0);
     const iva = sub*PCOM_TASA_IVA;
     const rete = x.aplicaRete ? sub*PCOM_TASA_RETE : 0;
-    return `<tr><td style="text-align:center">${i+1}</td><td>${_remiEsc(it.descripcion)}</td><td>${_remiEsc(it.proveedor)||'—'}</td>
+    const _e = pcomEstadoLinea(it);
+    const _estTxt = _e.k==='completo'?'COMPLETO':(_e.k==='parcial'?('PARCIAL '+_pcomNum(it.recibida)+'/'+_pcomNum(it.cantidad)):(_e.k==='comprado'?'COMPRADO':'—'));
+    const _pref = (_multiCot && it.cotizacion) ? ('['+_remiEsc(it.cotizacion)+'] ') : '';
+    return `<tr><td style="text-align:center">${i+1}</td><td>${_pref}${_remiEsc(it.descripcion)}</td><td>${_remiEsc(it.proveedor)||'—'}</td>
     <td style="text-align:center">${_remiEsc(it.cantidad)}</td><td style="text-align:center">${_remiEsc(it.udm)}</td>
     <td style="text-align:right">${_pcomMoney(it.costo_unit)}</td><td style="text-align:right">${_pcomMoney(sub)}</td>
     <td style="text-align:right">${_pcomMoney(iva)}</td><td style="text-align:right">${rete?('-'+_pcomMoney(rete)):'—'}</td>
-    <td style="text-align:right">${_pcomMoney(sub+iva-rete)}</td><td style="text-align:center">${x.aplicaRete?'SI':'NO'}</td></tr>`;
+    <td style="text-align:right">${_pcomMoney(sub+iva-rete)}</td><td style="text-align:center">${x.aplicaRete?'SI':'NO'}</td>
+    <td style="text-align:center;font-size:9px;font-weight:700;color:${_e.k==='completo'?'#1F7A3D':(_e.k==='pendiente'?'#888':'#000')}">${_estTxt}</td></tr>`;
   }).join('');
   const provs = Object.keys(calc.provs).sort();
   const filasResumen = provs.map(p=>{const x=calc.provs[p];return `<tr><td>${_remiEsc(p)}${x.sinOC?' <span style="font-size:8.5px;color:#888">(NO REQUIERE OC)</span>':''}</td><td style="text-align:right">${_pcomMoney(x.subtotal)}</td><td style="text-align:right">${_pcomMoney(x.total)}</td><td style="text-align:center;font-weight:700;color:${x.pago==='PAGADO'?'#2EAA4A':'#c00'}">${x.pago}</td></tr>`;}).join('');
@@ -21659,12 +21862,12 @@ function _pcomPlanBodyHTML(c){
   </tr></table>
   <table class="b"><thead><tr style="background:#d9d9d9;font-weight:700">
     <th style="width:32px">ITEM</th><th>DESCRIPCION</th><th style="width:110px">PROVEEDOR</th><th style="width:42px">CANT</th><th style="width:40px">UDM</th>
-    <th style="width:75px">COSTO UNIT</th><th style="width:80px">SUBTOTAL</th><th style="width:75px">IVA (19%)</th><th style="width:75px">RETENCION</th><th style="width:85px">TOTAL PAGAR</th><th style="width:42px">¿RETE?</th>
+    <th style="width:75px">COSTO UNIT</th><th style="width:80px">SUBTOTAL</th><th style="width:75px">IVA (19%)</th><th style="width:75px">RETENCION</th><th style="width:85px">TOTAL PAGAR</th><th style="width:42px">¿RETE?</th><th style="width:70px">ESTADO</th>
   </tr></thead><tbody>${filas}</tbody></table>
   <div style="margin-top:16px;width:430px">
     <table class="b"><tr style="background:#003366;color:#fff;font-weight:700;text-align:center"><td>PROVEEDOR</td><td style="width:110px">VALOR SIN IVA</td><td style="width:110px">TOTAL A PAGAR</td><td style="width:80px">PAGO</td></tr>${filasResumen}</table>
   </div>
-  <div style="margin-top:14px;font-size:9px;color:#555">Retefuente 2,5% aplica si la compra al proveedor ≥ $ ${PCOM_BASE_RETE.toLocaleString('es-CO')} (10 UVT ${new Date().getFullYear()}) y no es autoretenedor. Cotización: ${_remiEsc(c.cotizacion)||'n.a.'} · Fecha: ${c.fecha?c.fecha.split('-').reverse().join('/'):''}</div>`;
+  <div style="margin-top:14px;font-size:9px;color:#555">Retefuente 2,5% aplica si la compra al proveedor ≥ $ ${PCOM_BASE_RETE.toLocaleString('es-CO')} (10 UVT ${new Date().getFullYear()}) y no es autoretenedor. Cotización: ${_remiEsc(_cotIds.join('  +  '))||'n.a.'} · Fecha: ${c.fecha?c.fecha.split('-').reverse().join('/'):''}</div>`;
 }
 function pcomPDF(){
   if(!pcom_current) return; pcomSyncHeader();
