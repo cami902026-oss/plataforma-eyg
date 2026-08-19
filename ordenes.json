@@ -7295,5 +7295,54 @@
     "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1787177572753",
+    "num": "CMC-000041",
+    "cliente": "ANDES OPERATING",
+    "desc": "Cotización LM1768 · 14 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-19",
+    "valor": 18050036.62,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1768",
+    "createdAt": "2026-08-19T22:12:52.754Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-19T22:12:52.754Z",
+    "updatedBy": "alexandra"
   }
 ]
