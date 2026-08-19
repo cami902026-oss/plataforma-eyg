@@ -22692,6 +22692,44 @@ function absNuevoProductoModal() {
 
 function absNuevoClose(){ const m=document.getElementById('abs-nuevo-modal'); if(m) m.remove(); }
 
+// v188 — ¿ya existe un producto casi igual?
+// Reusa la normalización del buscador inteligente (_absNorm ya vuelve iguales
+// SCH 80/S80, 150L/150#, BRIDA/FLANCHE, 6 X 4/6X4, acentos, etc.).
+// Criterio: las MEDIDAS deben coincidir exactamente (si no, es otro ítem) y las
+// palabras deben parecerse mucho. Devuelve los candidatos, ordenados.
+function _absSimilares(desc){
+  const prep = s => String(s||'').replace(/A\s*\/\s*C/gi,'AC');   // A/C y AC son lo mismo
+  const toks = s => (typeof _absQTokens==='function' ? _absQTokens(prep(s)) : prep(s).toUpperCase().split(' ')).filter(Boolean);
+  const A = toks(desc);
+  if(A.length < 2) return [];
+  const esNum = t => /\d/.test(t);
+  const limpia = t => String(t).replace(/"/g,'').replace(/\.(?=\d{3})/g,'');   // 1/2"X3/4" y 3.000 = 3000
+  // raíz de la palabra: CIEGA/CIEGO, CURVA/CURVAS, ROSCADO/ROSCADA cuentan igual
+  const raiz = w => w.length>=5 ? w.slice(0,4) : w;
+  const numA = A.filter(esNum).map(limpia).sort();
+  const palA = A.filter(t=>!esNum(t)).map(raiz);
+  const out = [];
+  (abs_productos||[]).forEach(p=>{
+    const B = toks(p.descripcion);
+    if(!B.length) return;
+    // Las medidas mandan: o son las mismas, o una lista contiene a la otra
+    // (ej. "THREADOLET ... 1/2 X 3/4" vs "... 1/2 X 3/4 - 36"), y ahí se exige más parecido.
+    const nB = B.filter(esNum).map(limpia).sort();
+    const iguales = nB.join('|') === numA.join('|');
+    const contiene = !iguales && (numA.every(t=>nB.indexOf(t)>=0) || nB.every(t=>numA.indexOf(t)>=0));
+    if(!iguales && !contiene) return;
+    const minimo = iguales ? 0.6 : 0.8;
+    const palB = B.filter(t=>!esNum(t)).map(raiz);
+    const enB = {}; palB.forEach(w=>{ enB[w]=1; });
+    const comunes = palA.filter(w=>enB[w]).length;
+    const universo = {}; palA.concat(palB).forEach(w=>{ universo[w]=1; });
+    const total = Object.keys(universo).length || 1;
+    const sim = comunes/total;
+    if(sim >= minimo) out.push([sim, p]);
+  });
+  out.sort((a,b)=> b[0]-a[0] || (b[1].stock_actual||0)-(a[1].stock_actual||0));
+  return out.slice(0,6).map(x=>x[1]);
+}
 async function absGuardarNuevoProducto() {
   if (!abs_canSalida()) return showToast('Sin permiso','error');
   const val = id => (document.getElementById(id)?.value||'').trim();
@@ -22711,6 +22749,24 @@ async function absGuardarNuevoProducto() {
   const universo = _absCodigosTodos || abs_productos;
   if (universo.some(p=>String(p.codigo||'').toLowerCase()===codigo.toLowerCase()))
     return showToast('Ya existe un producto con el código '+codigo,'error');
+  // v188 — AVISO anti-repetido. Avisa, NO bloquea (mismo criterio que el aviso de
+  // remisión doble): el equipo decide, porque a veces sí se necesita otro código
+  // (otra marca, o el de importación aparte del de plaza).
+  try{
+    const parecidos = _absSimilares(desc);
+    if(parecidos.length){
+      const lista = parecidos.map(x=>'   • '+x.codigo+'   '+(x.descripcion||'')+
+        '\n        marca '+(x.marca||'—')+'  ·  '+(x.proveedor||'—')+'  ·  stock '+(x.stock_actual||0)+(x.ubicacion?('  ·  '+x.ubicacion):'')).join('\n');
+      const msg = '⚠️ Ya existe '+(parecidos.length===1?'un producto muy parecido':'productos muy parecidos')+':\n\n'+lista+
+        '\n\nSi es el MISMO ítem, cancela y usa el código que ya existe — así el inventario no se parte en dos.'+
+        '\nSi de verdad es distinto (otra marca, o el importado aparte del de plaza), continúa y se crea igual.\n\n'+
+        '¿Crear de todas formas "'+desc+'"?';
+      if(!confirm(msg)){
+        showToast('No se creó. Usa el código que ya existe.','info',{durationMs:7000});
+        return;
+      }
+    }
+  }catch(_){ /* si algo falla en el aviso, no se estorba la creación */ }
   const body = {
     codigo,
     descripcion: desc,
