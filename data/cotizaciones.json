@@ -41778,8 +41778,8 @@
     "cliente": "SAR ENERGY",
     "contacto": "OSCAR SANCHEZ",
     "correo": "osanchez@sarenergy.com>",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "580",
     "iva": 19,
     "subtotal": 4963600,
     "ivaVal": 943084,
@@ -41873,13 +41873,35 @@
         "precioProveedor": 55000
       }
     ],
-    "fechaGuardado": "2026-08-03T22:04:15.728Z",
+    "fechaGuardado": "2026-08-19T16:15:00.067Z",
     "fechaEnvio": "2026-07-24T20:57:27.540Z",
+    "facturadaAt": "2026-08-19",
     "adjudicadaAt": "2026-08-03",
+    "valorAdjudicado": 4339976,
+    "itemsAdjudicados": [
+      {
+        "uid": "9af67ab8-3794-429a-8c13-2e35578f7567",
+        "qty": 10
+      },
+      {
+        "uid": "37728548-8fc1-4881-b8a2-7abe900706f8",
+        "qty": 20
+      },
+      {
+        "uid": "73546f24-e85f-47c2-9b3b-3d035c9c85e9",
+        "qty": 12
+      },
+      {
+        "uid": "cd8072e4-bc1b-4304-967c-bc077f9a74df",
+        "qty": 20
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-19T16:14:53.532Z",
     "createdAt": "2026-07-24T16:38:26.631Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-03T22:04:15.728Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-19T16:15:00.067Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1879",
