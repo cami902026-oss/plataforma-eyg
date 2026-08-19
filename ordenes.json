@@ -7344,5 +7344,54 @@
     "createdBy": "alexandra",
     "updatedAt": "2026-08-19T22:12:52.754Z",
     "updatedBy": "alexandra"
+  },
+  {
+    "id": "poc_1787177635828",
+    "num": "COM-000394",
+    "cliente": "ANDES Operating Company",
+    "desc": "Cotización LM1941 · 10 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-19",
+    "valor": 19227621.35,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1941",
+    "createdAt": "2026-08-19T22:13:55.829Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-19T22:13:55.829Z",
+    "updatedBy": "alexandra"
   }
 ]
