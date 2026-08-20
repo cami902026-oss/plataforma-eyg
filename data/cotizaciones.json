@@ -65129,7 +65129,7 @@
     "cliente": "TERMONORTE",
     "contacto": "MICHAEL CAMPUZANO ",
     "correo": "michael.campuzano@termonorte.co",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 35142,
@@ -65160,13 +65160,22 @@
         "precioProveedor": 8200
       }
     ],
-    "fechaGuardado": "2026-08-10T18:34:59.300Z",
+    "fechaGuardado": "2026-08-20T13:52:44.671Z",
     "fechaEnvio": "2026-08-10T18:34:59.300Z",
+    "adjudicadaAt": "2026-08-20",
+    "valorAdjudicado": 93712,
+    "itemsAdjudicados": [
+      {
+        "uid": "92d51ccd-64db-4bfa-a11c-080fd7aa7f1f",
+        "qty": 8
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-20T13:52:41.725Z",
     "createdAt": "2026-08-10T18:01:58.989Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-19T13:34:19.528Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-08-19T13:34:19.528Z"
+    "updatedAt": "2026-08-20T13:52:44.671Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM1964",
