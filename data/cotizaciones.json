@@ -76151,7 +76151,7 @@
     "cliente": "IMCOPETROL",
     "contacto": "DANIEL",
     "correo": "suministros@imcopetrol.com",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 3762792,
@@ -76210,11 +76210,25 @@
         "precioProveedor": 42590
       }
     ],
-    "fechaGuardado": "2026-08-20T19:17:25.432Z",
+    "fechaGuardado": "2026-08-20T19:24:05.358Z",
+    "fechaEnvio": "2026-08-20T19:24:05.358Z",
+    "valorAdjudicado": 2238000,
+    "itemsAdjudicados": [
+      {
+        "uid": "f777196c-e5e0-4b68-a21b-b5d809d61cf7",
+        "qty": 12
+      },
+      {
+        "uid": "a5b412e5-16c6-4246-af5c-709a5406e34a",
+        "qty": 60
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-20T18:56:59.484Z",
     "createdAt": "2026-08-20T16:26:47.534Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-20T19:17:25.432Z",
-    "updatedBy": "alberto"
+    "updatedAt": "2026-08-20T19:24:05.358Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2024",
