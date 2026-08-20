@@ -65131,9 +65131,9 @@
     "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
-    "subtotal": 144000,
-    "ivaVal": 27360,
-    "total": 171360,
+    "subtotal": 54000,
+    "ivaVal": 10260,
+    "total": 64260,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "BARRANQUILLA",
     "validez": "8 DÍAS",
@@ -65146,7 +65146,7 @@
     "items": [
       {
         "id": 1,
-        "qty": 8,
+        "qty": 3,
         "udm": "EA",
         "uid": "92d51ccd-64db-4bfa-a11c-080fd7aa7f1f",
         "desc": "FLANCHE RANURADO GALVANIZADO DE 1\"",
@@ -65159,7 +65159,7 @@
         "precioProveedor": 8200
       }
     ],
-    "fechaGuardado": "2026-08-20T17:18:08.180Z",
+    "fechaGuardado": "2026-08-20T17:15:11.561Z",
     "fechaEnvio": "2026-08-10T18:34:59.300Z",
     "adjudicadaAt": "2026-08-20",
     "valorAdjudicado": 93712,
@@ -65173,7 +65173,7 @@
     "adjudicacionAt": "2026-08-20T13:52:41.725Z",
     "createdAt": "2026-08-10T18:01:58.989Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-20T17:18:08.180Z",
+    "updatedAt": "2026-08-20T17:15:11.562Z",
     "updatedBy": "sheila"
   },
   {
@@ -76172,12 +76172,15 @@
         "udm": "EA",
         "uid": "85ec5d0d-96b9-4c3a-8a51-c35d8a728ce8",
         "desc": "REDUCER_PIPE.CONCENTRIC SWAGE;2\" X 3/4\";PLE X TSE;SCH 80;ASTM A234,GR WPB;FULL COMPLIANCE WITH ASME B16.9;QA/QC",
-        "marca": "XF",
+        "marca": "",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "CODIFER",
+        "desvTec": "BOTELLA   2\" X 3/4\"  SCH 80 ",
+        "proveedor": "SEAT COLOMBIA",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 7300
+        "precioProveedor": 178600,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 2,
@@ -76206,11 +76209,11 @@
         "precioProveedor": 42590
       }
     ],
-    "fechaGuardado": "2026-08-20T16:29:37.268Z",
+    "fechaGuardado": "2026-08-20T17:18:20.369Z",
     "createdAt": "2026-08-20T16:26:47.534Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-20T16:29:37.268Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-20T17:18:20.370Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM2024",
