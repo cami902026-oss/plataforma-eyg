@@ -75986,9 +75986,9 @@
     "estado": "Enviada",
     "factura": "",
     "iva": 19,
-    "subtotal": 206500,
-    "ivaVal": 39235,
-    "total": 245735,
+    "subtotal": 366675,
+    "ivaVal": 69668.25,
+    "total": 436343.25,
     "formaPago": "CONTADO",
     "sitioEntrega": "VILLETA",
     "validez": "8 DÍAS",
@@ -76104,12 +76104,12 @@
         "uid": "e22cd91e-8ffe-4d8c-aa70-eea0d484a2a7",
         "desc": "codos acero al carbon 1\" x 3000 NPT galvanizado ",
         "marca": "XF-BOTHWELL",
-        "precio": 33372,
-        "desvTec": "SE OFERTA A-105, NO SE INCLUYE GALVANIZADO",
+        "precio": 67691,
+        "desvTec": "SE OFERTA A-105, SE INCLUYE  PROCESO DE GALVANIZADO LOCAL",
         "proveedor": "CODIFER",
         "obsProveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 26030
+        "tiempoEntrega": "3-4 DIAS",
+        "precioProveedor": 46030
       },
       {
         "id": 9,
@@ -76118,12 +76118,12 @@
         "uid": "d489399d-bc3f-4674-8338-0eec6e73a550",
         "desc": "Unión universal 1 x 3000 roscada acero al carbon galvanizado ",
         "marca": "XF-BOTHWELL",
-        "precio": 33795,
-        "desvTec": "SE OFERTA A-105, NO SE INCLUYE GALVANIZADO ",
+        "precio": 68176,
+        "desvTec": "SE OFERTA A-105, SE INCLUYE  PROCESO DE GALVANIZADO LOCAL ",
         "proveedor": "CODIFER",
         "obsProveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 26360
+        "tiempoEntrega": "3-4 DIAS",
+        "precioProveedor": 46360
       },
       {
         "id": 10,
@@ -76132,20 +76132,20 @@
         "uid": "9f87ede1-d1e8-41ed-9c5b-223ab0588d49",
         "desc": "BuShing reductor de 1 1/2\" macho a 1\" hembra NPT acero al carbon galvanizado",
         "marca": "XF-BOTHWELL",
-        "precio": 15295,
-        "desvTec": "SE OFERTA A-105,NO SE INCLUYE GALVANIZADO",
+        "precio": 38132,
+        "desvTec": "SE OFERTA A-105, SE INCLUYE  PROCESO DE GALVANIZADO LOCAL",
         "proveedor": "CODIFER",
         "obsProveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 11930
+        "tiempoEntrega": "3-4 DIAS",
+        "precioProveedor": 25930
       }
     ],
-    "fechaGuardado": "2026-08-20T17:57:56.814Z",
+    "fechaGuardado": "2026-08-20T20:25:20.379Z",
     "fechaEnvio": "2026-08-20T17:57:56.814Z",
     "createdAt": "2026-08-20T16:19:50.168Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-20T17:57:56.814Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-20T20:25:20.379Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM2023",
@@ -76444,12 +76444,12 @@
     "cliente": "CONFIPETROL",
     "contacto": "EMMANUEL BULLA",
     "correo": "emmanuel.bulla@confipetrol.com",
-    "estado": "Enviada",
+    "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 11580000,
-    "ivaVal": 2200200,
-    "total": 13780200,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "BARRANCABERMEJA",
     "validez": "8 DÍAS",
@@ -76462,24 +76462,23 @@
     "items": [
       {
         "id": 1,
-        "qty": 30,
-        "udm": "EA",
-        "uid": "bb57e89f-4466-48f1-b52f-bcccf2cf534d",
         "desc": "Válvula para agua 1/4\" NPT macho, resistencia mínima de 3000 psig",
-        "marca": "FITOK -HY LOK -SSP FITTINGS",
-        "precio": 386000,
-        "desvTec": "316L STAINLESS STEEL, ND SERIES NONROTATING-STEM NEEDLE VALVE 1/4\" MALE  NPT X 3000 PSI ",
-        "proveedor": "GERENCIA",
+        "udm": "EA",
+        "qty": 30,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
         "obsProveedor": "",
-        "tiempoEntrega": "2-3- SEMANAS ",
-        "precioProveedor": 0
+        "uid": "bb57e89f-4466-48f1-b52f-bcccf2cf534d"
       }
     ],
-    "fechaGuardado": "2026-08-20T20:23:27.329Z",
-    "fechaEnvio": "2026-08-20T20:23:27.329Z",
+    "fechaGuardado": "2026-08-20T18:53:44.671Z",
     "createdAt": "2026-08-20T18:53:44.671Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-20T20:23:27.329Z",
+    "updatedAt": "2026-08-20T18:53:44.671Z",
     "updatedBy": "sandra"
   },
   {
