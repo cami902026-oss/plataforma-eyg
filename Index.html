@@ -18913,7 +18913,7 @@ function absCartTipo(tipo) {
   const bs=document.getElementById('abs-cart-btn-salida');
   if(be) be.classList.toggle('active',tipo==='ENTRADA');
   if(bs) bs.classList.toggle('active',tipo==='SALIDA');
-  const th=document.getElementById('abs-cart-th-extra'); if(th) th.textContent=tipo==='ENTRADA'?'Lote':'Colada';
+  const th=document.getElementById('abs-cart-th-extra'); if(th) th.textContent=tipo==='ENTRADA'?'Lote / Colada':'Colada';
   const rg=document.getElementById('abs-cart-remision-group'); if(rg) rg.style.display=tipo==='SALIDA'?'':'none';
   absCartRender();
 }
@@ -18969,12 +18969,22 @@ function absCartRender() {
     const sc=it.stock_actual<=0?'var(--red)':it.stock_actual<=5?'var(--yellow)':'var(--green)';
     const extraVal=esSalida?it.colada:it.lote;
     const extraCampo=esSalida?'colada':'lote';
+    // v190: en ENTRADA se piden los dos — el lote (de la compra) y la colada
+    // (la que viene marcada en la pieza). La colada es la que después evita
+    // tener que escribirla en cada despacho y la que amarra el certificado.
+    const inpS='padding:6px 8px;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:6px;color:#fff;font-size:13px';
+    const celdaExtra = esSalida
+      ? `<input type="text" value="${(it.colada||'').replace(/"/g,'&quot;')}" placeholder="Colada" onchange="absCartSet('${it.codigo}','colada',this.value)" style="width:120px;${inpS}">`
+      : `<div style="display:flex;gap:6px;flex-wrap:wrap">
+           <input type="text" value="${(it.lote||'').replace(/"/g,'&quot;')}" placeholder="Lote" title="Lote de la compra o importación" onchange="absCartSet('${it.codigo}','lote',this.value)" style="width:104px;${inpS}">
+           <input type="text" value="${(it.colada||'').replace(/"/g,'&quot;')}" placeholder="Colada" title="N.° de colada marcado en la pieza. Si lo registras aquí, después no hay que escribirlo en cada salida y sirve para amarrar el certificado (MTR)." onchange="absCartSet('${it.codigo}','colada',this.value)" style="width:104px;${inpS};border-color:rgba(232,160,32,.45)">
+         </div>`;
     return `<tr>
       <td><code style="font-size:11px;color:var(--gold)">${it.codigo}</code></td>
       <td style="font-size:13px">${it.descripcion}${(it.marca||it.proveedor)?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${it.marca||'—'}${it.proveedor?' · '+it.proveedor:''}</div>`:''}</td>
       <td style="color:${sc};font-weight:700">${it.stock_actual}</td>
       <td><input type="number" min="0.01" step="0.01" value="${it.cantidad}" onchange="absCartSet('${it.codigo}','cantidad',this.value);absCartRender()" style="width:90px;padding:6px 8px;background:rgba(15,43,91,0.5);border:1px solid ${insuf?'var(--red)':'var(--border)'};border-radius:6px;color:#fff;font-size:13px">${insuf?'<div style="color:var(--red);font-size:10px;margin-top:2px">Supera stock</div>':''}</td>
-      <td><input type="text" value="${(extraVal||'').replace(/"/g,'&quot;')}" placeholder="${esSalida?'Colada':'Lote'}" onchange="absCartSet('${it.codigo}','${extraCampo}',this.value)" style="width:120px;padding:6px 8px;background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:6px;color:#fff;font-size:13px"></td>
+      <td>${celdaExtra}</td>
       <td><button onclick="absCartRemove('${it.codigo}')" title="Quitar" style="background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:16px">&#10005;</button></td>
     </tr>`;
   }).join('');
@@ -19134,7 +19144,8 @@ async function absCartGuardar() {
         codigo_producto:it.codigo, descripcion_producto:it.descripcion,
         tipo:abs_cart_tipo, cantidad:it.cantidad, stock_resultante:nuevo_stock,
         costo:prod.costo_compra||0, responsable:currentUser?.name||'SISTEMA',
-        lote:abs_cart_tipo==='ENTRADA'?(it.lote||''):'', colada:abs_cart_tipo==='SALIDA'?(it.colada||''):'',
+        lote:abs_cart_tipo==='ENTRADA'?(it.lote||''):'',
+        colada:it.colada||'',          // v190: también en ENTRADA (antes solo salidas)
         remision, notas
       };
       await absFetch('kardex',{method:'POST',body:JSON.stringify(mov)});
