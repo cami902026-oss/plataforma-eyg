@@ -7343,7 +7343,9 @@
     "createdAt": "2026-08-19T22:12:52.754Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-08-19T22:12:52.754Z",
-    "updatedBy": "alexandra"
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
   },
   {
     "id": "poc_1787177635828",
@@ -7392,7 +7394,9 @@
     "createdAt": "2026-08-19T22:13:55.829Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-08-19T22:13:55.829Z",
-    "updatedBy": "alexandra"
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
   },
   {
     "id": "poc_1787177674677",
@@ -7441,6 +7445,57 @@
     "createdAt": "2026-08-19T22:14:34.677Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-08-19T22:14:34.677Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1787234060151",
+    "num": "73870",
+    "cliente": "TERMONORTE",
+    "desc": "Cotización LM1963 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-20",
+    "valor": 41818.979999999996,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1963",
+    "createdAt": "2026-08-20T13:54:20.151Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-20T13:54:20.151Z",
     "updatedBy": "alexandra"
   }
 ]
