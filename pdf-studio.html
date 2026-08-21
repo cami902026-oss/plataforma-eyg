@@ -189,7 +189,11 @@
         <h4>QUE MAS QUITAR</h4>
         <div class="fila"><label><input type="checkbox" id="ac-sello" checked> Sello superior del proveedor <span style="color:var(--muted);">("Documento: PVC&hellip; EdgarR")</span></label></div>
         <div class="fila">
-          <label><input type="checkbox" id="ac-fondo" checked> Fondo / marca de agua</label>
+          <label title="Borra del PDF la imagen que el proveedor estampa sobre toda la hoja. El texto NO se toca."><input type="checkbox" id="ac-imgfondo" checked> <b>Imagen de fondo / marca de agua del proveedor</b> <span style="color:var(--muted);">(recomendado)</span></label>
+        </div>
+        <div class="fila" style="font-size:11.5px;color:var(--muted);margin-top:-4px;">Quita solo las imagenes que cubren media hoja o mas. Los logos, sellos y firmas del <b>fabricante</b> se conservan, y en un PDF escaneado no toca nada.</div>
+        <div class="fila" style="margin-top:6px;">
+          <label title="Blanquea los pixeles claros. Solo para marcas de agua impresas o escaneadas: en un PDF normal desvanece el texto."><input type="checkbox" id="ac-fondo"> Aclarar el fondo por color <span style="color:var(--muted);">(solo escaneados; puede desvanecer el texto)</span></label>
           <label>Umbral <input type="range" id="ac-umbral" min="150" max="245" value="200" oninput="document.getElementById('ac-umbralv').textContent=this.value" title="Mas bajo borra mas fondo, pero puede aclarar el texto"> <span id="ac-umbralv">200</span></label>
         </div>
       </div>
@@ -887,6 +891,151 @@ function _acDetectar(items, vp, nombres, conSello) {
   }
   return rects;
 }
+
+/* -- 🖼 v193: QUITAR LA IMAGEN DE FONDO DEL PROVEEDOR ---------------------
+   El proveedor toma el PDF del fabricante y le estampa encima su marca de agua
+   como una imagen (XObject) que cubre toda la hoja. Blanquearla por color no
+   sirve: es gris oscuro (luminancia ~111) y el umbral que la borra tambien se
+   come el texto. Lo que si funciona es QUITAR EL RECURSO del PDF: el operador
+   "Do" queda huerfano, los visores lo ignoran y la marca desaparece sin tocar
+   un solo pixel del documento -- ni siquiera hace falta rasterizar. */
+
+// Tokeniza un content stream saltando los strings (…) y <…>, para que el texto
+// del documento no se confunda con operadores.
+function _acTokens(txt) {
+  const out = []; let i = 0; const n = txt.length;
+  const corte = /[\s\/\[\]<>(){}]/;
+  while (i < n) {
+    const ch = txt[i];
+    if (ch === '(') {                                  // string literal, con anidamiento y \(
+      let d = 1; i++;
+      while (i < n && d > 0) {
+        if (txt[i] === '\\') i += 2;
+        else { if (txt[i] === '(') d++; else if (txt[i] === ')') d--; i++; }
+      }
+      out.push('()');
+    } else if (ch === '<' && txt[i + 1] !== '<') {      // string hexadecimal
+      while (i < n && txt[i] !== '>') i++;
+      i++; out.push('<>');
+    } else if (ch === '/') {
+      let j = i + 1; while (j < n && !corte.test(txt[j])) j++;
+      out.push(txt.slice(i, j)); i = j;
+    } else if (/\s/.test(ch)) { i++; }
+    else if (/[\[\]{}]/.test(ch)) { out.push(ch); i++; }
+    else if (ch === '<' || ch === '>') { out.push(ch + ch); i += 2; }
+    else { let j = i; while (j < n && !corte.test(txt[j])) j++; out.push(txt.slice(i, j)); i = j; }
+  }
+  return out;
+}
+// Recorre el stream rastreando la matriz (q/Q/cm) y devuelve, por cada XObject
+// dibujado con Do, el % de la hoja que llega a cubrir.
+function _acAreasDe(txt, pw, ph) {
+  const tk = _acTokens(txt);
+  let ctm = [1, 0, 0, 1, 0, 0];
+  const pila = []; let num = []; let nombre = null; const areas = {};
+  const mul = (m, c) => [
+    m[0] * c[0] + m[1] * c[2], m[0] * c[1] + m[1] * c[3],
+    m[2] * c[0] + m[3] * c[2], m[2] * c[1] + m[3] * c[3],
+    m[4] * c[0] + m[5] * c[2] + c[4], m[4] * c[1] + m[5] * c[3] + c[5]
+  ];
+  for (const t of tk) {
+    if (t === 'q') { pila.push(ctm.slice()); num = []; }
+    else if (t === 'Q') { ctm = pila.pop() || [1, 0, 0, 1, 0, 0]; num = []; }
+    else if (t === 'cm') { if (num.length >= 6) ctm = mul(num.slice(-6), ctm); num = []; }
+    else if (t === 'Do') {
+      if (nombre) {
+        const a = Math.abs(ctm[0] * ctm[3] - ctm[1] * ctm[2]);   // area que cubre = |det|
+        const pct = 100 * a / (pw * ph);
+        if (!(nombre in areas) || areas[nombre] < pct) areas[nombre] = pct;
+      }
+      num = [];
+    } else if (t[0] === '/') { nombre = t.slice(1); }
+    else { const v = parseFloat(t); if (!isNaN(v) && /^[-+.\d]/.test(t)) num.push(v); else num = []; }
+  }
+  return areas;
+}
+function _acContenido(pg) {
+  try {
+    const ctx = pg.node.context;
+    let c = pg.node.Contents(); if (!c) return '';
+    c = ctx.lookup(c);
+    const partes = [];
+    if (c instanceof PDFLib.PDFArray) { for (let i = 0; i < c.size(); i++) partes.push(ctx.lookup(c.get(i))); }
+    else partes.push(c);
+    const dec = new TextDecoder('latin1');
+    let txt = '';
+    for (const st of partes) {
+      if (!st) continue;
+      try { txt += dec.decode(PDFLib.decodePDFRawStream(st).decode()); } catch (_) {}
+    }
+    return txt;
+  } catch (_) { return ''; }
+}
+// Quita del PDF de una fuente las imagenes que cubren >= minPct de la hoja.
+// Devuelve cuantas quito. Guarda los bytes originales para poder deshacer.
+async function _acQuitarFondos(srcId, minPct) {
+  const f = fuentes[srcId];
+  if (!f) return 0;
+  if (!f._bytesOrig) f._bytesOrig = f.bytes.slice(0);
+  const doc = await PDFLib.PDFDocument.load(f.bytes.slice(0), { ignoreEncryption: true, updateMetadata: false });
+  const pgs = doc.getPages();
+  let quitadas = 0;
+  for (let i = 0; i < pgs.length; i++) {
+    // Salvaguarda: si la pagina no trae texto es un escaneo — la "imagen de
+    // fondo" ES el documento y quitarla dejaria la hoja en blanco.
+    try {
+      const pj = await f.pdfjsDoc.getPage(i + 1);
+      const tc = await pj.getTextContent();
+      if (!tc.items.length) continue;
+    } catch (_) { continue; }
+    const pg = pgs[i];
+    const dim = pg.getSize();
+    const areas = _acAreasDe(_acContenido(pg), dim.width, dim.height);
+    const res = pg.node.Resources();
+    const xo = res && res.lookup(PDFLib.PDFName.of('XObject'), PDFLib.PDFDict);
+    if (!xo) continue;
+    for (const par of xo.entries()) {
+      const key = par[0], ref = par[1];
+      const nom = String(key.encodedName || key).replace('/', '');
+      if ((areas[nom] || 0) < minPct) continue;
+      try {
+        const obj = doc.context.lookup(ref);
+        const dict = obj && (obj.dict || obj);
+        const sub = dict && dict.get(PDFLib.PDFName.of('Subtype'));
+        if (!sub || String(sub) !== '/Image') continue;      // los Form XObject no se tocan
+        xo.delete(key); quitadas++;
+      } catch (_) {}
+    }
+  }
+  if (!quitadas) return 0;
+  const nuevos = await doc.save();
+  f.bytes = nuevos.buffer.slice(nuevos.byteOffset, nuevos.byteOffset + nuevos.byteLength);
+  f.pdfjsDoc = await pdfjsLib.getDocument({ data: f.bytes.slice(0) }).promise;
+  f.libDoc = null;                                            // el cache de pdf-lib ya no sirve
+  // Refrescar las miniaturas de las paginas que salen de esta fuente
+  for (const p of paginas) {
+    if (p.srcId !== srcId || p.tipo !== 'pdf') continue;
+    try { const mt = await miniatura(f.pdfjsDoc, p.pageIndex + 1); p.thumb = mt.thumb; } catch (_) {}
+  }
+  return quitadas;
+}
+// Deja el PDF como llego (deshace el quitado de imagenes de fondo)
+async function _acRestaurarFondos() {
+  let n = 0;
+  for (const srcId of Object.keys(fuentes)) {
+    const f = fuentes[srcId];
+    if (!f || !f._bytesOrig) continue;
+    f.bytes = f._bytesOrig.slice(0);
+    f.pdfjsDoc = await pdfjsLib.getDocument({ data: f.bytes.slice(0) }).promise;
+    f.libDoc = null; f._bytesOrig = null; n++;
+    for (const p of paginas) {
+      if (p.srcId !== srcId || p.tipo !== 'pdf') continue;
+      try { const mt = await miniatura(f.pdfjsDoc, p.pageIndex + 1); p.thumb = mt.thumb; } catch (_) {}
+    }
+  }
+  return n;
+}
+
 function abrirAutoCert() {
   if (!paginas.length) { toast('Agrega primero los certificados.', true); return; }
   let guardados = '';
@@ -897,16 +1046,27 @@ function abrirAutoCert() {
 async function autoCertAplicar() {
   const nombres = $('ac-nombres').value.split(',').map(t => t.trim().toUpperCase()).filter(Boolean);
   const conSello = $('ac-sello').checked, conFondo = $('ac-fondo').checked;
+  const conImgFondo = $('ac-imgfondo').checked;
   const umbral = parseInt($('ac-umbral').value) || 200;
   const soloSel = (document.querySelector('input[name=ac-alcance]:checked') || {}).value === 'sel';
-  if (!nombres.length && !conSello && !conFondo) { toast('No marcaste nada que quitar.', true); return; }
+  if (!nombres.length && !conSello && !conFondo && !conImgFondo) { toast('No marcaste nada que quitar.', true); return; }
   const lista = paginas.map((p, i) => ({ p: p, i: i })).filter(o => !soloSel || o.p.sel);
   if (!lista.length) { toast('No hay paginas seleccionadas.', true); return; }
   try { localStorage.setItem(AC_LS, $('ac-nombres').value); } catch (_) {}
   cerrarModal('modal-autocert');
   cargando('Buscando el proveedor en ' + lista.length + ' pagina(s)...');
-  let tapados = 0, sinTexto = 0;
+  let tapados = 0, sinTexto = 0, fondos = 0;
   try {
+    // 1) La marca de agua se quita del PDF (no por color): es una imagen que
+    //    cubre toda la hoja, y borrar el recurso no toca el texto.
+    if (conImgFondo) {
+      const srcs = {};
+      lista.forEach(o => { if (o.p.tipo === 'pdf' && o.p.srcId) srcs[o.p.srcId] = 1; });
+      for (const srcId of Object.keys(srcs)) {
+        cargando('Quitando la imagen de fondo de "' + (fuentes[srcId].nombre || '') + '"...');
+        try { fondos += await _acQuitarFondos(srcId, 45); } catch (e) { console.warn('quitar fondo', e); }
+      }
+    }
     for (const o of lista) {
       cargando('Limpiando pagina ' + (o.i + 1) + ' de ' + paginas.length + '...');
       const p = o.p, l = _limpDe(p);
@@ -930,19 +1090,25 @@ async function autoCertAplicar() {
   render(); actualizarVistas();
   let msg = tapados ? ('\u2705 Listo \u2014 ' + tapados + ' dato(s) del proveedor tapados')
                     : 'No se encontro el nombre del proveedor en el texto';
-  if (conFondo) msg += ' \u00b7 fondo blanqueado';
+  if (fondos) msg += ' \u00b7 ' + fondos + ' imagen(es) de fondo quitadas';
+  else if (conImgFondo) msg += ' \u00b7 sin imagen de fondo que quitar';
+  if (conFondo) msg += ' \u00b7 fondo aclarado por color';
   if (sinTexto) msg += ' \u00b7 ' + sinTexto + ' pagina(s) sin texto (escaneadas): tapalas a mano con el borrador \ud83e\uddfd';
-  toast(msg, !tapados && !conFondo);
+  toast(msg, !tapados && !conFondo && !fondos);
 }
-function autoCertQuitar() {
+async function autoCertQuitar() {
   paginas.forEach(p => {
     if (!p.limp) return;
     p.limp.rects = (p.limp.rects || []).filter(r => !r.auto);
     if (p.limp.marca && p.limp.marca.auto) p.limp.marca.on = false;
   });
   cerrarModal('modal-autocert');
+  cargando('Devolviendo los PDF a como llegaron...');
+  let n = 0;
+  try { n = await _acRestaurarFondos(); } catch (e) { console.warn('restaurar fondos', e); }
+  finally { cargando(false); }
   render(); actualizarVistas();
-  toast('Limpieza automatica deshecha (lo que tapaste a mano se conserva).');
+  toast('Limpieza automatica deshecha' + (n ? ' (incluida la imagen de fondo)' : '') + ' \u2014 lo que tapaste a mano se conserva.');
 }
 
 // ── Modal de limpieza ────────────────────────────────────────────────────────
