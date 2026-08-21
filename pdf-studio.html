@@ -85,11 +85,13 @@
 </head>
 <body>
 <h1>📄 PDF Studio E&G <span class="badge">🔒 100% LOCAL — nada se sube a internet</span></h1>
-<div class="sub">Arrastra PDFs o imágenes; organiza (mover, rotar, borrar) y <b>edita viendo el resultado en vivo</b>: ✏️ (o doble clic) para escribir texto y firmar, 🧽 para <b>tapar datos y quitar marcas de agua</b>, 🏷️ para sellos, membrete E&amp;G y numeración — las miniaturas muestran TODO tal como saldrá el PDF.</div>
+<div class="sub">Arrastra PDFs o imágenes; organiza (mover, rotar, borrar) y <b>edita viendo el resultado en vivo</b>: ✏️ (o doble clic) para escribir texto y firmar, 🧽 para <b>tapar datos y quitar marcas de agua</b>, 🏷️ para sellos, membrete E&amp;G y numeración — las miniaturas muestran TODO tal como saldrá el PDF.<br>
+🧼 <b>Limpiar certificados</b>: borra de un golpe el <b>nombre del proveedor</b> (CODIFER, GRANADA, TUVAPOR…), el <b>sello superior</b> y el <b>fondo/marca de agua</b> en todas las páginas. Nunca borra E&amp;G.</div>
 
 <div class="toolbar">
   <button class="btn btn-green" onclick="document.getElementById('file-input').click()">➕ Agregar archivos</button>
   <button class="btn btn-gold" id="btn-sellos" onclick="abrirSellos()" disabled>🏷️ Sellos y marca…</button>
+  <button class="btn btn-gold" id="btn-autocert" onclick="abrirAutoCert()" disabled title="Busca solo el nombre del proveedor y el sello, y los borra de todas las paginas">🧼 Limpiar certificados…</button>
   <button class="btn btn-gold" id="btn-form" onclick="abrirFormulario()" disabled title="Rellenar los campos que ya trae el PDF">📋 Formulario</button>
   <button class="btn btn-blue" id="btn-todo" onclick="exportar(false)" disabled>⬇️ Descargar PDF</button>
   <button class="btn btn-gold" id="btn-sel" onclick="exportar(true)" disabled>⬇️ Descargar selección</button>
@@ -110,7 +112,7 @@
 <div id="grid"></div>
 <div id="vacio">Sin páginas todavía — agrega archivos arriba 👆</div>
 
-<div class="nota-privacidad">🔒 Todo el procesamiento ocurre en este equipo. Los archivos <b>nunca</b> salen de tu PC.<br>E&amp;G Energy Group SAS · PDF Studio v4</div>
+<div class="nota-privacidad">🔒 Todo el procesamiento ocurre en este equipo. Los archivos <b>nunca</b> salen de tu PC.<br>E&amp;G Energy Group SAS · PDF Studio v5 · limpieza automática de certificados</div>
 
 <input type="file" id="file-input" multiple accept="application/pdf,image/jpeg,image/png" style="display:none" onchange="agregarArchivos(this.files); this.value='';">
 <input type="file" id="firma-input" accept="image/png,image/jpeg" style="display:none" onchange="cargarFirma(this.files[0]); this.value='';">
@@ -169,6 +171,39 @@
         </div>
       </div>
       <div class="fila" style="justify-content:flex-end;"><button class="btn btn-green" onclick="cerrarModal('modal-sellos')">Listo</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- 🧼 Modal v192: limpieza AUTOMATICA de certificados (proveedor + sello + fondo) -->
+<div class="overlay" id="modal-autocert">
+  <div class="modal">
+    <div class="modal-head"><b>🧼 Limpiar certificados (automatico)</b><button class="cerrar" onclick="cerrarModal('modal-autocert')">&#10005;</button></div>
+    <div class="modal-body">
+      <div class="seccion">
+        <h4>NOMBRES DE PROVEEDOR A BORRAR <span style="color:var(--muted);font-weight:400;">(separados por coma)</span></h4>
+        <div class="fila"><input type="text" id="ac-nombres" style="flex:1;min-width:280px;" placeholder="CODIFER, GRANADA, TUVAPOR..."></div>
+        <div class="fila" style="font-size:11.5px;color:var(--muted);">Nunca se borra <b>E&amp;G</b>, <b>EYG</b> ni <b>ENERGY GROUP</b>, asi aparezcan en la misma linea.</div>
+      </div>
+      <div class="seccion">
+        <h4>QUE MAS QUITAR</h4>
+        <div class="fila"><label><input type="checkbox" id="ac-sello" checked> Sello superior del proveedor <span style="color:var(--muted);">("Documento: PVC&hellip; EdgarR")</span></label></div>
+        <div class="fila">
+          <label><input type="checkbox" id="ac-fondo" checked> Fondo / marca de agua</label>
+          <label>Umbral <input type="range" id="ac-umbral" min="150" max="245" value="200" oninput="document.getElementById('ac-umbralv').textContent=this.value" title="Mas bajo borra mas fondo, pero puede aclarar el texto"> <span id="ac-umbralv">200</span></label>
+        </div>
+      </div>
+      <div class="seccion">
+        <h4>EN QUE PAGINAS</h4>
+        <div class="fila">
+          <label><input type="radio" name="ac-alcance" value="todas" checked> Todas</label>
+          <label><input type="radio" name="ac-alcance" value="sel"> Solo las seleccionadas</label>
+        </div>
+      </div>
+      <div class="fila" style="justify-content:space-between;">
+        <button class="btn btn-ghost" onclick="autoCertQuitar()" title="Deja las paginas como llegaron (los tapados hechos a mano con el borrador se conservan)">&#8634; Deshacer limpieza automatica</button>
+        <button class="btn btn-green" onclick="autoCertAplicar()">🧼 Limpiar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -456,7 +491,7 @@ function render() {
   if ($('membrete-on') && $('membrete-on').checked) extras.push('membrete');
   if ($('numerar-on') && $('numerar-on').checked) extras.push('numeración');
   $('contador').textContent = paginas.length ? (paginas.length + ' página(s)' + (nSel ? ' · ' + nSel + ' sel.' : '') + (extras.length ? ' · 🏷️ ' + extras.join(' + ') : '')) : '';
-  ['btn-todo','btn-marcar','btn-limpiar','btn-sellos'].forEach(id => { $(id).disabled = !paginas.length; });
+  ['btn-todo','btn-marcar','btn-limpiar','btn-sellos','btn-autocert'].forEach(id => { $(id).disabled = !paginas.length; });
   const _bf = $('btn-form'); if (_bf) { _bf.disabled = !_hayFormularios(); _bf.style.display = _hayFormularios() ? '' : 'none'; }
   ['btn-sel','btn-rotar','btn-quitar'].forEach(id => { $(id).disabled = !nSel; });
   $('btn-marcar').textContent = (nSel === paginas.length && paginas.length) ? '☐ Ninguna' : '☑ Todas';
@@ -745,7 +780,7 @@ function _aplicarLimpiezaCanvas(ctx, w, h, limp) {
     try { const im = ctx.getImageData(0, 0, w, h); _limpiarPixeles(im.data, limp.marca); ctx.putImageData(im, 0, 0); } catch(_) {}
   }
   (limp.rects || []).forEach(r => {
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = r.blanco ? '#ffffff' : '#000';   // v192: la limpieza automatica tapa en blanco
     ctx.fillRect(r.x * w, (1 - r.y - r.h) * h, r.w * w, r.h * h);   // origen abajo-izquierda
   });
 }
@@ -770,6 +805,144 @@ async function _rasterLimpio(p, escala) {
   }
   _aplicarLimpiezaCanvas(ctx, canvas.width, canvas.height, p.limp);
   return canvas;
+}
+
+
+/* -- 🧼 v192: LIMPIEZA AUTOMATICA DE CERTIFICADOS -------------------------------
+   Busca por TEXTO el nombre del proveedor y el sello superior y los convierte en
+   tapados normales de `p.limp.rects` (marcados con auto:true y blanco:true). No
+   inventa un pipeline nuevo: al exportar, la pagina con limpieza se RASTERIZA
+   igual que con el borrador manual, asi que el dato desaparece del archivo de
+   verdad, no queda un rectangulo encima que se pueda mover. */
+const AC_BLANCA = ['E&G', 'E & G', 'EYG', 'ENERGY GROUP'];
+const AC_SELLO_RE = /documento\s*:|pvc\s*-|edgar\s*r/i;
+const AC_LS = 'eyg_pdfstudio_proveedores';
+const AC_DEFECTO = 'CODIFER, GRANADA, COLIMPORTADOS, TUVAPOR, TUVACOL, TUBACOL';
+
+function _acEsBlanca(txt) {
+  const s = (txt || '').toUpperCase();
+  return AC_BLANCA.some(w => s.indexOf(w) >= 0);
+}
+// Agrupa los fragmentos de texto que van en la misma linea (pdf.js los parte)
+function _acLineas(items) {
+  const lin = []; let act = null;
+  for (const it of items) {
+    if (!it.str) continue;
+    const y = it.transform ? it.transform[5] : 0;
+    if (act && Math.abs(act.y - y) < 3) act.items.push(it);
+    else { act = { y: y, items: [it] }; lin.push(act); }
+  }
+  return lin;
+}
+// Rectangulo que ocupa un fragmento de texto, en fracciones 0-1 del espacio
+// VISUAL con origen abajo-izquierda (lo que espera _aplicarLimpiezaCanvas)
+function _acRectDeItem(it, vp) {
+  const t = it.transform || [1, 0, 0, 1, 0, 0];
+  const a = t[0], b = t[1], c = t[2], d = t[3], e = t[4], f = t[5];
+  const la = Math.hypot(a, b) || 1, lc = Math.hypot(c, d) || 1;
+  const ux = a / la, uy = b / la, vx = c / lc, vy = d / lc;   // avance del texto / "arriba"
+  const W = it.width || la, H = it.height || lc;
+  const m = H * 0.30;                                          // margen: descendentes y acentos
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  [[-1, -m], [W + 1, -m], [-1, H + m], [W + 1, H + m]].forEach(q => {
+    const pt = pdfjsLib.Util.applyTransform([e + ux * q[0] + vx * q[1], f + uy * q[0] + vy * q[1]], vp.transform);
+    if (pt[0] < minX) minX = pt[0];
+    if (pt[0] > maxX) maxX = pt[0];
+    if (pt[1] < minY) minY = pt[1];
+    if (pt[1] > maxY) maxY = pt[1];
+  });
+  const cl = (v) => Math.max(0, Math.min(1, v));
+  const x0 = cl(minX / vp.width), x1 = cl(maxX / vp.width);
+  const yTop = cl(minY / vp.height), yBot = cl(maxY / vp.height);
+  return { x: x0, y: 1 - yBot, w: x1 - x0, h: yBot - yTop, auto: true, blanco: true };
+}
+// Devuelve los rectangulos a tapar en una pagina
+function _acDetectar(items, vp, nombres, conSello) {
+  const rects = [];
+  for (const ln of _acLineas(items)) {
+    const partes = ln.items.map(it => it.str || '');
+    // 1) Sello del proveedor: se tapa la linea completa
+    if (conSello && ln.items.some(it => AC_SELLO_RE.test(it.str || ''))) {
+      ln.items.forEach((it, i) => { if (!_acEsBlanca(partes[i])) rects.push(_acRectDeItem(it, vp)); });
+      continue;
+    }
+    // 2) Nombre del proveedor: puede venir partido entre varios fragmentos, asi que
+    //    se busca sobre la linea unida y luego se mapea a los fragmentos que lo forman
+    const texto = partes.join('').toUpperCase();
+    const rangos = []; let pos = 0;
+    partes.forEach(t => { rangos.push([pos, pos + t.length]); pos += t.length; });
+    const marcados = {};
+    for (const n of nombres) {
+      if (!n) continue;
+      let desde = texto.indexOf(n);
+      while (desde >= 0) {
+        const hasta = desde + n.length;
+        rangos.forEach((r, i) => {
+          if (r[1] > desde && r[0] < hasta && !_acEsBlanca(partes[i])) marcados[i] = true;
+        });
+        desde = texto.indexOf(n, desde + 1);
+      }
+    }
+    Object.keys(marcados).forEach(i => rects.push(_acRectDeItem(ln.items[i], vp)));
+  }
+  return rects;
+}
+function abrirAutoCert() {
+  if (!paginas.length) { toast('Agrega primero los certificados.', true); return; }
+  let guardados = '';
+  try { guardados = localStorage.getItem(AC_LS) || ''; } catch (_) {}
+  if (!$('ac-nombres').value) $('ac-nombres').value = guardados || AC_DEFECTO;
+  abrirModalId('modal-autocert');
+}
+async function autoCertAplicar() {
+  const nombres = $('ac-nombres').value.split(',').map(t => t.trim().toUpperCase()).filter(Boolean);
+  const conSello = $('ac-sello').checked, conFondo = $('ac-fondo').checked;
+  const umbral = parseInt($('ac-umbral').value) || 200;
+  const soloSel = (document.querySelector('input[name=ac-alcance]:checked') || {}).value === 'sel';
+  if (!nombres.length && !conSello && !conFondo) { toast('No marcaste nada que quitar.', true); return; }
+  const lista = paginas.map((p, i) => ({ p: p, i: i })).filter(o => !soloSel || o.p.sel);
+  if (!lista.length) { toast('No hay paginas seleccionadas.', true); return; }
+  try { localStorage.setItem(AC_LS, $('ac-nombres').value); } catch (_) {}
+  cerrarModal('modal-autocert');
+  cargando('Buscando el proveedor en ' + lista.length + ' pagina(s)...');
+  let tapados = 0, sinTexto = 0;
+  try {
+    for (const o of lista) {
+      cargando('Limpiando pagina ' + (o.i + 1) + ' de ' + paginas.length + '...');
+      const p = o.p, l = _limpDe(p);
+      l.rects = (l.rects || []).filter(r => !r.auto);          // se reemplaza la corrida anterior
+      if (conFondo) l.marca = { on: true, umbral: umbral, color: true, bn: false, auto: true };
+      else if (l.marca && l.marca.auto) l.marca.on = false;
+      if (p.tipo !== 'pdf') { sinTexto++; continue; }           // una imagen no trae texto que buscar
+      if (!nombres.length && !conSello) continue;
+      try {
+        const page = await fuentes[p.srcId].pdfjsDoc.getPage(p.pageIndex + 1);
+        const rotTotal = ((page.rotate || 0) + p.rot) % 360;
+        const vp = page.getViewport({ scale: 1, rotation: rotTotal });
+        const tc = await page.getTextContent();
+        if (!tc.items.length) { sinTexto++; continue; }         // PDF escaneado: solo se puede a mano
+        const rr = _acDetectar(tc.items, vp, nombres, conSello);
+        rr.forEach(r => l.rects.push(r));
+        tapados += rr.length;
+      } catch (e) { console.warn('auto-limpieza pagina ' + (o.i + 1), e); }
+    }
+  } finally { cargando(false); }
+  render(); actualizarVistas();
+  let msg = tapados ? ('\u2705 Listo \u2014 ' + tapados + ' dato(s) del proveedor tapados')
+                    : 'No se encontro el nombre del proveedor en el texto';
+  if (conFondo) msg += ' \u00b7 fondo blanqueado';
+  if (sinTexto) msg += ' \u00b7 ' + sinTexto + ' pagina(s) sin texto (escaneadas): tapalas a mano con el borrador \ud83e\uddfd';
+  toast(msg, !tapados && !conFondo);
+}
+function autoCertQuitar() {
+  paginas.forEach(p => {
+    if (!p.limp) return;
+    p.limp.rects = (p.limp.rects || []).filter(r => !r.auto);
+    if (p.limp.marca && p.limp.marca.auto) p.limp.marca.on = false;
+  });
+  cerrarModal('modal-autocert');
+  render(); actualizarVistas();
+  toast('Limpieza automatica deshecha (lo que tapaste a mano se conserva).');
 }
 
 // ── Modal de limpieza ────────────────────────────────────────────────────────
