@@ -76868,7 +76868,7 @@
     "cliente": "CIAM",
     "contacto": "YEISON",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 48000,
@@ -76886,23 +76886,24 @@
     "items": [
       {
         "id": 1,
-        "desc": "ESPARRAGO 3/4\" X 5\" A-193/194 B7 2H",
-        "udm": "EA",
         "qty": 6,
-        "precio": 8000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "93cebee3-612d-4be1-b457-1af65ca18795",
+        "desc": "ESPARRAGO 3/4\" X 5\" A-193/194 B7 2H",
         "marca": "JDF",
+        "precio": 8000,
+        "desvTec": "",
         "proveedor": "MUNDIAL",
-        "precioProveedor": 5618,
         "obsProveedor": "",
-        "uid": "93cebee3-612d-4be1-b457-1af65ca18795"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 5618
       }
     ],
-    "fechaGuardado": "2026-08-21T14:33:42.255Z",
+    "fechaGuardado": "2026-08-21T14:35:32.976Z",
+    "fechaEnvio": "2026-08-21T14:35:32.976Z",
     "createdAt": "2026-08-21T14:33:42.255Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-21T14:33:42.255Z",
+    "updatedAt": "2026-08-21T14:35:32.976Z",
     "updatedBy": "sandra"
   },
   {
