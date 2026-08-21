@@ -7496,6 +7496,57 @@
     "createdAt": "2026-08-20T13:54:20.151Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-08-20T13:54:20.151Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1787319038563",
+    "num": "LM2011",
+    "cliente": "PETRORIOS",
+    "desc": "Cotización LM2011 · 2 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-21",
+    "valor": 2879000.32,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM2011",
+    "createdAt": "2026-08-21T13:30:38.564Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-21T13:30:38.564Z",
     "updatedBy": "alexandra"
   }
 ]
