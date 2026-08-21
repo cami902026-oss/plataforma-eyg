@@ -119,7 +119,7 @@
 <div id="grid"></div>
 <div id="vacio">Sin páginas todavía — agrega archivos arriba 👆</div>
 
-<div class="nota-privacidad">🔒 Todo el procesamiento ocurre en este equipo. Los archivos <b>nunca</b> salen de tu PC.<br>E&amp;G Energy Group SAS · PDF Studio <b>v194</b> · limpieza automática de certificados — si aqui no dice v194, recarga con Ctrl+F5</div>
+<div class="nota-privacidad">🔒 Todo el procesamiento ocurre en este equipo. Los archivos <b>nunca</b> salen de tu PC.<br>E&amp;G Energy Group SAS · PDF Studio <b>v195</b> · limpieza automática de certificados — si aqui no dice v194, recarga con Ctrl+F5</div>
 
 <input type="file" id="file-input" multiple accept="application/pdf,image/jpeg,image/png" style="display:none" onchange="agregarArchivos(this.files); this.value='';">
 <input type="file" id="firma-input" accept="image/png,image/jpeg" style="display:none" onchange="cargarFirma(this.files[0]); this.value='';">
@@ -335,6 +335,19 @@ function cargando(msg) {
 function abrirModalId(id) { $(id).classList.add('abierto'); }
 function cerrarModal(id) { $(id).classList.remove('abierto'); }
 
+/* Opciones de carga de pdf.js. Los cMaps son OBLIGATORIOS: sin ellos, un PDF con
+   fuentes CID (los certificados de fabricantes asiaticos: BOTH-WELL, NINGBO...)
+   se abre "en blanco" — se dibujan los logos y las lineas, pero NO el texto.
+   standardFontDataUrl hace lo propio con las fuentes no incrustadas. */
+function _opcsPdf(bytes) {
+  return {
+    data: bytes,
+    cMapUrl: 'libs/pdfjs/cmaps/',
+    cMapPacked: true,
+    standardFontDataUrl: 'libs/pdfjs/standard_fonts/'
+  };
+}
+
 // ── Cargar archivos ──────────────────────────────────────────────────────────
 async function agregarArchivos(files) {
   const lista = Array.from(files || []);
@@ -360,7 +373,7 @@ async function agregarPdf(f) {
   const bytes = await f.arrayBuffer();
   const srcId = 's' + (++_seq);
   // OJO: pdf.js "consume" el buffer — se le da una COPIA y el original queda para pdf-lib.
-  const doc = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
+  const doc = await pdfjsLib.getDocument(_opcsPdf(bytes.slice(0))).promise;
   fuentes[srcId] = { nombre: f.name, bytes: bytes, pdfjsDoc: doc, libDoc: null, campos: [], valores: {} };
   try { await _detectarCampos(srcId); } catch(_) {}          // 📋 ¿trae campos de formulario?
   if ((fuentes[srcId].campos || []).length) {
@@ -1022,7 +1035,7 @@ async function _acQuitarFondos(srcId, minPct) {
   if (!quitadas) return 0;
   const nuevos = await doc.save();
   f.bytes = nuevos.buffer.slice(nuevos.byteOffset, nuevos.byteOffset + nuevos.byteLength);
-  f.pdfjsDoc = await pdfjsLib.getDocument({ data: f.bytes.slice(0) }).promise;
+  f.pdfjsDoc = await pdfjsLib.getDocument(_opcsPdf(f.bytes.slice(0))).promise;
   f.libDoc = null;                                            // el cache de pdf-lib ya no sirve
   // Refrescar las miniaturas de las paginas que salen de esta fuente
   for (const p of paginas) {
@@ -1038,7 +1051,7 @@ async function _acRestaurarFondos() {
     const f = fuentes[srcId];
     if (!f || !f._bytesOrig) continue;
     f.bytes = f._bytesOrig.slice(0);
-    f.pdfjsDoc = await pdfjsLib.getDocument({ data: f.bytes.slice(0) }).promise;
+    f.pdfjsDoc = await pdfjsLib.getDocument(_opcsPdf(f.bytes.slice(0))).promise;
     f.libDoc = null; f._bytesOrig = null; n++;
     for (const p of paginas) {
       if (p.srcId !== srcId || p.tipo !== 'pdf') continue;
