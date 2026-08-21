@@ -7700,6 +7700,57 @@
     "createdAt": "2026-08-21T19:37:47.409Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-08-21T19:37:47.409Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1787342630763",
+    "num": "LM2032",
+    "cliente": "MONTITEC",
+    "desc": "Cotización LM2032 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-21",
+    "valor": 6658645,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-08-21",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-24",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM2032",
+    "createdAt": "2026-08-21T20:03:50.763Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-21T20:03:50.763Z",
     "updatedBy": "alexandra"
   }
 ]
