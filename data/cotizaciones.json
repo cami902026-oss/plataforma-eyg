@@ -8734,6 +8734,7 @@
     "contacto": "DALADIER",
     "correo": "",
     "estado": "Adjudicada",
+    "factura": "",
     "iva": 19,
     "subtotal": 74690,
     "ivaVal": 14191.1,
@@ -8746,6 +8747,7 @@
     "realizadaPor": "Alexandra",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
+    "motivoRechazo": "",
     "items": [
       {
         "id": 1,
@@ -8757,7 +8759,8 @@
         "desvTec": "INCLUYE PROCESO DE GALVANIZADO ",
         "marca": "JDF",
         "proveedor": "MUNDIAL",
-        "precioProveedor": 5640
+        "precioProveedor": 5640,
+        "uid": "cd1c8a03-9ee9-4f16-977f-d5346ea8ee40"
       },
       {
         "id": 2,
@@ -8769,7 +8772,8 @@
         "desvTec": "INCLUYE PROCESO DE GALVANIZADO ",
         "marca": "JDF",
         "proveedor": "MUNDIAL",
-        "precioProveedor": 6058
+        "precioProveedor": 6058,
+        "uid": "008c5b10-4f83-4348-ae1e-0b09cf401157"
       },
       {
         "id": 3,
@@ -8781,14 +8785,16 @@
         "desvTec": "INCLUYE PROCESO DE GALVANIZADO ",
         "marca": "JDF",
         "proveedor": "MUNDIAL",
-        "precioProveedor": 5650
+        "precioProveedor": 5650,
+        "uid": "1c54de1b-01c3-414e-9352-d835f99b97a4"
       }
     ],
-    "fechaGuardado": "2026-06-18T18:50:59.230Z",
+    "fechaGuardado": "2026-08-21T14:30:27.423Z",
+    "adjudicadaAt": "2026-08-21",
     "createdAt": "2026-06-18T18:50:59.231Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-06-18T18:50:59.231Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-21T14:30:27.423Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM1700",
