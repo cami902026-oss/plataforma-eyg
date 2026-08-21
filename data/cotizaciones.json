@@ -76066,7 +76066,7 @@
     "cliente": "PETRORIOS",
     "contacto": "LUIS ANGEL",
     "correo": "",
-    "estado": "Adjudicada",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 366675,
@@ -76223,58 +76223,12 @@
         "precioProveedor": 25930
       }
     ],
-    "fechaGuardado": "2026-08-21T17:25:58.995Z",
+    "fechaGuardado": "2026-08-20T20:25:50.166Z",
     "fechaEnvio": "2026-08-20T17:57:56.814Z",
-    "adjudicadaAt": "2026-08-21",
-    "valorAdjudicado": 366675,
-    "itemsAdjudicados": [
-      {
-        "uid": "9e4252df-9827-44df-b73b-a6e069cdfc9d",
-        "qty": 1
-      },
-      {
-        "uid": "e49c7856-0f35-4def-a8a7-904b376d88b0",
-        "qty": 1
-      },
-      {
-        "uid": "d29c19eb-ea21-4680-9652-e9da53e09ed7",
-        "qty": 1
-      },
-      {
-        "uid": "217e173b-0026-42a6-89ac-a985a8b5ee7b",
-        "qty": 1
-      },
-      {
-        "uid": "e776c33b-0ec0-4aa8-80a3-b471f2e01576",
-        "qty": 1
-      },
-      {
-        "uid": "a99f8a57-ac2a-4b5c-bb38-b2e9cc16bc24",
-        "qty": 1
-      },
-      {
-        "uid": "d380b2ab-d502-4aa6-bba9-2e56effae516",
-        "qty": 1
-      },
-      {
-        "uid": "e22cd91e-8ffe-4d8c-aa70-eea0d484a2a7",
-        "qty": 3
-      },
-      {
-        "uid": "d489399d-bc3f-4674-8338-0eec6e73a550",
-        "qty": 1
-      },
-      {
-        "uid": "9f87ede1-d1e8-41ed-9c5b-223ab0588d49",
-        "qty": 1
-      }
-    ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-08-21T17:25:55.818Z",
     "createdAt": "2026-08-20T16:19:50.168Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-21T17:25:58.995Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-20T20:25:50.166Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM2023",
@@ -76900,6 +76854,63 @@
     "createdAt": "2026-08-21T17:10:01.295Z",
     "createdBy": "sandra",
     "updatedAt": "2026-08-21T17:23:21.254Z",
+    "updatedBy": "sandra"
+  },
+  {
+    "id": "LM1655-2",
+    "fecha": "2026-08-21",
+    "fechaVenc": "2026-08-29",
+    "cliente": "MAG SERVICIOS",
+    "contacto": "HERNAN PEREZ",
+    "correo": "",
+    "estado": "Adjudicada",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 4350000,
+    "ivaVal": 826500,
+    "total": 5176500,
+    "formaPago": "CONTADO",
+    "sitioEntrega": "PTO GAITAN",
+    "validez": "8 DIAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S,A,S, CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO,                                                                                                         -PARA PEDIDOS CON UN VALOR INFERIOR A $500,000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "",
+    "realizadaPor": "",
+    "aprobadaPor": "",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "qty": 30,
+        "udm": "EA",
+        "uid": "fddd55a8-821c-43ac-b2fc-bcd99200fea0",
+        "desc": "LAMINA HR12MM 350 X 200MM",
+        "marca": "IMPORTADO",
+        "precio": 85000,
+        "desvTec": "PERFORACION EN EL CENTRO DE LA LAMINA DE 3/8\"",
+        "proveedor": "PROYECTOS  Y SERVICIOS LA NACIONAL SAS",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 48000
+      },
+      {
+        "id": 2,
+        "qty": 20,
+        "udm": "EA",
+        "uid": "2b8a5d31-e22f-47bd-9da9-d61d690086ef",
+        "desc": "LAMINA HR12MM 350 X 200MM",
+        "marca": "IMPORTADA",
+        "precio": 90000,
+        "desvTec": "PERFORACION EN EL CENTRO DE LA LAMINA DE 1/4\"",
+        "proveedor": "",
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      }
+    ],
+    "fechaGuardado": "2026-08-21T17:26:59.698Z",
+    "adjudicadaAt": "2026-08-21",
+    "createdAt": "2026-08-21T17:26:59.698Z",
+    "createdBy": "sandra",
+    "updatedAt": "2026-08-21T17:26:59.698Z",
     "updatedBy": "sandra"
   },
   {
