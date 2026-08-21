@@ -7649,6 +7649,57 @@
     "createdAt": "2026-08-21T18:05:47.322Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-08-21T18:05:47.322Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1787341067408",
+    "num": "3788",
+    "cliente": "MAG SERVICIOS",
+    "desc": "Cotización LM1655 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-21",
+    "valor": 2427600,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-08-21",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "DON SAMUEL",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-25",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1655",
+    "createdAt": "2026-08-21T19:37:47.409Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-21T19:37:47.409Z",
     "updatedBy": "alexandra"
   }
 ]
