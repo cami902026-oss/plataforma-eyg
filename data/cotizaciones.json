@@ -34065,7 +34065,7 @@
     "cliente": "SAR ENERGY",
     "contacto": "OSCAR SANCHEZ",
     "correo": "lrojas@sarenergy.com",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 47875243,
@@ -34368,13 +34368,30 @@
         "precioProveedor": 45000
       }
     ],
-    "fechaGuardado": "2026-07-17T22:33:47.482Z",
+    "fechaGuardado": "2026-08-21T20:47:47.238Z",
     "fechaEnvio": "2026-07-17T22:33:47.482Z",
+    "adjudicadaAt": "2026-08-21",
+    "valorAdjudicado": 20383568,
+    "itemsAdjudicados": [
+      {
+        "uid": "d42bdba4-d5e7-4d02-9ffb-e593b67a75b3",
+        "qty": 10
+      },
+      {
+        "uid": "1056344f-4a8e-4d30-9531-057231913604",
+        "qty": 15
+      },
+      {
+        "uid": "e5e7ec73-8f77-4235-8588-8713f569a41d",
+        "qty": 11
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-21T20:47:42.487Z",
     "createdAt": "2026-07-17T14:19:53.036Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-07-27T02:17:10.426Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-07-27T02:17:10.426Z"
+    "updatedAt": "2026-08-21T20:47:47.238Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM1832",
