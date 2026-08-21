@@ -7547,6 +7547,57 @@
     "createdAt": "2026-08-21T13:30:38.564Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-08-21T13:30:38.564Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1787334705110",
+    "num": "LM2022",
+    "cliente": "PETRORIOS",
+    "desc": "Cotización LM2022 · 10 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-21",
+    "valor": 436343.25,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM2022",
+    "createdAt": "2026-08-21T17:51:45.110Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-21T17:51:45.110Z",
     "updatedBy": "alexandra"
   }
 ]
