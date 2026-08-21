@@ -7598,6 +7598,57 @@
     "createdAt": "2026-08-21T17:51:45.110Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-08-21T17:51:45.110Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1787335547321",
+    "num": "LM2021",
+    "cliente": "PETRORIOS",
+    "desc": "Cotización LM2021 · 3 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-21",
+    "valor": 156467.15,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM2021",
+    "createdAt": "2026-08-21T18:05:47.322Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-21T18:05:47.322Z",
     "updatedBy": "alexandra"
   }
 ]
