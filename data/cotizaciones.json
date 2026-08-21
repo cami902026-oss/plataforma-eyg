@@ -76066,7 +76066,7 @@
     "cliente": "PETRORIOS",
     "contacto": "LUIS ANGEL",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 366675,
@@ -76223,12 +76223,58 @@
         "precioProveedor": 25930
       }
     ],
-    "fechaGuardado": "2026-08-20T20:25:50.166Z",
+    "fechaGuardado": "2026-08-21T17:25:58.995Z",
     "fechaEnvio": "2026-08-20T17:57:56.814Z",
+    "adjudicadaAt": "2026-08-21",
+    "valorAdjudicado": 366675,
+    "itemsAdjudicados": [
+      {
+        "uid": "9e4252df-9827-44df-b73b-a6e069cdfc9d",
+        "qty": 1
+      },
+      {
+        "uid": "e49c7856-0f35-4def-a8a7-904b376d88b0",
+        "qty": 1
+      },
+      {
+        "uid": "d29c19eb-ea21-4680-9652-e9da53e09ed7",
+        "qty": 1
+      },
+      {
+        "uid": "217e173b-0026-42a6-89ac-a985a8b5ee7b",
+        "qty": 1
+      },
+      {
+        "uid": "e776c33b-0ec0-4aa8-80a3-b471f2e01576",
+        "qty": 1
+      },
+      {
+        "uid": "a99f8a57-ac2a-4b5c-bb38-b2e9cc16bc24",
+        "qty": 1
+      },
+      {
+        "uid": "d380b2ab-d502-4aa6-bba9-2e56effae516",
+        "qty": 1
+      },
+      {
+        "uid": "e22cd91e-8ffe-4d8c-aa70-eea0d484a2a7",
+        "qty": 3
+      },
+      {
+        "uid": "d489399d-bc3f-4674-8338-0eec6e73a550",
+        "qty": 1
+      },
+      {
+        "uid": "9f87ede1-d1e8-41ed-9c5b-223ab0588d49",
+        "qty": 1
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-21T17:25:55.818Z",
     "createdAt": "2026-08-20T16:19:50.168Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-20T20:25:50.166Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-21T17:25:58.995Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2023",
