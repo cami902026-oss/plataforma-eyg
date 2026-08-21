@@ -11,6 +11,13 @@
   h1 { font-size:19px; color:#fff; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
   h1 .badge { font-size:10px; background:rgba(46,170,74,.25); border:1px solid rgba(46,170,74,.5); color:#86efac; border-radius:20px; padding:3px 10px; font-weight:600; }
   .sub { color:var(--muted); font-size:12px; margin:6px 0 14px; line-height:1.5; }
+  .ac-chips { display:flex; flex-wrap:wrap; gap:6px; max-height:190px; overflow-y:auto; padding:4px 2px; }
+  .ac-chip { display:inline-flex; align-items:center; gap:5px; border:1px solid var(--border); border-radius:20px;
+             padding:4px 11px; font-size:12px; cursor:pointer; user-select:none; background:transparent; color:var(--muted); transition:.12s; }
+  .ac-chip:hover { border-color:#2EAA4A; }
+  .ac-chip.on { background:rgba(46,170,74,.16); border-color:#2EAA4A; color:#8ee6a6; font-weight:600; }
+  .ac-chip .x { opacity:.55; font-size:13px; padding:0 1px; }
+  .ac-chip .x:hover { opacity:1; color:#ef4444; }
   .toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:14px; position:sticky; top:8px; z-index:50; box-shadow:0 4px 18px rgba(0,0,0,.35); }
   .btn { border:none; border-radius:8px; padding:9px 14px; font-size:12.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:filter .15s; color:#fff; }
   .btn:hover { filter:brightness(1.15); }
@@ -181,9 +188,14 @@
     <div class="modal-head"><b>🧼 Limpiar certificados (automatico)</b><button class="cerrar" onclick="cerrarModal('modal-autocert')">&#10005;</button></div>
     <div class="modal-body">
       <div class="seccion">
-        <h4>NOMBRES DE PROVEEDOR A BORRAR <span style="color:var(--muted);font-weight:400;">(separados por coma)</span></h4>
-        <div class="fila"><input type="text" id="ac-nombres" style="flex:1;min-width:280px;" placeholder="CODIFER, GRANADA, TUVAPOR..."></div>
-        <div class="fila" style="font-size:11.5px;color:var(--muted);">Nunca se borra <b>E&amp;G</b>, <b>EYG</b> ni <b>ENERGY GROUP</b>, asi aparezcan en la misma linea.</div>
+        <h4>PROVEEDORES A BORRAR <span style="color:var(--muted);font-weight:400;">(haz clic para activar o desactivar)</span></h4>
+        <div id="ac-chips" class="ac-chips"></div>
+        <div class="fila" style="margin-top:8px;">
+          <input type="text" id="ac-nuevo" style="flex:1;min-width:190px;" placeholder="Agregar otro proveedor y dar Enter" onkeydown="if(event.key==='Enter'){event.preventDefault();acAgregarProv();}">
+          <button class="btn btn-green" style="padding:8px 14px;font-size:12px;" onclick="acAgregarProv()">+ Agregar</button>
+        </div>
+        <div class="fila" style="font-size:11.5px;color:var(--muted);">Nunca se borra <b>E&amp;G</b>, <b>EYG</b> ni <b>ENERGY GROUP</b>, asi aparezcan en la misma linea. Los que agregues quedan guardados en este equipo.</div>
+        <input type="hidden" id="ac-nombres">
       </div>
       <div class="seccion">
         <h4>QUE MAS QUITAR</h4>
@@ -1036,11 +1048,113 @@ async function _acRestaurarFondos() {
   return n;
 }
 
+
+/* -- Proveedores frecuentes de E&G. Los marcados con `ojo` vienen APAGADOS
+   porque son palabras que aparecen legitimamente en un certificado (p.ej.
+   "filler metal") y borrarlas mutilaria el documento. */
+const AC_BASE = [
+  { n: 'CODIFER' }, { n: 'COLIMPORTADOS' }, { n: 'TECINCOL' }, { n: 'INSTRUGASES' },
+  { n: 'INDUVACOL' }, { n: 'TUVACOL' }, { n: 'TUVAPOR' }, { n: 'TUBACOL' },
+  { n: 'HIDROLING' }, { n: 'DISEFER' }, { n: 'SEGEFER' }, { n: 'FLEXILATINA' },
+  { n: 'TUVALREP' }, { n: 'FERREINSTRUMENTACION' }, { n: 'TERMOVAL' }, { n: 'VALVECOL' },
+  { n: 'CAMALECO' }, { n: 'STECKERL' }, { n: 'NORVENTAS' }, { n: 'TALECTRO' },
+  { n: 'PRETECOR' }, { n: 'FAIMPETROL' }, { n: 'LAMAR' }, { n: 'GRANADA' },
+  { n: 'FILLER',   ojo: 'ojo: "filler metal" sale en casi todo certificado de soldadura' },
+  { n: 'MUNDIAL',  ojo: 'ojo: es una palabra comun, puede borrar texto legitimo' },
+  { n: 'IMPERIAL', ojo: 'ojo: "imperial" aparece en unidades y medidas' },
+  { n: 'MARIN',    ojo: 'ojo: coincide dentro de "marine"' },
+  { n: 'TOSIN',    ojo: 'ojo: nombre corto, puede coincidir dentro de otra palabra' },
+  { n: 'MONTENEGRO' }, { n: 'PERALTA' }, { n: 'FSS INTER' }
+];
+const AC_LS_CFG = 'eyg_pdfstudio_prov_cfg';
+
+function _acCfg() {
+  let cfg = null;
+  try { cfg = JSON.parse(localStorage.getItem(AC_LS_CFG) || 'null'); } catch (_) {}
+  if (!cfg || typeof cfg !== 'object') cfg = {};
+  if (!Array.isArray(cfg.propios)) cfg.propios = [];
+  if (!Array.isArray(cfg.apagados)) {
+    // primera vez: quedan apagados solo los que pueden borrar texto legitimo
+    cfg.apagados = AC_BASE.filter(b => b.ojo).map(b => b.n);
+    // y se respeta lo que el usuario ya tuviera escrito en la version anterior
+    try {
+      const viejo = (localStorage.getItem(AC_LS) || '').split(',').map(t => t.trim().toUpperCase()).filter(Boolean);
+      if (viejo.length) {
+        cfg.apagados = cfg.apagados.filter(n => viejo.indexOf(n) < 0);
+        viejo.forEach(n => { if (!AC_BASE.some(b => b.n === n) && cfg.propios.indexOf(n) < 0) cfg.propios.push(n); });
+      }
+    } catch (_) {}
+  }
+  return cfg;
+}
+function _acGuardarCfg(cfg) {
+  try { localStorage.setItem(AC_LS_CFG, JSON.stringify(cfg)); } catch (_) {}
+}
+// Lista final de nombres activos -> al input oculto que lee autoCertAplicar
+function _acSincronizar() {
+  const cfg = _acCfg();
+  const todos = AC_BASE.map(b => b.n).concat(cfg.propios);
+  const activos = todos.filter(n => cfg.apagados.indexOf(n) < 0);
+  $('ac-nombres').value = activos.join(', ');
+  return activos;
+}
+function acPintarChips() {
+  const cfg = _acCfg();
+  const cont = $('ac-chips');
+  if (!cont) return;
+  const html = [];
+  AC_BASE.forEach(b => {
+    const on = cfg.apagados.indexOf(b.n) < 0;
+    html.push('<span class="ac-chip' + (on ? ' on' : '') + '" title="' + (b.ojo || 'Clic para activar o desactivar') +
+      '" onclick="acToggleProv(' + JSON.stringify(b.n).replace(/"/g, '&quot;') + ')">' +
+      (b.ojo ? '\u26A0\uFE0F ' : '') + b.n + '</span>');
+  });
+  cfg.propios.forEach(n => {
+    const on = cfg.apagados.indexOf(n) < 0;
+    html.push('<span class="ac-chip' + (on ? ' on' : '') + '" title="Agregado por ti">' +
+      '<span onclick="acToggleProv(' + JSON.stringify(n).replace(/"/g, '&quot;') + ')">' + n + '</span>' +
+      '<span class="x" title="Quitar de la lista" onclick="event.stopPropagation();acBorrarProv(' + JSON.stringify(n).replace(/"/g, '&quot;') + ')">\u2715</span></span>');
+  });
+  cont.innerHTML = html.join('');
+  const act = _acSincronizar();
+  const h = cont.parentNode.querySelector('h4');
+  if (h) h.innerHTML = 'PROVEEDORES A BORRAR <span style="color:var(--muted);font-weight:400;">(' + act.length + ' activos \u00b7 clic para activar o desactivar)</span>';
+}
+function acToggleProv(n) {
+  const cfg = _acCfg();
+  const i = cfg.apagados.indexOf(n);
+  if (i < 0) cfg.apagados.push(n); else cfg.apagados.splice(i, 1);
+  _acGuardarCfg(cfg); acPintarChips();
+}
+function acAgregarProv() {
+  const inp = $('ac-nuevo');
+  const n = (inp.value || '').trim().toUpperCase();
+  if (!n) return;
+  if (n.length < 4) { toast('"' + n + '" es muy corto: podria borrar texto que no es del proveedor.', true); return; }
+  if (AC_BLANCA.some(w => n.indexOf(w) >= 0)) { toast('Ese nombre es de E&G — no se puede poner en la lista de borrado.', true); return; }
+  const cfg = _acCfg();
+  if (AC_BASE.some(b => b.n === n) || cfg.propios.indexOf(n) >= 0) {
+    cfg.apagados = cfg.apagados.filter(x => x !== n);       // ya estaba: solo se activa
+    _acGuardarCfg(cfg); acPintarChips(); inp.value = '';
+    toast('"' + n + '" ya estaba en la lista — quedo activo.');
+    return;
+  }
+  cfg.propios.push(n);
+  cfg.apagados = cfg.apagados.filter(x => x !== n);
+  _acGuardarCfg(cfg); acPintarChips();
+  inp.value = ''; inp.focus();
+  toast('\u2705 "' + n + '" agregado a la lista de proveedores.');
+}
+function acBorrarProv(n) {
+  const cfg = _acCfg();
+  cfg.propios = cfg.propios.filter(x => x !== n);
+  cfg.apagados = cfg.apagados.filter(x => x !== n);
+  _acGuardarCfg(cfg); acPintarChips();
+}
+
 function abrirAutoCert() {
   if (!paginas.length) { toast('Agrega primero los certificados.', true); return; }
-  let guardados = '';
-  try { guardados = localStorage.getItem(AC_LS) || ''; } catch (_) {}
-  if (!$('ac-nombres').value) $('ac-nombres').value = guardados || AC_DEFECTO;
+  acPintarChips();
   abrirModalId('modal-autocert');
 }
 async function autoCertAplicar() {
@@ -1052,7 +1166,7 @@ async function autoCertAplicar() {
   if (!nombres.length && !conSello && !conFondo && !conImgFondo) { toast('No marcaste nada que quitar.', true); return; }
   const lista = paginas.map((p, i) => ({ p: p, i: i })).filter(o => !soloSel || o.p.sel);
   if (!lista.length) { toast('No hay paginas seleccionadas.', true); return; }
-  try { localStorage.setItem(AC_LS, $('ac-nombres').value); } catch (_) {}
+  _acSincronizar();
   cerrarModal('modal-autocert');
   cargando('Buscando el proveedor en ' + lista.length + ' pagina(s)...');
   let tapados = 0, sinTexto = 0, fondos = 0;
