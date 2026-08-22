@@ -1451,14 +1451,20 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                 </div>
                 <div class="form-group" id="cotiz-motivo-box" style="display:none;margin-bottom:8px;">
                   <label style="color:#f87171;">MOTIVO DE RECHAZO (obligatorio)</label>
-                  <select id="cotiz-motivo-rechazo" style="background:var(--card-bg);border:1px solid rgba(248,113,113,.5);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
+                  <select id="cotiz-motivo-rechazo" onchange="_cotizMotivoOtroSync()" style="background:var(--card-bg);border:1px solid rgba(248,113,113,.5);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
                     <option value="">— Selecciona el motivo —</option>
                     <option value="Sin stock disponible">Sin stock disponible</option>
                     <option value="Stock insuficiente">Stock insuficiente</option>
                     <option value="Falta soporte técnico">Falta soporte técnico</option>
                     <option value="Precio no competitivo">Precio no competitivo</option>
                     <option value="Tiempo de entrega no competitivo">Tiempo de entrega no competitivo</option>
+                    <option value="Cliente eligió otro proveedor">Cliente eligió otro proveedor</option>
+                    <option value="Cliente no respondió">Cliente no respondió</option>
+                    <option value="Proyecto cancelado / aplazado">Proyecto cancelado / aplazado</option>
+                    <option value="No cumplimos requisito técnico">No cumplimos requisito técnico</option>
+                    <option value="Otro">Otro (especificar)</option>
                   </select>
+                  <input type="text" id="cotiz-motivo-otro" maxlength="120" placeholder="¿Cuál fue el motivo?" oninput="_cotizMotivoOtroSync()" style="display:none;margin-top:6px;background:var(--card-bg);border:1px solid rgba(248,113,113,.5);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
                 </div>
                 <div class="form-group" id="cotiz-factura-group" style="margin-bottom:8px;display:none;">
                   <label>N° FACTURA <span style="color:var(--text-muted);font-weight:400;">(al facturar)</span></label>
@@ -1697,7 +1703,9 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <button class="bd-filter-btn" onclick="bdFilter('Adjudicada',this)">✅ Adjudicadas</button>
             <button class="bd-filter-btn" onclick="bdFilter('Rechazada',this)">❌ Rechazadas</button>
             <button class="bd-filter-btn" onclick="bdFilter('Pendiente',this)">⏳ Pendientes</button>
+            <button class="bd-filter-btn" id="bd-btn-sincerrar" onclick="bdFilter('_sincerrar',this)" title="Cotizaciones enviadas que ya pasaron su fecha de vencimiento y nadie cerró: no se sabe si se ganaron o se perdieron">⏰ Sin cerrar</button>
           </div>
+          <div id="bd-sincerrar-box" style="display:none;"></div>
           <div style="overflow-x:auto;">
             <table class="bd-table">
               <thead>
@@ -10635,6 +10643,17 @@ function _cotizAdjConfirmar(){
   _cotizEstadoPrev='Adjudicada';
   showToast('✅ Adjudicación registrada por $'+Math.round(valor).toLocaleString('es-CO')+' — guarda la cotización para que quede','ok');
 }
+// Base correcta para calcular el % ADJUDICADO (2026-08-22).
+// `valorAdjudicado` sale de _cotizAdjConfirmar como Σ(cantidad × precio), es decir
+// SUBTOTAL SIN IVA. Compararlo contra `total` (que SÍ lleva IVA) daba 84% en
+// adjudicaciones que fueron del 100% — exactamente 1/1,19. El denominador correcto
+// es el subtotal; si la cotización no lo trae (históricas), se le quita el IVA al total.
+function _cotizBaseAdj(c){
+  if(!c) return 0;
+  if(c.subtotal != null && +c.subtotal > 0) return +c.subtotal;
+  const t = +c.total || 0, iva = +c.iva || 0;
+  return iva > 0 ? t/(1+iva/100) : t;
+}
 // Valor real de una cotización para los informes: lo adjudicado si se registró;
 // si no, el total de siempre (las viejas siguen contando como antes).
 function _cotizValorReal(c){
@@ -10658,6 +10677,15 @@ function _cotizEsParcial(c){
   return items.some(function(it){ return m[it.uid]!=null && (+m[it.uid]) < (+it.qty||0); });
 }
 
+// Motivo "Otro": muestra/oculta el campo de texto libre. Aditivo — si el motivo es
+// uno de los de la lista, este campo ni existe para el usuario.
+function _cotizMotivoOtroSync() {
+  const sel = document.getElementById('cotiz-motivo-rechazo');
+  const inp = document.getElementById('cotiz-motivo-otro');
+  if (!sel || !inp) return;
+  inp.style.display = (sel.value === 'Otro') ? '' : 'none';
+}
+
 function cotizEstadoChange() {
   const sel = document.getElementById('cotiz-estado');
   const est = sel ? sel.value : '';
@@ -10665,6 +10693,7 @@ function cotizEstadoChange() {
   const _mbox = document.getElementById('cotiz-motivo-box');
   if (_mbox) _mbox.style.display = est === 'Rechazada' ? '' : 'none';
   if (est === 'Rechazada') { const _msel = document.getElementById('cotiz-motivo-rechazo'); if (_msel && !_msel.value) setTimeout(() => { try { _msel.focus(); } catch(_){} }, 50); }
+  try { _cotizMotivoOtroSync(); } catch(_){}   // el campo de texto libre solo cuando el motivo es "Otro"
   // Adjudicada -> preguntar QUE le adjudicaron (todo marcado por defecto)
   if (est === 'Adjudicada' && _cotizEstadoPrev !== 'Adjudicada') { _cotizAdjAbrir(); }
   const fld = document.getElementById('cotiz-factura');
@@ -12449,6 +12478,7 @@ function cotizNueva(silent) {
   document.getElementById('cotiz-estado').value = 'Borrador';
   document.getElementById('cotiz-factura').value = '';
   const _mrSel2 = document.getElementById('cotiz-motivo-rechazo'); if (_mrSel2) _mrSel2.value = '';
+  const _mrOtro2 = document.getElementById('cotiz-motivo-otro'); if (_mrOtro2) { _mrOtro2.value = ''; _mrOtro2.style.display = 'none'; }
   const _mrBox2 = document.getElementById('cotiz-motivo-box'); if (_mrBox2) _mrBox2.style.display = 'none';
   _cotizEstadoPrev = 'Borrador';
   _cotizFacturaFechaPend = '';
@@ -12489,7 +12519,19 @@ async function _cotizGuardarBDCore() {
   if (!cotizItems.length) { showToast('Agrega al menos un ítem','error'); return; }
   // Motivo de rechazo obligatorio: sin motivo no se puede guardar como Rechazada
   const _estadoAGuardar = document.getElementById('cotiz-estado').value;
-  const _motivoRech = ((document.getElementById('cotiz-motivo-rechazo')||{}).value || '').trim();
+  let _motivoRech = ((document.getElementById('cotiz-motivo-rechazo')||{}).value || '').trim();
+  // Opción "Otro": el texto libre viaja pegado al motivo ("Otro: no había el diámetro"),
+  // así el análisis los agrupa todos bajo "Otro" y aun así se lee el detalle.
+  if (_motivoRech === 'Otro') {
+    const _mo = ((document.getElementById('cotiz-motivo-otro')||{}).value || '').trim();
+    if (_estadoAGuardar === 'Rechazada' && !_mo) {
+      const _mb2 = document.getElementById('cotiz-motivo-box'); if (_mb2) _mb2.style.display = '';
+      const _mi = document.getElementById('cotiz-motivo-otro'); if (_mi) { _mi.style.display = ''; try { _mi.focus(); } catch(_){} }
+      showToast('Escribe cuál fue el motivo del rechazo','error');
+      return;
+    }
+    _motivoRech = _mo ? 'Otro: ' + _mo : 'Otro';
+  }
   if (_estadoAGuardar === 'Rechazada' && !_motivoRech) {
     const _mb = document.getElementById('cotiz-motivo-box'); if (_mb) _mb.style.display = '';
     const _ms = document.getElementById('cotiz-motivo-rechazo'); if (_ms) { try { _ms.focus(); } catch(_){} }
@@ -12579,6 +12621,15 @@ async function _cotizGuardarBDCore() {
     record.adjudicadaAt = _prevAdj || new Date().toISOString().slice(0, 10);
   } else if (_prevAdj) {
     record.adjudicadaAt = _prevAdj;   // conservar el histórico aunque cambie de estado
+  }
+  // Sello de fecha de RECHAZO (2026-08-22) — espejo del de adjudicación. Sin esto el
+  // análisis mensual de rechazos solo podía usar la fecha de creación de la cotización,
+  // que puede ser de meses antes. Viaja a Supabase dentro de `extra` (no necesita columna).
+  const _prevRech = (idx >= 0 && bd[idx]) ? bd[idx].rechazadaAt : null;
+  if (record.estado === 'Rechazada') {
+    record.rechazadaAt = _prevRech || new Date().toISOString().slice(0, 10);
+  } else if (_prevRech) {
+    record.rechazadaAt = _prevRech;   // se conserva el histórico aunque cambie de estado
   }
   // Qué se adjudicó de verdad. Si se acaba de registrar en el modal se usa eso;
   // si no, se conserva lo que ya tuviera (editar la cotización no lo borra).
@@ -13020,6 +13071,145 @@ function cotizDownloadExcel() {
   showToast('Excel descargado: Cotizacion_' + numCot + '.xlsx','success');
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+// BANDEJA "⏰ SIN CERRAR" (2026-08-22) — 100% ADITIVA
+// Problema que resuelve: de 1.023 cotizaciones solo 2 quedaron marcadas como
+// Rechazada. Las que se pierden se quedan en "Enviada" para siempre, así que
+// el análisis mensual de motivos de rechazo y de % adjudicado no tiene datos.
+// Esta bandeja lista las que ya vencieron y siguen abiertas, agrupadas por el
+// VENDEDOR responsable de cerrarlas, con cierre en un clic.
+// ══════════════════════════════════════════════════════════════════════════
+const BD_SINCERRAR_DIAS_FALLBACK = 30;                                  // si la cotización no trae fecha de vencimiento
+const BD_ESTADOS_ABIERTOS = { 'Enviada': 1, 'Revisión gerencia': 1, 'Pendiente': 1 };
+
+// Responsable de alimentar el dato: el vendedor; si no hay, quien la realizó.
+function _bdRespVendedor(c) {
+  return (c && (c.vendedor || '').trim()) || (c && (c.realizadaPor || '').trim()) || '— sin vendedor —';
+}
+// Días que lleva vencida. null = todavía no vence (o no hay fecha con qué calcular).
+function _bdDiasVencida(c) {
+  if (!c) return null;
+  const ES_FECHA = /^\d{4}-\d{2}-\d{2}$/;
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const base = ((c.fechaEnvio || '').substring(0, 10)) || ((c.fecha || '').substring(0, 10));
+  const fv = (c.fechaVenc || '').substring(0, 10);
+  let limite = null;
+  // La fecha de vencimiento manda, PERO solo si es coherente: hay cotizaciones con
+  // vencimientos basura tipo 1900-01-08 (serial de Excel mal convertido) que darían
+  // "46.247 días vencida". Si vence antes de existir, se usa la regla de los 30 días.
+  if (ES_FECHA.test(fv) && (!ES_FECHA.test(base) || fv >= base)) {
+    limite = new Date(fv + 'T00:00:00');
+  } else {
+    if (!ES_FECHA.test(base)) return null;
+    limite = new Date(base + 'T00:00:00');
+    limite.setDate(limite.getDate() + BD_SINCERRAR_DIAS_FALLBACK);
+  }
+  const d = Math.floor((hoy - limite) / 86400000);
+  return d > 0 ? d : null;
+}
+// ¿Está abierta y ya venció? (las del LIBRO histórico no entran: no se editan aquí)
+function _bdSinCerrar(c) {
+  if (!c || c._hist) return false;
+  if (!BD_ESTADOS_ABIERTOS[c.estado]) return false;
+  return _bdDiasVencida(c) != null;
+}
+// Resumen por vendedor arriba de la tabla: quién tiene cuántas y por cuánta plata.
+function _bdSinCerrarResumen(lista) {
+  const box = document.getElementById('bd-sincerrar-box');
+  if (!box) return;
+  if (_bdActiveFiltro !== '_sincerrar') { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const porVend = {};
+  lista.forEach(c => {
+    const v = _bdRespVendedor(c);
+    if (!porVend[v]) porVend[v] = { n: 0, monto: 0, viejo: 0 };
+    porVend[v].n++;
+    porVend[v].monto += (+c.total || 0);
+    porVend[v].viejo = Math.max(porVend[v].viejo, _bdDiasVencida(c) || 0);
+  });
+  const orden = Object.keys(porVend).sort((a, b) => porVend[b].n - porVend[a].n);
+  const esc = s => String(s).replace(/</g, '&lt;');
+  const chips = orden.map(v => `<span style="display:inline-block;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:999px;padding:5px 12px;margin:3px 4px 3px 0;font-size:12px;">
+      <b style="color:#fbbf24;">${esc(v)}</b>
+      <span style="color:#f87171;font-weight:700;margin-left:6px;">${porVend[v].n}</span>
+      <span style="color:var(--text-muted);margin-left:6px;">$${(porVend[v].monto / 1000000).toFixed(1)}M · hasta ${porVend[v].viejo}d</span>
+    </span>`).join('');
+  box.style.display = '';
+  box.innerHTML = `<div style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.35);border-radius:10px;padding:12px 14px;margin:10px 0;">
+      <div style="font-size:13px;font-weight:800;color:#f87171;margin-bottom:6px;">⏰ ${lista.length} cotización(es) vencidas y sin cerrar — nadie sabe si se ganaron o se perdieron</div>
+      <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:8px;">Responsable de cerrarlas: el <b>vendedor</b>. Cierra con ❌ (pide el motivo) o ✅ (abre la cotización para registrar qué adjudicaron). Sin esto no hay análisis mensual de rechazos ni de % adjudicado.</div>
+      <div>${chips || '<span style="color:var(--text-muted);font-size:12px;">Sin pendientes 🎉</span>'}</div>
+    </div>`;
+}
+// Modal de motivo — las opciones salen del MISMO desplegable del formulario,
+// para que nunca se desincronicen las dos listas.
+function _bdMotivoModal(id, cb) {
+  const src = document.getElementById('cotiz-motivo-rechazo');
+  const opts = src ? Array.from(src.options).filter(o => o.value) : [];
+  if (!opts.length) { cb(''); return; }
+  const prev = document.getElementById('_bdMotivoOv'); if (prev) prev.remove();
+  const ov = document.createElement('div');
+  ov.id = '_bdMotivoOv';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100001;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML = `<div style="background:var(--card-bg,#0f1e33);border:1px solid rgba(248,113,113,.5);border-radius:12px;padding:20px;max-width:420px;width:100%;">
+      <div style="font-size:15px;font-weight:800;color:#f87171;margin-bottom:4px;">❌ Rechazar ${String(id).replace(/</g, '&lt;')}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">El motivo es obligatorio: es lo que alimenta el análisis mensual.</div>
+      <select id="_bdMotivoSel" style="background:rgba(255,255,255,.06);border:1px solid rgba(248,113,113,.5);border-radius:8px;padding:9px 12px;color:#fff;width:100%;font-size:13px;">
+        <option value="">— Selecciona el motivo —</option>
+        ${opts.map(o => `<option value="${String(o.value).replace(/"/g, '&quot;')}">${String(o.text).replace(/</g, '&lt;')}</option>`).join('')}
+      </select>
+      <input type="text" id="_bdMotivoOtro" maxlength="120" placeholder="¿Cuál fue el motivo?" style="display:none;margin-top:8px;background:rgba(255,255,255,.06);border:1px solid rgba(248,113,113,.5);border-radius:8px;padding:9px 12px;color:#fff;width:100%;font-size:13px;">
+      <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
+        <button id="_bdMotivoCancel" style="background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:8px;padding:9px 16px;color:#cbd5e1;font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+        <button id="_bdMotivoOk" style="background:rgba(248,113,113,.25);border:1px solid #f87171;border-radius:8px;padding:9px 16px;color:#fecaca;font-size:13px;font-weight:700;cursor:pointer;">Rechazar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  const sel = ov.querySelector('#_bdMotivoSel'), otro = ov.querySelector('#_bdMotivoOtro');
+  sel.onchange = () => { otro.style.display = (sel.value === 'Otro') ? '' : 'none'; if (sel.value === 'Otro') { try { otro.focus(); } catch (_) { } } };
+  const cerrar = () => { try { ov.remove(); } catch (_) { } };
+  ov.querySelector('#_bdMotivoCancel').onclick = () => { cerrar(); cb(''); };
+  ov.querySelector('#_bdMotivoOk').onclick = () => {
+    let v = sel.value;
+    if (!v) { showToast('Selecciona el motivo del rechazo', 'error'); return; }
+    if (v === 'Otro') {
+      const t = (otro.value || '').trim();
+      if (!t) { showToast('Escribe cuál fue el motivo', 'error'); return; }
+      v = 'Otro: ' + t;
+    }
+    cerrar(); cb(v);
+  };
+  ov.onclick = e => { if (e.target === ov) { cerrar(); cb(''); } };
+  setTimeout(() => { try { sel.focus(); } catch (_) { } }, 50);
+}
+// ❌ Cierre rápido a Rechazada, sin salir de la bandeja.
+function bdCerrarRechazada(id, ev) {
+  if (ev) ev.stopPropagation();
+  const bd = getData('bd_cotizaciones', []);
+  const idx = bd.findIndex(c => c && c.id === id);
+  if (idx < 0) { showToast('No se encontró la cotización ' + id, 'error'); return; }
+  _bdMotivoModal(id, function (motivo) {
+    if (!motivo) return;
+    const rec = bd[idx];
+    rec.estado = 'Rechazada';
+    rec.motivoRechazo = motivo;
+    if (!rec.rechazadaAt) rec.rechazadaAt = new Date().toISOString().slice(0, 10);
+    _audit(rec, false);
+    saveData('bd_cotizaciones', bd);
+    try { _cotizReclamarYSubir(rec, false); } catch (_) { }
+    showToast('❌ ' + id + ' marcada Rechazada — ' + motivo, 'success');
+    bdRender();
+  });
+}
+// ✅ Adjudicada: abre la cotización con el estado puesto para que salga el modal
+// de adjudicación parcial que YA existe y quede registrado el % adjudicado.
+async function bdCerrarAdjudicada(id, ev) {
+  if (ev) ev.stopPropagation();
+  try { await bdCargar(id); } catch (_) { showToast('No se pudo abrir ' + id, 'error'); return; }
+  const sel = document.getElementById('cotiz-estado');
+  if (sel) { sel.value = 'Adjudicada'; try { cotizEstadoChange(); } catch (_) { } }
+  showToast('Marca QUÉ le adjudicaron y guarda — así queda el % adjudicado de ' + id, 'info', { durationMs: 8000 });
+}
+
 function bdFilter(estado, btn) {
   document.querySelectorAll('.bd-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -13048,6 +13238,22 @@ function exportCotizExcel(){
     const margen = venta>0 ? Math.round((1 - costo/venta)*1000)/10 : '';
     let dias='';
     if(c.createdAt && c.updatedAt){ dias = Math.round((new Date(c.updatedAt)-new Date(c.createdAt))/86400000); }
+    // ── 2026-08-22: columnas de CIERRE para el análisis mensual ──
+    // Fecha en que la cotización se cerró de verdad (se ganó, se perdió o se facturó),
+    // que NO es la fecha en que se creó. El "Mes de Cierre" es el campo por el que se
+    // agrupa la tabla dinámica; si aún está abierta va vacío a propósito.
+    const _fRech = (c.rechazadaAt||'').substring(0,10);
+    const _fAdj  = (c.adjudicadaAt||'').substring(0,10);
+    const _fFac  = (c.facturadaAt||'').substring(0,10);
+    const _fCierre = _fFac || _fAdj || _fRech || '';
+    // % adjudicado = cuánto del valor de ESTA cotización se adjudicó realmente
+    // (adjudicación parcial). Vacío = nunca se registró; NO es un 0%.
+    const _vAdj = (c.valorAdjudicado != null) ? Math.round(+c.valorAdjudicado) : '';
+    const _base = _cotizBaseAdj(c);   // subtotal SIN IVA — misma base que valorAdjudicado
+    const _pctAdj = (c.valorAdjudicado != null && _base > 0) ? Math.round(+c.valorAdjudicado/_base*1000)/10 : '';
+    const _noAdj  = (c.valorAdjudicado != null) ? Math.round(_base - (+c.valorAdjudicado)) : '';
+    let _tipoAdj = '';
+    try { if (_cotizAdjMapa(c)) _tipoAdj = _cotizEsParcial(c) ? 'Parcial' : 'Total'; } catch(_){}
     return {
       '# Cotización': c.id||'',
       'Fecha': c.fecha||'',
@@ -13071,7 +13277,21 @@ function exportCotizExcel(){
       'Vence': c.fechaVenc||'',
       'Creada': c.createdAt ? c.createdAt.substring(0,10) : '',
       'Últ. cambio': c.updatedAt ? c.updatedAt.substring(0,10) : '',
-      'Días (creada→cambio)': dias
+      'Días (creada→cambio)': dias,
+      // ── Columnas de cierre y adjudicación (2026-08-22) ──
+      'Motivo Rechazo': c.motivoRechazo || '',
+      'Vendedor Responsable': c.vendedor || c.realizadaPor || '',
+      'Fecha Envío': (c.fechaEnvio||'').substring(0,10),
+      'Fecha Adjudicación': _fAdj,
+      'Fecha Rechazo': _fRech,
+      'Fecha Facturación': _fFac,
+      'Fecha Cierre': _fCierre,
+      'Mes de Cierre': _fCierre ? _fCierre.substring(0,7) : '',
+      'Valor Adjudicado': _vAdj,
+      '% Adjudicado': _pctAdj,
+      'Valor No Adjudicado': _noAdj,
+      'Tipo Adjudicación': _tipoAdj,
+      'Días para cerrar': (_fCierre && c.fecha) ? Math.round((new Date(_fCierre+'T00:00:00') - new Date(String(c.fecha).substring(0,10)+'T00:00:00'))/86400000) : ''
     };
   });
   try {
@@ -13168,7 +13388,9 @@ async function exportCotizBDCompleta(){
         // Lo REALMENTE adjudicado. Vacío = nunca se registró (las viejas), y ahí
         // el análisis debe seguir usando el total como hasta ahora.
         'Valor Adjudicado': (c.valorAdjudicado!=null?Math.round(c.valorAdjudicado):''),
-        '% Adjudicado': (c.valorAdjudicado!=null && +c.total ? Math.round(c.valorAdjudicado/(+c.total)*100)+'%' : ''),
+        // FIX 2026-08-22: el denominador era `total` (CON IVA) contra un valorAdjudicado
+        // SIN IVA → toda adjudicación del 100% salía como 84%. Ahora va contra el subtotal.
+        '% Adjudicado': (c.valorAdjudicado!=null && _cotizBaseAdj(c)>0 ? Math.round(c.valorAdjudicado/_cotizBaseAdj(c)*100)+'%' : ''),
         // ── Detalle por línea: qué ítem entró y cuál se cayó ──
         'Adjudicación': _tipoAdj,
         'Ítem Adjudicado': (_entra===null ? '' : (_esAlt ? 'ALTERNATIVA' : (_entra?'SI':'NO'))),
@@ -13699,7 +13921,10 @@ function bdRender(filtro) {
   const vfVal = isComercial ? cuName : ((document.getElementById('bd-filter-vendedor')||{}).value||'').trim();
   const rfVal = ((document.getElementById('bd-filter-realiza')||{}).value||'').trim();
   const _ef = _bdActiveFiltro;
-  let lista = _ef && _ef !== 'todas' ? bdVisible.filter(c => c.estado === _ef) : [...bdVisible];
+  // Rama nueva (2026-08-22): bandeja de vencidas sin cerrar. El resto del filtrado sigue igual.
+  let lista = _ef === '_sincerrar'
+    ? bdVisible.filter(_bdSinCerrar)
+    : (_ef && _ef !== 'todas' ? bdVisible.filter(c => c.estado === _ef) : [...bdVisible]);
   if (srch) lista = lista.filter(c => (c.cliente||'').toLowerCase().includes(srch) || (c.id||'').toLowerCase().includes(srch) || (c.contacto||'').toLowerCase().includes(srch));
   if (_itemTerms.length) {
     _bdItemsLibroAsegurar(_itemTerms);   // dispara la consulta al LIBRO (async, re-render al llegar)
@@ -13719,6 +13944,12 @@ function bdRender(filtro) {
     return sdir * av.localeCompare(bv);
   });
   _bdSortArrows();
+
+  // Bandeja "⏰ Sin cerrar" (aditivo): manda el orden por antigüedad —  primero las
+  // más vencidas— y se pinta el resumen por vendedor. En cualquier otro filtro,
+  // el resumen se oculta y todo queda exactamente como estaba.
+  if (_ef === '_sincerrar') lista.sort((a, b) => (_bdDiasVencida(b) || 0) - (_bdDiasVencida(a) || 0));
+  _bdSinCerrarResumen(_ef === '_sincerrar' ? lista : []);
 
   if (!lista.length) {
     tbody.innerHTML = '';
@@ -13775,6 +14006,19 @@ function bdRender(filtro) {
     const factBtn = (c.estado === 'Facturada' && c.factura)
       ? `<button class="btn-sm" onclick="event.stopPropagation();cnuVerFacturasDeCotiz('${c.id}')" title="Ver la(s) factura(s) de esta cotización en el módulo Cartera" style="background:rgba(232,160,32,.18);border:1px solid rgba(232,160,32,.5);color:#fbbf24;font-weight:700">💳 Fact ${String(c.factura).replace(/</g,'&lt;').replace(/"/g,'&quot;')}</button>`
       : '';
+    // Bandeja "⏰ Sin cerrar" (2026-08-22, aditivo): responsable + antigüedad visibles
+    // en la fila, y cierre en un clic sin tener que abrir la cotización.
+    const _dv = (_bdActiveFiltro === '_sincerrar') ? _bdDiasVencida(c) : null;
+    const sinCerrarInfo = (_dv != null)
+      ? `<div style="font-size:10px;margin-top:4px;line-height:1.7;">
+          <span style="color:#fbbf24;font-weight:700;">👤 ${String(_bdRespVendedor(c)).replace(/</g,'&lt;')}</span><br>
+          <span style="color:#f87171;font-weight:700;">⏰ ${_dv} día(s) vencida</span>
+        </div>`
+      : '';
+    const cierreBtns = (_dv != null && !_h)
+      ? `<button class="btn-sm" onclick="bdCerrarAdjudicada('${c.id}',event)" title="Se ganó: abre la cotización para registrar QUÉ le adjudicaron (deja el % adjudicado)" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700">✅ Adjudicada</button>
+         <button class="btn-sm" onclick="bdCerrarRechazada('${c.id}',event)" title="Se perdió: pide el motivo y la cierra al instante" style="background:rgba(248,113,113,.2);border:1px solid rgba(248,113,113,.55);color:#fecaca;font-weight:700">❌ Rechazada</button>`
+      : '';
     const acciones = _h
       ? `<div style="display:flex;gap:4px;flex-wrap:wrap;">
           ${ocBtn}${remBtn}${compBtn}${factBtn}
@@ -13782,7 +14026,7 @@ function bdRender(filtro) {
           <button class="btn-sm bd-btn-xl" onclick="bdVerHistorico('${c.id}')">👁 Ver</button>
         </div>`
       : `<div style="display:flex;gap:4px;flex-wrap:wrap;">
-          ${ocBtn}${remBtn}${compBtn}${factBtn}
+          ${cierreBtns}${ocBtn}${remBtn}${compBtn}${factBtn}
           <button class="btn-sm bd-btn-edit" onclick="bdCargar('${c.id}')">✏️ Editar</button>
           <button class="btn-sm bd-btn-xl" onclick="bdDescargar('${c.id}')">⬇️ XLS</button>
           <button class="btn-sm bd-btn-del" onclick="bdEliminar('${c.id}',event)">🗑</button>
@@ -13796,7 +14040,7 @@ function bdRender(filtro) {
       <td style="text-align:center">${_h?'':_bdSemaforo(c)}</td>
       <td style="color:var(--gold);font-weight:600">$${(c.total||0).toLocaleString('es-CO',{minimumFractionDigits:0})}</td>
       <td style="color:var(--text-muted)">${c.fechaVenc||''}</td>
-      <td><span class="cotiz-estado-badge ${cls}">${c.estado}</span>${c.motivoRechazo?`<div style="font-size:9.5px;color:#f87171;margin-top:2px;">${String(c.motivoRechazo).replace(/</g,'&lt;')}</div>`:''}${cadenaDoc}</td>
+      <td><span class="cotiz-estado-badge ${cls}">${c.estado}</span>${c.motivoRechazo?`<div style="font-size:9.5px;color:#f87171;margin-top:2px;">${String(c.motivoRechazo).replace(/</g,'&lt;')}</div>`:''}${sinCerrarInfo}${cadenaDoc}</td>
       <td onclick="event.stopPropagation()">${acciones}</td>
     </tr>`;
   }).join('');
@@ -13824,7 +14068,20 @@ function _bdLoadIntoEditor(c, msg, adopted) {
   document.getElementById('cotiz-correo').value = c.correo || '';
   document.getElementById('cotiz-estado').value = c.estado || 'Enviada';
   document.getElementById('cotiz-factura').value = c.factura || '';
-  const _mrSel = document.getElementById('cotiz-motivo-rechazo'); if (_mrSel) _mrSel.value = c.motivoRechazo || '';
+  // Motivo de rechazo. Los "Otro: <texto>" se parten de vuelta en select + texto libre.
+  const _mrSel = document.getElementById('cotiz-motivo-rechazo');
+  const _mrOtro = document.getElementById('cotiz-motivo-otro');
+  const _mrVal = c.motivoRechazo || '';
+  if (_mrSel) {
+    if (/^Otro(:|$)/.test(_mrVal)) {
+      _mrSel.value = 'Otro';
+      if (_mrOtro) _mrOtro.value = _mrVal.replace(/^Otro:?\s*/, '');
+    } else {
+      _mrSel.value = _mrVal;
+      if (_mrOtro) _mrOtro.value = '';
+    }
+  }
+  try { _cotizMotivoOtroSync(); } catch(_){}
   const _mrBox = document.getElementById('cotiz-motivo-box'); if (_mrBox) _mrBox.style.display = (c.estado === 'Rechazada') ? '' : 'none';
   _cotizEstadoPrev = c.estado || 'Enviada';
   _cotizFacturaFechaPend = c.facturadaAt || '';
