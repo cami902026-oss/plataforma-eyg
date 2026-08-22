@@ -1,0 +1,51 @@
+name: 📊 Informe Comercial Semanal (viernes 6 PM)
+
+on:
+  schedule:
+    # Viernes 5:50 PM Colombia (UTC-5 = 22:50 UTC del mismo viernes).
+    # Se adelanta 10 min y se usa un minuto "no en punto" porque GitHub Actions
+    # retrasa los crons que caen en horas redondas — así llega cerca de las 6:00 PM.
+    - cron: '50 22 * * 5'
+
+  # Permite dispararlo a mano desde la pestaña Actions para probar
+  workflow_dispatch:
+
+jobs:
+  informe-semanal:
+    runs-on: ubuntu-latest
+    name: 📧 Enviar informe comercial de la semana
+
+    steps:
+      - name: 📥 Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: 🐍 Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Instalar dependencias
+        run: pip install openpyxl
+
+      - name: 📊 Generar y enviar el informe
+        env:
+          MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          SENDER_EMAIL:     ${{ secrets.SENDER_EMAIL }}
+          SUPABASE_URL:     ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:     ${{ secrets.SUPABASE_KEY }}
+
+          # PARA: gerencia
+          RECIPIENT_EMAILS: 'gerenciageneral@eygenergygroup.com'
+
+          # COPIA: Andrea + los vendedores
+          #   Andrea Bernal .......... andrea.bernal@eygenergygroup.com
+          #   Mario (dir. comercial) . director.comercial@eygenergygroup.com
+          #   Sheila Baron ........... comercial@eygenergygroup.com
+          # Para agregar o quitar a alguien, basta editar esta línea.
+          CC_EMAILS: 'andrea.bernal@eygenergygroup.com,director.comercial@eygenergygroup.com,comercial@eygenergygroup.com'
+        run: python scripts/informe_semanal_comercial.py
+
+      - name: ✅ Confirmar
+        run: echo "Informe comercial semanal enviado — $(date +'%Y-%m-%d %H:%M UTC')"
