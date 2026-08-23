@@ -364,12 +364,16 @@ alter table op_items replica identity full;
 
 
 -- ─────────────────────────────────────────────────────────────────────────
--- 13) SEMILLA — zonas de ruta (ajustar a la realidad de la ciudad)
+-- 13) ZONAS — se llenan solas, no se siembran
+-- Decisión del usuario (22-ago): la tabla arranca VACÍA. Las zonas son
+-- barrios de Bogotá (Fontibón, Puente Aranda, Ricaurte…) y se van creando
+-- a medida que alguien registra una sede, igual que las direcciones.
+-- Sembrar zonas genéricas inventadas solo produciría basura que nadie usa.
+--
+-- El `orden` (en qué secuencia se recorren) se ajusta después, cuando ya
+-- se sepa cuáles son las que de verdad aparecen.
 -- ─────────────────────────────────────────────────────────────────────────
-insert into zonas_ruta(zona, orden) values
-  ('Centro', 10), ('Zona Industrial', 20), ('Norte', 30),
-  ('Sur', 40), ('Occidente', 50), ('Otra', 90), ('Sin definir', 99)
-on conflict (zona) do nothing;
+-- (intencionalmente sin INSERT)
 
 
 -- ─────────────────────────────────────────────────────────────────────────
