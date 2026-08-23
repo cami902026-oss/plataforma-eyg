@@ -123,7 +123,15 @@ const SB_URL = 'https://juprjevxkcitqpsnemto.supabase.co/rest/v1';
 const SB_TABLAS = ['productos','kardex','familias','conteos','conteo_items',
                    'remisiones','cotizaciones','cotizacion_items',
                    'plan_compras','oc_compras','proveedores',
-                   'verificacion_despacho'];   // SIG-CAL-FR-009 (6-ago-2026)
+                   'verificacion_despacho',   // SIG-CAL-FR-009 (6-ago-2026)
+                   // OP — Órdenes de Pedido (23-ago-2026)
+                   'ops','op_items','op_reservas','op_certificados','op_eventos',
+                   'op_consecutivos','proveedor_sedes','proveedor_sede_memoria','zonas_ruta'];
+
+// Funciones del servidor que la plataforma puede invocar (rpc/<nombre>).
+// Se listan una por una a propósito: `rpc` no puede ser un comodín, o cualquier
+// función de la base quedaría expuesta.
+const SB_RPC = ['op_nuevo_numero'];
 
 function _handleSupabaseWrite(sb) {
   const key = PROPS.getProperty('SUPABASE_SECRET');
@@ -135,7 +143,14 @@ function _handleSupabaseWrite(sb) {
   }
   const path = String(sb.path || '').replace(/^\/+/, '');
   const tabla = path.split('?')[0].split('/')[0];
-  if (SB_TABLAS.indexOf(tabla) < 0) {
+  if (tabla === 'rpc') {
+    // Llamada a una función del servidor: se valida el NOMBRE contra su propia
+    // lista, no basta con que empiece por rpc/.
+    const fn = path.split('?')[0].split('/')[1] || '';
+    if (SB_RPC.indexOf(fn) < 0) {
+      return _json({ error: 'Función no permitida: ' + fn });
+    }
+  } else if (SB_TABLAS.indexOf(tabla) < 0) {
     return _json({ error: 'Tabla no permitida: ' + tabla });
   }
   // Gate de versión mínima para ESCRIBIR (protege contra pestañas con código viejo,

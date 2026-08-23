@@ -673,6 +673,277 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .abs-product-selected{background:rgba(46,170,74,0.08);border:1px solid rgba(46,170,74,0.3);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
 .abs-rot-stats-bar{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
 .abs-rot-stat{background:var(--card-bg);border:1px solid var(--border);border-left:3px solid;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   OP · ÓRDENES DE PEDIDO — identidad visual propia (2026-08-23)
+   ──────────────────────────────────────────────────────────────────────────
+   TODO va encerrado bajo #page-op. Ninguna regla puede alcanzar otro módulo:
+   no hay selectores globales, no se redefine ninguna clase existente.
+
+   La idea: la OP es una HOJA DE RUTA. En el mundo del material, la orden viaja
+   con una tarjeta que se sella en cada estación. De ahí salen las dos únicas
+   decisiones visuales fuertes:
+     · la FAJA DE ORIGEN — franja estarcida al borde de cada línea, como se
+       marca la tubería en patio. Verde sale de bodega, ámbar hay que comprarlo.
+       Es la bifurcación real de toda OP, no un adorno.
+     · el SELLO — cuando espera aprobación, un sello de caucho atraviesa el
+       documento. La compuerta del jefe, hecha física.
+   Las cifras y las specs van en monoespaciada porque así se escribe
+   2"×1500 en la industria. No se carga ninguna fuente nueva: la plataforma
+   es PWA y una tercera familia la pagaría todo el equipo.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#page-op{
+  --op-bodega:#3FBF63;      /* sale de la estantería */
+  --op-compra:#E8A020;      /* hay que salir a comprarlo en Bogotá */
+  --op-sin:#e05a4a;         /* nadie ha decidido de dónde sale */
+  --op-mono:ui-monospace,'SFMono-Regular',Consolas,'Liberation Mono',monospace;
+  --op-papel:#0b1d38;
+  --op-linea:#1e3a6e;
+}
+
+/* ── Cabecera de la hoja ──────────────────────────────────────────────── */
+#page-op .op-hoja{
+  background:var(--op-papel);
+  border:1px solid var(--op-linea);
+  border-top:3px solid var(--gold);
+  border-radius:3px;
+  padding:20px 22px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+#page-op .op-hoja-top{
+  display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;
+  justify-content:space-between;
+}
+#page-op .op-num{
+  font-family:'Montserrat',sans-serif;
+  font-weight:900;
+  font-size:clamp(23px,3.4vw,33px);
+  letter-spacing:.11em;
+  color:#fff;
+  line-height:1;
+  text-transform:uppercase;
+}
+#page-op .op-num em{ font-style:normal;color:var(--gold); }
+#page-op .op-sub{
+  font-family:var(--op-mono);
+  font-size:11.5px;
+  color:var(--text-muted);
+  letter-spacing:.04em;
+  margin-top:7px;
+  line-height:1.9;
+}
+#page-op .op-sub b{ color:#cfe0ff;font-weight:600; }
+
+/* ── El sello ─────────────────────────────────────────────────────────────
+   Solo aparece cuando la OP espera al jefe. Es lo único inclinado en toda la
+   plataforma: si algo está torcido, es porque está detenido.                */
+#page-op .op-sello{
+  position:absolute;right:-6px;top:14px;
+  transform:rotate(-7deg);
+  border:3px double var(--op-compra);
+  color:var(--op-compra);
+  font-family:'Montserrat',sans-serif;font-weight:900;
+  font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  padding:7px 15px;border-radius:3px;
+  background:rgba(232,160,32,.07);
+  pointer-events:none;
+  line-height:1.25;text-align:center;
+}
+#page-op .op-sello small{
+  display:block;font-size:9px;letter-spacing:.08em;font-weight:700;opacity:.8;
+}
+#page-op .op-sello.op-sello-neg{ border-color:var(--op-sin);color:var(--op-sin);background:rgba(224,90,74,.07); }
+#page-op .op-sello.op-sello-ok{  border-color:var(--op-bodega);color:var(--op-bodega);background:rgba(63,191,99,.07); }
+
+/* ── Balanza de origen ────────────────────────────────────────────────────
+   Una sola barra: qué parte del valor sale de la estantería y qué parte hay
+   que ir a comprar. Es el dato que hoy nadie tiene antes de arrancar.       */
+#page-op .op-balanza{ margin-top:18px; }
+#page-op .op-balanza-barra{
+  display:flex;height:9px;border-radius:2px;overflow:hidden;
+  background:rgba(255,255,255,.05);
+}
+#page-op .op-balanza-barra i{ display:block;height:100%; }
+#page-op .op-b-bodega{ background:var(--op-bodega); }
+#page-op .op-b-compra{ background:var(--op-compra); }
+#page-op .op-b-sin{
+  background:repeating-linear-gradient(45deg,var(--op-sin) 0 5px,rgba(224,90,74,.35) 5px 10px);
+}
+#page-op .op-balanza-pies{
+  display:flex;gap:18px;flex-wrap:wrap;margin-top:9px;
+  font-family:var(--op-mono);font-size:11px;color:var(--text-muted);
+}
+#page-op .op-balanza-pies b{ font-size:12.5px;display:block;color:#fff;font-weight:600; }
+#page-op .op-balanza-pies span::before{
+  content:'';display:inline-block;width:8px;height:8px;border-radius:1px;
+  margin-right:6px;background:currentColor;vertical-align:baseline;
+}
+
+/* ── El libro de ítems ────────────────────────────────────────────────────
+   Sin zebra ni bordes de caja: lo que separa las líneas es la faja de origen. */
+#page-op .op-libro{ border:1px solid var(--op-linea);border-radius:3px;overflow:hidden; }
+#page-op .op-linea{
+  display:grid;
+  grid-template-columns:3px 30px 1fr 92px 150px 108px;
+  align-items:center;gap:0;
+  border-bottom:1px solid rgba(30,58,110,.55);
+  background:var(--op-papel);
+  transition:background .14s;
+}
+#page-op .op-linea:last-child{ border-bottom:none; }
+#page-op .op-linea:hover{ background:#0e2444; }
+#page-op .op-faja{ align-self:stretch;background:var(--op-sin); }
+#page-op .op-linea[data-origen="BODEGA"] .op-faja{ background:var(--op-bodega); }
+#page-op .op-linea[data-origen="COMPRA"] .op-faja{ background:var(--op-compra); }
+#page-op .op-linea[data-origen="PENDIENTE"] .op-faja{
+  background:repeating-linear-gradient(45deg,var(--op-sin) 0 4px,transparent 4px 8px);
+}
+#page-op .op-linea > div{ padding:11px 12px; }
+#page-op .op-item-n{
+  font-family:var(--op-mono);font-size:11px;color:var(--text-muted);text-align:right;
+  padding-right:4px !important;
+}
+#page-op .op-desc{ font-size:13px;color:#e6edfb;line-height:1.4;min-width:0; }
+#page-op .op-desc small{
+  display:block;font-family:var(--op-mono);font-size:10.5px;
+  color:var(--text-muted);margin-top:3px;letter-spacing:.02em;
+}
+#page-op .op-cant{
+  font-family:var(--op-mono);font-size:13px;color:#fff;text-align:right;white-space:nowrap;
+}
+#page-op .op-cant u{ text-decoration:none;color:var(--text-muted);font-size:10.5px; }
+#page-op .op-fuente{ font-size:11.5px;min-width:0; }
+#page-op .op-fuente b{ font-family:var(--op-mono);font-size:11.5px;font-weight:600; }
+#page-op .op-costo{
+  font-family:var(--op-mono);font-size:12.5px;text-align:right;
+  color:#cfe0ff;white-space:nowrap;
+}
+#page-op .op-etq{
+  font-family:var(--op-mono);font-size:9.5px;font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;padding:2px 6px;border-radius:2px;white-space:nowrap;
+}
+#page-op .op-etq-bodega{ background:rgba(63,191,99,.14);color:var(--op-bodega); }
+#page-op .op-etq-compra{ background:rgba(232,160,32,.14);color:var(--op-compra); }
+#page-op .op-etq-sin{    background:rgba(224,90,74,.14);color:var(--op-sin); }
+
+#page-op .op-libro-cab{
+  display:grid;grid-template-columns:3px 30px 1fr 92px 150px 108px;
+  background:rgba(255,255,255,.03);border-bottom:1px solid var(--op-linea);
+}
+#page-op .op-libro-cab > div{
+  padding:8px 12px;font-family:var(--op-mono);font-size:9.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);
+}
+#page-op .op-libro-cab .op-r{ text-align:right; }
+
+/* ── Estados ──────────────────────────────────────────────────────────── */
+#page-op .op-estado{
+  font-family:var(--op-mono);font-size:10.5px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 9px;border-radius:2px;white-space:nowrap;
+  border:1px solid transparent;
+}
+#page-op .op-e-borrador{ background:rgba(255,255,255,.05);color:var(--text-muted);border-color:rgba(255,255,255,.12); }
+#page-op .op-e-espera  { background:rgba(232,160,32,.12);color:var(--op-compra);border-color:rgba(232,160,32,.45); }
+#page-op .op-e-ok      { background:rgba(63,191,99,.12);color:var(--op-bodega);border-color:rgba(63,191,99,.4); }
+#page-op .op-e-alto    { background:rgba(224,90,74,.12);color:var(--op-sin);border-color:rgba(224,90,74,.45); }
+#page-op .op-e-curso   { background:rgba(26,58,143,.35);color:#8fb4ff;border-color:rgba(122,163,238,.4); }
+
+/* ── Aviso de estado: es una barrera, no una tarjeta ──────────────────── */
+#page-op .op-barrera{
+  border-left:4px solid var(--op-compra);
+  background:linear-gradient(90deg,rgba(232,160,32,.10),transparent 62%);
+  padding:12px 16px;margin-bottom:15px;border-radius:0 3px 3px 0;
+}
+#page-op .op-barrera h4{
+  font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--op-compra);margin:0 0 3px;
+}
+#page-op .op-barrera p{ font-size:12.5px;color:#a9bcd8;margin:0;line-height:1.55; }
+#page-op .op-barrera.op-alto{ border-left-color:var(--op-sin);background:linear-gradient(90deg,rgba(224,90,74,.10),transparent 62%); }
+#page-op .op-barrera.op-alto h4{ color:var(--op-sin); }
+#page-op .op-barrera.op-libre{ border-left-color:var(--op-bodega);background:linear-gradient(90deg,rgba(63,191,99,.10),transparent 62%); }
+#page-op .op-barrera.op-libre h4{ color:var(--op-bodega); }
+#page-op .op-barrera.op-info{ border-left-color:#5a7fd0;background:linear-gradient(90deg,rgba(90,127,208,.10),transparent 62%); }
+#page-op .op-barrera.op-info h4{ color:#8fb4ff; }
+
+/* ── Índice de órdenes ────────────────────────────────────────────────── */
+#page-op .op-fila{
+  display:grid;
+  grid-template-columns:3px 168px 1fr 128px 92px 130px 96px;
+  align-items:center;
+  border-bottom:1px solid rgba(30,58,110,.55);
+  background:var(--op-papel);cursor:pointer;transition:background .14s;
+}
+#page-op .op-fila:hover{ background:#0e2444; }
+#page-op .op-fila:focus-visible{ outline:2px solid var(--gold);outline-offset:-2px; }
+#page-op .op-fila > div{ padding:12px; }
+#page-op .op-fila-marca{ align-self:stretch;background:rgba(255,255,255,.10); }
+#page-op .op-fila[data-e="pendiente_aprobacion"] .op-fila-marca{ background:var(--op-compra); }
+#page-op .op-fila[data-e="devuelta"] .op-fila-marca{ background:var(--op-sin); }
+#page-op .op-fila[data-e="aprobada"] .op-fila-marca,
+#page-op .op-fila[data-e="cerrada"] .op-fila-marca{ background:var(--op-bodega); }
+#page-op .op-fila-id{
+  font-family:'Montserrat',sans-serif;font-weight:900;font-size:13.5px;
+  letter-spacing:.09em;color:#fff;white-space:nowrap;
+}
+#page-op .op-fila-id small{
+  display:block;font-family:var(--op-mono);font-weight:400;font-size:10px;
+  letter-spacing:.03em;color:var(--text-muted);margin-top:3px;
+}
+#page-op .op-fila-cli{ font-size:13.5px;color:#e6edfb;font-weight:600;min-width:0; }
+#page-op .op-fila-cli small{
+  display:block;font-weight:400;font-size:10.5px;color:var(--text-muted);
+  font-family:var(--op-mono);margin-top:3px;
+}
+#page-op .op-fila-mini{ font-family:var(--op-mono);font-size:11px;color:var(--text-muted);text-align:right; }
+#page-op .op-fila-val{ font-family:var(--op-mono);font-size:13px;color:var(--gold);text-align:right;white-space:nowrap; }
+#page-op .op-nota{
+  font-size:10.5px;color:var(--op-sin);margin-top:4px;line-height:1.4;
+  display:block;max-width:260px;
+}
+
+/* ── Vacío: una invitación, no un aviso de error ──────────────────────── */
+#page-op .op-vacio{
+  text-align:center;padding:52px 20px;color:var(--text-muted);
+}
+#page-op .op-vacio strong{
+  display:block;font-family:'Montserrat',sans-serif;font-weight:700;
+  font-size:15px;color:#cfe0ff;margin-bottom:6px;letter-spacing:.03em;
+}
+
+/* ── Bitácora ─────────────────────────────────────────────────────────── */
+#page-op .op-bitacora{ margin-top:22px; }
+#page-op .op-bitacora h5{
+  font-family:var(--op-mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text-muted);margin:0 0 10px;font-weight:600;
+}
+#page-op .op-ev{
+  display:grid;grid-template-columns:110px 1fr;gap:14px;
+  padding:7px 0;border-top:1px solid rgba(30,58,110,.5);font-size:12px;
+}
+#page-op .op-ev time{ font-family:var(--op-mono);font-size:10.5px;color:var(--text-muted); }
+#page-op .op-ev b{ color:#cfe0ff;font-weight:600; }
+#page-op .op-ev span{ color:#8fa3bd; }
+
+@media (max-width:820px){
+  #page-op .op-libro-cab{ display:none; }
+  #page-op .op-linea{ grid-template-columns:3px 1fr;row-gap:0; }
+  #page-op .op-linea .op-item-n{ display:none; }
+  #page-op .op-linea .op-cant,
+  #page-op .op-linea .op-fuente,
+  #page-op .op-linea .op-costo{ grid-column:2;text-align:left;padding-top:0; }
+  #page-op .op-fila{ grid-template-columns:3px 1fr; }
+  #page-op .op-fila > div:nth-child(n+4){ grid-column:2;padding-top:0; }
+  #page-op .op-fila-mini,#page-op .op-fila-val{ text-align:left; }
+}
+@media (prefers-reduced-motion:reduce){
+  #page-op *{ transition:none !important;animation:none !important; }
+}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -779,7 +1050,11 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="nav-item" onclick="navigate('inventario')"><span class="icon">📦</span>Inventario</div>
       <div class="nav-item" onclick="navigate('cotizaciones')"><span class="icon">📋</span>Cotizaciones IA</div>
       <div class="nav-item" onclick="navigate('cartera')"><span class="icon">💰</span>Cartera</div>
-      <div class="nav-item" onclick="navigate('procesos')"><span class="icon">🚛</span>Procesos O.C.</div>
+      <!-- 23-ago-2026: "Procesos O.C." sale del MENÚ, reemplazado por Órdenes de Pedido.
+           La página, los datos (ordenes.json, 164 órdenes), el robot de Gmail que las
+           crea y el informe diario SIGUEN funcionando igual. Las alertas de O.C. vencida
+           siguen llevando allá. Para devolverlo al menú, descomentar la línea de abajo. -->
+      <!-- <div class="nav-item" onclick="navigate('procesos')"><span class="icon">🚛</span>Procesos O.C.</div> -->
       <div class="nav-item" onclick="navigate('op')"><span class="icon">📑</span>Órdenes de Pedido</div>
       <div class="nav-item" onclick="navigate('visitas')"><span class="icon">🤝</span>Visitas Comerciales</div>
       <div class="nav-item" onclick="navigate('programacion')"><span class="icon">🗓️</span>Programación Equipo</div>
@@ -3025,14 +3300,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <button class="bd-filter-btn" onclick="opFiltrar('cerrada',this)">🔒 Cerradas</button>
           </div>
           <div id="op-lista-count" class="abs-count"></div>
-          <div class="abs-table-wrap">
-            <table class="abs-table">
-              <thead><tr>
-                <th>N° OP</th><th>Fecha</th><th>Cliente</th><th>Cotización</th>
-                <th>O.C. cliente</th><th>Ítems</th><th>Valor</th><th>Estado</th><th>Acciones</th>
-              </tr></thead>
-              <tbody id="op-lista-tbody"><tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:32px">Cargando…</td></tr></tbody>
-            </table>
+          <div class="op-libro" id="op-lista-cont">
+            <div class="op-vacio">Cargando…</div>
           </div>
         </div>
 
@@ -3043,29 +3312,43 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div id="op-editor-titulo" style="font-weight:800;font-size:16px;color:#fff;margin-right:auto;"></div>
             <div id="op-editor-acciones" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
           </div>
-          <div id="op-editor-aviso"></div>
-          <div class="form-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px;">
-            <div class="form-group"><label>N° OP</label><input type="text" id="op-numero" readonly style="width:100%;opacity:.75;"></div>
-            <div class="form-group"><label>COTIZACIÓN</label><input type="text" id="op-cotizacion" readonly style="width:100%;opacity:.75;"></div>
-            <div class="form-group"><label>CLIENTE</label><input type="text" id="op-cliente" style="width:100%;"></div>
-            <div class="form-group"><label>N° O.C. DEL CLIENTE</label><input type="text" id="op-oc-cliente" placeholder="El que trae la orden del cliente" style="width:100%;"></div>
+          <!-- La hoja: encabezado sellado + balanza de origen -->
+          <div class="op-hoja">
+            <div id="op-sello-cont"></div>
+            <div class="op-hoja-top">
+              <div style="min-width:0;">
+                <div class="op-num" id="op-num-grande">—</div>
+                <div class="op-sub" id="op-hoja-sub"></div>
+              </div>
+              <div style="min-width:210px;flex:1;max-width:340px;">
+                <div class="form-group" style="margin-bottom:9px;">
+                  <label style="font-size:10px;letter-spacing:.1em;">CLIENTE</label>
+                  <input type="text" id="op-cliente" style="width:100%;">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label style="font-size:10px;letter-spacing:.1em;">N° O.C. DEL CLIENTE</label>
+                  <input type="text" id="op-oc-cliente" placeholder="El que trae la orden" style="width:100%;">
+                </div>
+              </div>
+            </div>
+            <div class="op-balanza" id="op-balanza"></div>
           </div>
-          <div class="form-group" style="margin-bottom:14px;">
-            <label>OBSERVACIONES</label>
+
+          <div id="op-editor-aviso"></div>
+
+          <div class="op-libro">
+            <div class="op-libro-cab">
+              <div></div><div class="op-r">#</div><div>Material</div>
+              <div class="op-r">Cantidad</div><div>De dónde sale</div><div class="op-r">Costo unit.</div>
+            </div>
+            <div id="op-items-tbody"></div>
+          </div>
+
+          <div class="form-group" style="margin-top:16px;">
+            <label style="font-size:10px;letter-spacing:.1em;">OBSERVACIONES</label>
             <textarea id="op-observaciones" rows="2" style="width:100%;"></textarea>
           </div>
-          <div id="op-items-resumen" style="margin-bottom:10px;"></div>
-          <div class="abs-table-wrap">
-            <table class="abs-table" id="op-items-tabla">
-              <thead><tr>
-                <th style="width:34px">#</th><th>Descripción</th><th style="width:70px">Cant.</th>
-                <th style="width:110px">Origen</th><th>Producto de bodega / Proveedor</th>
-                <th style="width:110px">Costo unit.</th><th style="width:100px">Estado</th>
-              </tr></thead>
-              <tbody id="op-items-tbody"></tbody>
-            </table>
-          </div>
-          <div id="op-eventos" style="margin-top:18px;"></div>
+          <div id="op-eventos"></div>
         </div>
       </div>
 
@@ -10466,7 +10749,6 @@ function generarInformePDF() {
     E&G Energy Group — Informe generado automáticamente
   </div>
 </div>
-
 
 
 </body></html>`;
@@ -21487,10 +21769,225 @@ function opPuedeEditar(op) {
 const opEsc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const opMoney = n => '$' + Math.round(+n || 0).toLocaleString('es-CO');
 
+// ─── Pintado (identidad propia del módulo, 2026-08-23) ───────────────────────
+// El estado NO es un adorno: define la marca de la fila, el color del sello y
+// si la hoja aparece "detenida". Todo lo demás se mantiene callado.
+const OP_CLS = {
+  borrador: 'op-e-borrador', pendiente_aprobacion: 'op-e-espera',
+  aprobada: 'op-e-ok', devuelta: 'op-e-alto', en_ejecucion: 'op-e-curso',
+  despachada: 'op-e-curso', cerrada: 'op-e-ok', anulada: 'op-e-alto'
+};
+
 function opChip(estado) {
-  const e = OP_ESTADOS[estado] || { lbl: estado || '—', cls: 'cotiz-estado-pendiente', icon: '' };
-  return '<span class="cotiz-estado-badge ' + e.cls + '">' + e.icon + ' ' + opEsc(e.lbl) + '</span>';
+  const e = OP_ESTADOS[estado] || { lbl: estado || '—' };
+  return '<span class="op-estado ' + (OP_CLS[estado] || 'op-e-borrador') + '">' + opEsc(e.lbl) + '</span>';
 }
+
+function opRenderLista() {
+  const cont = document.getElementById('op-lista-cont');
+  if (!cont) return;
+  const q = ((document.getElementById('op-search') || {}).value || '').toLowerCase().trim();
+  let l = op_filtro === 'todas' ? op_lista.slice() : op_lista.filter(o => o.estado === op_filtro);
+  if (q) l = l.filter(o => [o.numero, o.cotizacion_id, o.oc_cliente, o.cliente]
+    .some(x => String(x || '').toLowerCase().includes(q)));
+
+  // Las que esperan al jefe van primero: son las que detienen la operación.
+  l.sort((a, b) => (b.estado === 'pendiente_aprobacion') - (a.estado === 'pendiente_aprobacion')
+    || String(b.created_at || '').localeCompare(String(a.created_at || '')));
+
+  const cnt = document.getElementById('op-lista-count');
+  if (cnt) {
+    const esp = op_lista.filter(o => o.estado === 'pendiente_aprobacion').length;
+    cnt.innerHTML = l.length + ' orden' + (l.length === 1 ? '' : 'es') + ' de pedido'
+      + (esp ? ' · <b style="color:#E8A020">' + esp + ' esperando aprobación</b>' : '');
+  }
+
+  if (!l.length) {
+    cont.innerHTML = '<div class="op-vacio">'
+      + (op_lista.length
+        ? '<strong>Nada con ese filtro</strong>Prueba con otro estado o limpia la búsqueda.'
+        : '<strong>Todavía no hay órdenes de pedido</strong>Se crean desde una cotización ganada: cada OP arrastra sus ítems, dice qué sale de bodega y qué hay que comprar.')
+      + '</div>';
+    return;
+  }
+
+  cont.innerHTML = l.map(o => {
+    const items = (o._items != null ? o._items : '—');
+    return '<div class="op-fila" data-e="' + opEsc(o.estado) + '" tabindex="0" role="button"'
+      + ' onclick="opAbrir(' + o.id + ')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();opAbrir(' + o.id + ')}">'
+      + '<div class="op-fila-marca"></div>'
+      + '<div class="op-fila-id">' + opEsc(o.numero)
+      + '<small>' + opEsc((o.created_at || '').substring(0, 10)) + '</small></div>'
+      + '<div class="op-fila-cli">' + opEsc(o.cliente || 'Sin cliente')
+      + '<small>cot ' + opEsc(o.cotizacion_id || '—')
+      + (o.oc_cliente ? ' · o.c. ' + opEsc(o.oc_cliente) : '') + '</small></div>'
+      + '<div>' + opChip(o.estado)
+      + (o.estado === 'devuelta' && o.nota_devolucion ? '<span class="op-nota">' + opEsc(o.nota_devolucion) + '</span>' : '')
+      + '</div>'
+      + '<div class="op-fila-mini">' + items + ' ítems</div>'
+      + '<div class="op-fila-val">' + opMoney(o._valor || o.valor_venta || 0) + '</div>'
+      + '<div class="op-fila-mini">' + opEsc(o.created_by || '') + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function opRenderEditor() {
+  const o = op_current;
+  if (!o) return;
+
+  // El número se lee como un código estarcido: el año en oro, el consecutivo en blanco.
+  const partes = String(o.numero || '').split('-');
+  document.getElementById('op-num-grande').innerHTML = partes.length === 3
+    ? (opEsc(partes[0]) + '<em>·' + opEsc(partes[1]) + '·</em>' + opEsc(partes[2]))
+    : opEsc(o.numero || '—');
+  document.getElementById('op-editor-titulo').innerHTML = opEsc(o.numero) + ' &nbsp;' + opChip(o.estado);
+
+  const sub = [];
+  sub.push('cotización <b>' + opEsc(o.cotizacion_id || '—') + '</b>');
+  sub.push('creada por <b>' + opEsc(o.created_by || '—') + '</b> el <b>' + opEsc((o.created_at || '').substring(0, 10)) + '</b>');
+  if (o.aprobada_por) sub.push('aprobó <b>' + opEsc(o.aprobada_por) + '</b>');
+  document.getElementById('op-hoja-sub').innerHTML = sub.join('<br>');
+
+  document.getElementById('op-cliente').value = o.cliente || '';
+  document.getElementById('op-oc-cliente').value = o.oc_cliente || '';
+  document.getElementById('op-observaciones').value = o.observaciones || '';
+
+  const editable = opPuedeEditar(o);
+  ['op-cliente', 'op-oc-cliente', 'op-observaciones'].forEach(id => {
+    const e = document.getElementById(id); if (e) e.readOnly = !editable;
+  });
+
+  // El sello: lo único inclinado de la plataforma. Si está torcido, está detenido.
+  const sc = document.getElementById('op-sello-cont');
+  const SELLOS = {
+    pendiente_aprobacion: ['', 'Pendiente', 'de aprobación'],
+    devuelta: [' op-sello-neg', 'Devuelta', 'corregir y reenviar'],
+    aprobada: [' op-sello-ok', 'Aprobada', 'se puede ejecutar'],
+    cerrada: [' op-sello-ok', 'Cerrada', 'con certificados'],
+    anulada: [' op-sello-neg', 'Anulada', '']
+  };
+  const sl = SELLOS[o.estado];
+  sc.innerHTML = sl
+    ? '<div class="op-sello' + sl[0] + '">' + opEsc(sl[1]) + (sl[2] ? '<small>' + opEsc(sl[2]) + '</small>' : '') + '</div>'
+    : '';
+
+  // La barrera dice quién tiene la pelota. Nunca se disculpa, nunca es vaga.
+  const av = document.getElementById('op-editor-aviso');
+  const B = (cls, h, p) => '<div class="op-barrera ' + cls + '"><h4>' + h + '</h4><p>' + p + '</p></div>';
+  if (o.estado === 'pendiente_aprobacion') {
+    av.innerHTML = B('', 'La pelota está en gerencia',
+      opEsGerencia()
+        ? 'Apruébala completa para que compras y bodega arranquen, o devuélvela con una nota diciendo qué corregir.'
+        : 'Hasta que gerencia apruebe no se compra nada ni baja a bodega. La OP queda congelada mientras tanto.');
+  } else if (o.estado === 'devuelta') {
+    av.innerHTML = B('op-alto', 'Gerencia la devolvió',
+      opEsc(o.nota_devolucion || 'Sin nota.') + ' — corrige y vuelve a enviarla.');
+  } else if (o.estado === 'aprobada') {
+    av.innerHTML = B('op-libre', 'Aprobada, lista para ejecutar',
+      'Compras puede salir por lo de Bogotá y bodega puede alistar lo que ya está en Chía.');
+  } else if (o.estado === 'borrador') {
+    av.innerHTML = B('op-info', 'Borrador',
+      'Revisa de dónde sale cada línea y envíala a gerencia. Sin su aprobación no se compra.');
+  } else {
+    av.innerHTML = '';
+  }
+
+  const acc = document.getElementById('op-editor-acciones');
+  const b = [];
+  if (editable) b.push('<button class="btn btn-ghost" onclick="opGuardarCabecera()" style="padding:8px 14px;font-size:12px;">Guardar</button>');
+  if (o.estado === 'borrador' || o.estado === 'devuelta')
+    b.push('<button class="btn btn-primary" onclick="opEnviarAprobacion()" style="padding:8px 16px;font-size:13px;">Enviar a gerencia</button>');
+  if (o.estado === 'pendiente_aprobacion' && opEsGerencia()) {
+    b.push('<button class="btn" onclick="opAprobar()" style="background:rgba(63,191,99,.18);border:1px solid #3FBF63;color:#8ce8a6;padding:8px 16px;font-size:13px;font-weight:700;">Aprobar</button>');
+    b.push('<button class="btn" onclick="opDevolver()" style="background:rgba(224,90,74,.16);border:1px solid #e05a4a;color:#ffb3a8;padding:8px 16px;font-size:13px;font-weight:700;">Devolver</button>');
+  }
+  acc.innerHTML = b.join('');
+
+  opRenderItems();
+}
+
+function opRenderItems() {
+  const tb = document.getElementById('op-items-tbody');
+  if (!tb) return;
+  if (!op_currentItems.length) {
+    tb.innerHTML = '<div class="op-vacio"><strong>Esta OP no tiene material</strong>Vuelve a crearla desde la cotización.</div>';
+    document.getElementById('op-balanza').innerHTML = '';
+    return;
+  }
+
+  const ETQ = { BODEGA: ['op-etq-bodega', 'Bodega'], COMPRA: ['op-etq-compra', 'Comprar'], PENDIENTE: ['op-etq-sin', 'Sin definir'] };
+  tb.innerHTML = op_currentItems.map(it => {
+    const org = it.origen || 'PENDIENTE';
+    const e = ETQ[org] || ETQ.PENDIENTE;
+    let fuente;
+    if (org === 'BODEGA') {
+      fuente = it.producto_codigo
+        ? '<b style="color:#3FBF63">' + opEsc(it.producto_codigo) + '</b>'
+        : '<span style="color:var(--text-muted)">falta confirmar cuál</span>';
+    } else if (org === 'COMPRA') {
+      fuente = it.proveedor
+        ? '<b style="color:#E8A020">' + opEsc(it.proveedor) + '</b>'
+        : '<span style="color:#e05a4a">falta el proveedor</span>';
+    } else {
+      fuente = '<span style="color:#e05a4a">nadie ha decidido</span>';
+    }
+    return '<div class="op-linea" data-origen="' + opEsc(org) + '">'
+      + '<div class="op-faja"></div>'
+      + '<div class="op-item-n">' + (it.item || '') + '</div>'
+      + '<div class="op-desc">' + opEsc(it.descripcion)
+      + '<small><span class="op-etq ' + e[0] + '">' + e[1] + '</span></small></div>'
+      + '<div class="op-cant">' + (it.cantidad != null ? it.cantidad : '') + ' <u>' + opEsc(it.udm || '') + '</u></div>'
+      + '<div class="op-fuente">' + fuente + '</div>'
+      + '<div class="op-costo">' + (it.costo_unit != null ? opMoney(it.costo_unit) : '<span style="color:var(--text-muted)">—</span>') + '</div>'
+      + '</div>';
+  }).join('');
+
+  // La balanza: qué parte del valor está en la estantería y qué parte hay que
+  // ir a buscar a Bogotá. Es el dato que hoy nadie tiene antes de arrancar.
+  const val = { BODEGA: 0, COMPRA: 0, PENDIENTE: 0 };
+  const num = { BODEGA: 0, COMPRA: 0, PENDIENTE: 0 };
+  let costo = 0, venta = 0;
+  op_currentItems.forEach(it => {
+    const o = it.origen || 'PENDIENTE';
+    const v = +it.v_total || 0;
+    val[o] = (val[o] || 0) + v; num[o] = (num[o] || 0) + 1;
+    venta += v; costo += (+it.costo_unit || 0) * (+it.cantidad || 0);
+  });
+  const pc = k => venta > 0 ? (val[k] / venta * 100) : 0;
+  const util = venta > 0 ? ((venta - costo) / venta * 100) : null;
+  const pie = (color, k, txt) => num[k]
+    ? '<span style="color:' + color + '"><b>' + opMoney(val[k]) + '</b>' + num[k] + ' ' + txt + '</span>' : '';
+
+  document.getElementById('op-balanza').innerHTML =
+    '<div class="op-balanza-barra">'
+    + '<i class="op-b-bodega" style="width:' + pc('BODEGA').toFixed(2) + '%"></i>'
+    + '<i class="op-b-compra" style="width:' + pc('COMPRA').toFixed(2) + '%"></i>'
+    + '<i class="op-b-sin" style="width:' + pc('PENDIENTE').toFixed(2) + '%"></i>'
+    + '</div>'
+    + '<div class="op-balanza-pies">'
+    + pie('#3FBF63', 'BODEGA', 'ya en Chía')
+    + pie('#E8A020', 'COMPRA', 'por comprar en Bogotá')
+    + pie('#e05a4a', 'PENDIENTE', 'sin decidir')
+    + '<span style="margin-left:auto;color:var(--text-muted)"><b style="color:#E8A020">' + opMoney(venta) + '</b>valor de la orden'
+    + (util != null && opEsAdmin() ? ' · margen ' + util.toFixed(1) + '%' : '') + '</span>'
+    + '</div>';
+}
+
+async function opRenderEventos(opId) {
+  const cont = document.getElementById('op-eventos');
+  if (!cont) return;
+  try {
+    const ev = (await absFetch('op_eventos?op_id=eq.' + opId + '&order=at.desc&limit=40')) || [];
+    if (!ev.length) { cont.innerHTML = ''; return; }
+    cont.innerHTML = '<div class="op-bitacora"><h5>Por dónde ha pasado</h5>'
+      + ev.map(e => '<div class="op-ev">'
+        + '<time>' + opEsc(String(e.at || '').replace('T', ' ').substring(0, 16)) + '</time>'
+        + '<div><b>' + opEsc(e.evento) + '</b> · ' + opEsc(e.usuario || '')
+        + (e.detalle ? '<br><span>' + opEsc(e.detalle) + '</span>' : '') + '</div></div>').join('')
+      + '</div>';
+  } catch (_) { cont.innerHTML = ''; }
+}
+
 
 // ─── Carga ───────────────────────────────────────────────────────────────────
 async function opInit() {
@@ -21533,39 +22030,6 @@ function opFiltrar(estado, btn) {
   opRenderLista();
 }
 
-function opRenderLista() {
-  const tb = document.getElementById('op-lista-tbody');
-  if (!tb) return;
-  const q = ((document.getElementById('op-search') || {}).value || '').toLowerCase().trim();
-  let l = op_filtro === 'todas' ? op_lista.slice() : op_lista.filter(o => o.estado === op_filtro);
-  if (q) {
-    l = l.filter(o => [o.numero, o.cotizacion_id, o.oc_cliente, o.cliente]
-      .some(x => String(x || '').toLowerCase().includes(q)));
-  }
-  const cnt = document.getElementById('op-lista-count');
-  if (cnt) cnt.textContent = l.length + ' orden(es) de pedido' + (q ? ' que coinciden con "' + q + '"' : '');
-  if (!l.length) {
-    tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:32px">'
-      + (op_lista.length ? 'Nada con ese filtro.' : 'Todavía no hay órdenes de pedido. Crea la primera desde una cotización.')
-      + '</td></tr>';
-    return;
-  }
-  tb.innerHTML = l.map(o => {
-    const pend = o.estado === 'pendiente_aprobacion';
-    return '<tr' + (pend ? ' style="background:rgba(232,160,32,.07)"' : '') + '>'
-      + '<td style="font-weight:700;color:var(--gold);white-space:nowrap">' + opEsc(o.numero) + '</td>'
-      + '<td style="color:var(--text-muted)">' + opEsc((o.created_at || '').substring(0, 10)) + '</td>'
-      + '<td style="font-weight:600">' + opEsc(o.cliente || '—') + '</td>'
-      + '<td style="color:#90cdf4">' + opEsc(o.cotizacion_id || '—') + '</td>'
-      + '<td style="color:var(--text-muted);font-size:11.5px">' + opEsc(o.oc_cliente || '—') + '</td>'
-      + '<td style="text-align:center">' + (o._items != null ? o._items : '—') + '</td>'
-      + '<td style="color:var(--gold);font-weight:600;white-space:nowrap">' + opMoney(o._valor || o.valor_venta || 0) + '</td>'
-      + '<td>' + opChip(o.estado) + (o.estado === 'devuelta' && o.nota_devolucion
-        ? '<div style="font-size:10px;color:#f87171;margin-top:3px;max-width:210px">' + opEsc(o.nota_devolucion) + '</div>' : '') + '</td>'
-      + '<td><button class="btn-sm bd-btn-edit" onclick="opAbrir(' + o.id + ')">📂 Abrir</button></td>'
-      + '</tr>';
-  }).join('');
-}
 
 // ─── Crear desde cotización ──────────────────────────────────────────────────
 // Siempre hay cotización detrás de una OP (decisión del usuario). Por eso no
@@ -21751,131 +22215,6 @@ function opVolverLista() {
   opCargar(false);
 }
 
-function opRenderEditor() {
-  const o = op_current;
-  if (!o) return;
-  document.getElementById('op-editor-titulo').innerHTML = opEsc(o.numero) + ' &nbsp;' + opChip(o.estado);
-  document.getElementById('op-numero').value = o.numero || '';
-  document.getElementById('op-cotizacion').value = o.cotizacion_id || '';
-  document.getElementById('op-cliente').value = o.cliente || '';
-  document.getElementById('op-oc-cliente').value = o.oc_cliente || '';
-  document.getElementById('op-observaciones').value = o.observaciones || '';
-
-  const editable = opPuedeEditar(o);
-  ['op-cliente', 'op-oc-cliente', 'op-observaciones'].forEach(id => {
-    const e = document.getElementById(id); if (e) e.readOnly = !editable;
-  });
-
-  // Aviso de estado — lo primero que debe ver quien abre la OP
-  const av = document.getElementById('op-editor-aviso');
-  let html = '';
-  if (o.estado === 'pendiente_aprobacion') {
-    html = _opAviso('#E8A020', '⏳ Esperando aprobación de gerencia',
-      'Mientras esté en aprobación no se compra nada ni baja a bodega. '
-      + (opEsGerencia() ? 'Puedes aprobarla o devolverla con una nota.' : 'Solo gerencia puede aprobarla.'));
-  } else if (o.estado === 'devuelta') {
-    html = _opAviso('#f87171', '↩️ Devuelta por gerencia',
-      opEsc(o.nota_devolucion || 'Sin nota.') + ' — corrige y vuelve a enviarla a aprobación.');
-  } else if (o.estado === 'aprobada') {
-    html = _opAviso('#4ade80', '✅ Aprobada por ' + opEsc(o.aprobada_por || 'gerencia'),
-      'Ya se puede comprar y alistar.');
-  } else if (o.estado === 'borrador') {
-    html = _opAviso('#7eb3ff', '✏️ Borrador',
-      'Revisa los ítems y envíala a aprobación de gerencia para poder comprar.');
-  }
-  av.innerHTML = html;
-
-  // Acciones según estado y permisos
-  const acc = document.getElementById('op-editor-acciones');
-  const b = [];
-  if (editable) {
-    b.push('<button class="btn btn-ghost" onclick="opGuardarCabecera()" style="padding:8px 14px;font-size:12px;">💾 Guardar</button>');
-  }
-  if (o.estado === 'borrador' || o.estado === 'devuelta') {
-    b.push('<button class="btn btn-primary" onclick="opEnviarAprobacion()" style="padding:8px 16px;font-size:13px;">📤 Enviar a aprobación</button>');
-  }
-  if (o.estado === 'pendiente_aprobacion' && opEsGerencia()) {
-    b.push('<button class="btn" onclick="opAprobar()" style="background:rgba(46,170,74,.25);border:1px solid #2EAA4A;color:#86efac;padding:8px 16px;font-size:13px;font-weight:700;">✅ Aprobar</button>');
-    b.push('<button class="btn" onclick="opDevolver()" style="background:rgba(248,113,113,.2);border:1px solid #f87171;color:#fecaca;padding:8px 16px;font-size:13px;font-weight:700;">↩️ Devolver con nota</button>');
-  }
-  acc.innerHTML = b.join('');
-
-  opRenderItems();
-}
-
-function _opAviso(color, titulo, texto) {
-  return '<div style="background:' + color + '14;border-left:3px solid ' + color + ';border-radius:0 8px 8px 0;padding:11px 15px;margin-bottom:14px;">'
-    + '<div style="font-size:13px;font-weight:800;color:' + color + ';">' + titulo + '</div>'
-    + '<div style="font-size:12.5px;color:var(--text-muted);margin-top:3px;">' + texto + '</div></div>';
-}
-
-function opRenderItems() {
-  const tb = document.getElementById('op-items-tbody');
-  if (!tb) return;
-  if (!op_currentItems.length) {
-    tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">Esta OP no tiene ítems.</td></tr>';
-    return;
-  }
-  const ORIGEN = {
-    BODEGA:    ['rgba(46,170,74,.2)', '#86efac', '📦 Bodega'],
-    COMPRA:    ['rgba(232,160,32,.2)', '#fbbf24', '🛒 Comprar'],
-    PENDIENTE: ['rgba(255,255,255,.08)', '#9fb3c8', '❓ Sin definir']
-  };
-  tb.innerHTML = op_currentItems.map(it => {
-    const o = ORIGEN[it.origen] || ORIGEN.PENDIENTE;
-    const det = it.origen === 'BODEGA'
-      ? (it.producto_codigo
-          ? '<b style="color:#86efac">' + opEsc(it.producto_codigo) + '</b>'
-          : '<span style="color:var(--text-muted);font-size:11.5px">sin confirmar el producto</span>')
-      : (it.proveedor ? opEsc(it.proveedor) : '<span style="color:#f87171;font-size:11.5px">sin proveedor</span>');
-    return '<tr>'
-      + '<td style="color:var(--text-muted)">' + (it.item || '') + '</td>'
-      + '<td style="font-size:12.5px">' + opEsc(it.descripcion) + '</td>'
-      + '<td style="text-align:right;font-family:monospace">' + (it.cantidad != null ? it.cantidad : '') + ' ' + opEsc(it.udm || '') + '</td>'
-      + '<td><span style="display:inline-block;background:' + o[0] + ';color:' + o[1] + ';font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:3px;white-space:nowrap">' + o[2] + '</span></td>'
-      + '<td style="font-size:12px">' + det + '</td>'
-      + '<td style="text-align:right;font-family:monospace;white-space:nowrap">' + (it.costo_unit != null ? opMoney(it.costo_unit) : '<span style="color:var(--text-muted)">—</span>') + '</td>'
-      + '<td style="font-size:11.5px;color:var(--text-muted)">' + opEsc(it.estado || '') + '</td>'
-      + '</tr>';
-  }).join('');
-
-  // Resumen: cuánto sale de bodega, cuánto hay que comprar y qué falta definir
-  const g = { BODEGA: 0, COMPRA: 0, PENDIENTE: 0 };
-  let costo = 0, venta = 0;
-  op_currentItems.forEach(it => {
-    g[it.origen] = (g[it.origen] || 0) + 1;
-    costo += (+it.costo_unit || 0) * (+it.cantidad || 0);
-    venta += (+it.v_total || 0);
-  });
-  const util = venta > 0 ? ((venta - costo) / venta * 100) : null;
-  const res = document.getElementById('op-items-resumen');
-  if (res) {
-    res.innerHTML = '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12.5px;">'
-      + '<span style="color:var(--text-muted)">' + op_currentItems.length + ' ítems:</span>'
-      + '<b style="color:#86efac">📦 ' + (g.BODEGA || 0) + ' de bodega</b>'
-      + '<b style="color:#fbbf24">🛒 ' + (g.COMPRA || 0) + ' por comprar</b>'
-      + (g.PENDIENTE ? '<b style="color:#f87171">❓ ' + g.PENDIENTE + ' sin definir</b>' : '')
-      + '<span style="margin-left:auto;color:var(--text-muted)">Venta <b style="color:var(--gold)">' + opMoney(venta) + '</b>'
-      + ' · Costo <b>' + opMoney(costo) + '</b>'
-      + (util != null && opEsAdmin() ? ' · Utilidad <b style="color:' + (util < 10 ? '#f87171' : '#86efac') + '">' + util.toFixed(1) + '%</b>' : '')
-      + '</span></div>';
-  }
-}
-
-async function opRenderEventos(opId) {
-  const cont = document.getElementById('op-eventos');
-  if (!cont) return;
-  try {
-    const ev = (await absFetch('op_eventos?op_id=eq.' + opId + '&order=at.desc&limit=40')) || [];
-    if (!ev.length) { cont.innerHTML = ''; return; }
-    cont.innerHTML = '<div style="font-size:12px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Historial</div>'
-      + ev.map(e => '<div style="font-size:12px;color:var(--text-muted);padding:5px 0;border-bottom:1px solid var(--border);">'
-        + '<b style="color:#cbd5ff">' + opEsc(e.evento) + '</b> · ' + opEsc(e.usuario || '') + ' · '
-        + opEsc(String(e.at || '').replace('T', ' ').substring(0, 16))
-        + (e.detalle ? '<div style="color:#8fa3bd;margin-top:2px">' + opEsc(e.detalle) + '</div>' : '')
-        + '</div>').join('');
-  } catch (_) { cont.innerHTML = ''; }
-}
 
 // ─── Guardar cabecera ────────────────────────────────────────────────────────
 async function opGuardarCabecera() {
@@ -23914,9 +24253,6 @@ async function absGuardarEdicionProducto(codigo) {
 }
 
 </script>
-
-
-
 
 
 <!-- ===== MODAL BÚSQUEDA GLOBAL Ctrl+K ===== -->
