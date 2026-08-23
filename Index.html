@@ -22194,6 +22194,22 @@ function _opCotizBuscar() {
   }).join('');
 }
 
+// Cabecera de una OP nueva. Vive aparte porque la creación puede reintentarse
+// con otro número si el que dio el servidor ya estaba ocupado.
+function _opCabecera(numero, c, yo) {
+  return {
+    numero: numero,
+    cotizacion_id: c.id,
+    cliente: c.cliente || '',
+    estado: 'borrador',
+    valor_venta: (c.valorAdjudicado != null ? +c.valorAdjudicado : (+c.subtotal || 0)),
+    // Las 4 etapas heredadas de la O.C., para no perder ese lenguaje
+    stages: [{ s: 'pending', f: '', n: '' }, { s: 'pending', f: '', n: '' },
+             { s: 'pending', f: '', n: '' }, { s: 'pending', f: '', n: '' }],
+    created_by: yo, updated_by: yo
+  };
+}
+
 async function opCrearDesde(cotizId) {
   const c = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === cotizId && !x.deleted);
   if (!c) { showToast('No encontré la cotización ' + cotizId, 'error'); return; }
@@ -22201,29 +22217,31 @@ async function opCrearDesde(cotizId) {
   const ov = document.getElementById('_opCotizOv'); if (ov) ov.remove();
   showToast('Creando OP desde ' + cotizId + '…', 'info');
   try {
-    // 1) Consecutivo del SERVIDOR — atómico, imposible que dos OP compartan número
-    const num = await absFetch('rpc/op_nuevo_numero', { method: 'POST', body: JSON.stringify({}) });
-    const numero = (typeof num === 'string') ? num : String(num);
+    // 1) Consecutivo del SERVIDOR — atómico, imposible que dos OP compartan número.
+    //    Aun así se reintenta: si el contador quedara por detrás de un número que
+    //    ya existe (pasó el 23-ago al reiniciarlo durante pruebas), la base rechaza
+    //    el duplicado con 409 y aquí se pide el siguiente en vez de fallarle al
+    //    usuario. Nunca se reutiliza un número: solo se salta el ocupado.
     const yo = (currentUser && (currentUser.email || currentUser.name)) || 'system';
+    let numero = null, op = null, ultimoErr = null;
+    for (let intento = 0; intento < 5 && !op; intento++) {
+      const num = await absFetch('rpc/op_nuevo_numero', { method: 'POST', body: JSON.stringify({}) });
+      numero = (typeof num === 'string') ? num : String(num);
+      try {
+        const r = await absFetch('ops', {
+          method: 'POST', headers: { 'Prefer': 'return=representation' },
+          body: JSON.stringify(_opCabecera(numero, c, yo))
+        });
+        op = Array.isArray(r) ? r[0] : r;
+      } catch (e) {
+        ultimoErr = e;
+        if (!/409/.test(String(e && e.message))) throw e;    // otro error: que suba
+        console.warn('[op] ' + numero + ' ya existía, pido el siguiente');
+      }
+    }
+    if (!op || !op.id) throw (ultimoErr || new Error('el servidor no devolvió la OP creada'));
 
-    // 2) Cabecera. Se copian las 4 etapas heredadas de la O.C.
-    const cab = {
-      numero: numero,
-      cotizacion_id: c.id,
-      cliente: c.cliente || '',
-      estado: 'borrador',
-      valor_venta: (c.valorAdjudicado != null ? +c.valorAdjudicado : (+c.subtotal || 0)),
-      stages: [{ s: 'pending', f: '', n: '' }, { s: 'pending', f: '', n: '' },
-               { s: 'pending', f: '', n: '' }, { s: 'pending', f: '', n: '' }],
-      created_by: yo, updated_by: yo
-    };
-    const creada = await absFetch('ops', {
-      method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(cab)
-    });
-    const op = Array.isArray(creada) ? creada[0] : creada;
-    if (!op || !op.id) throw new Error('el servidor no devolvió la OP creada');
-
-    // 3) Ítems. Solo lo ADJUDICADO si la cotización registró adjudicación parcial:
+    // 2) Ítems. Solo lo ADJUDICADO si la cotización registró adjudicación parcial:
     //    lo que el cliente no pidió no tiene por qué entrar a la OP.
     const mapaAdj = (typeof _cotizAdjMapa === 'function') ? _cotizAdjMapa(c) : null;
     const filas = [];
