@@ -505,11 +505,47 @@ function _enviarEmailOP(op, tipo) {
     'https://cami902026-oss.github.io/plataforma-eyg/Index.html\n' +
     '(Ordenes de Pedido -> filtro "Por aprobar")';
   for (var i = 0; i < EMAIL_OP_APROBACION.length; i++) {
-    try { GmailApp.sendEmail(EMAIL_OP_APROBACION[i], asunto, cuerpo); } catch(e2) {
+    try { _enviarComoInfo(EMAIL_OP_APROBACION[i], asunto, cuerpo); } catch(e2) {
       Logger.log('Error enviando OP a ' + EMAIL_OP_APROBACION[i] + ': ' + e2.message);
     }
   }
   _telegramOP(op);
+}
+
+// ─── Enviar desde el correo institucional ───────────────────────────────────
+// El aviso de aprobacion sale a nombre de la empresa, no de la cuenta personal
+// que casualmente corre el script.
+//
+// Apps Script solo puede usar otra direccion si esta dada de alta como ALIAS
+// ("Enviar como") en la cuenta de Gmail que ejecuta el script. Por eso se
+// comprueba antes: si el alias no esta, se envia igual desde la cuenta de
+// siempre y se deja constancia en el log. Un aviso que sale con el remitente
+// equivocado es infinitamente mejor que un aviso que no sale.
+//
+// La direccion se puede cambiar sin tocar el codigo:
+//   Propiedades del script -> REMITENTE_OP = info@eygenergygroup.com
+function _enviarComoInfo(para, asunto, cuerpo) {
+  var quiero = 'info@eygenergygroup.com';
+  try {
+    var p = PropertiesService.getScriptProperties().getProperty('REMITENTE_OP');
+    if (p && p.indexOf('@') > 0) quiero = p.trim();
+  } catch (e0) {}
+  var alias = null;
+  try {
+    var lista = GmailApp.getAliases() || [];
+    for (var i = 0; i < lista.length; i++) {
+      if (String(lista[i]).toLowerCase() === quiero.toLowerCase()) { alias = lista[i]; break; }
+    }
+  } catch (e1) {}
+  if (alias) {
+    GmailApp.sendEmail(para, asunto, cuerpo, { from: alias, name: 'E&G Energy Group' });
+  } else {
+    Logger.log('AVISO: ' + quiero + ' no esta como alias ("Enviar como") en esta cuenta. '
+             + 'Se envia desde la cuenta por defecto. Alias disponibles: '
+             + (function(){ try { return (GmailApp.getAliases()||[]).join(', ') || '(ninguno)'; }
+                            catch(e){ return '(no se pudieron leer)'; } })());
+    GmailApp.sendEmail(para, asunto, cuerpo, { name: 'E&G Energy Group' });
+  }
 }
 
 // ─── Telegram al jefe (23-ago-2026) ─────────────────────────────────────────
