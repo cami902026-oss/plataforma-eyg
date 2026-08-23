@@ -50,9 +50,11 @@ jobs:
 
           reg = next((r for r in plan if r.get('fecha') == ds), None)
 
+          # 22-ago-2026: se retira Lina Cifuentes (ya no labora en la empresa).
+          # Si el plan de sábados llegara a traer 'lina' en una fecha vieja, el .get()
+          # devuelve correo None y simplemente no se le escribe a nadie.
           EMAILS = {
               'alexandra': ('Alexandra',       'asistente.administrativo@eygenergygroup.com'),
-              'lina':      ('Lina Cifuentes',  'auxiliarcontableadministrativo@eygenergygroup.com'),
               'sandra':    ('Sandra',          'asistente.comercial@eygenergygroup.com'),
           }
           DIRECCION = ['gerenciageneral@eygenergygroup.com',
