@@ -929,6 +929,20 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #page-op .op-ev b{ color:#cfe0ff;font-weight:600; }
 #page-op .op-ev span{ color:#8fa3bd; }
 
+
+#page-op .op-inp{
+  background:rgba(255,255,255,.05);border:1px solid transparent;border-radius:2px;
+  color:#e6edfb;font-family:var(--op-mono);font-size:11.5px;padding:4px 7px;width:100%;
+  transition:border-color .14s,background .14s;
+}
+#page-op .op-inp:hover{ border-color:var(--op-linea); }
+#page-op .op-inp:focus{ outline:none;border-color:var(--gold);background:rgba(232,160,32,.07); }
+#page-op .op-inp:disabled{ background:transparent;border-color:transparent;color:var(--text-muted);cursor:default; }
+#page-op .op-inp-num{ text-align:right; }
+#page-op select.op-inp{ cursor:pointer; }
+#page-op select.op-inp option{ background:var(--card-bg);color:#e6edfb; }
+#page-op .op-guardado{ animation:opFlash .9s ease-out; }
+@keyframes opFlash{ from{ background:rgba(63,191,99,.28); } to{ background:transparent; } }
 @media (max-width:820px){
   #page-op .op-libro-cab{ display:none; }
   #page-op .op-linea{ grid-template-columns:3px 1fr;row-gap:0; }
@@ -21901,6 +21915,18 @@ function opRenderEditor() {
     b.push('<button class="btn" onclick="opAprobar()" style="background:rgba(63,191,99,.18);border:1px solid #3FBF63;color:#8ce8a6;padding:8px 16px;font-size:13px;font-weight:700;">Aprobar</button>');
     b.push('<button class="btn" onclick="opDevolver()" style="background:rgba(224,90,74,.16);border:1px solid #e05a4a;color:#ffb3a8;padding:8px 16px;font-size:13px;font-weight:700;">Devolver</button>');
   }
+  // Deshacer una OP. Dos caminos distintos a propósito:
+  //  · sin arrancar (borrador/devuelta) → DESCARTAR: desaparece de la lista.
+  //  · ya aprobada o en marcha        → ANULAR: sigue visible, con su motivo.
+  // En ningún caso se borra de la base: `deleted` es una marca, no un DELETE.
+  // Es la lección del 26-jul, cuando "Cerrar Mes" se llevó 86 órdenes de verdad.
+  if (opPuedeDeshacer(o)) {
+    const arrancada = !['borrador', 'devuelta'].includes(o.estado);
+    b.push('<button class="btn btn-ghost" onclick="opDeshacer()" title="'
+      + (arrancada ? 'Anular la OP dejando constancia del motivo' : 'Descartar esta OP; el número queda registrado como no usado')
+      + '" style="padding:8px 14px;font-size:12px;color:#ffb3a8;margin-left:auto;">'
+      + (arrancada ? 'Anular' : 'Descartar') + '</button>');
+  }
   acc.innerHTML = b.join('');
 
   opRenderItems();
@@ -21916,32 +21942,45 @@ function opRenderItems() {
   }
 
   const ETQ = { BODEGA: ['op-etq-bodega', 'Bodega'], COMPRA: ['op-etq-compra', 'Comprar'], PENDIENTE: ['op-etq-sin', 'Sin definir'] };
+  const editable = opPuedeEditar(op_current);
+  const dis = editable ? '' : ' disabled';
   tb.innerHTML = op_currentItems.map(it => {
     const org = it.origen || 'PENDIENTE';
     const e = ETQ[org] || ETQ.PENDIENTE;
-    let fuente;
-    if (org === 'BODEGA') {
-      fuente = it.producto_codigo
-        ? '<b style="color:#3FBF63">' + opEsc(it.producto_codigo) + '</b>'
-        : '<span style="color:var(--text-muted)">falta confirmar cuál</span>';
-    } else if (org === 'COMPRA') {
-      fuente = it.proveedor
-        ? '<b style="color:#E8A020">' + opEsc(it.proveedor) + '</b>'
-        : '<span style="color:#e05a4a">falta el proveedor</span>';
-    } else {
-      fuente = '<span style="color:#e05a4a">nadie ha decidido</span>';
-    }
-    return '<div class="op-linea" data-origen="' + opEsc(org) + '">'
+    const id = it.id;
+    // De dónde sale: origen + a quién se le compra. Se guarda al salir del campo.
+    // El campo se identifica con data-* y no con argumentos entre comillas: así
+    // no hay comillas anidadas dentro del atributo onchange, que es donde se
+    // rompe el HTML generado por concatenación.
+    const attrs = c => ' data-id="' + id + '" data-campo="' + c + '" onchange="opItemCampo(this)"' + dis;
+    const selOrigen = '<select class="op-inp"' + attrs('origen') + '>'
+      + ['BODEGA', 'COMPRA', 'PENDIENTE'].map(v =>
+          '<option value="' + v + '"' + (v === org ? ' selected' : '') + '>'
+          + (v === 'BODEGA' ? 'Sale de bodega' : v === 'COMPRA' ? 'Se compra' : 'Sin definir') + '</option>').join('')
+      + '</select>';
+    const campoProv = org === 'BODEGA'
+      ? '<input class="op-inp" placeholder="código de bodega" value="' + opEsc(it.producto_codigo || '') + '"' + attrs('producto_codigo') + '>'
+      : '<input class="op-inp" placeholder="¿a quién se le compra?" value="' + opEsc(it.proveedor || '') + '"' + attrs('proveedor') + '>';
+    return '<div class="op-linea" data-origen="' + opEsc(org) + '" data-id="' + id + '">'
       + '<div class="op-faja"></div>'
       + '<div class="op-item-n">' + (it.item || '') + '</div>'
       + '<div class="op-desc">' + opEsc(it.descripcion)
       + '<small><span class="op-etq ' + e[0] + '">' + e[1] + '</span></small></div>'
-      + '<div class="op-cant">' + (it.cantidad != null ? it.cantidad : '') + ' <u>' + opEsc(it.udm || '') + '</u></div>'
-      + '<div class="op-fuente">' + fuente + '</div>'
-      + '<div class="op-costo">' + (it.costo_unit != null ? opMoney(it.costo_unit) : '<span style="color:var(--text-muted)">—</span>') + '</div>'
+      + '<div class="op-cant"><input class="op-inp op-inp-num" type="number" step="any" min="0" value="'
+      + (it.cantidad != null ? it.cantidad : '') + '"' + attrs('cantidad') + '>'
+      + '<u>' + opEsc(it.udm || '') + '</u></div>'
+      + '<div class="op-fuente" style="display:grid;gap:4px;">' + selOrigen + campoProv + '</div>'
+      + '<div class="op-costo"><input class="op-inp op-inp-num" type="number" step="any" min="0" placeholder="costo" value="'
+      + (it.costo_unit != null ? it.costo_unit : '') + '"' + attrs('costo_unit') + '></div>'
       + '</div>';
   }).join('');
 
+  _opBalanza();
+}
+
+// Balanza de origen. Vive aparte para poder refrescarla sola: repintar toda la
+// lista mientras alguien escribe un costo le arrebata el cursor.
+function _opBalanza() {
   // La balanza: qué parte del valor está en la estantería y qué parte hay que
   // ir a buscar a Bogotá. Es el dato que hoy nadie tiene antes de arrancar.
   const val = { BODEGA: 0, COMPRA: 0, PENDIENTE: 0 };
@@ -22016,8 +22055,10 @@ async function opCargar(avisar) {
     if (avisar) showToast('✅ ' + op_lista.length + ' OP cargadas', 'success');
   } catch (e) {
     console.error('[op] cargar', e);
-    const tb = document.getElementById('op-lista-tbody');
-    if (tb) tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#f87171;padding:28px">No se pudieron cargar las OP: ' + opEsc(e.message) + '</td></tr>';
+    // El error dice qué pasó y qué hacer. Nunca se queda en "Cargando…" para siempre.
+    const tb = document.getElementById('op-lista-cont');
+    if (tb) tb.innerHTML = '<div class="op-vacio"><strong style="color:#e05a4a">No se pudieron cargar las órdenes</strong>'
+      + opEsc(e.message) + '<br><br>Revisa la conexión y vuelve a intentar con 🔄 Recargar.</div>';
   } finally {
     op_cargando = false;
   }
@@ -22234,6 +22275,111 @@ async function opGuardarCabecera() {
     showToast('💾 Guardada', 'success');
   } catch (e) {
     showToast('No se pudo guardar: ' + e.message, 'error');
+  }
+}
+
+// ─── Edición línea por línea ─────────────────────────────────────────────────
+// Cada campo se guarda apenas sales de él. No hay botón de guardar por línea a
+// propósito: obligarte a recordarlo es la forma más fácil de perder el dato.
+async function opItemCampo(el) {
+  if (!el || !el.dataset) return;
+  const id = +el.dataset.id;
+  const campo = el.dataset.campo;
+  const valor = el.value;
+  const it = op_currentItems.find(x => x && x.id === id);
+  if (!it) return;
+  if (!opPuedeEditar(op_current)) { showToast('Esta OP ya no se puede editar', 'error'); return; }
+
+  let v = valor;
+  if (campo === 'cantidad' || campo === 'costo_unit') {
+    v = (String(valor).trim() === '') ? null : (+valor);
+    if (v != null && (isNaN(v) || v < 0)) { showToast('Ese valor no es un número válido', 'error'); return; }
+  } else {
+    v = String(valor || '').trim() || null;
+  }
+  if (it[campo] === v) return;                       // nada cambió, no molestamos al servidor
+
+  const antes = it[campo];
+  it[campo] = v;
+  const body = { [campo]: v, updated_by: (currentUser && (currentUser.email || currentUser.name)) || 'system' };
+
+  // Cambiar la cantidad cambia el valor de la línea; se recalcula aquí y no en
+  // dos sitios distintos, para que la balanza y el total no se separen nunca.
+  if (campo === 'cantidad') {
+    it.v_total = (+v || 0) * (+it.v_unit || 0);
+    body.v_total = it.v_total;
+  }
+  // Al pasar a bodega, el proveedor deja de aplicar (y al revés). Si no se
+  // limpia, quedan líneas que dicen "sale de bodega" con proveedor pegado.
+  if (campo === 'origen') {
+    if (v === 'BODEGA') { it.proveedor = null; body.proveedor = null; }
+    if (v === 'COMPRA') { it.producto_codigo = null; body.producto_codigo = null; }
+  }
+
+  try {
+    await absFetch('op_items?id=eq.' + id, {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(body)
+    });
+    if (el) { const f = el.closest('.op-linea') || el; f.classList.add('op-guardado'); setTimeout(() => f.classList.remove('op-guardado'), 900); }
+    if (campo === 'origen' || campo === 'cantidad') opRenderItems();   // cambia la faja y la balanza
+    else _opBalanza();
+  } catch (e) {
+    it[campo] = antes;                               // revertir: la pantalla no puede mentir
+    opRenderItems();
+    showToast('No se guardó el cambio: ' + (e && e.message || e), 'error', { durationMs: 8000 });
+  }
+}
+
+// ─── Deshacer una OP ─────────────────────────────────────────────────────────
+// Nunca se borra de la base. `deleted` es una marca; el número queda registrado
+// como no usado. Es la lección del 26-jul, cuando "Cerrar Mes" se llevó 86
+// órdenes de verdad y solo se pudieron recuperar 16.
+function opPuedeDeshacer(o) {
+  if (!o || o.estado === 'cerrada' || o.estado === 'anulada') return false;
+  if (opEsAdmin()) return true;
+  // Quien la creó puede deshacerla mientras no haya arrancado
+  const yo = ((currentUser && (currentUser.email || currentUser.name)) || '').toLowerCase();
+  return ['borrador', 'devuelta'].includes(o.estado) && String(o.created_by || '').toLowerCase() === yo;
+}
+
+async function opDeshacer() {
+  const o = op_current;
+  if (!o || !opPuedeDeshacer(o)) { showToast('No puedes deshacer esta OP', 'error'); return; }
+  const arrancada = !['borrador', 'devuelta'].includes(o.estado);
+  let motivo = '';
+  if (arrancada) {
+    motivo = prompt('Vas a ANULAR ' + o.numero + ', que ya estaba en marcha.\n\n¿Por qué? Queda registrado:', '');
+    if (motivo === null) return;
+    if (!motivo.trim()) { showToast('El motivo es obligatorio para anular', 'error'); return; }
+  } else {
+    if (!confirm('¿Descartar ' + o.numero + '?\n\nDesaparece de la lista. El número ' + o.numero
+      + ' no se reutiliza: queda registrado como no usado.')) return;
+    motivo = 'Descartada sin haber arrancado';
+  }
+  try {
+    // Si tenía stock apartado, se libera: dejar reservas huérfanas haría que el
+    // inventario mienta sobre lo disponible.
+    try {
+      await absFetch('op_reservas?op_id=eq.' + o.id + '&estado=eq.activa', {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ estado: 'liberada', liberada_at: new Date().toISOString(),
+          liberada_por: (currentUser && (currentUser.email || currentUser.name)) || 'system',
+          motivo: arrancada ? 'OP anulada' : 'OP descartada' })
+      });
+    } catch (_) { }
+
+    await opCambiarEstado(arrancada ? 'anulada' : 'borrador',
+      arrancada ? { nota_devolucion: motivo.trim() } : { deleted: true });
+    if (!arrancada) {
+      await absFetch('ops?id=eq.' + o.id, {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ deleted: true })
+      });
+    }
+    await opEvento(o.id, arrancada ? 'anulada' : 'descartada', motivo.trim());
+    showToast((arrancada ? '⛔ ' : '🗑 ') + o.numero + (arrancada ? ' anulada' : ' descartada'), 'info', { durationMs: 6000 });
+    opVolverLista();
+  } catch (e) {
+    showToast('No se pudo deshacer: ' + (e && e.message || e), 'error');
   }
 }
 
