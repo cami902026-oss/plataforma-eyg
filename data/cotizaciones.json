@@ -75150,7 +75150,7 @@
     "cliente": "CIAM",
     "contacto": "LUISA",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 793325,
@@ -75237,12 +75237,38 @@
         "precioProveedor": 35180
       }
     ],
-    "fechaGuardado": "2026-08-19T20:46:39.068Z",
+    "fechaGuardado": "2026-08-23T17:38:15.690Z",
     "fechaEnvio": "2026-08-19T20:46:39.068Z",
+    "adjudicadaAt": "2026-08-23",
+    "valorAdjudicado": 793325,
+    "itemsAdjudicados": [
+      {
+        "uid": "97639312-cfbf-4cac-ab4a-0eb5aa311edf",
+        "qty": 1
+      },
+      {
+        "uid": "7dcb0c89-8115-4faa-a82e-1dc2e264dec3",
+        "qty": 1
+      },
+      {
+        "uid": "bed68d67-72fb-41e7-ac5c-674b8c6c8c36",
+        "qty": 1
+      },
+      {
+        "uid": "5b52c088-a711-4ee8-945d-a4c18ace280a",
+        "qty": 1
+      },
+      {
+        "uid": "f470f6b3-c223-4736-8f9e-a0768106d88b",
+        "qty": 1
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-23T17:38:11.031Z",
     "createdAt": "2026-08-19T17:12:49.489Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-19T20:46:39.068Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-23T17:38:15.690Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2017",
