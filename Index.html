@@ -930,6 +930,78 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #page-op .op-ev span{ color:#8fa3bd; }
 
 
+/* ── LA VÍA ────────────────────────────────────────────────────────────────
+   No es una fila de pasos: el trabajo de la OP se BIFURCA. Tras la aprobación,
+   bodega alista y compras sale a Bogotá EN PARALELO, y solo después se juntan
+   para despachar. Dibujarlo como línea recta sería mentir sobre cómo se trabaja.
+   Las dos COMPUERTAS (aprobación y certificados) no son estaciones: son
+   barreras que cruzan la vía. Por eso se dibujan atravesadas y rayadas.       */
+#page-op .op-via{
+  background:var(--op-papel);border:1px solid var(--op-linea);
+  border-radius:3px;padding:18px 20px 14px;margin-bottom:16px;
+}
+#page-op .op-via-t{
+  font-family:var(--op-mono);font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text-muted);margin-bottom:14px;
+}
+#page-op .op-est{ display:grid;grid-template-columns:26px 1fr;gap:12px;position:relative; }
+#page-op .op-est-riel{ position:relative;display:flex;justify-content:center; }
+#page-op .op-est-riel::before{
+  content:'';position:absolute;top:0;bottom:0;width:2px;background:var(--op-linea);
+}
+#page-op .op-est:first-child .op-est-riel::before{ top:11px; }
+#page-op .op-est:last-child .op-est-riel::before{ bottom:calc(100% - 11px); }
+#page-op .op-est.op-hecho .op-est-riel::before{ background:var(--op-bodega); }
+#page-op .op-est-pt{
+  width:11px;height:11px;border-radius:50%;background:var(--op-papel);
+  border:2px solid var(--op-linea);margin-top:5px;position:relative;z-index:1;flex-shrink:0;
+}
+#page-op .op-est.op-hecho .op-est-pt{ background:var(--op-bodega);border-color:var(--op-bodega); }
+#page-op .op-est.op-aqui  .op-est-pt{
+  background:var(--gold);border-color:var(--gold);
+  box-shadow:0 0 0 4px rgba(232,160,32,.18);
+}
+#page-op .op-est-txt{ padding-bottom:15px;min-width:0; }
+#page-op .op-est-nom{
+  font-size:12.5px;color:var(--text-muted);font-weight:600;line-height:1.3;
+}
+#page-op .op-est.op-hecho .op-est-nom{ color:#cfe0ff; }
+#page-op .op-est.op-aqui .op-est-nom{ color:#fff; }
+#page-op .op-est-det{
+  font-family:var(--op-mono);font-size:10.5px;color:var(--text-muted);margin-top:3px;line-height:1.5;
+}
+
+/* La compuerta: atraviesa la vía en vez de seguirla. */
+#page-op .op-puerta{ grid-template-columns:26px 1fr; }
+#page-op .op-puerta .op-est-pt{
+  width:16px;height:7px;border-radius:1px;margin-top:7px;border:none;
+  background:repeating-linear-gradient(45deg,var(--op-compra) 0 3px,rgba(0,0,0,.35) 3px 6px);
+}
+#page-op .op-puerta.op-hecho .op-est-pt{
+  background:repeating-linear-gradient(45deg,var(--op-bodega) 0 3px,rgba(0,0,0,.35) 3px 6px);
+}
+#page-op .op-puerta .op-est-nom{
+  font-family:var(--op-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--op-compra);
+}
+#page-op .op-puerta.op-hecho .op-est-nom{ color:var(--op-bodega); }
+
+/* La bifurcación: dos rieles en paralelo, cada uno con su avance real. */
+#page-op .op-bif{ display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:2px 0 4px; }
+#page-op .op-rama{
+  border-left:2px solid var(--op-linea);padding:7px 0 7px 11px;min-width:0;
+}
+#page-op .op-rama.op-r-bodega{ border-left-color:var(--op-bodega); }
+#page-op .op-rama.op-r-compra{ border-left-color:var(--op-compra); }
+#page-op .op-rama.op-r-off{ opacity:.4; }
+#page-op .op-rama-t{ font-size:11.5px;color:#cfe0ff;font-weight:600; }
+#page-op .op-rama-n{ font-family:var(--op-mono);font-size:10.5px;color:var(--text-muted);margin-top:2px; }
+#page-op .op-rama-b{ height:4px;border-radius:2px;background:rgba(255,255,255,.07);margin-top:6px;overflow:hidden; }
+#page-op .op-rama-b i{ display:block;height:100%; }
+#page-op .op-r-bodega .op-rama-b i{ background:var(--op-bodega); }
+#page-op .op-r-compra .op-rama-b i{ background:var(--op-compra); }
+@media (max-width:640px){ #page-op .op-bif{ grid-template-columns:1fr; } }
+
 #page-op .op-inp{
   background:rgba(255,255,255,.05);border:1px solid transparent;border-radius:2px;
   color:#e6edfb;font-family:var(--op-mono);font-size:11.5px;padding:4px 7px;width:100%;
@@ -3349,6 +3421,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           </div>
 
           <div id="op-editor-aviso"></div>
+          <div class="op-via" id="op-via"></div>
 
           <div class="op-libro">
             <div class="op-libro-cab">
@@ -21930,6 +22003,7 @@ function opRenderEditor() {
   acc.innerHTML = b.join('');
 
   opRenderItems();
+  _opVia();
 }
 
 function opRenderItems() {
@@ -22278,6 +22352,88 @@ async function opGuardarCabecera() {
   }
 }
 
+// ─── LA VÍA: en qué estado está la OP ────────────────────────────────────────
+// Se dibuja como lo que es, no como una fila de pasos: la vía se BIFURCA
+// después de la aprobación (bodega alista mientras compras sale a Bogotá) y
+// vuelve a juntarse en el despacho. Las dos compuertas —aprobación y
+// certificados— atraviesan la vía en vez de seguirla, porque detienen todo.
+function _opVia() {
+  const o = op_current;
+  const cont = document.getElementById('op-via');
+  if (!cont || !o) return;
+
+  const ORDEN = ['borrador', 'pendiente_aprobacion', 'aprobada', 'en_ejecucion', 'despachada', 'cerrada'];
+  const pos = e => { const i = ORDEN.indexOf(e); return i < 0 ? 0 : i; };
+  const aqui = pos(o.estado);
+  const anulada = ['anulada'].includes(o.estado);
+  const devuelta = o.estado === 'devuelta';
+
+  // Avance real por rama: se cuenta sobre los ítems, no se inventa.
+  const its = op_currentItems || [];
+  const bod = its.filter(i => i.origen === 'BODEGA');
+  const com = its.filter(i => i.origen === 'COMPRA');
+  const listoBod = bod.filter(i => ['alistado', 'despachado'].includes(i.estado)).length;
+  const listoCom = com.filter(i => ['comprado', 'recibido', 'alistado', 'despachado'].includes(i.estado)).length;
+  const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+
+  const est = (cls, nom, det) =>
+    '<div class="op-est ' + cls + '"><div class="op-est-riel"><span class="op-est-pt"></span></div>'
+    + '<div class="op-est-txt"><div class="op-est-nom">' + nom + '</div>'
+    + (det ? '<div class="op-est-det">' + det + '</div>' : '') + '</div></div>';
+
+  const H = [];
+  H.push('<div class="op-via-t">Por dónde va</div>');
+
+  H.push(est(aqui > 0 ? 'op-hecho' : 'op-aqui', 'Creada desde ' + opEsc(o.cotizacion_id || '—'),
+    opEsc(o.created_by || '') + ' · ' + opEsc((o.created_at || '').substring(0, 10))
+    + ' · ' + its.length + ' ítems'));
+
+  // Compuerta 1
+  const apr = !!o.aprobada_at;
+  H.push('<div class="op-est op-puerta ' + (apr ? 'op-hecho' : (o.estado === 'pendiente_aprobacion' ? 'op-aqui' : '')) + '">'
+    + '<div class="op-est-riel"><span class="op-est-pt"></span></div><div class="op-est-txt">'
+    + '<div class="op-est-nom">Compuerta · aprobación de gerencia</div>'
+    + '<div class="op-est-det">'
+    + (apr ? 'aprobó ' + opEsc(o.aprobada_por || '') + ' el ' + opEsc(String(o.aprobada_at).substring(0, 10))
+       : devuelta ? '<span style="color:#e05a4a">devuelta: ' + opEsc(o.nota_devolucion || '') + '</span>'
+       : o.estado === 'pendiente_aprobacion' ? 'esperando al jefe — nada avanza hasta que apruebe'
+       : 'todavía no se ha enviado')
+    + '</div></div></div>');
+
+  // La bifurcación: solo tiene sentido dibujarla si ya se aprobó
+  const off = apr ? '' : ' op-r-off';
+  H.push('<div class="op-est"><div class="op-est-riel"><span class="op-est-pt" style="opacity:0"></span></div>'
+    + '<div class="op-est-txt" style="padding-bottom:8px"><div class="op-bif">'
+    + '<div class="op-rama op-r-bodega' + off + '"><div class="op-rama-t">📦 Bodega · Chía</div>'
+    + '<div class="op-rama-n">' + (bod.length ? listoBod + ' de ' + bod.length + ' alistados' : 'nada de bodega') + '</div>'
+    + '<div class="op-rama-b"><i style="width:' + pct(listoBod, bod.length) + '%"></i></div></div>'
+    + '<div class="op-rama op-r-compra' + off + '"><div class="op-rama-t">🛒 Compras · Bogotá</div>'
+    + '<div class="op-rama-n">' + (com.length ? listoCom + ' de ' + com.length + ' comprados' : 'nada por comprar') + '</div>'
+    + '<div class="op-rama-b"><i style="width:' + pct(listoCom, com.length) + '%"></i></div></div>'
+    + '</div></div></div>');
+
+  H.push(est(aqui >= 4 ? 'op-hecho' : (aqui === 3 ? 'op-aqui' : ''), '🚚 Despacho al sitio',
+    'las dos ramas se juntan · una sola remisión'));
+
+  // Compuerta 2
+  const cerr = o.estado === 'cerrada';
+  H.push('<div class="op-est op-puerta ' + (cerr ? 'op-hecho' : '') + '">'
+    + '<div class="op-est-riel"><span class="op-est-pt"></span></div><div class="op-est-txt">'
+    + '<div class="op-est-nom">Compuerta · certificados</div>'
+    + '<div class="op-est-det">' + (o.requiere_certificados === false
+      ? 'esta OP no los requiere' : 'sin los MTR cargados la base no deja cerrar') + '</div></div></div>');
+
+  H.push(est(cerr ? 'op-hecho' : '', '🔒 Cerrada',
+    cerr ? opEsc(String(o.cerrada_at || '').substring(0, 10)) : ''));
+
+  if (anulada) {
+    H.push('<div class="op-est"><div class="op-est-riel"><span class="op-est-pt" style="background:#e05a4a;border-color:#e05a4a"></span></div>'
+      + '<div class="op-est-txt"><div class="op-est-nom" style="color:#e05a4a">⛔ Anulada</div>'
+      + '<div class="op-est-det">' + opEsc(o.nota_devolucion || '') + '</div></div></div>');
+  }
+  cont.innerHTML = H.join('');
+}
+
 // ─── Edición línea por línea ─────────────────────────────────────────────────
 // Cada campo se guarda apenas sales de él. No hay botón de guardar por línea a
 // propósito: obligarte a recordarlo es la forma más fácil de perder el dato.
@@ -22321,7 +22477,7 @@ async function opItemCampo(el) {
       method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(body)
     });
     if (el) { const f = el.closest('.op-linea') || el; f.classList.add('op-guardado'); setTimeout(() => f.classList.remove('op-guardado'), 900); }
-    if (campo === 'origen' || campo === 'cantidad') opRenderItems();   // cambia la faja y la balanza
+    if (campo === 'origen' || campo === 'cantidad') { opRenderItems(); _opVia(); }   // cambia faja, balanza y ramas
     else _opBalanza();
   } catch (e) {
     it[campo] = antes;                               // revertir: la pantalla no puede mentir
