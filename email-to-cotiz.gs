@@ -516,17 +516,28 @@ function _enviarEmailOP(op, tipo) {
 // Reusa el bot que ya existe (@Gastosenergy_bot). El correo se lee cuando se
 // abre el correo; esto le llega al celular, que es donde de verdad esta.
 //
-// ⚠️ El TOKEN y el CHAT van en Propiedades del script, NUNCA aqui: este archivo
+// ⚠️ El TOKEN y los CHAT van en Propiedades del script, NUNCA aqui: este archivo
 //    se sube a GitHub. Configuracion del proyecto -> Propiedades del script:
-//      TELEGRAM_TOKEN     el token del bot de egresos
-//      TELEGRAM_CHAT_JEFE 8856231827
-// Si faltan, simplemente no se manda y el correo sigue saliendo igual.
+//      TELEGRAM_TOKEN       el token del bot de egresos
+//      TELEGRAM_CHAT_JEFE   8856231827            (Alberto)
+//      TELEGRAM_CHATS_OP    varios separados por coma, si se quiere sumar gente
+// Si falta el token no se manda nada y el correo sigue saliendo igual.
 function _telegramOP(op) {
   try {
     var props = PropertiesService.getScriptProperties();
     var token = props.getProperty('TELEGRAM_TOKEN');
-    var chat  = props.getProperty('TELEGRAM_CHAT_JEFE');
-    if (!token || !chat) { Logger.log('Telegram OP: falta TELEGRAM_TOKEN o TELEGRAM_CHAT_JEFE'); return; }
+    if (!token) { Logger.log('Telegram OP: falta TELEGRAM_TOKEN'); return; }
+    // Se juntan los dos ajustes y se quitan repetidos: asi se puede sumar gente
+    // sin tocar el codigo, y nadie recibe el mismo aviso dos veces.
+    var chats = [];
+    [props.getProperty('TELEGRAM_CHAT_JEFE'), props.getProperty('TELEGRAM_CHATS_OP')]
+      .forEach(function (v) {
+        String(v || '').split(',').forEach(function (x) {
+          x = x.trim();
+          if (x && chats.indexOf(x) < 0) chats.push(x);
+        });
+      });
+    if (!chats.length) { Logger.log('Telegram OP: no hay chats configurados'); return; }
     var texto =
       '*OP pendiente de tu aprobacion*\n\n' +
       '`' + (op.numero || '') + '`\n' +
@@ -536,11 +547,17 @@ function _telegramOP(op) {
       (op.creada_por ? 'La creo: ' + op.creada_por + '\n' : '') +
       '\nHasta que la apruebes no se compra nada ni baja a bodega.\n' +
       'https://cami902026-oss.github.io/plataforma-eyg/Index.html';
-    UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
-      method: 'post',
-      payload: { chat_id: chat, text: texto, parse_mode: 'Markdown', disable_web_page_preview: 'true' },
-      muteHttpExceptions: true
-    });
+    for (var i = 0; i < chats.length; i++) {
+      try {
+        UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+          method: 'post',
+          payload: { chat_id: chats[i], text: texto, parse_mode: 'Markdown', disable_web_page_preview: 'true' },
+          muteHttpExceptions: true
+        });
+      } catch (e1) {
+        Logger.log('Telegram OP: fallo el chat ' + chats[i] + ' — ' + e1.message);
+      }
+    }
   } catch (e) {
     Logger.log('Telegram OP fallo: ' + e.message);   // nunca tumba el correo
   }
