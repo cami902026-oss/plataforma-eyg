@@ -1002,6 +1002,30 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #page-op .op-r-compra .op-rama-b i{ background:var(--op-compra); }
 @media (max-width:640px){ #page-op .op-bif{ grid-template-columns:1fr; } }
 
+#page-op .op-alerta{
+  border-left:3px solid var(--op-compra);background:rgba(232,160,32,.08);
+  border-radius:0 3px 3px 0;padding:12px 16px;margin-bottom:10px;
+}
+#page-op .op-alerta.op-al-falta{ border-left-color:var(--op-sin);background:rgba(224,90,74,.08); }
+#page-op .op-alerta-t{
+  font-family:'Montserrat',sans-serif;font-weight:700;font-size:12.5px;
+  letter-spacing:.04em;color:var(--op-compra);margin-bottom:4px;
+}
+#page-op .op-al-falta .op-alerta-t{ color:var(--op-sin); }
+#page-op .op-alerta-d{ font-size:12.5px;color:#a9bcd8;line-height:1.6;max-width:74ch; }
+#page-op .op-alerta-d b{ color:#e6edfb; }
+#page-op .op-alerta-b{ display:flex;gap:8px;margin-top:10px;flex-wrap:wrap; }
+#page-op .op-alerta-b button{
+  background:rgba(63,191,99,.16);border:1px solid rgba(63,191,99,.55);color:#8ce8a6;
+  border-radius:6px;padding:6px 13px;font-size:12px;font-weight:700;cursor:pointer;
+  font-family:inherit;
+}
+#page-op .op-alerta-b button:hover{ background:rgba(63,191,99,.26); }
+#page-op .op-alerta-b button.op-b-no{
+  background:rgba(255,255,255,.05);border-color:var(--op-linea);color:var(--text-muted);
+}
+#page-op .op-alerta-b button:focus-visible{ outline:2px solid var(--gold);outline-offset:2px; }
+
 #page-op .op-plan-caja{
   background:var(--op-papel);border:1px solid var(--op-linea);
   border-left:3px solid var(--op-compra);border-radius:0 3px 3px 0;
@@ -3440,6 +3464,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 
           <div id="op-editor-aviso"></div>
           <div class="op-via" id="op-via"></div>
+          <div id="op-stock"></div>
           <div id="op-plan"></div>
 
           <div class="op-libro">
@@ -22001,6 +22026,7 @@ function opRenderEditor() {
   const acc = document.getElementById('op-editor-acciones');
   const b = [];
   if (editable) b.push('<button class="btn btn-ghost" onclick="opGuardarCabecera()" style="padding:8px 14px;font-size:12px;">Guardar</button>');
+  b.push('<button class="btn btn-ghost" onclick="opRevisarStock(false)" title="Comparar cada línea contra el inventario real" style="padding:8px 14px;font-size:12px;">Revisar inventario</button>');
   if (o.estado === 'borrador' || o.estado === 'devuelta')
     b.push('<button class="btn btn-primary" onclick="opEnviarAprobacion()" style="padding:8px 16px;font-size:13px;">Enviar a gerencia</button>');
   if (o.estado === 'pendiente_aprobacion' && opEsGerencia()) {
@@ -22024,6 +22050,7 @@ function opRenderEditor() {
   opRenderItems();
   _opVia();
   try { opPlanCargar(); } catch(_) {}
+  try { opRevisarStock(true); } catch(_) {}
 }
 
 function opRenderItems() {
@@ -22390,6 +22417,301 @@ async function opGuardarCabecera() {
   }
 }
 
+// ═══════════ CRUCE CON INVENTARIO ═══════════════════════════════════════════
+// El problema real: en la cotización se escribió "CODIFER" porque ese día no
+// había en bodega. Semanas después llega el pedido y sí hay — pero nadie lo
+// mira, y se compra lo que ya estaba. Pasa en los dos sentidos: también se
+// promete "sale de bodega" material que ya se vendió.
+//
+// El obstáculo no era buscar: es que la cotización y la bodega hablan distinto.
+// La cotización dice BRIDA; el inventario dice FLANCHE (79 productos, el ítem
+// más común de la bodega). También TE↔TEE, CAP↔TAPÓN, WN↔CUELLO. Sin traducir
+// eso, el cruce por texto falla el 100% de las veces: mandaba "BRIDA WN 3"
+// contra "PLATINA DE ORIFICIO".
+//
+// Tres capas, de la más dura a la más blanda:
+//   1. TIPO de pieza      → filtro duro (un codo jamás cruza contra una platina)
+//   2. CLASE y VARIANTE   → filtro duro POR EJES (150 ≠ 1500 · CIEGO ≠ CUELLO)
+//   3. Medidas y parecido → puntaje
+//
+// Regla de oro: es mejor decir "no encontré" que proponer la pieza equivocada.
+// Nunca cambia nada solo; propone y una persona confirma.
+// ════════════════════════════════════════════════════════════════════════════
+
+let _opStockIdx = null;      // inventario indexado
+let _opStockAt = 0;
+
+const OP_TIPOS = [
+  [['SEMICODO'], 'SEMICODO'], [['CODO'], 'CODO'],
+  [['TEE', 'TE', 'TES'], 'TEE'],
+  [['BRIDA', 'FLANCHE', 'FLANGE'], 'FLANCHE'],        // el hallazgo
+  [['PLATINA'], 'PLATINA'], [['TAPON', 'CAP'], 'TAPON'],
+  [['NIPLE', 'NIPPLE'], 'NIPLE'],
+  [['BUSHING', 'REDUCCION', 'REDUCTOR'], 'BUSHING'],
+  [['UNION', 'UNIVERSAL'], 'UNION'],
+  [['VALVULA', 'VALV', 'VAL'], 'VALVULA'],
+  [['ESPARRAGO', 'STUD'], 'ESPARRAGO'],
+  [['EMPAQUE', 'ESPIROMETALICO', 'FLEXITALICO'], 'EMPAQUE'],
+  [['THREADOLET', 'WELDOLET', 'SOCKOLET', 'OLET'], 'OLET'],
+  [['TUBO', 'TUBERIA'], 'TUBO'], [['LAMINA'], 'LAMINA'], [['BROCA'], 'BROCA'],
+  [['CABLE'], 'CABLE'], [['COPA'], 'COPA'], [['CONDULETA'], 'CONDULETA'],
+  [['CONECTOR'], 'CONECTOR'], [['TUERCA'], 'TUERCA'], [['MANOMETRO'], 'MANOMETRO']
+];
+
+// Los ejes son la clave: dos piezas solo chocan si difieren DENTRO del mismo
+// eje. Un flanche CIEGO y uno de CUELLO chocan (terminación) aunque ambos sean
+// RTJ. Comparar todos los atributos juntos dejaba pasar la pieza equivocada.
+const OP_EJES = {
+  terminacion: [[['CIEGO', 'CIEGA', 'BLIND'], 'CIEGO'], [['CUELLO', 'WN'], 'CUELLO'],
+                [['SLIPON', 'SO'], 'SLIPON'], [['SOCKET', 'SW', 'SOCKETWELD'], 'SOCKET']],
+  cara:        [[['RTJ'], 'RTJ'], [['RF'], 'RF']],
+  forma:       [[['REDU', 'REDUCIDA', 'REDUCTORA'], 'REDUCIDA']],
+  union:       [[['ROSCADO', 'ROSCADA', 'NPT', 'THRD'], 'ROSCADO'], [['BW', 'PS'], 'SOLDADO']]
+};
+const OP_MATERIAL = [105, 234, 106, 193, 194, 304, 316, 321];
+const OP_PRESION = [3000, 6000, 9000];
+const OP_CLASE = [150, 300, 400, 600, 900, 1500, 2500];
+
+function _opBase(s) {
+  s = String(s == null ? '' : s).toUpperCase();
+  s = s.normalize ? s.normalize('NFD').replace(/[̀-ͯ]/g, '') : s;
+  s = s.replace(/["”“’#×]/g, ' ').replace(/-/g, ' ');
+  return s.replace(/[^A-Z0-9/. ]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function _opPal(s) { return new Set(_opBase(s).replace(/\//g, ' ').split(' ').filter(Boolean)); }
+
+function _opTipo(s) {
+  const p = _opPal(s);
+  for (const [formas, canon] of OP_TIPOS) if (formas.some(f => p.has(f))) return canon;
+  return null;
+}
+function _opVariante(s) {
+  const p = _opPal(s), out = {};
+  for (const eje in OP_EJES) {
+    out[eje] = new Set();
+    for (const [formas, canon] of OP_EJES[eje]) if (formas.some(f => p.has(f))) out[eje].add(canon);
+  }
+  return out;
+}
+// Separa MEDIDAS (pulgadas) de ESPECIFICACIONES (A-105, 3000#, clase 150).
+// Y lee "900/1500L" como rango de clase, no como la fracción 0,6.
+function _opNums(s) {
+  let b = _opBase(s);
+  const clases = new Set(), medidas = new Set(), vals = new Set();
+  b.replace(/(\d{3,4})\s*\/\s*(\d{3,4})/g, (m, a, c) => {
+    [a, c].forEach(v => { if (OP_CLASE.includes(+v)) clases.add(+v); }); return ' ';
+  });
+  b = b.replace(/(\d{3,4})\s*\/\s*(\d{3,4})/g, ' ');
+  b = b.replace(/(\d+)\s+(\d+)\s*\/\s*(\d+)/g, (m, e, n, d) => { vals.add(Math.round((+e + n / d) * 1000) / 1000); return ' '; });
+  b = b.replace(/(\d+)\s*\/\s*(\d+)/g, (m, n, d) => { vals.add(Math.round((n / d) * 1000) / 1000); return ' '; });
+  (b.match(/\d+(?:\.\d+)?/g) || []).forEach(v => vals.add(Math.round(+v * 1000) / 1000));
+  vals.forEach(v => {
+    if (OP_CLASE.includes(v)) clases.add(v);
+    else if (OP_MATERIAL.includes(v) || OP_PRESION.includes(v) || v > 60) { /* especificación */ }
+    else medidas.add(v);
+  });
+  return { medidas, clases };
+}
+function _opSeq(a, b) {                       // parecido de texto, sin librerías
+  a = _opBase(a); b = _opBase(b);
+  if (!a || !b) return 0;
+  const ga = new Set(), gb = new Set();
+  for (let i = 0; i < a.length - 1; i++) ga.add(a.substr(i, 2));
+  for (let i = 0; i < b.length - 1; i++) gb.add(b.substr(i, 2));
+  let inter = 0; ga.forEach(x => { if (gb.has(x)) inter++; });
+  return (2 * inter) / (ga.size + gb.size || 1);
+}
+
+// El inventario se indexa una vez y se reusa 10 minutos: cruzar 40 líneas no
+// puede costar 40 consultas.
+async function _opStockIndice(forzar) {
+  if (_opStockIdx && !forzar && (Date.now() - _opStockAt) < 600000) return _opStockIdx;
+  const prods = (await absFetch('productos?activo=not.eq.false&select=codigo,descripcion,stock_actual&limit=2000')) || [];
+  _opStockIdx = prods.map(p => {
+    const n = _opNums(p.descripcion);
+    return { p: p, tipo: _opTipo(p.descripcion), va: _opVariante(p.descripcion),
+             med: n.medidas, cls: n.clases, base: _opBase(p.descripcion) };
+  });
+  _opStockAt = Date.now();
+  return _opStockIdx;
+}
+
+function _opBuscarStock(desc, idx) {
+  const td = _opTipo(desc), vd = _opVariante(desc);
+  const nd = _opNums(desc), bd = _opBase(desc);
+  const out = [];
+  for (const e of idx) {
+    if (td && e.tipo !== td) continue;                         // otro tipo de pieza
+    if (nd.clases.size && e.cls.size) {                        // 150 ≠ 1500
+      let hay = false; nd.clases.forEach(c => { if (e.cls.has(c)) hay = true; });
+      if (!hay) continue;
+    }
+    let choca = false;
+    for (const eje in OP_EJES) {                               // CIEGO ≠ CUELLO
+      const a = vd[eje], b = e.va[eje];
+      if (eje === 'forma') {
+        if (a.has('REDUCIDA') !== b.has('REDUCIDA')) { choca = true; break; }
+      } else if (a.size && b.size) {
+        let comun = false; a.forEach(x => { if (b.has(x)) comun = true; });
+        if (!comun) { choca = true; break; }
+      }
+    }
+    if (choca) continue;
+    let inter = 0; nd.medidas.forEach(m => { if (e.med.has(m)) inter++; });
+    const cob = nd.medidas.size ? inter / nd.medidas.size : 0;
+    let sobra = 0; e.med.forEach(m => { if (!nd.medidas.has(m)) sobra++; });
+    let varok = 0;
+    for (const eje in OP_EJES) {
+      const a = vd[eje], b = e.va[eje];
+      if (a.size && b.size) { a.forEach(x => { if (b.has(x)) varok = 1; }); }
+    }
+    const score = 0.50 * cob + 0.22 * _opSeq(bd, e.base) + 0.18 * varok + 0.10 * (1 / (1 + sobra));
+    out.push({ score: score, prod: e.p });
+  }
+  out.sort((a, b) => b.score - a.score);
+  return out.slice(0, 3);
+}
+
+// ─── Revisión de una OP entera ───────────────────────────────────────────────
+// Devuelve solo lo que MERECE atención: lo que se iba a comprar y sí hay, y lo
+// que se prometió de bodega y ya no está.
+async function opRevisarStock(silencioso) {
+  if (!op_current || !op_currentItems.length) return [];
+  let idx;
+  try { idx = await _opStockIndice(false); }
+  catch (e) { if (!silencioso) showToast('No se pudo leer el inventario: ' + e.message, 'error'); return []; }
+
+  const avisos = [];
+  for (const it of op_currentItems) {
+    const cand = _opBuscarStock(it.descripcion, idx);
+    const mejor = cand[0];
+    const qty = +it.cantidad || 0;
+
+    if (it.origen === 'COMPRA') {
+      // ¿Se iba a comprar algo que sí hay?
+      if (mejor && mejor.score >= 0.62) {
+        const hay = +mejor.prod.stock_actual || 0;
+        if (hay > 0) avisos.push({ it: it, tipo: 'hay', prod: mejor.prod, hay: hay,
+          alcanza: hay >= qty, score: mejor.score });
+      }
+    } else if (it.origen === 'BODEGA') {
+      // ¿Se prometió de bodega algo que ya no está?
+      let hay = null;
+      if (it.producto_codigo) {
+        const e = idx.find(x => x.p.codigo === it.producto_codigo);
+        hay = e ? (+e.p.stock_actual || 0) : null;
+      } else if (mejor && mejor.score >= 0.62) hay = +mejor.prod.stock_actual || 0;
+      if (hay != null && hay < qty) avisos.push({ it: it, tipo: 'falta', hay: hay,
+        prod: (mejor && mejor.prod) || null });
+    }
+  }
+  op_current._avisosStock = avisos;
+  _opPintarAvisosStock();
+  if (!silencioso && !avisos.length) showToast('Revisado: nada que corregir contra el inventario', 'success');
+  return avisos;
+}
+
+function _opPintarAvisosStock() {
+  const cont = document.getElementById('op-stock');
+  if (!cont || !op_current) return;
+  const av = op_current._avisosStock || [];
+  if (!av.length) { cont.innerHTML = ''; return; }
+  const editable = opPuedeEditar(op_current);
+
+  cont.innerHTML = av.map((a, n) => {
+    if (a.tipo === 'hay') {
+      const parcial = !a.alcanza;
+      return '<div class="op-alerta op-al-hay">'
+        + '<div class="op-alerta-t">' + (parcial ? 'Hay parte en bodega' : 'Esto ya está en bodega') + '</div>'
+        + '<div class="op-alerta-d">Ibas a comprar <b>' + opEsc(a.it.descripcion) + '</b>'
+        + (a.it.proveedor ? ' a <b>' + opEsc(a.it.proveedor) + '</b>' : '') + '.<br>'
+        + 'En bodega: <b>' + opEsc(a.prod.codigo) + ' · ' + opEsc(a.prod.descripcion) + '</b> — quedan <b>'
+        + a.hay + '</b>' + (parcial ? ' y necesitas ' + (+a.it.cantidad || 0) : '') + '.</div>'
+        + (editable ? '<div class="op-alerta-b">'
+            + '<button onclick="opTomarDeBodega(' + a.it.id + ',\'' + opEsc(a.prod.codigo) + '\',' + a.hay + ')">'
+            + (parcial ? 'Tomar ' + a.hay + ' de bodega y comprar el resto' : 'Tomar de bodega') + '</button>'
+            + '<button class="op-b-no" onclick="opIgnorarAviso(' + n + ')">Comprar igual</button>'
+            + '</div>' : '')
+        + '</div>';
+    }
+    return '<div class="op-alerta op-al-falta">'
+      + '<div class="op-alerta-t">Ya no hay en bodega</div>'
+      + '<div class="op-alerta-d"><b>' + opEsc(a.it.descripcion) + '</b> está marcado como que sale de bodega, '
+      + 'pero quedan <b>' + a.hay + '</b> y se necesitan <b>' + (+a.it.cantidad || 0) + '</b>.</div>'
+      + (editable ? '<div class="op-alerta-b">'
+          + '<button onclick="opItemCampoDirecto(' + a.it.id + ',\'origen\',\'COMPRA\')">Pasar a comprar</button>'
+          + '<button class="op-b-no" onclick="opIgnorarAviso(' + n + ')">Dejar así</button>'
+          + '</div>' : '')
+      + '</div>';
+  }).join('');
+}
+
+function opIgnorarAviso(n) {
+  if (!op_current || !op_current._avisosStock) return;
+  op_current._avisosStock.splice(n, 1);
+  _opPintarAvisosStock();
+}
+
+// Cambiar un campo sin tener que pasar por el input de la línea.
+async function opItemCampoDirecto(id, campo, valor) {
+  const el = document.querySelector('.op-linea[data-id="' + id + '"] [data-campo="' + campo + '"]');
+  if (el) { el.value = valor; await opItemCampo(el); }
+  else {
+    const falso = { dataset: { id: String(id), campo: campo }, value: valor };
+    await opItemCampo(falso);
+  }
+  await opRevisarStock(true);
+}
+
+// Tomar de bodega. Si no alcanza, se PARTE la línea: lo que hay sale de bodega
+// y el resto se compra. Es el mismo lenguaje del ✂️ del Plan de Compras.
+async function opTomarDeBodega(id, codigo, hay) {
+  const it = op_currentItems.find(x => x && x.id === id);
+  if (!it) return;
+  const qty = +it.cantidad || 0;
+  const yo = (currentUser && (currentUser.email || currentUser.name)) || 'system';
+  try {
+    if (hay >= qty) {
+      await absFetch('op_items?id=eq.' + id, {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ origen: 'BODEGA', producto_codigo: codigo, proveedor: null,
+          confirmado_por: yo, confirmado_at: new Date().toISOString(), updated_by: yo })
+      });
+      Object.assign(it, { origen: 'BODEGA', producto_codigo: codigo, proveedor: null });
+      showToast('Sale de bodega: ' + codigo, 'success');
+    } else {
+      // Parte de bodega, resto a comprar
+      const resto = qty - hay;
+      await absFetch('op_items?id=eq.' + id, {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ origen: 'BODEGA', producto_codigo: codigo, proveedor: null,
+          cantidad: hay, v_total: hay * (+it.v_unit || 0),
+          confirmado_por: yo, confirmado_at: new Date().toISOString(), updated_by: yo })
+      });
+      Object.assign(it, { origen: 'BODEGA', producto_codigo: codigo, proveedor: null,
+        cantidad: hay, v_total: hay * (+it.v_unit || 0) });
+      const nueva = {
+        op_id: op_current.id, uid: (it.uid || 'x') + '-r' + Date.now().toString().slice(-5),
+        item: (+it.item || 0), descripcion: it.descripcion, udm: it.udm,
+        cantidad: resto, v_unit: it.v_unit, v_total: resto * (+it.v_unit || 0),
+        origen: 'COMPRA', proveedor: it.proveedor || null, costo_unit: it.costo_unit,
+        estado: 'pendiente', cotizacion_item_uid: it.cotizacion_item_uid || null,
+        observaciones: 'Resto de la línea ' + (it.item || '') + ': en bodega solo había ' + hay,
+        updated_by: yo
+      };
+      const r = await absFetch('op_items', { method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(nueva) });
+      const creada = Array.isArray(r) ? r[0] : r;
+      if (creada) op_currentItems.push(creada);
+      showToast('Partida: ' + hay + ' de bodega y ' + resto + ' por comprar', 'success', { durationMs: 8000 });
+    }
+    await opEvento(op_current.id, 'stock_confirmado', it.descripcion + ' → bodega ' + codigo);
+    opRenderItems(); _opVia();
+    await opRevisarStock(true);
+  } catch (e) {
+    showToast('No se pudo aplicar: ' + (e && e.message || e), 'error');
+  }
+}
+
 // ═══════════ OP ⇄ PLAN DE COMPRAS ═══════════════════════════════════════════
 // El Plan de Compras ya es un módulo maduro: reparte líneas entre proveedores,
 // calcula IVA y retefuente, emite la O.C. E6-FC-01, controla pagos y saca la
@@ -22726,6 +23048,24 @@ async function opEnviarAprobacion() {
 
 async function opAprobar() {
   if (!op_current || !opEsGerencia()) { showToast('Solo gerencia aprueba', 'error'); return; }
+
+  // Último chequeo contra el inventario ANTES de dar el visto bueno. Entre que
+  // se arma la OP y el jefe la aprueba pueden pasar días, y el stock se mueve:
+  // no puede aprobar comprar algo que llegó ayer.
+  let av = [];
+  try { av = await opRevisarStock(true); } catch (_) { }
+  if (av.length) {
+    const hay = av.filter(a => a.tipo === 'hay').length;
+    const falta = av.filter(a => a.tipo === 'falta').length;
+    const detalle = (hay ? '· ' + hay + ' ítem(s) que se iban a comprar SÍ están en bodega\n' : '')
+                  + (falta ? '· ' + falta + ' ítem(s) marcados de bodega ya NO alcanzan\n' : '');
+    if (!confirm('El inventario cambió desde que se armó esta OP:\n\n' + detalle
+      + '\nLos avisos están arriba, con el botón para corregirlos.\n\n¿Aprobar de todos modos?')) {
+      showToast('Aprobación detenida — revisa los avisos de inventario', 'info', { durationMs: 8000 });
+      return;
+    }
+  }
+
   if (!confirm('¿Aprobar ' + op_current.numero + ' completa?\n\nDespués de esto se puede comprar y alistar.')) return;
   try {
     await opCambiarEstado('aprobada', {
