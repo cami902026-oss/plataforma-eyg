@@ -444,6 +444,12 @@ function doPost(e) {
       _enviarEmailCotizacion(params.cotizacion, params.tipo || 'creada');
       return _json({ ok: true });
     }
+    // OP pendiente de aprobacion (23-ago-2026). La plataforma ya manda este POST;
+    // sin este bloque el aviso se perdia en silencio y el jefe no se enteraba.
+    if (action === 'notificar_op') {
+      _enviarEmailOP(params.op || {}, params.tipo || 'pendiente_aprobacion');
+      return _json({ ok: true });
+    }
     return _json({ ok: false, error: 'Accion desconocida' });
   } catch(ex) {
     return _json({ ok: false, error: ex.message });
@@ -471,6 +477,36 @@ function _enviarEmailSolicitud(sol) {
   for (var i = 0; i < EMAIL_NOTIF.length; i++) {
     try { GmailApp.sendEmail(EMAIL_NOTIF[i], asunto, cuerpo); } catch(e2) {
       Logger.log('Error enviando a ' + EMAIL_NOTIF[i] + ': ' + e2.message);
+    }
+  }
+}
+
+// ─── Aviso de OP pendiente de aprobacion (23-ago-2026) ──────────────────────
+// Va SOLO a gerencia con copia a Andrea: es una decision del jefe, no un
+// boletin para todo el equipo. El asunto arranca con la accion que se espera,
+// para que se entienda desde la lista del correo sin abrirlo.
+var EMAIL_OP_APROBACION = [
+  'gerenciageneral@eygenergygroup.com',
+  'andrea.bernal@eygenergygroup.com'
+];
+
+function _enviarEmailOP(op, tipo) {
+  var asunto = 'APROBAR OP ' + (op.numero || '') + ' - ' + (op.cliente || 'sin cliente');
+  var cuerpo =
+    'Hay una Orden de Pedido esperando tu aprobacion.\n\n' +
+    'OP: ' + (op.numero || '') + '\n' +
+    'Cliente: ' + (op.cliente || '') + '\n' +
+    'Cotizacion: ' + (op.cotizacion || '') + '\n' +
+    (op.oc_cliente ? 'O.C. del cliente: ' + op.oc_cliente + '\n' : '') +
+    (op.items ? 'Items: ' + op.items + '\n' : '') +
+    (op.creada_por ? 'La creo: ' + op.creada_por + '\n' : '') +
+    '\nHasta que la apruebes no se compra nada ni baja a bodega.\n\n' +
+    'Abrir en la plataforma:\n' +
+    'https://cami902026-oss.github.io/plataforma-eyg/Index.html\n' +
+    '(Ordenes de Pedido -> filtro "Por aprobar")';
+  for (var i = 0; i < EMAIL_OP_APROBACION.length; i++) {
+    try { GmailApp.sendEmail(EMAIL_OP_APROBACION[i], asunto, cuerpo); } catch(e2) {
+      Logger.log('Error enviando OP a ' + EMAIL_OP_APROBACION[i] + ': ' + e2.message);
     }
   }
 }

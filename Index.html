@@ -21962,10 +21962,10 @@ function opRenderEditor() {
   const av = document.getElementById('op-editor-aviso');
   const B = (cls, h, p) => '<div class="op-barrera ' + cls + '"><h4>' + h + '</h4><p>' + p + '</p></div>';
   if (o.estado === 'pendiente_aprobacion') {
-    av.innerHTML = B('', 'La pelota está en gerencia',
+    av.innerHTML = B('', 'Le toca a gerencia',
       opEsGerencia()
         ? 'Apruébala completa para que compras y bodega arranquen, o devuélvela con una nota diciendo qué corregir.'
-        : 'Hasta que gerencia apruebe no se compra nada ni baja a bodega. La OP queda congelada mientras tanto.');
+        : 'Ya quedó enviada. Hasta que Alberto la apruebe no se compra nada ni baja a bodega, y nadie más la puede editar.');
   } else if (o.estado === 'devuelta') {
     av.innerHTML = B('op-alto', 'Gerencia la devolvió',
       opEsc(o.nota_devolucion || 'Sin nota.') + ' — corrige y vuelve a enviarla.');
@@ -22410,12 +22410,12 @@ function _opVia() {
   const apr = !!o.aprobada_at;
   H.push('<div class="op-est op-puerta ' + (apr ? 'op-hecho' : (o.estado === 'pendiente_aprobacion' ? 'op-aqui' : '')) + '">'
     + '<div class="op-est-riel"><span class="op-est-pt"></span></div><div class="op-est-txt">'
-    + '<div class="op-est-nom">Compuerta · aprobación de gerencia</div>'
+    + '<div class="op-est-nom">Tiene que aprobarla gerencia</div>'
     + '<div class="op-est-det">'
     + (apr ? 'aprobó ' + opEsc(o.aprobada_por || '') + ' el ' + opEsc(String(o.aprobada_at).substring(0, 10))
        : devuelta ? '<span style="color:#e05a4a">devuelta: ' + opEsc(o.nota_devolucion || '') + '</span>'
-       : o.estado === 'pendiente_aprobacion' ? 'esperando al jefe — nada avanza hasta que apruebe'
-       : 'todavía no se ha enviado')
+       : o.estado === 'pendiente_aprobacion' ? 'esperando a Alberto — nada avanza hasta que él apruebe'
+       : 'todavía no se ha enviado a aprobación')
     + '</div></div></div>');
 
   // La bifurcación: solo tiene sentido dibujarla si ya se aprobó
@@ -22437,9 +22437,9 @@ function _opVia() {
   const cerr = o.estado === 'cerrada';
   H.push('<div class="op-est op-puerta ' + (cerr ? 'op-hecho' : '') + '">'
     + '<div class="op-est-riel"><span class="op-est-pt"></span></div><div class="op-est-txt">'
-    + '<div class="op-est-nom">Compuerta · certificados</div>'
+    + '<div class="op-est-nom">Certificados de calidad (MTR)</div>'
     + '<div class="op-est-det">' + (o.requiere_certificados === false
-      ? 'esta OP no los requiere' : 'sin los MTR cargados la base no deja cerrar') + '</div></div></div>');
+      ? 'esta OP no los requiere' : 'hay que subirlos antes de poder cerrar la OP') + '</div></div></div>');
 
   H.push(est(cerr ? 'op-hecho' : '', '🔒 Cerrada',
     cerr ? opEsc(String(o.cerrada_at || '').substring(0, 10)) : ''));
