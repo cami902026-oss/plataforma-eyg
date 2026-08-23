@@ -1002,6 +1002,24 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #page-op .op-r-compra .op-rama-b i{ background:var(--op-compra); }
 @media (max-width:640px){ #page-op .op-bif{ grid-template-columns:1fr; } }
 
+#page-op .op-plan-caja{
+  background:var(--op-papel);border:1px solid var(--op-linea);
+  border-left:3px solid var(--op-compra);border-radius:0 3px 3px 0;
+  padding:15px 18px;margin-bottom:16px;
+}
+#page-op .op-plan-t{
+  font-family:var(--op-mono);font-size:10px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;
+}
+#page-op .op-plan-d{ font-size:12.5px;color:#a9bcd8;line-height:1.55;max-width:70ch; }
+#page-op .op-plan-g{ display:flex;gap:26px;flex-wrap:wrap;margin-top:4px; }
+#page-op .op-plan-g > div{ min-width:0; }
+#page-op .op-plan-g span{
+  display:block;font-family:var(--op-mono);font-size:9.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--text-muted);margin-bottom:2px;
+}
+#page-op .op-plan-g b{ font-family:var(--op-mono);font-size:14px;color:#e6edfb;font-weight:600; }
+
 #page-op .op-inp{
   background:rgba(255,255,255,.05);border:1px solid transparent;border-radius:2px;
   color:#e6edfb;font-family:var(--op-mono);font-size:11.5px;padding:4px 7px;width:100%;
@@ -3422,6 +3440,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 
           <div id="op-editor-aviso"></div>
           <div class="op-via" id="op-via"></div>
+          <div id="op-plan"></div>
 
           <div class="op-libro">
             <div class="op-libro-cab">
@@ -22004,6 +22023,7 @@ function opRenderEditor() {
 
   opRenderItems();
   _opVia();
+  try { opPlanCargar(); } catch(_) {}
 }
 
 function opRenderItems() {
@@ -22368,6 +22388,134 @@ async function opGuardarCabecera() {
   } catch (e) {
     showToast('No se pudo guardar: ' + e.message, 'error');
   }
+}
+
+// ═══════════ OP ⇄ PLAN DE COMPRAS ═══════════════════════════════════════════
+// El Plan de Compras ya es un módulo maduro: reparte líneas entre proveedores,
+// calcula IVA y retefuente, emite la O.C. E6-FC-01, controla pagos y saca la
+// utilidad. Sería un error hacer uno paralelo dentro de la OP.
+//
+// Así que la OP no compra: GENERA su plan con las líneas de COMPRA y lo deja en
+// el módulo donde compras (Alexandra y Andrea) ya trabaja. El plan lleva el
+// número de la OP como centro de costos, y la OP muestra de vuelta lo que de
+// verdad se va a pagar — que es lo que después aprueba gerencia.
+// ════════════════════════════════════════════════════════════════════════════
+
+// El plan de una OP se identifica con su propio número: no hay forma de
+// confundirlo ni de que dos OP peleen por el mismo centro de costos.
+// CC-OP-2026-0005. Se conserva el número tal cual, con sus guiones: es lo que
+// permite que el Plan de Compras reconozca de vuelta a qué OP pertenece.
+function _opCC(op) { return 'CC-' + String((op && op.numero) || '').trim(); }
+
+async function opPlanCargar() {
+  const cont = document.getElementById('op-plan');
+  if (!cont || !op_current) return;
+  const cc = _opCC(op_current);
+  let plan = [];
+  try {
+    plan = (await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc)
+      + '&select=item,descripcion,cantidad,proveedor,costo_unit,comprado,recibida&order=item.asc&limit=500')) || [];
+  } catch (_) { cont.innerHTML = ''; return; }
+
+  const compra = (op_currentItems || []).filter(i => i.origen === 'COMPRA');
+  op_current._plan = plan;
+
+  if (!plan.length) {
+    if (!compra.length) { cont.innerHTML = ''; return; }
+    cont.innerHTML = '<div class="op-plan-caja">'
+      + '<div class="op-plan-t">Plan de compras</div>'
+      + '<div class="op-plan-d">' + compra.length + ' línea(s) por comprar. Genera el plan para que '
+      + 'compras pida precios, compare proveedores y emita las órdenes.</div>'
+      + (opPuedeGenerarPlan()
+          ? '<button class="btn btn-primary" onclick="opGenerarPlan()" style="margin-top:10px;padding:8px 16px;font-size:13px;">Generar plan de compras</button>'
+          : '<div class="op-plan-d" style="margin-top:8px;">Lo genera compras (Alexandra o Andrea) o gerencia.</div>')
+      + '</div>';
+    return;
+  }
+
+  // Ya existe: se muestra lo que de verdad se va a pagar, contra lo que se cotizó.
+  const costoPlan = plan.reduce((a, r) => a + (+r.costo_unit || 0) * (+r.cantidad || 0), 0);
+  const costoCot = compra.reduce((a, i) => a + (+i.costo_unit || 0) * (+i.cantidad || 0), 0);
+  const dif = costoPlan - costoCot;
+  const comprados = plan.filter(r => r.comprado).length;
+  const provs = [...new Set(plan.map(r => (r.proveedor || '').trim()).filter(Boolean))];
+
+  cont.innerHTML = '<div class="op-plan-caja">'
+    + '<div class="op-plan-t">Plan de compras · <b style="color:var(--gold)">' + opEsc(cc) + '</b></div>'
+    + '<div class="op-plan-g">'
+    + '<div><span>Líneas</span><b>' + plan.length + '</b></div>'
+    + '<div><span>Proveedores</span><b>' + provs.length + '</b></div>'
+    + '<div><span>Ya comprado</span><b>' + comprados + ' de ' + plan.length + '</b></div>'
+    + '<div><span>Costo del plan</span><b>' + opMoney(costoPlan) + '</b></div>'
+    + (costoCot > 0 && Math.abs(dif) > 0.5
+        ? '<div><span>Contra lo cotizado</span><b style="color:' + (dif > 0 ? '#e05a4a' : '#3FBF63') + '">'
+          + (dif > 0 ? '+' : '−') + opMoney(Math.abs(dif)) + '</b></div>' : '')
+    + '</div>'
+    + (dif > 0.5 ? '<div class="op-plan-d" style="color:#e05a4a;margin-top:8px;">'
+        + 'Comprar sale ' + opMoney(dif) + ' más caro que lo que se cotizó. Gerencia lo verá al aprobar.</div>' : '')
+    + '<button class="btn btn-ghost" onclick="opAbrirPlan()" style="margin-top:10px;padding:7px 14px;font-size:12px;">Abrir el plan</button>'
+    + '</div>';
+}
+
+// Genera el plan lo mismo que compras y gerencia; el comercial no compra.
+function opPuedeGenerarPlan() {
+  const e = (currentUser && (currentUser.email || '')).toLowerCase();
+  return ['alexandra', 'andrea', 'alberto'].includes(e);
+}
+
+async function opGenerarPlan() {
+  const op = op_current;
+  if (!op) return;
+  if (!opPuedeGenerarPlan()) { showToast('El plan lo genera compras (Alexandra o Andrea) o gerencia', 'error'); return; }
+  const compra = (op_currentItems || []).filter(i => i.origen === 'COMPRA');
+  if (!compra.length) { showToast('Esta OP no tiene líneas por comprar', 'info'); return; }
+  const cc = _opCC(op);
+  try {
+    // Candado: si ese centro de costos ya existe, no se pisa en silencio.
+    // Es el mismo cuidado que ya tiene el módulo de Plan de Compras.
+    const ex = await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc) + '&select=item&limit=1');
+    if (ex && ex.length) { showToast('El plan ' + cc + ' ya existe. Ábrelo en vez de crearlo otra vez.', 'error'); return; }
+
+    const rows = compra.map((it, i) => ({
+      cc: cc,
+      cotizacion: op.cotizacion_id || '',
+      cliente: op.cliente || '',
+      fecha: new Date().toISOString().slice(0, 10),
+      item: i + 1,
+      descripcion: String(it.descripcion || '').trim(),
+      udm: it.udm || '',
+      cantidad: (it.cantidad == null ? null : +it.cantidad),
+      proveedor: String(it.proveedor || '').trim(),
+      costo_unit: (it.costo_unit == null ? null : +it.costo_unit),
+      nota: null, pago: 'PENDIENTE', sin_oc: false,
+      op_numero: op.numero,                        // el enlace de vuelta
+      created_by: (currentUser && (currentUser.name || currentUser.email)) || '—'
+    }));
+    await absFetch('plan_compras', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(rows) });
+    await opEvento(op.id, 'plan_generado', cc + ' · ' + rows.length + ' líneas por comprar');
+    showToast('✅ Plan ' + cc + ' generado con ' + rows.length + ' líneas', 'success', { durationMs: 7000 });
+    await opPlanCargar();
+    opRenderEventos(op.id);
+  } catch (e) {
+    showToast('No se pudo generar el plan: ' + (e && e.message || e), 'error', { durationMs: 9000 });
+  }
+}
+
+function opAbrirPlan() {
+  if (!op_current) return;
+  const cc = _opCC(op_current);
+  navigate('compras');
+  // pcomCargar puede estar en curso; se espera a que el plan aparezca en memoria.
+  let intentos = 0;
+  const abrir = () => {
+    intentos++;
+    try {
+      if (typeof pcomGrupos === 'function' && pcomGrupos()[cc]) { pcomAbrir(cc); return; }
+    } catch (_) { }
+    if (intentos < 12) setTimeout(abrir, 400);
+    else showToast('Abre el plan ' + cc + ' desde la lista', 'info');
+  };
+  setTimeout(abrir, 500);
 }
 
 // ─── LA VÍA: en qué estado está la OP ────────────────────────────────────────
@@ -22924,6 +23072,37 @@ function pcomCotizAgregar(c){
     ((res.items.length-add.length)?' ('+(res.items.length-add.length)+' ya estaban)':'')+
     (res.parcial?' · era adjudicación PARCIAL':'')+'. Recuerda 💾 Guardar plan.','ok',{durationMs:8000});
 }
+// ─── Enlace de vuelta: este plan nació de una OP ─────────────────────────────
+// Aditivo: se inserta un aviso sobre la tabla de ítems y no se toca nada del
+// editor. Si el plan no viene de una OP, el aviso simplemente no aparece.
+async function _pcomAvisoOP(){
+  const cont = document.getElementById('pcom-view-editor');
+  if(!cont || !pcom_current) return;
+  const prev = document.getElementById('pcom-aviso-op'); if(prev) prev.remove();
+  const cc = String(pcom_current.cc||'');
+  // El CC de una OP tiene la forma CC-OP-2026-0004
+  const m = cc.match(/^CC-(OP-\d{4}-\d+)$/);
+  if(!m) return;
+  const numero = m[1];
+  let op = null;
+  try{ op = ((await absFetch('ops?numero=eq.'+encodeURIComponent(numero)+'&select=numero,cliente,cotizacion_id,estado,oc_cliente&limit=1'))||[])[0]; }catch(_){ }
+  const d = document.createElement('div');
+  d.id = 'pcom-aviso-op';
+  d.style.cssText = 'background:rgba(139,92,246,.10);border-left:3px solid rgba(139,92,246,.75);'
+    + 'border-radius:0 8px 8px 0;padding:11px 15px;margin:12px 0;font-size:12.5px;color:#cbd5e1;line-height:1.6;';
+  d.innerHTML = '<b style="color:#c4b5fd;">Este plan es de la orden de pedido ' + numero + '</b>'
+    + (op ? '<br>Cliente ' + String(op.cliente||'—').replace(/</g,'&lt;')
+            + ' · cotización ' + String(op.cotizacion_id||'—').replace(/</g,'&lt;')
+            + (op.oc_cliente ? ' · O.C. ' + String(op.oc_cliente).replace(/</g,'&lt;') : '')
+            + '<br>Lo que quede aquí como costo definitivo es lo que gerencia verá al aprobar la OP.'
+          : '<br>No se pudo leer la OP; el plan funciona igual.')
+    + ' <button onclick="navigate(\'op\')" style="background:none;border:none;color:#c4b5fd;'
+    + 'text-decoration:underline;cursor:pointer;font-size:12.5px;padding:0;">Ver la OP</button>';
+  const tabla = cont.querySelector('.abs-table-wrap') || cont.firstElementChild;
+  if(tabla && tabla.parentNode) tabla.parentNode.insertBefore(d, tabla);
+  else cont.insertBefore(d, cont.firstChild);
+}
+
 function pcomCrearVacio(){
   pcom_current = { nueva:true, cc:'CC-MANUAL-'+Date.now().toString().slice(-5), cotizacion:'', cliente:'',
     fecha:new Date().toISOString().split('T')[0],
@@ -22946,6 +23125,9 @@ function pcomAbrirEditor(titulo){
   document.getElementById('pcom-view-lista').style.display='none';
   document.getElementById('pcom-view-editor').style.display='';
   document.getElementById('pcom-editor-titulo').textContent = titulo;
+  // 23-ago-2026: si el plan nació de una OP, decirlo y dejar volver allá.
+  // Sin esto, compras trabaja el plan sin saber a qué pedido pertenece.
+  try { _pcomAvisoOP(); } catch(_) {}
   const c = pcom_current;
   document.getElementById('pcom-cc').value = c.cc;
   document.getElementById('pcom-cotiz').value = c.cotizacion||'—';
