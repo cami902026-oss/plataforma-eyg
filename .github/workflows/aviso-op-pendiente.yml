@@ -1,0 +1,37 @@
+name: 📑 Aviso de OP pendiente de aprobación
+
+on:
+  schedule:
+    # Cada 15 minutos, de lunes a viernes entre las 6 AM y las 7 PM Colombia
+    # (11:00–24:00 UTC). Fuera de horario no tiene sentido despertar a nadie.
+    - cron: '*/15 11-23 * * 1-5'
+  workflow_dispatch:
+
+# Que dos corridas no se pisen: si una se demora, la siguiente espera.
+concurrency:
+  group: aviso-op-pendiente
+  cancel-in-progress: false
+
+jobs:
+  avisar:
+    runs-on: ubuntu-latest
+    name: 📧 Avisar a gerencia
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📧 Revisar y avisar
+        env:
+          MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          SUPABASE_URL:     ${{ secrets.SUPABASE_URL }}
+          # Escritura del evento 'aviso_enviado': necesita la key con permiso
+          # de escritura. Si solo hay lectura, el aviso sale igual pero se
+          # repetiría; por eso se usa la secreta.
+          SUPABASE_KEY:     ${{ secrets.SUPABASE_SECRET || secrets.SUPABASE_KEY }}
+          REMITENTE_OP:     'info@eygenergygroup.com'
+        run: python scripts/aviso_op_pendiente.py
