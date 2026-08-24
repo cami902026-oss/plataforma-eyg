@@ -1094,6 +1094,37 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   #page-op .op-desp-fila{ grid-template-columns:1fr; }
 }
 
+/* Caja de cierre de la OP: un checklist de tres sellos. Verde solo cuando
+   los tres están puestos; ahí aparece el botón de cerrar. */
+#page-op .op-cierre-caja{
+  background:var(--op-papel);border:1px solid var(--op-linea);
+  border-left:3px solid var(--op-linea);border-radius:0 3px 3px 0;
+  padding:15px 18px;margin-bottom:16px;
+}
+#page-op .op-cierre-caja.op-c-ok{ border-left-color:var(--op-bodega); }
+#page-op .op-cierre-fila{ display:flex;align-items:flex-start;gap:11px;padding:6px 0; }
+#page-op .op-cierre-p{
+  width:17px;height:17px;flex-shrink:0;margin-top:1px;border-radius:50%;
+  border:1px solid var(--op-linea);background:rgba(255,255,255,.04);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10.5px;color:#08150f;font-weight:700;
+}
+#page-op .op-cierre-p.op-p-ok{ background:var(--op-bodega);border-color:var(--op-bodega); }
+#page-op .op-cierre-l{ font-size:12.5px;color:var(--text-muted);line-height:1.4; }
+#page-op .op-cierre-l.op-l-ok{ color:#e6edfb; }
+#page-op .op-cierre-s{
+  font-family:var(--op-mono);font-size:10.5px;color:var(--text-muted);
+  margin-top:2px;line-height:1.5;max-width:68ch;
+}
+#page-op .op-cierre-s b{ color:#e6edfb; }
+#page-op .op-cierre-btn{
+  margin-top:12px;background:rgba(63,191,99,.16);border:1px solid rgba(63,191,99,.55);
+  color:#8ce8a6;border-radius:6px;padding:8px 17px;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;
+}
+#page-op .op-cierre-btn:hover{ background:rgba(63,191,99,.26); }
+#page-op .op-cierre-btn:focus-visible{ outline:2px solid var(--gold);outline-offset:2px; }
+
 #page-op .op-certs-caja{
   background:var(--op-papel);border:1px solid var(--op-linea);
   border-left:3px solid var(--op-bodega);border-radius:0 3px 3px 0;
@@ -3587,6 +3618,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div id="op-stock"></div>
           <div id="op-plan"></div>
           <div id="op-certs"></div>
+          <div id="op-cierre"></div>
 
           <div class="op-libro">
             <div class="op-libro-cab">
@@ -3686,6 +3718,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="btn btn-secondary" onclick="pcomLogistico()" style="width:auto;">🚚 Plan Logístico</button>
               <!-- Reporte de utilidad: SOLO gerencia (Alberto) + Andrea. Aditivo, 100% lectura. Añadido 2026-07-09. -->
               <button id="pcom-btn-utilidad" class="btn btn-secondary" onclick="pcomUtilidad()" style="width:auto;display:none;background:linear-gradient(135deg,#1F7A3D,#2eaa4a);color:#fff;" title="Compara lo vendido (cotización) contra el costo del proveedor (plan) y muestra la utilidad por ítem. Solo gerencia y Andrea.">💰 Utilidad (gerencia)</button>
+              <button id="pcom-btn-eliminar" class="btn btn-ghost" onclick="pcomEliminar()" style="width:auto;display:none;margin-left:auto;color:#ffb3a8;border-color:rgba(224,90,74,.45);" title="Elimina este plan y sus líneas. Avisa antes si ya tiene compras, recibidos, pagos u órdenes emitidas. Las O.C. ya generadas NO se borran.">🗑 Eliminar plan</button>
               <button id="pcom-btn-cc" class="btn btn-secondary" onclick="pcomCentroCostos()" style="width:auto;display:none;background:linear-gradient(135deg,#8a5d0c,#E8A020);color:#fff;" title="Lo que de verdad cuesta este pedido: material comprado + material de bodega + fletes y otros gastos, contra la venta. Solo gerencia y Andrea.">💰 Centro de costos</button>
             </div>
           </div>
@@ -4499,18 +4532,34 @@ const _NETLIFY_HOST = /\.netlify\.app$/i.test(location.hostname) || location.hos
   // Cachés BORRABLES sin perder nada: todo esto se vuelve a bajar al recargar.
   // NUNCA se toca 'energy_sync_queue' (cambios pendientes de subir), ni la sesión,
   // ni los tokens, ni los datos de los módulos.
+  // 24-ago-2026 — LA CAUSA REAL: los datos de la plataforma pesan ~7,2 MB y el
+  // navegador da ~5. No es mala suerte, es que NO CABE. Por eso a todo el equipo
+  // le salía "almacenamiento lleno" y no se adjuntaban fotos.
+  //
+  // Todo lo de esta lista lo vuelve a bajar el ciclo de sincronización (cada 8 s),
+  // así que soltarlo no pierde NADA. Va en orden: primero lo que menos se nota.
+  // NUNCA se toca 'energy_sync_queue' (cambios pendientes de subir), ni la sesión,
+  // ni los tokens.
   const _CACHES_REGENERABLES = [
     'energy_cotiz_items_undo',   // deshacer de ítems: solo sirve dentro de la sesión
     'inv_data_onedrive',         // caché del Excel de inventario (se rebaja de OneDrive)
     'energy_cotiz_fotos',        // sobrante viejo: las fotos ya viven en IndexedDB
-    'energy_fotos_inv'           // sobrante viejo: las fotos ya viven en IndexedDB
+    'energy_fotos_inv',          // sobrante viejo: las fotos ya viven en IndexedDB
+    'energy_remi_cajanegra',     // respaldo local de remisiones ya subidas
+    'energy_mensajeria',         // ~0,6 MB · se rebaja solo
+    'energy_visitas_actas',      // se rebaja solo
+    'energy_visitas',            // ~1,2 MB · se rebaja solo
+    'max_bd_cotizaciones'        // ~2,7 MB · el más pesado. Último recurso: se
+                                 // vuelve a bajar en el siguiente ciclo (8 s).
   ];
   function _hayPendientesSinSubir(){
     // Ante la duda decimos que SÍ hay pendientes (no borrar fotos que quizá no subieron).
     try { const q = JSON.parse(localStorage.getItem('energy_sync_queue') || '[]'); return !Array.isArray(q) || q.length > 0; }
     catch(_) { return true; }
   }
-  function _liberarEspacio(){
+  // Se libera DE A POCO y se reintenta: no tiene sentido tirar 2,7 MB de
+  // cotizaciones si con soltar una caché de fotos ya cabía.
+  function _liberarEspacio(objetivo){
     const conPendientes = _hayPendientesSinSubir();
     let liberados = 0;
     for (const k of _CACHES_REGENERABLES) {
@@ -4521,6 +4570,8 @@ const _NETLIFY_HOST = /\.netlify\.app$/i.test(location.hostname) || location.hos
         if (conPendientes && (k === 'energy_cotiz_fotos' || k === 'energy_fotos_inv')) continue;
         localStorage.removeItem(k);
         liberados += v.length;
+        // Ya se soltó bastante para lo que se quería guardar: no seguir borrando.
+        if (objetivo && liberados > objetivo * 2) break;
       } catch(_){}
     }
     return liberados;
@@ -4530,7 +4581,7 @@ const _NETLIFY_HOST = /\.netlify\.app$/i.test(location.hostname) || location.hos
     catch(e){
       const esCuota = e && (e.name === 'QuotaExceededError' || e.code === 22 || e.name === 'NS_ERROR_DOM_QUOTA_REACHED');
       if (!esCuota) throw e;
-      const liberados = _liberarEspacio();
+      const liberados = _liberarEspacio((v || '').length);
       if (liberados > 0) {
         try {
           const r = _setItemOrig.call(this, k, v);
@@ -4544,7 +4595,7 @@ const _NETLIFY_HOST = /\.netlify\.app$/i.test(location.hostname) || location.hos
       }
       if (Date.now() - _cuotaAvisada > 30000) {
         _cuotaAvisada = Date.now();
-        try { showToast('🛑 ALMACENAMIENTO DEL NAVEGADOR LLENO — este equipo ya no guarda copia local, pero tus cambios SÍ se están subiendo al servidor. Avisa a Andrea/soporte y recarga con Ctrl+F5.', 'error', { durationMs: 20000 }); } catch(_){}
+        try { showToast('🛑 El navegador de este equipo se quedó sin espacio. Tus cambios SÍ se están subiendo al servidor — no se pierde nada. Recarga con Ctrl+F5 y quedará libre. Si vuelve a salir seguido, avísame.', 'error', { durationMs: 20000 }); } catch(_){}
         try { console.error('[cuota] localStorage lleno al guardar', k, 'bytes:', (v || '').length); } catch(_){}
       }
       // NO relanzamos: la excepción cortaba la subida al servidor y ahí sí se perdía todo.
@@ -22028,6 +22079,11 @@ function opEsAdmin() {
 }
 function opPuedeCrear(cot) {
   if (!currentUser) return false;
+  // 24-ago-2026: Alexandra arma OP de cualquier cotización, no solo de las que
+  // ella cotizó. Es la asistente comercial: recibe la O.C. y monta el pedido,
+  // sin importar quién hizo la cotización. Antes solo podían Alberto y Andrea.
+  const _e = (currentUser.email || '').toLowerCase();
+  if (['alberto', 'andrea', 'alexandra'].includes(_e)) return true;
   if (opEsAdmin()) return true;
   if (!cot) return true;                       // sin cotización a la vista, decide el servidor
   const yo = (currentUser.name || '').trim().toLowerCase();
@@ -22231,7 +22287,8 @@ function opRenderEditor() {
   _opVia();
   try { opPlanCargar(); } catch(_) {}
   try { opRevisarStock(true); } catch(_) {}
-  try { opCertsCargar(); } catch(_) {}
+  // El cierre depende de los certificados, así que espera a que carguen.
+  try { opCertsCargar().then(function(){ try { opCerrarRevisar(); } catch(_) {} }); } catch(_) {}
 }
 
 function opRenderItems() {
@@ -22724,7 +22781,7 @@ async function opRecibirConfirmar() {
     campos[n][el.dataset.campo] = el.value;
   });
 
-  const errores = [];
+  const errores = [], sinColadaR = [];
   const listo = [];
   d.forEach((x, n) => {
     const C = campos[n] || {};
@@ -22732,8 +22789,9 @@ async function opRecibirConfirmar() {
     if (!q || q <= 0) return;                       // no llegó nada de esta línea: se salta
     const falta = (+x.it.cantidad || 0) - (+x.it.recibida || 0);
     if (q > falta) errores.push('"' + x.it.descripcion + '": llegan ' + q + ' pero solo faltaban ' + falta);
+    // Igual que en el despacho: si no trae colada, se avisa pero no se frena.
     const colada = String(C.colada || '').trim();
-    if (!colada) errores.push('Falta la colada / lote de "' + x.it.descripcion + '"');
+    if (!colada) sinColadaR.push(x.it.descripcion);
     listo.push({ x: x, qty: q, colada: colada, costo: (String(C.costo).trim() === '' ? null : +C.costo) });
   });
   const av = document.getElementById('op-recep-aviso');
@@ -22744,9 +22802,15 @@ async function opRecibirConfirmar() {
       + errores.map(opEsc).join('<br>') + '</div>';
     return;
   }
-  av.innerHTML = '';
+  av.innerHTML = sinColadaR.length
+    ? '<div style="background:rgba(232,160,32,.12);border-left:3px solid #E8A020;padding:11px 14px;'
+      + 'border-radius:0 6px 6px 0;margin-top:10px;font-size:12.5px;color:#fbbf24;line-height:1.7;">'
+      + '<b>Sin colada / lote:</b> ' + sinColadaR.map(opEsc).join(' · ')
+      + '<br>Entra igual; se puede completar después desde el checklist de certificados.</div>'
+    : '';
   const nuevos = listo.filter(L => !L.x.prod).length;
   if (!confirm('Vas a recibir ' + listo.length + ' línea(s) en bodega.\n\n'
+    + (sinColadaR.length ? sinColadaR.length + ' línea(s) SIN COLADA.\n' : '')
     + (nuevos ? 'Se van a CREAR ' + nuevos + ' producto(s) nuevos en el inventario.\n' : '')
     + 'Esto SUMA al inventario y no se deshace solo.\n\n¿Continuar?')) return;
 
@@ -22864,6 +22928,113 @@ async function opRecibirConfirmar() {
   }
 }
 
+// ─── Cierre de la OP: despachada + certificados + FACTURADA ──────────────────
+// 24-ago-2026. El cierre definitivo es cuando ya se facturó, que es cuando el
+// negocio terminó de verdad. La factura NO se teclea aquí: la trae la
+// cotización, que es donde el equipo ya la registra al marcarla Facturada.
+// Así la OP queda amarrada a la cotización y a cartera sin doble digitación.
+async function opCerrarRevisar() {
+  const o = op_current;
+  const cont = document.getElementById('op-cierre');
+  if (!cont || !o) return;
+
+  if (o.estado === 'cerrada') {
+    cont.innerHTML = '<div class="op-cierre-caja op-c-ok"><div class="op-plan-t">Pedido cerrado</div>'
+      + '<div class="op-plan-d">' + opEsc((o.cerrada_at || '').substring(0, 10))
+      + (o.cerrada_por ? ' · ' + opEsc(o.cerrada_por) : '')
+      + (o.factura ? ' · factura <b>' + opEsc(o.factura) + '</b>' : '') + '</div></div>';
+    return;
+  }
+  // Antes de aprobar no tiene sentido hablar de cierre.
+  if (!['aprobada', 'en_ejecucion', 'despachada'].includes(o.estado)) { cont.innerHTML = ''; return; }
+
+  const its = op_currentItems || [];
+  const desp = its.filter(i => i.estado === 'despachado').length;
+  const todoDesp = its.length > 0 && desp >= its.length;
+  const certs = ((o._certs) || []).length;
+  const noAplica = o.requiere_certificados === false;
+  const okCerts = noAplica || certs > 0;
+
+  // La factura se busca en el SERVIDOR: la pudo registrar otra persona hace un
+  // minuto, y el navegador puede tener la copia vieja.
+  let factura = '', estCot = '', okFact = false;
+  if (o.cotizacion_id) {
+    try {
+      const r = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(o.cotizacion_id)
+        + '&select=id,estado,extra&limit=1')) || [];
+      if (r.length) {
+        const ex = r[0].extra || {};
+        estCot = r[0].estado || ex.estado || '';
+        factura = String(ex.factura || '').trim();
+      }
+    } catch (_) { }
+    if (!estCot) {                                   // sin red: la copia local sirve
+      try {
+        const c = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === o.cotizacion_id);
+        if (c) { estCot = c.estado || ''; factura = String(c.factura || '').trim(); }
+      } catch (_) { }
+    }
+  }
+  okFact = (estCot === 'Facturada') && !!factura;
+
+  const fila = (ok, txt, det) => '<div class="op-cierre-fila">'
+    + '<span class="op-cierre-p' + (ok ? ' op-p-ok' : '') + '">' + (ok ? '✓' : '') + '</span>'
+    + '<div><div class="op-cierre-l' + (ok ? ' op-l-ok' : '') + '">' + txt + '</div>'
+    + (det ? '<div class="op-cierre-s">' + det + '</div>' : '') + '</div></div>';
+
+  const listo = todoDesp && okCerts && okFact;
+  cont.innerHTML = '<div class="op-cierre-caja' + (listo ? ' op-c-ok' : '') + '">'
+    + '<div class="op-plan-t">Para dar el pedido por cerrado</div>'
+    + fila(todoDesp, 'Despachado', its.length ? desp + ' de ' + its.length + ' ítems entregados' : 'todavía no hay ítems')
+    + fila(okCerts, 'Certificados', noAplica ? 'esta OP no los requiere' : certs + ' cargado(s)')
+    + fila(okFact, 'Facturada',
+        okFact ? 'factura ' + opEsc(factura) + ' · cotización ' + opEsc(o.cotizacion_id)
+               : (!o.cotizacion_id ? 'esta OP no tiene cotización ligada'
+                  : 'la cotización ' + opEsc(o.cotizacion_id) + ' está como <b>' + opEsc(estCot || '—')
+                    + '</b>. Se cierra cuando quede <b>Facturada</b> con su número de factura.'))
+    + (listo
+        ? (opEsAdmin()
+            ? '<button class="op-cierre-btn" onclick="opCerrar()">🔒 Cerrar el pedido</button>'
+            : '<div class="op-plan-d" style="margin-top:9px">Todo listo. La cierran Andrea o gerencia.</div>')
+        : '')
+    + '</div>';
+}
+
+async function opCerrar() {
+  if (!op_current || !opEsAdmin()) { showToast('La cierran Andrea o gerencia', 'error'); return; }
+  const o = op_current;
+  if (!confirm('¿Cerrar ' + o.numero + '?\n\nQueda despachado, con certificados y facturado: el pedido terminó.')) return;
+  try {
+    // Se guarda la factura EN la OP para que el cierre quede con su soporte,
+    // aunque después alguien toque la cotización.
+    let factura = '';
+    try {
+      const r = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(o.cotizacion_id || '')
+        + '&select=extra&limit=1')) || [];
+      factura = String(((r[0] || {}).extra || {}).factura || '').trim();
+    } catch (_) { }
+    const sello = {
+      cerrada_at: new Date().toISOString(),
+      cerrada_por: (currentUser && (currentUser.email || currentUser.name)) || 'system'
+    };
+    try {
+      await opCambiarEstado('cerrada', Object.assign({ factura: factura || null }, sello));
+    } catch (e1) {
+      // Si la columna `factura` todavía no existe en la base, se cierra igual:
+      // el número queda en el historial de la OP, que es lo que importa.
+      await opCambiarEstado('cerrada', sello);
+    }
+    await opEvento(o.id, 'cerrada', 'Despachada, con certificados y facturada'
+      + (factura ? ' · factura ' + factura : ''));
+    showToast('🔒 ' + o.numero + ' cerrada', 'success');
+    opRenderEditor();
+    opRenderEventos(o.id);
+  } catch (e) {
+    // El trigger de la base es el que manda: si faltan certificados, no deja.
+    showToast('No se pudo cerrar: ' + (e && e.message || e), 'error', { durationMs: 12000 });
+  }
+}
+
 // ═══════════ ALISTAR Y DESPACHAR DESDE LA OP ════════════════════════════════
 // Hoy bodega registra la salida en Abastecimiento y la remisión se hace aparte,
 // en su módulo. Los dos actos se cruzan por TEXTO (kardex.remision ILIKE) y si
@@ -22960,7 +23131,8 @@ function _opDespachoModal(sug) {
     + '<div style="font-family:\'Montserrat\',sans-serif;font-weight:800;font-size:17px;color:#fff;">'
     + 'Alistar y despachar · ' + opEsc(op_current.numero) + '</div>'
     + '<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">'
-    + 'En un solo acto: se crea la remisión y se descuenta el inventario. La colada es obligatoria.</div></div>'
+    + 'En un solo acto: se crea la remisión y se descuenta el inventario. '
+    + 'La colada se pide, pero si el material no la trae se puede despachar igual.</div></div>'
     + '<div style="padding:16px 22px;overflow-y:auto;flex:1;">'
     + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">'
     + '<div class="form-group" style="margin:0;"><label style="font-size:10px;letter-spacing:.1em;">N° REMISIÓN</label>'
@@ -23004,14 +23176,17 @@ async function opDespacharConfirmar() {
     lineas[n][el.dataset.campo] = el.value;
   });
 
-  const errores = [];
+  const errores = [], sinColada = [];
   const listo = d.items.map((it, n) => {
     const L = lineas[n] || {};
     const q = parseFloat(L.cantidad);
     const colada = String(L.colada || '').trim();
     const p = d.stock[it.producto_codigo] || {};
     if (!q || q <= 0) errores.push('Cantidad inválida en "' + it.descripcion + '"');
-    if (!colada) errores.push('Falta la colada de "' + it.descripcion + '"');
+    // La colada avisa pero NO bloquea: hay material que no la trae y otro al que
+    // se le pone después. Frenar el despacho obliga a inventarse un número, y un
+    // dato inventado es peor que un dato faltante.
+    if (!colada) sinColada.push(it.descripcion);
     if (q > (+p.stock_actual || 0)) errores.push('No alcanza el stock de "' + it.descripcion
       + '" (piden ' + q + ', quedan ' + (+p.stock_actual || 0) + ')');
     return { it: it, prod: p, qty: q, colada: colada };
@@ -23023,9 +23198,16 @@ async function opDespacharConfirmar() {
       + errores.map(opEsc).join('<br>') + '</div>';
     return;
   }
-  av.innerHTML = '';
+  // Las coladas que falten se avisan en amarillo, no frenan.
+  av.innerHTML = sinColada.length
+    ? '<div style="background:rgba(232,160,32,.12);border-left:3px solid #E8A020;padding:11px 14px;'
+      + 'border-radius:0 6px 6px 0;margin-top:10px;font-size:12.5px;color:#fbbf24;line-height:1.7;">'
+      + '<b>Sin colada:</b> ' + sinColada.map(opEsc).join(' · ')
+      + '<br>Se puede despachar igual; queda anotado que salieron sin colada.</div>'
+    : '';
 
   if (!confirm('Vas a despachar ' + listo.length + ' ítem(s) con la remisión ' + num + '.\n\n'
+    + (sinColada.length ? sinColada.length + ' ítem(s) van SIN COLADA.\n' : '')
     + 'Esto DESCUENTA del inventario y no se deshace solo.\n\n¿Continuar?')) return;
 
   const btn = document.getElementById('op-desp-ok');
@@ -24471,6 +24653,94 @@ function pcomAbrirEditor(titulo){
   // El centro de costos lleva costos, márgenes y utilidad: misma regla.
   const _bcc = document.getElementById('pcom-btn-cc');
   if (_bcc) _bcc.style.display = pcomEsGerencia() ? '' : 'none';
+  // Eliminar: Andrea, Alexandra y gerencia. Aparece también en un plan nuevo,
+  // donde solo sirve para descartarlo sin guardarlo.
+  const _bel = document.getElementById('pcom-btn-eliminar');
+  if (_bel) _bel.style.display = pcomPuedeEliminar() ? '' : 'none';
+}
+
+// ─── Eliminar un plan de compras (24-ago-2026) ───────────────────────────────
+// Nunca hubo forma de borrar uno y por eso quedaron tres planes de la misma
+// cotización. Se hace con candados, porque un plan puede llevar trabajo real
+// encima: si ya hay compras marcadas, recibidas, pagos u órdenes emitidas, eso
+// se dice ANTES y se pide escribir el número a mano.
+function pcomPuedeEliminar() {
+  return !!(currentUser && ['alberto', 'andrea', 'alexandra']
+    .includes((currentUser.email || '').toLowerCase()));
+}
+
+async function pcomEliminar() {
+  if (!pcom_current) return;
+  if (!pcomPuedeEliminar()) { showToast('El plan lo eliminan Andrea, Alexandra o gerencia', 'error'); return; }
+  const cc = String(pcom_current.cc || '').trim();
+  if (!cc) return;
+  if (pcom_current.nueva) {                       // todavía no existe en la base
+    if (!confirm('Este plan no se ha guardado. ¿Descartarlo?')) return;
+    pcom_current = null; pcomVolver(); return;
+  }
+
+  // Se mira el SERVIDOR, no la copia local: otra persona pudo marcar compras
+  // hace un minuto y el navegador no haberse enterado.
+  let lineas;
+  try {
+    lineas = (await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc)
+      + '&select=id,comprado,recibida,pago&limit=2000')) || [];
+  } catch (e) { showToast('No se pudo leer el plan: ' + (e && e.message || e), 'error'); return; }
+  if (!lineas.length) { showToast('Ese plan ya no existe en la base', 'info'); await pcomCargar(); pcomVolver(); return; }
+
+  const compradas = lineas.filter(r => r.comprado).length;
+  const recibidas = lineas.filter(r => (+r.recibida || 0) > 0).length;
+  const pagadas   = lineas.filter(r => String(r.pago || '').toUpperCase() === 'PAGADO').length;
+  let ocs = [];
+  try { ocs = (await absFetch('oc_compras?cc=eq.' + encodeURIComponent(cc) + '&select=oc')) || []; } catch (_) { }
+
+  const avisos = [];
+  if (compradas) avisos.push(compradas + ' línea(s) marcadas como COMPRADAS');
+  if (recibidas) avisos.push(recibidas + ' línea(s) con material ya RECIBIDO');
+  if (pagadas)   avisos.push(pagadas + ' línea(s) marcadas como PAGADAS');
+  if (ocs.length) avisos.push(ocs.length + ' orden(es) de compra emitidas: ' + ocs.map(o => o.oc).join(', '));
+
+  let msg = '¿Eliminar el plan ' + cc + ' con sus ' + lineas.length + ' línea(s)?\n\n';
+  if (avisos.length) {
+    msg += '⚠️ OJO — este plan ya tiene trabajo encima:\n· ' + avisos.join('\n· ')
+        + '\n\nLas órdenes de compra emitidas NO se borran: quedan en su historial.\n\n';
+  }
+  msg += 'Esto no se puede deshacer.';
+  if (!confirm(msg)) return;
+
+  // Segundo candado, solo si había trabajo: escribir el número a mano.
+  if (avisos.length) {
+    const r = prompt('Para confirmar, escribe el número del plan:\n\n' + cc, '');
+    if (r === null) return;
+    if (String(r).trim().toUpperCase() !== cc.toUpperCase()) {
+      showToast('El número no coincide — no se borró nada', 'info'); return;
+    }
+  }
+
+  try {
+    // Los gastos del centro de costos se van con el plan; las O.C. NO.
+    try {
+      await absFetch('plan_gastos?cc=eq.' + encodeURIComponent(cc),
+        { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+    } catch (_) { }
+    await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc),
+      { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+
+    // Si el plan era de una OP, allá queda constancia de que se borró.
+    const m = cc.match(/^CC-(OP-\d{4}-\d+)$/i);
+    if (m) {
+      try {
+        const ops = await absFetch('ops?numero=eq.' + encodeURIComponent(m[1].toUpperCase()) + '&select=id&limit=1');
+        if (ops && ops.length) await opEvento(ops[0].id, 'plan_eliminado', cc + ' · ' + lineas.length + ' líneas');
+      } catch (_) { }
+    }
+    showToast('🗑 Plan ' + cc + ' eliminado (' + lineas.length + ' líneas)', 'success', { durationMs: 7000 });
+    pcom_current = null;
+    await pcomCargar();
+    pcomVolver();
+  } catch (e) {
+    showToast('No se pudo eliminar: ' + (e && e.message || e), 'error', { durationMs: 10000 });
+  }
 }
 
 // ¿Quién ve la utilidad del plan? Solo gerencia (Alberto) + Andrea. Mismo criterio que la calculadora de utilidad.
