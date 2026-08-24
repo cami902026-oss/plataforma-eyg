@@ -22167,6 +22167,15 @@ function opRenderEditor() {
   const b = [];
   if (editable) b.push('<button class="btn btn-ghost" onclick="opGuardarCabecera()" style="padding:8px 14px;font-size:12px;">Guardar</button>');
   b.push('<button class="btn btn-ghost" onclick="opRevisarStock(false)" title="Comparar cada línea contra el inventario real" style="padding:8px 14px;font-size:12px;">Revisar inventario</button>');
+  // Ya despachado: llevar a la remisión, donde están el PDF, la planilla de
+  // viaje y los rótulos. La remisión creada desde la OP es una remisión normal.
+  const _rem = [...new Set((op_currentItems || []).map(i => i.remision).filter(Boolean))];
+  // El número va en un data-* y no entre comillas dentro del onclick: es donde se
+  // rompe el HTML armado por concatenación (ya pasó dos veces en este módulo).
+  _rem.forEach(r => b.push('<button class="btn btn-ghost" data-rem="' + opEsc(r)
+    + '" onclick="opVerRemision(this.dataset.rem)"'
+    + ' title="Abrir la remisión para el PDF, la planilla de viaje y los rótulos"'
+    + ' style="padding:8px 14px;font-size:12px;">📄 Remisión ' + opEsc(r) + '</button>'));
   // Alistar y despachar: solo con la OP ya aprobada y si queda algo de bodega.
   if (['aprobada', 'en_ejecucion'].includes(o.estado) && opPuedeDespachar()
       && (op_currentItems || []).some(i => i.origen === 'BODEGA' && i.estado !== 'despachado')) {
@@ -22577,6 +22586,20 @@ async function opGuardarCabecera() {
 //   · el stock se relee del servidor justo antes (no de memoria, que envejece)
 //   · caja negra en el equipo ANTES de tocar nada
 //   · ítem por ítem, y si alguno falla se dice CUÁL y la OP no se marca despachada
+// Abre la remisión en su módulo, que es donde viven el PDF, la planilla de viaje
+// y los rótulos. La remisión creada desde la OP es una remisión como cualquier otra.
+function opVerRemision(num) {
+  navigate('remisiones');
+  let n = 0;
+  const abrir = () => {
+    n++;
+    try { if (typeof remiGrupos === 'function' && remiGrupos()[num]) { remiAbrir(num); return; } } catch (_) { }
+    if (n < 12) setTimeout(abrir, 400);
+    else showToast('Busca la remisión ' + num + ' en la lista', 'info');
+  };
+  setTimeout(abrir, 500);
+}
+
 function opPuedeDespachar() {
   const e = (currentUser && (currentUser.email || '')).toLowerCase();
   return ['yesid', 'andrea', 'alberto'].includes(e);
