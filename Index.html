@@ -3577,6 +3577,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="btn btn-secondary" onclick="pcomLogistico()" style="width:auto;">🚚 Plan Logístico</button>
               <!-- Reporte de utilidad: SOLO gerencia (Alberto) + Andrea. Aditivo, 100% lectura. Añadido 2026-07-09. -->
               <button id="pcom-btn-utilidad" class="btn btn-secondary" onclick="pcomUtilidad()" style="width:auto;display:none;background:linear-gradient(135deg,#1F7A3D,#2eaa4a);color:#fff;" title="Compara lo vendido (cotización) contra el costo del proveedor (plan) y muestra la utilidad por ítem. Solo gerencia y Andrea.">💰 Utilidad (gerencia)</button>
+              <button id="pcom-btn-cc" class="btn btn-secondary" onclick="pcomCentroCostos()" style="width:auto;display:none;background:linear-gradient(135deg,#8a5d0c,#E8A020);color:#fff;" title="Lo que de verdad cuesta este pedido: material comprado + material de bodega + fletes y otros gastos, contra la venta. Solo gerencia y Andrea.">💰 Centro de costos</button>
             </div>
           </div>
         </div>
@@ -23798,6 +23799,9 @@ function pcomAbrirEditor(titulo){
   pcomRenderItems();
   const _bu = document.getElementById('pcom-btn-utilidad');
   if (_bu) _bu.style.display = pcomEsGerencia() ? '' : 'none';
+  // El centro de costos lleva costos, márgenes y utilidad: misma regla.
+  const _bcc = document.getElementById('pcom-btn-cc');
+  if (_bcc) _bcc.style.display = pcomEsGerencia() ? '' : 'none';
 }
 
 // ¿Quién ve la utilidad del plan? Solo gerencia (Alberto) + Andrea. Mismo criterio que la calculadora de utilidad.
@@ -23808,6 +23812,196 @@ function pcomEsGerencia(){
 // Genera un Excel comparando lo VENDIDO (precio de la cotización ligada) contra el COSTO del
 // proveedor (costo_unit del plan), con utilidad por ítem, %, totales y un espacio de transporte.
 // 100% lectura: no toca el plan, la cotización ni la base de datos.
+// ═══════════ CENTRO DE COSTOS DEL PLAN ══════════════════════════════════════
+// Un pedido cuesta más que su material: fletes, recogidas en Bogotá, empaque.
+// Hasta ahora el transporte se escribía a mano en una casilla del Excel de
+// utilidad — se perdía al regenerar el reporte y nadie más lo veía.
+//
+// Aquí esos gastos viven en el plan, junto al material, y el costo total del
+// centro de costos es el costo REAL del pedido.
+// Solo lo ven Andrea y gerencia: lleva costos, márgenes y utilidad.
+let pcom_gastos = [];
+
+const _ccMoney = n => '$' + Math.round(+n || 0).toLocaleString('es-CO');
+const _ccEsc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+async function pcomCentroCostos() {
+  if (!pcomEsGerencia()) { showToast('El centro de costos lo ven Andrea y gerencia', 'error'); return; }
+  if (!pcom_current) return;
+  if (typeof pcomSyncHeader === 'function') pcomSyncHeader();
+  const cc = String(pcom_current.cc || '');
+  try {
+    pcom_gastos = (await absFetch('plan_gastos?cc=eq.' + encodeURIComponent(cc)
+      + '&select=id,concepto,proveedor,valor,aplica_iva,nota&order=id.asc&limit=200')) || [];
+  } catch (e) {
+    pcom_gastos = [];
+    if (/PGRST205|does not exist|relation/i.test(String(e && e.message))) {
+      showToast('Falta correr migracion_plan_gastos_2026-08-24.sql en Supabase', 'error', { durationMs: 12000 });
+      return;
+    }
+  }
+  _ccAbrirModal();
+}
+
+function _ccCerrar() { const m = document.getElementById('pcom-cc-modal'); if (m) m.remove(); }
+
+function _ccAbrirModal() {
+  _ccCerrar();
+  const ov = document.createElement('div');
+  ov.id = 'pcom-cc-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:100002;'
+    + 'display:flex;align-items:center;justify-content:center;padding:18px;';
+  ov.innerHTML = '<div style="background:var(--card-bg,#0d1f3c);border:1px solid var(--border);'
+    + 'border-radius:12px;max-width:860px;width:100%;max-height:90vh;display:flex;flex-direction:column;">'
+    + '<div style="padding:18px 22px 12px;border-bottom:1px solid var(--border);">'
+    + '<div style="font-family:\'Montserrat\',sans-serif;font-weight:800;font-size:17px;color:#fff;">'
+    + 'Centro de costos · ' + _ccEsc(pcom_current.cc) + '</div>'
+    + '<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">'
+    + _ccEsc(pcom_current.cliente || '—') + (pcom_current.cotizacion ? ' · cotización ' + _ccEsc(pcom_current.cotizacion) : '')
+    + ' — lo que de verdad cuesta este pedido</div></div>'
+    + '<div id="pcom-cc-body" style="padding:18px 22px;overflow-y:auto;flex:1;"></div>'
+    + '<div style="padding:12px 22px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;">'
+    + '<button onclick="_ccCerrar()" style="background:rgba(255,255,255,.08);border:1px solid var(--border);'
+    + 'border-radius:8px;padding:9px 18px;color:#cbd5e1;font-weight:700;cursor:pointer;">Cerrar</button></div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click', e => { if (e.target === ov) _ccCerrar(); });
+  _ccPintar();
+}
+
+function _ccPintar() {
+  const cont = document.getElementById('pcom-cc-body');
+  if (!cont || !pcom_current) return;
+  const items = (pcom_current.items || []).filter(it => String(it.descripcion || '').trim());
+
+  // El material se parte en dos: lo que se compra afuera y lo que ya es nuestro.
+  // Mezclarlos esconde de dónde sale el costo.
+  let costoCompra = 0, costoBodega = 0, nCompra = 0, nBodega = 0;
+  items.forEach(it => {
+    const v = (parseFloat(it.cantidad) || 0) * (parseFloat(it.costo_unit) || 0);
+    if (/^BODEGA/i.test(String(it.proveedor || '').trim())) { costoBodega += v; nBodega++; }
+    else { costoCompra += v; nCompra++; }
+  });
+  const gastos = pcom_gastos.reduce((a, g) => a + (+g.valor || 0), 0);
+  const costoTotal = costoCompra + costoBodega + gastos;
+
+  // Venta: se busca en la(s) cotización(es) del plan. Si no hay, no se inventa.
+  let venta = 0, hayVenta = false;
+  try {
+    const cotIds = pcomCotizIds(pcom_current);
+    const data = (typeof remiCotizData === 'function' ? remiCotizData() : []);
+    const norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    const precio = {};
+    cotIds.forEach(id => {
+      const cot = data.find(x => String(x.id) === String(id));
+      (cot && cot.items || []).forEach(it => { const k = norm(it.desc); if (k && precio[k] == null) precio[k] = +it.precio || 0; });
+    });
+    items.forEach(it => {
+      const p = precio[norm(it.descripcion)];
+      if (p != null) { venta += (parseFloat(it.cantidad) || 0) * p; hayVenta = true; }
+    });
+  } catch (_) { }
+
+  const util = venta - costoTotal;
+  const margen = venta > 0 ? (util / venta * 100) : null;
+
+  const fila = (lbl, val, color, sub) =>
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:9px 0;'
+    + 'border-bottom:1px solid rgba(30,58,110,.5);">'
+    + '<div><div style="font-size:13px;color:#e6edfb;">' + lbl + '</div>'
+    + (sub ? '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + sub + '</div>' : '')
+    + '</div><div style="font-family:ui-monospace,Consolas,monospace;font-size:14px;white-space:nowrap;'
+    + (color ? 'color:' + color + ';' : 'color:#fff;') + '">' + _ccMoney(val) + '</div></div>';
+
+  cont.innerHTML =
+    fila('Material comprado a proveedores', costoCompra, null, nCompra + ' línea(s)')
+    + fila('Material de bodega', costoBodega, '#86efac', nBodega ? nBodega + ' línea(s) · a costo de inventario' : 'ninguna')
+    + fila('Otros gastos', gastos, '#fbbf24', pcom_gastos.length + ' registrado(s)')
+    + '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:13px 0;'
+    + 'border-bottom:2px solid var(--border);margin-bottom:6px;">'
+    + '<div style="font-family:\'Montserrat\',sans-serif;font-weight:800;font-size:14px;color:#fff;">COSTO TOTAL DEL PEDIDO</div>'
+    + '<div style="font-family:ui-monospace,Consolas,monospace;font-size:19px;font-weight:700;color:var(--gold);">'
+    + _ccMoney(costoTotal) + '</div></div>'
+    + (hayVenta
+        ? fila('Venta (según la cotización)', venta, '#90cdf4')
+          + '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:11px 0;">'
+          + '<div style="font-family:\'Montserrat\',sans-serif;font-weight:800;font-size:14px;color:#fff;">UTILIDAD REAL</div>'
+          + '<div style="font-family:ui-monospace,Consolas,monospace;font-size:19px;font-weight:700;color:'
+          + (util < 0 ? '#f87171' : (margen != null && margen < 10 ? '#fbbf24' : '#86efac')) + ';">'
+          + _ccMoney(util) + (margen != null ? '  <span style="font-size:14px">(' + margen.toFixed(1) + '%)</span>' : '')
+          + '</div></div>'
+          + (util < 0 ? '<div style="background:rgba(248,113,113,.12);border-left:3px solid #f87171;padding:9px 13px;'
+             + 'font-size:12.5px;color:#fecaca;border-radius:0 6px 6px 0;margin-bottom:8px;">'
+             + 'Este pedido está costando más de lo que se vendió. Revisa los gastos y el costo de los proveedores.</div>' : '')
+        : '<div style="font-size:12px;color:var(--text-muted);padding:10px 0;">'
+          + 'Este plan no está ligado a una cotización con precios, así que no se puede calcular la utilidad.</div>')
+
+    // ── Gastos ──
+    + '<div style="margin-top:18px;">'
+    + '<div style="font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.13em;'
+    + 'text-transform:uppercase;color:var(--text-muted);margin-bottom:9px;">Otros gastos del pedido</div>'
+    + (pcom_gastos.length
+        ? pcom_gastos.map(g =>
+            '<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:rgba(255,255,255,.03);'
+            + 'border-radius:6px;margin-bottom:5px;">'
+            + '<div style="flex:1;min-width:0;"><div style="font-size:13px;color:#e6edfb;">' + _ccEsc(g.concepto) + '</div>'
+            + '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">'
+            + (g.proveedor ? _ccEsc(g.proveedor) + ' · ' : '') + (g.aplica_iva ? 'con IVA' : 'sin IVA')
+            + (g.nota ? ' · ' + _ccEsc(g.nota) : '') + '</div></div>'
+            + '<div style="font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#fbbf24;white-space:nowrap;">'
+            + _ccMoney(g.valor) + '</div>'
+            + '<button onclick="pcomGastoQuitar(' + g.id + ')" title="Quitar" style="background:none;border:none;'
+            + 'color:var(--red);cursor:pointer;font-size:17px;padding:0 4px;">×</button></div>').join('')
+        : '<div style="font-size:12.5px;color:var(--text-muted);padding:6px 0 10px;">'
+          + 'Todavía no hay gastos. Agrega el flete, la recogida en Bogotá o lo que haya costado mover este pedido.</div>')
+    + '<button onclick="pcomGastoAgregar()" style="background:rgba(232,160,32,.18);border:1px solid rgba(232,160,32,.55);'
+    + 'color:#fbbf24;border-radius:7px;padding:8px 15px;font-size:12.5px;font-weight:700;cursor:pointer;margin-top:6px;">'
+    + '+ Agregar gasto</button></div>';
+}
+
+async function pcomGastoAgregar() {
+  if (!pcomEsGerencia() || !pcom_current) return;
+  const concepto = prompt('¿Qué gasto?\n\nEjemplos: Flete a Yopal · Recogida Fontibón · Empaque · Cargue', '');
+  if (concepto === null) return;
+  if (!concepto.trim()) { showToast('Ponle un nombre al gasto', 'error'); return; }
+  const valorTxt = prompt('¿Cuánto costó "' + concepto.trim() + '"?\n\n(solo el número, sin puntos ni $)', '');
+  if (valorTxt === null) return;
+  const valor = parseFloat(String(valorTxt).replace(/[^0-9.,-]/g, '').replace(/\./g, '').replace(',', '.'));
+  if (isNaN(valor) || valor < 0) { showToast('Ese valor no es un número válido', 'error'); return; }
+  const prov = prompt('¿A quién se le paga? (transportadora, mensajero…)\n\nPuede quedar vacío.', '') || '';
+  const conIva = confirm('¿Este gasto lleva IVA?\n\nAceptar = sí lleva\nCancelar = no lleva');
+  try {
+    await absFetch('plan_gastos', {
+      method: 'POST', headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        cc: pcom_current.cc, concepto: concepto.trim(), proveedor: prov.trim() || null,
+        valor: valor, aplica_iva: !!conIva,
+        op_numero: (String(pcom_current.cc || '').match(/^CC-(OP-\d{4}-\d+)$/) || [])[1] || null,
+        created_by: (currentUser && (currentUser.name || currentUser.email)) || '—'
+      })
+    });
+    await pcomCentroCostosRecargar();
+    showToast('Gasto agregado: ' + concepto.trim() + ' ' + _ccMoney(valor), 'success');
+  } catch (e) { showToast('No se pudo guardar: ' + (e && e.message || e), 'error'); }
+}
+
+async function pcomGastoQuitar(id) {
+  const g = pcom_gastos.find(x => x && x.id === id);
+  if (!g) return;
+  if (!confirm('¿Quitar "' + g.concepto + '" (' + _ccMoney(g.valor) + ')?')) return;
+  try {
+    await absFetch('plan_gastos?id=eq.' + id, { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+    await pcomCentroCostosRecargar();
+  } catch (e) { showToast('No se pudo quitar: ' + e.message, 'error'); }
+}
+
+async function pcomCentroCostosRecargar() {
+  try {
+    pcom_gastos = (await absFetch('plan_gastos?cc=eq.' + encodeURIComponent(pcom_current.cc)
+      + '&select=id,concepto,proveedor,valor,aplica_iva,nota&order=id.asc&limit=200')) || [];
+  } catch (_) { }
+  _ccPintar();
+}
+
 function pcomUtilidad(){
   if(!pcomEsGerencia()){ showToast('Solo gerencia y Andrea pueden ver la utilidad','error'); return; }
   const c = pcom_current; if(!c){ return; }

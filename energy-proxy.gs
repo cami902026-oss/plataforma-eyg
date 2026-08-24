@@ -130,7 +130,8 @@ const SB_TABLAS = ['productos','kardex','familias','conteos','conteo_items',
                    'verificacion_despacho',   // SIG-CAL-FR-009 (6-ago-2026)
                    // OP — Órdenes de Pedido (23-ago-2026)
                    'ops','op_items','op_reservas','op_certificados','op_eventos',
-                   'op_consecutivos','proveedor_sedes','proveedor_sede_memoria','zonas_ruta'];
+                   'op_consecutivos','proveedor_sedes','proveedor_sede_memoria','zonas_ruta',
+                   'plan_gastos'];   // centro de costos del plan (24-ago-2026)
 
 // Funciones del servidor que la plataforma puede invocar (rpc/<nombre>).
 // Se listan una por una a propósito: `rpc` no puede ser un comodín, o cualquier
