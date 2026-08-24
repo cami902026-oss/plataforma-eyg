@@ -22452,7 +22452,7 @@ const OP_TIPOS = [
   [['VALVULA', 'VALV', 'VAL'], 'VALVULA'],
   [['ESPARRAGO', 'STUD'], 'ESPARRAGO'],
   [['EMPAQUE', 'ESPIROMETALICO', 'FLEXITALICO'], 'EMPAQUE'],
-  [['THREADOLET', 'WELDOLET', 'SOCKOLET', 'OLET'], 'OLET'],
+  [['THREADOLET', 'WELDOLET', 'SOCKOLET', 'ELBOLET', 'ELBOLEHT', 'OLET'], 'OLET'],
   [['TUBO', 'TUBERIA'], 'TUBO'], [['LAMINA'], 'LAMINA'], [['BROCA'], 'BROCA'],
   [['CABLE'], 'CABLE'], [['COPA'], 'COPA'], [['CONDULETA'], 'CONDULETA'],
   [['CONECTOR'], 'CONECTOR'], [['TUERCA'], 'TUERCA'], [['MANOMETRO'], 'MANOMETRO']
@@ -22466,7 +22466,11 @@ const OP_EJES = {
                 [['SLIPON', 'SO'], 'SLIPON'], [['SOCKET', 'SW', 'SOCKETWELD'], 'SOCKET']],
   cara:        [[['RTJ'], 'RTJ'], [['RF'], 'RF']],
   forma:       [[['REDU', 'REDUCIDA', 'REDUCTORA'], 'REDUCIDA']],
-  union:       [[['ROSCADO', 'ROSCADA', 'NPT', 'THRD'], 'ROSCADO'], [['BW', 'PS'], 'SOLDADO']]
+  union:       [[['ROSCADO', 'ROSCADA', 'NPT', 'THRD'], 'ROSCADO'], [['BW', 'PS'], 'SOLDADO']],
+  // El material NO es un detalle: una pieza en inoxidable no reemplaza una en
+  // acero al carbono ni al reves, por mucho que coincidan medida y forma.
+  material:    [[['INOX', 'INOXIDABLE', 'SS', 'INOXIDABLES'], 'INOX'],
+                [['AC', 'CARBON', 'CARBONO'], 'CARBON']]
 };
 const OP_MATERIAL = [105, 234, 106, 193, 194, 304, 316, 321];
 const OP_PRESION = [3000, 6000, 9000];
@@ -22538,6 +22542,10 @@ async function _opStockIndice(forzar) {
 
 function _opBuscarStock(desc, idx) {
   const td = _opTipo(desc), vd = _opVariante(desc);
+  // Si no sabemos QUE pieza es, no hay con que filtrar: cualquier producto que
+  // comparta un numero pasaria por bueno. Pasó con "elboleht 1/2\"×3M", que
+  // proponia una TEE de 1/2". Antes de adivinar, se calla.
+  if (!td) return [];
   const nd = _opNums(desc), bd = _opBase(desc);
   const out = [];
   for (const e of idx) {
