@@ -77268,7 +77268,7 @@
     "cliente": "CIAM",
     "contacto": "YEISON",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 1241919,
@@ -77441,12 +77441,54 @@
         "precioProveedor": 30000
       }
     ],
-    "fechaGuardado": "2026-08-22T12:58:22.557Z",
+    "fechaGuardado": "2026-08-24T01:47:03.627Z",
     "fechaEnvio": "2026-08-22T12:58:22.557Z",
+    "adjudicadaAt": "2026-08-24",
+    "valorAdjudicado": 991169,
+    "itemsAdjudicados": [
+      {
+        "uid": "213068a2-1a92-41ed-9baa-51dca6cfb782",
+        "qty": 1
+      },
+      {
+        "uid": "18d6f5de-63c7-4d20-8aaa-b149aaf34573",
+        "qty": 8
+      },
+      {
+        "uid": "377fd4db-f09e-4718-aab4-ba8cd0ebd12e",
+        "qty": 1
+      },
+      {
+        "uid": "04418b1e-72f6-4cea-b7f7-1cb9c3c1c7e7",
+        "qty": 1
+      },
+      {
+        "uid": "336885c8-9080-406d-8e0e-35b814852295",
+        "qty": 6
+      },
+      {
+        "uid": "c0ca5c27-5d8f-4596-addb-c7393f58e6c0",
+        "qty": 1
+      },
+      {
+        "uid": "31fac8c0-7afe-407b-a2cf-127c040f1e50",
+        "qty": 1
+      },
+      {
+        "uid": "226dc54e-1374-4029-9435-2822c42cebe8",
+        "qty": 3
+      },
+      {
+        "uid": "33702000-35c7-4cd9-99cb-c60aa1e8ba0e",
+        "qty": 1
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-24T01:46:57.703Z",
     "createdAt": "2026-08-21T14:38:47.855Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-22T12:58:22.557Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-24T01:47:03.627Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2032",
