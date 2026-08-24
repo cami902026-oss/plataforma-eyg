@@ -22908,14 +22908,17 @@ async function opPlanCargar() {
   } catch (_) { cont.innerHTML = ''; return; }
 
   const compra = (op_currentItems || []).filter(i => i.origen === 'COMPRA');
+  const bodega = (op_currentItems || []).filter(i => i.origen === 'BODEGA');
   op_current._plan = plan;
 
   if (!plan.length) {
-    if (!compra.length) { cont.innerHTML = ''; return; }
+    if (!compra.length && !bodega.length) { cont.innerHTML = ''; return; }
     cont.innerHTML = '<div class="op-plan-caja">'
       + '<div class="op-plan-t">Plan de compras</div>'
-      + '<div class="op-plan-d">' + compra.length + ' línea(s) por comprar. Genera el plan para que '
-      + 'compras pida precios, compare proveedores y emita las órdenes.</div>'
+      + '<div class="op-plan-d">' + compra.length + ' por comprar'
+      + (bodega.length ? ' y ' + bodega.length + ' de bodega' : '')
+      + '. El plan es el centro de costos del pedido: lleva lo que se compra <b>y</b> lo que '
+      + 'sale de bodega con su costo de inventario, para que el margen sea el real.</div>'
       + (opPuedeGenerarPlan()
           ? '<button class="btn btn-primary" onclick="opGenerarPlan()" style="margin-top:10px;padding:8px 16px;font-size:13px;">Generar plan de compras</button>'
           : '<div class="op-plan-d" style="margin-top:8px;">Lo genera compras (Alexandra o Andrea) o gerencia.</div>')
@@ -22928,7 +22931,13 @@ async function opPlanCargar() {
   const costoCot = compra.reduce((a, i) => a + (+i.costo_unit || 0) * (+i.cantidad || 0), 0);
   const dif = costoPlan - costoCot;
   const comprados = plan.filter(r => r.comprado).length;
-  const provs = [...new Set(plan.map(r => (r.proveedor || '').trim()).filter(Boolean))];
+  const provs = [...new Set(plan.map(r => (r.proveedor || '').trim())
+    .filter(p => p && !/^BODEGA/i.test(p)))];
+  // Líneas de la OP que todavía no están en el plan (p.ej. las de bodega en los
+  // planes generados antes de que entraran).
+  const enPlan = new Set(plan.map(r => String(r.descripcion || '').trim().toLowerCase()));
+  const faltan = compra.concat(bodega)
+    .filter(i => !enPlan.has(String(i.descripcion || '').trim().toLowerCase())).length;
 
   cont.innerHTML = '<div class="op-plan-caja">'
     + '<div class="op-plan-t">Plan de compras · <b style="color:var(--gold)">' + opEsc(cc) + '</b></div>'
@@ -22944,6 +22953,10 @@ async function opPlanCargar() {
     + (dif > 0.5 ? '<div class="op-plan-d" style="color:#e05a4a;margin-top:8px;">'
         + 'Comprar sale ' + opMoney(dif) + ' más caro que lo que se cotizó. Gerencia lo verá al aprobar.</div>' : '')
     + '<button class="btn btn-ghost" onclick="opAbrirPlan()" style="margin-top:10px;padding:7px 14px;font-size:12px;">Abrir el plan</button>'
+    + (faltan && opPuedeGenerarPlan()
+        ? ' <button class="btn btn-primary" onclick="opGenerarPlan()" style="margin-top:10px;padding:7px 14px;font-size:12px;">'
+          + 'Agregar las ' + faltan + ' líneas que faltan</button>'
+        : '')
     + '</div>';
 }
 
@@ -22957,33 +22970,76 @@ async function opGenerarPlan() {
   const op = op_current;
   if (!op) return;
   if (!opPuedeGenerarPlan()) { showToast('El plan lo genera compras (Alexandra o Andrea) o gerencia', 'error'); return; }
-  const compra = (op_currentItems || []).filter(i => i.origen === 'COMPRA');
-  if (!compra.length) { showToast('Esta OP no tiene líneas por comprar', 'info'); return; }
+  const usables = (op_currentItems || []).filter(i => ['COMPRA', 'BODEGA'].includes(i.origen));
+  if (!usables.length) { showToast('Esta OP no tiene líneas con origen definido', 'info'); return; }
   const cc = _opCC(op);
   try {
-    // Candado: si ese centro de costos ya existe, no se pisa en silencio.
-    // Es el mismo cuidado que ya tiene el módulo de Plan de Compras.
-    const ex = await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc) + '&select=item&limit=1');
-    if (ex && ex.length) { showToast('El plan ' + cc + ' ya existe. Ábrelo en vez de crearlo otra vez.', 'error'); return; }
+    // Si el plan ya existe no se pisa: se completan SOLO las líneas que falten.
+    // Es lo que pasó con CC-OP-2026-0007, generado antes de que lo de bodega
+    // entrara al plan.
+    const ex = (await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc)
+      + '&select=descripcion,item&limit=500')) || [];
+    const yaHay = new Set(ex.map(r => String(r.descripcion || '').trim().toLowerCase()));
+    const faltan = usables.filter(i => !yaHay.has(String(i.descripcion || '').trim().toLowerCase()));
+    if (ex.length && !faltan.length) {
+      showToast('El plan ' + cc + ' ya está completo. Ábrelo en vez de crearlo otra vez.', 'info'); return;
+    }
+    if (ex.length && !confirm('El plan ' + cc + ' ya existe con ' + ex.length + ' línea(s).\n\n'
+      + 'Se le van a AGREGAR ' + faltan.length + ' línea(s) que faltan (lo de bodega).\n'
+      + 'No se toca ni se borra nada de lo que ya está.\n\n¿Continuar?')) return;
 
-    const rows = compra.map((it, i) => ({
-      cc: cc,
-      cotizacion: op.cotizacion_id || '',
-      cliente: op.cliente || '',
-      fecha: new Date().toISOString().slice(0, 10),
-      item: i + 1,
-      descripcion: String(it.descripcion || '').trim(),
-      udm: it.udm || '',
-      cantidad: (it.cantidad == null ? null : +it.cantidad),
-      proveedor: String(it.proveedor || '').trim(),
-      costo_unit: (it.costo_unit == null ? null : +it.costo_unit),
-      nota: null, pago: 'PENDIENTE', sin_oc: false,
-      op_numero: op.numero,                        // el enlace de vuelta
-      created_by: (currentUser && (currentUser.name || currentUser.email)) || '—'
-    }));
+    // Costo del inventario para lo que sale de bodega: sin eso el centro de
+    // costos miente y el margen se ve mejor de lo que es.
+    const codigos = faltan.filter(i => i.origen === 'BODEGA' && i.producto_codigo)
+                          .map(i => i.producto_codigo);
+    const costoInv = {};
+    if (codigos.length) {
+      try {
+        const ps = (await absFetch('productos?codigo=in.(' + codigos.map(encodeURIComponent).join(',')
+          + ')&select=codigo,costo_compra&limit=500')) || [];
+        ps.forEach(p => { costoInv[p.codigo] = p.costo_compra; });
+      } catch (_) { }
+    }
+
+    let n = ex.length;
+    const rows = faltan.map(it => {
+      const esBod = it.origen === 'BODEGA';
+      const costo = esBod
+        ? (it.producto_codigo && costoInv[it.producto_codigo] != null ? +costoInv[it.producto_codigo] : null)
+        : (it.costo_unit == null ? null : +it.costo_unit);
+      n++;
+      return {
+        cc: cc,
+        cotizacion: op.cotizacion_id || '',
+        cliente: op.cliente || '',
+        fecha: new Date().toISOString().slice(0, 10),
+        item: n,
+        descripcion: String(it.descripcion || '').trim(),
+        udm: it.udm || '',
+        cantidad: (it.cantidad == null ? null : +it.cantidad),
+        // "BODEGA" como proveedor es la convención que el equipo ya usa a mano.
+        proveedor: esBod ? 'BODEGA' : String(it.proveedor || '').trim(),
+        costo_unit: costo,
+        nota: esBod
+          ? ('Sale de bodega' + (it.producto_codigo ? ' · ' + it.producto_codigo : '')
+             + (costo == null ? ' · SIN COSTO EN INVENTARIO' : ''))
+          : null,
+        // A bodega no se le emite orden de compra ni se le paga: ya es nuestro.
+        pago: esBod ? 'PAGADO' : 'PENDIENTE',
+        sin_oc: esBod,
+        comprado: esBod,
+        op_numero: op.numero,                        // el enlace de vuelta
+        created_by: (currentUser && (currentUser.name || currentUser.email)) || '—'
+      };
+    });
     await absFetch('plan_compras', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(rows) });
-    await opEvento(op.id, 'plan_generado', cc + ' · ' + rows.length + ' líneas por comprar');
-    showToast('✅ Plan ' + cc + ' generado con ' + rows.length + ' líneas', 'success', { durationMs: 7000 });
+    const nBod = rows.filter(r => r.sin_oc).length;
+    await opEvento(op.id, ex.length ? 'plan_completado' : 'plan_generado',
+      cc + ' · ' + rows.length + ' líneas (' + nBod + ' de bodega)');
+    const sinCosto = rows.filter(r => r.sin_oc && r.costo_unit == null).length;
+    showToast('✅ Plan ' + cc + (ex.length ? ' completado con ' : ' generado con ') + rows.length + ' líneas'
+      + (nBod ? ' · ' + nBod + ' de bodega' : '')
+      + (sinCosto ? ' · ⚠️ ' + sinCosto + ' sin costo de inventario' : ''), 'success', { durationMs: 9000 });
     await opPlanCargar();
     opRenderEventos(op.id);
   } catch (e) {
@@ -23490,9 +23546,13 @@ function pcomCalcRows(items){
   let tot = { subtotal:0, iva:0, rete:0, total:0 };
   Object.keys(provs).forEach(p=>{
     const x = provs[p];
-    x.iva = x.subtotal * PCOM_TASA_IVA;
+    // BODEGA no es un proveedor: es material que ya es nuestro. No se le paga
+    // IVA ni se le practica retefuente a uno mismo. Antes esas líneas inflaban
+    // el total del plan (el equipo ya escribía "BODEGA" a mano en 104 líneas).
+    x.esBodega = /^BODEGA/.test(p);
+    x.iva = x.esBodega ? 0 : x.subtotal * PCOM_TASA_IVA;
     x.autoret = pcomEsAutoRet(p);
-    x.aplicaRete = (x.subtotal >= PCOM_BASE_RETE && !x.autoret && p!=='(SIN PROVEEDOR)');
+    x.aplicaRete = (!x.esBodega && x.subtotal >= PCOM_BASE_RETE && !x.autoret && p!=='(SIN PROVEEDOR)');
     x.rete = x.aplicaRete ? x.subtotal * PCOM_TASA_RETE : 0;
     x.total = x.subtotal + x.iva - x.rete;
     tot.subtotal += x.subtotal; tot.iva += x.iva; tot.rete += x.rete; tot.total += x.total;
