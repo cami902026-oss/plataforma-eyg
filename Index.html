@@ -1055,6 +1055,27 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   #page-costos .cc-fila .cc-r{ text-align:left; }
 }
 
+#page-op .op-desp-cab,#page-op .op-desp-fila{
+  display:grid;grid-template-columns:1fr 110px 190px;gap:10px;align-items:center;
+}
+#page-op .op-desp-cab > div{
+  padding:6px 2px;font-family:var(--op-mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-muted);
+}
+#page-op .op-desp-fila{
+  padding:8px 2px;border-top:1px solid rgba(30,58,110,.5);
+}
+#page-op .op-desp-fila.op-desp-mal{ background:rgba(224,90,74,.08); }
+#page-op .op-desp-d{ font-size:12.5px;color:#e6edfb;line-height:1.4;min-width:0; }
+#page-op .op-desp-d small{
+  display:block;font-family:var(--op-mono);font-size:10.5px;color:var(--text-muted);margin-top:2px;
+}
+#page-op .op-desp-c{ text-align:right; }
+@media (max-width:700px){
+  #page-op .op-desp-cab{ display:none; }
+  #page-op .op-desp-fila{ grid-template-columns:1fr; }
+}
+
 #page-op .op-certs-caja{
   background:var(--op-papel);border:1px solid var(--op-linea);
   border-left:3px solid var(--op-bodega);border-radius:0 3px 3px 0;
@@ -22146,6 +22167,11 @@ function opRenderEditor() {
   const b = [];
   if (editable) b.push('<button class="btn btn-ghost" onclick="opGuardarCabecera()" style="padding:8px 14px;font-size:12px;">Guardar</button>');
   b.push('<button class="btn btn-ghost" onclick="opRevisarStock(false)" title="Comparar cada línea contra el inventario real" style="padding:8px 14px;font-size:12px;">Revisar inventario</button>');
+  // Alistar y despachar: solo con la OP ya aprobada y si queda algo de bodega.
+  if (['aprobada', 'en_ejecucion'].includes(o.estado) && opPuedeDespachar()
+      && (op_currentItems || []).some(i => i.origen === 'BODEGA' && i.estado !== 'despachado')) {
+    b.push('<button class="btn" onclick="opDespacharAbrir()" title="Crea la remisión y descuenta el inventario en un solo acto" style="background:rgba(63,191,99,.18);border:1px solid #3FBF63;color:#8ce8a6;padding:8px 16px;font-size:13px;font-weight:700;">📦 Alistar y despachar</button>');
+  }
   // El orden es: borrador → compras → gerencia. Nunca del borrador al jefe.
   if (o.estado === 'borrador' || o.estado === 'devuelta')
     b.push('<button class="btn btn-primary" onclick="opPasarACompras()" style="padding:8px 16px;font-size:13px;">Pasar a compras</button>');
@@ -22537,6 +22563,263 @@ async function opGuardarCabecera() {
     showToast('💾 Guardada', 'success');
   } catch (e) {
     showToast('No se pudo guardar: ' + e.message, 'error');
+  }
+}
+
+// ═══════════ ALISTAR Y DESPACHAR DESDE LA OP ════════════════════════════════
+// Hoy bodega registra la salida en Abastecimiento y la remisión se hace aparte,
+// en su módulo. Los dos actos se cruzan por TEXTO (kardex.remision ILIKE) y si
+// alguien escribe el número distinto quedan huérfanos.
+//
+// Aquí es un solo acto: se valida el stock, se crea la remisión, se descuenta
+// el inventario y se cierran las reservas. Con el mismo cuidado que ya tiene el
+// módulo de Remisiones, porque esto toca inventario real:
+//   · el stock se relee del servidor justo antes (no de memoria, que envejece)
+//   · caja negra en el equipo ANTES de tocar nada
+//   · ítem por ítem, y si alguno falla se dice CUÁL y la OP no se marca despachada
+function opPuedeDespachar() {
+  const e = (currentUser && (currentUser.email || '')).toLowerCase();
+  return ['yesid', 'andrea', 'alberto'].includes(e);
+}
+
+async function opDespacharAbrir() {
+  if (!op_current) return;
+  if (!opPuedeDespachar()) { showToast('Despacha bodega (Yesid), Andrea o gerencia', 'error'); return; }
+  if (!['aprobada', 'en_ejecucion'].includes(op_current.estado)) {
+    showToast('La OP tiene que estar aprobada para despachar', 'error'); return;
+  }
+  const bod = (op_currentItems || []).filter(i => i.origen === 'BODEGA' && i.estado !== 'despachado');
+  if (!bod.length) { showToast('No hay ítems de bodega pendientes de despachar', 'info'); return; }
+
+  const sinProd = bod.filter(i => !i.producto_codigo);
+  if (sinProd.length) {
+    showToast('Hay ' + sinProd.length + ' ítem(s) de bodega sin confirmar cuál producto es. '
+      + 'Confírmalos en la lista antes de despachar.', 'error', { durationMs: 10000 });
+    return;
+  }
+
+  // Stock FRESCO: entre que se armó la OP y este momento pudo salir material.
+  let stock = {};
+  try {
+    const ps = (await absFetch('productos?codigo=in.(' + bod.map(i => encodeURIComponent(i.producto_codigo)).join(',')
+      + ')&select=codigo,descripcion,stock_actual,costo_compra,salidas&limit=200')) || [];
+    ps.forEach(p => { stock[p.codigo] = p; });
+  } catch (e) { showToast('No se pudo leer el inventario: ' + e.message, 'error'); return; }
+
+  // Siguiente número de remisión, como referencia. Se puede cambiar.
+  let sug = '';
+  try {
+    const ult = (await absFetch('remisiones?select=remision&order=remision.desc&limit=30')) || [];
+    const nums = ult.map(r => parseInt(String(r.remision).replace(/\D/g, ''), 10)).filter(n => !isNaN(n));
+    if (nums.length) sug = String(Math.max.apply(null, nums) + 1);
+  } catch (_) { }
+
+  op_current._despacho = { items: bod, stock: stock };
+  _opDespachoModal(sug);
+}
+
+function _opDespachoModal(sug) {
+  const d = op_current._despacho;
+  const prev = document.getElementById('op-desp-modal'); if (prev) prev.remove();
+  const ov = document.createElement('div');
+  ov.id = 'op-desp-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100003;'
+    + 'display:flex;align-items:center;justify-content:center;padding:16px;';
+
+  const filas = d.items.map((it, n) => {
+    const p = d.stock[it.producto_codigo] || {};
+    const hay = +p.stock_actual || 0;
+    const q = +it.cantidad || 0;
+    const falta = hay < q;
+    return '<div class="op-desp-fila' + (falta ? ' op-desp-mal' : '') + '">'
+      + '<div class="op-desp-d">' + opEsc(it.descripcion)
+      + '<small>' + opEsc(it.producto_codigo) + ' · ' + opEsc(p.descripcion || '')
+      + ' · quedan <b style="color:' + (falta ? '#e05a4a' : '#3FBF63') + '">' + hay + '</b></small></div>'
+      + '<div class="op-desp-c"><input type="number" step="any" min="0" value="' + q + '"'
+      + ' data-n="' + n + '" data-campo="cantidad" class="op-inp op-inp-num"></div>'
+      + '<div><input type="text" placeholder="colada / heat number" value="' + opEsc(it.colada || '') + '"'
+      + ' data-n="' + n + '" data-campo="colada" class="op-inp"></div>'
+      + '</div>';
+  }).join('');
+
+  ov.innerHTML = '<div style="background:var(--card-bg,#0d1f3c);border:1px solid var(--border);border-radius:12px;'
+    + 'max-width:900px;width:100%;max-height:92vh;display:flex;flex-direction:column;">'
+    + '<div style="padding:18px 22px 12px;border-bottom:1px solid var(--border);">'
+    + '<div style="font-family:\'Montserrat\',sans-serif;font-weight:800;font-size:17px;color:#fff;">'
+    + 'Alistar y despachar · ' + opEsc(op_current.numero) + '</div>'
+    + '<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">'
+    + 'En un solo acto: se crea la remisión y se descuenta el inventario. La colada es obligatoria.</div></div>'
+    + '<div style="padding:16px 22px;overflow-y:auto;flex:1;">'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">'
+    + '<div class="form-group" style="margin:0;"><label style="font-size:10px;letter-spacing:.1em;">N° REMISIÓN</label>'
+    + '<input type="text" id="op-desp-num" value="' + opEsc(sug || '') + '" style="width:100%;"></div>'
+    + '<div class="form-group" style="margin:0;"><label style="font-size:10px;letter-spacing:.1em;">LUGAR DE ENTREGA</label>'
+    + '<input type="text" id="op-desp-lugar" placeholder="Yopal, Puerto Gaitán…" style="width:100%;"></div>'
+    + '<div class="form-group" style="margin:0;"><label style="font-size:10px;letter-spacing:.1em;">N° O.C. DEL CLIENTE</label>'
+    + '<input type="text" id="op-desp-oc" value="' + opEsc(op_current.oc_cliente || '') + '" style="width:100%;"></div>'
+    + '</div>'
+    + '<div class="op-desp-cab"><div>Material</div><div class="op-desp-c">Cantidad</div><div>Colada</div></div>'
+    + filas
+    + '<div class="form-group" style="margin-top:12px;"><label style="font-size:10px;letter-spacing:.1em;">OBSERVACIONES</label>'
+    + '<textarea id="op-desp-obs" rows="2" style="width:100%;"></textarea></div>'
+    + '<div id="op-desp-aviso"></div></div>'
+    + '<div style="padding:12px 22px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;">'
+    + '<button onclick="_opDespachoCerrar()" style="background:rgba(255,255,255,.08);border:1px solid var(--border);'
+    + 'border-radius:8px;padding:9px 18px;color:#cbd5e1;font-weight:700;cursor:pointer;">Cancelar</button>'
+    + '<button id="op-desp-ok" onclick="opDespacharConfirmar()" style="background:rgba(63,191,99,.22);'
+    + 'border:1px solid #3FBF63;border-radius:8px;padding:9px 20px;color:#8ce8a6;font-weight:700;cursor:pointer;">'
+    + 'Despachar y descontar</button></div></div>';
+  document.body.appendChild(ov);
+  setTimeout(() => { try { document.getElementById('op-desp-num').focus(); } catch (_) { } }, 60);
+}
+
+function _opDespachoCerrar() { const m = document.getElementById('op-desp-modal'); if (m) m.remove(); }
+
+async function opDespacharConfirmar() {
+  const d = op_current && op_current._despacho;
+  if (!d) return;
+  const num = (document.getElementById('op-desp-num').value || '').trim();
+  const lugar = (document.getElementById('op-desp-lugar').value || '').trim();
+  const oc = (document.getElementById('op-desp-oc').value || '').trim();
+  const obs = (document.getElementById('op-desp-obs').value || '').trim();
+  if (!num) { showToast('Falta el N° de remisión', 'error'); return; }
+
+  // Lo que quedó escrito en el modal
+  const lineas = [];
+  document.querySelectorAll('#op-desp-modal [data-n]').forEach(el => {
+    const n = +el.dataset.n;
+    if (!lineas[n]) lineas[n] = {};
+    lineas[n][el.dataset.campo] = el.value;
+  });
+
+  const errores = [];
+  const listo = d.items.map((it, n) => {
+    const L = lineas[n] || {};
+    const q = parseFloat(L.cantidad);
+    const colada = String(L.colada || '').trim();
+    const p = d.stock[it.producto_codigo] || {};
+    if (!q || q <= 0) errores.push('Cantidad inválida en "' + it.descripcion + '"');
+    if (!colada) errores.push('Falta la colada de "' + it.descripcion + '"');
+    if (q > (+p.stock_actual || 0)) errores.push('No alcanza el stock de "' + it.descripcion
+      + '" (piden ' + q + ', quedan ' + (+p.stock_actual || 0) + ')');
+    return { it: it, prod: p, qty: q, colada: colada };
+  });
+  const av = document.getElementById('op-desp-aviso');
+  if (errores.length) {
+    av.innerHTML = '<div style="background:rgba(224,90,74,.12);border-left:3px solid #e05a4a;padding:11px 14px;'
+      + 'border-radius:0 6px 6px 0;margin-top:10px;font-size:12.5px;color:#fecaca;line-height:1.7;">'
+      + errores.map(opEsc).join('<br>') + '</div>';
+    return;
+  }
+  av.innerHTML = '';
+
+  if (!confirm('Vas a despachar ' + listo.length + ' ítem(s) con la remisión ' + num + '.\n\n'
+    + 'Esto DESCUENTA del inventario y no se deshace solo.\n\n¿Continuar?')) return;
+
+  const btn = document.getElementById('op-desp-ok');
+  if (btn) { btn.disabled = true; btn.textContent = 'Despachando…'; }
+
+  // 🛟 Caja negra ANTES de tocar el servidor, igual que en Remisiones. Si algo
+  // sale mal a mitad, queda constancia de lo que se iba a hacer.
+  try {
+    const caja = JSON.parse(localStorage.getItem('energy_op_despacho') || '{}');
+    caja[op_current.numero + '-' + num] = {
+      ts: new Date().toISOString(), por: (currentUser && currentUser.name) || '—',
+      remision: num, lugar: lugar, lineas: listo.map(x => ({
+        codigo: x.prod.codigo, desc: x.it.descripcion, qty: x.qty, colada: x.colada
+      }))
+    };
+    localStorage.setItem('energy_op_despacho', JSON.stringify(caja));
+  } catch (_) { }
+
+  const fecha = new Date().toISOString().split('T')[0];
+  const yo = (currentUser && (currentUser.name || currentUser.email)) || 'SISTEMA';
+  const fallos = [];
+
+  try {
+    // 1) La remisión (el documento). Si algo falla después, queda el papel y se
+    //    ve qué faltó descontar — al revés sería stock movido sin respaldo.
+    const rows = listo.map((x, i) => ({
+      remision: num, fecha: fecha, cliente: op_current.cliente || '', lugar: lugar,
+      oc: oc || null, cotizacion_id: op_current.cotizacion_id || null,
+      op_numero: op_current.numero,
+      item: i + 1, descripcion: String(x.it.descripcion || '').trim(),
+      cantidad: x.qty, marca: '', colada: x.colada, desviacion: '',
+      observaciones: obs, contiene: '', recibido_por: op_current.cliente || '',
+      created_by: yo
+    }));
+    await absFetch('remisiones', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(rows) });
+
+    // 2) El inventario, ítem por ítem. Misma mecánica que el carrito de
+    //    Abastecimiento: kardex + productos, y se anota cuál falla.
+    for (const x of listo) {
+      try {
+        const nuevo = (+x.prod.stock_actual || 0) - x.qty;
+        await absFetch('kardex', {
+          method: 'POST', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({
+            fecha: fecha, hora: new Date().toTimeString().split(' ')[0],
+            codigo_producto: x.prod.codigo, descripcion_producto: x.prod.descripcion,
+            tipo: 'SALIDA', cantidad: x.qty, stock_resultante: nuevo,
+            costo: x.prod.costo_compra || 0, responsable: yo,
+            lote: '', colada: x.colada, remision: num, op_numero: op_current.numero,
+            notas: 'Despacho de ' + op_current.numero + (obs ? ' · ' + obs : '')
+          })
+        });
+        await absFetch('productos?codigo=eq.' + encodeURIComponent(x.prod.codigo), {
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ stock_actual: nuevo, salidas: (+x.prod.salidas || 0) + x.qty,
+                                 updated_at: new Date().toISOString() })
+        });
+        // El ítem de la OP queda despachado con su colada
+        await absFetch('op_items?id=eq.' + x.it.id, {
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ estado: 'despachado', colada: x.colada, remision: num, updated_by: yo })
+        });
+        Object.assign(x.it, { estado: 'despachado', colada: x.colada, remision: num });
+      } catch (e) {
+        fallos.push(x.it.descripcion + ' (' + (e && e.message || e) + ')');
+      }
+    }
+
+    // 3) Las reservas de esos ítems ya se consumieron: si se quedan activas, el
+    //    inventario miente sobre lo disponible.
+    try {
+      await absFetch('op_reservas?op_id=eq.' + op_current.id + '&estado=eq.activa', {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ estado: 'consumida', liberada_at: new Date().toISOString(),
+                               liberada_por: yo, motivo: 'Despachado en la remisión ' + num })
+      });
+    } catch (_) { }
+
+    await opEvento(op_current.id, 'despachado',
+      'Remisión ' + num + ' · ' + (listo.length - fallos.length) + ' de ' + listo.length + ' ítems'
+      + (lugar ? ' · ' + lugar : ''));
+
+    // La OP solo pasa a despachada si TODO salió y no queda nada de bodega.
+    if (!fallos.length) {
+      const quedan = (op_currentItems || []).filter(i => i.origen === 'BODEGA' && i.estado !== 'despachado').length;
+      if (!quedan) {
+        await opCambiarEstado('despachada', {});
+        try { _opDispararAvisos(); } catch (_) { }
+      } else {
+        await opCambiarEstado('en_ejecucion', {});
+      }
+    }
+
+    _opDespachoCerrar();
+    _opStockIdx = null;                       // el inventario cambió: se vuelve a leer
+    if (fallos.length) {
+      showToast('⚠️ Remisión ' + num + ' creada, pero NO se descontó: ' + fallos.join(' · ')
+        + '. Revísalo en Abastecimiento.', 'error', { durationMs: 15000 });
+    } else {
+      showToast('✅ Remisión ' + num + ' creada y ' + listo.length + ' ítem(s) descontados del inventario',
+        'success', { durationMs: 9000 });
+    }
+    await opAbrir(op_current.id);
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Despachar y descontar'; }
+    showToast('No se pudo despachar: ' + (e && e.message || e), 'error', { durationMs: 12000 });
   }
 }
 
