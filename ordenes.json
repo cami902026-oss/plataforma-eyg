@@ -7498,5 +7498,209 @@
     "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1787334705110",
+    "num": "LM2022",
+    "cliente": "PETRORIOS",
+    "desc": "Cotización LM2022 · 10 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-21",
+    "valor": 436343.25,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM2022",
+    "createdAt": "2026-08-21T17:51:45.110Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-21T17:51:45.110Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1787335547321",
+    "num": "LM2021",
+    "cliente": "PETRORIOS",
+    "desc": "Cotización LM2021 · 3 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-21",
+    "valor": 156467.15,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM2021",
+    "createdAt": "2026-08-21T18:05:47.322Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-21T18:05:47.322Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1787341067408",
+    "num": "3788",
+    "cliente": "MAG SERVICIOS",
+    "desc": "Cotización LM1655 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-21",
+    "valor": 2427600,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-08-21",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "DON SAMUEL",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-25",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM1655",
+    "createdAt": "2026-08-21T19:37:47.409Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-21T19:37:47.409Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1787342630763",
+    "num": "LM2032",
+    "cliente": "MONTITEC",
+    "desc": "Cotización LM2032 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-08-21",
+    "valor": 6658645,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-08-21",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-08-24",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "LM2032",
+    "createdAt": "2026-08-21T20:03:50.763Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-08-21T20:03:50.763Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
   }
 ]
