@@ -1002,6 +1002,59 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #page-op .op-r-compra .op-rama-b i{ background:var(--op-compra); }
 @media (max-width:640px){ #page-op .op-bif{ grid-template-columns:1fr; } }
 
+/* ── CENTRO DE COSTOS ─────────────────────────────────────────────────────
+   Lo mismo que en la OP: todo encerrado bajo #page-costos para que ninguna
+   regla pueda alcanzar otro módulo.                                         */
+#page-costos{ --cc-mono:ui-monospace,'SFMono-Regular',Consolas,monospace; }
+#page-costos .cc-totales{ display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px; }
+#page-costos .cc-tile{
+  background:var(--card-bg);border:1px solid var(--border);border-left:3px solid var(--gold);
+  border-radius:3px;padding:12px 16px;min-width:150px;flex:1;
+}
+#page-costos .cc-tile span{
+  display:block;font-family:var(--cc-mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;
+}
+#page-costos .cc-tile b{ font-family:var(--cc-mono);font-size:16px;color:#fff;font-weight:600; }
+#page-costos .cc-cab,#page-costos .cc-fila{
+  display:grid;grid-template-columns:1.5fr 1.1fr .9fr .9fr .7fr .9fr .55fr;align-items:center;
+}
+#page-costos .cc-cab{
+  background:rgba(255,255,255,.03);border:1px solid var(--border);border-bottom:none;
+  border-radius:3px 3px 0 0;
+}
+#page-costos .cc-cab > div{
+  padding:9px 12px;font-family:var(--cc-mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-muted);
+}
+#page-costos .cc-r{ text-align:right; }
+#page-costos .cc-fila{
+  border:1px solid var(--border);border-top:none;background:var(--card-bg);
+  cursor:pointer;transition:background .14s;
+}
+#page-costos .cc-fila:hover{ background:#132b52; }
+#page-costos .cc-fila:focus-visible{ outline:2px solid var(--gold);outline-offset:-2px; }
+#page-costos .cc-fila > div{ padding:11px 12px;min-width:0; }
+#page-costos .cc-id{ font-size:12.5px;font-weight:700;color:var(--gold);word-break:break-word; }
+#page-costos .cc-id small,#page-costos .cc-n small{
+  display:block;font-family:var(--cc-mono);font-size:10px;font-weight:400;
+  color:var(--text-muted);margin-top:3px;
+}
+#page-costos .cc-cli{ font-size:13px;color:#e6edfb;font-weight:600; }
+#page-costos .cc-n{ font-family:var(--cc-mono);font-size:12.5px;color:#e6edfb;white-space:nowrap; }
+#page-costos .cc-vacio{
+  text-align:center;padding:50px 20px;color:var(--text-muted);
+  border:1px solid var(--border);border-radius:3px;background:var(--card-bg);
+}
+#page-costos .cc-vacio strong{
+  display:block;font-family:'Montserrat',sans-serif;font-size:15px;color:#cfe0ff;margin-bottom:6px;
+}
+@media (max-width:900px){
+  #page-costos .cc-cab{ display:none; }
+  #page-costos .cc-fila{ grid-template-columns:1fr 1fr; }
+  #page-costos .cc-fila .cc-r{ text-align:left; }
+}
+
 #page-op .op-certs-caja{
   background:var(--op-papel);border:1px solid var(--op-linea);
   border-left:3px solid var(--op-bodega);border-radius:0 3px 3px 0;
@@ -1218,6 +1271,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="nav-item" id="nav-abastecimiento" onclick="navigate('abastecimiento')"><span class="icon">🏭</span>Abastecimiento</div>
       <div class="nav-item" onclick="navigate('remisiones')"><span class="icon">🧾</span>Remisiones</div>
       <div class="nav-item" onclick="navigate('compras')"><span class="icon">🛒</span>Plan de Compras</div>
+      <div class="nav-item" id="nav-costos" onclick="navigate('costos')"><span class="icon">💰</span>Centro de Costos</div>
       <div class="nav-item" onclick="navigate('pdfstudio')"><span class="icon">📄</span>PDF Studio</div>
       <div class="nav-item" onclick="navigate('ayuda')"><span class="icon">❓</span>Ayuda</div>
       <div class="nav-item" onclick="navigate('configuracion')"><span class="icon">⚙️</span>Configuración</div>
@@ -3511,6 +3565,22 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
         </div>
       </div>
 
+
+      <!-- ═══════════ CENTRO DE COSTOS (24-ago-2026) ═══════════
+           Solo Alberto y Andrea. Lleva costos, márgenes y utilidad. -->
+      <div class="page" id="page-costos">
+        <div class="abs-toolbar">
+          <input type="text" id="cc-search" placeholder="Buscar centro de costos, cliente o cotización..." oninput="ccRender()" style="flex:1;min-width:220px;">
+          <select id="cc-mes" onchange="ccRender()" style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;padding:9px 14px;color:#fff;font-size:13px;min-width:150px;">
+            <option value="">Todos los meses</option>
+          </select>
+          <button class="btn btn-ghost" onclick="ccCargar()" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
+          <button class="btn btn-primary" onclick="ccExcel()" title="Centros de costos, análisis por proveedor y el detalle para dinámicas" style="padding:8px 16px;font-size:13px;">⬇ Excel de análisis</button>
+        </div>
+        <div class="cc-totales" id="cc-totales"></div>
+        <div id="cc-lista"><div class="cc-vacio">Cargando…</div></div>
+      </div>
+
       <!-- ===== PLAN DE COMPRAS ===== -->
       <div class="page" id="page-compras">
         <!-- VISTA LISTA -->
@@ -4123,6 +4193,9 @@ function userCanSeeModule(mod) {
   const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'JEFE';
   // Históricos es estrictamente admin/jefe (no se puede destrabar por config)
   if (mod === 'historico') return isAdmin;
+  // Centro de Costos: SOLO Alberto y Andrea. Lleva costos, márgenes y utilidad;
+  // no se puede abrir a nadie más desde el panel de permisos.
+  if (mod === 'costos') return email === 'alberto' || email === 'andrea';
   // Cartera: Andrea, Alberto y Nelsy (no se puede destrabar por config)
   if (mod === 'cartera') return email === 'andrea' || email === 'alberto' || email === 'nelsy';
   // Programación Equipo: TODO el equipo la VE (para saber quién está presencial);
@@ -6549,13 +6622,14 @@ function navigate(page) {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
   currentPage = page;
-  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',pdfstudio:'PDF Studio',ayuda:'Ayuda'};
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',costos:'Centro de Costos',pdfstudio:'PDF Studio',ayuda:'Ayuda'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
   if(page==='remisiones') remiInit();
   if(page==='visitas') { try{ visPlanInit(); }catch(_){} }
   if(page==='programacion') { try{ peInit(); }catch(_){} try{ sabPlanInit(); }catch(_){} }
   if(page==='compras') pcomInit();
+  if(page==='costos') { try{ ccInit(); }catch(e){ console.error('[cc]',e); } }
   if(page==='ayuda') ayudaRender();
   if(page==='cartera') { setTimeout(()=>{ try { cnuCargar(false); } catch(_){} }, 100); setTimeout(loadCarteraUrlUI, 400); }
   if(page==='pdfstudio') { const _f=document.getElementById('pdfstudio-frame'); if(_f && !_f.src) _f.src='pdf-studio.html'; }   // v155: carga perezosa (las librerías PDF solo se bajan al entrar)
@@ -23812,6 +23886,270 @@ function pcomEsGerencia(){
 // Genera un Excel comparando lo VENDIDO (precio de la cotización ligada) contra el COSTO del
 // proveedor (costo_unit del plan), con utilidad por ítem, %, totales y un espacio de transporte.
 // 100% lectura: no toca el plan, la cotización ni la base de datos.
+// ═══════════ MÓDULO CENTRO DE COSTOS ════════════════════════════════════════
+// Vista consolidada de todos los centros de costos: qué se vendió, qué costó y
+// qué quedó. Solo Alberto y Andrea — lleva costos, márgenes y utilidad.
+//
+// "Vendido" es lo ADJUDICADO por el cliente, no lo cotizado: si se cotizaron
+// $10M y le adjudicaron $6M, el centro de costos vale $6M. La mitad de las
+// adjudicaciones de agosto fueron parciales, así que usar lo cotizado infla la
+// venta y hace ver márgenes que no existen.
+let cc_datos = [];
+let cc_cargando = false;
+
+function ccPuedeVer() {
+  const e = (currentUser && (currentUser.email || '')).toLowerCase();
+  return ['alberto', 'andrea'].includes(e);
+}
+
+const ccMoney = n => '$' + Math.round(+n || 0).toLocaleString('es-CO');
+const ccEsc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+async function ccInit() {
+  if (!ccPuedeVer()) return;
+  if (!cc_datos.length) await ccCargar();
+  else ccRender();
+}
+
+async function ccCargar() {
+  if (cc_cargando) return;
+  cc_cargando = true;
+  const cont = document.getElementById('cc-lista');
+  if (cont) cont.innerHTML = '<div class="cc-vacio">Cargando…</div>';
+  try {
+    // Las tres piezas del costo real, en tres consultas.
+    const [lineas, gastos] = await Promise.all([
+      absFetch('plan_compras?select=cc,cotizacion,cliente,fecha,descripcion,cantidad,costo_unit,proveedor,comprado,recibida,created_by&limit=10000'),
+      absFetch('plan_gastos?select=cc,concepto,proveedor,valor,aplica_iva&limit=2000').catch(() => [])
+    ]);
+
+    // Lo vendido sale de la cotización: primero lo adjudicado, y si nunca se
+    // registró, el subtotal — marcado, para no confundir un dato con una suposición.
+    const cots = {};
+    (getData('bd_cotizaciones', []) || []).forEach(c => {
+      if (c && c.id) cots[String(c.id).trim().toUpperCase()] = c;
+    });
+
+    const g = {};
+    (lineas || []).forEach(r => {
+      const k = r.cc; if (!k) return;
+      if (!g[k]) g[k] = { cc: k, cliente: '', fecha: '', cots: new Set(), lineas: 0,
+                          costoCompra: 0, costoBodega: 0, gastos: 0, comprados: 0,
+                          provs: {}, creadoPor: '' };
+      const d = g[k];
+      const v = (+r.costo_unit || 0) * (+r.cantidad || 0);
+      const p = String(r.proveedor || '').trim().toUpperCase();
+      d.lineas++;
+      if (/^BODEGA/.test(p)) d.costoBodega += v;
+      else { d.costoCompra += v; if (p) d.provs[p] = (d.provs[p] || 0) + v; }
+      if (r.comprado) d.comprados++;
+      if (r.cotizacion) d.cots.add(String(r.cotizacion).trim().toUpperCase());
+      if (r.cliente && !d.cliente) d.cliente = r.cliente;
+      if (r.fecha && (!d.fecha || r.fecha < d.fecha)) d.fecha = r.fecha;
+      if (r.created_by && !d.creadoPor) d.creadoPor = r.created_by;
+    });
+    (gastos || []).forEach(x => { if (g[x.cc]) g[x.cc].gastos += (+x.valor || 0); });
+
+    cc_datos = Object.values(g).map(d => {
+      let vendido = 0, exacto = true;
+      d.cots.forEach(id => {
+        const c = cots[id];
+        if (!c) { exacto = false; return; }
+        if (c.valorAdjudicado != null) vendido += +c.valorAdjudicado;
+        else { vendido += (+c.subtotal || 0); exacto = false; }   // nunca se registró
+      });
+      const costo = d.costoCompra + d.costoBodega + d.gastos;
+      return Object.assign(d, {
+        cots: [...d.cots], vendido: vendido, ventaExacta: exacto,
+        costo: costo, utilidad: vendido - costo,
+        margen: vendido > 0 ? ((vendido - costo) / vendido * 100) : null
+      });
+    });
+    // Por fecha de creación, lo más reciente primero.
+    cc_datos.sort((a, b) => String(b.fecha || '').localeCompare(String(a.fecha || '')));
+    ccRender();
+  } catch (e) {
+    console.error('[cc]', e);
+    if (cont) cont.innerHTML = '<div class="cc-vacio"><strong style="color:#e05a4a">No se pudieron cargar</strong>'
+      + ccEsc(e.message) + '</div>';
+  } finally { cc_cargando = false; }
+}
+
+function ccRender() {
+  const cont = document.getElementById('cc-lista');
+  if (!cont) return;
+  const q = ((document.getElementById('cc-search') || {}).value || '').toLowerCase().trim();
+  const mes = ((document.getElementById('cc-mes') || {}).value || '').trim();
+  let l = cc_datos.slice();
+  if (mes) l = l.filter(d => String(d.fecha || '').startsWith(mes));
+  if (q) l = l.filter(d => [d.cc, d.cliente, d.cots.join(' ')]
+    .some(x => String(x || '').toLowerCase().includes(q)));
+
+  // Meses disponibles, para el filtro
+  const sel = document.getElementById('cc-mes');
+  if (sel && !sel.dataset.listo) {
+    const meses = [...new Set(cc_datos.map(d => String(d.fecha || '').substring(0, 7)).filter(Boolean))].sort().reverse();
+    const MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    sel.innerHTML = '<option value="">Todos los meses</option>'
+      + meses.map(m => '<option value="' + m + '">' + MES[+m.substring(5, 7) - 1] + ' ' + m.substring(0, 4) + '</option>').join('');
+    sel.dataset.listo = '1';
+  }
+
+  // Totales del período
+  const t = l.reduce((a, d) => ({
+    vendido: a.vendido + d.vendido, costo: a.costo + d.costo,
+    gastos: a.gastos + d.gastos, util: a.util + d.utilidad
+  }), { vendido: 0, costo: 0, gastos: 0, util: 0 });
+  const marg = t.vendido > 0 ? (t.util / t.vendido * 100) : null;
+  const tot = document.getElementById('cc-totales');
+  if (tot) {
+    const tile = (lbl, val, color) => '<div class="cc-tile"><span>' + lbl + '</span><b'
+      + (color ? ' style="color:' + color + '"' : '') + '>' + val + '</b></div>';
+    tot.innerHTML = tile('Centros de costos', String(l.length))
+      + tile('Vendido', ccMoney(t.vendido), '#90cdf4')
+      + tile('Costo', ccMoney(t.costo))
+      + tile('Otros gastos', ccMoney(t.gastos), '#fbbf24')
+      + tile('Utilidad', ccMoney(t.util) + (marg != null ? ' · ' + marg.toFixed(1) + '%' : ''),
+             t.util < 0 ? '#f87171' : '#86efac');
+  }
+
+  if (!l.length) {
+    cont.innerHTML = '<div class="cc-vacio"><strong>Nada con ese filtro</strong>'
+      + 'Prueba con otro mes o limpia la búsqueda.</div>';
+    return;
+  }
+
+  cont.innerHTML = '<div class="cc-cab">'
+    + '<div>Centro de costos</div><div>Cliente</div><div class="cc-r">Vendido</div>'
+    + '<div class="cc-r">Costo</div><div class="cc-r">Gastos</div><div class="cc-r">Utilidad</div><div class="cc-r">Compras</div></div>'
+    + l.map(d => {
+      const col = d.utilidad < 0 ? '#f87171' : (d.margen != null && d.margen < 10 ? '#fbbf24' : '#86efac');
+      return '<div class="cc-fila" onclick="ccAbrirPlan(\'' + ccEsc(d.cc).replace(/'/g, "\\'") + '\')" '
+        + 'tabindex="0" role="button" title="Abrir el plan ' + ccEsc(d.cc) + '">'
+        + '<div class="cc-id">' + ccEsc(d.cc) + '<small>' + ccEsc(d.fecha || '') + ' · '
+        + ccEsc(d.cots.join(' + ') || 'sin cotización') + '</small></div>'
+        + '<div class="cc-cli">' + ccEsc(d.cliente || '—') + '</div>'
+        + '<div class="cc-r cc-n">' + ccMoney(d.vendido)
+        + (d.ventaExacta ? '' : '<small title="Alguna cotización no registró qué le adjudicaron; se usó el valor cotizado">aprox.</small>') + '</div>'
+        + '<div class="cc-r cc-n">' + ccMoney(d.costo)
+        + '<small>' + (d.costoBodega > 0 ? ccMoney(d.costoBodega) + ' de bodega' : d.lineas + ' líneas') + '</small></div>'
+        + '<div class="cc-r cc-n">' + (d.gastos ? ccMoney(d.gastos) : '<span style="color:var(--text-muted)">—</span>') + '</div>'
+        + '<div class="cc-r cc-n" style="color:' + col + '"><b>' + ccMoney(d.utilidad) + '</b>'
+        + (d.margen != null ? '<small style="color:' + col + '">' + d.margen.toFixed(1) + '%</small>' : '') + '</div>'
+        + '<div class="cc-r cc-n">' + d.comprados + '/' + d.lineas + '</div>'
+        + '</div>';
+    }).join('');
+}
+
+function ccAbrirPlan(cc) {
+  navigate('compras');
+  let n = 0;
+  const abrir = () => {
+    n++;
+    try { if (typeof pcomGrupos === 'function' && pcomGrupos()[cc]) { pcomAbrir(cc); return; } } catch (_) { }
+    if (n < 12) setTimeout(abrir, 400); else showToast('Abre ' + cc + ' desde la lista', 'info');
+  };
+  setTimeout(abrir, 500);
+}
+
+// ─── Excel para analizar ─────────────────────────────────────────────────────
+// Tres hojas porque son tres preguntas distintas: cómo va cada pedido, a quién
+// le compramos, y el detalle para armar dinámicas.
+async function ccExcel() {
+  if (!ccPuedeVer()) { showToast('Solo Alberto y Andrea', 'error'); return; }
+  if (!cc_datos.length) { showToast('No hay datos cargados', 'info'); return; }
+  showToast('Armando el Excel…', 'info');
+  let lineas = [], gastos = [];
+  try {
+    lineas = (await absFetch('plan_compras?select=cc,cotizacion,cliente,fecha,item,descripcion,udm,cantidad,costo_unit,proveedor,pago,comprado,recibida&limit=10000')) || [];
+    gastos = (await absFetch('plan_gastos?select=cc,concepto,proveedor,valor,aplica_iva,nota,created_by&limit=2000').catch(() => [])) || [];
+  } catch (e) { showToast('No se pudieron leer los datos: ' + e.message, 'error'); return; }
+
+  const mes = ((document.getElementById('cc-mes') || {}).value || '').trim();
+  const ccs = new Set(cc_datos.filter(d => !mes || String(d.fecha || '').startsWith(mes)).map(d => d.cc));
+
+  // Hoja 1 — un centro de costos por fila
+  const h1 = cc_datos.filter(d => ccs.has(d.cc)).map(d => ({
+    'Centro de costos': d.cc, 'Fecha': d.fecha || '', 'Mes': String(d.fecha || '').substring(0, 7),
+    'Cliente': d.cliente || '', 'Cotización': d.cots.join(' + '),
+    'Vendido (adjudicado)': Math.round(d.vendido),
+    'Venta exacta': d.ventaExacta ? 'SÍ' : 'aproximada',
+    'Costo material comprado': Math.round(d.costoCompra),
+    'Costo material bodega': Math.round(d.costoBodega),
+    'Otros gastos': Math.round(d.gastos),
+    'Costo total': Math.round(d.costo),
+    'Utilidad': Math.round(d.utilidad),
+    '% Utilidad': d.margen != null ? Math.round(d.margen * 10) / 10 : '',
+    'Líneas': d.lineas, 'Líneas compradas': d.comprados,
+    'Proveedores': Object.keys(d.provs).length
+  }));
+
+  // Hoja 2 — a quién le compramos, que es la pregunta del usuario
+  const prov = {};
+  lineas.forEach(r => {
+    if (!ccs.has(r.cc)) return;
+    const p = String(r.proveedor || '').trim().toUpperCase() || '(SIN PROVEEDOR)';
+    if (/^BODEGA/.test(p)) return;                    // bodega no es proveedor
+    if (!prov[p]) prov[p] = { compra: 0, lineas: 0, ccs: new Set(), clientes: new Set(), comprados: 0 };
+    prov[p].compra += (+r.costo_unit || 0) * (+r.cantidad || 0);
+    prov[p].lineas++; prov[p].ccs.add(r.cc);
+    if (r.cliente) prov[p].clientes.add(r.cliente);
+    if (r.comprado) prov[p].comprados++;
+  });
+  gastos.forEach(x => {
+    if (!ccs.has(x.cc)) return;
+    const p = String(x.proveedor || '').trim().toUpperCase();
+    if (!p) return;
+    if (!prov[p]) prov[p] = { compra: 0, lineas: 0, ccs: new Set(), clientes: new Set(), comprados: 0 };
+    prov[p].compra += (+x.valor || 0); prov[p].lineas++; prov[p].ccs.add(x.cc);
+  });
+  const totProv = Object.values(prov).reduce((a, x) => a + x.compra, 0);
+  const h2 = Object.keys(prov).sort((a, b) => prov[b].compra - prov[a].compra).map(p => ({
+    'Proveedor': p,
+    'Total comprado': Math.round(prov[p].compra),
+    '% del total': totProv > 0 ? Math.round(prov[p].compra / totProv * 1000) / 10 : 0,
+    'Líneas': prov[p].lineas,
+    'Líneas ya compradas': prov[p].comprados,
+    'Centros de costos': prov[p].ccs.size,
+    'Clientes distintos': prov[p].clientes.size,
+    'Ticket promedio por línea': prov[p].lineas ? Math.round(prov[p].compra / prov[p].lineas) : 0
+  }));
+
+  // Hoja 3 — el detalle, para dinámicas
+  const h3 = lineas.filter(r => ccs.has(r.cc)).map(r => ({
+    'Centro de costos': r.cc, 'Fecha': r.fecha || '', 'Cliente': r.cliente || '',
+    'Cotización': r.cotizacion || '', 'Item': r.item, 'Descripción': r.descripcion || '',
+    'UDM': r.udm || '', 'Cantidad': r.cantidad, 'Costo unit.': r.costo_unit,
+    'Costo total': Math.round((+r.costo_unit || 0) * (+r.cantidad || 0)),
+    'Proveedor': r.proveedor || '', 'Origen': /^BODEGA/i.test(String(r.proveedor || '')) ? 'BODEGA' : 'COMPRA',
+    'Pago': r.pago || '', 'Comprado': r.comprado ? 'SÍ' : 'NO', 'Recibida': r.recibida
+  }));
+
+  // Hoja 4 — los gastos, que hasta ahora vivían en una casilla de Excel
+  const h4 = gastos.filter(x => ccs.has(x.cc)).map(x => ({
+    'Centro de costos': x.cc, 'Concepto': x.concepto || '', 'Proveedor': x.proveedor || '',
+    'Valor': Math.round(+x.valor || 0), 'Lleva IVA': x.aplica_iva ? 'SÍ' : 'NO',
+    'Nota': x.nota || '', 'Registró': x.created_by || ''
+  }));
+
+  try {
+    const wb = XLSX.utils.book_new();
+    const hoja = (rows, nombre) => {
+      if (!rows.length) return;
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = Object.keys(rows[0]).map(k => ({ wch: Math.max(k.length + 2, 12) }));
+      ws['!autofilter'] = { ref: ws['!ref'] };
+      XLSX.utils.book_append_sheet(wb, ws, nombre);
+    };
+    hoja(h1, 'Centros de costos');
+    hoja(h2, 'Por proveedor');
+    hoja(h3, 'Detalle');
+    hoja(h4, 'Otros gastos');
+    XLSX.writeFile(wb, 'Centros_de_costos_' + (mes || 'todos') + '.xlsx');
+    showToast('✅ ' + h1.length + ' centros de costos y ' + h2.length + ' proveedores exportados', 'success');
+  } catch (e) { showToast('Error al exportar: ' + (e && e.message || e), 'error'); }
+}
+
 // ═══════════ CENTRO DE COSTOS DEL PLAN ══════════════════════════════════════
 // Un pedido cuesta más que su material: fletes, recogidas en Bogotá, empaque.
 // Hasta ahora el transporte se escribía a mano en una casilla del Excel de
