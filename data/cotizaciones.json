@@ -70288,7 +70288,7 @@
     "cliente": "CIAM",
     "contacto": "YEISON",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 431857,
@@ -70319,13 +70319,22 @@
         "precioProveedor": 302300
       }
     ],
-    "fechaGuardado": "2026-08-21T13:29:49.685Z",
+    "fechaGuardado": "2026-08-24T01:41:23.771Z",
     "fechaEnvio": "2026-08-12T22:11:11.643Z",
+    "adjudicadaAt": "2026-08-24",
+    "valorAdjudicado": 431857,
+    "itemsAdjudicados": [
+      {
+        "uid": "7d0ac3eb-08a4-4817-9292-d208a5cca7be",
+        "qty": 1
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-24T01:41:20.293Z",
     "createdAt": "2026-08-12T21:59:26.064Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-21T13:30:36.349Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-08-21T13:30:36.349Z"
+    "updatedAt": "2026-08-24T01:41:23.771Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1982-1",
