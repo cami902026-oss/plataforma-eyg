@@ -2,9 +2,13 @@ name: 📑 Aviso de OP pendiente de aprobación
 
 on:
   schedule:
-    # Cada 15 minutos, de lunes a viernes entre las 6 AM y las 7 PM Colombia
-    # (11:00–24:00 UTC). Fuera de horario no tiene sentido despertar a nadie.
-    - cron: '*/15 11-23 * * 1-5'
+    # Cada 15 minutos entre las 6 AM y las 10 PM Colombia (11:00–03:00 UTC).
+    # La primera versión cortaba a las 7 PM "para no despertar a nadie" y el
+    # 23-ago se mandó una OP a las 8:44 PM que se quedó esperando hasta el día
+    # siguiente. El equipo trabaja de noche; el aviso tiene que estar ahí.
+    # Sin restricción de día: en UTC el viernes por la noche ya es sábado.
+    - cron: '*/15 11-23 * * *'
+    - cron: '*/15 0-3 * * *'
   workflow_dispatch:
 
 # Que dos corridas no se pisen: si una se demora, la siguiente espera.

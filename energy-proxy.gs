@@ -99,6 +99,10 @@ function doPost(e) {
     if (body.sb && typeof body.sb === 'object') {
       return _handleSupabaseWrite(body.sb);
     }
+    // Disparar un workflow de GitHub (aviso instantaneo de OP pendiente)
+    if (body.wf && typeof body.wf === 'object') {
+      return _handleWorkflowDispatch(body.wf);
+    }
     return _json({ error: 'Petición inválida — falta messages[], file o sb' });
 
   } catch (err) {
@@ -132,6 +136,40 @@ const SB_TABLAS = ['productos','kardex','familias','conteos','conteo_items',
 // Se listan una por una a propósito: `rpc` no puede ser un comodín, o cualquier
 // función de la base quedaría expuesta.
 const SB_RPC = ['op_nuevo_numero'];
+
+// ─── DISPARAR UN WORKFLOW DE GITHUB (23-ago-2026) ───────────────────────────
+// La plataforma no puede llamar a la API de GitHub: haria falta un token en el
+// navegador, y este repo es publico. El proxy si tiene GH_TOKEN en sus
+// propiedades, asi que hace de puente.
+//
+// Se usa para que el aviso de "OP pendiente de aprobacion" salga AL INSTANTE
+// en vez de esperar al ciclo de 15 minutos.
+//
+// Lista blanca por nombre de archivo: nunca un comodin. Un proxy que dispara
+// cualquier workflow es un proxy que ejecuta codigo arbitrario en el repo.
+var GH_WORKFLOWS = ['aviso-op-pendiente.yml'];
+
+function _handleWorkflowDispatch(wf) {
+  var nombre = String((wf && wf.file) || '');
+  if (GH_WORKFLOWS.indexOf(nombre) < 0) {
+    return _json({ ok: false, error: 'Workflow no permitido: ' + nombre });
+  }
+  var tok = PROPS.getProperty('GH_TOKEN');
+  if (!tok) return _json({ ok: false, error: 'GH_TOKEN no configurado' });
+  var owner = PROPS.getProperty('GH_OWNER') || 'cami902026-oss';
+  var repo  = PROPS.getProperty('GH_REPO')  || 'plataforma-eyg';
+  var url = 'https://api.github.com/repos/' + owner + '/' + repo
+          + '/actions/workflows/' + encodeURIComponent(nombre) + '/dispatches';
+  var r = UrlFetchApp.fetch(url, {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { 'Authorization': 'Bearer ' + tok, 'Accept': 'application/vnd.github+json' },
+    payload: JSON.stringify({ ref: PROPS.getProperty('GH_BRANCH') || 'main' }),
+    muteHttpExceptions: true
+  });
+  var code = r.getResponseCode();
+  return _json({ ok: code === 204, status: code, body: code === 204 ? '' : r.getContentText().slice(0, 200) });
+}
 
 function _handleSupabaseWrite(sb) {
   const key = PROPS.getProperty('SUPABASE_SECRET');

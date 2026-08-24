@@ -1002,6 +1002,32 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #page-op .op-r-compra .op-rama-b i{ background:var(--op-compra); }
 @media (max-width:640px){ #page-op .op-bif{ grid-template-columns:1fr; } }
 
+#page-op .op-certs-caja{
+  background:var(--op-papel);border:1px solid var(--op-linea);
+  border-left:3px solid var(--op-bodega);border-radius:0 3px 3px 0;
+  padding:15px 18px;margin-bottom:16px;
+}
+#page-op .op-lnk{
+  background:none;border:none;color:var(--gold);text-decoration:underline;
+  cursor:pointer;font-size:12.5px;padding:0;font-family:inherit;
+}
+#page-op .op-lnk:focus-visible{ outline:2px solid var(--gold);outline-offset:2px; }
+#page-op .op-certs-lista{ margin-top:11px;display:grid;gap:1px; }
+#page-op .op-cert-fila{
+  display:flex;align-items:flex-start;gap:10px;padding:8px 10px;cursor:pointer;
+  background:rgba(255,255,255,.02);border-radius:3px;transition:background .14s;
+}
+#page-op .op-cert-fila:hover{ background:rgba(255,255,255,.05); }
+#page-op .op-cert-fila.op-cert-ok{ background:rgba(63,191,99,.08); }
+#page-op .op-cert-fila input{
+  width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:#3FBF63;cursor:pointer;
+}
+#page-op .op-cert-d{ font-size:12.5px;color:#e6edfb;line-height:1.4;min-width:0; }
+#page-op .op-cert-d small{
+  display:block;font-family:var(--op-mono);font-size:10.5px;color:var(--text-muted);margin-top:2px;
+}
+#page-op .op-cert-ok .op-cert-d small{ color:var(--op-bodega); }
+
 #page-op .op-alerta{
   border-left:3px solid var(--op-compra);background:rgba(232,160,32,.08);
   border-radius:0 3px 3px 0;padding:12px 16px;margin-bottom:10px;
@@ -3466,6 +3492,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div class="op-via" id="op-via"></div>
           <div id="op-stock"></div>
           <div id="op-plan"></div>
+          <div id="op-certs"></div>
 
           <div class="op-libro">
             <div class="op-libro-cab">
@@ -22051,6 +22078,7 @@ function opRenderEditor() {
   _opVia();
   try { opPlanCargar(); } catch(_) {}
   try { opRevisarStock(true); } catch(_) {}
+  try { opCertsCargar(); } catch(_) {}
 }
 
 function opRenderItems() {
@@ -22415,6 +22443,118 @@ async function opGuardarCabecera() {
   } catch (e) {
     showToast('No se pudo guardar: ' + e.message, 'error');
   }
+}
+
+// ═══════════ CERTIFICADOS (MTR) ═════════════════════════════════════════════
+// La OP no cierra sin ellos — y esa regla vive en la BASE, no aquí, así que se
+// cumple venga la escritura de donde venga. Esto es solo la forma de marcarlos.
+//
+// Es una lista de verificación, no un archivador: se marca qué material ya
+// tiene su certificado y con qué colada. Subir el PDF viene después; hoy los
+// MTR están en Downloads\Certificados organizados por CLIENTE, no por colada,
+// y ordenar eso es otro trabajo.
+async function opCertsCargar() {
+  const cont = document.getElementById('op-certs');
+  if (!cont || !op_current) return;
+  let certs = [];
+  try {
+    certs = (await absFetch('op_certificados?op_id=eq.' + op_current.id
+      + '&select=id,op_item_id,colada,nombre,subido_por,subido_at&limit=200')) || [];
+  } catch (_) { }
+  op_current._certs = certs;
+  const porItem = {};
+  certs.forEach(c => { if (c.op_item_id) (porItem[c.op_item_id] = porItem[c.op_item_id] || []).push(c); });
+
+  const its = op_currentItems || [];
+  const conCert = its.filter(i => (porItem[i.id] || []).length).length;
+  const editable = !['cerrada', 'anulada'].includes(op_current.estado);
+  const noAplica = op_current.requiere_certificados === false;
+
+  cont.innerHTML = '<div class="op-certs-caja">'
+    + '<div class="op-plan-t">Certificados de calidad (MTR)</div>'
+    + (noAplica
+        ? '<div class="op-plan-d">Esta OP está marcada como que <b>no requiere certificados</b>. '
+          + 'Puede cerrarse sin ellos.'
+          + (editable ? ' <button class="op-lnk" onclick="opCertsRequiere(true)">Volver a exigirlos</button>' : '')
+          + '</div>'
+        : '<div class="op-plan-d"><b>' + conCert + ' de ' + its.length + '</b> ítems con certificado. '
+          + (conCert >= its.length && its.length
+              ? 'Ya se puede cerrar la OP.'
+              : 'Sin al menos uno cargado, <b>la base de datos no deja cerrar</b> esta OP.')
+          + (editable ? ' <button class="op-lnk" onclick="opCertsRequiere(false)">Esta OP no lleva certificados</button>' : '')
+          + '</div>')
+    + (noAplica ? '' : '<div class="op-certs-lista">' + its.map(it => {
+        const cs = porItem[it.id] || [];
+        const ok = cs.length > 0;
+        return '<label class="op-cert-fila' + (ok ? ' op-cert-ok' : '') + '">'
+          + '<input type="checkbox"' + (ok ? ' checked' : '') + (editable ? '' : ' disabled')
+          + ' onchange="opCertToggle(' + it.id + ', this.checked, this)">'
+          + '<span class="op-cert-d">' + opEsc(it.descripcion)
+          + (cs.length
+              ? '<small>' + cs.map(c => 'colada ' + opEsc(c.colada || '—')
+                  + (c.subido_por ? ' · ' + opEsc(c.subido_por) : '')).join(' · ') + '</small>'
+              : '<small>sin certificado</small>')
+          + '</span></label>';
+      }).join('') + '</div>')
+    + '</div>';
+}
+
+// Marcar o desmarcar el certificado de un ítem. Al marcar pide la colada: un
+// MTR sin colada no sirve, porque es lo que amarra el papel al metal.
+async function opCertToggle(itemId, marcado, el) {
+  const it = op_currentItems.find(x => x && x.id === itemId);
+  if (!it) return;
+  try {
+    if (marcado) {
+      const colada = prompt('Colada / heat number del certificado de:\n\n' + it.descripcion
+        + '\n\n(si no la tienes a mano, deja vacío y complétala después)', it.colada || '');
+      if (colada === null) { if (el) el.checked = false; return; }
+      await absFetch('op_certificados', {
+        method: 'POST', headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          op_id: op_current.id, op_item_id: itemId, colada: (colada || '').trim() || null,
+          archivo: 'pendiente-de-subir', nombre: 'MTR ' + (it.descripcion || '').slice(0, 60),
+          tipo: 'MTR', subido_por: (currentUser && (currentUser.email || currentUser.name)) || 'sistema'
+        })
+      });
+      // La colada también queda en el ítem: es donde la busca todo lo demás.
+      if ((colada || '').trim() && !it.colada) {
+        await absFetch('op_items?id=eq.' + itemId, {
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ colada: colada.trim() })
+        });
+        it.colada = colada.trim();
+      }
+      await opEvento(op_current.id, 'certificado', it.descripcion + (colada ? ' · colada ' + colada : ''));
+    } else {
+      if (!confirm('¿Quitar el certificado de "' + it.descripcion + '"?')) { if (el) el.checked = true; return; }
+      await absFetch('op_certificados?op_id=eq.' + op_current.id + '&op_item_id=eq.' + itemId,
+        { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+    }
+    await opCertsCargar();
+    _opVia();
+  } catch (e) {
+    if (el) el.checked = !marcado;
+    showToast('No se pudo guardar: ' + (e && e.message || e), 'error');
+  }
+}
+
+// Excepción documentada: hay pedidos que de verdad no llevan MTR.
+async function opCertsRequiere(exigir) {
+  if (!op_current) return;
+  if (!exigir && !confirm('¿Marcar que ' + op_current.numero + ' NO requiere certificados?\n\n'
+    + 'Podrá cerrarse sin ellos. Queda registrado quién lo decidió.')) return;
+  try {
+    await absFetch('ops?id=eq.' + op_current.id, {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ requiere_certificados: !!exigir })
+    });
+    op_current.requiere_certificados = !!exigir;
+    await opEvento(op_current.id, exigir ? 'certificados_exigidos' : 'certificados_no_aplican', '');
+    await opCertsCargar();
+    _opVia();
+    opRenderEventos(op_current.id);
+  } catch (e) { showToast('No se pudo cambiar: ' + e.message, 'error'); }
 }
 
 // ═══════════ CRUCE CON INVENTARIO ═══════════════════════════════════════════
@@ -23124,6 +23264,21 @@ async function opCambiarEstado(estado, extra) {
 // ⚠️ Mientras esa acción no se agregue del lado del Apps Script, el POST no
 //    hace nada y no rompe nada — la campana sigue avisando igual.
 function _opNotificarAprobacion(op) {
+  // Camino principal: pedirle al proxy que dispare el workflow que manda el
+  // correo por Microsoft Graph. Sale en ~1 minuto en vez de esperar el ciclo
+  // de 15. Si falla, el ciclo lo recoge igual: esto ADELANTA el aviso, no es
+  // el único camino.
+  try {
+    const proxy = (typeof _ghWriteProxyURL === 'function') ? _ghWriteProxyURL() : null;
+    if (proxy) {
+      fetch(proxy, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ secret: _proxySecret(), wf: { file: 'aviso-op-pendiente.yml' } })
+      }).catch(function () { });
+    }
+  } catch (_) { }
+
   try {
     if (typeof COTIZ_NOTIF_URL === 'undefined' || !COTIZ_NOTIF_URL) return;
     fetch(COTIZ_NOTIF_URL, {
