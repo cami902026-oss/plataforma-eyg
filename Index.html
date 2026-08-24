@@ -1055,6 +1055,24 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   #page-costos .cc-fila .cc-r{ text-align:left; }
 }
 
+#page-op .op-recep-cab,#page-op .op-recep-fila{
+  display:grid;grid-template-columns:1fr 100px 160px 120px;gap:10px;align-items:center;
+}
+#page-op .op-recep-cab > div{
+  padding:6px 2px;font-family:var(--op-mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-muted);
+}
+#page-op .op-recep-fila{ padding:9px 2px;border-top:1px solid rgba(30,58,110,.5); }
+#page-op .op-recep-d{ font-size:12.5px;color:#e6edfb;line-height:1.4;min-width:0; }
+#page-op .op-recep-d small{
+  display:block;font-family:var(--op-mono);font-size:10.5px;color:var(--text-muted);margin-top:2px;
+}
+#page-op .op-recep-c{ text-align:right; }
+@media (max-width:760px){
+  #page-op .op-recep-cab{ display:none; }
+  #page-op .op-recep-fila{ grid-template-columns:1fr; }
+}
+
 #page-op .op-desp-cab,#page-op .op-desp-fila{
   display:grid;grid-template-columns:1fr 110px 190px;gap:10px;align-items:center;
 }
@@ -22176,6 +22194,11 @@ function opRenderEditor() {
     + '" onclick="opVerRemision(this.dataset.rem)"'
     + ' title="Abrir la remisión para el PDF, la planilla de viaje y los rótulos"'
     + ' style="padding:8px 14px;font-size:12px;">📄 Remisión ' + opEsc(r) + '</button>'));
+  // Recibir: con la OP aprobada y si queda algo comprado por llegar.
+  if (['aprobada', 'en_ejecucion'].includes(o.estado) && opPuedeRecibir()
+      && (op_currentItems || []).some(i => i.origen === 'COMPRA' && (+i.recibida || 0) < (+i.cantidad || 0))) {
+    b.push('<button class="btn" onclick="opRecibirAbrir()" title="Entra al inventario con su origen: plaza, importación, devolución" style="background:rgba(232,160,32,.18);border:1px solid #E8A020;color:#fbbf24;padding:8px 16px;font-size:13px;font-weight:700;">📥 Recibir en bodega</button>');
+  }
   // Alistar y despachar: solo con la OP ya aprobada y si queda algo de bodega.
   if (['aprobada', 'en_ejecucion'].includes(o.estado) && opPuedeDespachar()
       && (op_currentItems || []).some(i => i.origen === 'BODEGA' && i.estado !== 'despachado')) {
@@ -22572,6 +22595,272 @@ async function opGuardarCabecera() {
     showToast('💾 Guardada', 'success');
   } catch (e) {
     showToast('No se pudo guardar: ' + e.message, 'error');
+  }
+}
+
+// ═══════════ RECIBIR COMPRAS EN BODEGA ══════════════════════════════════════
+// Todo entra a bodega y se especifica DE DÓNDE. Sin eso no hay análisis de
+// importación: hoy lo único que marca "importado" es el prefijo IMP- del código
+// del producto, que es del producto y no del movimiento. Si la misma brida se
+// compra un mes importada y al otro a CODIFER, no se pueden separar.
+//
+// Una compra puede llegar por partes: se recibe lo que llegó y queda el saldo.
+// Cada llegada con su fecha, su factura y su colada.
+function opPuedeRecibir() {
+  const e = (currentUser && (currentUser.email || '')).toLowerCase();
+  return ['yesid', 'andrea', 'alberto'].includes(e);
+}
+
+async function opRecibirAbrir() {
+  if (!op_current) return;
+  if (!opPuedeRecibir()) { showToast('Recibe bodega (Yesid), Andrea o gerencia', 'error'); return; }
+  const com = (op_currentItems || []).filter(i => i.origen === 'COMPRA'
+    && (+i.recibida || 0) < (+i.cantidad || 0));
+  if (!com.length) { showToast('No hay compras pendientes de recibir', 'info'); return; }
+
+  // Se propone el producto de inventario que corresponde, con el mismo cruce
+  // que ya usa la OP. Si no hay, se podrá crear al recibir.
+  let idx = null;
+  try { idx = await _opStockIndice(true); } catch (_) { }
+  const props = com.map(it => {
+    if (it.producto_codigo) {
+      const e = idx && idx.find(x => x.p.codigo === it.producto_codigo);
+      return { it: it, prod: e ? e.p : null, score: 1 };
+    }
+    const r = idx ? _opBuscarStock(it.descripcion, idx) : [];
+    return (r[0] && r[0].score >= 0.62) ? { it: it, prod: r[0].prod, score: r[0].score }
+                                        : { it: it, prod: null, score: 0 };
+  });
+  op_current._recep = props;
+  _opRecepModal();
+}
+
+function _opRecepCerrar() { const m = document.getElementById('op-recep-modal'); if (m) m.remove(); }
+
+function _opRecepModal() {
+  const d = op_current._recep;
+  _opRecepCerrar();
+  const ov = document.createElement('div');
+  ov.id = 'op-recep-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100003;'
+    + 'display:flex;align-items:center;justify-content:center;padding:16px;';
+
+  const filas = d.map((x, n) => {
+    const it = x.it;
+    const pedida = +it.cantidad || 0, ya = +it.recibida || 0, falta = pedida - ya;
+    return '<div class="op-recep-fila">'
+      + '<div class="op-recep-d">' + opEsc(it.descripcion)
+      + '<small>' + (it.proveedor ? opEsc(it.proveedor) + ' · ' : '')
+      + 'pedidas ' + pedida + (ya ? ' · ya llegaron ' + ya : '') + ' · <b>faltan ' + falta + '</b></small>'
+      + '<small>' + (x.prod
+          ? 'entra a <b style="color:#3FBF63">' + opEsc(x.prod.codigo) + '</b> · ' + opEsc(x.prod.descripcion)
+            + (x.score < 1 ? ' <i>(propuesto, confirma)</i>' : '')
+          : '<b style="color:#E8A020">producto nuevo</b> — se creará en el inventario al recibir')
+      + '</small></div>'
+      + '<div class="op-recep-c"><input type="number" step="any" min="0" max="' + falta + '" value="' + falta + '"'
+      + ' data-n="' + n + '" data-campo="cantidad" class="op-inp op-inp-num"></div>'
+      + '<div><input type="text" placeholder="colada / lote" value="' + opEsc(it.colada || '') + '"'
+      + ' data-n="' + n + '" data-campo="colada" class="op-inp"></div>'
+      + '<div><input type="number" step="any" min="0" placeholder="costo real" value="'
+      + (it.costo_unit != null ? it.costo_unit : '') + '"'
+      + ' data-n="' + n + '" data-campo="costo" class="op-inp op-inp-num"></div>'
+      + '</div>';
+  }).join('');
+
+  const provs = [...new Set(d.map(x => x.it.proveedor).filter(Boolean))];
+
+  ov.innerHTML = '<div style="background:var(--card-bg,#0d1f3c);border:1px solid var(--border);border-radius:12px;'
+    + 'max-width:980px;width:100%;max-height:92vh;display:flex;flex-direction:column;">'
+    + '<div style="padding:18px 22px 12px;border-bottom:1px solid var(--border);">'
+    + '<div style="font-family:\'Montserrat\',sans-serif;font-weight:800;font-size:17px;color:#fff;">'
+    + 'Recibir en bodega · ' + opEsc(op_current.numero) + '</div>'
+    + '<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">'
+    + 'Entra al inventario con su origen. Puede llegar por partes: recibe lo que llegó y queda el saldo.</div></div>'
+    + '<div style="padding:16px 22px;overflow-y:auto;flex:1;">'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px;">'
+    + '<div class="form-group" style="margin:0;"><label style="font-size:10px;letter-spacing:.1em;">DE DÓNDE VIENE</label>'
+    + '<select id="op-recep-origen" style="width:100%;">'
+    + '<option value="PLAZA">Compra nacional (plaza)</option>'
+    + '<option value="IMPORTACION">Importación</option>'
+    + '<option value="DEVOLUCION">Devolución</option>'
+    + '<option value="TRASLADO">Traslado</option>'
+    + '</select></div>'
+    + '<div class="form-group" style="margin:0;"><label style="font-size:10px;letter-spacing:.1em;">PROVEEDOR</label>'
+    + '<input type="text" id="op-recep-prov" value="' + opEsc(provs.length === 1 ? provs[0] : '') + '"'
+    + ' placeholder="' + (provs.length > 1 ? 'varios: ' + opEsc(provs.join(', ')) : '') + '" style="width:100%;"></div>'
+    + '<div class="form-group" style="margin:0;"><label style="font-size:10px;letter-spacing:.1em;">FACTURA DEL PROVEEDOR</label>'
+    + '<input type="text" id="op-recep-fact" style="width:100%;"></div>'
+    + '<div class="form-group" style="margin:0;"><label style="font-size:10px;letter-spacing:.1em;">FECHA</label>'
+    + '<input type="date" id="op-recep-fecha" value="' + new Date().toISOString().slice(0, 10) + '" style="width:100%;"></div>'
+    + '</div>'
+    + '<div class="op-recep-cab"><div>Material</div><div class="op-recep-c">Cantidad</div>'
+    + '<div>Colada / lote</div><div>Costo unit. real</div></div>'
+    + filas
+    + '<div class="form-group" style="margin-top:12px;"><label style="font-size:10px;letter-spacing:.1em;">OBSERVACIONES</label>'
+    + '<textarea id="op-recep-obs" rows="2" style="width:100%;"></textarea></div>'
+    + '<div id="op-recep-aviso"></div></div>'
+    + '<div style="padding:12px 22px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;">'
+    + '<button onclick="_opRecepCerrar()" style="background:rgba(255,255,255,.08);border:1px solid var(--border);'
+    + 'border-radius:8px;padding:9px 18px;color:#cbd5e1;font-weight:700;cursor:pointer;">Cancelar</button>'
+    + '<button id="op-recep-ok" onclick="opRecibirConfirmar()" style="background:rgba(63,191,99,.22);'
+    + 'border:1px solid #3FBF63;border-radius:8px;padding:9px 20px;color:#8ce8a6;font-weight:700;cursor:pointer;">'
+    + 'Recibir en bodega</button></div></div>';
+  document.body.appendChild(ov);
+}
+
+async function opRecibirConfirmar() {
+  const d = op_current && op_current._recep;
+  if (!d) return;
+  const origen = document.getElementById('op-recep-origen').value;
+  const prov = (document.getElementById('op-recep-prov').value || '').trim();
+  const fact = (document.getElementById('op-recep-fact').value || '').trim();
+  const fecha = document.getElementById('op-recep-fecha').value || new Date().toISOString().slice(0, 10);
+  const obs = (document.getElementById('op-recep-obs').value || '').trim();
+
+  const campos = [];
+  document.querySelectorAll('#op-recep-modal [data-n]').forEach(el => {
+    const n = +el.dataset.n;
+    if (!campos[n]) campos[n] = {};
+    campos[n][el.dataset.campo] = el.value;
+  });
+
+  const errores = [];
+  const listo = [];
+  d.forEach((x, n) => {
+    const C = campos[n] || {};
+    const q = parseFloat(C.cantidad);
+    if (!q || q <= 0) return;                       // no llegó nada de esta línea: se salta
+    const falta = (+x.it.cantidad || 0) - (+x.it.recibida || 0);
+    if (q > falta) errores.push('"' + x.it.descripcion + '": llegan ' + q + ' pero solo faltaban ' + falta);
+    const colada = String(C.colada || '').trim();
+    if (!colada) errores.push('Falta la colada / lote de "' + x.it.descripcion + '"');
+    listo.push({ x: x, qty: q, colada: colada, costo: (String(C.costo).trim() === '' ? null : +C.costo) });
+  });
+  const av = document.getElementById('op-recep-aviso');
+  if (!listo.length) { showToast('No pusiste cantidades: no hay nada que recibir', 'info'); return; }
+  if (errores.length) {
+    av.innerHTML = '<div style="background:rgba(224,90,74,.12);border-left:3px solid #e05a4a;padding:11px 14px;'
+      + 'border-radius:0 6px 6px 0;margin-top:10px;font-size:12.5px;color:#fecaca;line-height:1.7;">'
+      + errores.map(opEsc).join('<br>') + '</div>';
+    return;
+  }
+  av.innerHTML = '';
+  const nuevos = listo.filter(L => !L.x.prod).length;
+  if (!confirm('Vas a recibir ' + listo.length + ' línea(s) en bodega.\n\n'
+    + (nuevos ? 'Se van a CREAR ' + nuevos + ' producto(s) nuevos en el inventario.\n' : '')
+    + 'Esto SUMA al inventario y no se deshace solo.\n\n¿Continuar?')) return;
+
+  const btn = document.getElementById('op-recep-ok');
+  if (btn) { btn.disabled = true; btn.textContent = 'Recibiendo…'; }
+  const yo = (currentUser && (currentUser.name || currentUser.email)) || 'SISTEMA';
+  const fallos = [];
+
+  try {
+    // Cabecera de la llegada: una compra puede llegar en varias, y cada una
+    // tiene su fecha y su factura.
+    let recepId = null;
+    try {
+      const r = await absFetch('op_recepciones', {
+        method: 'POST', headers: { 'Prefer': 'return=representation' },
+        body: JSON.stringify({
+          op_numero: op_current.numero, cc: 'CC-' + op_current.numero,
+          proveedor: prov || null, factura: fact || null, origen: origen,
+          fecha: fecha, observaciones: obs || null, recibido_por: yo
+        })
+      });
+      recepId = (Array.isArray(r) ? r[0] : r || {}).id || null;
+    } catch (_) { }
+
+    for (const L of listo) {
+      const it = L.x.it;
+      try {
+        let prod = L.x.prod;
+        // Producto nuevo: se crea al recibirlo. Bodega no puede quedarse
+        // esperando a que alguien lo cree en otro módulo con el material en el piso.
+        if (!prod) {
+          const codigo = 'OP-' + Date.now().toString().slice(-8) + '-' + (it.item || '0');
+          const nuevoProd = {
+            codigo: codigo, descripcion: String(it.descripcion || '').trim().toUpperCase(),
+            stock_actual: 0, entradas: 0, salidas: 0,
+            costo_compra: (L.costo != null ? L.costo : (it.costo_unit || 0)),
+            proveedor: prov || it.proveedor || null, activo: true,
+            fecha_ingreso: fecha, colada: L.colada || null
+          };
+          await absFetch('productos', { method: 'POST', headers: { 'Prefer': 'return=minimal' },
+                                        body: JSON.stringify(nuevoProd) });
+          prod = Object.assign(nuevoProd, { stock_actual: 0, entradas: 0, salidas: 0 });
+          await absFetch('op_items?id=eq.' + it.id, {
+            method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+            body: JSON.stringify({ producto_codigo: codigo })
+          });
+          it.producto_codigo = codigo;
+        }
+        // Stock fresco del producto: pudo moverse mientras se llenaba la pantalla
+        let actual = +prod.stock_actual || 0, entradas = +prod.entradas || 0;
+        try {
+          const p = (await absFetch('productos?codigo=eq.' + encodeURIComponent(prod.codigo)
+            + '&select=stock_actual,entradas&limit=1')) || [];
+          if (p[0]) { actual = +p[0].stock_actual || 0; entradas = +p[0].entradas || 0; }
+        } catch (_) { }
+        const nuevo = actual + L.qty;
+
+        await absFetch('kardex', {
+          method: 'POST', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({
+            fecha: fecha, hora: new Date().toTimeString().split(' ')[0],
+            codigo_producto: prod.codigo, descripcion_producto: prod.descripcion,
+            tipo: 'ENTRADA', cantidad: L.qty, stock_resultante: nuevo,
+            costo: (L.costo != null ? L.costo : (it.costo_unit || 0)),
+            responsable: yo, lote: L.colada, colada: L.colada, remision: '',
+            // Lo que faltaba para el análisis de importación
+            proveedor: prov || it.proveedor || null, origen: origen, factura: fact || null,
+            recepcion_id: recepId, op_numero: op_current.numero,
+            notas: 'Recepción de ' + op_current.numero + (obs ? ' · ' + obs : '')
+          })
+        });
+        const upd = { stock_actual: nuevo, entradas: entradas + L.qty, updated_at: new Date().toISOString() };
+        if (L.costo != null) upd.costo_compra = L.costo;      // el costo REAL de la compra
+        await absFetch('productos?codigo=eq.' + encodeURIComponent(prod.codigo), {
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(upd)
+        });
+
+        // La línea de la OP: cuánto llegó en total y en qué estado queda
+        const recibidaTot = (+it.recibida || 0) + L.qty;
+        const completa = recibidaTot >= (+it.cantidad || 0);
+        await absFetch('op_items?id=eq.' + it.id, {
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({
+            recibida: recibidaTot, estado: completa ? 'recibido' : 'comprado',
+            colada: L.colada,
+            // Ya está en la casa: para lo que sigue (alistar y despachar) sale de bodega.
+            origen: completa ? 'BODEGA' : it.origen,
+            costo_unit: (L.costo != null ? L.costo : it.costo_unit),
+            updated_by: yo
+          })
+        });
+        Object.assign(it, { recibida: recibidaTot, estado: completa ? 'recibido' : 'comprado',
+                            colada: L.colada, origen: completa ? 'BODEGA' : it.origen });
+      } catch (e) {
+        fallos.push(it.descripcion + ' (' + (e && e.message || e) + ')');
+      }
+    }
+
+    await opEvento(op_current.id, 'recibido',
+      (listo.length - fallos.length) + ' de ' + listo.length + ' líneas · ' + origen
+      + (prov ? ' · ' + prov : '') + (fact ? ' · factura ' + fact : ''));
+
+    _opRecepCerrar();
+    _opStockIdx = null;                       // el inventario cambió
+    if (fallos.length) {
+      showToast('⚠️ Se recibió parte: falló ' + fallos.join(' · '), 'error', { durationMs: 15000 });
+    } else {
+      showToast('✅ ' + listo.length + ' línea(s) recibidas en bodega'
+        + (nuevos ? ' · ' + nuevos + ' producto(s) creados' : ''), 'success', { durationMs: 9000 });
+    }
+    await opAbrir(op_current.id);
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Recibir en bodega'; }
+    showToast('No se pudo recibir: ' + (e && e.message || e), 'error', { durationMs: 12000 });
   }
 }
 
