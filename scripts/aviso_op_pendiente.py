@@ -33,7 +33,9 @@ SB_KEY = os.environ.get('SUPABASE_KEY', '')
 COMPRAS = ['asistente.administrativo@eygenergygroup.com',   # Alexandra
            'andrea.bernal@eygenergygroup.com']
 GERENCIA = ['gerenciageneral@eygenergygroup.com']
-BODEGA = ['bodega@eygenergygroup.com']                       # Yesid
+# Andrea también alista, no solo Yesid: los dos reciben el aviso de ALISTAR.
+BODEGA = ['bodega@eygenergygroup.com',                       # Yesid
+          'andrea.bernal@eygenergygroup.com']
 
 ETAPAS = {
     # estado                (evento que marca,   para,      copia)
@@ -222,7 +224,7 @@ if __name__ == '__main__':
                 if com:
                     envios.append(('aprobada_compras', com, COMPRAS, []))
                 if bod:
-                    envios.append(('aprobada_bodega', bod, BODEGA, ['andrea.bernal@eygenergygroup.com']))
+                    envios.append(('aprobada_bodega', bod, BODEGA, []))
             else:
                 envios = [(estado, items, para_fijo, copia_fija)]
             if not envios:
