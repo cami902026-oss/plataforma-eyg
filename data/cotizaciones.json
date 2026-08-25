@@ -74677,7 +74677,7 @@
     "cliente": "TGI",
     "contacto": "ALVARO DE  LA ROTA",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 2971401,
@@ -74718,14 +74718,60 @@
         "proveedor": "LAMAR USA",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 32800
+      },
+      {
+        "id": 1,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "9b18ed4c-c063-4b73-98cd-efe1451b666c",
+        "desc": "INDICADOR ORANGE RESCARCH INC. PART N° 1201-E1044, DESC 1201PG-1E-3.5 F, MAX PRESS  3000 PSI (200BAR) , MAX TEMP 150° F(66°C) , WETTED PARTS BRASS, SEALS BUNA, RANGE 0-35 PSID, PORT 1/4\"  NPT",
+        "altDe": null,
+        "marca": "",
+        "precio": 0,
+        "desvTec": "ADJUNTO ENVIO IMAGEN",
+        "proveedor": "ROCHA Y LONDOÑO",
+        "fotoGrande": false,
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 1980000
+      },
+      {
+        "id": 2,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "68fe8dfd-364e-45ba-a016-372b416c6461",
+        "desc": "CONECTOR MACHO 3/8\" ODT X  1/4\" MNPT, 316SS",
+        "altDe": null,
+        "marca": "COMFIT",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "LAMAR USA",
+        "fotoGrande": false,
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 32800
       }
     ],
-    "fechaGuardado": "2026-08-18T19:28:12.845Z",
+    "fechaGuardado": "2026-08-25T01:54:03.534Z",
     "fechaEnvio": "2026-08-18T19:28:12.845Z",
+    "adjudicadaAt": "2026-08-25",
+    "valorAdjudicado": 2971401,
+    "itemsAdjudicados": [
+      {
+        "uid": "466a4d43-bea4-4929-9e00-b55b88124b3c",
+        "qty": 1
+      },
+      {
+        "uid": "6d8a2876-0b9b-4da2-846b-8dcec49df609",
+        "qty": 1
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-08-25T01:54:03.519Z",
     "createdAt": "2026-08-18T18:17:18.615Z",
     "createdBy": "alberto",
-    "updatedAt": "2026-08-18T19:28:12.845Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-25T01:54:03.534Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2011",
