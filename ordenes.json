@@ -6669,10 +6669,10 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-08-24",
         "n": "",
-        "factura": ""
+        "factura": "583"
       }
     ],
     "observaciones": "",
@@ -6680,8 +6680,8 @@
     "cotizacionId": "LM1967",
     "createdAt": "2026-08-11T22:05:40.745Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-12T17:53:27.895Z",
-    "updatedBy": "alexandra",
+    "updatedAt": "2026-08-25T01:17:25.016Z",
+    "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false
   },
@@ -7700,6 +7700,58 @@
     "createdBy": "alexandra",
     "updatedAt": "2026-08-21T20:03:50.763Z",
     "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1784835624933",
+    "num": "LM1818-1 - LM1842",
+    "cliente": "INDUMEC",
+    "desc": "Cotización LM1818-1 · 29 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-22",
+    "valor": 14261494.31,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-07-23",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "factura": ""
+      }
+    ],
+    "cotizacionId": "LM1818-1",
+    "createdAt": "2026-07-23T19:40:24.934Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-23T23:53:45.985Z",
+    "updatedBy": "alexandra",
+    "deleted": true,
+    "deletedAt": "2026-07-23T23:53:45.965Z",
+    "deletedBy": "andrea",
     "faltanFechas": false,
     "archivada": false
   }
