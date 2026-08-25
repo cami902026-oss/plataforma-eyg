@@ -1,4 +1,4 @@
-name: 📑 Aviso de OP pendiente de aprobación
+name: 📑 Avisos automáticos (OP pendiente + cotización en revisión)
 
 on:
   schedule:
@@ -19,7 +19,7 @@ concurrency:
 jobs:
   avisar:
     runs-on: ubuntu-latest
-    name: 📧 Avisar a gerencia
+    name: 📧 Avisar a quien le toca
     steps:
       - uses: actions/checkout@v4
 
@@ -39,3 +39,38 @@ jobs:
           SUPABASE_KEY:     ${{ secrets.SUPABASE_SECRET || secrets.SUPABASE_KEY }}
           REMITENTE_OP:     'info@eygenergygroup.com'
         run: python scripts/aviso_op_pendiente.py
+
+      # 👔 Cotizaciones que pasaron a "Revisión gerencia". Va en el MISMO
+      # workflow a propósito: la lista blanca del proxy (energy-proxy.gs) solo
+      # deja disparar este archivo, así que colgando el aviso aquí funciona el
+      # disparo instantáneo desde la plataforma sin tocar Apps Script.
+      # `if: always()` para que un fallo del aviso de OP no se lleve este.
+      - name: 👔 Cotizaciones en revisión de gerencia
+        if: always()
+        env:
+          MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          SUPABASE_URL:     ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:     ${{ secrets.SUPABASE_SECRET || secrets.SUPABASE_KEY }}
+          REMITENTE_OP:     'info@eygenergygroup.com'
+        run: python scripts/aviso_cotiz_gerencia.py
+
+      # El estado vive en el repo (no en Supabase) porque no hay tabla de
+      # eventos de cotizaciones. Sin esto, cada corrida volvería a avisar.
+      - name: 💾 Guardar qué cotizaciones ya se avisaron
+        if: always()
+        run: |
+          git config user.name  "ENERGY Bot"
+          git config user.email "bot@eygenergygroup.com"
+          git add data/aviso_gerencia_estado.json
+          if git diff --staged --quiet; then
+            echo "Sin cambios de estado."
+          else
+            git commit -m "👔 Aviso de revisión de gerencia - $(TZ='America/Bogota' date +'%Y-%m-%d %H:%M')"
+            # Reintentos: los navegadores del equipo empujan data/ todo el día
+            for i in 1 2 3; do
+              git push && break
+              git pull --rebase && sleep 3
+            done
+          fi
