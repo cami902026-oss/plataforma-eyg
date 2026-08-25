@@ -76378,8 +76378,8 @@
     "cliente": "PETRORIOS",
     "contacto": "LUIS ANGEL",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "587",
     "iva": 19,
     "subtotal": 131485,
     "ivaVal": 24982.15,
@@ -76437,8 +76437,9 @@
         "precioProveedor": 2401
       }
     ],
-    "fechaGuardado": "2026-08-21T17:56:21.115Z",
+    "fechaGuardado": "2026-08-25T21:10:15.548Z",
     "fechaEnvio": "2026-08-20T17:05:49.937Z",
+    "facturadaAt": "2026-08-25",
     "adjudicadaAt": "2026-08-21",
     "valorAdjudicado": 131485,
     "itemsAdjudicados": [
@@ -76459,8 +76460,8 @@
     "adjudicacionAt": "2026-08-21T17:55:50.792Z",
     "createdAt": "2026-08-20T15:57:22.890Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-21T17:56:21.115Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-25T21:10:15.548Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2022",
@@ -81233,7 +81234,7 @@
         "udm": "EA",
         "uid": "6729191f-66c1-48fb-b89d-dff60232af8a",
         "desc": " ANGULO (3\" X 3\"X 3/8\") X 6MTS            \n",
-        "marca": "IMPORTADA",
+        "marca": "",
         "precio": 0,
         "desvTec": "",
         "proveedor": "IMPERIAL",
@@ -81247,7 +81248,7 @@
         "udm": "EA",
         "uid": "d1742073-9381-4d27-8106-b2385b89b683",
         "desc": " LAMINA GALV CAL 20 1.20 X 2.40           \n",
-        "marca": "IMPORTADA",
+        "marca": "",
         "precio": 0,
         "desvTec": "LAMINA GALV A653 C-20 0,85mm 1,22mx2,44m",
         "proveedor": "ACEROS MAPA",
@@ -81261,13 +81262,13 @@
         "udm": "EA",
         "uid": "e49c6f3a-b803-4415-9bd9-50772209d435",
         "desc": " LAMINA HR 1\" 1.20 X 2.40                 \n",
-        "marca": "IMPORTADA",
+        "marca": "",
         "precio": 0,
         "desvTec": "LAMINA H.R 1       8 x 20",
         "proveedor": "IMPERIAL",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 87630
+        "precioProveedor": 0
       },
       {
         "id": 6,
@@ -81275,13 +81276,13 @@
         "udm": "EA",
         "uid": "4c6e5b6b-0ebd-4223-a489-ead152f93275",
         "desc": " LAMINA HR 1/2\" 1.20 X 2.40               \n",
-        "marca": "IMPORTADA",
+        "marca": "",
         "precio": 0,
-        "desvTec": "LAMINA H.R 1/2     4 x 8",
-        "proveedor": "IMPERIAL",
+        "desvTec": "",
+        "proveedor": "",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 786758
+        "precioProveedor": 0
       },
       {
         "id": 7,
@@ -81485,13 +81486,13 @@
         "udm": "EA",
         "uid": "7c3bf88e-aca0-42d4-aba4-bb34ac6fd5de",
         "desc": " TUBERIA AGUAS NEGRAS 1 1/2\" X 1.9 MM \n",
-        "marca": "IMPORTADO ",
+        "marca": "",
         "precio": 0,
-        "desvTec": "TUBO AGUA NEGRA 1.1/2 CAL. .080",
-        "proveedor": "IMPERIAL",
+        "desvTec": "",
+        "proveedor": "",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 52385
+        "precioProveedor": 0
       },
       {
         "id": 22,
@@ -81597,13 +81598,13 @@
         "udm": "EA",
         "uid": "8b3902b4-be4d-4654-8a4e-454ce9b151e2",
         "desc": " TUBO RECTANGULAR 100 X 50MM CAL 18 X 6 M \n",
-        "marca": "IMPORTADO",
+        "marca": "",
         "precio": 0,
-        "desvTec": "TUBO ESTR RECTANG 100 x 50 x 1.5 mm",
-        "proveedor": "IMPERIAL",
+        "desvTec": "",
+        "proveedor": "",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 87550
+        "precioProveedor": 0
       },
       {
         "id": 30,
@@ -81611,13 +81612,13 @@
         "udm": "EA",
         "uid": "11581f9b-b6f9-4e7f-8ae7-4d67d52acff3",
         "desc": " TUBO RECTANGULAR 150 X 50MM CAL 18 X 6 M \n",
-        "marca": "IMPORTADO",
+        "marca": "",
         "precio": 0,
-        "desvTec": "TUBO ESTR RECTANG 150 x 50 x 2.0 mm",
-        "proveedor": "IMPERIAL",
+        "desvTec": "",
+        "proveedor": "",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 148320
+        "precioProveedor": 0
       },
       {
         "id": 31,
@@ -81639,13 +81640,13 @@
         "udm": "EA",
         "uid": "fbfb1454-003c-498a-aa4e-4e4a58095f34",
         "desc": " VIGA HEA 160 X 6 M                       \n",
-        "marca": "IMPORTADA",
+        "marca": "",
         "precio": 0,
-        "desvTec": "HEA 160 x 30.4 kg/m x 6m",
-        "proveedor": "ACEROS MAPA",
+        "desvTec": "",
+        "proveedor": "",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 647520
+        "precioProveedor": 0
       },
       {
         "id": 33,
@@ -81653,13 +81654,13 @@
         "udm": "EA",
         "uid": "18f69b66-ad69-4fe3-8710-76f7386e2805",
         "desc": " VIGA HEA 200 X 6 M                       \n",
-        "marca": "IMPORTADA",
+        "marca": "",
         "precio": 0,
-        "desvTec": "HEA 200 x 42.30 kg/m x 6m",
-        "proveedor": "ACEROS MAPA",
+        "desvTec": "",
+        "proveedor": "",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 900990
+        "precioProveedor": 0
       },
       {
         "id": 34,
@@ -81667,13 +81668,13 @@
         "udm": "EA",
         "uid": "52ae9a1b-001c-4e27-8cb8-2e5ae2bd06ce",
         "desc": " VIGA IPE 160 (160 X 82 X 5 ) X 6 METR    \n",
-        "marca": "IMPORTADA",
+        "marca": "",
         "precio": 0,
-        "desvTec": "IPE 160 x 15.80 kg/m x 6m",
-        "proveedor": "ACEROS MAPA",
+        "desvTec": "",
+        "proveedor": "",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 336540
+        "precioProveedor": 0
       },
       {
         "id": 35,
@@ -81695,13 +81696,13 @@
         "udm": "EA",
         "uid": "6a020d4b-94d6-4db3-ade7-aa67c572e2e2",
         "desc": " VIGA UPN 200 (200x134x75)mm X 6 M        \n",
-        "marca": "IMPORTADA",
+        "marca": "",
         "precio": 0,
-        "desvTec": "UPN 200 x 25.3 kg/m x 6m",
-        "proveedor": "ACEROS MAPA",
+        "desvTec": "",
+        "proveedor": "",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 622380
+        "precioProveedor": 0
       },
       {
         "id": 37,
@@ -81737,7 +81738,7 @@
         "udm": "EA",
         "uid": "31d892bf-3a3e-4883-9690-8bf7ac933972",
         "desc": " LAMINA HR 1/4\" 1.20 X 2.40               \n",
-        "marca": "IMPORTADA",
+        "marca": "",
         "precio": 542591,
         "desvTec": " SE OFERTA LAMINA HR 6.00MM 1200X2400MM \n",
         "proveedor": "STECKERL",
@@ -81774,10 +81775,10 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-08-25T21:09:30.024Z",
+    "fechaGuardado": "2026-08-25T20:18:11.803Z",
     "createdAt": "2026-08-25T20:02:05.426Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-25T21:09:30.024Z",
+    "updatedAt": "2026-08-25T20:18:11.803Z",
     "updatedBy": "sandra"
   },
   {
