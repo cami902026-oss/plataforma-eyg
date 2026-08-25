@@ -2067,6 +2067,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                     <option value="Pendiente">⏳ Pendiente seguimiento</option>
                   </select>
                 </div>
+                <!-- Qué le adjudicaron de verdad: se ve y se puede corregir -->
+                <div id="cotiz-adj-panel" style="display:none;"></div>
                 <div class="form-group" id="cotiz-motivo-box" style="display:none;margin-bottom:8px;">
                   <label style="color:#f87171;">MOTIVO DE RECHAZO (obligatorio)</label>
                   <select id="cotiz-motivo-rechazo" onchange="_cotizMotivoOtroSync()" style="background:var(--card-bg);border:1px solid rgba(248,113,113,.5);border-radius:6px;padding:6px 10px;color:#fff;width:100%;font-size:13px;">
@@ -2322,8 +2324,10 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <button class="bd-filter-btn" onclick="bdFilter('Rechazada',this)">❌ Rechazadas</button>
             <button class="bd-filter-btn" onclick="bdFilter('Pendiente',this)">⏳ Pendientes</button>
             <button class="bd-filter-btn" id="bd-btn-sincerrar" onclick="bdFilter('_sincerrar',this)" title="Cotizaciones enviadas que ya pasaron su fecha de vencimiento y nadie cerró: no se sabe si se ganaron o se perdieron">⏰ Sin cerrar</button>
+            <button class="bd-filter-btn" id="bd-btn-sinadj" onclick="bdFilter('_sinadj',this)" title="Cotizaciones ganadas donde nadie marcó qué le adjudicaron al cliente: hoy cuentan como 100%">⚖️ Sin verificar</button>
           </div>
           <div id="bd-sincerrar-box" style="display:none;"></div>
+          <div id="bd-sinadj-box" style="display:none;"></div>
           <div style="overflow-x:auto;">
             <table class="bd-table">
               <thead>
@@ -11340,8 +11344,8 @@ function _cotizAdjAbrir(){
   // Las ALTERNATIVAS nunca suman al total, así que tampoco se adjudican
   const items = (cotizItems||[]).filter(function(it){ return it && !_cotizEsAlt(it); });
   if(!items.length){ showToast('La cotización no tiene ítems','error'); return; }
-  const prev = (window._cotizAdjGuardado && Array.isArray(window._cotizAdjGuardado.items))
-    ? window._cotizAdjGuardado.items : null;
+  const _reg = (typeof _cotizAdjRegistroActual === 'function') ? _cotizAdjRegistroActual() : null;
+  const prev = (_reg && Array.isArray(_reg.items) && _reg.items.length) ? _reg.items : null;
   // v184 — N° de ítem TAL COMO SALE EN EL PDF que vio el cliente. Se calcula sobre
   // cotizItems COMPLETO (con alternativas) y se mapea por uid, para que al marcar
   // qué le adjudicaron se hable del mismo número en cotizaciones largas ("el 47").
@@ -11545,6 +11549,7 @@ function cotizEstadoChange() {
   // Motivo de rechazo: el desplegable solo se muestra cuando el estado es Rechazada
   const _mbox = document.getElementById('cotiz-motivo-box');
   if (_mbox) _mbox.style.display = est === 'Rechazada' ? '' : 'none';
+  try { _cotizAdjPanel(); } catch(_) {}
   if (est === 'Rechazada') { const _msel = document.getElementById('cotiz-motivo-rechazo'); if (_msel && !_msel.value) setTimeout(() => { try { _msel.focus(); } catch(_){} }, 50); }
   try { _cotizMotivoOtroSync(); } catch(_){}   // el campo de texto libre solo cuando el motivo es "Otro"
   // Adjudicada -> preguntar QUE le adjudicaron (todo marcado por defecto)
@@ -13967,6 +13972,200 @@ function _bdSinCerrar(c) {
   return _bdDiasVencida(c) != null;
 }
 // Resumen por vendedor arriba de la tabla: quién tiene cuántas y por cuánta plata.
+// ═══════════ CORREGIR LA ADJUDICACIÓN (25-ago-2026) ═════════════════════════
+// Hasta hoy el modal de "¿qué le adjudicaron?" solo se abría en el MOMENTO de
+// pasar la cotización a Adjudicada. Si te equivocabas, o si la cotización venía
+// de antes de que el modal existiera, no había forma de corregirlo: quedaba
+// contando como 100% adjudicada para siempre.
+//
+// De 165 cotizaciones Adjudicadas/Facturadas, 130 no tienen registrado qué les
+// adjudicaron — $1.682 millones que hoy se cuentan como ganados completos sin
+// que nadie lo haya verificado.
+
+// ¿Esta cotización tiene registrado qué le adjudicaron?
+function _cotizTieneAdj(c) {
+  return !!(c && Array.isArray(c.itemsAdjudicados) && c.itemsAdjudicados.length);
+}
+
+// Las que hay que revisar: cerradas como ganadas pero sin verificar.
+function _cotizSinVerificarAdj(c) {
+  if (!c || c.deleted) return false;
+  if (!['Adjudicada', 'Facturada'].includes(c.estado)) return false;
+  if (_cotizTieneAdj(c)) return false;
+  // Las del LIBRO no tienen la estructura de ítems que el modal necesita.
+  if (c._hist) return false;
+  // OJO: 24 cotizaciones de la plataforma tienen sus ítems SOLO en la tabla
+  // `cotizacion_items` y no en la copia local. Si se exigiera `c.items` aquí,
+  // esas 24 no aparecerían nunca. Se traen del servidor al resolverlas.
+  return true;
+}
+
+// Los ítems de una cotización, vengan de donde vengan. Las viejas de la
+// plataforma los tienen solo en la tabla `cotizacion_items`.
+async function _cotizItemsDe(c) {
+  const locales = (c && c.items || []).filter(it => it && !_cotizEsAlt(it));
+  if (locales.length) return locales;
+  try {
+    const rs = (await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(c.id)
+      + '&select=uid,descripcion,qty,v_unit,alt_de&order=item.asc&limit=2000')) || [];
+    return rs.filter(r => !r.alt_de).map(r => ({
+      uid: r.uid, desc: r.descripcion || '',
+      qty: (r.qty != null ? +r.qty : 0), precio: (r.v_unit != null ? +r.v_unit : 0)
+    }));
+  } catch (_) { return []; }
+}
+
+// Caja informativa en el editor: qué quedó registrado y el botón para corregirlo.
+function _cotizAdjPanel() {
+  const box = document.getElementById('cotiz-adj-panel');
+  if (!box) return;
+  const est = (document.getElementById('cotiz-estado') || {}).value || '';
+  if (!['Adjudicada', 'Facturada'].includes(est)) { box.style.display = 'none'; box.innerHTML = ''; return; }
+
+  // Lo que se acaba de registrar en esta sesión manda sobre lo guardado.
+  const rec = _cotizAdjRegistroActual();
+  const items = (cotizItems || []).filter(it => it && !_cotizEsAlt(it));
+  const totalCot = items.reduce((a, it) => a + (+it.qty || 0) * (+it.precio || 0), 0);
+  const btn = '<button type="button" onclick="cotizCorregirAdj()" style="background:rgba(232,160,32,.18);'
+    + 'border:1px solid rgba(232,160,32,.5);color:#fbbf24;border-radius:6px;padding:5px 12px;'
+    + 'font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:7px;">'
+    + (rec ? '✏️ Corregir lo adjudicado' : '⚖️ Registrar qué le adjudicaron') + '</button>';
+
+  box.style.display = '';
+  if (!rec) {
+    box.innerHTML = '<div style="background:rgba(232,160,32,.08);border:1px solid rgba(232,160,32,.3);'
+      + 'border-radius:8px;padding:10px 12px;margin-bottom:8px;">'
+      + '<div style="font-size:11.5px;color:#fbbf24;font-weight:700;">⚖️ Sin verificar</div>'
+      + '<div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:3px;">'
+      + 'Hoy cuenta como <b>100% adjudicada</b> porque nadie marcó qué pidió el cliente. '
+      + 'Si le adjudicaron todo, está bien; si fue parcial, corrígelo.</div>' + btn + '</div>';
+    return;
+  }
+  const val = +rec.valor || 0;
+  const pct = totalCot ? Math.round(val / totalCot * 100) : 0;
+  const parcial = val < totalCot - 0.5;
+  const col = parcial ? '#fbbf24' : '#86efac';
+  box.innerHTML = '<div style="background:rgba(' + (parcial ? '232,160,32' : '46,170,74') + ',.08);'
+    + 'border:1px solid rgba(' + (parcial ? '232,160,32' : '46,170,74') + ',.3);'
+    + 'border-radius:8px;padding:10px 12px;margin-bottom:8px;">'
+    + '<div style="font-size:11.5px;color:' + col + ';font-weight:700;">'
+    + (parcial ? '⚖️ Adjudicación PARCIAL · ' + pct + '%' : '✅ Adjudicada completa') + '</div>'
+    + '<div style="font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:3px;">'
+    + '$' + Math.round(val).toLocaleString('es-CO') + ' de $' + Math.round(totalCot).toLocaleString('es-CO')
+    + ((rec.items || []).length ? ' · ' + rec.items.length + ' de ' + items.length + ' ítems' : '')
+    + (rec.por ? '<br>registró <b>' + String(rec.por).replace(/</g, '&lt;') + '</b>' : '')
+    + (rec.at ? ' el ' + String(rec.at).substring(0, 10) : '')
+    + '</div>' + btn + '</div>';
+}
+
+// El registro vigente: primero lo de esta sesión, si no lo guardado en la BD.
+function _cotizAdjRegistroActual() {
+  if (window._cotizAdjGuardado && Array.isArray(window._cotizAdjGuardado.items))
+    return window._cotizAdjGuardado;
+  try {
+    const id = cotizEditId || (typeof cotizReadNum === 'function' ? cotizReadNum() : '');
+    if (!id) return null;
+    const c = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === id);
+    if (c && Array.isArray(c.itemsAdjudicados) && c.itemsAdjudicados.length) {
+      return { items: c.itemsAdjudicados, valor: c.valorAdjudicado,
+               por: c.adjudicacionPor, at: c.adjudicacionAt };
+    }
+  } catch (_) { }
+  return null;
+}
+
+function cotizCorregirAdj() {
+  const est = (document.getElementById('cotiz-estado') || {}).value || '';
+  if (!['Adjudicada', 'Facturada'].includes(est)) {
+    showToast('Esto solo aplica a cotizaciones Adjudicadas o Facturadas', 'info'); return;
+  }
+  _cotizAdjAbrir();
+}
+
+// ── Bandeja: marcar de una las que sí fueron completas ──────────────────────
+// La mayoría de las 130 sin verificar son de 1 o 2 ítems ya facturados: fueron
+// completas. Abrir el modal para cada una sería castigar a quien corrige. Un
+// clic estampa "todo adjudicado" y deja constancia de quién lo confirmó.
+async function bdAdjCompleta(id) {
+  const bd = getData('bd_cotizaciones', []);
+  const c = bd.find(x => x && x.id === id);
+  if (!c) return showToast('No se encontró ' + id, 'error');
+  const items = await _cotizItemsDe(c);
+  if (!items.length) return showToast('No se encontraron los ítems de ' + id
+    + ' — ábrela y márcala desde adentro', 'error', { durationMs: 9000 });
+  const val = items.reduce((a, it) => a + (+it.qty || 0) * (+it.precio || 0), 0);
+  if (!confirm('¿Al cliente le adjudicaron TODO de ' + id + '?\n\n'
+    + items.length + ' ítem(s) por $' + Math.round(val).toLocaleString('es-CO')
+    + '\n\nSi fue parcial, cancela y usa "✏️ Parcial".')) return;
+  const sello = {
+    itemsAdjudicados: items.map(it => ({ uid: it.uid || _cotizItemUid(it), qty: (+it.qty || 0) })),
+    valorAdjudicado: Math.round(val * 100) / 100,
+    adjudicacionPor: (currentUser && (currentUser.name || currentUser.email)) || '—',
+    adjudicacionAt: new Date().toISOString()
+  };
+  Object.assign(c, sello);
+  setData('bd_cotizaciones', bd);
+  try {
+    // Mismo camino que usa el guardado normal de la cotizacion: merge por id,
+    // tocando solo `extra`. Asi no se pisa nada de lo que otro haya cambiado.
+    await absFetch('cotizaciones', {
+      method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ id: id, extra: c })
+    });
+    showToast('✅ ' + id + ' marcada como adjudicada COMPLETA', 'success');
+  } catch (e) {
+    showToast('Se guardó local pero no subió: ' + (e && e.message || e), 'error', { durationMs: 10000 });
+  }
+  bdRender();
+}
+
+// Abre la cotización y, de una, el modal para marcar qué le adjudicaron.
+function bdAdjParcial(id) {
+  bdCargar(id);
+  let n = 0;
+  const abrir = () => {
+    n++;
+    if (cotizEditId === id && (cotizItems || []).length) { _cotizAdjAbrir(); return; }
+    if (n < 20) setTimeout(abrir, 250);
+    else showToast('Abre la cotización y usa "✏️ Corregir lo adjudicado"', 'info');
+  };
+  setTimeout(abrir, 400);
+}
+
+// Resumen de la bandeja, mismo estilo que el de "⏰ Sin cerrar".
+function _bdSinAdjResumen(lista) {
+  const box = document.getElementById('bd-sinadj-box');
+  if (!box) return;
+  if (_bdActiveFiltro !== '_sinadj') { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const monto = lista.reduce((a, c) => a + (+c.total || 0), 0);
+  const porVend = {};
+  lista.forEach(c => {
+    const v = _bdRespVendedor(c);
+    if (!porVend[v]) porVend[v] = { n: 0, monto: 0 };
+    porVend[v].n++; porVend[v].monto += (+c.total || 0);
+  });
+  const esc = s => String(s).replace(/</g, '&lt;');
+  const chips = Object.keys(porVend).sort((a, b) => porVend[b].n - porVend[a].n).map(v =>
+    '<span style="display:inline-block;background:rgba(255,255,255,.06);border:1px solid var(--border);'
+    + 'border-radius:999px;padding:5px 12px;margin:3px 4px 3px 0;font-size:12px;">'
+    + '<b style="color:#fbbf24;">' + esc(v) + '</b>'
+    + '<span style="color:#fbbf24;font-weight:700;margin-left:6px;">' + porVend[v].n + '</span>'
+    + '<span style="color:var(--text-muted);margin-left:6px;">$'
+    + (porVend[v].monto / 1000000).toFixed(1) + 'M</span></span>').join('');
+  box.style.display = '';
+  box.innerHTML = '<div style="background:rgba(232,160,32,.08);border:1px solid rgba(232,160,32,.35);'
+    + 'border-radius:10px;padding:12px 14px;margin:10px 0;">'
+    + '<div style="font-size:13px;font-weight:800;color:#fbbf24;margin-bottom:6px;">'
+    + '⚖️ ' + lista.length + ' cotización(es) ganadas sin verificar qué les adjudicaron '
+    + '— hoy cuentan como 100%</div>'
+    + '<div style="font-size:11.5px;color:var(--text-muted);margin-bottom:8px;line-height:1.6;">'
+    + 'Son $' + (monto / 1000000).toFixed(0) + ' millones contados como ganados completos. '
+    + 'Si le adjudicaron todo, dale <b>✅ Completa</b> y listo. Si fue parcial, <b>✏️ Parcial</b> '
+    + 'abre la cotización para marcar ítem por ítem. Sin esto, el % adjudicado y lo perdido '
+    + 'no son reales.</div>'
+    + '<div>' + (chips || '<span style="color:var(--text-muted);font-size:12px;">Todas verificadas 🎉</span>') + '</div></div>';
+}
+
 function _bdSinCerrarResumen(lista) {
   const box = document.getElementById('bd-sincerrar-box');
   if (!box) return;
@@ -14777,7 +14976,9 @@ function bdRender(filtro) {
   // Rama nueva (2026-08-22): bandeja de vencidas sin cerrar. El resto del filtrado sigue igual.
   let lista = _ef === '_sincerrar'
     ? bdVisible.filter(_bdSinCerrar)
-    : (_ef && _ef !== 'todas' ? bdVisible.filter(c => c.estado === _ef) : [...bdVisible]);
+    : _ef === '_sinadj'
+      ? bdVisible.filter(_cotizSinVerificarAdj)
+      : (_ef && _ef !== 'todas' ? bdVisible.filter(c => c.estado === _ef) : [...bdVisible]);
   if (srch) lista = lista.filter(c => (c.cliente||'').toLowerCase().includes(srch) || (c.id||'').toLowerCase().includes(srch) || (c.contacto||'').toLowerCase().includes(srch));
   if (_itemTerms.length) {
     _bdItemsLibroAsegurar(_itemTerms);   // dispara la consulta al LIBRO (async, re-render al llegar)
@@ -14803,6 +15004,9 @@ function bdRender(filtro) {
   // el resumen se oculta y todo queda exactamente como estaba.
   if (_ef === '_sincerrar') lista.sort((a, b) => (_bdDiasVencida(b) || 0) - (_bdDiasVencida(a) || 0));
   _bdSinCerrarResumen(_ef === '_sincerrar' ? lista : []);
+  // Las más recientes primero: son las que todavía se recuerdan.
+  if (_ef === '_sinadj') lista.sort((a, b) => String(b.fecha || '').localeCompare(String(a.fecha || '')));
+  try { _bdSinAdjResumen(_ef === '_sinadj' ? lista : []); } catch(_) {}
 
   if (!lista.length) {
     tbody.innerHTML = '';
@@ -14876,6 +15080,13 @@ function bdRender(filtro) {
       ? `<button class="btn-sm" onclick="bdCerrarAdjudicada('${c.id}',event)" title="Se ganó: abre la cotización para registrar QUÉ le adjudicaron (deja el % adjudicado)" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700">✅ Adjudicada</button>
          <button class="btn-sm" onclick="bdCerrarRechazada('${c.id}',event)" title="Se perdió: pide el motivo y la cierra al instante" style="background:rgba(248,113,113,.2);border:1px solid rgba(248,113,113,.55);color:#fecaca;font-weight:700">❌ Rechazada</button>`
       : '';
+    // Bandeja "⚖️ Sin verificar": resolver desde la fila. La mayoria fueron
+    // completas y ahi basta un clic; solo las parciales piden abrir el detalle.
+    const _sinAdj = (_bdActiveFiltro === '_sinadj') && !_h;
+    const adjBtns = _sinAdj
+      ? `<button class="btn-sm" onclick="event.stopPropagation();bdAdjCompleta('${c.id}')" title="Al cliente le adjudicaron TODA la cotizacion" style="background:rgba(46,170,74,.22);border:1px solid rgba(46,170,74,.55);color:#86efac;font-weight:700">✅ Completa</button>
+         <button class="btn-sm" onclick="event.stopPropagation();bdAdjParcial('${c.id}')" title="Le adjudicaron solo una parte: abre la cotizacion para marcar item por item" style="background:rgba(232,160,32,.2);border:1px solid rgba(232,160,32,.55);color:#fbbf24;font-weight:700">✏️ Parcial</button>`
+      : '';
     const acciones = _h
       ? `<div style="display:flex;gap:4px;flex-wrap:wrap;">
           ${ocBtn}${remBtn}${compBtn}${factBtn}
@@ -14883,7 +15094,7 @@ function bdRender(filtro) {
           <button class="btn-sm bd-btn-xl" onclick="bdVerHistorico('${c.id}')">👁 Ver</button>
         </div>`
       : `<div style="display:flex;gap:4px;flex-wrap:wrap;">
-          ${cierreBtns}${opBtn}${ocBtn}${remBtn}${compBtn}${factBtn}
+          ${adjBtns}${cierreBtns}${opBtn}${ocBtn}${remBtn}${compBtn}${factBtn}
           <button class="btn-sm bd-btn-edit" onclick="bdCargar('${c.id}')">✏️ Editar</button>
           <button class="btn-sm bd-btn-xl" onclick="bdDescargar('${c.id}')">⬇️ XLS</button>
           <button class="btn-sm bd-btn-del" onclick="bdEliminar('${c.id}',event)">🗑</button>
@@ -15194,6 +15405,9 @@ document.addEventListener('visibilitychange', _presVigilar);
 })();
 
 async function bdCargar(id) {
+  // La adjudicación registrada pertenece a UNA cotización: al abrir otra se
+  // suelta, o se le estamparían a la nueva los ítems de la anterior.
+  if (id !== cotizEditId) window._cotizAdjGuardado = null;
   // SUPABASE MANDA (2026-07-13): al abrir se trae PRIMERO la fila de Supabase
   // (1 registro con el web-record completo en `extra`, ~300ms) — la fuente más
   // fresca — con tope de 4s. El flujo anterior (verificar el JSON completo de
