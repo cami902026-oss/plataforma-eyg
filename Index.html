@@ -24429,11 +24429,94 @@ async function opTomarDeBodega(id, codigo, hay) {
       showToast('Partida: ' + hay + ' de bodega y ' + resto + ' por comprar', 'success', { durationMs: 8000 });
     }
     await opEvento(op_current.id, 'stock_confirmado', it.descripcion + ' → bodega ' + codigo);
+
+    // Si el plan ya estaba hecho, esa línea seguía como compra a un proveedor.
+    // Se corrige sola: BODEGA, costo de inventario, sin O.C. y ya nuestra.
+    // (El caso OP-2026-0017: el plan se generó un minuto antes de esta decisión.)
+    try {
+      const _sync = await _opPlanSyncBodega(it);
+      if (_sync) {
+        await opEvento(op_current.id, 'plan_corregido',
+          it.descripcion + ' · ' + (_sync.antes ? 'era compra a ' + _sync.antes + ', ' : '')
+          + 'ahora sale de bodega' + (_sync.costo != null ? ' a ' + opMoney(_sync.costo) : ''));
+        showToast('🛒 También se corrigió en el plan de compras: esa línea ya no se compra'
+          + (_sync.costo != null ? ' (costo de inventario ' + opMoney(_sync.costo) + ')' : ''),
+          'info', { durationMs: 9000 });
+      }
+    } catch (_) { }
+
     opRenderItems(); _opVia();
     await opRevisarStock(true);
+    try { await opPlanCargar(); } catch (_) { }
   } catch (e) {
     showToast('No se pudo aplicar: ' + (e && e.message || e), 'error');
   }
+}
+
+// ═══════════ OP ⇄ PLAN: que los dos digan lo mismo ══════════════════════════
+// 25-ago-2026 · el caso OP-2026-0017 (TGI / LM2010).
+//
+// El historial de esa OP lo cuenta al minuto: 01:55 plan generado con las dos
+// líneas como COMPRA · 01:56 se confirmó que el conector sale de bodega. El
+// plan ya estaba hecho y no se enteró, porque opGenerarPlan solo AGREGA las
+// líneas que faltan y nunca corrige una cuyo origen cambió. Tocó arreglarlo a
+// mano, y la línea quedó sin su nota, sin el marcado de "ya es nuestro" y
+// pidiendo pago de algo que no se le compra a nadie.
+
+// Corrige en el plan la línea de un ítem que acaba de pasar a BODEGA.
+// Silenciosa a propósito: es una consecuencia de lo que la persona ya decidió,
+// no una pregunta nueva. Si el plan todavía no existe, no hace nada.
+async function _opPlanSyncBodega(it) {
+  if (!op_current || !it) return null;
+  const cc = _opCC(op_current);
+  const desc = String(it.descripcion || '').trim();
+  if (!desc) return null;
+  try {
+    const filas = (await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc)
+      + '&descripcion=eq.' + encodeURIComponent(desc)
+      + '&select=id,proveedor,costo_unit,cantidad&limit=5')) || [];
+    if (!filas.length) return null;
+
+    // El costo REAL es el del inventario, no el que puso el vendedor al cotizar:
+    // con el costo de compra el margen se ve mejor de lo que es.
+    let costo = null;
+    if (it.producto_codigo) {
+      try {
+        const p = (await absFetch('productos?codigo=eq.' + encodeURIComponent(it.producto_codigo)
+          + '&select=costo_compra&limit=1')) || [];
+        if (p[0] && p[0].costo_compra != null) costo = +p[0].costo_compra;
+      } catch (_) { }
+    }
+    const cuerpo = {
+      proveedor: 'BODEGA',
+      nota: 'Sale de bodega' + (it.producto_codigo ? ' · ' + it.producto_codigo : '')
+            + (costo == null ? ' · SIN COSTO EN INVENTARIO' : ''),
+      pago: 'PAGADO',        // a bodega no se le paga: ya es nuestro
+      sin_oc: true,          // ni se le emite orden de compra
+      comprado: true,
+      op_numero: op_current.numero
+    };
+    if (costo != null) cuerpo.costo_unit = costo;
+    // La cantidad pudo partirse (parte de bodega, resto por comprar).
+    if (it.cantidad != null) cuerpo.cantidad = +it.cantidad;
+
+    for (const f of filas) {
+      await absFetch('plan_compras?id=eq.' + f.id, {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(cuerpo)
+      });
+    }
+    return { n: filas.length, costo: costo, antes: filas[0].proveedor || '' };
+  } catch (e) { console.warn('[op→plan]', e); return null; }
+}
+
+// Antes de generar el plan: ¿hay algo marcado como COMPRA que EN REALIDAD está
+// en bodega? No se pregunta "¿lo revisaste?" — se mira de verdad contra el
+// inventario y se dice qué encontró, que es lo único accionable.
+async function _opCompraQueHayEnBodega() {
+  try {
+    const av = await opRevisarStock(true);
+    return (av || []).filter(a => a && a.tipo === 'hay');
+  } catch (_) { return []; }
 }
 
 // ═══════════ OP ⇄ PLAN DE COMPRAS ═══════════════════════════════════════════
@@ -24529,6 +24612,23 @@ async function opGenerarPlan() {
   const usables = (op_currentItems || []).filter(i => ['COMPRA', 'BODEGA'].includes(i.origen));
   if (!usables.length) { showToast('Esta OP no tiene líneas con origen definido', 'info'); return; }
   const cc = _opCC(op);
+
+  // 25-ago-2026: mirar el inventario ANTES, no después. Si algo marcado como
+  // compra ya está en bodega y el plan se genera igual, entra como compra y el
+  // plan queda mintiendo hasta que alguien lo corrija a mano.
+  try {
+    const _hay = await _opCompraQueHayEnBodega();
+    if (_hay.length) {
+      const _lista = _hay.slice(0, 6).map(a => '· ' + a.it.descripcion
+        + ' — hay ' + a.hay + ' en bodega (' + a.prod.codigo + ')').join('\n');
+      if (!confirm('⚠️ ' + _hay.length + ' ítem(s) marcados para COMPRAR ya están en bodega:\n\n'
+        + _lista + (_hay.length > 6 ? '\n· … y ' + (_hay.length - 6) + ' más' : '')
+        + '\n\nSi generas el plan ahora, entran como compra.\n'
+        + 'Cancela y usa los avisos de arriba para pasarlos a bodega.\n\n'
+        + '¿Generar el plan de todos modos?')) return;
+    }
+  } catch (_) { }
+
   try {
     // Si el plan ya existe no se pisa: se completan SOLO las líneas que falten.
     // Es lo que pasó con CC-OP-2026-0007, generado antes de que lo de bodega
@@ -25279,13 +25379,26 @@ async function _pcomAvisarOP(it){
     const ops = await absFetch('ops?numero=eq.'+encodeURIComponent(numero)+'&select=id&limit=1');
     if(!ops || !ops.length) return;
     const its = await absFetch('op_items?op_id=eq.'+ops[0].id
-      + '&descripcion=eq.'+encodeURIComponent(desc)+'&select=id,estado&limit=5');
+      + '&descripcion=eq.'+encodeURIComponent(desc)+'&select=id,estado,origen&limit=5');
     if(!its || !its.length) return;
+    // 25-ago-2026 — el ORIGEN también viaja. Si compras escribe BODEGA en el plan
+    // porque el material ya lo tenemos, la OP decía COMPRA y bodega no se
+    // enteraba de que le tocaba alistarlo: los dos documentos decían cosas
+    // distintas del mismo ítem.
+    const esBodega = /^BODEGA/i.test(String(it.proveedor||'').trim());
     for(const x of its){
-      if(x.estado === estado) continue;
+      const cuerpo = { updated_by:(currentUser&&(currentUser.email||currentUser.name))||'plan' };
+      if(x.estado !== estado) cuerpo.estado = estado;
+      if(esBodega && x.origen !== 'BODEGA'){ cuerpo.origen = 'BODEGA'; cuerpo.proveedor = null; }
+      if(Object.keys(cuerpo).length === 1) continue;      // solo updated_by: nada que cambiar
       await absFetch('op_items?id=eq.'+x.id,{method:'PATCH',
         headers:{'Prefer':'return=minimal'},
-        body:JSON.stringify({ estado: estado, updated_by:(currentUser&&(currentUser.email||currentUser.name))||'plan' })});
+        body:JSON.stringify(cuerpo)});
+      if(cuerpo.origen){
+        try{ await opEvento(ops[0].id, 'origen_desde_plan',
+          desc + ' · compras lo pasó a BODEGA en el plan ' + pcom_current.cc
+          + ' · falta confirmar cuál producto es'); }catch(_){}
+      }
     }
   }catch(e){ console.warn('[pcom→op]', e); }
 }
@@ -26025,6 +26138,13 @@ function pcomUpd(i, campo, valor){
     // había que marcarlo en dos sitios y la vía de la OP mostraba 0 comprados.
     if(campo==='comprado' || campo==='recibida') { try{ _pcomAvisarOP(it); }catch(_){} }
   }
+  // 25-ago-2026: escribir BODEGA como proveedor es decir "este ya lo tenemos".
+  // La OP tiene que enterarse o seguirá diciendo COMPRA, y bodega no sabrá que
+  // le toca alistarlo. Solo al PONER bodega; quitarla no devuelve nada solo,
+  // porque el origen puede haber cambiado por otra razón en la OP.
+  if(campo==='proveedor' && /^BODEGA/i.test(String(it.proveedor||'').trim())){
+    try{ _pcomAvisarOP(it); }catch(_){}
+  }
 }
 function pcomRenderItems(){
   const tb = document.getElementById('pcom-items-tbody'); if(!tb||!pcom_current) return;
@@ -26221,6 +26341,10 @@ async function pcomGuardar(silencioso){
       costo_unit:(it.costo_unit===''||it.costo_unit==null)?null:parseFloat(it.costo_unit),
       nota:String(it.nota||'').trim()||null,
       pago:it.pago||'PENDIENTE', sin_oc:!!it.sin_oc,
+      // 25-ago-2026: el enlace de vuelta a la OP se perdía en CADA guardado
+      // (estaba nulo en las 2.800 líneas de la base). El número sale del propio
+      // CC, que es de dónde ya lo deducen los dos avisos del módulo.
+      op_numero: (String(c.cc||'').match(/^CC-(OP-\d{4}-\d+)$/)||[])[1] || null,
       created_by: currentUser?.name||'—'
     }));
     // v186 — seguimiento de compra por línea. Solo se envía si la base ya tiene las columnas;
