@@ -1096,6 +1096,59 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 
 /* Caja de cierre de la OP: un checklist de tres sellos. Verde solo cuando
    los tres están puestos; ahí aparece el botón de cerrar. */
+/* Modal de la OP: una hoja sobre el escritorio, no una tarjeta genérica. */
+#op-ligar-modal .op-modal-hoja{
+  background:var(--card-bg,#0d1f3c);border:1px solid var(--border);border-radius:4px;
+  max-width:720px;width:100%;max-height:90vh;display:flex;flex-direction:column;
+  padding:20px 24px 18px;
+}
+#op-ligar-modal .op-modal-cab{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px;
+}
+#op-ligar-modal .op-modal-cab h3{
+  margin:0;font-family:'Montserrat',sans-serif;font-weight:800;font-size:16.5px;color:#fff;
+}
+#op-ligar-modal .op-modal-cab button{
+  background:none;border:none;color:var(--text-muted);font-size:24px;line-height:1;cursor:pointer;
+}
+#op-ligar-modal .op-modal-cab button:focus-visible{ outline:2px solid var(--gold);outline-offset:2px; }
+#op-ligar-modal .op-modal-pie{
+  display:flex;gap:10px;justify-content:flex-end;margin-top:14px;
+  padding-top:13px;border-top:1px solid var(--op-linea,rgba(30,58,110,.5));
+}
+#op-ligar-modal .op-plan-d{ font-size:12.5px;color:#a9bcd8;line-height:1.55; }
+#op-ligar-modal .op-plan-d b{ color:#e6edfb; }
+#op-ligar-modal .op-ligar-lista{ overflow-y:auto;flex:1;display:grid;gap:8px;min-height:0; }
+#op-ligar-modal .op-ligar-op{
+  display:flex;align-items:flex-start;gap:11px;padding:11px 13px;cursor:pointer;
+  background:rgba(255,255,255,.025);border:1px solid var(--op-linea,rgba(30,58,110,.5));
+  border-radius:3px;transition:background .14s,border-color .14s;
+}
+#op-ligar-modal .op-ligar-op:hover{ background:rgba(255,255,255,.055); }
+/* La de la misma cotización va marcada: es casi siempre la correcta. */
+#op-ligar-modal .op-ligar-fuerte{ border-left:3px solid var(--op-bodega,#3FBF63); }
+#op-ligar-modal .op-ligar-op input{
+  width:16px;height:16px;margin-top:2px;flex-shrink:0;accent-color:var(--gold);cursor:pointer;
+}
+#op-ligar-modal .op-ligar-n{ font-size:13px;font-weight:700;color:#e6edfb; }
+#op-ligar-modal .op-ligar-tag{
+  font-family:var(--op-mono,monospace);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:#8ce8a6;background:rgba(63,191,99,.14);border-radius:2px;padding:2px 6px;
+  font-weight:600;vertical-align:1px;
+}
+#op-ligar-modal .op-ligar-d{
+  font-family:var(--op-mono,monospace);font-size:10.5px;color:var(--text-muted);margin-top:3px;
+}
+#op-ligar-modal .op-ligar-i{
+  font-size:11.5px;color:#a9bcd8;line-height:1.6;margin-top:6px;
+  padding-left:9px;border-left:1px solid var(--op-linea,rgba(30,58,110,.5));
+}
+#op-ligar-modal .op-ligar-err,#op-ligar-modal .op-ligar-warn{
+  margin-top:11px;padding:10px 13px;border-radius:0 4px 4px 0;font-size:12.5px;line-height:1.6;
+}
+#op-ligar-modal .op-ligar-err{ background:rgba(224,90,74,.12);border-left:3px solid #e05a4a;color:#fecaca; }
+#op-ligar-modal .op-ligar-warn{ background:rgba(232,160,32,.12);border-left:3px solid #E8A020;color:#fbbf24; }
+
 #page-op .op-cierre-caja{
   background:var(--op-papel);border:1px solid var(--op-linea);
   border-left:3px solid var(--op-linea);border-radius:0 3px 3px 0;
@@ -22250,6 +22303,14 @@ function opRenderEditor() {
     + '" onclick="opVerRemision(this.dataset.rem)"'
     + ' title="Abrir la remisión para el PDF, la planilla de viaje y los rótulos"'
     + ' style="padding:8px 14px;font-size:12px;">📄 Remisión ' + opEsc(r) + '</button>'));
+  // Ligar una remisión hecha aparte (el caso MONTITEC): con la OP viva y si
+  // todavía hay ítems sin despachar. No toca inventario.
+  if (['aprobada', 'en_ejecucion', 'despachada'].includes(o.estado) && opPuedeDespachar()
+      && (op_currentItems || []).some(i => i.estado !== 'despachado')) {
+    b.push('<button class="btn btn-ghost" onclick="opLigarAbrir()"'
+      + ' title="La remisión ya se hizo por el módulo de Remisiones y esta OP no se enteró. Esto las amarra sin volver a descontar inventario."'
+      + ' style="padding:8px 14px;font-size:12px;">🔗 Ligar remisión ya hecha</button>');
+  }
   // Recibir: con la OP aprobada y si queda algo comprado por llegar.
   if (['aprobada', 'en_ejecucion'].includes(o.estado) && opPuedeRecibir()
       && (op_currentItems || []).some(i => i.origen === 'COMPRA' && (+i.recibida || 0) < (+i.cantidad || 0))) {
@@ -23032,6 +23093,191 @@ async function opCerrar() {
   } catch (e) {
     // El trigger de la base es el que manda: si faltan certificados, no deja.
     showToast('No se pudo cerrar: ' + (e && e.message || e), 'error', { durationMs: 12000 });
+  }
+}
+
+// ═══════════ LIGAR UNA REMISIÓN QUE YA SE HIZO ══════════════════════════════
+// 24-ago-2026 · el caso MONTITEC.
+//
+// La remisión 26269 se hizo por el módulo de Remisiones, como se ha hecho toda
+// la vida, y la OP-2026-0004 quedó al lado sin enterarse. La columna para
+// amarrarlas (`remisiones.op_numero`) ya existía; lo que faltaba era el botón.
+//
+// LO IMPORTANTE: esto NO TOCA INVENTARIO. La remisión ya descontó cuando se
+// creó; volver a descontar sería restar dos veces el mismo material. Aquí solo
+// se dice "esta remisión es de esta OP": se marcan los ítems como despachados
+// con su número y, si ya no queda nada pendiente, la OP pasa a despachada.
+// Por eso se puede hacer sin miedo con las remisiones viejas.
+
+async function opLigarAbrir() {
+  if (!op_current) return;
+  if (!opPuedeDespachar()) { showToast('Esto lo hacen bodega (Yesid), Andrea o gerencia', 'error'); return; }
+  const o = op_current;
+
+  // Candidatas: remisiones de la MISMA cotización o del MISMO cliente que
+  // todavía no pertenecen a ninguna OP. Se traen del servidor, no de memoria.
+  let filas = [];
+  try {
+    const partes = [];
+    if (o.cotizacion_id) partes.push('cotizacion_id.eq.' + o.cotizacion_id);
+    if (o.cliente) partes.push('cliente.ilike.*' + String(o.cliente).trim() + '*');
+    if (!partes.length) { showToast('Esta OP no tiene cliente ni cotización para buscar', 'error'); return; }
+    filas = (await absFetch('remisiones?op_numero=is.null&or=(' + encodeURIComponent(partes.join(',')) + ')'
+      + '&select=remision,fecha,cliente,cotizacion_id,item,item_cot,descripcion,cantidad,colada'
+      + '&order=remision.desc&limit=500')) || [];
+  } catch (e) { showToast('No se pudieron leer las remisiones: ' + (e && e.message || e), 'error'); return; }
+
+  if (!filas.length) {
+    showToast('No hay remisiones sueltas de ' + (o.cliente || o.cotizacion_id)
+      + '. Si ya está ligada a otra OP no aparece aquí.', 'info', { durationMs: 9000 });
+    return;
+  }
+
+  // Una remisión = varias filas. Se agrupan por número.
+  const grupos = {};
+  filas.forEach(f => { (grupos[f.remision] = grupos[f.remision] || []).push(f); });
+  op_ligar_grupos = grupos;
+
+  const nums = Object.keys(grupos).sort().reverse();
+  const cuerpo = nums.map(n => {
+    const g = grupos[n];
+    const misma = g.some(x => String(x.cotizacion_id || '') === String(o.cotizacion_id || ''));
+    return '<label class="op-ligar-op' + (misma ? ' op-ligar-fuerte' : '') + '">'
+      + '<input type="radio" name="op-ligar-r" value="' + opEsc(n) + '">'
+      + '<div><div class="op-ligar-n">Remisión ' + opEsc(n)
+      + (misma ? ' <span class="op-ligar-tag">misma cotización</span>' : '') + '</div>'
+      + '<div class="op-ligar-d">' + opEsc(g[0].fecha || '') + ' · ' + opEsc(g[0].cliente || '')
+      + ' · cotización ' + opEsc(g[0].cotizacion_id || '—') + ' · ' + g.length + ' línea(s)</div>'
+      + '<div class="op-ligar-i">'
+      + g.slice(0, 6).map(x => '· ' + opEsc(String(x.descripcion || '').substring(0, 52))
+          + ' <b>' + opEsc(x.cantidad) + '</b>').join('<br>')
+      + (g.length > 6 ? '<br>· … y ' + (g.length - 6) + ' más' : '')
+      + '</div></div></label>';
+  }).join('');
+
+  const prev = document.getElementById('op-ligar-modal'); if (prev) prev.remove();
+  const ov = document.createElement('div');
+  ov.id = 'op-ligar-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(3,8,18,.82);z-index:100004;'
+    + 'display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML = '<div class="op-modal-hoja">'
+    + '<div class="op-modal-cab"><h3>🔗 Ligar una remisión ya hecha</h3>'
+    + '<button onclick="_opLigarCerrar()" aria-label="Cerrar">×</button></div>'
+    + '<div class="op-plan-d" style="margin-bottom:12px">Marca la remisión que corresponde a <b>'
+    + opEsc(o.numero) + '</b>. Los ítems quedan despachados con ese número. '
+    + '<b>No se toca el inventario</b>: la remisión ya descontó cuando se creó.</div>'
+    + '<div class="op-ligar-lista">' + cuerpo + '</div>'
+    + '<div id="op-ligar-aviso"></div>'
+    + '<div class="op-modal-pie">'
+    + '<button class="btn btn-ghost" onclick="_opLigarCerrar()" style="padding:8px 16px;font-size:12px;">Cancelar</button>'
+    + '<button class="btn btn-primary" id="op-ligar-ok" onclick="opLigarConfirmar()" style="padding:8px 18px;font-size:13px;">Ligar a ' + opEsc(o.numero) + '</button>'
+    + '</div></div>';
+  document.body.appendChild(ov);
+}
+
+let op_ligar_grupos = {};
+function _opLigarCerrar() { const m = document.getElementById('op-ligar-modal'); if (m) m.remove(); }
+
+async function opLigarConfirmar() {
+  if (!op_current) return;
+  const sel = document.querySelector('#op-ligar-modal input[name="op-ligar-r"]:checked');
+  const av = document.getElementById('op-ligar-aviso');
+  if (!sel) {
+    if (av) av.innerHTML = '<div class="op-ligar-err">Marca cuál remisión es.</div>';
+    return;
+  }
+  const num = sel.value;
+  const g = op_ligar_grupos[num] || [];
+  const its = op_currentItems || [];
+
+  // Emparejar línea de remisión con ítem de la OP. Primero por el N° de ítem de
+  // la cotización, que es exacto; si no lo trae, por texto. Lo que no empareje
+  // se dice, no se adivina.
+  const usados = new Set();
+  const pares = [];
+  const norm = t => String(t || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+  g.forEach(f => {
+    let it = null;
+    if (f.item_cot != null) it = its.find(x => !usados.has(x.id) && String(x.item) === String(f.item_cot));
+    if (!it) {
+      const n = norm(f.descripcion);
+      it = its.find(x => !usados.has(x.id) && norm(x.descripcion) === n)
+        || its.find(x => !usados.has(x.id) && (norm(x.descripcion).startsWith(n.substring(0, 24)) || n.startsWith(norm(x.descripcion).substring(0, 24))));
+    }
+    if (it) { usados.add(it.id); pares.push({ f: f, it: it }); }
+  });
+
+  const sueltas = g.length - pares.length;
+  if (!pares.length) {
+    if (av) av.innerHTML = '<div class="op-ligar-err">Ninguna línea de la remisión ' + opEsc(num)
+      + ' coincide con los ítems de esta OP. Revisa que sea la remisión correcta.</div>';
+    return;
+  }
+  if (av) av.innerHTML = sueltas
+    ? '<div class="op-ligar-warn"><b>' + sueltas + ' línea(s)</b> de la remisión no coinciden con ningún ítem de la OP. '
+      + 'Se liga igual: la remisión queda amarrada y esas líneas simplemente no marcan ningún ítem.</div>'
+    : '';
+
+  if (!confirm('Ligar la remisión ' + num + ' a ' + op_current.numero + '.\n\n'
+    + pares.length + ' ítem(s) quedan DESPACHADOS.\n'
+    + (sueltas ? sueltas + ' línea(s) de la remisión no emparejaron.\n' : '')
+    + '\nNo se toca el inventario: la remisión ya descontó cuando se creó.\n\n¿Continuar?')) return;
+
+  const btn = document.getElementById('op-ligar-ok');
+  if (btn) { btn.disabled = true; btn.textContent = 'Ligando…'; }
+  const yo = (currentUser && (currentUser.name || currentUser.email)) || 'SISTEMA';
+  const fallos = [];
+
+  try {
+    // 1) La remisión sabe de qué OP es (todas sus líneas).
+    await absFetch('remisiones?remision=eq.' + encodeURIComponent(num), {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ op_numero: op_current.numero })
+    });
+
+    // 2) Cada ítem emparejado queda despachado con su número y su colada.
+    for (const p of pares) {
+      try {
+        const body = { estado: 'despachado', remision: num, updated_by: yo };
+        const col = String(p.f.colada || '').trim();
+        if (col && !String(p.it.colada || '').trim()) body.colada = col;
+        await absFetch('op_items?id=eq.' + p.it.id, {
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(body)
+        });
+        Object.assign(p.it, body);
+      } catch (e) { fallos.push(p.it.descripcion + ' (' + (e && e.message || e) + ')'); }
+    }
+
+    // 3) Las reservas de esos ítems ya no aplican: el material salió.
+    try {
+      await absFetch('op_reservas?op_id=eq.' + op_current.id + '&estado=eq.activa', {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ estado: 'consumida', liberada_at: new Date().toISOString(),
+                               liberada_por: yo, motivo: 'Ligada la remisión ' + num })
+      });
+    } catch (_) { }
+
+    await opEvento(op_current.id, 'remision_ligada',
+      'Remisión ' + num + ' (hecha aparte) · ' + pares.length + ' ítem(s) despachados'
+      + (sueltas ? ' · ' + sueltas + ' línea(s) sin emparejar' : ''));
+
+    if (!fallos.length) {
+      const quedan = (op_currentItems || []).filter(i => i.estado !== 'despachado').length;
+      await opCambiarEstado(quedan ? 'en_ejecucion' : 'despachada', {});
+      if (!quedan) { try { _opDispararAvisos(); } catch (_) { } }
+    }
+
+    _opLigarCerrar();
+    showToast(fallos.length
+      ? '⚠️ Remisión ' + num + ' ligada, pero ' + fallos.length + ' ítem(s) no quedaron marcados: ' + fallos.join(' · ')
+      : '🔗 Remisión ' + num + ' ligada a ' + op_current.numero + ' · ' + pares.length + ' ítem(s) despachados',
+      fallos.length ? 'error' : 'success', { durationMs: fallos.length ? 14000 : 8000 });
+
+    opRenderEditor();
+    opRenderEventos(op_current.id);
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Ligar a ' + op_current.numero; }
+    showToast('No se pudo ligar: ' + (e && e.message || e), 'error', { durationMs: 12000 });
   }
 }
 
