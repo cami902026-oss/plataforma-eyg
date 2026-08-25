@@ -8659,6 +8659,40 @@ async function cnuCargarClientes(force) {
   return _cnuClientes;
 }
 // ── Nueva factura ──
+// Un nombre de cliente sin lo que no distingue a nadie: tildes, puntos y la
+// forma societaria (S.A.S., LTDA…). "CONSTRUCCIONES YUV SAS" y
+// "CONSTRUCCIONES YUV S.A.S" son el mismo cliente escrito de dos formas.
+function _cnuNormNombre(t){
+  let x = String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+  x = x.replace(/\b(S\.?A\.?S|S\.?A|LTDA|E\.?U|BIC|SUCURSAL COLOMBIA)\b/g,' ');
+  return x.replace(/[^A-Z0-9]+/g,' ').replace(/\s+/g,' ').trim();
+}
+
+// Busca el cliente en Cartera en tres pasos, del más seguro al más flexible.
+// Devuelve { c, como } o { candidatos } si hay varios: con dudas NO elige, las
+// muestra. Proponer el cliente equivocado en una factura es peor que no proponer.
+function _cnuBuscarCliente(nombre){
+  const lista = _cnuClientes || [];
+  const n = String(nombre||'').trim();
+  if(!n || !lista.length) return {};
+  const ex = lista.filter(c => String(c.nombre||'').trim().toUpperCase() === n.toUpperCase());
+  if(ex.length === 1) return { c: ex[0], como: 'exacto' };
+  const nn = _cnuNormNombre(n);
+  if(!nn) return {};
+  const norm = lista.filter(c => _cnuNormNombre(c.nombre) === nn);
+  if(norm.length === 1) return { c: norm[0], como: 'mismo nombre, otra forma de escribirlo' };
+  if(norm.length > 1) return { candidatos: norm };
+  // Uno contiene al otro: "CIAM" dentro de "CIAM S.A.S. BIC". Se exige que la
+  // parte corta tenga al menos 4 letras, para que "SA" no cruce con media BD.
+  const dentro = nn.length >= 4 ? lista.filter(c => {
+    const cn = _cnuNormNombre(c.nombre);
+    return cn && (cn.indexOf(nn) === 0 || nn.indexOf(cn) === 0);
+  }) : [];
+  if(dentro.length === 1) return { c: dentro[0], como: 'nombre incompleto en la cotización' };
+  if(dentro.length > 1) return { candidatos: dentro };
+  return {};
+}
+
 async function cnuNuevaFactura(prefill) {
   if (!_cnuPuedeEscribir()) { showToast('Tu usuario es de consulta en Cartera — los cambios los registran Andrea o Alberto.', 'error'); return; }
   prefill = prefill || {};
@@ -8676,18 +8710,52 @@ async function cnuNuevaFactura(prefill) {
   document.getElementById('cnuf-iva').value = '19';
   document.getElementById('cnuf-reteica').value = 'NO';
   document.getElementById('cnuf-hint').textContent = '';
+  // Lo que diga el buscador se cuenta SIEMPRE: antes el aviso de "no está en la
+  // BD" lo pisaba el hint de más abajo y quedabas sin saber por qué no salió.
+  let avisoCli = '';
   if (prefill.clienteNombre) {
-    const c = _cnuClientes.find(x => x.nombre.trim().toUpperCase() === prefill.clienteNombre.trim().toUpperCase());
-    if (c) { sel.value = c.id; cnuFactClienteChange(); }
-    else document.getElementById('cnuf-hint').textContent = '⚠️ El cliente "' + prefill.clienteNombre + '" no está en la BD de Cartera — créalo con ➕ o elige uno de la lista.';
+    const r = _cnuBuscarCliente(prefill.clienteNombre);
+    if (r.c) {
+      sel.value = r.c.id; cnuFactClienteChange();
+      if (r.como !== 'exacto')
+        avisoCli = '👤 Se eligió <b>' + r.c.nombre + '</b> para "' + prefill.clienteNombre
+                 + '" (' + r.como + '). Si no es, cámbialo arriba.';
+    } else if (r.candidatos && r.candidatos.length) {
+      avisoCli = '👤 "' + prefill.clienteNombre + '" se parece a varios: '
+               + r.candidatos.map(x => '<b>' + x.nombre + '</b>').join(' · ')
+               + '. Elige cuál es en la lista de arriba.';
+    } else {
+      // No está: se ofrece crearlo con ese mismo nombre, en un clic.
+      _cnuCliSugerido = prefill.clienteNombre;
+      avisoCli = '👤 <b>' + prefill.clienteNombre + '</b> todavía no está en Cartera. '
+               + '<button type="button" onclick="cnuCrearClienteSugerido()" style="background:rgba(232,160,32,.2);'
+               + 'border:1px solid rgba(232,160,32,.55);color:#fbbf24;border-radius:6px;padding:3px 10px;'
+               + 'font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;">Crearlo ahora</button>';
+    }
   }
   if (prefill.numero) document.getElementById('cnuf-numero').value = prefill.numero;
   if (prefill.cotiz) document.getElementById('cnuf-cotiz').value = prefill.cotiz;
   if (prefill.oc) document.getElementById('cnuf-oc').value = prefill.oc;
   if (prefill.vendedor) document.getElementById('cnuf-vendedor').value = prefill.vendedor;
   if (prefill.total) { document.getElementById('cnuf-total').value = prefill.total; cnuFactCalc(); }
-  if (prefill.hint) document.getElementById('cnuf-hint').textContent = prefill.hint;
+  // El hint de la cotización y el aviso del cliente conviven: son dos cosas
+  // distintas y antes el segundo se perdía.
+  const _h = document.getElementById('cnuf-hint');
+  _h.innerHTML = [prefill.hint ? String(prefill.hint).replace(/</g,'&lt;') : '', avisoCli]
+    .filter(Boolean).join('<br>');
   openModal('modal-cnu-factura');
+}
+
+// Crea el cliente que trae la cotización, con el nombre ya puesto. Al guardarlo,
+// cnuClienteGuardar refresca la lista de la factura y lo deja seleccionado.
+let _cnuCliSugerido = '';
+async function cnuCrearClienteSugerido(){
+  const n = _cnuCliSugerido;
+  await cnuClienteEditar(null);
+  const el = document.getElementById('cnuc-nombre');
+  if (el && n) { el.value = n; try { el.focus(); } catch(_){} }
+  const t = document.getElementById('cnuc-titulo');
+  if (t && n) t.textContent = '➕ ' + n;
 }
 function cnuFactClienteChange() {
   const c = (_cnuClientes || []).find(x => String(x.id) === document.getElementById('cnuf-cliente').value);
@@ -11412,7 +11480,21 @@ function _cotizAdjConfirmar(){
   const m=document.getElementById('cotiz-adj-modal'); if(m) m.remove();
   _cotizAdjPend=null;
   _cotizEstadoPrev='Adjudicada';
-  showToast('✅ Adjudicación registrada por $'+Math.round(valor).toLocaleString('es-CO')+' — guarda la cotización para que quede','ok');
+
+  // 25-ago-2026 — SE GUARDA SOLA. Antes esto vivía en `window._cotizAdjGuardado`
+  // (memoria del navegador) y el aviso decía "guarda la cotización para que
+  // quede": si cambiabas de módulo o cerrabas la pestaña, la adjudicación se
+  // perdía, y con ella el % adjudicado, los ítems que alimentan la OP y el plan
+  // de compras. Facturada ya se auto-guardaba; Adjudicada no. Ahora van igual.
+  const _cli=(document.getElementById('cotiz-cliente').value||'').trim();
+  if(_cli && Array.isArray(cotizItems) && cotizItems.length){
+    showToast('✅ Adjudicación registrada por $'+Math.round(valor).toLocaleString('es-CO')+' — guardando…','ok');
+    try{ cotizGuardarBD(); }
+    catch(e){ showToast('⚠️ La adjudicación quedó registrada pero NO se pudo guardar sola: '+(e&&e.message||e)+'. Dale Guardar.','error',{durationMs:14000}); }
+  } else {
+    showToast('✅ Adjudicación por $'+Math.round(valor).toLocaleString('es-CO')
+      +' — completa cliente e ítems y dale Guardar, o se pierde','info',{durationMs:12000});
+  }
 }
 // Base correcta para calcular el % ADJUDICADO (2026-08-22).
 // `valorAdjudicado` sale de _cotizAdjConfirmar como Σ(cantidad × precio), es decir
