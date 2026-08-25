@@ -1056,8 +1056,19 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 }
 
 #page-op .op-recep-cab,#page-op .op-recep-fila{
-  display:grid;grid-template-columns:1fr 100px 160px 120px;gap:10px;align-items:center;
+  display:grid;grid-template-columns:1fr 88px 140px 106px 100px;gap:9px;align-items:center;
 }
+/* La columna de lo que sale de una va marcada: es la decisión del acto. */
+#page-op .op-recep-sale input{
+  border-color:rgba(232,160,32,.45);background:rgba(232,160,32,.07);
+}
+#page-op .op-recep-cab .op-recep-sale{ color:#E8A020; }
+#page-op .op-recep-resumen{
+  margin-top:12px;padding:11px 14px;border-radius:0 4px 4px 0;
+  border-left:3px solid var(--op-compra,#E8A020);background:rgba(232,160,32,.09);
+  font-size:12.5px;color:#fbbf24;line-height:1.6;
+}
+#page-op .op-recep-resumen b{ color:#fff; }
 #page-op .op-recep-cab > div{
   padding:6px 2px;font-family:var(--op-mono);font-size:9.5px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--text-muted);
@@ -22749,13 +22760,21 @@ async function opRecibirAbrir() {
     return (r[0] && r[0].score >= 0.62) ? { it: it, prod: r[0].prod, score: r[0].score }
                                         : { it: it, prod: null, score: 0 };
   });
+  // Siguiente número de remisión, por si algo sale de una. Se puede cambiar.
+  let sug = '';
+  try {
+    const ult = (await absFetch('remisiones?select=remision&order=remision.desc&limit=30')) || [];
+    const nums = ult.map(r => parseInt(String(r.remision).replace(/\D/g, ''), 10)).filter(n => !isNaN(n));
+    if (nums.length) sug = String(Math.max.apply(null, nums) + 1);
+  } catch (_) { }
+
   op_current._recep = props;
-  _opRecepModal();
+  _opRecepModal(sug);
 }
 
 function _opRecepCerrar() { const m = document.getElementById('op-recep-modal'); if (m) m.remove(); }
 
-function _opRecepModal() {
+function _opRecepModal(sug) {
   const d = op_current._recep;
   _opRecepCerrar();
   const ov = document.createElement('div');
@@ -22782,6 +22801,11 @@ function _opRecepModal() {
       + '<div><input type="number" step="any" min="0" placeholder="costo real" value="'
       + (it.costo_unit != null ? it.costo_unit : '') + '"'
       + ' data-n="' + n + '" data-campo="costo" class="op-inp op-inp-num"></div>'
+      // Sale de una: viene precargado con todo lo que llega, porque la compra
+      // se hizo PARA este pedido. Si algo se queda en bodega, se baja aquí.
+      + '<div class="op-recep-c op-recep-sale"><input type="number" step="any" min="0" value="' + falta + '"'
+      + ' title="Cuánto de lo que llega se va derecho al cliente. El resto queda en bodega."'
+      + ' data-n="' + n + '" data-campo="sale" class="op-inp op-inp-num" oninput="_opRecepRecalc()"></div>'
       + '</div>';
   }).join('');
 
@@ -22793,7 +22817,9 @@ function _opRecepModal() {
     + '<div style="font-family:\'Montserrat\',sans-serif;font-weight:800;font-size:17px;color:#fff;">'
     + 'Recibir en bodega · ' + opEsc(op_current.numero) + '</div>'
     + '<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">'
-    + 'Entra al inventario con su origen. Puede llegar por partes: recibe lo que llegó y queda el saldo.</div></div>'
+    + 'Entra al inventario con su origen. Puede llegar por partes: recibe lo que llegó y queda el saldo. '
+    + 'Lo que va derecho al cliente sale en el mismo acto — entra y sale el mismo día, '
+    + 'y queda la huella de la compra y de la entrega.</div></div>'
     + '<div style="padding:16px 22px;overflow-y:auto;flex:1;">'
     + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px;">'
     + '<div class="form-group" style="margin:0;"><label style="font-size:10px;letter-spacing:.1em;">DE DÓNDE VIENE</label>'
@@ -22811,11 +22837,21 @@ function _opRecepModal() {
     + '<div class="form-group" style="margin:0;"><label style="font-size:10px;letter-spacing:.1em;">FECHA</label>'
     + '<input type="date" id="op-recep-fecha" value="' + new Date().toISOString().slice(0, 10) + '" style="width:100%;"></div>'
     + '</div>'
-    + '<div class="op-recep-cab"><div>Material</div><div class="op-recep-c">Cantidad</div>'
-    + '<div>Colada / lote</div><div>Costo unit. real</div></div>'
+    // Solo hacen falta si algo sale de una, pero se dejan siempre a la vista:
+    // esconderlas obligaría a bodega a descubrir que existen.
+    + '<div style="display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-bottom:14px;">'
+    + '<div class="form-group" style="margin:0;"><label style="font-size:10px;letter-spacing:.1em;">N° REMISIÓN (lo que sale)</label>'
+    + '<input type="text" id="op-recep-remi" value="' + opEsc(sug || '') + '" style="width:100%;"></div>'
+    + '<div class="form-group" style="margin:0;"><label style="font-size:10px;letter-spacing:.1em;">LUGAR DE ENTREGA</label>'
+    + '<input type="text" id="op-recep-lugar" placeholder="Yopal, Barrancabermeja, Puerto Gaitán…" style="width:100%;"></div>'
+    + '</div>'
+    + '<div class="op-recep-cab"><div>Material</div><div class="op-recep-c">Llegó</div>'
+    + '<div>Colada / lote</div><div>Costo unit. real</div>'
+    + '<div class="op-recep-c op-recep-sale">Sale de una</div></div>'
     + filas
     + '<div class="form-group" style="margin-top:12px;"><label style="font-size:10px;letter-spacing:.1em;">OBSERVACIONES</label>'
     + '<textarea id="op-recep-obs" rows="2" style="width:100%;"></textarea></div>'
+    + '<div id="op-recep-resumen"></div>'
     + '<div id="op-recep-aviso"></div></div>'
     + '<div style="padding:12px 22px 18px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;">'
     + '<button onclick="_opRecepCerrar()" style="background:rgba(255,255,255,.08);border:1px solid var(--border);'
@@ -22824,6 +22860,44 @@ function _opRecepModal() {
     + 'border:1px solid #3FBF63;border-radius:8px;padding:9px 20px;color:#8ce8a6;font-weight:700;cursor:pointer;">'
     + 'Recibir en bodega</button></div></div>';
   document.body.appendChild(ov);
+  try { _opRecepRecalc(); } catch (_) { }
+}
+
+// Cuenta en vivo cuánto entra y cuánto sale, y lo dice en el botón. Bodega no
+// debería tener que adivinar qué va a pasar cuando lo oprima.
+function _opRecepRecalc() {
+  let entra = 0, sale = 0, lineasSale = 0;
+  document.querySelectorAll('#op-recep-modal [data-n]').forEach(el => {
+    const v = parseFloat(el.value) || 0;
+    if (el.dataset.campo === 'cantidad' && v > 0) entra++;
+    if (el.dataset.campo === 'sale' && v > 0) { sale += v; lineasSale++; }
+  });
+  const r = document.getElementById('op-recep-resumen');
+  if (r) {
+    r.innerHTML = sale > 0
+      ? '<div class="op-recep-resumen">Entra a bodega y <b>' + lineasSale + ' línea(s) salen de una</b> '
+        + 'hacia el cliente en este mismo acto. Se va a crear la remisión con esas líneas. '
+        + 'Lo que no salga se queda en inventario.</div>'
+      : '';
+  }
+  const b = document.getElementById('op-recep-ok');
+  if (b && !b.disabled) b.textContent = sale > 0 ? 'Recibir y despachar' : 'Recibir en bodega';
+}
+
+// Un ítem puede quedar despachado por partes. `despachada` es aditivo: si la
+// columna todavía no existe en la base, se guarda sin ella y no se rompe nada.
+async function _opRecepPatchItem(id, body) {
+  try {
+    await absFetch('op_items?id=eq.' + id, {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(body)
+    });
+  } catch (e) {
+    if (!('despachada' in body)) throw e;
+    const b2 = Object.assign({}, body); delete b2.despachada;
+    await absFetch('op_items?id=eq.' + id, {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(b2)
+    });
+  }
 }
 
 async function opRecibirConfirmar() {
@@ -22853,7 +22927,12 @@ async function opRecibirConfirmar() {
     // Igual que en el despacho: si no trae colada, se avisa pero no se frena.
     const colada = String(C.colada || '').trim();
     if (!colada) sinColadaR.push(x.it.descripcion);
-    listo.push({ x: x, qty: q, colada: colada, costo: (String(C.costo).trim() === '' ? null : +C.costo) });
+    // Lo que sale de una no puede ser más de lo que llegó: eso sería despachar
+    // material que nadie recibió.
+    const sale = Math.max(0, parseFloat(C.sale) || 0);
+    if (sale > q) errores.push('"' + x.it.descripcion + '": salen ' + sale + ' pero solo llegaron ' + q);
+    listo.push({ x: x, qty: q, colada: colada, sale: sale,
+                 costo: (String(C.costo).trim() === '' ? null : +C.costo) });
   });
   const av = document.getElementById('op-recep-aviso');
   if (!listo.length) { showToast('No pusiste cantidades: no hay nada que recibir', 'info'); return; }
@@ -22869,8 +22948,28 @@ async function opRecibirConfirmar() {
       + '<b>Sin colada / lote:</b> ' + sinColadaR.map(opEsc).join(' · ')
       + '<br>Entra igual; se puede completar después desde el checklist de certificados.</div>'
     : '';
+  // Lo que sale necesita su remisión: sin número no hay documento de entrega.
+  const salen = listo.filter(L => L.sale > 0);
+  const remi = ((document.getElementById('op-recep-remi') || {}).value || '').trim();
+  const lugar = ((document.getElementById('op-recep-lugar') || {}).value || '').trim();
+  if (salen.length && !remi) {
+    av.innerHTML = '<div style="background:rgba(224,90,74,.12);border-left:3px solid #e05a4a;padding:11px 14px;'
+      + 'border-radius:0 6px 6px 0;margin-top:10px;font-size:12.5px;color:#fecaca;line-height:1.7;">'
+      + 'Hay ' + salen.length + ' línea(s) que salen de una: ponle el <b>N° de remisión</b>.</div>';
+    return;
+  }
+  if (salen.length && remi) {
+    try {
+      const ya = (await absFetch('remisiones?remision=eq.' + encodeURIComponent(remi) + '&select=remision&limit=1')) || [];
+      if (ya.length && !confirm('La remisión ' + remi + ' YA EXISTE.\n\n'
+        + 'Si sigues, estas líneas se le suman a esa misma remisión.\n\n¿Es lo que quieres?')) return;
+    } catch (_) { }
+  }
+
   const nuevos = listo.filter(L => !L.x.prod).length;
   if (!confirm('Vas a recibir ' + listo.length + ' línea(s) en bodega.\n\n'
+    + (salen.length ? salen.length + ' línea(s) SALEN DE UNA con la remisión ' + remi
+       + (lugar ? ' hacia ' + lugar : '') + '.\n' : '')
     + (sinColadaR.length ? sinColadaR.length + ' línea(s) SIN COLADA.\n' : '')
     + (nuevos ? 'Se van a CREAR ' + nuevos + ' producto(s) nuevos en el inventario.\n' : '')
     + 'Esto SUMA al inventario y no se deshace solo.\n\n¿Continuar?')) return;
@@ -22879,6 +22978,7 @@ async function opRecibirConfirmar() {
   if (btn) { btn.disabled = true; btn.textContent = 'Recibiendo…'; }
   const yo = (currentUser && (currentUser.name || currentUser.email)) || 'SISTEMA';
   const fallos = [];
+  const salidasRemi = [];          // las líneas que se van derecho al cliente
 
   try {
     // Cabecera de la llegada: una compra puede llegar en varias, y cada una
@@ -22921,11 +23021,11 @@ async function opRecibirConfirmar() {
           it.producto_codigo = codigo;
         }
         // Stock fresco del producto: pudo moverse mientras se llenaba la pantalla
-        let actual = +prod.stock_actual || 0, entradas = +prod.entradas || 0;
+        let actual = +prod.stock_actual || 0, entradas = +prod.entradas || 0, salidas = +prod.salidas || 0;
         try {
           const p = (await absFetch('productos?codigo=eq.' + encodeURIComponent(prod.codigo)
-            + '&select=stock_actual,entradas&limit=1')) || [];
-          if (p[0]) { actual = +p[0].stock_actual || 0; entradas = +p[0].entradas || 0; }
+            + '&select=stock_actual,entradas,salidas&limit=1')) || [];
+          if (p[0]) { actual = +p[0].stock_actual || 0; entradas = +p[0].entradas || 0; salidas = +p[0].salidas || 0; }
         } catch (_) { }
         const nuevo = actual + L.qty;
 
@@ -22943,7 +23043,40 @@ async function opRecibirConfirmar() {
             notas: 'Recepción de ' + op_current.numero + (obs ? ' · ' + obs : '')
           })
         });
-        const upd = { stock_actual: nuevo, entradas: entradas + L.qty, updated_at: new Date().toISOString() };
+        // ── Sale de una ────────────────────────────────────────────────
+        // Dos movimientos de verdad, no uno "neto": entró (a quién se le
+        // compró, a qué precio, con qué factura) y salió (a quién, con qué
+        // remisión). Aunque el material no haya pasado por Chía, la huella
+        // queda; el stock neto no se mueve.
+        let stockFinal = nuevo;
+        if (L.sale > 0) {
+          stockFinal = nuevo - L.sale;
+          await absFetch('kardex', {
+            method: 'POST', headers: { 'Prefer': 'return=minimal' },
+            body: JSON.stringify({
+              fecha: fecha, hora: new Date().toTimeString().split(' ')[0],
+              codigo_producto: prod.codigo, descripcion_producto: prod.descripcion,
+              tipo: 'SALIDA', cantidad: L.sale, stock_resultante: stockFinal,
+              costo: (L.costo != null ? L.costo : (it.costo_unit || 0)),
+              responsable: yo, lote: L.colada, colada: L.colada, remision: remi,
+              op_numero: op_current.numero,
+              notas: 'Sale de una en la recepción de ' + op_current.numero
+                     + (lugar ? ' · ' + lugar : '') + (obs ? ' · ' + obs : '')
+            })
+          });
+          salidasRemi.push({
+            remision: remi, fecha: fecha, cliente: op_current.cliente || '', lugar: lugar,
+            oc: op_current.oc_cliente || null, cotizacion_id: op_current.cotizacion_id || null,
+            op_numero: op_current.numero, item: salidasRemi.length + 1,
+            descripcion: String(it.descripcion || '').trim(), cantidad: L.sale,
+            marca: '', colada: L.colada, desviacion: '', observaciones: obs,
+            contiene: '', recibido_por: op_current.cliente || '', created_by: yo
+          });
+        }
+
+        const upd = { stock_actual: stockFinal, entradas: entradas + L.qty,
+                      updated_at: new Date().toISOString() };
+        if (L.sale > 0) upd.salidas = salidas + L.sale;
         if (L.costo != null) upd.costo_compra = L.costo;      // el costo REAL de la compra
         await absFetch('productos?codigo=eq.' + encodeURIComponent(prod.codigo), {
           method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(upd)
@@ -22952,35 +23085,64 @@ async function opRecibirConfirmar() {
         // La línea de la OP: cuánto llegó en total y en qué estado queda
         const recibidaTot = (+it.recibida || 0) + L.qty;
         const completa = recibidaTot >= (+it.cantidad || 0);
-        await absFetch('op_items?id=eq.' + it.id, {
-          method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
-          body: JSON.stringify({
-            recibida: recibidaTot, estado: completa ? 'recibido' : 'comprado',
-            colada: L.colada,
-            // Ya está en la casa: para lo que sigue (alistar y despachar) sale de bodega.
-            origen: completa ? 'BODEGA' : it.origen,
-            costo_unit: (L.costo != null ? L.costo : it.costo_unit),
-            updated_by: yo
-          })
-        });
-        Object.assign(it, { recibida: recibidaTot, estado: completa ? 'recibido' : 'comprado',
-                            colada: L.colada, origen: completa ? 'BODEGA' : it.origen });
+        // Solo queda DESPACHADO cuando ya salió todo lo que el cliente pidió.
+        // Si salió una parte, la línea sigue viva y el resto se despacha por
+        // el camino normal, con el saldo que quedó en bodega.
+        const despTot = (+it.despachada || 0) + L.sale;
+        const todoFuera = L.sale > 0 && despTot >= (+it.cantidad || 0);
+        const cuerpo = {
+          recibida: recibidaTot,
+          estado: todoFuera ? 'despachado' : (completa ? 'recibido' : 'comprado'),
+          colada: L.colada,
+          // Ya está en la casa: para lo que sigue (alistar y despachar) sale de bodega.
+          origen: completa ? 'BODEGA' : it.origen,
+          costo_unit: (L.costo != null ? L.costo : it.costo_unit),
+          updated_by: yo
+        };
+        if (L.sale > 0) { cuerpo.remision = remi; cuerpo.despachada = despTot; }
+        await _opRecepPatchItem(it.id, cuerpo);
+        Object.assign(it, cuerpo);
       } catch (e) {
         fallos.push(it.descripcion + ' (' + (e && e.message || e) + ')');
+      }
+    }
+
+    // La remisión de lo que salió: un solo documento con todas sus líneas, y
+    // al final para que si algo falló arriba no salga un papel de material que
+    // nunca entró.
+    if (salidasRemi.length) {
+      try {
+        await absFetch('remisiones', { method: 'POST', headers: { 'Prefer': 'return=minimal' },
+                                       body: JSON.stringify(salidasRemi) });
+      } catch (e) {
+        fallos.push('la remisión ' + remi + ' no se pudo crear (' + (e && e.message || e)
+                    + '). El material YA salió del inventario: créala a mano.');
       }
     }
 
     await opEvento(op_current.id, 'recibido',
       (listo.length - fallos.length) + ' de ' + listo.length + ' líneas · ' + origen
       + (prov ? ' · ' + prov : '') + (fact ? ' · factura ' + fact : ''));
+    if (salidasRemi.length) {
+      await opEvento(op_current.id, 'despachado',
+        'Sale de una · remisión ' + remi + ' · ' + salidasRemi.length + ' línea(s)'
+        + (lugar ? ' · ' + lugar : ''));
+      // Si ya no queda nada pendiente, el pedido salió completo.
+      const quedan = (op_currentItems || []).filter(i => i.estado !== 'despachado').length;
+      try {
+        await opCambiarEstado(quedan ? 'en_ejecucion' : 'despachada', {});
+        if (!quedan) { try { _opDispararAvisos(); } catch (_) { } }
+      } catch (_) { }
+    }
 
     _opRecepCerrar();
     _opStockIdx = null;                       // el inventario cambió
     if (fallos.length) {
       showToast('⚠️ Se recibió parte: falló ' + fallos.join(' · '), 'error', { durationMs: 15000 });
     } else {
-      showToast('✅ ' + listo.length + ' línea(s) recibidas en bodega'
-        + (nuevos ? ' · ' + nuevos + ' producto(s) creados' : ''), 'success', { durationMs: 9000 });
+      showToast('✅ ' + listo.length + ' línea(s) recibidas'
+        + (salidasRemi.length ? ' · ' + salidasRemi.length + ' salieron de una con la remisión ' + remi : ' en bodega')
+        + (nuevos ? ' · ' + nuevos + ' producto(s) creados' : ''), 'success', { durationMs: 11000 });
     }
     await opAbrir(op_current.id);
   } catch (e) {
