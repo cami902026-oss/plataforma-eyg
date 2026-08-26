@@ -82034,7 +82034,7 @@
     "cliente": "MONTITEC",
     "contacto": "MARCO LABATON ",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Borrador",
     "factura": "",
     "iva": 19,
     "subtotal": 3832936,
@@ -82083,12 +82083,12 @@
         "precioProveedor": 126900
       }
     ],
-    "fechaGuardado": "2026-08-26T15:59:33.625Z",
+    "fechaGuardado": "2026-08-26T15:18:55.911Z",
     "fechaEnvio": "2026-08-26T14:53:14.938Z",
     "createdAt": "2026-08-26T14:24:08.525Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-26T15:59:33.625Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-26T15:18:55.911Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2054",
@@ -82097,7 +82097,7 @@
     "cliente": "PGS",
     "contacto": "LEONARDO",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Revisión gerencia",
     "factura": "",
     "iva": 19,
     "subtotal": 0,
@@ -82115,38 +82115,38 @@
     "items": [
       {
         "id": 1,
-        "desc": "switches electricos de presion marca (united electric o winters) conexion inferior de 1/2” npt rando de 500 a 5000 psi",
-        "udm": "EA",
         "qty": 2,
+        "udm": "EA",
+        "uid": "96f5af0d-0378-4bbe-b3cd-0039ffd125b4",
+        "desc": "switches electricos de presion marca (united electric o winters) conexion inferior de 1/2” npt rando de 500 a 5000 psi",
+        "marca": "UNITED ELECTRIC",
         "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "",
-        "proveedor": "",
-        "precioProveedor": 0,
+        "desvTec": "SE OFRECE RANGO DE 500-6000 PSI",
+        "proveedor": "CONTROL",
         "obsProveedor": "",
-        "uid": "96f5af0d-0378-4bbe-b3cd-0039ffd125b4"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 1600000
       },
       {
         "id": 2,
-        "desc": "switch electrico de presion marca ( united electric o winters) conexión inferior de 1/2” NPT rango de 10 a 130 psi",
-        "udm": "EA",
         "qty": 1,
+        "udm": "EA",
+        "uid": "cb324dbe-9c04-45ce-a7b0-43f9e59bc73d",
+        "desc": "switch electrico de presion marca ( united electric o winters) conexión inferior de 1/2” NPT rango de 10 a 130 psi",
+        "marca": "UNITED ELECTRIC",
         "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
-        "marca": "",
-        "proveedor": "",
-        "precioProveedor": 0,
+        "desvTec": "SE OFRECE RANGO DE 10-130 PSI",
+        "proveedor": "CONTROL",
         "obsProveedor": "",
-        "uid": "cb324dbe-9c04-45ce-a7b0-43f9e59bc73d"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 1300000
       }
     ],
-    "fechaGuardado": "2026-08-26T14:21:58.212Z",
+    "fechaGuardado": "2026-08-26T16:00:25.874Z",
     "createdAt": "2026-08-26T14:21:58.212Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-26T14:21:58.212Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-26T16:00:25.874Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2055",
