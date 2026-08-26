@@ -79638,8 +79638,8 @@
     "cliente": "CIAM",
     "contacto": "LUISA",
     "correo": "",
-    "estado": "Facturada",
-    "factura": "592",
+    "estado": "Adjudicada",
+    "factura": "",
     "iva": 19,
     "subtotal": 793325,
     "ivaVal": 150731.75,
@@ -79725,12 +79725,23 @@
         "precioProveedor": 35180
       }
     ],
-    "fechaGuardado": "2026-08-26T21:09:13.762Z",
+    "fechaGuardado": "2026-08-24T15:15:56.568Z",
     "fechaEnvio": "2026-08-19T20:46:39.068Z",
-    "facturadaAt": "2026-08-26",
     "adjudicadaAt": "2026-08-23",
-    "valorAdjudicado": 89942,
+    "valorAdjudicado": 793325,
     "itemsAdjudicados": [
+      {
+        "uid": "97639312-cfbf-4cac-ab4a-0eb5aa311edf",
+        "qty": 1
+      },
+      {
+        "uid": "7dcb0c89-8115-4faa-a82e-1dc2e264dec3",
+        "qty": 1
+      },
+      {
+        "uid": "bed68d67-72fb-41e7-ac5c-674b8c6c8c36",
+        "qty": 1
+      },
       {
         "uid": "5b52c088-a711-4ee8-945d-a4c18ace280a",
         "qty": 1
@@ -79741,10 +79752,10 @@
       }
     ],
     "adjudicacionPor": "Andrea",
-    "adjudicacionAt": "2026-08-26T21:08:39.888Z",
+    "adjudicacionAt": "2026-08-23T17:38:11.031Z",
     "createdAt": "2026-08-19T17:12:49.489Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-26T21:09:13.762Z",
+    "updatedAt": "2026-08-24T15:15:56.568Z",
     "updatedBy": "andrea"
   },
   {
@@ -80724,11 +80735,11 @@
         "desc": "YEE SANITARIA 3\" INOX 316L\n",
         "marca": "",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "desvTec": "YEE CLAMP DE 3\" SANIT. INOX 304",
+        "proveedor": "GFERREINOXCOL",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 197500
       },
       {
         "id": 11,
@@ -80780,11 +80791,11 @@
         "desc": "YEE SANITARIA 2\" INOX 316L\n",
         "marca": "",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "desvTec": "YEE CLAMP DE 2\" SANIT. INOX 304",
+        "proveedor": "FERREINOXCOL",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 154000
       },
       {
         "id": 15,
@@ -80850,11 +80861,11 @@
         "desc": "YEE SANITARIA 4\" INOX 316L\n",
         "marca": "",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "desvTec": "YEE DE 4\" SANIT. SOLD. INOX 304",
+        "proveedor": "FERREINOXCOL",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 294000
       },
       {
         "id": 20,
@@ -80892,11 +80903,11 @@
         "desc": "NIPLE 1/2\" X 2\" INOX  316L\n",
         "marca": "",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "desvTec": "NIPLE DE 1/2 X 2\" R/R INOX 304",
+        "proveedor": "FERREINOXCOL",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 5000
       },
       {
         "id": 23,
@@ -80906,11 +80917,11 @@
         "desc": "REDUCCION SANITARIA 6 \"a 4\" INOX 316L\n",
         "marca": "",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "desvTec": "REDUCCION CONCENTRICA DE 6 X 4 SANIT. SOLD. INOX\n304",
+        "proveedor": "FERREINOXCOL",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 158000
       },
       {
         "id": 24,
@@ -80948,17 +80959,17 @@
         "desc": "TAPON CLAMP SANITARIO 6\" INOX 316L\n",
         "marca": "",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "desvTec": "TAPON CLAMP DE 6\" SANIT. INOX 304",
+        "proveedor": "FERREINOXCOL",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 79500
       }
     ],
-    "fechaGuardado": "2026-08-25T22:10:33.490Z",
+    "fechaGuardado": "2026-08-26T20:48:52.465Z",
     "createdAt": "2026-08-25T14:11:05.695Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-25T22:10:33.490Z",
+    "updatedAt": "2026-08-26T20:48:52.465Z",
     "updatedBy": "sandra"
   },
   {
@@ -82246,9 +82257,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 1769432,
+    "ivaVal": 336192.08,
+    "total": 2105624.08,
     "formaPago": "60 DÍAS",
     "sitioEntrega": "YOPAL",
     "validez": "8 DÍAS",
@@ -82265,13 +82276,13 @@
         "udm": "EA",
         "uid": "f082617e-e848-40f0-b75a-68f868e2d045",
         "desc": "Manguera hidráulica 1/2\"hembraa hembra",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "marca": "STRIMGFLEX",
+        "precio": 146380,
+        "desvTec": "Manguera caucho lona multipropósito x 300 psi,grafada con hembras rectas de 3/4\" Jic   X 6MTR              no tiene trenza en acero porque es de 300 psi",
+        "proveedor": "HIDROLING",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 98080
       },
       {
         "id": 2,
@@ -82279,13 +82290,13 @@
         "udm": "EA",
         "uid": "c664391b-05a5-4af1-addf-9f0c36adec67",
         "desc": "Manguera hidráulica 1/2\"hembraa hembra",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "marca": "STRIMGFLEX",
+        "precio": 105552,
+        "desvTec": "Manguera caucho lona multipropósito x 300 psi,grafada con hembras rectas de 3/4\" Jic   X 4MTR              no tiene trenza en acero porque es de 300 psi",
+        "proveedor": "HIDROLING",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 70719
       },
       {
         "id": 3,
@@ -82294,12 +82305,12 @@
         "uid": "72ccb4d4-8ef3-4d0a-9955-1943f88a2c4a",
         "desc": "Acople recto  1/2\" macho",
         "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "precio": 4000,
+        "desvTec": "Adaptador recto macho macho 1/2\" npt x npt ",
+        "proveedor": "HIDROLING",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 2600
       },
       {
         "id": 4,
@@ -82307,8 +82318,8 @@
         "udm": "EA",
         "uid": "b92e51ab-1ddc-40b2-8561-906bf76cea96",
         "desc": "Reducción busching 3/4\" a 1/2 ",
-        "marca": "",
-        "precio": 0,
+        "marca": "MECH-FLOW",
+        "precio": 1750,
         "desvTec": "X 150 PSI GALVANIZADO",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -82321,8 +82332,8 @@
         "udm": "EA",
         "uid": "b31db4a5-08b1-4cfa-96f7-85fa5ded06c9",
         "desc": "Universales galvanizadas 3/4\" NPT",
-        "marca": "",
-        "precio": 0,
+        "marca": "MECH-FLOW",
+        "precio": 11200,
         "desvTec": "X 150 PSI",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -82335,8 +82346,8 @@
         "udm": "EA",
         "uid": "1bf7abe5-33e6-441f-bdb4-99051f302627",
         "desc": "válvulas de bola 3/4\" NPT",
-        "marca": "",
-        "precio": 0,
+        "marca": "PEGLER",
+        "precio": 35020,
         "desvTec": "X 125-200 PSI BRONCE CROMADO",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -82349,8 +82360,8 @@
         "udm": "EA",
         "uid": "353890d8-dbd8-4dc7-a93c-8bfc447275db",
         "desc": "T galvanizada 3/4\" NPT",
-        "marca": "",
-        "precio": 0,
+        "marca": "MECH-FLOW",
+        "precio": 3378,
         "desvTec": "X  150 PSI ",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -82363,8 +82374,8 @@
         "udm": "EA",
         "uid": "327fd007-6078-4878-9b12-e00733a5f4ea",
         "desc": "Union hembra roscada de 3/4 npt ",
-        "marca": "",
-        "precio": 0,
+        "marca": "MECH-FLOW",
+        "precio": 1750,
         "desvTec": "X 150 PSI ",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -82377,13 +82388,13 @@
         "udm": "EA",
         "uid": "72ffe797-8616-46ef-950c-fe40628980fe",
         "desc": "Niple de 3/4\" npt ",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "marca": "MECH-FLOW",
+        "precio": 3571,
+        "desvTec": "SE OFERTA X 4\" ",
+        "proveedor": "INSTRUGASES",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 2500
       },
       {
         "id": 10,
@@ -82391,8 +82402,8 @@
         "udm": "EA",
         "uid": "35c3f7c8-770d-4544-8c48-18f76ed4650a",
         "desc": "válvula de bola de 3/4\" npt",
-        "marca": "",
-        "precio": 0,
+        "marca": "PEGLER",
+        "precio": 35020,
         "desvTec": "X 125-200 PSI BRONCE CROMADO",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -82419,19 +82430,19 @@
         "udm": "EA",
         "uid": "eba039ca-e183-42a8-9e2b-7843f469c122",
         "desc": "válvula de tres vías de bola 3/8\"",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "X 800 PSI INOX SS-316",
+        "marca": "SIO",
+        "precio": 81982,
+        "desvTec": "X 800 PSI INOX SS-316 TIPO L",
         "proveedor": "CODIFER",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 75510
       }
     ],
-    "fechaGuardado": "2026-08-26T16:22:02.030Z",
+    "fechaGuardado": "2026-08-26T21:13:33.003Z",
     "createdAt": "2026-08-26T16:10:50.110Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-26T16:22:02.030Z",
+    "updatedAt": "2026-08-26T21:13:33.003Z",
     "updatedBy": "sandra"
   },
   {
