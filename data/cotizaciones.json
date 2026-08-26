@@ -4472,7 +4472,7 @@
     "cliente": "MAG SERVICIOS",
     "contacto": "HERNAN PEREZ",
     "correo": "",
-    "estado": "Adjudicada",
+    "estado": "Borrador",
     "factura": "",
     "iva": 19,
     "subtotal": 2040000,
@@ -4489,19 +4489,19 @@
     "motivoRechazo": "",
     "items": [
       {
-        "desc": "LAMINA HR12MM 350 X 200MM",
-        "udm": "EA",
         "qty": 24,
-        "precio": 85000,
+        "udm": "EA",
+        "uid": "fddd55a8-821c-43ac-b2fc-bcd99200fea0",
+        "desc": "LAMINA HR12MM 350 X 200MM",
         "marca": "IMPORTADO",
-        "proveedor": "PROYECTOS  Y SERVICIOS LA NACIONAL SAS",
-        "precioProveedor": 48000,
-        "tiempoEntrega": "1-2 DIAS",
+        "precio": 85000,
         "desvTec": "",
-        "uid": "fddd55a8-821c-43ac-b2fc-bcd99200fea0"
+        "proveedor": "PROYECTOS  Y SERVICIOS LA NACIONAL SAS",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 48000
       }
     ],
-    "fechaGuardado": "2026-08-21T16:53:32.323Z",
+    "fechaGuardado": "2026-08-26T20:08:21.923Z",
     "adjudicadaAt": "2026-08-21",
     "valorAdjudicado": 2040000,
     "itemsAdjudicados": [
@@ -4514,8 +4514,8 @@
     "adjudicacionAt": "2026-08-21T16:50:44.326Z",
     "createdAt": "2026-08-21T16:53:32.323Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-21T16:53:32.323Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-26T20:08:21.923Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1657",
