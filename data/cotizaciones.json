@@ -76484,8 +76484,8 @@
     "cliente": "PETRORIOS",
     "contacto": "LUIS ANGEL",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "593",
     "iva": 19,
     "subtotal": 366675,
     "ivaVal": 69668.25,
@@ -76641,8 +76641,9 @@
         "precioProveedor": 25930
       }
     ],
-    "fechaGuardado": "2026-08-21T17:25:58.995Z",
+    "fechaGuardado": "2026-08-26T21:25:46.223Z",
     "fechaEnvio": "2026-08-20T17:57:56.814Z",
+    "facturadaAt": "2026-08-26",
     "adjudicadaAt": "2026-08-21",
     "valorAdjudicado": 366675,
     "itemsAdjudicados": [
@@ -76691,8 +76692,8 @@
     "adjudicacionAt": "2026-08-21T17:25:55.818Z",
     "createdAt": "2026-08-20T16:19:50.168Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-21T17:25:58.995Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-26T21:25:46.223Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2023",
@@ -79638,8 +79639,8 @@
     "cliente": "CIAM",
     "contacto": "LUISA",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "592",
     "iva": 19,
     "subtotal": 793325,
     "ivaVal": 150731.75,
@@ -79725,23 +79726,12 @@
         "precioProveedor": 35180
       }
     ],
-    "fechaGuardado": "2026-08-24T15:15:56.568Z",
+    "fechaGuardado": "2026-08-26T21:09:13.762Z",
     "fechaEnvio": "2026-08-19T20:46:39.068Z",
+    "facturadaAt": "2026-08-26",
     "adjudicadaAt": "2026-08-23",
-    "valorAdjudicado": 793325,
+    "valorAdjudicado": 89942,
     "itemsAdjudicados": [
-      {
-        "uid": "97639312-cfbf-4cac-ab4a-0eb5aa311edf",
-        "qty": 1
-      },
-      {
-        "uid": "7dcb0c89-8115-4faa-a82e-1dc2e264dec3",
-        "qty": 1
-      },
-      {
-        "uid": "bed68d67-72fb-41e7-ac5c-674b8c6c8c36",
-        "qty": 1
-      },
       {
         "uid": "5b52c088-a711-4ee8-945d-a4c18ace280a",
         "qty": 1
@@ -79752,10 +79742,10 @@
       }
     ],
     "adjudicacionPor": "Andrea",
-    "adjudicacionAt": "2026-08-23T17:38:11.031Z",
+    "adjudicacionAt": "2026-08-26T21:08:39.888Z",
     "createdAt": "2026-08-19T17:12:49.489Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-24T15:15:56.568Z",
+    "updatedAt": "2026-08-26T21:09:13.762Z",
     "updatedBy": "andrea"
   },
   {
@@ -80585,7 +80575,7 @@
     "cliente": "BRINSA",
     "contacto": "SAMIR KALIL CHAVEZ",
     "correo": "samir.kalil@brinsa.com.co",
-    "estado": "Revisión gerencia",
+    "estado": "Borrador",
     "factura": "",
     "iva": 19,
     "subtotal": 0,
@@ -80966,10 +80956,10 @@
         "precioProveedor": 79500
       }
     ],
-    "fechaGuardado": "2026-08-26T21:25:46.258Z",
+    "fechaGuardado": "2026-08-26T20:48:52.465Z",
     "createdAt": "2026-08-25T14:11:05.695Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-26T21:25:46.258Z",
+    "updatedAt": "2026-08-26T20:48:52.465Z",
     "updatedBy": "sandra"
   },
   {
