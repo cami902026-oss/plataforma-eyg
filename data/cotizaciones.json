@@ -60576,8 +60576,8 @@
     "cliente": "CIAM",
     "contacto": "OSCAR GUERRERO",
     "correo": "",
-    "estado": "Facturada",
-    "factura": "589",
+    "estado": "Adjudicada",
+    "factura": "",
     "iva": 19,
     "subtotal": 4976000,
     "ivaVal": 945440,
@@ -60646,9 +60646,8 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-08-26T19:42:29.430Z",
+    "fechaGuardado": "2026-08-18T17:51:44.620Z",
     "fechaEnvio": "2026-08-13T19:33:59.771Z",
-    "facturadaAt": "2026-08-26",
     "adjudicadaAt": "2026-08-18",
     "valorAdjudicado": 4976000,
     "itemsAdjudicados": [
@@ -60673,8 +60672,8 @@
     "adjudicacionAt": "2026-08-18T17:51:41.549Z",
     "createdAt": "2026-08-13T19:33:59.772Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-26T19:42:29.430Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-08-18T17:51:44.620Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM1946",
@@ -77783,8 +77782,8 @@
     "cliente": "MONTITEC",
     "contacto": "MARCO LABATON ",
     "correo": "",
-    "estado": "Facturada",
-    "factura": "588",
+    "estado": "Adjudicada",
+    "factura": "",
     "iva": 19,
     "subtotal": 5595500,
     "ivaVal": 1063145,
@@ -77814,9 +77813,8 @@
         "precioProveedor": 259550
       }
     ],
-    "fechaGuardado": "2026-08-26T19:11:00.196Z",
+    "fechaGuardado": "2026-08-21T20:02:48.794Z",
     "fechaEnvio": "2026-08-21T16:50:50.370Z",
-    "facturadaAt": "2026-08-26",
     "adjudicadaAt": "2026-08-21",
     "valorAdjudicado": 5595500,
     "itemsAdjudicados": [
@@ -77829,8 +77827,8 @@
     "adjudicacionAt": "2026-08-21T20:02:45.699Z",
     "createdAt": "2026-08-21T16:31:00.328Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-26T19:11:00.196Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-08-21T20:02:48.795Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2033",
@@ -82085,7 +82083,7 @@
         "precioProveedor": 126900
       }
     ],
-    "fechaGuardado": "2026-08-26T17:04:09.609Z",
+    "fechaGuardado": "2026-08-26T19:38:51.267Z",
     "fechaEnvio": "2026-08-26T14:53:14.938Z",
     "adjudicadaAt": "2026-08-26",
     "valorAdjudicado": 847056,
@@ -82099,8 +82097,8 @@
     "adjudicacionAt": "2026-08-26T17:02:05.008Z",
     "createdAt": "2026-08-26T14:24:08.525Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-26T17:04:09.609Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-26T19:38:51.267Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM2054",
@@ -82454,9 +82452,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 1035000,
+    "ivaVal": 196650,
+    "total": 1231650,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "MOSQUERA",
     "validez": "8 DÍAS",
@@ -82468,38 +82466,24 @@
     "motivoRechazo": "",
     "items": [
       {
-        "id": 1,
-        "qty": 2,
-        "udm": "EA",
-        "uid": "ee890d7b-8066-404a-86e4-33a504ac801f",
-        "desc": "REDUCING TEE NPS 3\" x 2\" SCH 40S (A182 TP304",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "SS-304",
-        "proveedor": "",
-        "obsProveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
         "id": 2,
         "qty": 45,
         "udm": "EA",
         "uid": "87103b08-0c98-4795-9cfe-8d194a2c61be",
         "desc": "90° ELBOW 2\", SCH 160, LR, ASME B16.9, BE, ASTM A234 GR. WPB, SEAMLESS ",
-        "marca": "",
-        "precio": 0,
+        "marca": "XF",
+        "precio": 23000,
         "desvTec": "A-234 WPB",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 19850
       }
     ],
-    "fechaGuardado": "2026-08-26T16:45:29.946Z",
+    "fechaGuardado": "2026-08-26T17:24:50.162Z",
     "createdAt": "2026-08-26T16:44:11.286Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-26T16:45:29.946Z",
+    "updatedAt": "2026-08-26T17:24:50.162Z",
     "updatedBy": "sandra"
   },
   {
