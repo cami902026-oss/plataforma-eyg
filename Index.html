@@ -697,6 +697,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   --op-bodega:#3FBF63;      /* sale de la estantería */
   --op-compra:#E8A020;      /* hay que salir a comprarlo en Bogotá */
   --op-sin:#e05a4a;         /* nadie ha decidido de dónde sale */
+  --op-cerrada:#9b8cd8;     /* archivada: ya no pide nada */
   --op-mono:ui-monospace,'SFMono-Regular',Consolas,'Liberation Mono',monospace;
   --op-papel:#0b1d38;
   --op-linea:#1e3a6e;
@@ -757,6 +758,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 }
 #page-op .op-sello.op-sello-neg{ border-color:var(--op-sin);color:var(--op-sin);background:rgba(224,90,74,.07); }
 #page-op .op-sello.op-sello-ok{  border-color:var(--op-bodega);color:var(--op-bodega);background:rgba(63,191,99,.07); }
+#page-op .op-sello.op-sello-cerrada{ border-color:var(--op-cerrada);color:var(--op-cerrada);background:rgba(155,140,216,.07); }
 
 /* ── Balanza de origen ────────────────────────────────────────────────────
    Una sola barra: qué parte del valor sale de la estantería y qué parte hay
@@ -851,6 +853,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #page-op .op-e-ok      { background:rgba(63,191,99,.12);color:var(--op-bodega);border-color:rgba(63,191,99,.4); }
 #page-op .op-e-alto    { background:rgba(224,90,74,.12);color:var(--op-sin);border-color:rgba(224,90,74,.45); }
 #page-op .op-e-curso   { background:rgba(26,58,143,.35);color:#8fb4ff;border-color:rgba(122,163,238,.4); }
+#page-op .op-e-cerrada { background:rgba(155,140,216,.14);color:var(--op-cerrada);border-color:rgba(155,140,216,.45); }
 
 /* ── Aviso de estado: es una barrera, no una tarjeta ──────────────────── */
 #page-op .op-barrera{
@@ -884,8 +887,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #page-op .op-fila-marca{ align-self:stretch;background:rgba(255,255,255,.10); }
 #page-op .op-fila[data-e="pendiente_aprobacion"] .op-fila-marca{ background:var(--op-compra); }
 #page-op .op-fila[data-e="devuelta"] .op-fila-marca{ background:var(--op-sin); }
-#page-op .op-fila[data-e="aprobada"] .op-fila-marca,
-#page-op .op-fila[data-e="cerrada"] .op-fila-marca{ background:var(--op-bodega); }
+#page-op .op-fila[data-e="aprobada"] .op-fila-marca{ background:var(--op-bodega); }
+#page-op .op-fila[data-e="cerrada"] .op-fila-marca{ background:var(--op-cerrada); }
 #page-op .op-fila-id{
   font-family:'Montserrat',sans-serif;font-weight:900;font-size:13.5px;
   letter-spacing:.09em;color:#fff;white-space:nowrap;
@@ -22544,7 +22547,7 @@ const opMoney = n => '$' + Math.round(+n || 0).toLocaleString('es-CO');
 const OP_CLS = {
   borrador: 'op-e-borrador', en_compras: 'op-e-curso', pendiente_aprobacion: 'op-e-espera',
   aprobada: 'op-e-ok', devuelta: 'op-e-alto', en_ejecucion: 'op-e-curso',
-  despachada: 'op-e-curso', cerrada: 'op-e-ok', anulada: 'op-e-alto'
+  despachada: 'op-e-curso', cerrada: 'op-e-cerrada', anulada: 'op-e-alto'
 };
 
 function opChip(estado) {
@@ -22632,7 +22635,7 @@ function opRenderEditor() {
     pendiente_aprobacion: ['', 'Pendiente', 'de aprobación'],
     devuelta: [' op-sello-neg', 'Devuelta', 'corregir y reenviar'],
     aprobada: [' op-sello-ok', 'Aprobada', 'se puede ejecutar'],
-    cerrada: [' op-sello-ok', 'Cerrada', 'con certificados'],
+    cerrada: [' op-sello-cerrada', 'Cerrada', 'con certificados'],
     anulada: [' op-sello-neg', 'Anulada', '']
   };
   const sl = SELLOS[o.estado];
