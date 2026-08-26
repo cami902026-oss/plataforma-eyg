@@ -84,7 +84,8 @@
     "createdAt": "2026-07-25T14:43:54.236Z",
     "createdBy": "andrea",
     "updatedBy": "andrea",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-26T21:23:37.102Z"
   },
   {
     "id": "poc_1777926438588",
@@ -296,7 +297,8 @@
     "archivada": false,
     "observaciones": "",
     "facturacion": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-26T21:23:37.102Z"
   },
   {
     "id": "poc_1778168100636",
@@ -778,7 +780,8 @@
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-26T21:23:37.102Z"
   },
   {
     "id": "poc_1780498017972",
@@ -975,7 +978,8 @@
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-26T21:23:37.102Z"
   },
   {
     "id": "poc_1780685275512",
@@ -1027,7 +1031,8 @@
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-26T21:23:37.102Z"
   },
   {
     "id": "poc_1780759794347",
@@ -1125,7 +1130,8 @@
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-26T21:23:37.102Z"
   },
   {
     "id": "poc_1781024695284",
@@ -1177,7 +1183,8 @@
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-26T21:23:37.102Z"
   },
   {
     "id": "poc_1781034415013",
@@ -1276,7 +1283,8 @@
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-26T21:23:37.102Z"
   },
   {
     "id": "poc_1781116679153",
@@ -3834,7 +3842,8 @@
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-26T21:23:37.102Z"
   },
   {
     "id": "poc_1782876574385",
@@ -4221,7 +4230,8 @@
     "archivada": false,
     "observaciones": "",
     "facturacion": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-26T21:23:37.102Z"
   },
   {
     "id": "poc_1783111268042",
@@ -4821,7 +4831,8 @@
     "archivada": false,
     "observaciones": "",
     "facturacion": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-26T21:23:37.102Z"
   },
   {
     "id": "poc_1784328344190",
@@ -7821,5 +7832,56 @@
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1782944501501",
+    "num": "ODC-AA-ELEC-SKID-469-24-579",
+    "cliente": "SKID EXPERTS",
+    "desc": "Cotización LM1603 · 43 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-01",
+    "valor": 24745455,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "cotizacionId": "LM1603",
+    "createdAt": "2026-07-01T22:21:41.501Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-27T02:51:16.206Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false,
+    "deleted": true,
+    "deletedAt": "2026-07-27T02:51:16.202Z",
+    "deletedBy": "andrea"
   }
 ]
