@@ -60576,8 +60576,8 @@
     "cliente": "CIAM",
     "contacto": "OSCAR GUERRERO",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "589",
     "iva": 19,
     "subtotal": 4976000,
     "ivaVal": 945440,
@@ -60646,8 +60646,9 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-08-18T17:51:44.620Z",
+    "fechaGuardado": "2026-08-26T19:42:29.430Z",
     "fechaEnvio": "2026-08-13T19:33:59.771Z",
+    "facturadaAt": "2026-08-26",
     "adjudicadaAt": "2026-08-18",
     "valorAdjudicado": 4976000,
     "itemsAdjudicados": [
@@ -60672,8 +60673,8 @@
     "adjudicacionAt": "2026-08-18T17:51:41.549Z",
     "createdAt": "2026-08-13T19:33:59.772Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-18T17:51:44.620Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-26T19:42:29.430Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1946",
@@ -77782,8 +77783,8 @@
     "cliente": "MONTITEC",
     "contacto": "MARCO LABATON ",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "588",
     "iva": 19,
     "subtotal": 5595500,
     "ivaVal": 1063145,
@@ -77813,8 +77814,9 @@
         "precioProveedor": 259550
       }
     ],
-    "fechaGuardado": "2026-08-21T20:02:48.794Z",
+    "fechaGuardado": "2026-08-26T19:11:00.196Z",
     "fechaEnvio": "2026-08-21T16:50:50.370Z",
+    "facturadaAt": "2026-08-26",
     "adjudicadaAt": "2026-08-21",
     "valorAdjudicado": 5595500,
     "itemsAdjudicados": [
@@ -77827,8 +77829,8 @@
     "adjudicacionAt": "2026-08-21T20:02:45.699Z",
     "createdAt": "2026-08-21T16:31:00.328Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-21T20:02:48.795Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-26T19:11:00.196Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2033",
@@ -82538,5 +82540,91 @@
     "createdBy": "andrea",
     "updatedAt": "2026-08-24T13:22:15.496Z",
     "updatedBy": "alexandra"
+  },
+  {
+    "id": "LM2059",
+    "fecha": "2026-08-26",
+    "fechaVenc": "2026-09-03",
+    "cliente": "PSI",
+    "contacto": "MAURICIO",
+    "correo": "",
+    "estado": "Borrador",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
+    "formaPago": "60 DÍAS",
+    "sitioEntrega": "PUENTE ARANDA ",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Sandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "id": 1,
+        "desc": "esparrago 1 1/2\" x 7 3/4\" b7",
+        "udm": "EA",
+        "qty": 12,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": "MUNDIAL",
+        "precioProveedor": 20551,
+        "obsProveedor": "",
+        "uid": "83184ff3-0209-4992-95c6-c5eb67b3fdb8"
+      },
+      {
+        "id": 2,
+        "desc": "esparrago 1 1/8\" x 6\" ",
+        "udm": "EA",
+        "qty": 12,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": "MUNDIAL",
+        "precioProveedor": 11131,
+        "obsProveedor": "",
+        "uid": "cf2ef541-34c0-4828-97f5-810b19b2b944"
+      },
+      {
+        "id": 3,
+        "desc": "tuerca 2h 1 1/2\" ",
+        "udm": "EA",
+        "qty": 12,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": "MUNDIAL",
+        "precioProveedor": 8780,
+        "obsProveedor": "",
+        "uid": "5b7b4d93-64c6-4655-a99b-666ec7ddaf96"
+      },
+      {
+        "id": 4,
+        "desc": "tuerca 2h 11/8\"",
+        "udm": "EA",
+        "qty": 12,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": "MUNDIAL",
+        "precioProveedor": 2800,
+        "obsProveedor": "",
+        "uid": "5f148350-3729-4918-aca4-978fc4cbd730"
+      }
+    ],
+    "fechaGuardado": "2026-08-26T19:48:42.857Z",
+    "createdAt": "2026-08-26T19:48:42.857Z",
+    "createdBy": "sandra",
+    "updatedAt": "2026-08-26T19:48:42.857Z",
+    "updatedBy": "sandra"
   }
 ]
