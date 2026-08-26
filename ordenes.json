@@ -4628,7 +4628,9 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:27:59.419Z",
     "updatedBy": "andrea",
-    "faltanFechas": true
+    "faltanFechas": true,
+    "archivada": true,
+    "archivadaAt": "2026-08-26T21:52:10.266Z"
   },
   {
     "id": "poc_1784044650417",
@@ -4931,7 +4933,9 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:27:59.420Z",
     "updatedBy": "andrea",
-    "faltanFechas": true
+    "faltanFechas": true,
+    "archivada": true,
+    "archivadaAt": "2026-08-26T21:52:10.266Z"
   },
   {
     "id": "poc_1784682485492",
@@ -4979,7 +4983,9 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:27:59.420Z",
     "updatedBy": "andrea",
-    "faltanFechas": true
+    "faltanFechas": true,
+    "archivada": true,
+    "archivadaAt": "2026-08-26T21:52:10.266Z"
   },
   {
     "id": "poc_1784325991849",
@@ -7832,5 +7838,56 @@
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1782944501501",
+    "num": "ODC-AA-ELEC-SKID-469-24-579",
+    "cliente": "SKID EXPERTS",
+    "desc": "Cotización LM1603 · 43 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-01",
+    "valor": 24745455,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "cotizacionId": "LM1603",
+    "createdAt": "2026-07-01T22:21:41.501Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-27T02:51:16.206Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false,
+    "deleted": true,
+    "deletedAt": "2026-07-27T02:51:16.202Z",
+    "deletedBy": "andrea"
   }
 ]
