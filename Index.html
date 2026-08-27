@@ -22476,9 +22476,12 @@ const OP_ESTADOS = {
 
 // ─── Permisos ────────────────────────────────────────────────────────────────
 // Crean: el comercial o asistente de ESA oferta, más Andrea y gerencia.
-// Aprueba: SOLO gerencia. Es la compuerta que pidió el jefe.
+// Aprueba: gerencia. Es la compuerta que pidió el jefe.
+// 27-ago-2026: Andrea entra a la compuerta junto a Alberto, a pedido de ella.
+// Antes era solo él, y con el jefe en reunión las OP se quedaban quietas el día
+// entero. Sigue siendo compuerta: quien arma la OP no es quien la aprueba.
 function opEsGerencia() {
-  return !!(currentUser && (currentUser.email || '').toLowerCase() === 'alberto');
+  return !!(currentUser && ['alberto', 'andrea'].includes((currentUser.email || '').toLowerCase()));
 }
 function opEsAdmin() {
   return !!(currentUser && ['alberto', 'andrea'].includes((currentUser.email || '').toLowerCase()));
