@@ -813,6 +813,11 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   display:block;font-family:var(--op-mono);font-size:10.5px;
   color:var(--text-muted);margin-top:3px;letter-spacing:.02em;
 }
+/* La desviación técnica, a la vista en la línea. Apagada mientras esté vacía para
+   no competir con la descripción; en ámbar cuando hay algo que el proveedor tiene
+   que leer sí o sí antes de despachar. */
+#page-op .op-desv{ margin-top:4px;font-size:11px; }
+#page-op .op-desv-hay{ border-color:rgba(232,160,32,.45);color:var(--gold); }
 #page-op .op-cant{
   font-family:var(--op-mono);font-size:13px;color:#fff;text-align:right;white-space:nowrap;
 }
@@ -22776,7 +22781,14 @@ function opRenderItems() {
       + '<div class="op-faja"></div>'
       + '<div class="op-item-n">' + (it.item || '') + '</div>'
       + '<div class="op-desc">' + opEsc(it.descripcion)
-      + '<small><span class="op-etq ' + e[0] + '">' + e[1] + '</span></small></div>'
+      + '<small><span class="op-etq ' + e[0] + '">' + e[1] + '</span></small>'
+      // La desviación técnica es lo que se le PROMETIÓ al cliente, y va a la vista
+      // en la línea: es lo que evita comprar lo que no era. De aquí baja a la O.C.
+      // del proveedor (nota del Plan de Compras) y a la remisión del cliente.
+      + '<input class="op-inp op-desv' + (it.desviacion_tecnica ? ' op-desv-hay' : '')
+      + '" placeholder="desviación técnica — lo que se le ofreció al cliente" value="'
+      + opEsc(it.desviacion_tecnica || '') + '"' + attrs('desviacion_tecnica') + '>'
+      + '</div>'
       + '<div class="op-cant"><input class="op-inp op-inp-num" type="number" step="any" min="0" value="'
       + (it.cantidad != null ? it.cantidad : '') + '"' + attrs('cantidad') + '>'
       + '<u>' + opEsc(it.udm || '') + '</u></div>'
@@ -23009,6 +23021,10 @@ async function opCrearDesde(cotizId) {
         proveedor: /BODEGA/i.test(prov) ? null : (prov || null),
         costo_unit: costo,
         estado: 'pendiente',
+        // La desviación técnica es lo que se le prometió al cliente y lo que el
+        // proveedor tiene que leer en la O.C. Si no viaja aquí, se pierde para
+        // siempre: el plan se genera desde la OP, no desde la cotización.
+        desviacion_tecnica: it.desvTec || null,
         cotizacion_item_uid: it.uid || null,
         updated_by: yo
       });
@@ -23451,7 +23467,9 @@ async function opRecibirConfirmar() {
             oc: op_current.oc_cliente || null, cotizacion_id: op_current.cotizacion_id || null,
             op_numero: op_current.numero, item: salidasRemi.length + 1,
             descripcion: String(it.descripcion || '').trim(), cantidad: L.sale,
-            marca: '', colada: L.colada, desviacion: '', observaciones: obs,
+            // Igual que en el despacho normal: la desviación llega hasta el cliente.
+            marca: '', colada: L.colada, desviacion: it.desviacion_tecnica || '',
+            observaciones: obs,
             contiene: '', recibido_por: op_current.cliente || '', created_by: yo
           });
         }
@@ -24029,7 +24047,10 @@ async function opDespacharConfirmar() {
       oc: oc || null, cotizacion_id: op_current.cotizacion_id || null,
       op_numero: op_current.numero,
       item: i + 1, descripcion: String(x.it.descripcion || '').trim(),
-      cantidad: x.qty, marca: '', colada: x.colada, desviacion: '',
+      // La desviación viaja hasta el papel que firma el cliente: es lo que se le
+      // ofreció, y quien recibe tiene que poder confrontarlo contra lo que llegó.
+      cantidad: x.qty, marca: '', colada: x.colada,
+      desviacion: x.it.desviacion_tecnica || '',
       observaciones: obs, contiene: '', recibido_por: op_current.cliente || '',
       created_by: yo
     }));
@@ -24585,6 +24606,7 @@ async function opTomarDeBodega(id, codigo, hay) {
         cantidad: resto, v_unit: it.v_unit, v_total: resto * (+it.v_unit || 0),
         origen: 'COMPRA', proveedor: it.proveedor || null, costo_unit: it.costo_unit,
         estado: 'pendiente', cotizacion_item_uid: it.cotizacion_item_uid || null,
+        desviacion_tecnica: it.desviacion_tecnica || null,
         observaciones: 'Resto de la línea ' + (it.item || '') + ': en bodega solo había ' + hay,
         updated_by: yo
       };
@@ -24828,6 +24850,14 @@ async function opGenerarPlan() {
       const costo = esBod
         ? (it.producto_codigo && costoInv[it.producto_codigo] != null ? +costoInv[it.producto_codigo] : null)
         : (it.costo_unit == null ? null : +it.costo_unit);
+      // La nota del plan es la que imprime la O.C. en "Referencia, Especificaciones
+      // o datos de ingeniería" (E6-FC-01). La desviación va PRIMERO: lo de bodega es
+      // logística nuestra, la desviación es lo que el proveedor tiene que leer.
+      const desv = String(it.desviacion_tecnica || '').trim();
+      const notaBod = esBod
+        ? ('Sale de bodega' + (it.producto_codigo ? ' · ' + it.producto_codigo : '')
+           + (costo == null ? ' · SIN COSTO EN INVENTARIO' : ''))
+        : '';
       n++;
       return {
         cc: cc,
@@ -24841,10 +24871,7 @@ async function opGenerarPlan() {
         // "BODEGA" como proveedor es la convención que el equipo ya usa a mano.
         proveedor: esBod ? 'BODEGA' : String(it.proveedor || '').trim(),
         costo_unit: costo,
-        nota: esBod
-          ? ('Sale de bodega' + (it.producto_codigo ? ' · ' + it.producto_codigo : '')
-             + (costo == null ? ' · SIN COSTO EN INVENTARIO' : ''))
-          : null,
+        nota: [desv, notaBod].filter(Boolean).join(' · ') || null,
         // A bodega no se le emite orden de compra ni se le paga: ya es nuestro.
         pago: esBod ? 'PAGADO' : 'PENDIENTE',
         sin_oc: esBod,
