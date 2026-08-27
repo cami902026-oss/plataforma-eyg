@@ -813,6 +813,12 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   display:block;font-family:var(--op-mono);font-size:10.5px;
   color:var(--text-muted);margin-top:3px;letter-spacing:.02em;
 }
+/* Alistada y sin salir. Ámbar como todo lo que está detenido esperando a alguien. */
+#page-op .op-chip-envio{
+  display:inline-block;margin-left:6px;padding:2px 8px;border-radius:2px;
+  font-family:var(--op-mono);font-size:10.5px;font-weight:700;letter-spacing:.04em;
+  background:rgba(232,160,32,.16);border:1px solid rgba(232,160,32,.5);color:#fbbf24;
+}
 /* La desviación técnica, a la vista en la línea. Apagada mientras esté vacía para
    no competir con la descripción; en ámbar cuando hay algo que el proveedor tiene
    que leer sí o sí antes de despachar. */
@@ -3650,6 +3656,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <button class="bd-filter-btn" onclick="opFiltrar('en_compras',this)">🛒 En compras</button>
             <button class="bd-filter-btn" onclick="opFiltrar('pendiente_aprobacion',this)">⏳ Por aprobar</button>
             <button class="bd-filter-btn" onclick="opFiltrar('aprobada',this)">✅ Aprobadas</button>
+            <button class="bd-filter-btn" onclick="opFiltrar('por_enviar',this)" title="Alistadas, con remisión y descontadas del inventario, pero el material sigue en la bodega">📦 Por enviar</button>
             <button class="bd-filter-btn" onclick="opFiltrar('devuelta',this)">↩️ Devueltas</button>
             <button class="bd-filter-btn" onclick="opFiltrar('en_ejecucion',this)">🛒 En ejecución</button>
             <button class="bd-filter-btn" onclick="opFiltrar('cerrada',this)">🔒 Cerradas</button>
@@ -22567,7 +22574,11 @@ function opRenderLista() {
   const cont = document.getElementById('op-lista-cont');
   if (!cont) return;
   const q = ((document.getElementById('op-search') || {}).value || '').toLowerCase().trim();
-  let l = op_filtro === 'todas' ? op_lista.slice() : op_lista.filter(o => o.estado === op_filtro);
+  // «por_enviar» no es un estado: es una condición que cruza varios. Una OP
+  // alistada y sin salir puede estar en cualquier estado de la máquina.
+  let l = op_filtro === 'todas' ? op_lista.slice()
+        : op_filtro === 'por_enviar' ? op_lista.filter(o => o._porEnviar)
+        : op_lista.filter(o => o.estado === op_filtro);
   if (q) l = l.filter(o => [o.numero, o.cotizacion_id, o.oc_cliente, o.cliente]
     .some(x => String(x || '').toLowerCase().includes(q)));
 
@@ -22578,8 +22589,10 @@ function opRenderLista() {
   const cnt = document.getElementById('op-lista-count');
   if (cnt) {
     const esp = op_lista.filter(o => o.estado === 'pendiente_aprobacion').length;
+    const env = op_lista.filter(o => o._porEnviar).length;
     cnt.innerHTML = l.length + ' orden' + (l.length === 1 ? '' : 'es') + ' de pedido'
-      + (esp ? ' · <b style="color:#E8A020">' + esp + ' esperando aprobación</b>' : '');
+      + (esp ? ' · <b style="color:#E8A020">' + esp + ' esperando aprobación</b>' : '')
+      + (env ? ' · <b style="color:#E8A020">' + env + ' por enviar</b>' : '');
   }
 
   if (!l.length) {
@@ -22603,6 +22616,10 @@ function opRenderLista() {
       + (o.oc_cliente ? ' · o.c. ' + opEsc(o.oc_cliente) : '') + '</small></div>'
       + '<div>' + opChip(o.estado)
       + (o.estado === 'devuelta' && o.nota_devolucion ? '<span class="op-nota">' + opEsc(o.nota_devolucion) + '</span>' : '')
+      // Alistada y sin salir: el material está en la bodega ocupando espacio y
+      // el cliente esperando. Se ve desde la lista, sin abrir la OP.
+      + (o._porEnviar ? '<span class="op-chip-envio">📦 Por enviar</span>' : '')
+      + (o.enviada_at ? '<span class="op-nota">🚚 ' + opEsc(_opEnvioTxt(o)) + '</span>' : '')
       + '</div>'
       + '<div class="op-fila-mini">' + items + ' ítems</div>'
       + '<div class="op-fila-val">' + opMoney(o._valor || o.valor_venta || 0) + '</div>'
@@ -22677,6 +22694,19 @@ function opRenderEditor() {
   } else {
     av.innerHTML = '';
   }
+  // El envío va APARTE del estado, a propósito: una OP puede estar despachada
+  // —remisión hecha, inventario descontado— y seguir en la bodega esperando
+  // quién la lleve. Se suma a la barrera del estado, no la reemplaza.
+  if (_opPorEnviar(o)) {
+    av.innerHTML += B('', '📦 Alistada, pendiente de envío',
+      'La remisión ya está hecha y el inventario descontado, pero el material '
+      + 'todavía no sale de la bodega. Cuando salga, confirma el envío y deja por dónde se mandó: '
+      + 'es lo único con lo que se rastrea si se pierde.');
+  } else if (o.enviada_at) {
+    av.innerHTML += B('op-libre', '🚚 Enviada',
+      'Salió por ' + opEsc(_opEnvioTxt(o)) + ' · ' + opEsc(String(o.enviada_at).slice(0, 10))
+      + (o.enviada_por ? ' · confirmó ' + opEsc(o.enviada_por) : ''));
+  }
   // Solo lectura: se dice en voz alta en vez de dejar campos muertos sin
   // explicación. El módulo lo ve todo el equipo; moverlo le toca a quien
   // está trabajando el pedido.
@@ -22716,6 +22746,11 @@ function opRenderEditor() {
   if (['aprobada', 'en_ejecucion'].includes(o.estado) && opPuedeDespachar()
       && (op_currentItems || []).some(i => i.origen === 'BODEGA' && i.estado !== 'despachado')) {
     b.push('<button class="btn" onclick="opDespacharAbrir()" title="Crea la remisión y descuenta el inventario en un solo acto" style="background:rgba(63,191,99,.18);border:1px solid #3FBF63;color:#8ce8a6;padding:8px 16px;font-size:13px;font-weight:700;">📦 Alistar y despachar</button>');
+  }
+  // Alistada, con remisión y todavía en bodega: falta que salga. Es el paso que
+  // no existía y por el que la OP-2026-0020 se veía en un limbo.
+  if (_opPorEnviar(o) && opPuedeDespachar()) {
+    b.push('<button class="btn" onclick="opEnvioAbrir()" title="El material ya está alistado y con remisión. Esto registra que SALIÓ de la bodega, y por dónde." style="background:rgba(232,160,32,.18);border:1px solid #E8A020;color:#fbbf24;padding:8px 16px;font-size:13px;font-weight:700;">🚚 Confirmar envío</button>');
   }
   // El orden es: borrador → compras → gerencia. Nunca del borrador al jefe.
   if ((o.estado === 'borrador' || o.estado === 'devuelta') && editable)
@@ -22865,14 +22900,23 @@ async function opCargar(avisar) {
     // Conteo de ítems por OP, en una sola consulta
     const ids = op_lista.map(o => o.id);
     if (ids.length) {
-      const its = (await absFetch('op_items?select=op_id,v_total&op_id=in.(' + ids.join(',') + ')&limit=8000')) || [];
+      // 27-ago-2026: se piden también `estado` y `remision` para saber, desde la
+      // lista, qué está alistado y todavía sin salir de la bodega.
+      const its = (await absFetch('op_items?select=op_id,v_total,estado,remision&op_id=in.(' + ids.join(',') + ')&limit=8000')) || [];
       const acc = {};
       its.forEach(i => {
-        if (!acc[i.op_id]) acc[i.op_id] = { n: 0, v: 0 };
+        if (!acc[i.op_id]) acc[i.op_id] = { n: 0, v: 0, desp: 0, rem: 0 };
         acc[i.op_id].n++;
         acc[i.op_id].v += (+i.v_total || 0);
+        if (i.estado === 'despachado') acc[i.op_id].desp++;
+        if (i.remision) acc[i.op_id].rem++;
       });
-      op_lista.forEach(o => { o._items = (acc[o.id] || {}).n || 0; o._valor = (acc[o.id] || {}).v || 0; });
+      op_lista.forEach(o => {
+        const a = acc[o.id] || {};
+        o._items = a.n || 0; o._valor = a.v || 0;
+        // Todo despachado, con papel, y nadie ha confirmado que salió.
+        o._porEnviar = !o.enviada_at && !!a.n && a.desp === a.n && a.rem > 0;
+      });
     }
     opRenderLista();
     if (avisar) showToast('✅ ' + op_lista.length + ' OP cargadas', 'success');
@@ -25018,6 +25062,159 @@ function _opVia() {
 // ─── Edición línea por línea ─────────────────────────────────────────────────
 // Cada campo se guarda apenas sales de él. No hay botón de guardar por línea a
 // propósito: obligarte a recordarlo es la forma más fácil de perder el dato.
+// ─── El ENVÍO: un paso propio, no un sinónimo de «despachada» ────────────────
+// Despachada = la remisión está hecha y el inventario descontado.
+// Enviada    = el material SALIÓ de la bodega para el cliente.
+// Son dos momentos y hasta hoy la plataforma los confundía. En la OP-2026-0020
+// (ANDES OPERATING) pasó el primero y no el segundo: remisión 26280, los 2 ítems
+// descontados, y el material esperando en bodega a que alguien lo llevara. La OP
+// se veía en un limbo porque no había cómo decir «alistada, sin salir».
+//
+// Y con 92 destinos a nivel nacional, POR DÓNDE se mandó no es un adorno: es lo
+// único con lo que se rastrea un pedido o se reclama cuando se pierde.
+function _opPorEnviar(o, items) {
+  if (!o || o.enviada_at) return false;
+  const its = items || op_currentItems || [];
+  if (!its.length) return false;
+  // Tiene que haber papel, y no puede quedar nada sin despachar.
+  return its.some(i => i.remision) && its.every(i => i.estado === 'despachado');
+}
+
+const OP_ENVIO_MEDIO = {
+  CAMION_EG:      ['🚚', 'Camión E&G'],
+  BUS:            ['🚌', 'Bus / encomienda'],
+  TRANSPORTADORA: ['📦', 'Transportadora'],
+  CLIENTE_RECOGE: ['🤝', 'El cliente lo recoge'],
+  OTRO:           ['✳️', 'Otro']
+};
+const _opEnvioTxt = o => {
+  const m = OP_ENVIO_MEDIO[o && o.envio_medio];
+  return m ? (m[0] + ' ' + m[1] + (o.envio_detalle ? ' · ' + o.envio_detalle : '')) : '';
+};
+
+function opEnvioAbrir() {
+  if (!op_current) return;
+  if (!opPuedeDespachar()) { showToast('El envío lo confirman bodega (Yesid), Alexandra, Andrea o gerencia', 'error'); return; }
+  const o = op_current;
+  const rem = [...new Set((op_currentItems || []).map(i => i.remision).filter(Boolean))];
+
+  const medios = Object.keys(OP_ENVIO_MEDIO).map(k =>
+    '<label class="op-ligar-op"><input type="radio" name="op-envio-m" value="' + k + '">'
+    + '<div><div class="op-ligar-n">' + OP_ENVIO_MEDIO[k][0] + ' ' + OP_ENVIO_MEDIO[k][1] + '</div></div></label>').join('');
+
+  const prev = document.getElementById('op-envio-modal'); if (prev) prev.remove();
+  const ov = document.createElement('div');
+  ov.id = 'op-envio-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(3,8,18,.82);z-index:100004;'
+    + 'display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML = '<div class="op-modal-hoja">'
+    + '<div class="op-modal-cab"><h3>🚚 Confirmar envío</h3>'
+    + '<button onclick="_opEnvioCerrar()" aria-label="Cerrar">×</button></div>'
+    + '<div class="op-plan-d" style="margin-bottom:12px"><b>' + opEsc(o.numero)
+    + '</b> ya está alistada y con remisión'
+    + (rem.length ? ' (' + rem.map(opEsc).join(', ') + ')' : '')
+    + '. Esto registra que <b>salió de la bodega</b> y por dónde. '
+    + '<b>No toca el inventario</b>: ya se descontó al despachar.</div>'
+    + '<div class="op-ligar-lista">' + medios + '</div>'
+    + '<div style="margin-top:12px">'
+    + '<label class="op-plan-d" style="display:block;margin-bottom:5px">Empresa, guía, placa o conductor</label>'
+    + '<input id="op-envio-det" class="op-inp" style="width:100%"'
+    + ' placeholder="Ej: Copetran guía 4471 — o placa SXT-482, Jhon"></div>'
+    + '<div id="op-envio-aviso"></div>'
+    + '<div class="op-modal-pie">'
+    + '<button class="btn btn-ghost" onclick="_opEnvioCerrar()" style="padding:8px 16px;font-size:12px;">Cancelar</button>'
+    + '<button class="btn btn-primary" id="op-envio-ok" onclick="opEnvioConfirmar()" style="padding:8px 18px;font-size:13px;">Registrar salida</button>'
+    + '</div></div>';
+  document.body.appendChild(ov);
+}
+function _opEnvioCerrar() { const m = document.getElementById('op-envio-modal'); if (m) m.remove(); }
+
+async function opEnvioConfirmar() {
+  if (!op_current) return;
+  const sel = document.querySelector('#op-envio-modal input[name="op-envio-m"]:checked');
+  const av = document.getElementById('op-envio-aviso');
+  if (!sel) { if (av) av.innerHTML = '<div class="op-ligar-err">Marca por dónde se envió.</div>'; return; }
+  const medio = sel.value;
+  const det = String((document.getElementById('op-envio-det') || {}).value || '').trim();
+  // Sin guía ni placa no hay con qué rastrear ni reclamar. Se exige, salvo
+  // cuando se lo lleva el cliente: ahí no hay transportador a quién reclamarle.
+  if (!det && medio !== 'CLIENTE_RECOGE') {
+    if (av) av.innerHTML = '<div class="op-ligar-err">Escribe la guía, la placa o la empresa: es con lo que se rastrea si se pierde.</div>';
+    return;
+  }
+  const yo = (currentUser && (currentUser.name || currentUser.email)) || 'SISTEMA';
+  const btn = document.getElementById('op-envio-ok');
+  if (btn) { btn.disabled = true; btn.textContent = 'Registrando…'; }
+  try {
+    const cuerpo = { enviada_at: new Date().toISOString(), enviada_por: yo,
+                     envio_medio: medio, envio_detalle: det || null, updated_by: yo };
+    await absFetch('ops?id=eq.' + op_current.id, {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(cuerpo)
+    });
+    Object.assign(op_current, cuerpo);
+    try { await opEvento(op_current.id, 'enviada', OP_ENVIO_MEDIO[medio][1] + (det ? ' · ' + det : '')); } catch (_) { }
+    _opEnvioCerrar();
+    showToast('🚚 ' + op_current.numero + ' salió por ' + OP_ENVIO_MEDIO[medio][1], 'success');
+    opAbrir(op_current.id);
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Registrar salida'; }
+    if (av) av.innerHTML = '<div class="op-ligar-err">No se pudo registrar: ' + opEsc(e && e.message || e) + '</div>';
+  }
+}
+
+// 27-ago-2026 — OP → Plan de Compras: la dirección que faltaba.
+//
+// v220 ya arreglaba la OP cuando compras escribía BODEGA en el plan. Al revés no
+// había nada, y ahí se cayó la OP-2026-0016 (NEW GRANADA): el cruce con inventario
+// propuso bodega, pero lo de bodega era HIERRO y la cotización pedía acero. No
+// servía. Se cambió el origen a COMPRA en la OP y la línea del plan siguió
+// diciendo BODEGA · PAGADO · sin O.C., o sea que nadie la iba a comprar nunca.
+// Terminó comprándose todo por fuera del plan.
+//
+// No inventa proveedor ni costo: los deja en blanco para que compras los ponga.
+// Si el plan todavía no existe no hace nada — lo generará ya corregido.
+async function _opPlanDesdeOrigen(it, origen) {
+  if (!op_current || !it) return;
+  const cc = _opCC(op_current);
+  const desc = String(it.descripcion || '').trim();
+  if (!cc || !desc) return;
+  const esBodega = p => /^BODEGA/i.test(String(p || '').trim());
+  try {
+    const filas = (await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc)
+      + '&descripcion=eq.' + encodeURIComponent(desc)
+      + '&select=id,proveedor,nota,pago,sin_oc,comprado&limit=5')) || [];
+    if (!filas.length) return;
+    for (const f of filas) {
+      // Ya comprado: el plan es el hecho consumado, no se toca.
+      if (f.comprado) continue;
+      const cuerpo = {};
+      if (origen === 'COMPRA' && esBodega(f.proveedor)) {
+        cuerpo.proveedor = '';
+        cuerpo.costo_unit = null;         // el costo era el del inventario; ya no aplica
+        cuerpo.pago = 'PENDIENTE';
+        cuerpo.sin_oc = false;            // ahora sí lleva orden de compra
+        // La nota pierde el rastro de bodega y conserva la desviación técnica,
+        // que es lo que el proveedor tiene que leer en la O.C.
+        cuerpo.nota = String(f.nota || '').split(' · ')
+          .filter(p => !/^Sale de bodega/i.test(p.trim())
+                    && !/^SIN COSTO EN INVENTARIO$/i.test(p.trim()))
+          .join(' · ').trim() || null;
+      } else if (origen === 'BODEGA' && !esBodega(f.proveedor)) {
+        cuerpo.proveedor = 'BODEGA';
+        cuerpo.pago = 'PAGADO';           // ya es nuestro: no se le paga a nadie
+        cuerpo.sin_oc = true;
+      }
+      if (!Object.keys(cuerpo).length) continue;
+      await absFetch('plan_compras?id=eq.' + f.id, {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(cuerpo)
+      });
+      showToast(origen === 'COMPRA'
+        ? '🛒 ' + cc + ' ya lo pide como compra — falta el proveedor'
+        : '📦 ' + cc + ' ya lo marca de bodega', 'success', { durationMs: 6000 });
+    }
+  } catch (_) { /* el plan no manda sobre la OP: si falla, no bloquea el cambio */ }
+}
+
 async function opItemCampo(el) {
   if (!el || !el.dataset) return;
   const id = +el.dataset.id;
@@ -25058,6 +25255,9 @@ async function opItemCampo(el) {
       method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(body)
     });
     if (el) { const f = el.closest('.op-linea') || el; f.classList.add('op-guardado'); setTimeout(() => f.classList.remove('op-guardado'), 900); }
+    // El plan de compras tiene que enterarse: si esto ya no sale de bodega,
+    // alguien lo tiene que ir a comprar.
+    if (campo === 'origen') await _opPlanDesdeOrigen(it, v);
     if (campo === 'origen' || campo === 'cantidad') { opRenderItems(); _opVia(); }   // cambia faja, balanza y ramas
     else _opBalanza();
   } catch (e) {
