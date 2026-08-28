@@ -22747,10 +22747,13 @@ function opRenderEditor() {
       && (op_currentItems || []).some(i => i.origen === 'BODEGA' && i.estado !== 'despachado')) {
     b.push('<button class="btn" onclick="opDespacharAbrir()" title="Crea la remisión y descuenta el inventario en un solo acto" style="background:rgba(63,191,99,.18);border:1px solid #3FBF63;color:#8ce8a6;padding:8px 16px;font-size:13px;font-weight:700;">📦 Alistar y despachar</button>');
   }
-  // Alistada, con remisión y todavía en bodega: falta que salga. Es el paso que
-  // no existía y por el que la OP-2026-0020 se veía en un limbo.
-  if (_opPorEnviar(o) && opPuedeDespachar()) {
-    b.push('<button class="btn" onclick="opEnvioAbrir()" title="El material ya está alistado y con remisión. Esto registra que SALIÓ de la bodega, y por dónde." style="background:rgba(232,160,32,.18);border:1px solid #E8A020;color:#fbbf24;padding:8px 16px;font-size:13px;font-weight:700;">🚚 Confirmar envío</button>');
+  // Registrar que el material SALIÓ, y por dónde. Va destacado cuando además
+  // está alistada y esperando (el caso de la 0020), y discreto el resto del
+  // tiempo — pero siempre disponible: quien despacha sabe si el camión salió.
+  if (_opPuedeMarcarEnviada(o) && opPuedeDespachar()) {
+    b.push(_opPorEnviar(o)
+      ? '<button class="btn" onclick="opEnvioAbrir()" title="El material ya está alistado y con remisión. Esto registra que SALIÓ de la bodega, y por dónde." style="background:rgba(232,160,32,.18);border:1px solid #E8A020;color:#fbbf24;padding:8px 16px;font-size:13px;font-weight:700;">🚚 Confirmar envío</button>'
+      : '<button class="btn btn-ghost" onclick="opEnvioAbrir()" title="Registrar que esta orden ya salió para el cliente y por dónde se mandó" style="padding:8px 14px;font-size:12px;">🚚 Marcar como enviada</button>');
   }
   // El orden es: borrador → compras → gerencia. Nunca del borrador al jefe.
   if ((o.estado === 'borrador' || o.estado === 'devuelta') && editable)
@@ -25080,6 +25083,17 @@ function _opPorEnviar(o, items) {
   return its.some(i => i.remision) && its.every(i => i.estado === 'despachado');
 }
 
+// Quién puede marcar «ya salió». Más ancho que _opPorEnviar a propósito: ese
+// dice «alistada y sin salir» (para el chip), este dice «se puede registrar la
+// salida». El papel puede existir sin que la OP se haya enterado —pasó con la
+// remisión 26278 de NEW GRANADA, que nunca se ligó— y quien despacha sabe que
+// el camión salió aunque los ítems todavía digan «comprado».
+function _opPuedeMarcarEnviada(o, items) {
+  if (!o || o.enviada_at) return false;
+  if (['aprobada', 'en_ejecucion', 'despachada', 'cerrada'].includes(o.estado)) return true;
+  return (items || op_currentItems || []).some(i => i.remision);
+}
+
 const OP_ENVIO_MEDIO = {
   CAMION_EG:      ['🚚', 'Camión E&G'],
   BUS:            ['🚌', 'Bus / encomienda'],
@@ -25110,11 +25124,11 @@ function opEnvioAbrir() {
   ov.innerHTML = '<div class="op-modal-hoja">'
     + '<div class="op-modal-cab"><h3>🚚 Confirmar envío</h3>'
     + '<button onclick="_opEnvioCerrar()" aria-label="Cerrar">×</button></div>'
-    + '<div class="op-plan-d" style="margin-bottom:12px"><b>' + opEsc(o.numero)
-    + '</b> ya está alistada y con remisión'
-    + (rem.length ? ' (' + rem.map(opEsc).join(', ') + ')' : '')
-    + '. Esto registra que <b>salió de la bodega</b> y por dónde. '
-    + '<b>No toca el inventario</b>: ya se descontó al despachar.</div>'
+    + '<div class="op-plan-d" style="margin-bottom:12px">Registra que <b>' + opEsc(o.numero)
+    + '</b> salió para el cliente y por dónde se mandó'
+    + (rem.length ? ' · remisión ' + rem.map(opEsc).join(', ') : '')
+    + '. <b>No toca el inventario ni cambia el estado de la orden</b>: solo deja constancia '
+    + 'de la salida, que es lo que se necesita para rastrear o reclamar.</div>'
     + '<div class="op-ligar-lista">' + medios + '</div>'
     + '<div style="margin-top:12px">'
     + '<label class="op-plan-d" style="display:block;margin-bottom:5px">Empresa, guía, placa o conductor</label>'
