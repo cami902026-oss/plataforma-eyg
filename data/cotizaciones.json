@@ -82135,7 +82135,7 @@
     "cliente": "PGS",
     "contacto": "LEONARDO",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 7031250,
@@ -82180,12 +82180,26 @@
         "precioProveedor": 1300000
       }
     ],
-    "fechaGuardado": "2026-08-26T22:07:42.357Z",
+    "fechaGuardado": "2026-08-28T17:31:11.062Z",
     "fechaEnvio": "2026-08-26T22:07:42.357Z",
+    "adjudicadaAt": "2026-08-28",
+    "valorAdjudicado": 4531250,
+    "itemsAdjudicados": [
+      {
+        "uid": "96f5af0d-0378-4bbe-b3cd-0039ffd125b4",
+        "qty": 1
+      },
+      {
+        "uid": "cb324dbe-9c04-45ce-a7b0-43f9e59bc73d",
+        "qty": 1
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-28T17:31:11.051Z",
     "createdAt": "2026-08-26T14:21:58.212Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-26T22:07:42.357Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-28T17:31:11.062Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2055",
