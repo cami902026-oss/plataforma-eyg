@@ -77749,7 +77749,7 @@
     "cliente": "RCH CONSTRUCTORES",
     "contacto": "SONIA",
     "correo": "Compras@rchconstructores.com",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 528575,
@@ -77792,12 +77792,26 @@
         "precioProveedor": 145000
       }
     ],
-    "fechaGuardado": "2026-08-21T20:25:50.238Z",
+    "fechaGuardado": "2026-08-28T17:57:35.887Z",
     "fechaEnvio": "2026-08-21T20:25:50.238Z",
+    "adjudicadaAt": "2026-08-28",
+    "valorAdjudicado": 528575,
+    "itemsAdjudicados": [
+      {
+        "uid": "e29fa20e-0612-47fd-a984-4b9ef849b45c",
+        "qty": 1
+      },
+      {
+        "uid": "1bbf3c25-b969-42ef-b56d-5f3addd01f68",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-28T17:57:30.181Z",
     "createdAt": "2026-08-21T19:17:51.701Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-21T20:25:50.238Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-28T17:57:35.887Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2034",
@@ -82727,7 +82741,7 @@
     "cliente": "PSI",
     "contacto": "OSCAR",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 619956,
@@ -82800,12 +82814,34 @@
         "precioProveedor": 2800
       }
     ],
-    "fechaGuardado": "2026-08-26T20:04:20.454Z",
+    "fechaGuardado": "2026-08-28T19:39:39.668Z",
     "fechaEnvio": "2026-08-26T20:04:20.454Z",
+    "adjudicadaAt": "2026-08-28",
+    "valorAdjudicado": 619956,
+    "itemsAdjudicados": [
+      {
+        "uid": "83184ff3-0209-4992-95c6-c5eb67b3fdb8",
+        "qty": 12
+      },
+      {
+        "uid": "cf2ef541-34c0-4828-97f5-810b19b2b944",
+        "qty": 12
+      },
+      {
+        "uid": "5b7b4d93-64c6-4655-a99b-666ec7ddaf96",
+        "qty": 12
+      },
+      {
+        "uid": "5f148350-3729-4918-aca4-978fc4cbd730",
+        "qty": 12
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-28T19:39:39.654Z",
     "createdAt": "2026-08-26T19:48:42.857Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-26T20:04:20.454Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-28T19:39:39.668Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2060",
@@ -84989,7 +85025,7 @@
     "vendedor": "Sheila Baron",
     "realizadaPor": "Alexandra",
     "aprobadaPor": "Alberto",
-    "solicitudId": "SOL-20260828-135",
+    "solicitudId": "",
     "motivoRechazo": "",
     "items": [
       {
@@ -85003,7 +85039,7 @@
         "desvTec": "SE OFERTA TORNILLO CON TUERCA Y ARANDELA",
         "proveedor": "MUNDIAL",
         "tiempoEntrega": "",
-        "precioProveedor": 0
+        "precioProveedor": 1200
       },
       {
         "id": 2,
@@ -85136,10 +85172,10 @@
         "precioProveedor": 43000
       }
     ],
-    "fechaGuardado": "2026-08-28T14:59:38.993Z",
+    "fechaGuardado": "2026-08-28T21:20:16.169Z",
     "createdAt": "2026-08-28T14:23:29.795Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-28T14:59:38.993Z",
+    "updatedAt": "2026-08-28T21:20:16.169Z",
     "updatedBy": "alexandra"
   },
   {
