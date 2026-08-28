@@ -85011,7 +85011,7 @@
     "cliente": "SAR ENERGY SAS",
     "contacto": "Oscar Sanchez",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 5860275,
@@ -85037,7 +85037,7 @@
         "precio": 1765,
         "desvTec": "SE OFERTA TORNILLO CON TUERCA Y ARANDELA",
         "proveedor": "MUNDIAL",
-        "tiempoEntrega": "",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
         "precioProveedor": 1200
       },
       {
@@ -85050,7 +85050,7 @@
         "precio": 31361,
         "desvTec": "X 3000",
         "proveedor": "CODIFER",
-        "tiempoEntrega": "",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
         "precioProveedor": 26030
       },
       {
@@ -85063,7 +85063,7 @@
         "precio": 23012,
         "desvTec": "X 3000",
         "proveedor": "CODIFER",
-        "tiempoEntrega": "",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
         "precioProveedor": 19100
       },
       {
@@ -85076,7 +85076,7 @@
         "precio": 79241,
         "desvTec": "X 3000",
         "proveedor": "CODIFER",
-        "tiempoEntrega": "",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
         "precioProveedor": 65770
       },
       {
@@ -85089,7 +85089,7 @@
         "precio": 14699,
         "desvTec": "X 3000",
         "proveedor": "CODIFER",
-        "tiempoEntrega": "",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
         "precioProveedor": 12200
       },
       {
@@ -85102,7 +85102,7 @@
         "precio": 23506,
         "desvTec": "X 3000",
         "proveedor": "CODIFER",
-        "tiempoEntrega": "",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
         "precioProveedor": 19510
       },
       {
@@ -85115,7 +85115,7 @@
         "precio": 246024,
         "desvTec": "HIERRO, FILTRO",
         "proveedor": "CODIFER",
-        "tiempoEntrega": "",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
         "precioProveedor": 204200
       },
       {
@@ -85128,7 +85128,7 @@
         "precio": 129169,
         "desvTec": "X 3000",
         "proveedor": "CODIFER",
-        "tiempoEntrega": "",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
         "precioProveedor": 107210
       },
       {
@@ -85141,7 +85141,7 @@
         "precio": 94337,
         "desvTec": "",
         "proveedor": "CODIFER",
-        "tiempoEntrega": "",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
         "precioProveedor": 78300
       },
       {
@@ -85154,7 +85154,7 @@
         "precio": 80147,
         "desvTec": "",
         "proveedor": "MARIN",
-        "tiempoEntrega": "",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
         "precioProveedor": 54500
       },
       {
@@ -85167,14 +85167,15 @@
         "precio": 63235,
         "desvTec": "",
         "proveedor": "MARIN",
-        "tiempoEntrega": "",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
         "precioProveedor": 43000
       }
     ],
-    "fechaGuardado": "2026-08-28T22:17:17.119Z",
+    "fechaGuardado": "2026-08-28T22:23:57.708Z",
+    "fechaEnvio": "2026-08-28T22:23:57.708Z",
     "createdAt": "2026-08-28T14:23:29.795Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-28T22:17:17.119Z",
+    "updatedAt": "2026-08-28T22:23:57.709Z",
     "updatedBy": "alexandra"
   },
   {
@@ -86636,12 +86637,12 @@
     "cliente": "WILLER",
     "contacto": "WILFREDO PEREZ",
     "correo": "",
-    "estado": "Adjudicada",
+    "estado": "Revisión gerencia",
     "factura": "",
     "iva": 19,
-    "subtotal": 621712,
-    "ivaVal": 118125.28,
-    "total": 739837.28,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
     "formaPago": "45 DÍAS",
     "sitioEntrega": "TAME ",
     "validez": "8 DÍAS",
@@ -86659,12 +86660,12 @@
         "uid": "ae61f64f-09ce-4f35-9e9d-dbc625348193",
         "desc": "BRIDA WN 6\" X 150 SCH 40 RF A-105 ",
         "marca": "XF",
-        "precio": 147156,
+        "precio": 0,
         "desvTec": "",
-        "proveedor": "CODIFER",
+        "proveedor": "",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 94180
+        "precioProveedor": 0
       },
       {
         "id": 2,
@@ -86673,33 +86674,19 @@
         "uid": "339d9df1-b839-4add-9805-c41e19ade41c",
         "desc": "EMPAQUE FLEXITALICO 8\" X 150 SS-304 ",
         "marca": "XF",
-        "precio": 16544,
+        "precio": 0,
         "desvTec": "",
-        "proveedor": "COLIMPORTADOS",
+        "proveedor": "",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 10588
+        "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-08-28T22:22:09.613Z",
-    "adjudicadaAt": "2026-08-28",
-    "valorAdjudicado": 621712,
-    "itemsAdjudicados": [
-      {
-        "uid": "ae61f64f-09ce-4f35-9e9d-dbc625348193",
-        "qty": 4
-      },
-      {
-        "uid": "339d9df1-b839-4add-9805-c41e19ade41c",
-        "qty": 2
-      }
-    ],
-    "adjudicacionPor": "Andrea",
-    "adjudicacionAt": "2026-08-28T22:22:09.608Z",
+    "fechaGuardado": "2026-08-28T21:56:56.255Z",
     "createdAt": "2026-08-28T21:53:51.727Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-28T22:22:09.614Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-08-28T21:56:56.255Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM629",
