@@ -44,9 +44,18 @@ jobs:
       # workflow a propósito: la lista blanca del proxy (energy-proxy.gs) solo
       # deja disparar este archivo, así que colgando el aviso aquí funciona el
       # disparo instantáneo desde la plataforma sin tocar Apps Script.
-      # `if: always()` para que un fallo del aviso de OP no se lleve este.
+      # `always()` para que un fallo del aviso de OP no se lleve este.
+      #
+      # 28-ago-2026 — SOLO en el disparo instantáneo, nunca en el barrido de
+      # cada 15 minutos. El respaldo por schedule se volvió en contra: su
+      # anti-duplicado vive en data/aviso_gerencia_estado.json y se guarda con
+      # `git push`, que viene fallando desde el 25-ago porque el equipo empuja
+      # commits al repo todo el día. Sin poder marcar «ya avisé», cada corrida
+      # volvía a avisar: 3 cotizaciones (LM2055, LM2070, LM2049-1) × ~64
+      # corridas diarias. El aviso de OP no sufre esto porque marca en Supabase.
+      # Ahora sale una vez, cuando quien arma la cotización la manda a revisión.
       - name: 👔 Cotizaciones en revisión de gerencia
-        if: always()
+        if: always() && github.event_name == 'workflow_dispatch'
         env:
           MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
           MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
@@ -59,7 +68,7 @@ jobs:
       # El estado vive en el repo (no en Supabase) porque no hay tabla de
       # eventos de cotizaciones. Sin esto, cada corrida volvería a avisar.
       - name: 💾 Guardar qué cotizaciones ya se avisaron
-        if: always()
+        if: always() && github.event_name == 'workflow_dispatch'
         run: |
           git config user.name  "ENERGY Bot"
           git config user.email "bot@eygenergygroup.com"
