@@ -84921,7 +84921,7 @@
     "cliente": "CIAM",
     "contacto": "YEISON",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 16000,
@@ -84939,23 +84939,24 @@
     "items": [
       {
         "id": 1,
-        "desc": "codos 2\"×90° sch 40",
-        "udm": "EA",
         "qty": 2,
-        "precio": 8000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "732bdf91-b15b-4daf-8681-4156f332c7f4",
+        "desc": "codos 2\"×90° sch 40",
         "marca": "XF",
+        "precio": 8000,
+        "desvTec": "A-234 WPB",
         "proveedor": "CODIFER",
-        "precioProveedor": 5090,
         "obsProveedor": "",
-        "uid": "732bdf91-b15b-4daf-8681-4156f332c7f4"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 5090
       }
     ],
-    "fechaGuardado": "2026-08-28T14:37:36.886Z",
+    "fechaGuardado": "2026-08-28T14:38:21.192Z",
+    "fechaEnvio": "2026-08-28T14:38:21.192Z",
     "createdAt": "2026-08-28T14:37:36.887Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-28T14:37:36.887Z",
+    "updatedAt": "2026-08-28T14:38:21.192Z",
     "updatedBy": "sandra"
   },
   {
