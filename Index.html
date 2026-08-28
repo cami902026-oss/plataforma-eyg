@@ -3711,9 +3711,18 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <div id="op-items-tbody"></div>
           </div>
 
-          <div class="form-group" style="margin-top:16px;">
-            <label style="font-size:10px;letter-spacing:.1em;">OBSERVACIONES</label>
-            <textarea id="op-observaciones" rows="2" style="width:100%;"></textarea>
+          <!-- Observaciones: por qué la orden está detenida. Se escribe mientras
+               está VIVA y desaparece al cerrarse — una orden cerrada ya no tiene
+               nada pendiente que explicar. Se guarda sola al salir del campo. -->
+          <div class="form-group" id="op-obs-bloque" style="margin-top:16px;">
+            <label style="font-size:10px;letter-spacing:.1em;">OBSERVACIONES
+              <span style="text-transform:none;letter-spacing:0;color:var(--text-muted);font-weight:400;">
+                — por qué está detenida: sin facturar, sin enviar, esperando algo…</span>
+            </label>
+            <textarea id="op-observaciones" rows="2" style="width:100%;"
+                      placeholder="Ej: no se ha facturado porque falta la O.C. firmada · el envío espera que abran la vía"
+                      onchange="opGuardarObs(this)"></textarea>
+            <div id="op-obs-eco" style="font-size:11px;color:var(--text-muted);margin-top:4px;"></div>
           </div>
           <div id="op-eventos"></div>
         </div>
@@ -22619,6 +22628,10 @@ function opRenderLista() {
       // Alistada y sin salir: el material está en la bodega ocupando espacio y
       // el cliente esperando. Se ve desde la lista, sin abrir la OP.
       + (o._porEnviar ? '<span class="op-chip-envio">📦 Por enviar</span>' : '')
+      // Por qué está detenida, a la vista desde la lista. En las cerradas no:
+      // ya no hay nada pendiente que explicar.
+      + (o.observaciones && !['cerrada', 'anulada'].includes(o.estado)
+          ? '<span class="op-nota">📝 ' + opEsc(o.observaciones) + '</span>' : '')
       + (o.enviada_at ? '<span class="op-nota">🚚 ' + opEsc(_opEnvioTxt(o)) + '</span>' : '')
       + '</div>'
       + '<div class="op-fila-mini">' + items + ' ítems</div>'
@@ -22650,9 +22663,22 @@ function opRenderEditor() {
   document.getElementById('op-observaciones').value = o.observaciones || '';
 
   const editable = opPuedeEditar(o);
-  ['op-cliente', 'op-oc-cliente', 'op-observaciones'].forEach(id => {
+  ['op-cliente', 'op-oc-cliente'].forEach(id => {
     const e = document.getElementById(id); if (e) e.readOnly = !editable;
   });
+
+  // 28-ago-2026 — Las observaciones NO siguen el permiso de edición de la OP.
+  // Son la nota de por qué está detenida (sin facturar, sin enviar, esperando
+  // una vía) y eso lo sabe quien está encima del pedido, no necesariamente
+  // quien puede editarlo. Se escriben mientras la orden está VIVA y el bloque
+  // desaparece al cerrarla: una orden cerrada ya no tiene nada que explicar.
+  const _obsBloque = document.getElementById('op-obs-bloque');
+  const _obsViva = !['cerrada', 'anulada'].includes(o.estado);
+  if (_obsBloque) _obsBloque.style.display = _obsViva ? '' : 'none';
+  const _obsTa = document.getElementById('op-observaciones');
+  if (_obsTa) _obsTa.readOnly = !_obsViva || !currentUser;
+  const _obsEco = document.getElementById('op-obs-eco');
+  if (_obsEco) _obsEco.textContent = '';
 
   // El sello: lo único inclinado de la plataforma. Si está torcido, está detenido.
   const sc = document.getElementById('op-sello-cont');
@@ -23148,6 +23174,36 @@ function opVolverLista() {
   opCargar(false);
 }
 
+
+// Guardado propio de la observación: no pasa por «Guardar», que solo aparece si
+// puedes editar la OP. La nota de por qué está detenida la deja quien está
+// encima del pedido, y se guarda sola al salir del campo.
+async function opGuardarObs(el) {
+  if (!op_current || !el) return;
+  const eco = document.getElementById('op-obs-eco');
+  if (['cerrada', 'anulada'].includes(op_current.estado)) return;
+  const v = String(el.value || '').trim();
+  if (v === String(op_current.observaciones || '').trim()) return;   // nada cambió
+  const yo = (currentUser && (currentUser.name || currentUser.email)) || 'SISTEMA';
+  if (eco) eco.textContent = 'Guardando…';
+  try {
+    await absFetch('ops?id=eq.' + op_current.id, {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ observaciones: v || null, updated_by: yo })
+    });
+    op_current.observaciones = v || null;
+    // Que quede el rastro: quién dijo qué y cuándo. Sin esto la observación es
+    // un post-it sin dueño y nadie sabe si sigue vigente.
+    try { await opEvento(op_current.id, 'observacion', v || '(borrada)'); } catch (_) { }
+    if (eco) eco.textContent = '✓ Guardada por ' + yo;
+    const f = op_lista.find(x => x && x.id === op_current.id);
+    if (f) { f.observaciones = v || null; opRenderLista(); }
+  } catch (e) {
+    if (eco) eco.textContent = '';
+    el.value = op_current.observaciones || '';        // la pantalla no puede mentir
+    showToast('No se guardó la observación: ' + (e && e.message || e), 'error', { durationMs: 8000 });
+  }
+}
 
 // ─── Guardar cabecera ────────────────────────────────────────────────────────
 async function opGuardarCabecera() {
