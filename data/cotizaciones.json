@@ -77749,7 +77749,7 @@
     "cliente": "RCH CONSTRUCTORES",
     "contacto": "SONIA",
     "correo": "Compras@rchconstructores.com",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 528575,
@@ -77792,12 +77792,26 @@
         "precioProveedor": 145000
       }
     ],
-    "fechaGuardado": "2026-08-21T20:25:50.238Z",
+    "fechaGuardado": "2026-08-28T17:57:30.193Z",
     "fechaEnvio": "2026-08-21T20:25:50.238Z",
+    "adjudicadaAt": "2026-08-28",
+    "valorAdjudicado": 528575,
+    "itemsAdjudicados": [
+      {
+        "uid": "e29fa20e-0612-47fd-a984-4b9ef849b45c",
+        "qty": 1
+      },
+      {
+        "uid": "1bbf3c25-b969-42ef-b56d-5f3addd01f68",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-28T17:57:30.181Z",
     "createdAt": "2026-08-21T19:17:51.701Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-21T20:25:50.238Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-28T17:57:30.193Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2034",
