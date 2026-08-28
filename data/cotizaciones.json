@@ -82061,8 +82061,8 @@
     "cliente": "MONTITEC",
     "contacto": "MARCO LABATON ",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "594",
     "iva": 19,
     "subtotal": 3832936,
     "ivaVal": 728257.84,
@@ -82110,8 +82110,9 @@
         "precioProveedor": 126900
       }
     ],
-    "fechaGuardado": "2026-08-27T17:19:15.933Z",
+    "fechaGuardado": "2026-08-27T18:23:32.563Z",
     "fechaEnvio": "2026-08-26T14:53:14.938Z",
+    "facturadaAt": "2026-08-27",
     "adjudicadaAt": "2026-08-26",
     "valorAdjudicado": 847056,
     "itemsAdjudicados": [
@@ -82124,7 +82125,7 @@
     "adjudicacionAt": "2026-08-27T17:19:13.062Z",
     "createdAt": "2026-08-26T14:24:08.525Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-27T17:19:15.933Z",
+    "updatedAt": "2026-08-27T18:23:32.563Z",
     "updatedBy": "andrea"
   },
   {
@@ -82245,11 +82246,25 @@
         "desc": "VALVULA, BOLA, TIPO: TRUNNION, TAMAÑO: 4in, PRESION/CLASE: 900#, MATERIAL: ACERO CARBONO, ESPECIFICACION DE MATERIAL: ASTM A216, CARA: REALZADA, PASO: COMPLETO, ESPECIFICACION MATERIAL BOLA: AISI 316, ESTANDAR: API 6D",
         "marca": "",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "desvTec": "KF M415-299N6AG4 4FP CL900RTJ CS/3MIL/DEV/HNBR/FS NACEII SER M3 BLV W/LKG HDL",
+        "proveedor": "GERENCIA",
         "obsProveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "tiempoEntrega": "25 SEMANAS",
+        "precioProveedor": 11133500
+      },
+      {
+        "id": 12,
+        "altDe": "5e934926-a71d-4b1f-8358-9dc576a3c4a8",
+        "desc": "VALVULA, BOLA, TIPO: TRUNNION, TAMAÑO: 4in, PRESION/CLASE: 900#, MATERIAL: ACERO CARBONO, ESPECIFICACION DE MATERIAL: ASTM A216, CARA: REALZADA, PASO: COMPLETO, ESPECIFICACION MATERIAL BOLA: AISI 316, ESTANDAR: API 6D",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 0,
+        "tiempoEntrega": "2 SEMANAS",
+        "desvTec": "CAMERON BV 4X4 RJ WKM 370D6 900 24YRF24 WG LP NACEVALVE, BALL, TRUNNION, 4 IN (100 MM) X 4 IN (100 MM), FLANGED RING JOINT, WKM, 370D6, ANSI 900 (150 PN), 2250 PSI (155 BAR) MOP, 2217 PSI (153 BAR) MOP AT MAX TEMP, TRIM 24-YRF-24, CARBON STEEL BODY, CARBON STEEL/1MIL ENP BALL, CARBON STEEL/1MIL ENP STEM, CARBON STEEL/1 MIL ENP SEAT, NYLON SEAT SEAL, HNBR SEALS, WORM GEAR OPERATOR WITH LOCK DEVICE LESS LOCK, API 607, API 6D, API 598, -20 F (-29 C) - +250 F (+121 C), LONG PATTERN",
+        "marca": "",
+        "proveedor": "GERENCIA",
+        "precioProveedor": 17528000,
+        "uid": "0f3940cd-c6cb-40ee-be8f-eda2c51ac374"
       },
       {
         "id": 4,
@@ -82364,11 +82379,11 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-08-26T22:55:33.834Z",
+    "fechaGuardado": "2026-08-28T13:31:53.294Z",
     "createdAt": "2026-08-26T15:56:15.284Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-26T22:55:33.834Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-28T13:31:53.294Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2056",
