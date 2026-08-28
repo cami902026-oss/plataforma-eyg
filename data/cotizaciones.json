@@ -77749,7 +77749,7 @@
     "cliente": "RCH CONSTRUCTORES",
     "contacto": "SONIA",
     "correo": "Compras@rchconstructores.com",
-    "estado": "Adjudicada",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 528575,
@@ -77792,26 +77792,12 @@
         "precioProveedor": 145000
       }
     ],
-    "fechaGuardado": "2026-08-28T17:57:35.887Z",
+    "fechaGuardado": "2026-08-21T20:25:50.238Z",
     "fechaEnvio": "2026-08-21T20:25:50.238Z",
-    "adjudicadaAt": "2026-08-28",
-    "valorAdjudicado": 528575,
-    "itemsAdjudicados": [
-      {
-        "uid": "e29fa20e-0612-47fd-a984-4b9ef849b45c",
-        "qty": 1
-      },
-      {
-        "uid": "1bbf3c25-b969-42ef-b56d-5f3addd01f68",
-        "qty": 2
-      }
-    ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-08-28T17:57:30.181Z",
     "createdAt": "2026-08-21T19:17:51.701Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-28T17:57:35.887Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-21T20:25:50.238Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM2034",
@@ -82741,7 +82727,7 @@
     "cliente": "PSI",
     "contacto": "OSCAR",
     "correo": "",
-    "estado": "Adjudicada",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 619956,
@@ -82814,34 +82800,12 @@
         "precioProveedor": 2800
       }
     ],
-    "fechaGuardado": "2026-08-28T19:39:39.668Z",
+    "fechaGuardado": "2026-08-26T20:04:20.454Z",
     "fechaEnvio": "2026-08-26T20:04:20.454Z",
-    "adjudicadaAt": "2026-08-28",
-    "valorAdjudicado": 619956,
-    "itemsAdjudicados": [
-      {
-        "uid": "83184ff3-0209-4992-95c6-c5eb67b3fdb8",
-        "qty": 12
-      },
-      {
-        "uid": "cf2ef541-34c0-4828-97f5-810b19b2b944",
-        "qty": 12
-      },
-      {
-        "uid": "5b7b4d93-64c6-4655-a99b-666ec7ddaf96",
-        "qty": 12
-      },
-      {
-        "uid": "5f148350-3729-4918-aca4-978fc4cbd730",
-        "qty": 12
-      }
-    ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-08-28T19:39:39.654Z",
     "createdAt": "2026-08-26T19:48:42.857Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-28T19:39:39.668Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-26T20:04:20.454Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM2060",
@@ -86313,6 +86277,50 @@
     "createdBy": "alexandra",
     "updatedAt": "2026-08-28T17:19:04.448Z",
     "updatedBy": "alexandra"
+  },
+  {
+    "id": "LM2080",
+    "fecha": "2026-08-28",
+    "fechaVenc": "2026-09-05",
+    "cliente": "EQUIIPAR S.A.S",
+    "contacto": "ORLANDO",
+    "correo": "EQUIIPAR@GMAIL.COM",
+    "estado": "Revisión gerencia",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
+    "formaPago": "CONTADO",
+    "sitioEntrega": "YOPAL",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Sandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "id": 1,
+        "desc": "VALVULA GLOBO 3\" X 150 PSI RF A-216 WCB*",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "marca": "SIO",
+        "proveedor": "CODIFER",
+        "precioProveedor": 998290,
+        "obsProveedor": "",
+        "uid": "2826fc69-764a-4064-bf6a-975baff9d8ea"
+      }
+    ],
+    "fechaGuardado": "2026-08-28T19:40:07.347Z",
+    "createdAt": "2026-08-28T19:40:07.347Z",
+    "createdBy": "sandra",
+    "updatedAt": "2026-08-28T19:40:07.347Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM629",
