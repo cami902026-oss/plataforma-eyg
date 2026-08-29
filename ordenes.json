@@ -3408,11 +3408,11 @@
     "updatedAt": "2026-07-29T01:51:25.090Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "cotizacionId": "",
     "observaciones": "",
     "facturacion": "",
-    "archivadaAt": "2026-08-28T13:04:07.995Z"
+    "archivadaAt": "2026-08-28T16:46:47.967Z"
   },
   {
     "id": "poc_1781749319612",
@@ -4731,7 +4731,7 @@
     "updatedAt": "2026-07-29T15:45:37.723Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "",
     "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
@@ -5036,7 +5036,7 @@
     "updatedAt": "2026-07-29T16:04:28.390Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
     "archivadaAt": "2026-08-28T16:46:47.967Z"
   },
@@ -5342,7 +5342,7 @@
     "updatedAt": "2026-07-29T16:02:25.409Z",
     "updatedBy": "andrea",
     "faltanFechas": true,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "",
     "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
@@ -5448,9 +5448,7 @@
     "updatedBy": "andrea",
     "faltanFechas": true,
     "observaciones": "",
-    "facturacion": "",
-    "archivada": true,
-    "archivadaAt": "2026-08-29T13:08:13.761Z"
+    "facturacion": ""
   },
   {
     "id": "poc_1784907649372",
@@ -5553,60 +5551,6 @@
     "archivada": false,
     "observaciones": "",
     "facturacion": ""
-  },
-  {
-    "id": "poc_1785158635122",
-    "num": "240726K0370",
-    "cliente": "CIAM",
-    "desc": "Cotización LM1846 · 13 ítems",
-    "estado": "activo",
-    "fechaIngreso": "2026-07-27",
-    "valor": 10085131,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-07-25",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": "",
-        "factura": ""
-      }
-    ],
-    "observaciones": "",
-    "facturacion": "",
-    "cotizacionId": "LM1846",
-    "createdAt": "2026-07-27T13:23:55.123Z",
-    "createdBy": "alexandra",
-    "updatedAt": "2026-07-29T23:05:23.910Z",
-    "updatedBy": "alexandra",
-    "faltanFechas": false,
-    "archivada": false,
-    "deleted": true,
-    "deletedAt": "2026-07-29T23:05:23.905Z",
-    "deletedBy": "andrea"
   },
   {
     "id": "poc_1784987911412",
