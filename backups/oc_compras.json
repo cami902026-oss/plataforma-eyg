@@ -1574,5 +1574,43 @@
   "total": 149940,
   "created_by": "Andrea",
   "created_at": "2026-08-24T15:53:18.515488+00:00"
+ },
+ {
+  "id": 45,
+  "oc": 26071,
+  "cc": "CC-LM1784-SKI",
+  "cotizacion": "LM1784",
+  "proveedor": "DISTRIBUCIONES PEÑA",
+  "fecha": "2026-08-28",
+  "condiciones": {
+   "lugar": "BOGOTA",
+   "plazo": "Contado",
+   "entrega": "31 DE AGOSTO DE 2026",
+   "observaciones": ""
+  },
+  "items": [
+   {
+    "udm": "MTR",
+    "nota": "TUBO POR 3 METROS",
+    "cantidad": 360,
+    "subtotal": 9599760,
+    "costo_unit": 26666,
+    "descripcion": "tuberia acero galv conduit rmc diametro 1\""
+   },
+   {
+    "udm": "MTR",
+    "nota": "TUBO POR 3 METROS",
+    "cantidad": 120,
+    "subtotal": 6799920,
+    "costo_unit": 56666,
+    "descripcion": "tuberia acero galv conduit rmc diametro 2\""
+   }
+  ],
+  "subtotal": 16399680,
+  "iva": 3115939.2,
+  "retencion": 409992,
+  "total": 19105627.2,
+  "created_by": "Alexandra",
+  "created_at": "2026-08-28T20:40:33.33495+00:00"
  }
 ]
