@@ -82792,7 +82792,7 @@
     "cliente": "SKID EXPERT",
     "contacto": "JENNY ARIAS",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 8305590,
@@ -82900,12 +82900,30 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-08-27T22:10:49.201Z",
+    "fechaGuardado": "2026-08-29T15:18:04.975Z",
     "fechaEnvio": "2026-08-27T22:10:49.201Z",
+    "adjudicadaAt": "2026-08-29",
+    "valorAdjudicado": 1601545,
+    "itemsAdjudicados": [
+      {
+        "uid": "b2ea20e5-2716-4eb4-981d-95bb2ba0cda8",
+        "qty": 9
+      },
+      {
+        "uid": "43676bf4-e4fa-4bf2-b96d-35b55416a7c1",
+        "qty": 1
+      },
+      {
+        "uid": "431bc8e0-16e7-4951-b3b4-ec59b4590b53",
+        "qty": 1
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-29T15:18:04.965Z",
     "createdAt": "2026-08-06T17:27:16.343Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-27T22:10:49.201Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-29T15:18:04.976Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2061",
