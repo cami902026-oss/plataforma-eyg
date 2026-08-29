@@ -24581,7 +24581,19 @@ function _opBuscarStock(desc, idx) {
     const score = 0.50 * cob + 0.22 * _opSeq(bd, e.base) + 0.18 * varok + 0.10 * (1 / (1 + sobra));
     out.push({ score: score, prod: e.p });
   }
-  out.sort((a, b) => b.score - a.score);
+  // 29-ago-2026 — Desempate por EXISTENCIAS. El inventario tiene la misma pieza
+  // repetida con códigos distintos (origen plaza / importación / fabricación) y
+  // varias de esas copias en cero. Ordenando solo por parecido ganaba la
+  // primera del índice, que podía ser justo la vacía, y la OP avisaba «no hay»
+  // teniendo material: la OP-2026-0033 de WILLER daba por faltante el flanche
+  // de cuello 6" (22000107, stock 0) habiendo 19 en el 22000124 — misma
+  // descripción, mismo score. Igual pasaba con el de 4", con 96 en bodega.
+  // Con parecido equivalente (±0.02) gana el que SÍ tiene.
+  out.sort((a, b) => {
+    const d = b.score - a.score;
+    if (Math.abs(d) > 0.02) return d;
+    return (+b.prod.stock_actual || 0) - (+a.prod.stock_actual || 0);
+  });
   return out.slice(0, 3);
 }
 
