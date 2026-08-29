@@ -22734,19 +22734,20 @@ function opRenderEditor() {
       + (o.enviada_por ? ' · confirmó ' + opEsc(o.enviada_por) : ''));
   }
   // Material de compra que salió sin pasar por bodega. La regla es que todo lo
-  // que pasa por nosotros ingresa: si esto aparece, faltó la recepción y con
-  // ella la COLADA. Se dice aunque la orden ya esté cerrada — es justo lo que
-  // hay que rastrear si el cliente pide el certificado.
+  // que pasa por nosotros ingresa. Lo que se pierde es el RASTRO EN KARDEX: no
+  // queda registro de que entró y salió.
+  // Ojo con no confundir dos cosas: la COLADA no es el MTR. Hay material
+  // —forjado, válvulas, empaques— que no maneja colada y sí trae certificado
+  // del fabricante. Por eso aquí no se dice nada del certificado: eso lo lleva
+  // el checklist, línea por línea, con su «no aplica».
   const _sinIngresar = (op_currentItems || []).filter(i => i.origen === 'COMPRA'
     && i.estado === 'despachado' && (+i.recibida || 0) < (+i.cantidad || 0));
   if (_sinIngresar.length) {
     av.innerHTML += B('op-alto', '⚠️ Salió sin ingresar a bodega',
       '<b>' + _sinIngresar.length + ' ítem(s)</b> de compra se despacharon sin registrar la '
-      + 'recepción, así que no dejaron movimiento en el kardex ni quedó su colada'
-      + (o.requiere_certificados
-          ? ' — <b>y esta orden exige certificados</b>. Si el cliente pide el MTR toca '
-            + 'rastrearlo contra el proveedor.'
-          : '.'));
+      + 'recepción, así que ese material no dejó movimiento en el kardex: no hay rastro '
+      + 'de que entró y volvió a salir. Si alguno maneja colada, la recepción era donde '
+      + 'se capturaba.');
   }
   // Solo lectura: se dice en voz alta en vez de dejar campos muertos sin
   // explicación. El módulo lo ve todo el equipo; moverlo le toca a quien
@@ -23917,7 +23918,7 @@ async function opLigarConfirmar() {
     if (!confirm('⚠️ ' + sinRecibir.length + ' ítem(s) son COMPRA y nunca entraron a bodega:\n\n'
       + lista + (sinRecibir.length > 5 ? '\n· … y ' + (sinRecibir.length - 5) + ' más' : '')
       + '\n\nSi el material pasó por nosotros TIENE que ingresar primero: es lo que\n'
-      + 'deja el rastro en el kardex y guarda la COLADA para los certificados.\n\n'
+      + 'deja el rastro en el kardex, y donde se captura la colada del que la maneja.\n\n'
       + 'Cancela y usa «📥 Recibir en bodega» — con «sale de una» si se despacha\n'
       + 'el mismo día. Sigue solo si el proveedor le entregó directo al cliente.\n\n'
       + '¿Ligar de todos modos?')) return;
