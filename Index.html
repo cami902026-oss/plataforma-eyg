@@ -24360,8 +24360,10 @@ async function opCertsCargar() {
           + '<input type="checkbox"' + (ok ? ' checked' : '') + ((editable && !na) ? '' : ' disabled')
           + ' onchange="opCertToggle(' + it.id + ', this.checked, this)">'
           + '<span class="op-cert-d">' + opEsc(it.descripcion)
+          // Sin colada NO es un pendiente: hay material que no la maneja y su MTR
+          // vale igual. Se dice «sin colada» y punto, sin rayita que parezca hueco.
           + (cs.length
-              ? '<small>' + cs.map(c => 'colada ' + opEsc(c.colada || '&mdash;')
+              ? '<small>' + cs.map(c => (c.colada ? 'colada ' + opEsc(c.colada) : 'sin colada')
                   + (c.subido_por ? ' &middot; ' + opEsc(c.subido_por) : '')).join(' &middot; ') + '</small>'
               : na ? '<small>no aplica</small>' : '<small>sin certificado</small>')
           + '</span>'
@@ -24409,20 +24411,27 @@ async function opCertNoAplica(itemId, marcar) {
 }
 
 // Marcar o desmarcar el certificado de un ítem. Al marcar pide la colada: un
-// MTR sin colada no sirve, porque es lo que amarra el papel al metal.
+// La colada amarra el papel al metal — cuando el material la maneja. Hay
+// material (forjado, válvulas, empaques, tuercas) que no la lleva y sí trae
+// MTR del fabricante: por eso la colada se pide, no se exige.
+//
+// 29-ago-2026 — El ARCHIVO vive FUERA de la plataforma, por decisión: no se
+// suben los PDF para no cargar el almacenamiento. Marcar aquí significa «el
+// certificado existe y lo tenemos», no «está adjunto». El valor guardado lo
+// dice así en vez de «pendiente-de-subir», que se leía como tarea a medias.
 async function opCertToggle(itemId, marcado, el) {
   const it = op_currentItems.find(x => x && x.id === itemId);
   if (!it) return;
   try {
     if (marcado) {
       const colada = prompt('Colada / heat number del certificado de:\n\n' + it.descripcion
-        + '\n\n(si no la tienes a mano, deja vacío y complétala después)', it.colada || '');
+        + '\n\n(si este material no maneja colada, deja vacío: el MTR vale igual)', it.colada || '');
       if (colada === null) { if (el) el.checked = false; return; }
       await absFetch('op_certificados', {
         method: 'POST', headers: { 'Prefer': 'return=minimal' },
         body: JSON.stringify({
           op_id: op_current.id, op_item_id: itemId, colada: (colada || '').trim() || null,
-          archivo: 'pendiente-de-subir', nombre: 'MTR ' + (it.descripcion || '').slice(0, 60),
+          archivo: 'archivo-externo', nombre: 'MTR ' + (it.descripcion || '').slice(0, 60),
           tipo: 'MTR', subido_por: (currentUser && (currentUser.email || currentUser.name)) || 'sistema'
         })
       });
