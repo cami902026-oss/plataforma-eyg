@@ -22733,6 +22733,21 @@ function opRenderEditor() {
       'Salió por ' + opEsc(_opEnvioTxt(o)) + ' · ' + opEsc(String(o.enviada_at).slice(0, 10))
       + (o.enviada_por ? ' · confirmó ' + opEsc(o.enviada_por) : ''));
   }
+  // Material de compra que salió sin pasar por bodega. La regla es que todo lo
+  // que pasa por nosotros ingresa: si esto aparece, faltó la recepción y con
+  // ella la COLADA. Se dice aunque la orden ya esté cerrada — es justo lo que
+  // hay que rastrear si el cliente pide el certificado.
+  const _sinIngresar = (op_currentItems || []).filter(i => i.origen === 'COMPRA'
+    && i.estado === 'despachado' && (+i.recibida || 0) < (+i.cantidad || 0));
+  if (_sinIngresar.length) {
+    av.innerHTML += B('op-alto', '⚠️ Salió sin ingresar a bodega',
+      '<b>' + _sinIngresar.length + ' ítem(s)</b> de compra se despacharon sin registrar la '
+      + 'recepción, así que no dejaron movimiento en el kardex ni quedó su colada'
+      + (o.requiere_certificados
+          ? ' — <b>y esta orden exige certificados</b>. Si el cliente pide el MTR toca '
+            + 'rastrearlo contra el proveedor.'
+          : '.'));
+  }
   // Solo lectura: se dice en voz alta en vez de dejar campos muertos sin
   // explicación. El módulo lo ve todo el equipo; moverlo le toca a quien
   // está trabajando el pedido.
@@ -23460,6 +23475,9 @@ async function opRecibirConfirmar() {
     return;
   }
   if (salen.length && remi) {
+    // ¿Este MATERIAL ya salió con otro documento? Es distinto de que el número
+    // esté repetido, y es por donde se coló la doble remisión de NEW GRANADA.
+    if (!_opConfirmarNoDuplica(salen.map(L => L.x && L.x.it), remi)) return;
     try {
       const ya = (await absFetch('remisiones?remision=eq.' + encodeURIComponent(remi) + '&select=remision&limit=1')) || [];
       if (ya.length && !confirm('La remisión ' + remi + ' YA EXISTE.\n\n'
@@ -23883,6 +23901,28 @@ async function opLigarConfirmar() {
       + 'Se liga igual: la remisión queda amarrada y esas líneas simplemente no marcan ningún ítem.</div>'
     : '';
 
+  // 29-ago-2026 — REGLA DEL NEGOCIO: si el material pasó por nosotros, SIEMPRE
+  // ingresa a bodega. Ligar no toca inventario porque asume que la remisión ya
+  // descontó al crearse, y esa premisa NO se cumple con ítems de COMPRA que
+  // nunca se recibieron: ahí no hay nada que descontar y el material cruza la
+  // empresa sin dejar un movimiento de kardex ni su colada.
+  // Pasó en la OP-2026-0031 (PSI): 4 líneas compradas a MUNDIAL, ligadas y
+  // despachadas sin recepción. Quedó facturada y cerrada exigiendo certificados,
+  // con la colada en blanco en las 4 líneas de la remisión.
+  const sinRecibir = pares.filter(p => p.it.origen === 'COMPRA'
+    && (+p.it.recibida || 0) < (+p.it.cantidad || 0));
+  if (sinRecibir.length) {
+    const lista = sinRecibir.slice(0, 5)
+      .map(p => '· ' + String(p.it.descripcion || '').substring(0, 46)).join('\n');
+    if (!confirm('⚠️ ' + sinRecibir.length + ' ítem(s) son COMPRA y nunca entraron a bodega:\n\n'
+      + lista + (sinRecibir.length > 5 ? '\n· … y ' + (sinRecibir.length - 5) + ' más' : '')
+      + '\n\nSi el material pasó por nosotros TIENE que ingresar primero: es lo que\n'
+      + 'deja el rastro en el kardex y guarda la COLADA para los certificados.\n\n'
+      + 'Cancela y usa «📥 Recibir en bodega» — con «sale de una» si se despacha\n'
+      + 'el mismo día. Sigue solo si el proveedor le entregó directo al cliente.\n\n'
+      + '¿Ligar de todos modos?')) return;
+  }
+
   if (!confirm('Ligar la remisión ' + num + ' a ' + op_current.numero + '.\n\n'
     + pares.length + ' ítem(s) quedan DESPACHADOS.\n'
     + (sueltas ? sueltas + ' línea(s) de la remisión no emparejaron.\n' : '')
@@ -24124,6 +24164,10 @@ async function opDespacharConfirmar() {
 
   const btn = document.getElementById('op-desp-ok');
   if (btn) { btn.disabled = true; btn.textContent = 'Despachando…'; }
+
+  // ¿Este material ya salió con otro documento? Antes de mover nada: crear el
+  // segundo papel es lo que le llega al cliente, y de ahí sale la doble factura.
+  if (!_opConfirmarNoDuplica(listo.map(x => x.it), num)) return;
 
   // 🛟 Caja negra ANTES de tocar el servidor, igual que en Remisiones. Si algo
   // sale mal a mitad, queda constancia de lo que se iba a hacer.
@@ -25242,6 +25286,41 @@ async function opEnvioConfirmar() {
     if (btn) { btn.disabled = false; btn.textContent = 'Registrar salida'; }
     if (av) av.innerHTML = '<div class="op-ligar-err">No se pudo registrar: ' + opEsc(e && e.message || e) + '</div>';
   }
+}
+
+// 29-ago-2026 — Anti remisión duplicada.
+//
+// Ya existía un chequeo, pero mira si el NÚMERO está repetido. Esto mira lo
+// otro, que es por donde se coló el problema: si ese MATERIAL ya salió con otro
+// documento. Pasó con NEW GRANADA (OP-2026-0016): los ítems ya tenían la
+// remisión 26278 —con dirección de entrega y la O.C. del cliente— y al día
+// siguiente se les creó encima la 26281, con el pedido completo otra vez y el
+// codo partido en 2+2 cuando eran 6. Dos papeles por la misma entrega: el
+// cliente la puede recibir dos veces, o facturarse dos veces.
+//
+// Avisa y deja seguir: hay entregas parciales legítimas donde una OP lleva
+// varias remisiones. Lo que no puede es pasar callado.
+function _opRemisionesPrevias(items, remiNueva) {
+  const previas = new Set();
+  const nueva = String(remiNueva || '').trim();
+  (items || []).forEach(it => {
+    const r = String((it && it.remision) || '').trim();
+    if (r && r !== nueva) previas.add(r);
+  });
+  return [...previas];
+}
+
+function _opConfirmarNoDuplica(items, remiNueva) {
+  const prev = _opRemisionesPrevias(items, remiNueva);
+  if (!prev.length) return true;
+  const cuantos = (items || []).filter(it => it && it.remision).length;
+  return confirm('⚠️ Este material YA salió con la remisión ' + prev.join(', ') + '.\n\n'
+    + cuantos + ' de las líneas que vas a despachar ya tienen documento.\n\n'
+    + 'Si sigues quedan DOS remisiones por la misma entrega: el cliente la puede\n'
+    + 'recibir o facturar dos veces. Ya pasó con NEW GRANADA (26278 y 26281).\n\n'
+    + 'Cancela y revisa la ' + prev[0] + ' antes de crear otra.\n'
+    + 'Sigue solo si esta es una entrega PARCIAL distinta.\n\n'
+    + '¿Crear la remisión ' + (remiNueva || '') + ' de todos modos?');
 }
 
 // 27-ago-2026 — OP → Plan de Compras: la dirección que faltaba.
