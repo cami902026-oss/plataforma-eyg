@@ -46,16 +46,17 @@ jobs:
       # disparo instantáneo desde la plataforma sin tocar Apps Script.
       # `always()` para que un fallo del aviso de OP no se lleve este.
       #
-      # 28-ago-2026 — SOLO en el disparo instantáneo, nunca en el barrido de
-      # cada 15 minutos. El respaldo por schedule se volvió en contra: su
-      # anti-duplicado vive en data/aviso_gerencia_estado.json y se guarda con
-      # `git push`, que viene fallando desde el 25-ago porque el equipo empuja
-      # commits al repo todo el día. Sin poder marcar «ya avisé», cada corrida
-      # volvía a avisar: 3 cotizaciones (LM2055, LM2070, LM2049-1) × ~64
-      # corridas diarias. El aviso de OP no sufre esto porque marca en Supabase.
-      # Ahora sale una vez, cuando quien arma la cotización la manda a revisión.
+      # 28-ago-2026 — quedó SOLO en disparo instantáneo porque su anti-duplicado
+      # vivía en data/aviso_gerencia_estado.json, guardado con `git push`, y ese
+      # push venía fallando desde el 25-ago (el equipo empuja commits todo el
+      # día). Sin poder marcar «ya avisé», cada corrida repetía: LM2055, LM2070
+      # y LM2049-1 × ~64 corridas diarias.
+      # 29-ago-2026 — la memoria pasó a Supabase (tabla `avisos_enviados`, con
+      # índice único por tipo+clave), así que el barrido de respaldo VUELVE: si
+      # el disparo instantáneo falla, el aviso sale igual en el siguiente ciclo
+      # y no se repite. Es lo que se había perdido al apagarlo.
       - name: 👔 Cotizaciones en revisión de gerencia
-        if: always() && github.event_name == 'workflow_dispatch'
+        if: always()
         env:
           MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
           MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
@@ -65,21 +66,9 @@ jobs:
           REMITENTE_OP:     'info@eygenergygroup.com'
         run: python scripts/aviso_cotiz_gerencia.py
 
-      # El estado vive en el repo (no en Supabase) porque no hay tabla de
-      # eventos de cotizaciones. Sin esto, cada corrida volvería a avisar.
-      - name: 💾 Guardar qué cotizaciones ya se avisaron
-        if: always() && github.event_name == 'workflow_dispatch'
-        run: |
-          git config user.name  "ENERGY Bot"
-          git config user.email "bot@eygenergygroup.com"
-          git add data/aviso_gerencia_estado.json
-          if git diff --staged --quiet; then
-            echo "Sin cambios de estado."
-          else
-            git commit -m "👔 Aviso de revisión de gerencia - $(TZ='America/Bogota' date +'%Y-%m-%d %H:%M')"
-            # Reintentos: los navegadores del equipo empujan data/ todo el día
-            for i in 1 2 3; do
-              git push && break
-              git pull --rebase && sleep 3
-            done
-          fi
+      # 29-ago-2026 — Se eliminó el paso «💾 Guardar qué cotizaciones ya se
+      # avisaron», que commiteaba data/aviso_gerencia_estado.json y lo empujaba
+      # al repo. Ese push competía con los commits del equipo, fallaba, y al
+      # fallar el aviso se repetía todo el día. La memoria ahora vive en la
+      # tabla `avisos_enviados` de Supabase y el propio script la escribe: no
+      # hace falta commitear nada.

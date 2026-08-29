@@ -38,7 +38,11 @@ SB_URL = os.environ.get('SUPABASE_URL', 'https://juprjevxkcitqpsnemto.supabase.c
 SB_KEY = os.environ.get('SUPABASE_KEY', '')
 
 ESTADO_REVISION = 'Revisión gerencia'
-ESTADO_FILE = 'data/aviso_gerencia_estado.json'
+# 29-ago-2026: la memoria de «ya avisé» pasó del repo a Supabase. Ver
+# scripts/migracion_avisos_enviados_2026-08-29.sql. El archivo de abajo queda
+# solo para sembrar la tabla la primera vez; después no se lee ni se escribe.
+TIPO_AVISO = 'cotiz_gerencia'
+ESTADO_FILE = 'data/aviso_gerencia_estado.json'   # histórico, ya no se usa
 
 # A quién le llega. Andrea va en copia MIENTRAS SE PRUEBA: cuando diga que ya,
 # se borra esta línea y el aviso queda solo para gerencia.
@@ -49,10 +53,14 @@ PLATAFORMA = 'https://cami902026-oss.github.io/plataforma-eyg/Index.html'
 MAX_POR_CORRIDA = 10          # tope de cortesía: si algo se desmadra, no inunda
 
 
-def sb(path):
+def sb(path, method='GET', body=None):
     h = {'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY,
          'Content-Type': 'application/json', 'User-Agent': 'energy-aviso-cotiz'}
-    r = urllib.request.Request(SB_URL + '/rest/v1/' + path, method='GET', headers=h)
+    if method in ('POST', 'PATCH', 'DELETE'):
+        h['Prefer'] = 'return=minimal'
+    data = json.dumps(body).encode() if body is not None else None
+    r = urllib.request.Request(SB_URL + '/rest/v1/' + path, method=method,
+                               headers=h, data=data)
     with urllib.request.urlopen(r) as resp:
         t = resp.read().decode()
         return json.loads(t) if t.strip() else None
@@ -206,19 +214,44 @@ def html_aviso(cot, items):
 
 
 def cargar_estado():
+    """Qué cotizaciones ya se avisaron, según la BASE.
+
+    Antes esto vivía en data/aviso_gerencia_estado.json y se guardaba con
+    `git push`. Ese push falla cuando el equipo empuja commits al mismo tiempo
+    —cosa que pasa todo el día— y desde el 25-ago-2026 dejó de guardarse del
+    todo: el archivo quedó congelado y cada corrida volvía a avisar de lo mismo.
+    Ahora la memoria está donde no se pierde.
+    """
     try:
-        with open(ESTADO_FILE, encoding='utf-8') as f:
-            d = json.load(f)
-            return [str(x) for x in (d.get('avisadas') or [])]
-    except Exception:
-        return []
+        r = sb('avisos_enviados?tipo=eq.' + TIPO_AVISO + '&select=clave&limit=2000') or []
+        return [str(x.get('clave')) for x in r if x.get('clave')]
+    except Exception as e:
+        # Sin memoria no se puede decidir a quién avisar, y avisar de todo sería
+        # justo el spam que esto viene a arreglar. Mejor no mandar nada.
+        print('! no se pudo leer avisos_enviados:', e)
+        return None
 
 
-def guardar_estado(ids):
-    with open(ESTADO_FILE, 'w', encoding='utf-8') as f:
-        json.dump({'avisadas': sorted(set(ids)),
-                   'actualizado': datetime.datetime.utcnow().isoformat(timespec='seconds') + 'Z'},
-                  f, ensure_ascii=False, indent=1)
+def marcar_avisada(cid):
+    """Deja constancia de un aviso. El índice único (tipo, clave) es el que de
+    verdad impide el duplicado: si dos corridas coinciden, la segunda choca."""
+    try:
+        sb('avisos_enviados', 'POST', {'tipo': TIPO_AVISO, 'clave': str(cid)})
+        return True
+    except Exception as e:
+        print('  ! no se pudo marcar', cid, 'como avisada:', e)
+        return False
+
+
+def olvidar(claves):
+    """Las que salieron de revisión se olvidan: si vuelven a entrar, se avisa
+    otra vez. Es a propósito — una cotización que regresa a revisión cambió."""
+    for k in claves:
+        try:
+            sb('avisos_enviados?tipo=eq.' + TIPO_AVISO
+               + '&clave=eq.' + urllib.parse.quote(str(k)), 'DELETE')
+        except Exception as e:
+            print('  ! no se pudo olvidar', k, e)
 
 
 if __name__ == '__main__':
@@ -239,14 +272,21 @@ if __name__ == '__main__':
 
     en_revision = [str(c.get('id')) for c in cots]
     avisadas = cargar_estado()
+    if avisadas is None:
+        # No se pudo leer la memoria. Callarse es lo correcto: avisar de todo
+        # sería exactamente el spam que esto vino a arreglar.
+        raise SystemExit('Sin memoria de avisos (avisos_enviados): no se envía nada esta corrida.')
+
     # Las que salieron de revisión se olvidan: si vuelven a entrar, vuelve a avisar.
+    sobran = [i for i in avisadas if i not in en_revision]
+    if sobran and not prueba:
+        olvidar(sobran)
     avisadas = [i for i in avisadas if i in en_revision]
     nuevas = [c for c in cots if str(c.get('id')) not in avisadas]
 
-    print('En revisión de gerencia:', len(cots), '| ya avisadas:', len(avisadas), '| nuevas:', len(nuevas))
+    print('En revisión de gerencia:', len(cots), '| ya avisadas:', len(avisadas),
+          '| nuevas:', len(nuevas), '| olvidadas:', len(sobran))
     if not nuevas:
-        if not prueba:
-            guardar_estado(avisadas)
         raise SystemExit(0)
 
     token = None if prueba else graph_token()
@@ -270,15 +310,24 @@ if __name__ == '__main__':
             print('--- (prueba, no se envía)', asunto)
             print(html[:400], '...')
         else:
+            # Marcar ANTES de mandar. El índice único (tipo, clave) es lo que
+            # convierte esto en garantía de verdad: si otra corrida ya reservó
+            # esta cotización, el insert choca y aquí no se manda nada. Al revés
+            # —mandar y después marcar— queda la ventana por la que se colaron
+            # los correos repetidos de agosto.
+            if not marcar_avisada(cid):
+                print('  · ya la tomó otra corrida, no se manda', cid)
+                continue
             try:
                 enviar(token, remitente, asunto, html, GERENCIA, COPIA_PRUEBA)
                 print('  ✓ enviado', cid)
             except Exception as e:
+                # No salió: se desmarca para que el ciclo de respaldo reintente.
+                # Esta es la red de seguridad que se había perdido al apagar el
+                # barrido — ahora se puede tener sin que repita.
                 print('  ! falló el envío de', cid, e)
+                olvidar([cid])
                 continue
-        avisadas.append(cid)
         enviados += 1
 
-    if not prueba:
-        guardar_estado(avisadas)
     print('Avisos enviados:', enviados)
