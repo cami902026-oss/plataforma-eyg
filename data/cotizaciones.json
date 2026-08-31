@@ -87326,7 +87326,7 @@
     "cliente": "INDUMEC",
     "contacto": "PEDRO",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 3135000,
@@ -87399,12 +87399,34 @@
         "precioProveedor": 105200
       }
     ],
-    "fechaGuardado": "2026-08-31T14:50:11.467Z",
+    "fechaGuardado": "2026-08-31T16:48:26.483Z",
     "fechaEnvio": "2026-08-31T14:50:11.467Z",
+    "adjudicadaAt": "2026-08-31",
+    "valorAdjudicado": 3135000,
+    "itemsAdjudicados": [
+      {
+        "uid": "c6c4fa21-ae60-44d9-a49a-dd0505447235",
+        "qty": 10
+      },
+      {
+        "uid": "7ef9e47f-39cb-4089-9bd2-40d0e507a4bc",
+        "qty": 10
+      },
+      {
+        "uid": "8fdf6423-831f-4667-8858-b7321a3a8d73",
+        "qty": 10
+      },
+      {
+        "uid": "af00857e-eabf-4c78-83e5-a3eb904fa5d8",
+        "qty": 22
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-31T16:48:26.473Z",
     "createdAt": "2026-08-31T14:29:26.216Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-31T14:50:11.468Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-31T16:48:26.483Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2090",
