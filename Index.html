@@ -2153,6 +2153,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <button class="btn btn-primary" onclick="cotizExtract()" style="width:auto;font-size:13px;">🤖 Extraer ítems con IA</button>
               <button class="btn btn-secondary" onclick="cotizAddRow()" style="width:auto;font-size:13px;">+ Fila manual</button>
               <button class="btn btn-secondary" onclick="cotizBuscarInventarioModal()" style="width:auto;font-size:13px;background:rgba(26,58,143,.4);">🔍 Buscar en inventario</button>
+              <button class="btn btn-secondary" onclick="hpAbrir(null)" title="Buscar a cómo hemos cotizado un producto antes" style="width:auto;font-size:13px;background:rgba(232,160,32,.18);color:#fcd34d;">🕘 Precios cotizados</button>
               <button class="btn btn-secondary" onclick="cotizClear()" style="width:auto;font-size:13px;">🗑 Limpiar ítems</button>
               <button class="btn btn-secondary" id="cotiz-btn-quitar-img" onclick="cotizQuitarImagen()" style="width:auto;font-size:13px;display:none;background:rgba(248,113,113,.18);color:#fca5a5;">✕ Quitar imagen</button>
               <button class="btn btn-secondary" id="cotiz-btn-undo" onclick="cotizUndoItems()" title="Restaura la tabla de ítems como estaba antes de la última extracción con IA" style="width:auto;font-size:13px;display:none;background:rgba(232,160,32,.18);color:#fcd34d;">↩️ Recuperar ítems anteriores</button>
@@ -12730,6 +12731,7 @@ function cotizRender() {
       <td class="desc-cell"><textarea rows="1" oninput="cotizItems[${i}].desc=this.value;_cotizAutoGrow(this)" style="min-width:170px" placeholder="Descripción del producto">${(it.desc||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
         <div class="cotiz-foto-ctrl">
           <button type="button" class="foto-btn" onclick="_cotizPickFoto(${i})">📷 Foto</button>
+          <button type="button" class="foto-btn" onclick="hpAbrir(${i})" title="Ver a cómo se ha cotizado antes este producto (por cliente y fecha)">🕘 Precios</button>
           ${it.fotoId ? `<img class="cotiz-foto-thumb" style="width:${it.fotoGrande?'72px':'34px'};height:${it.fotoGrande?'72px':'34px'};" src="${(_cotizFotos[it.fotoId]||'')}" onclick="_cotizVerFoto(${i})" title="Ver foto (clic para ampliar)">
             <label title="Incluir esta foto en el PDF que va al cliente"><input type="checkbox" ${it.fotoEnPDF!==false?'checked':''} onchange="cotizItems[${i}].fotoEnPDF=this.checked"> PDF</label>
             <label title="Mostrar la foto en GRANDE (en pantalla y en el PDF al cliente)"><input type="checkbox" ${it.fotoGrande?'checked':''} onchange="cotizItems[${i}].fotoGrande=this.checked;try{cotizRender()}catch(_){}"> 🔍 Grande</label>
@@ -13893,6 +13895,301 @@ function _cotizInvAdd(codigo, desc, marca, precio, udm) {
   } else {
     showToast(`⚠️ "${desc.substring(0,40)}…" agregado SIN precio — recuerda colocarlo en la fila`,'info');
   }
+}
+
+/* ═══ 🕘 BUSCADOR DE PRECIOS COTIZADOS (v233) ════════════════════════════════
+   "¿A cómo le vendimos esto antes a ESTE cliente?" Los precios son distintos
+   por cliente, así que el buscador arranca con el cliente de la cotización
+   abierta y desde ahí se amplía (otro cliente, o todos).
+   SOLO LECTURA: una consulta a `cotizacion_items` con el join a `cotizaciones`
+   (cliente, fecha, estado). No escribe absolutamente nada. Si Supabase no
+   responde, la cotización sigue funcionando igual.
+   La ventana (3 / 12 meses / todo) y el cliente se filtran EN PANTALLA sobre lo
+   ya traído, así que cambiar de chip no vuelve a consultar. */
+const _HP_STOP = ['DE','DEL','LA','EL','LOS','LAS','PARA','CON','POR','SIN','EN','Y','O','UN','UNA','QUE','TIPO','MARCA','REF','NUEVO','NUEVA'];
+const _HP_MES  = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+let _hpCache    = {};     // 'palabras clave' -> filas ya mapeadas
+let _hpClientes = null;   // lista para el autocompletar
+let _hpFila     = null;   // fila que abrió el buscador (null = buscador general)
+let _hpMeses    = 3;      // ventana en meses (0 = todo)
+let _hpVerAlt   = false;
+let _hpVerOtros = false;
+let _hpKey      = '';     // término de la última consulta
+let _hpAviso    = '';     // nota cuando hubo que aflojar la búsqueda
+let _hpFilas    = [];     // lo que se está viendo (los botones lo leen por índice)
+
+function _hpEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// Las descripciones vienen sucias de años de digitación ("VALVULA?PRESION VACIO",
+// "MOD. 3100", saltos de línea). Todo lo que no sea letra, número, / o - se vuelve
+// separador; así "VALVULA?PRESION" se parte en dos palabras buscables.
+function _hpNorm(s){
+  return String(s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^A-Z0-9\/\-]+/g,' ').replace(/\s+/g,' ').trim();
+}
+// Palabras que sirven para buscar: fuera las genéricas y las de 1-2 letras,
+// salvo que lleven número (2", 6, 3/4 es justo lo que distingue un ítem).
+function _hpPalabras(txt){
+  return _hpNorm(txt).split(' ')
+    .map(function(w){ return w.replace(/^[\-\/]+|[\-\/]+$/g, ''); })
+    .filter(function(w){ return w && _HP_STOP.indexOf(w) === -1 && (w.length >= 3 || /\d/.test(w)); })
+    .slice(0, 5);
+}
+function _hpFechaCorta(f){
+  const p = String(f||'').slice(0,10).split('-');
+  if (p.length !== 3) return String(f||'—');
+  return p[2] + '-' + (_HP_MES[+p[1]-1] || p[1]) + '-' + p[0].slice(2);
+}
+function _hpMesesDesde(f){
+  if (!f) return 999;
+  const d = new Date(String(f).slice(0,10) + 'T00:00:00');
+  if (isNaN(d.getTime())) return 999;
+  return Math.max(0, Math.round((Date.now() - d.getTime()) / (30.44*24*3600*1000)));
+}
+function _hpPlata(n){ return '$' + Math.round(+n||0).toLocaleString('es-CO'); }
+
+// Nombres de cliente para el autocompletar (los de la nube + los locales)
+async function _hpClientesEnsure(){
+  if (_hpClientes) { _hpPintarDL(); return; }
+  const set = {};
+  try { (getData('bd_cotizaciones', []) || []).forEach(function(c){ const n = ((c&&c.cliente)||'').trim(); if (n) set[n] = 1; }); } catch(_) {}
+  try {
+    const rows = await absFetch('cotizaciones?select=cliente&limit=2000');
+    (rows||[]).forEach(function(r){ const n = ((r&&r.cliente)||'').trim(); if (n) set[n] = 1; });
+  } catch(_) {}
+  _hpClientes = Object.keys(set).sort();
+  _hpPintarDL();
+}
+function _hpPintarDL(){
+  const dl = document.getElementById('_hp-cli-dl');
+  if (dl && _hpClientes) dl.innerHTML = _hpClientes.map(function(n){ return '<option value="' + _hpEsc(n) + '">'; }).join('');
+}
+
+// La consulta: una sola, ordenada de lo más nuevo a lo más viejo.
+async function _hpConsultar(words){
+  const key = words.join(' ');
+  if (_hpCache[key]) return _hpCache[key];
+  const filtro = 'and=(' + words.map(function(w){ return 'or(descripcion.ilike.*' + encodeURIComponent(w) + '*,marca.ilike.*' + encodeURIComponent(w) + '*)'; }).join(',') + ')';
+  const base = 'cotizacion_items?select=cotizacion_id,descripcion,marca,qty,udm,v_unit,precio_proveedor,proveedor,tiempo_entrega,alt_de,cotizaciones!inner(cliente,fecha,estado)'
+    + '&' + filtro + '&v_unit=gt.0&order=cotizaciones(fecha).desc&limit=500';
+  let rows;
+  try { rows = await absFetch(base + '&cotizaciones.deleted=not.is.true'); }
+  catch(_) { rows = await absFetch(base); }   // por si la columna `deleted` no existiera
+  const out = [], vistos = {};
+  (rows||[]).forEach(function(r){
+    const c = r.cotizaciones || {};
+    const fila = {
+      id: r.cotizacion_id || '', desc: r.descripcion || '', marca: r.marca || '',
+      qty: +r.qty || 0, udm: r.udm || '', precio: +r.v_unit || 0,
+      costo: (r.precio_proveedor != null ? +r.precio_proveedor : null),
+      prov: r.proveedor || '', entrega: r.tiempo_entrega || '', alt: !!r.alt_de,
+      cliente: c.cliente || '', fecha: c.fecha || '', estado: c.estado || ''
+    };
+    // la misma línea repetida dentro de la misma cotización se muestra una vez
+    const k = fila.id + '|' + _hpNorm(fila.desc) + '|' + fila.precio;
+    if (vistos[k]) return;
+    vistos[k] = 1; out.push(fila);
+  });
+  _hpCache[key] = out;
+  return out;
+}
+
+function hpAbrir(i){
+  _hpFila = (typeof i === 'number' ? i : null);
+  _hpMeses = 3; _hpVerAlt = false; _hpVerOtros = false; _hpKey = ''; _hpFilas = [];
+  const it  = (_hpFila != null ? cotizItems[_hpFila] : null);
+  const cli = (((document.getElementById('cotiz-cliente')||{}).value) || '').trim();
+  const prev = document.getElementById('_hpModal'); if (prev) prev.remove();
+  const ov = document.createElement('div');
+  ov.id = '_hpModal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2600;padding:20px;overflow-y:auto;';
+  ov.onclick = function(e){ if (e.target === ov) ov.remove(); };
+  ov.innerHTML =
+    '<div style="max-width:940px;margin:24px auto;background:#0a1a30;border:1px solid var(--border);border-radius:14px;padding:22px;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">'
+    +   '<h3 style="color:#fff;margin:0;">🕘 Precios ya cotizados</h3>'
+    +   '<button onclick="document.getElementById(&quot;_hpModal&quot;).remove()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">✕</button>'
+    + '</div>'
+    + '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">'
+    +   '<div style="flex:2;min-width:230px;">'
+    +     '<label style="font-size:10px;color:var(--text-muted);letter-spacing:.5px;">🔎 PRODUCTO</label>'
+    +     '<input id="_hp-q" value="' + _hpEsc(it ? (it.desc||'').replace(/\s+/g,' ').trim() : '') + '" placeholder="Ej: valvula bola 2 150" onkeydown="if(event.key===&quot;Enter&quot;){event.preventDefault();hpBuscar();}" style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:9px;padding:9px 11px;color:#fff;font-size:13px;">'
+    +   '</div>'
+    +   '<div style="flex:1;min-width:190px;">'
+    +     '<label style="font-size:10px;color:var(--text-muted);letter-spacing:.5px;">👤 CLIENTE</label>'
+    +     '<div style="display:flex;gap:5px;">'
+    +       '<input id="_hp-cli" list="_hp-cli-dl" value="' + _hpEsc(cli) + '" placeholder="Todos los clientes" oninput="_hpRepintar()" style="flex:1;min-width:0;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:9px;padding:9px 11px;color:#fff;font-size:13px;">'
+    +       '<datalist id="_hp-cli-dl"></datalist>'
+    +       '<button onclick="document.getElementById(&quot;_hp-cli&quot;).value=&quot;&quot;;_hpRepintar();" title="Ver todos los clientes" style="background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:9px;color:#cbd5e1;cursor:pointer;padding:0 10px;font-size:12px;white-space:nowrap;">✕ todos</button>'
+    +     '</div>'
+    +   '</div>'
+    +   '<div style="align-self:flex-end;"><button onclick="hpBuscar()" style="background:var(--gold);border:none;border-radius:9px;color:#0a1a30;font-weight:700;cursor:pointer;padding:9px 16px;font-size:13px;">Buscar</button></div>'
+    + '</div>'
+    + '<div id="_hp-chips" style="margin-bottom:10px;"></div>'
+    + '<div id="_hp-resumen" style="font-size:12px;color:#cbd5e1;margin-bottom:10px;"></div>'
+    + '<div id="_hp-res" style="max-height:52vh;overflow-y:auto;"></div>'
+    + '<div id="_hp-pie" style="font-size:11px;color:var(--text-muted);margin-top:10px;"></div>'
+    + '</div>';
+  document.body.appendChild(ov);
+  _hpPintarChips();
+  _hpClientesEnsure();
+  if (it && (it.desc||'').trim()) hpBuscar();
+  else {
+    document.getElementById('_hp-res').innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:22px;">Escribe qué producto buscas y dale Buscar.</p>';
+    setTimeout(function(){ const q = document.getElementById('_hp-q'); if (q) q.focus(); }, 90);
+  }
+}
+
+function _hpPintarChips(){
+  const c = document.getElementById('_hp-chips'); if (!c) return;
+  const chip = function(m, txt){
+    const on = (_hpMeses === m);
+    return '<button onclick="_hpSetMeses(' + m + ')" style="background:' + (on?'var(--gold)':'rgba(255,255,255,.07)')
+      + ';color:' + (on?'#0a1a30':'#cbd5e1') + ';border:1px solid ' + (on?'var(--gold)':'var(--border)')
+      + ';border-radius:20px;padding:4px 14px;font-size:11.5px;font-weight:' + (on?'700':'500') + ';cursor:pointer;margin-right:6px;">' + txt + '</button>';
+  };
+  c.innerHTML = chip(3,'3 meses') + chip(12,'12 meses') + chip(0,'Todo')
+    + '<label style="font-size:11px;color:var(--text-muted);margin-left:10px;cursor:pointer;"><input type="checkbox"'
+    + (_hpVerAlt?' checked':'') + ' onchange="_hpVerAlt=this.checked;_hpRepintar();"> ver alternativas</label>';
+}
+function _hpSetMeses(m){ _hpMeses = m; _hpPintarChips(); _hpRepintar(); }
+
+async function hpBuscar(){
+  const cont = document.getElementById('_hp-res'); if (!cont) return;
+  let words = _hpPalabras(((document.getElementById('_hp-q')||{}).value) || '');
+  if (!words.length) { cont.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:22px;">Escribe qué producto buscas.</p>'; return; }
+  if (!_hpCache[words.join(' ')]) cont.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:22px;">Buscando en el histórico…</p>';
+  _hpAviso = '';
+  try {
+    let rows = await _hpConsultar(words);
+    // Exigir TODAS las palabras deja por fuera el ítem cuando una está escrita
+    // distinto ("FLAGEA" por "FLANGEADA"). Si no hubo nada, se afloja soltando
+    // las últimas palabras — y se avisa con cuáles quedó buscando.
+    let intentos = 0;
+    while (!rows.length && words.length > 2 && intentos < 2) {
+      words = words.slice(0, words.length - 1); intentos++;
+      rows = await _hpConsultar(words);
+      if (rows.length) _hpAviso = 'Sin coincidencias exactas — busqué con «' + words.join(' ') + '».';
+    }
+    _hpKey = words.join(' ');
+    _hpRepintar();
+  } catch(_) {
+    cont.innerHTML = '<p style="color:#fca5a5;text-align:center;padding:22px;">No se pudo consultar el histórico. Revisa la conexión y vuelve a darle Buscar.</p>';
+  }
+}
+
+function _hpRepintar(){
+  const cont = document.getElementById('_hp-res'); if (!cont || !_hpKey) return;
+  const todas = _hpCache[_hpKey] || [];
+  const cli  = (((document.getElementById('_hp-cli')||{}).value) || '').trim();
+  const cliN = _hpNorm(cli);
+  const visibles = todas.filter(function(r){ return _hpVerAlt || !r.alt; });
+  const dentro = visibles.filter(function(r){ return _hpMeses === 0 || _hpMesesDesde(r.fecha) <= _hpMeses; });
+  const esDelCli = function(r){ return !cliN || _hpNorm(r.cliente).indexOf(cliN) !== -1; };
+  const delCli = dentro.filter(esDelCli);
+  const otros  = cliN ? dentro.filter(function(r){ return !esDelCli(r); }) : [];
+
+  _hpFilas = delCli.concat(otros);   // los botones leen por índice de esta lista
+  let html = '';
+  if (!delCli.length && !otros.length) {
+    html = '<p style="color:var(--text-muted);text-align:center;padding:22px;">Sin resultados en esta ventana'
+      + (cliN ? ' para <b style="color:#fff">' + _hpEsc(cli) + '</b>' : '') + '.'
+      + (visibles.length ? '<br><span style="font-size:11.5px;">Hay ' + visibles.length + ' precio(s) más viejos — dale <b>Todo</b>'
+          + (cliN ? ' o <b>✕ todos</b>' : '') + '.</span>' : '')
+      + '</p>';
+  } else {
+    if (cliN && delCli.length) html += '<div style="font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.5px;margin:2px 0 6px;">★ ' + _hpEsc(cli.toUpperCase()) + '</div>';
+    html += delCli.map(function(r,k){ return _hpFilaHTML(r, k); }).join('');
+    if (otros.length) {
+      // si a ese cliente no le hemos cotizado esto, no tiene sentido dejarlo plegado
+      const verOtros = _hpVerOtros || !delCli.length;
+      html += '<div onclick="_hpVerOtros=' + (verOtros?'false':'true') + ';_hpRepintar();" style="cursor:pointer;font-size:11.5px;color:#93c5fd;font-weight:600;margin:10px 0 6px;">'
+        + (verOtros ? '▾' : '▸') + ' Otros clientes (' + otros.length + ')</div>';
+      if (verOtros) html += otros.map(function(r,k){ return _hpFilaHTML(r, delCli.length + k); }).join('');
+    }
+  }
+  cont.innerHTML = html;
+  _hpPintarResumen(delCli, cliN ? otros : [], cli);
+  const pie = document.getElementById('_hp-pie');
+  if (pie) {
+    const mas = visibles.length - dentro.length;
+    pie.textContent = (delCli.length + otros.length) + ' resultado(s)'
+      + (mas > 0 ? ' · hay ' + mas + ' más en «Todo»' : '')
+      + (todas.length >= 500 ? ' · se muestran los 500 más recientes, afina la búsqueda' : '');
+  }
+}
+
+function _hpPintarResumen(delCli, otros, cli){
+  const box = document.getElementById('_hp-resumen'); if (!box) return;
+  const partes = [];
+  if (cli && delCli.length) {
+    const u = delCli[0];
+    partes.push('<b style="color:var(--gold)">A ' + _hpEsc(cli.toUpperCase()) + ':</b> último ' + _hpPlata(u.precio)
+      + ' (' + _hpFechaCorta(u.fecha) + ') · ' + delCli.length + ' registro(s)');
+  }
+  const base = (cli ? otros : delCli).filter(function(r){ return r.precio > 0; });
+  if (base.length) {
+    const ps = base.map(function(r){ return r.precio; });
+    const min = Math.min.apply(null, ps), max = Math.max.apply(null, ps);
+    partes.push('<span style="color:var(--text-muted)">' + (cli ? 'A otros:' : 'Rango:') + '</span> '
+      + _hpPlata(min) + (min !== max ? ' – ' + _hpPlata(max) : ''));
+  }
+  if (_hpAviso) partes.push('<span style="color:#fcd34d;">' + _hpEsc(_hpAviso) + '</span>');
+  box.innerHTML = partes.join(' &nbsp;·&nbsp; ');
+}
+
+function _hpFilaHTML(r, k){
+  const meses = _hpMesesDesde(r.fecha);
+  const viejo = meses >= 6;
+  const fact  = /factur/i.test(r.estado || '');
+  const btns = (_hpFila != null)
+    ? '<button onclick="hpUsar(' + k + ',0)" title="Escribe este precio de venta en la fila" style="background:var(--gold);border:none;border-radius:7px;color:#0a1a30;font-weight:700;cursor:pointer;padding:5px 12px;font-size:11.5px;margin-left:6px;">Usar</button>'
+      + '<button onclick="hpUsar(' + k + ',1)" title="Trae además marca, proveedor, costo y tiempo de entrega" style="background:rgba(26,58,143,.55);border:1px solid var(--border);border-radius:7px;color:#dbeafe;cursor:pointer;padding:5px 12px;font-size:11.5px;margin-left:6px;">Traer línea</button>'
+    : '<button onclick="hpAgregar(' + k + ')" style="background:var(--gold);border:none;border-radius:7px;color:#0a1a30;font-weight:700;cursor:pointer;padding:5px 12px;font-size:11.5px;margin-left:6px;">➕ Agregar como ítem</button>';
+  return '<div style="background:var(--card-bg);border:1px solid ' + (viejo ? 'rgba(232,160,32,.45)' : 'var(--border)') + ';border-radius:9px;padding:9px 12px;margin-bottom:6px;">'
+    + '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline;font-size:11px;">'
+    +   '<div style="color:' + (viejo ? '#fcd34d' : 'var(--text-muted)') + ';">' + _hpFechaCorta(r.fecha)
+    +     ' · <b style="color:#93c5fd;">' + _hpEsc(r.id) + '</b> · ' + _hpEsc(r.cliente || '—')
+    +     (viejo && meses < 900 ? ' · ⚠ hace ' + meses + ' meses' : '') + '</div>'
+    +   '<div>' + (fact ? '<span style="color:#4ade80;font-weight:600;">✅ ' + _hpEsc(r.estado) + '</span>' : (r.estado ? '<span style="color:var(--text-muted);">' + _hpEsc(r.estado) + '</span>' : ''))
+    +     (r.alt ? ' <span style="color:#fcd34d;">· alternativa</span>' : '') + '</div>'
+    + '</div>'
+    + '<div style="font-size:12.5px;color:#fff;font-weight:600;margin:3px 0;">' + _hpEsc((r.desc||'').replace(/\s+/g,' ').trim().slice(0,120)) + '</div>'
+    + '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">'
+    +   '<div style="font-size:11px;color:var(--text-muted);"><b style="color:#68d391;font-size:13.5px;">' + _hpPlata(r.precio) + '</b> venta'
+    +     (r.costo ? ' · costo ' + _hpPlata(r.costo) : '')
+    +     (r.marca ? ' · ' + _hpEsc(r.marca) : '') + (r.prov ? ' · ' + _hpEsc(r.prov) : '')
+    +     (r.qty ? ' · x' + r.qty + ' ' + _hpEsc(r.udm || '') : '') + '</div>'
+    +   '<div style="white-space:nowrap;">' + btns + '</div>'
+    + '</div></div>';
+}
+
+// [Usar] escribe el precio de venta. [Traer línea] trae además marca,
+// proveedor, costo y tiempo de entrega — nunca pisa la descripción ni la cantidad.
+function hpUsar(k, completo){
+  const r = _hpFilas[k]; if (!r) return;
+  const it = (_hpFila != null ? cotizItems[_hpFila] : null);
+  if (!it) { showToast('Esa fila ya no existe', 'error'); return; }
+  it.precio = r.precio || 0;
+  if (completo) {
+    if (r.costo != null) it.precioProveedor = r.costo;
+    if (r.marca)   it.marca = r.marca;
+    if (r.prov)    it.proveedor = r.prov;
+    if (r.entrega) it.tiempoEntrega = r.entrega;
+  }
+  try { cotizRender(); } catch(_) {}
+  const m = document.getElementById('_hpModal'); if (m) m.remove();
+  showToast('Precio de ' + r.id + ' (' + _hpFechaCorta(r.fecha) + '): ' + _hpPlata(r.precio), 'success');
+}
+function hpAgregar(k){
+  const r = _hpFilas[k]; if (!r) return;
+  cotizItems.push({
+    id: cotizItems.length + 1, desc: (r.desc||'').replace(/\s+/g,' ').trim(), udm: r.udm || 'EA', qty: 1,
+    precio: r.precio || 0, tiempoEntrega: r.entrega || '1-2 DIAS', desvTec: '',
+    marca: r.marca || '', proveedor: r.prov || '', precioProveedor: (r.costo != null ? r.costo : 0), obsProveedor: ''
+  });
+  try { cotizRender(); } catch(_) {}
+  const m = document.getElementById('_hpModal'); if (m) m.remove();
+  showToast('Ítem agregado con el precio de ' + r.id, 'success');
 }
 
 function cotizDownloadExcel() {
