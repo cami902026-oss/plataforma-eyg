@@ -39,12 +39,13 @@ jobs:
           # PARA: gerencia
           RECIPIENT_EMAILS: 'gerenciageneral@eygenergygroup.com'
 
-          # COPIA: Andrea + los vendedores
+          # COPIA: solo Andrea.
           #   Andrea Bernal .......... andrea.bernal@eygenergygroup.com
-          #   Mario (dir. comercial) . director.comercial@eygenergygroup.com
-          #   Sheila Baron ........... comercial@eygenergygroup.com
+          # 31-ago-2026, decisión de Andrea: el informe es SOLO para gerencia general.
+          # Salieron de la copia Mario (director.comercial@) y Sheila (comercial@);
+          # los vendedores no deben ver el consolidado comercial.
           # Para agregar o quitar a alguien, basta editar esta línea.
-          CC_EMAILS: 'andrea.bernal@eygenergygroup.com,director.comercial@eygenergygroup.com,comercial@eygenergygroup.com'
+          CC_EMAILS: 'andrea.bernal@eygenergygroup.com'
         run: python scripts/informe_semanal_comercial.py
 
       - name: ✅ Confirmar
