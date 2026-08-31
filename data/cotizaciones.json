@@ -85100,7 +85100,7 @@
     "cliente": "CIAM",
     "contacto": "DALADIER",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 2253900,
@@ -85187,12 +85187,34 @@
         "precioProveedor": 7258
       }
     ],
-    "fechaGuardado": "2026-08-28T16:04:36.750Z",
+    "fechaGuardado": "2026-08-31T14:26:39.705Z",
     "fechaEnvio": "2026-08-28T16:04:35.722Z",
+    "adjudicadaAt": "2026-08-31",
+    "valorAdjudicado": 2153900,
+    "itemsAdjudicados": [
+      {
+        "uid": "90e9248a-2fe7-4809-9fc2-173f81975ef0",
+        "qty": 2
+      },
+      {
+        "uid": "3b886256-3abc-4a1c-b6c7-cd00f8f7cc2b",
+        "qty": 2
+      },
+      {
+        "uid": "1155f01e-0d50-4c92-b96b-2879f6a864ec",
+        "qty": 60
+      },
+      {
+        "uid": "f42bb4f0-7882-48fc-920d-41c593d1efcd",
+        "qty": 64
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-31T14:26:39.696Z",
     "createdAt": "2026-08-28T14:24:19.880Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-28T16:04:36.750Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-08-31T14:26:39.705Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2075",
@@ -85739,12 +85761,12 @@
         "udm": "UND",
         "uid": "927b8b77-d90c-4f4f-8bcd-a82f47b7a434",
         "desc": "TEFLON LIQUIDO REF 567 X 50 ML",
-        "marca": "",
+        "marca": "LOCTITE",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "",
-        "precioProveedor": 0
+        "proveedor": "COLIMPORTADOS",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
+        "precioProveedor": 79330
       },
       {
         "id": 13,
@@ -86228,10 +86250,10 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-08-29T17:05:41.130Z",
+    "fechaGuardado": "2026-08-31T15:19:50.552Z",
     "createdAt": "2026-08-28T15:08:41.666Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-29T17:05:41.130Z",
+    "updatedAt": "2026-08-31T15:19:50.552Z",
     "updatedBy": "alexandra"
   },
   {
