@@ -85100,7 +85100,7 @@
     "cliente": "CIAM",
     "contacto": "DALADIER",
     "correo": "",
-    "estado": "Adjudicada",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 2253900,
@@ -85187,34 +85187,12 @@
         "precioProveedor": 7258
       }
     ],
-    "fechaGuardado": "2026-08-31T14:26:39.705Z",
+    "fechaGuardado": "2026-08-28T16:04:36.750Z",
     "fechaEnvio": "2026-08-28T16:04:35.722Z",
-    "adjudicadaAt": "2026-08-31",
-    "valorAdjudicado": 2153900,
-    "itemsAdjudicados": [
-      {
-        "uid": "90e9248a-2fe7-4809-9fc2-173f81975ef0",
-        "qty": 2
-      },
-      {
-        "uid": "3b886256-3abc-4a1c-b6c7-cd00f8f7cc2b",
-        "qty": 2
-      },
-      {
-        "uid": "1155f01e-0d50-4c92-b96b-2879f6a864ec",
-        "qty": 60
-      },
-      {
-        "uid": "f42bb4f0-7882-48fc-920d-41c593d1efcd",
-        "qty": 64
-      }
-    ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-08-31T14:26:39.696Z",
     "createdAt": "2026-08-28T14:24:19.880Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-31T14:26:39.705Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-28T16:04:36.750Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM2075",
@@ -87270,6 +87248,51 @@
     "createdAt": "2026-08-31T13:35:14.524Z",
     "createdBy": "sandra",
     "updatedAt": "2026-08-31T14:19:38.525Z",
+    "updatedBy": "sandra"
+  },
+  {
+    "id": "LM2088",
+    "fecha": "2026-08-31",
+    "fechaVenc": "2026-09-08",
+    "cliente": "EQUIIPAR S.A.S",
+    "contacto": "ORLANDO",
+    "correo": "EQUIIPAR@GMAIL.COM",
+    "estado": "Enviada",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 210000,
+    "ivaVal": 39900,
+    "total": 249900,
+    "formaPago": "CONTADO",
+    "sitioEntrega": "YOPAL",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Sandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "id": 1,
+        "desc": "valve  - cheque  part no z040-166-001",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 210000,
+        "tiempoEntrega": "25 DIAS ",
+        "desvTec": "Stainless Steel Inline Check Valve Z040-166-001 ",
+        "marca": "",
+        "proveedor": "FERREINSTRUMENTACION",
+        "precioProveedor": 145000,
+        "obsProveedor": "",
+        "uid": "00589642-24d5-476e-ba42-44ff6687eabb"
+      }
+    ],
+    "fechaGuardado": "2026-08-31T14:28:11.615Z",
+    "fechaEnvio": "2026-08-31T14:28:11.615Z",
+    "createdAt": "2026-08-31T14:28:11.615Z",
+    "createdBy": "sandra",
+    "updatedAt": "2026-08-31T14:28:11.615Z",
     "updatedBy": "sandra"
   },
   {
