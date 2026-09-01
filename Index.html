@@ -23395,16 +23395,48 @@ function _opLineasDeCotiz(c) {
   return out;
 }
 
+// Modal de opciones con respuesta esperable. `confirm` solo da sí/no, y aquí hay
+// tres caminos de verdad distintos: abrir la que existe, pedir otra vez lo mismo
+// o pedir solo lo que falta. Meterlos en confirms encadenados obliga a adivinar
+// qué significa "Cancelar", que es justo donde la gente se equivoca.
+function _opPreguntar(titulo, cuerpoHTML, botones) {
+  return new Promise(resolve => {
+    const prev = document.getElementById('_opPregOv'); if (prev) prev.remove();
+    const ov = document.createElement('div');
+    ov.id = '_opPregOv';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(3,8,18,.84);z-index:100006;'
+      + 'display:flex;align-items:center;justify-content:center;padding:20px;';
+    ov.innerHTML = '<div style="background:var(--card-bg,#0f1e33);border:1px solid var(--border);'
+      + 'border-radius:12px;padding:20px;max-width:640px;width:100%;max-height:84vh;overflow-y:auto;">'
+      + '<div style="font-size:15.5px;font-weight:800;color:#fff;margin-bottom:10px;">' + titulo + '</div>'
+      + '<div style="font-size:13px;color:#cbd5e1;line-height:1.65;">' + cuerpoHTML + '</div>'
+      + '<div id="_opPregBtns" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px;"></div>'
+      + '</div>';
+    document.body.appendChild(ov);
+    const cont = ov.querySelector('#_opPregBtns');
+    botones.forEach(b => {
+      const el = document.createElement('button');
+      el.textContent = b.txt;
+      el.style.cssText = 'border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer;font-size:12.5px;'
+        + (b.tono === 'ok' ? 'background:rgba(63,191,99,.22);border:1px solid #3FBF63;color:#8ce8a6;'
+          : b.tono === 'alt' ? 'background:rgba(139,92,246,.22);border:1px solid rgba(139,92,246,.55);color:#c4b5fd;'
+          : 'background:rgba(255,255,255,.08);border:1px solid var(--border);color:#cbd5e1;');
+      el.onclick = () => { ov.remove(); resolve(b.val); };
+      cont.appendChild(el);
+    });
+  });
+}
+
 // ─── Guardia: ¿esta cotización YA tiene OP? ──────────────────────────────────
-// De una cotización SÍ pueden salir varias OP (decisión del 22-ago: despachos
-// por partes, adjudicaciones parciales). Por eso esto avisa y no bloquea. Pero
-// hay que separar dos cosas que antes se veían iguales:
-//   · queda material sin OP  → es una OP adicional legítima, se confirma y ya.
-//   · TODO ya está en una OP → es un duplicado, y desde v235 (ligar descuenta)
-//     un duplicado significa despachar dos veces y descontar dos veces el
-//     inventario. Ahí se exige escribir el número de la cotización a mano, la
-//     misma vara que se usa para borrar un plan de compras.
-// Devuelve true para seguir creando, false para abortar.
+// De una cotización SÍ pueden salir varias OP, y por DOS razones distintas que
+// no hay que confundir:
+//   · quedó material por fuera        → OP adicional (lo que falta).
+//   · el cliente vuelve a pedir       → PEDIDO REPETIDO sobre la misma oferta,
+//     con los mismos ítems y los mismos precios. Es normal, no es un error.
+// Por eso esto no bloquea ni castiga: informa CUÁL OP ya existe y en qué estado,
+// y deja elegir. Lo único que sí es un error es crear otra sin darse cuenta —
+// desde v235 (ligar descuenta) eso despacha y descuenta dos veces.
+// Devuelve null para abortar, o { soloUids, repetido, nota } para seguir.
 async function _opGuardiaCotizConOP(c) {
   let ops;
   try {
@@ -23412,16 +23444,18 @@ async function _opGuardiaCotizConOP(c) {
       + '&select=id,numero,estado,valor_venta,created_by,created_at&order=numero')) || [];
   } catch (e) {
     // Antes este error se tragaba en silencio y la OP se creaba igual. Si no se
-    // sabe qué hay, se pregunta: una OP repetida cuesta un despacho doble.
+    // sabe qué hay, se pregunta: una OP repetida sin querer cuesta un despacho doble.
     return confirm('⚠️ No pude comprobar si ' + c.id + ' ya tiene una OP.\n\n'
-      + (e && e.message || e) + '\n\n¿Crear la OP de todos modos?');
+      + (e && e.message || e) + '\n\n¿Crear la OP de todos modos?') ? {} : null;
   }
   const vivas = ops.filter(o => o.estado !== 'anulada');
-  if (!vivas.length) return true;
+  if (!vivas.length) return {};
 
-  const nombra = o => o.numero + ' (' + ((OP_ESTADOS[o.estado] || {}).lbl || o.estado || '—') + ')';
-  const listaOps = vivas.map(o => '· ' + nombra(o) + ' · ' + opMoney(o.valor_venta || 0)
-    + ' · la creó ' + (o.created_by || '—')).join('\n');
+  const listaOps = '<ul style="margin:8px 0 0;padding-left:18px;">' + vivas.map(o =>
+    '<li style="margin-bottom:3px;"><b style="color:var(--gold)">' + opEsc(o.numero) + '</b> · '
+    + opEsc((OP_ESTADOS[o.estado] || {}).lbl || o.estado || '—') + ' · ' + opMoney(o.valor_venta || 0)
+    + ' <span style="color:var(--text-muted)">· la creó ' + opEsc(o.created_by || '—')
+    + ' el ' + opEsc(String(o.created_at || '').substring(0, 10)) + '</span></li>').join('') + '</ul>';
 
   // ¿Qué ítems de la cotización están ya cubiertos? El amarre es
   // `op_items.cotizacion_item_uid`, que es exacto. Sin él no se adivina.
@@ -23436,51 +23470,87 @@ async function _opGuardiaCotizConOP(c) {
   } catch (_) { cubierto = null; }
 
   const nuevas = _opLineasDeCotiz(c);
+  // Lo que falta se mide en CANTIDAD, no en si el ítem aparece o no: si la
+  // cotización eran 10 y la primera OP se llevó 4, faltan 6, no cero.
   const pend = cubierto && nuevas.length
-    ? nuevas.filter(L => !L.uid || (+cubierto[L.uid] || 0) < L.qty)
+    ? nuevas.map(L => ({ L: L, falta: L.uid ? Math.max(0, L.qty - (+cubierto[L.uid] || 0)) : L.qty }))
+        .filter(x => x.falta > 0)
     : null;
+  const cab = '<b>' + opEsc(c.id) + '</b> ya tiene ' + vivas.length + ' orden(es) de pedido:' + listaOps;
+  const ABRIR = { txt: '📂 Abrir ' + vivas[0].numero, val: 'abrir', tono: 'alt' };
+  const NADA = { txt: 'Cancelar', val: null };
+
+  const abrirLaQueHay = async () => {
+    navigate('op');
+    try { await opAbrir(vivas[0].id); } catch (_) { await opCargar(false); }
+    return null;
+  };
 
   // Caso 1 — no se pudo comparar ítem por ítem. Se dice lo que hay y decide la persona.
   if (!pend) {
-    return confirm(c.id + ' ya tiene ' + vivas.length + ' OP:\n\n' + listaOps
-      + '\n\nNo pude comparar los ítems para saber si esta sería repetida.\n'
-      + 'Ábrela y míralo antes, si tienes duda.\n\n¿Crear otra OP igual?');
+    const r = await _opPreguntar('📑 Esta cotización ya tiene OP', cab
+      + '<div style="margin-top:12px;color:#fbbf24;">No pude comparar los ítems para saber si '
+      + 'esta sería la misma o material nuevo. Si tienes duda, abre la que ya existe y míralo.</div>',
+      [ABRIR, { txt: 'Crear otra OP igual', val: 'todo', tono: 'ok' }, NADA]);
+    if (r === 'abrir') return await abrirLaQueHay();
+    return r === 'todo' ? {} : null;
   }
 
-  // Caso 2 — DUPLICADO: no queda un solo ítem por fuera.
+  // Caso 2 — todos los ítems ya están cubiertos. NO es necesariamente un error:
+  // el cliente puede estar pidiendo otra vez lo mismo contra la misma oferta,
+  // con los mismos precios. Se dice claro qué significa cada camino y se elige.
   if (!pend.length) {
-    if (confirm('🚨 ' + c.id + ' YA está completa en:\n\n' + listaOps
-      + '\n\nNo queda NINGÚN ítem por fuera. Crear otra OP sería repetirla:\n'
-      + 'se despacharía dos veces y se descontaría dos veces del inventario.\n\n'
-      + 'Aceptar = abrir ' + vivas[0].numero + '  ·  Cancelar = seguir para crear otra')) {
-      navigate('op');
-      try { await opAbrir(vivas[0].id); } catch (_) { await opCargar(false); }
-      return false;
-    }
-    const tecleado = prompt('Para crear una OP repetida de ' + c.id + ', escribe el número\n'
-      + 'de la cotización tal cual: ' + c.id + '\n\n'
-      + '(Si lo que quieres es corregir la OP que ya existe, cancela y ábrela.)', '');
-    if (String(tecleado || '').trim().toUpperCase() !== String(c.id).trim().toUpperCase()) {
-      showToast('No se creó la OP: ' + c.id + ' ya está completa en ' + vivas[0].numero, 'info',
-        { durationMs: 9000 });
-      return false;
-    }
-    return true;
+    const r = await _opPreguntar('🔁 Ya se despachó todo lo de esta cotización', cab
+      + '<div style="margin-top:12px;">No queda <b>ningún ítem</b> por fuera: los '
+      + nuevas.length + ' de la cotización ya están en esa OP.</div>'
+      + '<div style="margin-top:10px;background:rgba(232,160,32,.12);border-left:3px solid #E8A020;'
+      + 'padding:10px 13px;border-radius:0 6px 6px 0;color:#fbbf24;">'
+      + 'Si el cliente <b>volvió a pedir</b> lo mismo, esto es un pedido nuevo y va con su '
+      + 'propia OP: adelante. Si solo venías a corregir o mirar lo que ya se despachó, '
+      + '<b>abre la que existe</b> — crear otra despacha y descuenta el inventario dos veces.</div>',
+      [ABRIR,
+       { txt: '🔁 Es un pedido NUEVO del cliente', val: 'repetido', tono: 'ok' },
+       NADA]);
+    if (r === 'abrir') return await abrirLaQueHay();
+    if (r !== 'repetido') return null;
+    return { repetido: true,
+             nota: 'pedido repetido · ' + c.id + ' ya estaba completa en '
+                   + vivas.map(o => o.numero).join(', ') };
   }
 
-  // Caso 3 — OP adicional legítima: hay material que todavía no está en ninguna OP.
+  // Caso 3 — quedó material por fuera. Puede querer solo lo que falta (lo normal
+  // tras una entrega parcial) o todo otra vez (si el cliente repitió el pedido).
   const cubiertas = nuevas.length - pend.length;
-  const muestra = pend.slice(0, 6).map(L => '· ' + String(L.it.desc || '').substring(0, 48)
-    + ' × ' + L.qty).join('\n');
-  return confirm(c.id + ' ya tiene ' + vivas.length + ' OP:\n\n' + listaOps
-    + '\n\nTodavía hay ' + pend.length + ' ítem(s) que no están en ninguna OP:\n' + muestra
-    + (pend.length > 6 ? '\n· … y ' + (pend.length - 6) + ' más' : '')
-    + (cubiertas
-      ? '\n\n⚠️ OJO: la OP nueva nace con los ' + nuevas.length + ' ítems de la cotización,\n'
-        + 'incluidos los ' + cubiertas + ' que YA están en la OP de arriba. Bórralos a mano\n'
-        + 'en la OP nueva, o los despachas dos veces.'
-      : '')
-    + '\n\n¿Crear la OP adicional?');
+  const muestra = '<ul style="margin:6px 0 0;padding-left:18px;">'
+    + pend.slice(0, 8).map(x => '<li>' + opEsc(String(x.L.it.desc || '').substring(0, 60))
+        + ' <b>× ' + x.falta + '</b>'
+        + (x.falta < x.L.qty ? ' <span style="color:var(--text-muted)">(de ' + x.L.qty
+            + ', ya salieron ' + (x.L.qty - x.falta) + ')</span>' : '') + '</li>').join('')
+    + (pend.length > 8 ? '<li style="color:var(--text-muted)">… y ' + (pend.length - 8) + ' más</li>' : '')
+    + '</ul>';
+  const r = await _opPreguntar('📑 Falta material de esta cotización', cab
+    + '<div style="margin-top:12px;">Todavía hay <b>' + pend.length + ' ítem(s)</b> que no están '
+    + 'en ninguna OP:</div>' + muestra
+    + (cubiertas ? '<div style="margin-top:10px;color:var(--text-muted)">Los otros ' + cubiertas
+        + ' ya están en la OP de arriba.</div>' : ''),
+    [ABRIR,
+     { txt: '➕ Solo lo que falta (' + pend.length + ')', val: 'falta', tono: 'ok' },
+     { txt: '📋 Todo otra vez (' + nuevas.length + ')', val: 'todo' },
+     NADA]);
+  if (r === 'abrir') return await abrirLaQueHay();
+  if (r === 'falta') {
+    const q = {};
+    pend.forEach(x => { if (x.L.uid) q[x.L.uid] = x.falta; });
+    return { soloUids: q,
+             nota: 'solo lo que faltaba · el resto ya estaba en '
+                   + vivas.map(o => o.numero).join(', ') };
+  }
+  if (r === 'todo') {
+    return { repetido: true,
+             nota: 'con TODOS los ítems · ' + vivas.map(o => o.numero).join(', ') + ' ya cubría '
+                   + cubiertas + ' de ellos' };
+  }
+  return null;
 }
 
 // Cabecera de una OP nueva. Vive aparte porque la creación puede reintentarse
@@ -23505,7 +23575,8 @@ async function opCrearDesde(cotizId) {
   if (!opPuedeCrear(c)) { showToast('Esa cotización no es tuya. La crea su comercial, Andrea o gerencia.', 'error'); return; }
   // La guardia vive AQUÍ y no en quien llama: por este punto pasan las dos
   // entradas (el botón 📑 de la BD de cotizaciones y el buscador del módulo OP).
-  if (!(await _opGuardiaCotizConOP(c))) { const o0 = document.getElementById('_opCotizOv'); if (o0) o0.remove(); return; }
+  const dec = await _opGuardiaCotizConOP(c);
+  if (!dec) { const o0 = document.getElementById('_opCotizOv'); if (o0) o0.remove(); return; }
   const ov = document.getElementById('_opCotizOv'); if (ov) ov.remove();
   showToast('Creando OP desde ' + cotizId + '…', 'info');
   try {
@@ -23538,8 +23609,16 @@ async function opCrearDesde(cotizId) {
     const mapaAdj = (typeof _cotizAdjMapa === 'function') ? _cotizAdjMapa(c) : null;
     const filas = [];
     let n = 0;
+    // `dec.soloUids` viene de la guardia cuando se pidió "solo lo que falta":
+    // uid → cantidad pendiente. Lo que no esté ahí no entra a esta OP.
     _opLineasDeCotiz(c).forEach(L => {
-      const it = L.it, qty = L.qty;
+      const it = L.it;
+      let qty = L.qty;
+      if (dec.soloUids) {
+        if (!L.uid || dec.soloUids[L.uid] == null) return;
+        qty = +dec.soloUids[L.uid] || 0;
+        if (!qty) return;
+      }
       n++;
       const costo = (it.precioProveedor != null ? +it.precioProveedor : null);
       const prov = (it.proveedor || '').trim();
@@ -23569,8 +23648,24 @@ async function opCrearDesde(cotizId) {
     if (filas.length) {
       await absFetch('op_items', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(filas) });
     }
+    // Si la OP nació solo con parte de la cotización, su valor es el de SUS
+    // líneas. Dejar el de la cotización completa infla la venta, y ese número es
+    // el que ve gerencia al aprobar y el que compara contra el costo de compras.
+    if (dec.soloUids) {
+      const suma = filas.reduce((s, f) => s + (+f.v_total || 0), 0);
+      try {
+        await absFetch('ops?id=eq.' + op.id, {
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ valor_venta: suma, updated_by: yo })
+        });
+        op.valor_venta = suma;
+      } catch (e) { console.warn('[op] valor parcial', e); }
+    }
+    // El motivo queda escrito: dentro de un mes, ver dos OP de la misma cotización
+    // sin saber por qué es lo que hace dudar si alguien despachó doble.
     await opEvento(op.id, 'creada', 'Desde la cotización ' + c.id + ' · ' + filas.length + ' ítems'
-      + (mapaAdj ? ' (solo lo adjudicado)' : ''));
+      + (mapaAdj ? ' (solo lo adjudicado)' : '')
+      + (dec.nota ? ' · ' + dec.nota : ''));
 
     showToast('✅ ' + numero + ' creada con ' + filas.length + ' ítems', 'success', { durationMs: 7000 });
     await opCargar(false);
