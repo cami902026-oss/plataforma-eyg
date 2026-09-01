@@ -835,6 +835,13 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   font-family:var(--op-mono);font-size:10.5px;font-weight:700;letter-spacing:.04em;
   background:rgba(232,160,32,.16);border:1px solid rgba(232,160,32,.5);color:#fbbf24;
 }
+/* ⏰ Atrasada: rojo, no ámbar. El ámbar ya lo usan «por enviar» y la desviación;
+   si el atraso comparte color se lee como un aviso más y deja de resaltar. */
+#page-op .op-chip-atraso{
+  display:inline-block;margin-left:6px;padding:2px 8px;border-radius:2px;
+  font-family:var(--op-mono);font-size:10.5px;font-weight:700;letter-spacing:.04em;
+  background:rgba(224,90,74,.16);border:1px solid rgba(224,90,74,.55);color:#fca5a5;
+}
 /* La desviación técnica, a la vista en la línea. Apagada mientras esté vacía para
    no competir con la descripción; en ámbar cuando hay algo que el proveedor tiene
    que leer sí o sí antes de despachar. */
@@ -3665,18 +3672,31 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           <div class="abs-toolbar">
             <input type="text" id="op-search" placeholder="Buscar N° OP, cotización, O.C. del cliente o cliente..." oninput="opRenderLista()" style="flex:1;min-width:220px;">
             <button class="btn btn-ghost" onclick="opCargar(true)" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
+            <button class="btn btn-ghost" id="op-btn-hist" onclick="opModo()" style="padding:8px 14px;font-size:12px;">🗄️ Historial</button>
             <button class="btn btn-primary" id="op-btn-nueva" onclick="opNuevaDesdeCotiz()" style="padding:8px 16px;font-size:13px;">➕ Nueva OP desde cotización</button>
           </div>
+          <!-- Barra de ACTIVAS. Las cerradas y anuladas no viven aquí: se ven en
+               🗄️ Historial. Una pantalla donde todo cabe es una donde nada resalta. -->
           <div class="bd-filters" id="op-filtros">
             <button class="bd-filter-btn active" onclick="opFiltrar('todas',this)">Todas</button>
+            <button class="bd-filter-btn" onclick="opFiltrar('atrasadas',this)" title="Llevan más días de la cuenta sin moverse. Lo que espera material de fabricación no cuenta hasta su fecha comprometida.">⏰ Atrasadas</button>
             <button class="bd-filter-btn" onclick="opFiltrar('borrador',this)">✏️ Borrador</button>
             <button class="bd-filter-btn" onclick="opFiltrar('en_compras',this)">🛒 En compras</button>
             <button class="bd-filter-btn" onclick="opFiltrar('pendiente_aprobacion',this)">⏳ Por aprobar</button>
             <button class="bd-filter-btn" onclick="opFiltrar('aprobada',this)">✅ Aprobadas</button>
             <button class="bd-filter-btn" onclick="opFiltrar('por_enviar',this)" title="Alistadas, con remisión y descontadas del inventario, pero el material sigue en la bodega">📦 Por enviar</button>
+            <button class="bd-filter-btn" onclick="opFiltrar('en_camino',this)" title="Ya salieron con la transportadora">🚚 En camino</button>
+            <button class="bd-filter-btn" onclick="opFiltrar('por_facturar',this)" title="Despachadas y todavía sin factura">💳 Por facturar</button>
             <button class="bd-filter-btn" onclick="opFiltrar('devuelta',this)">↩️ Devueltas</button>
             <button class="bd-filter-btn" onclick="opFiltrar('en_ejecucion',this)">🛒 En ejecución</button>
+          </div>
+          <!-- Barra del HISTORIAL: aparece solo en ese modo. -->
+          <div class="bd-filters" id="op-filtros-hist" style="display:none;">
+            <button class="bd-filter-btn active" onclick="opFiltrar('todas',this)">Todas</button>
             <button class="bd-filter-btn" onclick="opFiltrar('cerrada',this)">🔒 Cerradas</button>
+            <button class="bd-filter-btn" onclick="opFiltrar('anulada',this)">⛔ Anuladas</button>
+            <select id="op-hist-mes" onchange="opRenderLista()"
+                    style="margin-left:6px;padding:6px 10px;font-size:12px;"></select>
           </div>
           <div id="op-lista-count" class="abs-count"></div>
           <div class="op-libro" id="op-lista-cont">
@@ -3704,9 +3724,16 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
                   <label style="font-size:10px;letter-spacing:.1em;">CLIENTE</label>
                   <input type="text" id="op-cliente" style="width:100%;">
                 </div>
-                <div class="form-group" style="margin-bottom:0;">
+                <div class="form-group" style="margin-bottom:9px;">
                   <label style="font-size:10px;letter-spacing:.1em;">N° O.C. DEL CLIENTE</label>
                   <input type="text" id="op-oc-cliente" placeholder="El que trae la orden" style="width:100%;">
+                </div>
+                <!-- La sale sola del tiempo de entrega más largo de la cotización.
+                     Se corrige a mano cuando el proveedor da una fecha real. -->
+                <div class="form-group" style="margin-bottom:0;">
+                  <label style="font-size:10px;letter-spacing:.1em;">FECHA COMPROMETIDA</label>
+                  <input type="date" id="op-fecha-comp" style="width:100%;">
+                  <div id="op-fecha-comp-eco" style="font-size:10.5px;color:var(--text-muted);margin-top:3px;"></div>
                 </div>
               </div>
             </div>
@@ -22815,6 +22842,85 @@ const OP_ESTADOS = {
   anulada:              { lbl: 'Anulada',         cls: 'cotiz-estado-rechazada', icon: '⛔' }
 };
 
+// ═══ 1-sep-2026 · HISTORIAL Y ATRASADAS ══════════════════════════════════════
+// La pantalla mostraba TODAS las OP juntas. Con ~2 nuevas al día, en tres meses
+// son 200 y la que pide algo hoy se pierde entre las que ya terminaron. Por eso
+// las CERRADAS y ANULADAS salen de la lista y viven en 🗄️ Historial: no se
+// borran ni se esconden, dejan de estorbar.
+const OP_ARCHIVADAS = ['cerrada', 'anulada'];
+let op_modo = 'activas';                      // 'activas' | 'historial'
+
+// Días sin moverse antes de pintarse ⏰ Atrasada, por estado. Se cuentan desde el
+// ÚLTIMO CAMBIO de la OP (`updated_at`), no desde que se creó: lo que importa no
+// es que sea vieja, es que lleve quieta.
+const OP_DIAS_QUIETA = {
+  borrador: 1, pendiente_aprobacion: 1, devuelta: 1,
+  en_compras: 2, aprobada: 2, en_ejecucion: 4, despachada: 5
+};
+// Solo estas etapas esperan MATERIAL. Que algo sea de fabricación no justifica
+// que el jefe se demore en aprobar ni que se demore la factura: esas dependen de
+// nosotros y siguen con el plazo corto.
+const OP_ETAPAS_MATERIAL = ['en_compras', 'en_ejecucion'];
+
+// Lee el tiempo de entrega escrito a mano y devuelve DÍAS CALENDARIO (el tope).
+// Se queda con el número MAYOR del rango: "1-2 DIAS" son 2, no 1. Medir el atraso
+// contra el extremo optimista marcaría atrasado lo que va bien.
+// Probado contra los 25 valores distintos que hay en `cotizacion_items`.
+function _opDiasEntrega(txt) {
+  const t = String(txt || '').toUpperCase()
+    .replace(/[ÁÀÄÂ]/g, 'A').replace(/[ÉÈËÊ]/g, 'E').replace(/[ÍÌÏÎ]/g, 'I')
+    .replace(/[ÓÒÖÔ]/g, 'O').replace(/[ÚÙÜÛ]/g, 'U').trim();
+  if (!t) return null;
+  if (/INMEDIAT|ENTREGA YA|STOCK|DISPONIBLE/.test(t)) return 0;
+  const nums = (t.match(/\d+(?:[.,]\d+)?/g) || []).map(n => parseFloat(n.replace(',', '.')));
+  if (!nums.length) return null;                      // "A CONVENIR" y parecidos
+  const n = Math.max.apply(null, nums);
+  let dias = /SEMANA/.test(t) ? n * 7 : /\bMES(ES)?\b/.test(t) ? n * 30 : n;
+  // "días hábiles" no son días de calendario: 10 hábiles son 2 semanas.
+  if (/HABIL/.test(t) && !/SEMANA|MES/.test(t)) dias = Math.ceil(dias * 7 / 5);
+  return Math.round(dias);
+}
+
+// El plazo de la OP lo marca su línea MÁS LENTA: el pedido no sale completo hasta
+// que llegue la última, y mandar dos veces a Orito cuesta más que el ítem que falta.
+function _opDiasDeLineas(items) {
+  let max = null;
+  (items || []).forEach(it => {
+    const d = _opDiasEntrega(it && (it.tiempoEntrega || it.tiempo_entrega));
+    if (d != null && (max == null || d > max)) max = d;
+  });
+  return max;
+}
+
+function _opHoyISO() { return new Date().toISOString().substring(0, 10); }
+function _opDiasQuieta(o) {
+  const base = o.updated_at || o.created_at;
+  if (!base) return 0;
+  return Math.floor((Date.now() - new Date(base).getTime()) / 86400000);
+}
+
+// ¿Está atrasada? Devuelve null si no, o el motivo si sí.
+function opAtrasada(o) {
+  if (!o || OP_ARCHIVADAS.includes(o.estado)) return null;   // lo terminado no se atrasa
+  const umbral = OP_DIAS_QUIETA[o.estado];
+  if (umbral == null) return null;
+  // Despachada Y facturada ya no pide nada; espera el cierre, que no es urgencia.
+  if (o.estado === 'despachada' && o.factura) return null;
+  const dias = _opDiasQuieta(o);
+  // Si espera material y hay una fecha comprometida, manda ELLA. Es el caso de la
+  // fabricación: hay líneas cotizadas a 24 semanas, y con el plazo corto saldrían
+  // atrasadas desde el primer día, que es la forma más rápida de que el equipo
+  // deje de mirar las banderas.
+  if (OP_ETAPAS_MATERIAL.includes(o.estado) && o.fecha_comprometida) {
+    if (_opHoyISO() <= String(o.fecha_comprometida)) return null;
+    const tarde = Math.floor((Date.now() - new Date(o.fecha_comprometida + 'T00:00:00').getTime()) / 86400000);
+    return 'comprometida el ' + String(o.fecha_comprometida).split('-').reverse().join('/')
+      + ' · ' + tarde + ' día(s) tarde';
+  }
+  if (dias > umbral) return dias + ' día(s) sin moverse';
+  return null;
+}
+
 // ─── Permisos ────────────────────────────────────────────────────────────────
 // Crean: el comercial o asistente de ESA oferta, más Andrea y gerencia.
 // Aprueba: gerencia. Es la compuerta que pidió el jefe.
@@ -22903,11 +23009,36 @@ function opRenderLista() {
   const cont = document.getElementById('op-lista-cont');
   if (!cont) return;
   const q = ((document.getElementById('op-search') || {}).value || '').toLowerCase().trim();
-  // «por_enviar» no es un estado: es una condición que cruza varios. Una OP
-  // alistada y sin salir puede estar en cualquier estado de la máquina.
-  let l = op_filtro === 'todas' ? op_lista.slice()
-        : op_filtro === 'por_enviar' ? op_lista.filter(o => o._porEnviar)
-        : op_lista.filter(o => o.estado === op_filtro);
+  // Primero el MODO: activas (lo que pide algo) o historial (lo que ya terminó).
+  const hist = op_modo === 'historial';
+  const univ = op_lista.filter(o => OP_ARCHIVADAS.includes(o.estado) === hist);
+
+  // «por_enviar», «en_camino», «por_facturar» y «atrasadas» NO son estados: son
+  // condiciones que cruzan varios. Una OP alistada y sin salir puede estar en
+  // cualquier estado de la máquina.
+  let l = op_filtro === 'todas' ? univ.slice()
+        : op_filtro === 'por_enviar' ? univ.filter(o => o._porEnviar)
+        : op_filtro === 'en_camino' ? univ.filter(o => o.estado === 'despachada' && o.enviada_at)
+        : op_filtro === 'por_facturar' ? univ.filter(o => o.estado === 'despachada' && !o.factura)
+        : op_filtro === 'atrasadas' ? univ.filter(o => !!opAtrasada(o))
+        : univ.filter(o => o.estado === op_filtro);
+
+  // El historial se recorre por mes: sin eso, buscar una de marzo es bajar y bajar.
+  const selMes = document.getElementById('op-hist-mes');
+  if (hist && selMes) {
+    const meses = Array.from(new Set(univ.map(o => String(o.cerrada_at || o.updated_at
+      || o.created_at || '').substring(0, 7)).filter(Boolean))).sort().reverse();
+    const antes = selMes.value;
+    const opts = ['<option value="">Todos los meses</option>'].concat(meses.map(m =>
+      '<option value="' + m + '">' + _opMesTxt(m) + '</option>')).join('');
+    if (selMes.innerHTML !== opts) {
+      selMes.innerHTML = opts;
+      if (antes && meses.includes(antes)) selMes.value = antes;
+    }
+    if (selMes.value) l = l.filter(o => String(o.cerrada_at || o.updated_at || o.created_at
+      || '').substring(0, 7) === selMes.value);
+  }
+
   if (q) l = l.filter(o => [o.numero, o.cotizacion_id, o.oc_cliente, o.cliente]
     .some(x => String(x || '').toLowerCase().includes(q)));
 
@@ -22917,16 +23048,27 @@ function opRenderLista() {
 
   const cnt = document.getElementById('op-lista-count');
   if (cnt) {
-    const esp = op_lista.filter(o => o.estado === 'pendiente_aprobacion').length;
-    const env = op_lista.filter(o => o._porEnviar).length;
+    const act = op_lista.filter(o => !OP_ARCHIVADAS.includes(o.estado));
+    const esp = act.filter(o => o.estado === 'pendiente_aprobacion').length;
+    const env = act.filter(o => o._porEnviar).length;
+    const fac = act.filter(o => o.estado === 'despachada' && !o.factura).length;
+    const atr = act.filter(o => !!opAtrasada(o)).length;
+    const arch = op_lista.length - act.length;
     cnt.innerHTML = l.length + ' orden' + (l.length === 1 ? '' : 'es') + ' de pedido'
-      + (esp ? ' · <b style="color:#E8A020">' + esp + ' esperando aprobación</b>' : '')
-      + (env ? ' · <b style="color:#E8A020">' + env + ' por enviar</b>' : '');
+      + (hist ? ' en el historial'
+        : (esp ? ' · <b style="color:#E8A020">' + esp + ' esperando aprobación</b>' : '')
+          + (env ? ' · <b style="color:#E8A020">' + env + ' por enviar</b>' : '')
+          + (fac ? ' · <b style="color:#E8A020">' + fac + ' por facturar</b>' : '')
+          + (atr ? ' · <b style="color:#e05a4a">' + atr + ' atrasada' + (atr === 1 ? '' : 's') + '</b>' : '')
+          + (arch ? ' <span style="color:var(--text-muted)">· ' + arch
+              + ' en 🗄️ Historial</span>' : ''));
   }
 
   if (!l.length) {
     cont.innerHTML = '<div class="op-vacio">'
-      + (op_lista.length
+      + (hist
+        ? '<strong>El historial está vacío</strong>Aquí van a parar las órdenes cerradas y las anuladas.'
+        : op_lista.length
         ? '<strong>Nada con ese filtro</strong>Prueba con otro estado o limpia la búsqueda.'
         : '<strong>Todavía no hay órdenes de pedido</strong>Se crean desde una cotización ganada: cada OP arrastra sus ítems, dice qué sale de bodega y qué hay que comprar.')
       + '</div>';
@@ -22935,6 +23077,7 @@ function opRenderLista() {
 
   cont.innerHTML = l.map(o => {
     const items = (o._items != null ? o._items : '—');
+    const _atr = opAtrasada(o);
     return '<div class="op-fila" data-e="' + opEsc(o.estado) + '" tabindex="0" role="button"'
       + ' onclick="opAbrir(' + o.id + ')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();opAbrir(' + o.id + ')}">'
       + '<div class="op-fila-marca"></div>'
@@ -22949,6 +23092,12 @@ function opRenderLista() {
       // el cliente esperando. Se ve desde la lista, sin abrir la OP.
       + (o._porEnviar ? '<span class="op-chip-envio">📦 Por enviar</span>' : '')
       + (o.enviada_at ? '<span class="op-nota">🚚 ' + opEsc(_opEnvioTxt(o)) + '</span>' : '')
+      // Quieta más días de la cuenta. Lo que espera fabricación no cuenta hasta
+      // su fecha comprometida, si no la bandera saldría en todas y no diría nada.
+      + (_atr ? '<span class="op-chip-atraso" title="' + opEsc(_atr) + '">⏰ Atrasada</span>' : '')
+      + (!_atr && o.fecha_comprometida && OP_ETAPAS_MATERIAL.includes(o.estado)
+          ? '<span class="op-nota">📅 para el '
+            + opEsc(String(o.fecha_comprometida).split('-').reverse().join('/')) + '</span>' : '')
       + '</div>'
       + '<div class="op-fila-mini">' + items + ' ítems</div>'
       + '<div class="op-fila-val">' + opMoney(o._valor || o.valor_venta || 0) + '</div>'
@@ -22992,6 +23141,25 @@ function opRenderEditor() {
   ['op-cliente', 'op-oc-cliente'].forEach(id => {
     const e = document.getElementById(id); if (e) e.readOnly = !editable;
   });
+
+  // Fecha comprometida: sale sola del tiempo de entrega más largo de la
+  // cotización y se corrige a mano. Es la que decide si la OP se pinta ⏰
+  // Atrasada mientras espera material — sin ella, lo que se fabrica en 24
+  // semanas saldría en rojo desde el primer día.
+  const fcEl = document.getElementById('op-fecha-comp');
+  if (fcEl) {
+    fcEl.value = o.fecha_comprometida || '';
+    fcEl.disabled = !editable;
+    const eco = document.getElementById('op-fecha-comp-eco');
+    if (eco) {
+      const atr = opAtrasada(o);
+      eco.innerHTML = !o.fecha_comprometida
+        ? 'Sin fecha: se usa el plazo corto por etapa.'
+        : (atr && atr.indexOf('comprometida') === 0
+            ? '<b style="color:#fca5a5">⏰ ' + opEsc(atr) + '</b>'
+            : 'Mientras no pase, la OP no se marca atrasada.');
+    }
+  }
 
   // 28-ago-2026 — Las observaciones NO siguen el permiso de edición de la OP.
   // Son la nota de por qué está detenida (sin facturar, sin enviar, esperando
@@ -23304,8 +23472,41 @@ async function opCargar(avisar) {
 
 function opFiltrar(estado, btn) {
   op_filtro = estado;
-  document.querySelectorAll('#op-filtros .bd-filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#op-filtros .bd-filter-btn, #op-filtros-hist .bd-filter-btn')
+    .forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  opRenderLista();
+}
+
+const _OP_MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio',
+                   'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+function _opMesTxt(m) {
+  const p = String(m || '').split('-');
+  return p.length === 2 ? (_OP_MESES[(+p[1] || 1) - 1] + ' ' + p[0]) : String(m || '');
+}
+
+// Cambia entre las activas y el historial. Cada modo arranca en «Todas»: dejar
+// el filtro puesto haría que el historial se viera vacío sin razón aparente.
+function opModo(forzar) {
+  op_modo = forzar || (op_modo === 'historial' ? 'activas' : 'historial');
+  const hist = op_modo === 'historial';
+  const fa = document.getElementById('op-filtros');
+  const fh = document.getElementById('op-filtros-hist');
+  if (fa) fa.style.display = hist ? 'none' : '';
+  if (fh) fh.style.display = hist ? '' : 'none';
+  const bt = document.getElementById('op-btn-hist');
+  if (bt) {
+    bt.textContent = hist ? '← Volver a las activas' : '🗄️ Historial';
+    bt.classList.toggle('btn-primary', hist);
+    bt.classList.toggle('btn-ghost', !hist);
+  }
+  const nueva = document.getElementById('op-btn-nueva');
+  if (nueva) nueva.style.display = hist ? 'none' : '';    // no se crea desde el historial
+  op_filtro = 'todas';
+  (hist ? [fh, fa] : [fa, fh]).forEach((cja, i) => {
+    if (!cja) return;
+    cja.querySelectorAll('.bd-filter-btn').forEach((b, j) => b.classList.toggle('active', i === 0 && j === 0));
+  });
   opRenderLista();
 }
 
@@ -23754,15 +23955,37 @@ async function opCrearDesde(cotizId) {
     // Si la OP nació solo con parte de la cotización, su valor es el de SUS
     // líneas. Dejar el de la cotización completa infla la venta, y ese número es
     // el que ve gerencia al aprobar y el que compara contra el costo de compras.
-    if (dec.soloUids) {
-      const suma = filas.reduce((s, f) => s + (+f.v_total || 0), 0);
+    const patch = {};
+    if (dec.soloUids) patch.valor_venta = filas.reduce((s, f) => s + (+f.v_total || 0), 0);
+    // Fecha comprometida = hoy + el tiempo de entrega de la línea MÁS LENTA. Es lo
+    // que evita que una OP con material de fabricación (hay líneas cotizadas a 24
+    // semanas) se pinte atrasada desde el primer día. Se puede corregir a mano.
+    const diasE = _opDiasDeLineas(_opLineasDeCotiz(c).map(L => L.it));
+    if (diasE != null) {
+      const f = new Date(); f.setDate(f.getDate() + diasE);
+      patch.fecha_comprometida = f.toISOString().substring(0, 10);
+    }
+    if (Object.keys(patch).length) {
+      patch.updated_by = yo;
       try {
         await absFetch('ops?id=eq.' + op.id, {
-          method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
-          body: JSON.stringify({ valor_venta: suma, updated_by: yo })
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(patch)
         });
-        op.valor_venta = suma;
-      } catch (e) { console.warn('[op] valor parcial', e); }
+        Object.assign(op, patch);
+      } catch (e) {
+        // Si la base todavía no tiene `fecha_comprometida`, se reintenta sin ella:
+        // el plazo es una ayuda, no puede tumbar la creación de la OP.
+        console.warn('[op] patch creación', e);
+        if (patch.fecha_comprometida && patch.valor_venta != null) {
+          try {
+            await absFetch('ops?id=eq.' + op.id, {
+              method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+              body: JSON.stringify({ valor_venta: patch.valor_venta, updated_by: yo })
+            });
+            op.valor_venta = patch.valor_venta;
+          } catch (_) { }
+        }
+      }
     }
     // El motivo queda escrito: dentro de un mes, ver dos OP de la misma cotización
     // sin saber por qué es lo que hace dudar si alguien despachó doble.
@@ -23906,10 +24129,31 @@ async function opGuardarCabecera() {
       observaciones: (document.getElementById('op-observaciones').value || '').trim(),
       updated_by: (currentUser && (currentUser.email || currentUser.name)) || 'system'
     };
-    await absFetch('ops?id=eq.' + op_current.id, {
-      method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(body)
-    });
+    const fcEl = document.getElementById('op-fecha-comp');
+    const fc = fcEl ? ((fcEl.value || '').trim() || null) : null;
+    const fcCambio = fcEl && fc !== (op_current.fecha_comprometida || null);
+    if (fcCambio) body.fecha_comprometida = fc;
+    try {
+      await absFetch('ops?id=eq.' + op_current.id, {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(body)
+      });
+    } catch (e) {
+      // La columna `fecha_comprometida` puede no existir todavía (migración sin
+      // correr). Antes que perder el resto de la cabecera, se guarda sin ella y
+      // se avisa: lo que NO puede pasar es que el usuario crea que guardó.
+      if (!fcCambio) throw e;
+      delete body.fecha_comprometida;
+      await absFetch('ops?id=eq.' + op_current.id, {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(body)
+      });
+      Object.assign(op_current, body);
+      showToast('💾 Guardada, PERO la fecha comprometida no: a la base le falta la '
+        + 'columna `fecha_comprometida`. Avisa a sistemas.', 'error', { durationMs: 14000 });
+      return;
+    }
     Object.assign(op_current, body);
+    if (fcCambio) await opEvento(op_current.id, 'plazo_cambiado',
+      'Fecha comprometida ' + (fc ? '→ ' + fc : 'borrada'));
     showToast('💾 Guardada', 'success');
   } catch (e) {
     showToast('No se pudo guardar: ' + e.message, 'error');
