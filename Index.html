@@ -23341,8 +23341,23 @@ function _opCotizBuscar() {
   const cont = document.getElementById('_opCotizRes');
   if (!cont) return;
   if (!l.length) { cont.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:14px;">Sin resultados.</div>'; return; }
+  // Qué cotización ya tiene OP, dicho ANTES de dar clic. Sale de op_lista, que
+  // el módulo ya trae cargada: sin una consulta más. La comprobación de verdad
+  // (contra el servidor, ítem por ítem) la hace _opGuardiaCotizConOP al crear.
+  const opsPorCotiz = {};
+  (op_lista || []).forEach(o => {
+    if (!o || o.estado === 'anulada' || !o.cotizacion_id) return;
+    (opsPorCotiz[String(o.cotizacion_id)] = opsPorCotiz[String(o.cotizacion_id)] || []).push(o);
+  });
   cont.innerHTML = l.slice(0, 40).map(c => {
     const permitido = opPuedeCrear(c);
+    const yaOps = opsPorCotiz[String(c.id)] || [];
+    const chip = yaOps.length
+      ? '<div style="font-size:11px;color:#c4b5fd;margin-top:2px;">📑 Ya tiene '
+        + yaOps.map(o => opEsc(o.numero) + ' <span style="color:var(--text-muted)">('
+            + opEsc((OP_ESTADOS[o.estado] || {}).lbl || o.estado || '—') + ')</span>').join(' · ')
+        + '</div>'
+      : '';
     return '<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-bottom:1px solid var(--border);'
       + (permitido ? '' : 'opacity:.45;') + '">'
       + '<div style="flex:1;min-width:0;">'
@@ -23350,12 +23365,122 @@ function _opCotizBuscar() {
       + ' <span style="color:#fff;font-weight:600">' + opEsc(c.cliente || '') + '</span></div>'
       + '<div style="font-size:11px;color:var(--text-muted)">' + opEsc(c.fecha || '') + ' · '
       + (c.items || []).length + ' ítems · ' + opMoney(c.subtotal || 0)
-      + ' · ' + opEsc(c.vendedor || c.realizadaPor || 'sin vendedor') + '</div></div>'
+      + ' · ' + opEsc(c.vendedor || c.realizadaPor || 'sin vendedor') + '</div>' + chip + '</div>'
       + (permitido
         ? '<button class="btn-sm bd-btn-edit" onclick="opCrearDesde(\'' + opEsc(c.id).replace(/'/g, "\\'") + '\')">Crear OP</button>'
         : '<span style="font-size:10.5px;color:var(--text-muted)">no es tuya</span>')
       + '</div>';
   }).join('');
+}
+
+// Qué líneas de la cotización se convierten en ítems de la OP. Vive aparte —
+// como `_pcomLineasDeCotiz` en el Plan de Compras — porque el aviso de "esta
+// cotización YA tiene OP" tiene que comparar EXACTAMENTE lo mismo que se va a
+// crear. Dos copias de esta regla se desincronizan y el aviso empieza a mentir.
+// Reglas: las alternativas no van, y si hubo adjudicación parcial solo entra lo
+// adjudicado, con la cantidad adjudicada.
+function _opLineasDeCotiz(c) {
+  const mapaAdj = (typeof _cotizAdjMapa === 'function') ? _cotizAdjMapa(c) : null;
+  const out = [];
+  (c && c.items || []).forEach(it => {
+    if (typeof _cotizEsAlt === 'function' && _cotizEsAlt(it)) return;   // las alternativas no van
+    let qty = +it.qty || 0;
+    if (mapaAdj) {
+      if (mapaAdj[it.uid] == null) return;                              // no se lo adjudicaron
+      qty = +mapaAdj[it.uid] || 0;
+      if (!qty) return;
+    }
+    out.push({ it: it, uid: it.uid || null, qty: qty });
+  });
+  return out;
+}
+
+// ─── Guardia: ¿esta cotización YA tiene OP? ──────────────────────────────────
+// De una cotización SÍ pueden salir varias OP (decisión del 22-ago: despachos
+// por partes, adjudicaciones parciales). Por eso esto avisa y no bloquea. Pero
+// hay que separar dos cosas que antes se veían iguales:
+//   · queda material sin OP  → es una OP adicional legítima, se confirma y ya.
+//   · TODO ya está en una OP → es un duplicado, y desde v235 (ligar descuenta)
+//     un duplicado significa despachar dos veces y descontar dos veces el
+//     inventario. Ahí se exige escribir el número de la cotización a mano, la
+//     misma vara que se usa para borrar un plan de compras.
+// Devuelve true para seguir creando, false para abortar.
+async function _opGuardiaCotizConOP(c) {
+  let ops;
+  try {
+    ops = (await absFetch('ops?deleted=is.false&cotizacion_id=eq.' + encodeURIComponent(c.id)
+      + '&select=id,numero,estado,valor_venta,created_by,created_at&order=numero')) || [];
+  } catch (e) {
+    // Antes este error se tragaba en silencio y la OP se creaba igual. Si no se
+    // sabe qué hay, se pregunta: una OP repetida cuesta un despacho doble.
+    return confirm('⚠️ No pude comprobar si ' + c.id + ' ya tiene una OP.\n\n'
+      + (e && e.message || e) + '\n\n¿Crear la OP de todos modos?');
+  }
+  const vivas = ops.filter(o => o.estado !== 'anulada');
+  if (!vivas.length) return true;
+
+  const nombra = o => o.numero + ' (' + ((OP_ESTADOS[o.estado] || {}).lbl || o.estado || '—') + ')';
+  const listaOps = vivas.map(o => '· ' + nombra(o) + ' · ' + opMoney(o.valor_venta || 0)
+    + ' · la creó ' + (o.created_by || '—')).join('\n');
+
+  // ¿Qué ítems de la cotización están ya cubiertos? El amarre es
+  // `op_items.cotizacion_item_uid`, que es exacto. Sin él no se adivina.
+  let cubierto = {};
+  try {
+    const its = (await absFetch('op_items?select=cotizacion_item_uid,cantidad&op_id=in.('
+      + vivas.map(o => o.id).join(',') + ')&limit=4000')) || [];
+    its.forEach(i => {
+      const k = String(i.cotizacion_item_uid || '').trim();
+      if (k) cubierto[k] = (cubierto[k] || 0) + (+i.cantidad || 0);
+    });
+  } catch (_) { cubierto = null; }
+
+  const nuevas = _opLineasDeCotiz(c);
+  const pend = cubierto && nuevas.length
+    ? nuevas.filter(L => !L.uid || (+cubierto[L.uid] || 0) < L.qty)
+    : null;
+
+  // Caso 1 — no se pudo comparar ítem por ítem. Se dice lo que hay y decide la persona.
+  if (!pend) {
+    return confirm(c.id + ' ya tiene ' + vivas.length + ' OP:\n\n' + listaOps
+      + '\n\nNo pude comparar los ítems para saber si esta sería repetida.\n'
+      + 'Ábrela y míralo antes, si tienes duda.\n\n¿Crear otra OP igual?');
+  }
+
+  // Caso 2 — DUPLICADO: no queda un solo ítem por fuera.
+  if (!pend.length) {
+    if (confirm('🚨 ' + c.id + ' YA está completa en:\n\n' + listaOps
+      + '\n\nNo queda NINGÚN ítem por fuera. Crear otra OP sería repetirla:\n'
+      + 'se despacharía dos veces y se descontaría dos veces del inventario.\n\n'
+      + 'Aceptar = abrir ' + vivas[0].numero + '  ·  Cancelar = seguir para crear otra')) {
+      navigate('op');
+      try { await opAbrir(vivas[0].id); } catch (_) { await opCargar(false); }
+      return false;
+    }
+    const tecleado = prompt('Para crear una OP repetida de ' + c.id + ', escribe el número\n'
+      + 'de la cotización tal cual: ' + c.id + '\n\n'
+      + '(Si lo que quieres es corregir la OP que ya existe, cancela y ábrela.)', '');
+    if (String(tecleado || '').trim().toUpperCase() !== String(c.id).trim().toUpperCase()) {
+      showToast('No se creó la OP: ' + c.id + ' ya está completa en ' + vivas[0].numero, 'info',
+        { durationMs: 9000 });
+      return false;
+    }
+    return true;
+  }
+
+  // Caso 3 — OP adicional legítima: hay material que todavía no está en ninguna OP.
+  const cubiertas = nuevas.length - pend.length;
+  const muestra = pend.slice(0, 6).map(L => '· ' + String(L.it.desc || '').substring(0, 48)
+    + ' × ' + L.qty).join('\n');
+  return confirm(c.id + ' ya tiene ' + vivas.length + ' OP:\n\n' + listaOps
+    + '\n\nTodavía hay ' + pend.length + ' ítem(s) que no están en ninguna OP:\n' + muestra
+    + (pend.length > 6 ? '\n· … y ' + (pend.length - 6) + ' más' : '')
+    + (cubiertas
+      ? '\n\n⚠️ OJO: la OP nueva nace con los ' + nuevas.length + ' ítems de la cotización,\n'
+        + 'incluidos los ' + cubiertas + ' que YA están en la OP de arriba. Bórralos a mano\n'
+        + 'en la OP nueva, o los despachas dos veces.'
+      : '')
+    + '\n\n¿Crear la OP adicional?');
 }
 
 // Cabecera de una OP nueva. Vive aparte porque la creación puede reintentarse
@@ -23378,6 +23503,9 @@ async function opCrearDesde(cotizId) {
   const c = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === cotizId && !x.deleted);
   if (!c) { showToast('No encontré la cotización ' + cotizId, 'error'); return; }
   if (!opPuedeCrear(c)) { showToast('Esa cotización no es tuya. La crea su comercial, Andrea o gerencia.', 'error'); return; }
+  // La guardia vive AQUÍ y no en quien llama: por este punto pasan las dos
+  // entradas (el botón 📑 de la BD de cotizaciones y el buscador del módulo OP).
+  if (!(await _opGuardiaCotizConOP(c))) { const o0 = document.getElementById('_opCotizOv'); if (o0) o0.remove(); return; }
   const ov = document.getElementById('_opCotizOv'); if (ov) ov.remove();
   showToast('Creando OP desde ' + cotizId + '…', 'info');
   try {
@@ -23410,14 +23538,8 @@ async function opCrearDesde(cotizId) {
     const mapaAdj = (typeof _cotizAdjMapa === 'function') ? _cotizAdjMapa(c) : null;
     const filas = [];
     let n = 0;
-    (c.items || []).forEach(it => {
-      if (typeof _cotizEsAlt === 'function' && _cotizEsAlt(it)) return;   // las alternativas no van
-      let qty = +it.qty || 0;
-      if (mapaAdj) {
-        if (mapaAdj[it.uid] == null) return;                              // no se lo adjudicaron
-        qty = +mapaAdj[it.uid] || 0;
-        if (!qty) return;
-      }
+    _opLineasDeCotiz(c).forEach(L => {
+      const it = L.it, qty = L.qty;
       n++;
       const costo = (it.precioProveedor != null ? +it.precioProveedor : null);
       const prov = (it.proveedor || '').trim();
@@ -23468,13 +23590,9 @@ async function opDesdeBD(cotizId) {
     showToast('Esa cotización no es tuya. La OP la crea su comercial, Andrea o gerencia.', 'error');
     return;
   }
-  // Aviso, no bloqueo: de una cotización SÍ pueden salir varias OP.
-  try {
-    const ya = await absFetch('ops?deleted=is.false&cotizacion_id=eq.' + encodeURIComponent(cotizId) + '&select=numero');
-    if (ya && ya.length) {
-      if (!confirm(cotizId + ' ya tiene ' + ya.length + ' OP (' + ya.map(x => x.numero).join(', ') + ').\n\n¿Crear otra?')) return;
-    }
-  } catch (_) { }
+  // El aviso de "ya tiene OP" vive dentro de opCrearDesde, para que valga igual
+  // por este atajo y por el buscador del módulo. Antes estaba solo aquí (y se
+  // tragaba el error de red en silencio), así que crear desde el módulo no avisaba.
   navigate('op');
   await opCrearDesde(cotizId);
 }
