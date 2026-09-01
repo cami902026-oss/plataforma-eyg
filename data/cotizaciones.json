@@ -88256,7 +88256,7 @@
     "cliente": "CIAM",
     "contacto": "YEISON MARTINEZ",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 6402843,
@@ -88483,12 +88483,78 @@
         "precioProveedor": 25000
       }
     ],
-    "fechaGuardado": "2026-08-31T19:46:17.176Z",
+    "fechaGuardado": "2026-09-01T16:06:13.819Z",
     "fechaEnvio": "2026-08-31T19:46:17.176Z",
+    "adjudicadaAt": "2026-09-01",
+    "valorAdjudicado": 6402843,
+    "itemsAdjudicados": [
+      {
+        "uid": "bc0aa069-5f4e-403a-8d82-b120a734467b",
+        "qty": 10
+      },
+      {
+        "uid": "ecf00758-4731-467b-b9b9-eea13e306760",
+        "qty": 1
+      },
+      {
+        "uid": "9fab1f73-bdcc-4db3-bd59-33b3efd43b9e",
+        "qty": 3
+      },
+      {
+        "uid": "0e2dd06a-b037-4d06-951d-a2c431948e33",
+        "qty": 4
+      },
+      {
+        "uid": "c2cdaec6-26bf-44d1-a572-df6128cf5487",
+        "qty": 4
+      },
+      {
+        "uid": "42ee1595-dfeb-4562-84b5-c9176c6a9008",
+        "qty": 2
+      },
+      {
+        "uid": "d62a7bbd-89d0-4077-aea9-acc5ba20271d",
+        "qty": 1
+      },
+      {
+        "uid": "667cbeef-2e31-4a13-839a-3b655828bb82",
+        "qty": 10
+      },
+      {
+        "uid": "5386c9f3-24de-4a4b-bfd4-b75a8712b23a",
+        "qty": 1
+      },
+      {
+        "uid": "44bbaa8b-7b41-4e5b-8c3c-50bd54caf7d1",
+        "qty": 1
+      },
+      {
+        "uid": "7466cdf8-6614-4a05-b55e-961869d3079e",
+        "qty": 12
+      },
+      {
+        "uid": "eced5af3-952a-4ff9-a478-f45ebf753bcb",
+        "qty": 4
+      },
+      {
+        "uid": "468fe3a0-feb9-4bf7-9145-fd0f983b44aa",
+        "qty": 2
+      },
+      {
+        "uid": "a7aa6a52-86e1-40f4-8348-492faded3a6d",
+        "qty": 2
+      },
+      {
+        "uid": "d3dbcfd1-64b7-4a66-a7df-af03013d2528",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-09-01T16:06:13.811Z",
     "createdAt": "2026-08-31T19:44:21.631Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-31T19:46:17.176Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-01T16:06:13.820Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2074",
