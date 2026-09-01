@@ -24207,7 +24207,8 @@ async function opLigarAbrir() {
     + '<button onclick="_opLigarCerrar()" aria-label="Cerrar">×</button></div>'
     + '<div class="op-plan-d" style="margin-bottom:12px">Marca la remisión que corresponde a <b>'
     + opEsc(o.numero) + '</b>. Los ítems quedan despachados con ese número. '
-    + '<b>No se toca el inventario</b>: la remisión ya descontó cuando se creó.</div>'
+    + '<b>El inventario SÍ se descuenta</b>, pero solo lo que salga de bodega y no haya '
+    + 'descontado ya: antes de mover nada se revisa el kardex de esa remisión.</div>'
     + '<div class="op-ligar-lista">' + cuerpo + '</div>'
     + '<div id="op-ligar-aviso"></div>'
     + '<div class="op-modal-pie">'
@@ -24282,10 +24283,86 @@ async function opLigarConfirmar() {
       + '¿Ligar de todos modos?')) return;
   }
 
+  // 1-sep-2026 — LO QUE SALE DE BODEGA TIENE QUE DESCONTAR.
+  // Ligar nació asumiendo que la remisión ya había descontado al crearse. Es
+  // FALSO: el módulo de Remisiones solo escribe la tabla `remisiones`, nunca
+  // toca el kardex (Index.html, remiGuardar). Pasó en la OP-2026-0033 (WILLER,
+  // remisión 26284): 4 flanches de 6" y 2 espirometálicos salieron de bodega sin
+  // un solo movimiento y el stock siguió diciendo 19 y 30. Se corrigió a mano.
+  // La regla es: se descuenta lo que tenga código de producto y NO tenga ya una
+  // salida en el kardex de esa remisión. Preguntarle al kardex —y no confiar en
+  // una premisa— es lo que hace que ligar dos veces no descuente dos veces.
+  const aDescontar = [], sinDescontar = [], negativos = [], difCantidad = [];
+  const conCodigo = pares.filter(p => String(p.it.producto_codigo || '').trim());
+  if (conCodigo.length) {
+    let yaSalio;
+    try {
+      const mov = (await absFetch('kardex?tipo=eq.SALIDA&select=codigo_producto&or=('
+        + encodeURIComponent('remision.eq.' + num + ',op_numero.eq.' + op_current.numero)
+        + ')&limit=500')) || [];
+      yaSalio = new Set(mov.map(m => String(m.codigo_producto || '').trim()));
+    } catch (e) {
+      // Sin poder leer el kardex NO se descuenta a ciegas: descontar de más es
+      // peor que no descontar, porque el stock queda mintiendo hacia abajo.
+      if (av) av.innerHTML = '<div class="op-ligar-err">No se pudo leer el kardex para saber qué '
+        + 'ya descontó (' + opEsc(e && e.message || e) + '). No se liga: intenta de nuevo.</div>';
+      return;
+    }
+    const faltan = conCodigo.filter(p => !yaSalio.has(String(p.it.producto_codigo).trim()));
+    if (faltan.length) {
+      let stock = {};
+      try {
+        const ps = (await absFetch('productos?codigo=in.('
+          + faltan.map(p => encodeURIComponent(String(p.it.producto_codigo).trim())).join(',')
+          + ')&select=codigo,descripcion,stock_actual,costo_compra,salidas&limit=200')) || [];
+        ps.forEach(p => { stock[p.codigo] = p; });
+      } catch (e) {
+        if (av) av.innerHTML = '<div class="op-ligar-err">No se pudo leer el inventario ('
+          + opEsc(e && e.message || e) + '). No se liga: intenta de nuevo.</div>';
+        return;
+      }
+      faltan.forEach(p => {
+        const prod = stock[String(p.it.producto_codigo).trim()];
+        // Manda la cantidad de la REMISIÓN: es el papel que firmó el cliente y
+        // lo que de verdad salió. Si difiere de la OP se avisa, no se corrige solo.
+        const qRem = Math.abs(parseFloat(p.f.cantidad) || 0);
+        const qOp = Math.abs(parseFloat(p.it.cantidad) || 0);
+        const q = qRem || qOp;
+        if (!prod || !q) { sinDescontar.push(String(p.it.descripcion || '').substring(0, 46)); return; }
+        if (qRem && qOp && qRem !== qOp) {
+          difCantidad.push(String(p.it.descripcion || '').substring(0, 40)
+            + ' (OP ' + qOp + ' · remisión ' + qRem + ')');
+        }
+        const queda = (+prod.stock_actual || 0) - q;
+        if (queda < 0) {
+          negativos.push(prod.descripcion + ': hay ' + (+prod.stock_actual || 0)
+            + ' y la remisión dice ' + q + ' → quedaría en ' + queda);
+        }
+        aDescontar.push({ it: p.it, f: p.f, prod: prod, qty: q });
+      });
+    }
+  }
+
+  if (negativos.length && !confirm('🚨 El inventario NO alcanza para ' + negativos.length
+    + ' ítem(s):\n\n' + negativos.join('\n')
+    + '\n\nSe va a descontar igual porque el material YA SALIÓ: el stock en negativo\n'
+    + 'es la señal de que el maestro está mal (conteo, código duplicado o una\n'
+    + 'salida que nunca se registró). Corrígelo en Abastecimiento después.\n\n'
+    + '¿Descontar de todos modos?')) return;
+
   if (!confirm('Ligar la remisión ' + num + ' a ' + op_current.numero + '.\n\n'
     + pares.length + ' ítem(s) quedan DESPACHADOS.\n'
     + (sueltas ? sueltas + ' línea(s) de la remisión no emparejaron.\n' : '')
-    + '\nNo se toca el inventario: la remisión ya descontó cuando se creó.\n\n¿Continuar?')) return;
+    + (difCantidad.length ? '\n⚠️ Cantidad distinta entre la OP y la remisión:\n'
+        + difCantidad.map(t => '· ' + t).join('\n') + '\nSe descuenta lo de la REMISIÓN.\n' : '')
+    + '\n' + (aDescontar.length
+        ? 'SE DESCUENTAN DEL INVENTARIO ' + aDescontar.length + ' ítem(s):\n'
+          + aDescontar.map(x => '· ' + x.prod.descripcion + ': ' + (+x.prod.stock_actual || 0)
+              + ' → ' + ((+x.prod.stock_actual || 0) - x.qty)).join('\n') + '\n'
+        : 'No hay nada que descontar: o ya descontó, o no sale de bodega.\n')
+    + (sinDescontar.length ? '\nSin descontar (no están en el inventario): '
+        + sinDescontar.join(' · ') + '\n' : '')
+    + '\n¿Continuar?')) return;
 
   const btn = document.getElementById('op-ligar-ok');
   if (btn) { btn.disabled = true; btn.textContent = 'Ligando…'; }
@@ -24312,7 +24389,37 @@ async function opLigarConfirmar() {
       } catch (e) { fallos.push(p.it.descripcion + ' (' + (e && e.message || e) + ')'); }
     }
 
-    // 3) Las reservas de esos ítems ya no aplican: el material salió.
+    // 3) El inventario. Misma mecánica que «Alistar y despachar»: kardex primero
+    //    (es el rastro) y después el saldo del producto. Si una línea falla se
+    //    anota y las demás siguen: media corrección vale más que ninguna.
+    const fecha = String(pares[0].f.fecha || '').substring(0, 10)
+      || new Date().toISOString().split('T')[0];
+    for (const x of aDescontar) {
+      try {
+        const nuevo = (+x.prod.stock_actual || 0) - x.qty;
+        const col = String(x.f.colada || x.it.colada || '').trim();
+        await absFetch('kardex', {
+          method: 'POST', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({
+            fecha: fecha, hora: new Date().toTimeString().split(' ')[0],
+            codigo_producto: x.prod.codigo, descripcion_producto: x.prod.descripcion,
+            tipo: 'SALIDA', cantidad: x.qty, stock_resultante: nuevo,
+            costo: x.prod.costo_compra || 0, responsable: yo,
+            lote: '', colada: col, remision: num, op_numero: op_current.numero,
+            notas: 'Despacho de ' + op_current.numero + ' · remisión hecha aparte y ligada'
+          })
+        });
+        await absFetch('productos?codigo=eq.' + encodeURIComponent(x.prod.codigo), {
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ stock_actual: nuevo, salidas: (+x.prod.salidas || 0) + x.qty,
+                                 updated_at: new Date().toISOString() })
+        });
+      } catch (e) {
+        fallos.push('inventario de ' + x.prod.descripcion + ' (' + (e && e.message || e) + ')');
+      }
+    }
+
+    // 4) Las reservas de esos ítems ya no aplican: el material salió.
     try {
       await absFetch('op_reservas?op_id=eq.' + op_current.id + '&estado=eq.activa', {
         method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
@@ -24323,7 +24430,9 @@ async function opLigarConfirmar() {
 
     await opEvento(op_current.id, 'remision_ligada',
       'Remisión ' + num + ' (hecha aparte) · ' + pares.length + ' ítem(s) despachados'
-      + (sueltas ? ' · ' + sueltas + ' línea(s) sin emparejar' : ''));
+      + (sueltas ? ' · ' + sueltas + ' línea(s) sin emparejar' : '')
+      + (aDescontar.length ? ' · descontados del inventario: '
+          + aDescontar.map(x => x.prod.codigo + ' (' + x.qty + ')').join(', ') : ''));
 
     if (!fallos.length) {
       const quedan = (op_currentItems || []).filter(i => i.estado !== 'despachado').length;
@@ -24333,8 +24442,9 @@ async function opLigarConfirmar() {
 
     _opLigarCerrar();
     showToast(fallos.length
-      ? '⚠️ Remisión ' + num + ' ligada, pero ' + fallos.length + ' ítem(s) no quedaron marcados: ' + fallos.join(' · ')
-      : '🔗 Remisión ' + num + ' ligada a ' + op_current.numero + ' · ' + pares.length + ' ítem(s) despachados',
+      ? '⚠️ Remisión ' + num + ' ligada, pero quedaron ' + fallos.length + ' pendiente(s): ' + fallos.join(' · ')
+      : '🔗 Remisión ' + num + ' ligada a ' + op_current.numero + ' · ' + pares.length + ' ítem(s) despachados'
+        + (aDescontar.length ? ' · ' + aDescontar.length + ' descontado(s) del inventario' : ''),
       fallos.length ? 'error' : 'success', { durationMs: fallos.length ? 14000 : 8000 });
 
     opRenderEditor();
