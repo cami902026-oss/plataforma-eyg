@@ -89037,7 +89037,7 @@
     "cliente": "MYM",
     "contacto": "RAUL",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 56400,
@@ -89055,23 +89055,24 @@
     "items": [
       {
         "id": 1,
-        "desc": "EMPAQUE FLEXITALICO 10\" X 150 SS304",
-        "udm": "EA",
         "qty": 3,
-        "precio": 18800,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "fa3fe506-52b1-4edd-8f2c-6dc762ea6e7d",
+        "desc": "EMPAQUE FLEXITALICO 10\" X 150 SS304",
         "marca": "SPIRAL PACK",
+        "precio": 18800,
+        "desvTec": "",
         "proveedor": "COLIMPORTADOS",
-        "precioProveedor": 13150,
         "obsProveedor": "",
-        "uid": "fa3fe506-52b1-4edd-8f2c-6dc762ea6e7d"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 13150
       }
     ],
-    "fechaGuardado": "2026-09-01T19:09:50.716Z",
+    "fechaGuardado": "2026-09-01T19:10:06.500Z",
+    "fechaEnvio": "2026-09-01T19:10:06.500Z",
     "createdAt": "2026-09-01T19:09:50.716Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-01T19:09:50.716Z",
+    "updatedAt": "2026-09-01T19:10:06.500Z",
     "updatedBy": "sandra"
   },
   {
