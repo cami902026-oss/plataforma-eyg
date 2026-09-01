@@ -23379,6 +23379,61 @@ function _opCotizBuscar() {
 // crear. Dos copias de esta regla se desincronizan y el aviso empieza a mentir.
 // Reglas: las alternativas no van, y si hubo adjudicación parcial solo entra lo
 // adjudicado, con la cantidad adjudicada.
+// 1-sep-2026 — LOS ÍTEMS PUEDEN NO ESTAR EN LA COPIA LOCAL.
+// `bd_cotizaciones` guarda la cabecera de todas las cotizaciones, pero los ítems
+// viven en `cotizacion_items` y se bajan cuando se abre la cotización. Si nadie
+// la ha abierto en ESE equipo —o alguien la acaba de crear en otro— `c.items`
+// llega vacío. La OP se creaba igual: vacía, quemando un consecutivo y sin decir
+// nada. Pasó dos veces el 1-sep: OP-2026-0037 (LM2092) y OP-2026-0041 (LM2096),
+// esta última con la cotización recién adjudicada por otra persona un minuto antes.
+// Por eso, si local no trae nada, se le pregunta al SERVIDOR antes de crear nada.
+// 🚨 Y OJO: `cotizacion_items` TRAE FILAS REPETIDAS. Medido el 1-sep sobre las
+// 359 cotizaciones con ítems: 50 tienen un número de ítem repetido y en 27 el
+// total de las filas no cuadra con el subtotal de la cabecera — varias al doble
+// exacto, o sea cada línea duplicada. En LM2096 eran dos filas del ítem 1 (una
+// de las 16:54 y otra de las 17:02, con la descripción corregida por Sandra).
+// Bajar eso a ciegas habría creado la OP con el DOBLE de material, que es peor
+// que crearla vacía. Por eso:
+//   1) de cada número de ítem se deja la fila MÁS RECIENTE (la corregida),
+//   2) y el total tiene que cuadrar con el subtotal de la cotización. Si no
+//      cuadra, esto NO devuelve nada: mejor mandar a abrir la cotización que
+//      inventarse el pedido.
+// Devuelve { items, cuadra, suma, subtotal }.
+async function _opItemsFrescos(c) {
+  const its = (await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(c.id)
+    + '&select=id,item,uid,descripcion,udm,qty,v_unit,v_total,marca,proveedor,precio_proveedor,'
+    + 'tiempo_entrega,desviacion_tecnica,alt_de,updated_at&order=item.asc&limit=2000')) || [];
+
+  // Las alternativas se conservan tal cual: _opLineasDeCotiz ya las descarta, y
+  // dejarlas fuera del cuadre haría que una cotización con alternativas nunca cuadre.
+  const alts = its.filter(r => r.alt_de);
+  const princ = its.filter(r => !r.alt_de);
+  const rank = r => String(r.updated_at || '') + '|' + String(r.id || '').padStart(12, '0');
+  const mejor = {};
+  princ.forEach(r => {
+    const k = String(r.item);
+    if (!mejor[k] || rank(r) > rank(mejor[k])) mejor[k] = r;
+  });
+  const vivos = Object.keys(mejor).sort((a, b) => (+a || 0) - (+b || 0)).map(k => mejor[k]);
+
+  const suma = vivos.reduce((s, r) => s + (+r.v_total || 0), 0);
+  const subtotal = +c.subtotal || 0;
+  // Sin subtotal no hay contra qué comparar (cotizaciones viejas): se deja pasar.
+  const cuadra = !subtotal || Math.abs(suma - subtotal) <= Math.max(1, subtotal * 0.005);
+
+  // Mismo mapeo servidor→web que usa la BD de cotizaciones al abrir una del LIBRO.
+  const aWeb = it => ({
+    uid: it.uid || null, desc: it.descripcion || '', udm: it.udm || 'EA',
+    qty: +it.qty || 0, precio: (it.v_unit != null ? +it.v_unit : null),
+    marca: it.marca || '', proveedor: it.proveedor || '',
+    precioProveedor: (it.precio_proveedor != null ? +it.precio_proveedor : null),
+    tiempoEntrega: it.tiempo_entrega || '', desvTec: it.desviacion_tecnica || '',
+    altDe: it.alt_de || null
+  });
+  return { items: vivos.concat(alts).map(aWeb), cuadra: cuadra,
+           suma: suma, subtotal: subtotal, repetidas: princ.length - vivos.length };
+}
+
 function _opLineasDeCotiz(c) {
   const mapaAdj = (typeof _cotizAdjMapa === 'function') ? _cotizAdjMapa(c) : null;
   const out = [];
@@ -23570,9 +23625,43 @@ function _opCabecera(numero, c, yo) {
 }
 
 async function opCrearDesde(cotizId) {
-  const c = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === cotizId && !x.deleted);
+  // `let` y no `const`: si los ítems no están en este equipo, se reemplaza por
+  // una copia con los que trae el servidor (ver más abajo).
+  let c = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === cotizId && !x.deleted);
   if (!c) { showToast('No encontré la cotización ' + cotizId, 'error'); return; }
   if (!opPuedeCrear(c)) { showToast('Esa cotización no es tuya. La crea su comercial, Andrea o gerencia.', 'error'); return; }
+
+  // Los ítems ANTES que nada: sin material no hay OP que valga, y el consecutivo
+  // se pide más abajo. Una OP vacía quema un número y no se puede completar.
+  if (!_opLineasDeCotiz(c).length) {
+    let fr = null;
+    try { fr = await _opItemsFrescos(c); }
+    catch (e) {
+      showToast('No pude leer los ítems de ' + cotizId + ': ' + (e && e.message || e)
+        + ' — no se creó la OP.', 'error', { durationMs: 12000 });
+      return;
+    }
+    if (fr && fr.items.length && !fr.cuadra) {
+      showToast('⚠️ Los ítems de ' + cotizId + ' en el servidor suman ' + opMoney(fr.suma)
+        + ' y la cotización dice ' + opMoney(fr.subtotal) + '. No creo la OP con datos que no cuadran: '
+        + 'abre ' + cotizId + ' en Cotizaciones, revísala, guárdala y vuelve a intentar.',
+        'error', { durationMs: 18000 });
+      return;
+    }
+    if (fr && fr.items.length) {
+      c = Object.assign({}, c, { items: fr.items });     // copia: no se toca la caché local
+      showToast('Los ítems de ' + cotizId + ' no estaban en este equipo; se bajaron del servidor'
+        + (fr.repetidas ? ' (se descartaron ' + fr.repetidas + ' fila(s) repetida(s), quedó la última)' : '')
+        + '.', 'info', { durationMs: 8000 });
+    }
+  }
+  if (!_opLineasDeCotiz(c).length) {
+    showToast('❌ ' + cotizId + ' no tiene ítems que llevar a una OP'
+      + ((c.itemsAdjudicados || []).length ? ' (revisa la adjudicación: puede haber quedado en cero)' : '')
+      + '. No se creó nada.', 'error', { durationMs: 13000 });
+    return;
+  }
+
   // La guardia vive AQUÍ y no en quien llama: por este punto pasan las dos
   // entradas (el botón 📑 de la BD de cotizaciones y el buscador del módulo OP).
   const dec = await _opGuardiaCotizConOP(c);
@@ -23645,9 +23734,23 @@ async function opCrearDesde(cotizId) {
         updated_by: yo
       });
     });
-    if (filas.length) {
-      await absFetch('op_items', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(filas) });
+    // Cinturón: arriba ya se garantizó que hay líneas, pero si por lo que sea
+    // quedaran en cero, la cabecera ya está creada y sería una OP fantasma —
+    // con su consecutivo quemado y sin forma de completarla. Se marca borrada.
+    if (!filas.length) {
+      try {
+        await absFetch('ops?id=eq.' + op.id, {
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ deleted: true, updated_by: yo,
+                                 observaciones: 'Anulada al crearse: no quedó ningún ítem de ' + c.id })
+        });
+      } catch (_) { }
+      showToast('❌ ' + numero + ' no quedó con ningún ítem, así que se anuló. '
+        + 'Abre ' + c.id + ' en Cotizaciones y vuelve a intentar.', 'error', { durationMs: 14000 });
+      await opCargar(false);
+      return;
     }
+    await absFetch('op_items', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(filas) });
     // Si la OP nació solo con parte de la cotización, su valor es el de SUS
     // líneas. Dejar el de la cotización completa infla la venta, y ese número es
     // el que ve gerencia al aprobar y el que compara contra el costo de compras.
