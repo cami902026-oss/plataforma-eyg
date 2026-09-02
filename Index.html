@@ -21814,7 +21814,13 @@ async function remiPDF(marca){
   if(!remi_current) return; remiSyncHeader(); const c=remi_current;
   // Solo si es parte de una familia de entregas. Lo demás sale igual que siempre.
   const _cier = (c.esDefinitiva || c.entregaN>1 || c.remisionBase) ? await _remiCierreDatos(c) : null;
-  const items=c.items.filter(it=>String(it.descripcion||'').trim()!=='');
+  // 🔑 En una entrega parcial el DATO lleva la orden completa —es el único sitio
+  // donde consta cuánto se pidió de cada línea— pero el PAPEL imprime solo lo
+  // que de verdad sale hoy. Lo que va en 0 se ve abajo, en "queda pendiente".
+  // Sin esto volverían los renglones en cero que el cliente firmaba.
+  const _soloLoQueVa = !!c.remisionBase;
+  const items=c.items.filter(it=>String(it.descripcion||'').trim()!==''
+    && !(_soloLoQueVa && !(parseFloat(it.cantidad)>0)));
   // v183 — la columna "Ítem cot." SOLO sale si algún ítem trae el número de la
   // cotización. Remisiones sin cotización: PDF idéntico al de siempre.
   const hayItemCot=items.some(it=>String(it.itemCot||'').trim()!=='');
