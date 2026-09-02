@@ -22545,8 +22545,8 @@
     "cliente": "COPCOL",
     "contacto": "JOSE",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "603",
     "iva": 19,
     "subtotal": 348000,
     "ivaVal": 66120,
@@ -22571,15 +22571,17 @@
         "desvTec": "",
         "marca": "WILLIAMS ",
         "proveedor": "TUVACOL",
-        "precioProveedor": 242900
+        "precioProveedor": 242900,
+        "uid": "25fae367-b63d-4afd-bed2-0c842d0cb612"
       }
     ],
-    "fechaGuardado": "2026-07-08T22:07:41.726Z",
+    "fechaGuardado": "2026-09-02T17:58:48.630Z",
+    "facturadaAt": "2026-09-02",
     "adjudicadaAt": "2026-07-08",
     "createdAt": "2026-07-08T17:51:20.746Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-08T22:07:41.726Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-09-02T17:58:48.630Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM1783",
@@ -89156,7 +89158,7 @@
     "ivaVal": 0,
     "total": 0,
     "formaPago": "30 DÍAS",
-    "sitioEntrega": "GUAMAL",
+    "sitioEntrega": "POR DEFINIR ",
     "validez": "8 DÍAS",
     "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
     "vendedor": "Mario",
@@ -89410,11 +89412,11 @@
         "precioProveedor": 317000
       }
     ],
-    "fechaGuardado": "2026-09-02T17:54:20.086Z",
+    "fechaGuardado": "2026-09-02T17:53:38.801Z",
     "fechaEnvio": "2026-09-01T20:41:58.044Z",
     "createdAt": "2026-09-01T20:41:58.044Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-02T17:54:20.086Z",
+    "updatedAt": "2026-09-02T17:53:38.801Z",
     "updatedBy": "alexandra"
   },
   {
