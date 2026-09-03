@@ -2021,56 +2021,6 @@
     "updatedBy": "lina"
   },
   {
-    "id": "LM1001",
-    "fecha": "2026-05-23",
-    "fechaVenc": "2026-05-31",
-    "cliente": "PEPE1",
-    "contacto": "PEPITO1",
-    "correo": "pepito@eygenergygrimsjd.com",
-    "estado": "Enviada",
-    "iva": 19,
-    "subtotal": 418714.28571428574,
-    "ivaVal": 79555.71428571429,
-    "total": 498270,
-    "formaPago": "30 DÍAS",
-    "sitioEntrega": "chia",
-    "validez": "8 DÍAS",
-    "observaciones": "LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE.",
-    "items": [
-      {
-        "id": 1,
-        "desc": "TEE AC NPT 3.000L 1/2\"",
-        "udm": "EA",
-        "qty": 1,
-        "precio": 11571.428571428572,
-        "tiempoEntrega": "1-2 DÍAS HÁBILES",
-        "desvTec": "",
-        "marca": "BOTHWELL",
-        "proveedor": "",
-        "codigo": 15000104
-      },
-      {
-        "id": 2,
-        "desc": "PLATINA DE ORIFICIO 3-150 ORIFICIO 1-3/4",
-        "udm": "EA",
-        "qty": 1,
-        "precio": 407142.85714285716,
-        "tiempoEntrega": "1-2 DÍAS HÁBILES",
-        "desvTec": "",
-        "marca": "FABRICACION NACIONAL",
-        "proveedor": "",
-        "codigo": 1400001
-      }
-    ],
-    "fechaGuardado": "2026-05-23T00:41:24.609Z",
-    "createdAt": "2026-05-23T00:39:45.078Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-10T18:14:29.193Z",
-    "updatedBy": "andrea",
-    "deleted": true,
-    "deletedAt": "2026-06-10T18:14:29.193Z"
-  },
-  {
     "id": "LM1002",
     "fecha": "2026-05-23",
     "fechaVenc": "2026-05-31",
@@ -77431,8 +77381,8 @@
     "cliente": "RCH CONSTRUCTORES",
     "contacto": "SONIA",
     "correo": "Compras@rchconstructores.com",
-    "estado": "Facturada",
-    "factura": "604",
+    "estado": "Adjudicada",
+    "factura": "",
     "iva": 19,
     "subtotal": 528575,
     "ivaVal": 100429.25,
@@ -77474,9 +77424,8 @@
         "precioProveedor": 145000
       }
     ],
-    "fechaGuardado": "2026-09-03T14:19:04.089Z",
+    "fechaGuardado": "2026-08-28T17:57:35.887Z",
     "fechaEnvio": "2026-08-21T20:25:50.238Z",
-    "facturadaAt": "2026-09-03",
     "adjudicadaAt": "2026-08-28",
     "valorAdjudicado": 528575,
     "itemsAdjudicados": [
@@ -77493,8 +77442,8 @@
     "adjudicacionAt": "2026-08-28T17:57:30.181Z",
     "createdAt": "2026-08-21T19:17:51.701Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-03T14:19:04.089Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-08-28T17:57:35.887Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2034",
@@ -88349,8 +88298,8 @@
     "cliente": "CIAM",
     "contacto": "YEISON MARTINEZ",
     "correo": "",
-    "estado": "Facturada",
-    "factura": "610",
+    "estado": "Adjudicada",
+    "factura": "",
     "iva": 19,
     "subtotal": 6402843,
     "ivaVal": 1216540.17,
@@ -88576,9 +88525,8 @@
         "precioProveedor": 25000
       }
     ],
-    "fechaGuardado": "2026-09-03T23:51:06.620Z",
+    "fechaGuardado": "2026-09-01T16:06:20.891Z",
     "fechaEnvio": "2026-08-31T19:46:17.176Z",
-    "facturadaAt": "2026-09-03",
     "adjudicadaAt": "2026-09-01",
     "valorAdjudicado": 6402843,
     "itemsAdjudicados": [
@@ -88647,7 +88595,7 @@
     "adjudicacionAt": "2026-09-01T16:06:13.811Z",
     "createdAt": "2026-08-31T19:44:21.631Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-03T23:51:06.620Z",
+    "updatedAt": "2026-09-01T16:06:20.891Z",
     "updatedBy": "andrea"
   },
   {
@@ -89045,8 +88993,8 @@
     "cliente": "CIAM",
     "contacto": "ELIAS CASTELLANOS",
     "correo": "",
-    "estado": "Facturada",
-    "factura": "605",
+    "estado": "Adjudicada",
+    "factura": "",
     "iva": 19,
     "subtotal": 880000,
     "ivaVal": 167200,
@@ -89074,14 +89022,13 @@
         "precioProveedor": 80000
       }
     ],
-    "fechaGuardado": "2026-09-03T15:18:58.494Z",
+    "fechaGuardado": "2026-09-01T19:07:06.774Z",
     "fechaEnvio": "2026-09-01T16:54:16.398Z",
-    "facturadaAt": "2026-09-03",
     "adjudicadaAt": "2026-09-01",
     "createdAt": "2026-09-01T16:53:57.202Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-03T15:18:58.494Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-09-01T19:07:06.774Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM2097",
@@ -92003,6 +91950,192 @@
     "createdAt": "2026-09-03T17:39:26.070Z",
     "createdBy": "sandra",
     "updatedAt": "2026-09-03T23:20:01.002Z",
+    "updatedBy": "sandra"
+  },
+  {
+    "id": "LM1001",
+    "fecha": "2026-09-03",
+    "fechaVenc": "2026-09-11",
+    "cliente": "CIAM",
+    "contacto": "YEISON",
+    "correo": "",
+    "estado": "Borrador",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
+    "formaPago": "45 DÍAS",
+    "sitioEntrega": "PTO BOYACA",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Sandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "desc": "CABLE ECOLOGICO 2/0 - XLPE 15KV - ACSR - MARCA PROCABLE ",
+        "udm": "MTR",
+        "qty": 100,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "0693a036-5a6c-4573-b849-c4c0046e8ee4"
+      },
+      {
+        "desc": "TELDOR CABLE DE INSTRUMENTACION 1 X 3 X 16 AWG BLINDADO HFFR 300V 80° ",
+        "udm": "MTR",
+        "qty": 200,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "db27ec7c-fcce-4a04-a63f-77b2bc248fb2"
+      },
+      {
+        "desc": "THREADOLET 1/2\" X 3000 INOX ",
+        "udm": "EA",
+        "qty": 3,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "7855e68f-8dcb-4868-bc91-eae213e54c06"
+      },
+      {
+        "desc": "CODO 1/2\" X 3000 THR INOX ",
+        "udm": "EA",
+        "qty": 4,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "db638949-7328-4ab9-952d-efba3fd080b6"
+      },
+      {
+        "desc": "NIPLE 1 1/4\" X 6\" NPT-NPT",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "26ba9120-b492-4ca2-b084-dcc441d8a299"
+      },
+      {
+        "desc": "REDUCCION CONCENTRICA MACHO 1/2\" HEMBRA DE  1/4\" ROSCA NPT  EN ACERO INOXIDABLR ANSI 150",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "fc6fd54a-6949-4c88-a434-3a9c30bb8599"
+      },
+      {
+        "desc": "NIPLE 1/2\" X 200 SCH 80 NPT-NPT",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "6ec962f2-cf00-4597-b039-e3d9cdab39c1"
+      },
+      {
+        "desc": "ESPARAGO 3/4\" X 6 1/4\" B7 2H",
+        "udm": "EA",
+        "qty": 114,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "aa70bba0-7836-405f-99c4-f9a236eea10c"
+      },
+      {
+        "desc": "ESPARRAGO 1\" X 7 1/2\" ",
+        "udm": "EA",
+        "qty": 12,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "615290f9-aeeb-4741-8392-329bff5ce43b"
+      },
+      {
+        "desc": "CODO 3/4\" 90° NPT X 3000 ",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "e9d9c107-5f99-417e-bb2d-1df227ef1fcf"
+      },
+      {
+        "desc": "VALVULA PARA VENTEO AUTOMATICO DE 1/2\" 10 BAR 120C ",
+        "udm": "EA",
+        "qty": 8,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "d9e66e00-30f9-4c99-bc7e-113d02197f9b"
+      },
+      {
+        "desc": "NIPLE 3/4\" X 100 SCH 80 NPT-NPT",
+        "udm": "EA",
+        "qty": 2,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "dd367dca-b557-4a66-a79a-4b7190cd9332"
+      },
+      {
+        "desc": "CODO 90° 2\" SCH 40 BW",
+        "udm": "EA",
+        "qty": 2,
+        "precio": 0,
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "",
+        "uid": "e530ac9f-cdb1-4d8b-abf4-dd13354e9d98"
+      }
+    ],
+    "fechaGuardado": "2026-09-03T23:52:13.977Z",
+    "createdAt": "2026-05-23T00:39:45.078Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-09-03T23:52:13.977Z",
     "updatedBy": "sandra"
   },
   {
