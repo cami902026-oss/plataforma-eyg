@@ -85983,7 +85983,7 @@
     "cliente": "SAR ENERGY",
     "contacto": "LAURA ROJAS",
     "correo": "lrojas@sarenergy.com",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 111382641,
@@ -87010,12 +87010,38 @@
         "precioProveedor": 17260
       }
     ],
-    "fechaGuardado": "2026-09-01T21:34:00.018Z",
+    "fechaGuardado": "2026-09-03T16:56:44.332Z",
     "fechaEnvio": "2026-08-31T21:33:59.529Z",
+    "adjudicadaAt": "2026-09-03",
+    "valorAdjudicado": 10298865,
+    "itemsAdjudicados": [
+      {
+        "uid": "4fd7135e-fe43-45af-9116-f4720fa3d779",
+        "qty": 60
+      },
+      {
+        "uid": "2f5cbe7f-af0f-4c91-8037-ad23ea971b5c",
+        "qty": 15
+      },
+      {
+        "uid": "22c798b5-1d6c-4b7d-be4c-37a34027c833",
+        "qty": 6
+      },
+      {
+        "uid": "2503fc01-2b24-4ab1-a836-5e59e1ab7dfc",
+        "qty": 3
+      },
+      {
+        "uid": "8966b0ac-fdfb-4ac4-b7a3-6c9b6ba565e7",
+        "qty": 27
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-03T16:56:27.261Z",
     "createdAt": "2026-08-31T21:22:41.544Z",
     "createdBy": "alberto",
-    "updatedAt": "2026-09-01T21:34:00.018Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-03T16:56:44.332Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2078",
@@ -88917,7 +88943,7 @@
     "cliente": "CIAM",
     "contacto": "DALADIER",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 792000,
@@ -88948,12 +88974,22 @@
         "precioProveedor": 265320
       }
     ],
-    "fechaGuardado": "2026-09-01T15:00:47.430Z",
+    "fechaGuardado": "2026-09-03T17:53:16.326Z",
     "fechaEnvio": "2026-09-01T15:00:47.430Z",
+    "adjudicadaAt": "2026-09-03",
+    "valorAdjudicado": 792000,
+    "itemsAdjudicados": [
+      {
+        "uid": "658045f6-e3bc-4062-94fc-aabcb0893889",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-03T17:53:14.227Z",
     "createdAt": "2026-09-01T14:51:12.859Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-01T15:00:47.430Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-03T17:53:16.326Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2095",
@@ -90757,72 +90793,80 @@
     "motivoRechazo": "",
     "items": [
       {
+        "id": 1,
         "qty": 3,
         "udm": "EA",
-        "uid": "ab80b757-798e-40fb-8d8d-3aeb23319765",
+        "uid": "6d28400d-7642-4fc0-8fe1-8b8deea8b609",
         "desc": "\"Junta flexible en caucho \nCaracterística de Diseño\nDiámetro nominal: 4\"\" DN100 ANSI 150\nCuerpo: EPDM\nElastómero interno: EPDM\nConexiones: Bridas giratorias en acero inoxidable.\nFluido: agua a 80 psi y 180°F\nCondiciones de Operación\nRango de presión: Vacío total a 225 PSI\nRango de temperatura: -10 a 110 °C\"\n\n",
         "marca": "",
         "precio": 0,
-        "desvTec": "JUNTA FLEXIBLE EN CAUCHO 4”\nLongitud total: 150 mm\nElemento flexible: NBR (nitrilo)\nPresión permitida 230 PSI\nMáxima temperatura: 90°C\nBridas giratorias en acero inoxidable T304 ANSI 150#",
-        "proveedor": "SIFER",
-        "tiempoEntrega": "7-8 DIAS",
-        "precioProveedor": 866000
+        "desvTec": "Junta amortiguadora de vibración en caucho \nCaracterística de Diseño Diámetro nominal: 4\" Cuerpo: EPDM Elastómero interno: EPDM Conexiones: Bridas giratorias en acero inoxidable, dimensionadas según ASME B16.5 clase 150. Longitud total: 130 mm Tensores: Acero inoxidable 304\nCondiciones de Operación Presión de operación: 80 PSI Rango de temperatura: 180°F Fluido: Agua\nMovimientos Admisibles Axial: -X25 mm / +X 10 mm Lateral: +/- Y 15 mm",
+        "proveedor": "FLEXILATINA",
+        "obsProveedor": "",
+        "tiempoEntrega": "13-14 DIAS",
+        "precioProveedor": 1495000
       },
       {
+        "id": 2,
         "qty": 4,
         "udm": "EA",
-        "uid": "cd052b30-831d-435b-bdb2-66ca3a880975",
+        "uid": "e0a06d82-c61e-4175-9cdb-ee73f18de945",
         "desc": "\"Junta flexible en caucho\nCaracterística de Diseño\nDiámetro nominal: 3” DN80 ANSI 150\nCuerpo: EPDM Elastomero interno: EPDM\nConexiones: Bridas giratorias en acero inoxidable.\nFluido: agua a 80 psi y 180°F\nCondiciones de Operación\nRango de presión: - 400 mm Hg...150 PSI\nRango de temperatura : -10 a 110 °C\n\n\n\n",
         "marca": "",
         "precio": 0,
-        "desvTec": "JUNTA FLEXIBLE EN CAUCHO 3”\nLongitud total: 130 mm\nElemento flexible: NBR (nitrilo)\nPresión permitida 230 PSI\nMáxima temperatura: 90°C\nBridas giratorias en acero inoxidable T304 ANSI 150#",
-        "proveedor": "SIFER",
-        "tiempoEntrega": "7-8 DIAS",
-        "precioProveedor": 624000,
-        "obsProveedor": "1115000 FLEXILATINA"
+        "desvTec": "Junta amortiguadora de vibración en caucho \nCaracterística de Diseño Diámetro nominal: 3\" Cuerpo: EPDM Elastómero interno: EPDM Conexiones: Bridas giratorias en acero inoxidable, dimensionadas según ASME B16.5 clase 150. Longitud total: 130 mm Tensores: Acero inoxidable 304\nCondiciones de Operación Presión de operación: 80 PSI Rango de temperatura: 180°F Fluido: Agua\nMovimientos Admisibles Axial: -X25 mm / +X 10 mm Lateral: +/- Y 15 mm",
+        "proveedor": "FLEXILATINA",
+        "obsProveedor": "",
+        "tiempoEntrega": "13-14 DIAS",
+        "precioProveedor": 1115000
       },
       {
+        "id": 3,
         "qty": 3,
         "udm": "EA",
-        "uid": "8db30edd-9ac5-484b-94c8-78938a00deef",
+        "uid": "6377e9c8-3daa-4a52-9395-9657573b58fa",
         "desc": "\"Junta flexible en caucho \nCaracterística de Diseño\nDiámetro nominal: 6\"\" 300W ANSI 150\nCuerpo: EPDM\nElastómero interno: EPDM\nConexiones: Bridas giratorias en acero inoxidable.\nFluido: agua a 80 psi y 180°F\nCondiciones de Operación\nRango de presión: Vacío total a 225 PSI\nRango de temperatura: -10 a 110 °C\"\n\n",
         "marca": "",
         "precio": 0,
-        "desvTec": "JUNTA FLEXIBLE EN CAUCHO 6”\nLongitud total: 150 mm\nElemento flexible: NBR (nitrilo)\nPresión permitida 230 PSI\nMáxima temperatura: 90°C\nBridas giratorias en acero inoxidable T304 ANSI 150#",
-        "proveedor": "SIFER",
-        "tiempoEntrega": "7-8 DIAS",
-        "precioProveedor": 1270000,
-        "obsProveedor": "2033000 FLEXILATINA"
+        "desvTec": "Junta amortiguadora de vibración en caucho \nCaracterística de Diseño Diámetro nominal: 6\" Cuerpo: EPDM Elastómero interno: EPDM Conexiones: Bridas giratorias en acero inoxidable, dimensionadas según ASME B16.5 clase 150. Longitud total: 130 mm Tensores: Acero inoxidable 304\nCondiciones de Operación Presión de operación: 80 PSI Rango de temperatura: 180°F Fluido: Agua\nMovimientos Admisibles Axial: -X25 mm / +X 10 mm Lateral: +/- Y 15 mm",
+        "proveedor": "FLEXILATINA",
+        "obsProveedor": "",
+        "tiempoEntrega": "13-14 DIAS",
+        "precioProveedor": 2033000
       },
       {
+        "id": 4,
         "qty": 3,
         "udm": "EA",
-        "uid": "2c89c8e0-172e-41d5-9be7-a87f499d6e33",
+        "uid": "45193515-7740-4d1b-b24e-a1747874b954",
         "desc": "\n\"Junta flexible en caucho\nCaracterística de Diseño\nDiámetro nominal: 3” DN80 ANSI 150\nCuerpo: EPDM Elastomero interno: EPDM\nConexiones: Bridas giratorias en acero inoxidable.\nFluido: agua a 80 psi y 180°F\nCondiciones de Operación\nRango de presión: - 400 mm Hg...150 PSI\nRango de temperatura : -10 a 110 °C\"\n",
         "marca": "",
         "precio": 0,
-        "desvTec": "JUNTA FLEXIBLE EN CAUCHO 3”\nLongitud total: 130 mm\nElemento flexible: NBR (nitrilo)\nPresión permitida 230 PSI\nMáxima temperatura: 90°C\nBridas giratorias en acero inoxidable T304 ANSI 150#",
-        "proveedor": "SIFER",
-        "tiempoEntrega": "7-8 DIAS",
-        "precioProveedor": 624000
+        "desvTec": "Junta amortiguadora de vibración en caucho \nCaracterística de Diseño Diámetro nominal: 3\" Cuerpo: EPDM Elastómero interno: EPDM Conexiones: Bridas giratorias en acero inoxidable, dimensionadas según ASME B16.5 clase 150. Longitud total: 130 mm Tensores: Acero inoxidable 304\nCondiciones de Operación Presión de operación: 80 PSI Rango de temperatura: 180°F Fluido: Agua\nMovimientos Admisibles Axial: -X25 mm / +X 10 mm Lateral: +/- Y 15 mm",
+        "proveedor": "FLEXILATINA",
+        "obsProveedor": "",
+        "tiempoEntrega": "13-14 DIAS",
+        "precioProveedor": 1115000
       },
       {
+        "id": 5,
         "qty": 3,
         "udm": "EA",
-        "uid": "0bfb873a-1004-49ca-a216-d4c0f2394b62",
+        "uid": "ca349bdb-1761-408f-afd8-0de70b0c194f",
         "desc": "\"Junta flexible en caucho \nCaracterística de Diseño\nDiámetro nominal: 6\"\" 300W ANSI 150\nCuerpo: EPDM\nElastómero interno: EPDM\nConexiones: Bridas giratorias en acero inoxidable.\nFluido: agua a 80 psi y 180°F\nCondiciones de Operación\nRango de presión: Vacío total a 225 PSI\nRango de temperatura: -10 a 110 °C\"\n",
         "marca": "",
         "precio": 0,
-        "desvTec": "JUNTA FLEXIBLE EN CAUCHO 6”\nLongitud total: 150 mm\nElemento flexible: NBR (nitrilo)\nPresión permitida 230 PSI\nMáxima temperatura: 90°C\nBridas giratorias en acero inoxidable T304 ANSI 150#",
-        "proveedor": "SIFER",
-        "tiempoEntrega": "7-8 DIAS",
-        "precioProveedor": 1270000
+        "desvTec": "Junta amortiguadora de vibración en caucho \nCaracterística de Diseño Diámetro nominal: 6\" Cuerpo: EPDM Elastómero interno: EPDM Conexiones: Bridas giratorias en acero inoxidable, dimensionadas según ASME B16.5 clase 150. Longitud total: 130 mm Tensores: Acero inoxidable 304\nCondiciones de Operación Presión de operación: 80 PSI Rango de temperatura: 180°F Fluido: Agua\nMovimientos Admisibles Axial: -X25 mm / +X 10 mm Lateral: +/- Y 15 mm",
+        "proveedor": "FLEXILATINA",
+        "obsProveedor": "",
+        "tiempoEntrega": "13-14 DIAS",
+        "precioProveedor": 2033000
       }
     ],
-    "fechaGuardado": "2026-09-03T17:51:47.276Z",
+    "fechaGuardado": "2026-09-02T20:11:06.330Z",
     "createdAt": "2026-09-02T20:03:32.724Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-03T17:51:47.276Z",
+    "updatedAt": "2026-09-02T20:11:06.330Z",
     "updatedBy": "sandra"
   },
   {
@@ -91461,7 +91505,7 @@
         "udm": "MTR",
         "uid": "fc1b481b-79f0-4ab1-b5cc-a4c9574078cc",
         "desc": "CABLE ECOLÓGICO 15 KVA",
-        "marca": "VARIAS",
+        "marca": "CONDUCOL",
         "precio": 17100,
         "desvTec": "CABLE ECOLOGICO 15 KV # 2/0 AWG ACSR",
         "proveedor": "INTERELECTRICOS",
@@ -91475,7 +91519,7 @@
         "udm": "MTR",
         "uid": "77754cb5-23a3-44e5-bb69-187db7697621",
         "desc": "CABLE ECOLÓGICO 15 KVA ",
-        "marca": "VARIAS",
+        "marca": "PROCABLES",
         "precio": 28810,
         "desvTec": "CABLE ECOLOGICO XLPE  15 KV  2/0  AWG  ACSR \nHILOS EN ACERO",
         "proveedor": "COMEM",
@@ -91489,7 +91533,7 @@
         "udm": "EA",
         "uid": "207430ce-1a98-477c-a336-abe070566eef",
         "desc": "D.P.S 15KVA",
-        "marca": "VARIAS",
+        "marca": "ECI - PROPSTERP",
         "fotoId": "F1788444622041730",
         "precio": 170000,
         "desvTec": "PARARRAYO POLIMERICO 15KV 10KA SIN HERRAJE",
@@ -91501,11 +91545,11 @@
         "precioProveedor": 99000
       }
     ],
-    "fechaGuardado": "2026-09-03T16:45:38.392Z",
+    "fechaGuardado": "2026-09-03T17:26:00.092Z",
     "fechaEnvio": "2026-09-03T16:45:38.392Z",
     "createdAt": "2026-09-03T13:38:58.337Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-03T16:45:38.392Z",
+    "updatedAt": "2026-09-03T17:26:00.092Z",
     "updatedBy": "alexandra"
   },
   {
