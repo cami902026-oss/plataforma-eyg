@@ -2,10 +2,15 @@
 // Estrategia: network-first para HTML/JS (siempre intenta traer la última versión),
 // cache fallback cuando no hay internet → la app sigue abriendo del cache offline.
 
-const CACHE_NAME = 'energy-v243';
+const CACHE_NAME = 'energy-v244';
 const ASSETS = [
   './Index.html',
   './manifest.json',
+  // 3-sep-2026: el logo dejó de traerse del sitio de WordPress. El hosting activó
+  // un muro anti-bots que responde una página "One moment, please..." en vez de la
+  // imagen, y un <img> no ejecuta JavaScript: nunca pasa ese reto. Ahora sale del
+  // propio repo, así que además funciona sin internet.
+  './libs/logo-eyg.png',
 ];
 
 self.addEventListener('install', (event) => {
