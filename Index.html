@@ -24859,7 +24859,15 @@ async function opCerrarRevisar() {
   const todoDesp = its.length > 0 && desp >= its.length;
   const certs = ((o._certs) || []).length;
   const noAplica = o.requiere_certificados === false;
-  const okCerts = noAplica || certs > 0;
+  // 3-sep-2026 — LA COMPUERTA EXIGE TODOS, NO UNO.
+  // Antes bastaba con UNA fila de certificado (`certs > 0`) para desbloquear el
+  // cierre, aunque los demás ítems siguieran sin MTR. En la misma pantalla
+  // convivían dos reglas para lo mismo: la línea del proceso solo se pinta verde
+  // cuando están completos, pero el botón de cerrar se abría con uno. Por ahí se
+  // cerró la OP-2026-0005 (CIAM, factura 592) con 2 de 5 ítems sin certificado.
+  // Ahora las dos usan el mismo conteo: todos resueltos, con MTR o «no aplica».
+  const ctaCert = _opCertsCuenta(o, its);
+  const okCerts = noAplica || !!(ctaCert && ctaCert.listo);
 
   // La factura se busca en el SERVIDOR: la pudo registrar otra persona hace un
   // minuto, y el navegador puede tener la copia vieja.
@@ -24892,7 +24900,15 @@ async function opCerrarRevisar() {
   cont.innerHTML = '<div class="op-cierre-caja' + (listo ? ' op-c-ok' : '') + '">'
     + '<div class="op-plan-t">Para dar el pedido por cerrado</div>'
     + fila(todoDesp, 'Despachado', its.length ? desp + ' de ' + its.length + ' ítems entregados' : 'todavía no hay ítems')
-    + fila(okCerts, 'Certificados', noAplica ? 'esta OP no los requiere' : certs + ' cargado(s)')
+    + fila(okCerts, 'Certificados',
+        noAplica ? 'esta OP no los requiere'
+        : !ctaCert ? certs + ' cargado(s)'
+        : ctaCert.listo
+          ? ('completos · ' + ctaCert.conCert + ' de ' + ctaCert.aplican
+             + (ctaCert.noAplica ? ' (' + ctaCert.noAplica + ' no aplica'
+                + (ctaCert.noAplica > 1 ? 'n' : '') + ')' : ''))
+          : (ctaCert.conCert + ' de ' + ctaCert.aplican + ' · <b>faltan '
+             + ctaCert.pendientes + '</b>'))
     + fila(okFact, 'Facturada',
         okFact ? 'factura ' + opEsc(factura) + ' · cotización ' + opEsc(o.cotizacion_id)
                : (!o.cotizacion_id ? 'esta OP no tiene cotización ligada'
