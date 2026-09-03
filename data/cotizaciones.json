@@ -78513,7 +78513,7 @@
     "cliente": "SAR ENERGY",
     "contacto": "OSCAR SANCHEZ",
     "correo": "osanchez@sarenergy.com",
-    "estado": "Adjudicada",
+    "estado": "Vencida",
     "factura": "",
     "iva": 19,
     "subtotal": 65919885,
@@ -79244,54 +79244,13 @@
         "precioProveedor": 71183
       }
     ],
-    "fechaGuardado": "2026-09-03T14:25:40.091Z",
+    "fechaGuardado": "2026-08-31T16:19:37.050Z",
     "fechaEnvio": "2026-08-24T22:48:00.510Z",
-    "adjudicadaAt": "2026-09-03",
-    "valorAdjudicado": 3717037,
-    "itemsAdjudicados": [
-      {
-        "uid": "bc7ca34e-b7ce-4d6e-a069-1ed909a681c9",
-        "qty": 100
-      },
-      {
-        "uid": "d104b404-68ad-424c-9084-1f027e67e272",
-        "qty": 3
-      },
-      {
-        "uid": "dc431ef5-a6af-4c47-a918-9bf85bc7990b",
-        "qty": 20
-      },
-      {
-        "uid": "18b8dae2-e56f-42b2-ab2c-7a4698e7d60a",
-        "qty": 20
-      },
-      {
-        "uid": "04b749a8-c1d1-4aea-b79f-f787cab26d57",
-        "qty": 25
-      },
-      {
-        "uid": "fea72fa4-99d3-4734-ac49-266c136346ae",
-        "qty": 3
-      },
-      {
-        "uid": "6d893ff2-4532-4b88-aa3b-6bb9503f8267",
-        "qty": 10
-      },
-      {
-        "uid": "f72301bc-bb75-44c1-8a5d-69b3e2c62755",
-        "qty": 10
-      },
-      {
-        "uid": "267e32c4-a6a0-4829-b9ca-79528155dc5d",
-        "qty": 9
-      }
-    ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-09-03T14:25:40.082Z",
     "createdAt": "2026-08-22T16:28:11.665Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-03T14:25:40.091Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-31T16:25:16.000Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-08-31T16:25:16.000Z"
   },
   {
     "id": "LM2015",
@@ -91377,7 +91336,7 @@
         "udm": "MTR",
         "uid": "fc1b481b-79f0-4ab1-b5cc-a4c9574078cc",
         "desc": "CABLE ECOLÓGICO 15 KVA",
-        "marca": "VARIAS",
+        "marca": "",
         "precio": 0,
         "desvTec": "CABLE ECOLOGICO 15 KV # 2/0 AWG ACSR",
         "proveedor": "INTERELECTRICOS",
@@ -91391,7 +91350,7 @@
         "udm": "MTR",
         "uid": "77754cb5-23a3-44e5-bb69-187db7697621",
         "desc": "CABLE ECOLÓGICO 15 KVA ",
-        "marca": "VARIAS",
+        "marca": "",
         "precio": 0,
         "desvTec": "CALIBRE: 2/0N° DE HILOS EN ALUMINIO: 6N° DE HILOS EN ACERO",
         "proveedor": "COMEM",
@@ -91401,40 +91360,40 @@
       },
       {
         "id": 3,
-        "qty": 100,
-        "udm": "MTR",
-        "uid": "9d8bfb0c-46b2-407e-93d9-23eb684ac3cf",
         "desc": "CABLE ECOLOGICO 35 KVA",
-        "marca": "",
+        "udm": "MTR",
+        "qty": 100,
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 0
+        "desvTec": "",
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "obsProveedor": "",
+        "uid": "9d8bfb0c-46b2-407e-93d9-23eb684ac3cf"
       },
       {
         "id": 4,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "207430ce-1a98-477c-a336-abe070566eef",
         "desc": "D.P.S 15KVA",
-        "marca": "VARIAS",
-        "fotoId": "F1788444622041730",
+        "udm": "EA",
+        "qty": 1,
         "precio": 0,
-        "desvTec": "PARARRAYO POLIMERICO 15KV 10KA SIN HERRAJE",
-        "fotoEnPDF": true,
-        "proveedor": "INTERELECTRICAS",
-        "fotoGrande": true,
-        "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 90590
+        "desvTec": "PARARRAYO POLIMERICO 15KV 10KA SIN HERRAJE",
+        "marca": "",
+        "proveedor": "INTERELECTRICAS",
+        "precioProveedor": 90590,
+        "obsProveedor": "",
+        "fotoId": "F1788444622041730",
+        "fotoEnPDF": true,
+        "fotoGrande": true,
+        "uid": "207430ce-1a98-477c-a336-abe070566eef"
       }
     ],
-    "fechaGuardado": "2026-09-03T14:20:07.224Z",
+    "fechaGuardado": "2026-09-03T14:11:17.447Z",
     "createdAt": "2026-09-03T13:38:58.337Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-03T14:20:07.224Z",
+    "updatedAt": "2026-09-03T14:11:17.447Z",
     "updatedBy": "alexandra"
   },
   {
