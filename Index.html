@@ -23219,7 +23219,9 @@ function opAtrasada(o) {
   const umbral = OP_DIAS_QUIETA[o.estado];
   if (umbral == null) return null;
   // Despachada Y facturada ya no pide nada; espera el cierre, que no es urgencia.
-  if (o.estado === 'despachada' && o.factura) return null;
+  // La factura se lee de la cotización: `ops.factura` solo se llena al cerrar, así
+  // que preguntando por ella salían marcadas ⏰ órdenes que ya se habían cobrado.
+  if (o.estado === 'despachada' && _opFactura(o)) return null;
   const dias = _opDiasQuieta(o);
   // Si espera material y hay una fecha comprometida, manda ELLA. Es el caso de la
   // fabricación: hay líneas cotizadas a 24 semanas, y con el plazo corto saldrían
@@ -23346,6 +23348,9 @@ function opRenderLista() {
     // La barra de filtros se esconde: el tablero YA es el filtro, y dejarla
     // puesta hace creer que sus botones mueven algo del tablero.
     if (bF) bF.style.display = enTablero ? 'none' : '';
+    // Las facturas hacen falta en las DOS vistas: sin ellas el contador «por
+    // facturar» de la lista sigue contando lo ya cobrado. Se piden una vez.
+    if (!_opTabFact && !hist && (op_lista || []).length) _opTabCargarCerts();
     if (enTablero && opRenderTablero()) {
       const c0 = document.getElementById('op-lista-count');
       if (c0) c0.textContent = '';
@@ -23367,7 +23372,9 @@ function opRenderLista() {
   let l = op_filtro === 'todas' ? univ.slice()
         : op_filtro === 'por_enviar' ? univ.filter(o => o._porEnviar)
         : op_filtro === 'en_camino' ? univ.filter(o => o.estado === 'despachada' && o.enviada_at)
-        : op_filtro === 'por_facturar' ? univ.filter(o => o.estado === 'despachada' && !o.factura)
+        // La factura se registra en la COTIZACIÓN; `ops.factura` solo se llena al
+        // cerrar. Preguntando por ella salían como pendientes órdenes ya cobradas.
+        : op_filtro === 'por_facturar' ? univ.filter(o => o.estado === 'despachada' && !_opFactura(o))
         : op_filtro === 'atrasadas' ? univ.filter(o => !!opAtrasada(o))
         : univ.filter(o => o.estado === op_filtro);
 
@@ -23399,7 +23406,7 @@ function opRenderLista() {
     const act = op_lista.filter(o => !OP_ARCHIVADAS.includes(o.estado));
     const esp = act.filter(o => o.estado === 'pendiente_aprobacion').length;
     const env = act.filter(o => o._porEnviar).length;
-    const fac = act.filter(o => o.estado === 'despachada' && !o.factura).length;
+    const fac = act.filter(o => o.estado === 'despachada' && !_opFactura(o)).length;
     const atr = act.filter(o => !!opAtrasada(o)).length;
     const arch = op_lista.length - act.length;
     cnt.innerHTML = l.length + ' orden' + (l.length === 1 ? '' : 'es') + ' de pedido'
@@ -23837,21 +23844,44 @@ let op_vista = 'lista';
 try { op_vista = localStorage.getItem('energy_op_vista') === 'tablero' ? 'tablero' : 'lista'; } catch (_) { }
 let _opTabCerts = null;        // { op_id: Set(op_item_id) }
 let _opTabCertsIds = null;     // qué OP alcanzó a cubrir esa consulta
+let _opTabFact = null;         // { cotizacion_id: 'nº de factura' }
 let _opTabCertsPidiendo = false;
 
+// LA FACTURA NO VIVE EN LA OP. Se registra en la cotización, y `ops.factura` solo
+// se escribe al CERRAR. Preguntar por `o.factura` daba por pendientes órdenes ya
+// cobradas: el 3-sep, 3 de 7 (RCH factura 604, CIAM 596 y 605). Mientras el mapa
+// de cotizaciones no haya bajado se usa lo que tenga la OP, que nunca miente al
+// revés: si la OP dice que hay factura, es porque ya cerró.
+function _opFactura(o) {
+  const propia = String((o && o.factura) || '').trim();
+  if (propia) return propia;
+  if (!_opTabFact || !o || !o.cotizacion_id) return '';
+  return String(_opTabFact[o.cotizacion_id] || '').trim();
+}
+// Cuántos ítems de la OP tienen su certificado resuelto. null = todavía no se sabe.
+function _opCertsFalta(o) {
+  if (!o || o.requiere_certificados === false) return 0;
+  if (!_opTabCerts) return null;
+  const tot = +o._items || 0;
+  if (!tot) return 0;
+  return Math.max(0, tot - ((_opTabCerts[o.id] || { size: 0 }).size || 0));
+}
+
 const OP_CARRILES = [
-  { c: 'armar',     t: '📝 Armando',            d: 'Borrador y devueltas. Todavía es de la casa.',
+  { c: 'armar',     t: '📝 Borrador',           d: 'Borrador y devueltas. Todavía es de la casa.',
     f: o => ['borrador', 'devuelta'].includes(o.estado) },
   { c: 'esperar',   t: '⏳ Esperando decisión',  d: 'En compras y por aprobar. Aquí se traba la operación.',
     f: o => ['en_compras', 'pendiente_aprobacion'].includes(o.estado) },
   { c: 'despachar', t: '📦 Por despachar',      d: 'Aprobadas y en ejecución. El cliente ya espera.',
     f: o => ['aprobada', 'en_ejecucion'].includes(o.estado) },
-  { c: 'facturar',  t: '💳 Por facturar',       d: 'Ya salió el material. Falta la plata.',
-    f: o => o.estado === 'despachada' && !String(o.factura || '').trim() },
-  // Facturada y todavía sin cerrar: casi siempre le faltan los MTR. Antes esta OP
-  // no caía en ninguna columna y desaparecía justo cuando todavía debe algo.
-  { c: 'papeles',   t: '📄 Debe papeles',       d: 'Despachada y facturada, pero sin cerrar. Ya cobramos.',
-    f: o => o.estado === 'despachada' && !!String(o.factura || '').trim() }
+  { c: 'facturar',  t: '💳 Por facturar',       d: 'Ya salió el material y todavía no se ha facturado.',
+    f: o => o.estado === 'despachada' && !_opFactura(o) },
+  // Los certificados NO son una etapa: son un requisito que corre en paralelo. Por
+  // eso este carril es una LISTA PARA PERSEGUIR, no un paso del proceso: junta todo
+  // lo que ya salió de bodega y sigue debiendo su MTR, esté facturado o no. Una OP
+  // puede salir aquí y en su carril de etapa a la vez; la tarjeta lo dice.
+  { c: 'papeles',   t: '📄 Certificados',       d: 'Ya salió el material y falta el MTR. Aparecen también en su carril.',
+    f: o => o.estado === 'despachada' && (_opCertsFalta(o) || 0) > 0 }
 ];
 
 function opVista() {
@@ -23878,7 +23908,29 @@ async function _opTabCargarCerts() {
       (acc[r.op_id] = acc[r.op_id] || new Set()).add(r.op_item_id);
     });
     _opTabCerts = acc;
-    if (op_vista === 'tablero') opRenderLista();      // repintar ya con los sellos
+
+    // Y las facturas, que viven en la cotización. Va aparte y en su propio try:
+    // si falla, el tablero sigue con lo que tenga la OP en vez de quedarse en
+    // blanco. Es el mismo dato que consulta la pantalla de cierre.
+    try {
+      const cots = Array.from(new Set((op_lista || [])
+        .map(o => o.cotizacion_id).filter(Boolean)));
+      if (cots.length) {
+        const cr = (await absFetch('cotizaciones?id=in.('
+          + cots.map(c => '"' + encodeURIComponent(c) + '"').join(',')
+          + ')&select=id,estado,extra&limit=600')) || [];
+        const fa = {};
+        cr.forEach(c => {
+          const f = String(((c.extra || {}).factura) || '').trim();
+          if (f && String(c.estado || '') === 'Facturada') fa[c.id] = f;
+        });
+        _opTabFact = fa;
+      } else _opTabFact = {};
+    } catch (e) {
+      console.warn('[op] facturas del tablero', e && e.message);
+      _opTabFact = _opTabFact || {};
+    }
+    opRenderLista();                 // repintar ya con los sellos y las facturas
   } catch (e) {
     console.warn('[op] certificados del tablero', e && e.message);
     _opTabCerts = {};                                  // no se reintenta en bucle
@@ -23903,13 +23955,17 @@ function _opTabTarjeta(o, verPlata) {
   if (o._porEnviar) chips.push('<span class="op-tchip t-ojo">📦 por enviar</span>');
   if (o.enviada_at) chips.push('<span class="op-tchip">🚚 en camino</span>');
 
+  // Ya facturada: se sabe por la cotización, que es donde de verdad se registra.
+  const fact = _opFactura(o);
+  if (fact) chips.push('<span class="op-tchip t-ok">💳 factura ' + opEsc(fact) + '</span>');
+
   // Sello de certificados: cuántos ítems ya tienen el suyo resuelto.
   let certok = 0;
   if (o.requiere_certificados === false) {
     chips.push('<span class="op-tchip t-ok">📄 no aplica</span>'); certok = 1;
   } else if (_opTabCerts) {
-    const n = (_opTabCerts[o.id] || { size: 0 }).size || 0;
     const tot = +o._items || 0;
+    const n = tot - (_opCertsFalta(o) || 0);
     if (tot) {
       const listo = n >= tot;
       if (listo) certok = 1;
