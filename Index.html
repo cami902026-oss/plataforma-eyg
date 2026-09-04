@@ -5226,7 +5226,7 @@ function _enqueueOrdenesPendiente(arr, motivo) {
   try {
     const q = _getSyncQueue();
     const filtered = q.filter(it => it.file !== 'ordenes.json');
-    filtered.push({ file: 'ordenes.json', data: arr, label: 'Órdenes', ts: Date.now(), motivo, __ordenes: true });
+    filtered.push(_colaEntrada('ordenes.json', arr, 'Órdenes', { motivo: motivo, __ordenes: true }));
     _setSyncQueue(filtered);
     if (typeof _refreshSyncBadge === 'function') _refreshSyncBadge();
   } catch(_){}
@@ -5686,7 +5686,69 @@ const SYNC_QUEUE_KEY = 'energy_sync_queue';
 function _getSyncQueue() {
   try { return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || '[]'); } catch(_) { return []; }
 }
-function _setSyncQueue(arr) { localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(arr)); }
+function _setSyncQueue(arr) {
+  const txt = JSON.stringify(arr);
+  localStorage.setItem(SYNC_QUEUE_KEY, txt);
+  // El guardián de cuota NO relanza la excepción, a propósito: relanzarla cortaba
+  // la subida al servidor. Pero eso significa que un `setItem` sin espacio devuelve
+  // undefined EN SILENCIO — y si lo que no se guardó es justamente la cola, el
+  // cambio queda sin subir y sin que nadie se entere. Aquí se comprueba que sí
+  // quedó escrita: se suelta el valor viejo (que ocupa) y se reintenta.
+  try {
+    if (localStorage.getItem(SYNC_QUEUE_KEY) === txt) return;
+    localStorage.removeItem(SYNC_QUEUE_KEY);
+    localStorage.setItem(SYNC_QUEUE_KEY, txt);
+    if (localStorage.getItem(SYNC_QUEUE_KEY) !== txt) {
+      console.error('[cola] NO se pudo guardar la lista de pendientes: no cabe en el navegador');
+      try {
+        showToast('🛑 No cupo la lista de cambios pendientes. Recarga con Ctrl+F5 AHORA '
+          + 'y verifica que tu último cambio quedó: es el único caso en que se puede perder.',
+          'error', { durationMs: 25000 });
+      } catch (_) { }
+    }
+  } catch (_) { }
+}
+
+// ═══ 4-sep-2026 — LA COLA YA NO GUARDA UNA COPIA DEL ARCHIVO ═══════════════
+// Cada entrada de la cola llevaba `data`: el CONTENIDO ENTERO del archivo. Con
+// cotizaciones.json en 2,3 MB, un solo fallo de subida metía OTROS 2,3 MB en el
+// mismo localStorage donde ya vive la copia normal — el doble del archivo más
+// pesado de la plataforma. Con dos archivos en cola se pasaban los 5 MB del
+// navegador sin remedio.
+//
+// De ahí el círculo que reportó el equipo: internet inestable → falla la subida
+// → se encola una copia entera → se llena el navegador → la limpieza NO puede
+// soltar las fotos (hay pendientes, podrían no estar en el servidor) → no cabe
+// → `setItem` no guarda y NO lanza excepción (a propósito, para no cortar la
+// subida) → **la cola no se guarda y el cambio se queda sin subir de verdad**.
+// Por eso salía justo cuando el internet estaba inestable, y por eso quedaban
+// cambios sin subir.
+//
+// Ahora la cola guarda solo el NOMBRE del archivo y su clave local. Al reintentar
+// se lee la copia local, que además es la versión MÁS NUEVA: si alguien siguió
+// trabajando mientras no había red, se sube lo último y no una foto vieja.
+function _claveDeArchivo(file) {
+  try {
+    const t = (typeof POLL_TARGETS !== 'undefined' ? POLL_TARGETS : []).find(x => x.file === file);
+    return (t && t.storageKey) || null;
+  } catch (_) { return null; }
+}
+// Una entrada de cola sin la copia: si el archivo no tiene clave local conocida,
+// se guarda `data` como antes (no se puede reconstruir de otro lado).
+function _colaEntrada(file, data, label, extra) {
+  const key = _claveDeArchivo(file);
+  const e = { file: file, label: label, ts: Date.now(), key: key || undefined };
+  if (!key) e.data = data;
+  return Object.assign(e, extra || {});
+}
+// Devuelve los datos a subir: los de la copia local si la entrada solo trae la
+// referencia; y si es una entrada VIEJA que todavía trae `data`, esa.
+function _colaDatos(item) {
+  if (item && item.data !== undefined) return item.data;
+  const key = item && item.key;
+  if (!key) return null;
+  try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (_) { return null; }
+}
 function _setSyncStatus(state, msg) {
   const pill = document.getElementById('sync-pill');
   const label = document.getElementById('sync-label');
@@ -5716,7 +5778,7 @@ async function _enqueueOrSave(file, data, label) {
     // Sin token ni proxy: encolar igualmente para que _pollOne no descarte el item local
     const q = _getSyncQueue();
     const filtered = q.filter(item => item.file !== file);
-    filtered.push({ file, data, label, ts: Date.now() });
+    filtered.push(_colaEntrada(file, data, label));
     _setSyncQueue(filtered);
     _refreshSyncBadge();
     return;
@@ -5725,7 +5787,7 @@ async function _enqueueOrSave(file, data, label) {
     const q = _getSyncQueue();
     // Reemplaza cualquier entrada anterior para el mismo archivo (queremos solo la última)
     const filtered = q.filter(item => item.file !== file);
-    filtered.push({ file, data, label, ts: Date.now() });
+    filtered.push(_colaEntrada(file, data, label));
     _setSyncQueue(filtered);
     _refreshSyncBadge();
     return;
@@ -5743,7 +5805,7 @@ async function _enqueueOrSave(file, data, label) {
     // Falló: encolar para reintentar
     const q = _getSyncQueue();
     const filtered = q.filter(item => item.file !== file);
-    filtered.push({ file, data, label, ts: Date.now() });
+    filtered.push(_colaEntrada(file, data, label));
     _setSyncQueue(filtered);
     _refreshSyncBadge();
   }
@@ -5776,12 +5838,19 @@ async function _drainSyncQueue() {
       if (item.__ordenes) {
         // Vaciar la cola de esa entrada ANTES de reintentar para evitar duplicado
         // si _saveOrdenesGH vuelve a fallar y re-encola.
+        const arr = _colaDatos(item);
+        if (arr == null) { console.warn('[cola] sin datos para ordenes.json — se descarta'); continue; }
         const tmpQ = _getSyncQueue().filter(it => it.file !== 'ordenes.json');
         _setSyncQueue(tmpQ);
-        await _saveOrdenesGH(item.data);
+        await _saveOrdenesGH(arr);
         // Si _saveOrdenesGH falló re-encoló sola; si funcionó, no quedó nada que mover.
       } else {
-        const dataFinal = await _mergeAntesDeSubir(item.file, item.data);
+        // Los datos salen de la copia local (o de la propia entrada si es vieja).
+        // Si no hay ninguna de las dos, la entrada ya no tiene sentido: se deja
+        // caer en vez de subir `null` y borrar el archivo en el servidor.
+        const datos = _colaDatos(item);
+        if (datos == null) { console.warn('[cola] sin datos para', item.file, '— se descarta'); continue; }
+        const dataFinal = await _mergeAntesDeSubir(item.file, datos);
         await _saveDataGH(item.file, dataFinal, item.label + ' (cola)');
       }
     } catch(_) {
