@@ -25401,18 +25401,75 @@ async function opLigarConfirmar() {
   // Pasó en la OP-2026-0031 (PSI): 4 líneas compradas a MUNDIAL, ligadas y
   // despachadas sin recepción. Quedó facturada y cerrada exigiendo certificados,
   // con la colada en blanco en las 4 líneas de la remisión.
+  // 4-sep-2026 — LIGAR AHORA HACE ENTRAR EL MATERIAL, no solo avisa.
+  // Antes esto era un cartel que decía «cancela y usa Recibir en bodega», con una
+  // salida de emergencia: «sigue solo si el proveedor le entregó directo al
+  // cliente». Ese caso NO EXISTE — el proveedor nunca despacha directo, todo lo
+  // revisamos nosotros —, así que la salida de emergencia solo servía para que el
+  // material cruzara la empresa sin dejar rastro. Por ahí se fueron 9 líneas.
+  // Ahora se hace lo mismo que el cross-docking de «Recibir con sale de una»:
+  // ENTRADA y SALIDA el mismo día. El saldo no se mueve; lo que queda es la huella
+  // (a quién se le compró, a qué precio, con qué colada, y a quién salió).
   const sinRecibir = pares.filter(p => p.it.origen === 'COMPRA'
     && (+p.it.recibida || 0) < (+p.it.cantidad || 0));
+  const aIngresar = [];
   if (sinRecibir.length) {
-    const lista = sinRecibir.slice(0, 5)
-      .map(p => '· ' + String(p.it.descripcion || '').substring(0, 46)).join('\n');
-    if (!confirm('⚠️ ' + sinRecibir.length + ' ítem(s) son COMPRA y nunca entraron a bodega:\n\n'
-      + lista + (sinRecibir.length > 5 ? '\n· … y ' + (sinRecibir.length - 5) + ' más' : '')
-      + '\n\nSi el material pasó por nosotros TIENE que ingresar primero: es lo que\n'
-      + 'deja el rastro en el kardex, y donde se captura la colada del que la maneja.\n\n'
-      + 'Cancela y usa «📥 Recibir en bodega» — con «sale de una» si se despacha\n'
-      + 'el mismo día. Sigue solo si el proveedor le entregó directo al cliente.\n\n'
-      + '¿Ligar de todos modos?')) return;
+    let maestro = [];
+    try {
+      maestro = (await absFetch('productos?select=codigo,descripcion,stock_actual,entradas,salidas,costo_compra&limit=3000')) || [];
+    } catch (e) {
+      if (av) av.innerHTML = '<div class="op-ligar-err">No se pudo leer el inventario ('
+        + opEsc(e && e.message || e) + '). No se liga: intenta de nuevo.</div>';
+      return;
+    }
+    const porCodigo = {}, porDesc = {};
+    maestro.forEach(p => {
+      porCodigo[String(p.codigo || '').trim()] = p;
+      const k = norm(p.descripcion);
+      if (k) (porDesc[k] = porDesc[k] || []).push(p);
+    });
+    sinRecibir.forEach(p => {
+      // Manda la cantidad de la REMISIÓN: es el papel que firmó el cliente.
+      const q = Math.abs(parseFloat(p.f.cantidad) || 0) || Math.abs(parseFloat(p.it.cantidad) || 0);
+      if (!q) return;
+      const cod = String(p.it.producto_codigo || '').trim();
+      let prod = cod ? porCodigo[cod] : null;
+      // Sin código se busca por descripción, pero SOLO exacta y SOLO si hay una
+      // sola candidata. El cruce por parecido ya metió un falso positivo real en
+      // producción (BRIDA WN → FLANCHE CIEGO) y aquí movería inventario del
+      // producto equivocado. Ante la duda se crea ficha nueva, que es reversible.
+      if (!prod) {
+        const cand = porDesc[norm(p.it.descripcion)] || [];
+        if (cand.length === 1) prod = cand[0];
+      }
+      aIngresar.push({
+        it: p.it, f: p.f, prod: prod || null, qty: q,
+        costo: (p.it.costo_unit != null ? +p.it.costo_unit : 0),
+        colada: String(p.f.colada || p.it.colada || '').trim()
+      });
+    });
+  }
+  if (aIngresar.length) {
+    const nuevos = aIngresar.filter(x => !x.prod).length;
+    // Solo puede quedar negativo si algo figura como recibido y no está en el
+    // saldo: o ya salió por otro lado, o el maestro está mal. Se avisa, no se
+    // corrige solo — inventar unidades es peor que mostrar el número incómodo.
+    const negIngreso = aIngresar.filter(x =>
+      ((x.prod ? +x.prod.stock_actual || 0 : 0) - Math.max(0, +x.it.recibida || 0)) < 0);
+    if (negIngreso.length && !confirm('🚨 En ' + negIngreso.length + ' ítem(s) el saldo '
+      + 'quedaría en NEGATIVO:\n\n'
+      + negIngreso.map(x => '· ' + String(x.it.descripcion || '').substring(0, 42)
+          + ' (figura recibido ' + (+x.it.recibida || 0) + ', en bodega hay '
+          + (x.prod ? +x.prod.stock_actual || 0 : 0) + ')').join('\n')
+      + '\n\nEso significa que esas unidades ya salieron por otro lado o que el\n'
+      + 'maestro está mal. Corrígelo en Abastecimiento después.\n\n¿Seguir?')) return;
+    if (!confirm('📥 ' + aIngresar.length + ' ítem(s) son COMPRA y nunca entraron a bodega.\n\n'
+      + 'Se va a registrar la ENTRADA y enseguida la SALIDA con la remisión ' + num + ':\n'
+      + 'dos movimientos del mismo día. El saldo NO se mueve — queda el rastro.\n\n'
+      + aIngresar.map(x => '· ' + String(x.it.descripcion || '').substring(0, 40) + ' × ' + x.qty
+          + (x.prod ? '  →  ' + x.prod.codigo : '  →  ficha NUEVA')).join('\n')
+      + (nuevos ? '\n\n' + nuevos + ' no está(n) en el inventario: se les crea la ficha.' : '')
+      + '\n\n¿Registrar la entrada y ligar?')) return;
   }
 
   // 1-sep-2026 — LO QUE SALE DE BODEGA TIENE QUE DESCONTAR.
@@ -25425,7 +25482,11 @@ async function opLigarConfirmar() {
   // salida en el kardex de esa remisión. Preguntarle al kardex —y no confiar en
   // una premisa— es lo que hace que ligar dos veces no descuente dos veces.
   const aDescontar = [], sinDescontar = [], negativos = [], difCantidad = [];
-  const conCodigo = pares.filter(p => String(p.it.producto_codigo || '').trim());
+  // Lo que va a entrar YA sale en su propio paso (entra y sale el mismo día). Si
+  // se dejara aquí también, se descontaría dos veces la misma línea.
+  const _yaIngresa = new Set(aIngresar.map(x => x.it.id));
+  const conCodigo = pares.filter(p => String(p.it.producto_codigo || '').trim()
+    && !_yaIngresa.has(p.it.id));
   if (conCodigo.length) {
     let yaSalio;
     try {
@@ -25487,11 +25548,13 @@ async function opLigarConfirmar() {
     + (sueltas ? sueltas + ' línea(s) de la remisión no emparejaron.\n' : '')
     + (difCantidad.length ? '\n⚠️ Cantidad distinta entre la OP y la remisión:\n'
         + difCantidad.map(t => '· ' + t).join('\n') + '\nSe descuenta lo de la REMISIÓN.\n' : '')
+    + (aIngresar.length ? '\nENTRAN Y SALEN el mismo día ' + aIngresar.length
+        + ' ítem(s) de compra (el saldo no se mueve).\n' : '')
     + '\n' + (aDescontar.length
         ? 'SE DESCUENTAN DEL INVENTARIO ' + aDescontar.length + ' ítem(s):\n'
           + aDescontar.map(x => '· ' + x.prod.descripcion + ': ' + (+x.prod.stock_actual || 0)
               + ' → ' + ((+x.prod.stock_actual || 0) - x.qty)).join('\n') + '\n'
-        : 'No hay nada que descontar: o ya descontó, o no sale de bodega.\n')
+        : (aIngresar.length ? '' : 'No hay nada que descontar: o ya descontó, o no sale de bodega.\n'))
     + (sinDescontar.length ? '\nSin descontar (no están en el inventario): '
         + sinDescontar.join(' · ') + '\n' : '')
     + '\n¿Continuar?')) return;
@@ -25521,14 +25584,102 @@ async function opLigarConfirmar() {
       } catch (e) { fallos.push(p.it.descripcion + ' (' + (e && e.message || e) + ')'); }
     }
 
+    const fecha = String(pares[0].f.fecha || '').substring(0, 10)
+      || new Date().toISOString().split('T')[0];
+
+    // 2.5) LO QUE NUNCA ENTRÓ: entra y sale el mismo día, con la fecha de la
+    //      remisión. Dos movimientos de verdad, no uno «neto»: uno dice a quién
+    //      se le compró y a qué precio, el otro a quién salió y con qué papel.
+    //      Va ANTES del descuento normal para que el stock nunca pase por negativo.
+    // Saldo vivo de lo que se va tocando en esta misma pasada. Sin esto, dos
+    // líneas del mismo producto —o una que entra y otra que se descuenta— leerían
+    // el saldo de antes de empezar y la segunda pisaría los contadores de la
+    // primera. El stock quedaba bien por casualidad; entradas y salidas no.
+    const _saldoVivo = {};
+    const _leerSaldo = p => _saldoVivo[p.codigo] || {
+      stock: +p.stock_actual || 0, entradas: +p.entradas || 0, salidas: +p.salidas || 0
+    };
+    for (const x of aIngresar) {
+      try {
+        let prod = x.prod;
+        if (!prod) {
+          // Producto nuevo: se crea al recibirlo, igual que en «Recibir en bodega».
+          // Bodega no puede quedarse esperando a que alguien lo cree en otro módulo.
+          const codigo = 'OP-' + Date.now().toString().slice(-8) + '-' + (x.it.item || '0');
+          prod = {
+            codigo: codigo, descripcion: String(x.it.descripcion || '').trim().toUpperCase(),
+            stock_actual: 0, entradas: 0, salidas: 0, costo_compra: x.costo || 0,
+            proveedor: String(x.it.proveedor || '').trim() || null, activo: true,
+            fecha_ingreso: fecha, colada: x.colada || null
+          };
+          await absFetch('productos', {
+            method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(prod)
+          });
+        }
+        const sv = _leerSaldo(prod);
+        const antes = sv.stock;
+        // Si una parte YA se había recibido, esa parte ya está en el saldo: solo
+        // entra lo que falta. Sale siempre lo de la remisión, que es lo que de
+        // verdad salió, así que lo recibido antes queda consumido como debe ser.
+        const yaEntro = Math.max(0, +x.it.recibida || 0);
+        const entra = Math.max(0, x.qty - yaEntro);
+        const despues = antes + entra - x.qty;
+        const comun = {
+          codigo_producto: prod.codigo, descripcion_producto: prod.descripcion,
+          cantidad: x.qty, costo: x.costo || +prod.costo_compra || 0, responsable: yo,
+          lote: x.colada, colada: x.colada, op_numero: op_current.numero,
+          proveedor: String(x.it.proveedor || '').trim() || null
+        };
+        if (entra > 0) {
+          await absFetch('kardex', {
+            method: 'POST', headers: { 'Prefer': 'return=minimal' },
+            body: JSON.stringify(Object.assign({}, comun, {
+              cantidad: entra, fecha: fecha, hora: '08:00:00', tipo: 'ENTRADA',
+              stock_resultante: antes + entra, remision: '',
+              notas: 'Entró al ligar la remisión ' + num + ' de ' + op_current.numero
+                     + (yaEntro ? ' · ' + yaEntro + ' ya se había recibido' : '')
+            }))
+          });
+        }
+        await absFetch('kardex', {
+          method: 'POST', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify(Object.assign({}, comun, {
+            fecha: fecha, hora: '16:00:00', tipo: 'SALIDA',
+            stock_resultante: despues, remision: num,
+            notas: 'Salió el mismo día con la remisión ' + num
+          }))
+        });
+        // Si entró y salió lo mismo, el saldo queda donde estaba.
+        _saldoVivo[prod.codigo] = { stock: despues, entradas: sv.entradas + entra,
+                                    salidas: sv.salidas + x.qty };
+        await absFetch('productos?codigo=eq.' + encodeURIComponent(prod.codigo), {
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({
+            stock_actual: despues, entradas: sv.entradas + entra,
+            salidas: sv.salidas + x.qty, updated_at: new Date().toISOString()
+          })
+        });
+        const recibTot = yaEntro + entra;
+        await absFetch('op_items?id=eq.' + x.it.id, {
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({ producto_codigo: prod.codigo, recibida: recibTot, updated_by: yo })
+        });
+        x.it.producto_codigo = prod.codigo;
+        x.it.recibida = recibTot;
+      } catch (e) {
+        fallos.push('entrada de ' + x.it.descripcion + ' (' + (e && e.message || e) + ')');
+      }
+    }
+
     // 3) El inventario. Misma mecánica que «Alistar y despachar»: kardex primero
     //    (es el rastro) y después el saldo del producto. Si una línea falla se
     //    anota y las demás siguen: media corrección vale más que ninguna.
-    const fecha = String(pares[0].f.fecha || '').substring(0, 10)
-      || new Date().toISOString().split('T')[0];
     for (const x of aDescontar) {
       try {
-        const nuevo = (+x.prod.stock_actual || 0) - x.qty;
+        // Saldo vivo: si este mismo producto ya se movió arriba (entró y salió),
+        // hay que partir de ahí y no del saldo con el que empezó la pantalla.
+        const sv = _leerSaldo(x.prod);
+        const nuevo = sv.stock - x.qty;
         const col = String(x.f.colada || x.it.colada || '').trim();
         await absFetch('kardex', {
           method: 'POST', headers: { 'Prefer': 'return=minimal' },
@@ -25541,9 +25692,11 @@ async function opLigarConfirmar() {
             notas: 'Despacho de ' + op_current.numero + ' · remisión hecha aparte y ligada'
           })
         });
+        _saldoVivo[x.prod.codigo] = { stock: nuevo, entradas: sv.entradas,
+                                      salidas: sv.salidas + x.qty };
         await absFetch('productos?codigo=eq.' + encodeURIComponent(x.prod.codigo), {
           method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
-          body: JSON.stringify({ stock_actual: nuevo, salidas: (+x.prod.salidas || 0) + x.qty,
+          body: JSON.stringify({ stock_actual: nuevo, salidas: sv.salidas + x.qty,
                                  updated_at: new Date().toISOString() })
         });
       } catch (e) {
