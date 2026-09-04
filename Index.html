@@ -25440,9 +25440,38 @@ async function opLigarConfirmar() {
   const usados = new Set();
   const pares = [];
   const norm = t => String(t || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+
+  // 🚨 4-sep-2026 — EL N° DE LA REMISIÓN ES EL DE LA COTIZACIÓN, NO EL DE LA OP.
+  // `remisiones.item_cot` guarda el número del ítem en la COTIZACIÓN; `op_items.item`
+  // es la numeración PROPIA de la OP, que se renumera 1..n al crearla. Mientras la
+  // OP lleve la cotización completa coinciden; con una adjudicación PARCIAL dejan de
+  // coincidir y el emparejamiento se corre.
+  // Pasó en la OP-2026-0034: LM2074 tenía 5 ítems, la OP recibió del 2 al 5 y quedó
+  // TODO CORRIDO UN PUESTO — cada línea marcó el ítem equivocado, el primero se quedó
+  // sin despachar y por eso la OP no se podía cerrar.
+  // El puente bueno es el uid del ítem de la cotización, que la OP sí guarda en
+  // `cotizacion_item_uid`. El número solo se usa si no se pudo armar ese puente.
+  let uidPorItemCot = null;
+  if (op_current.cotizacion_id) {
+    try {
+      const ci = (await absFetch('cotizacion_items?cotizacion_id=eq.'
+        + encodeURIComponent(op_current.cotizacion_id) + '&select=item,uid&limit=800')) || [];
+      const m = {};
+      ci.forEach(c => { if (c && c.item != null && c.uid) m[String(c.item)] = c.uid; });
+      if (Object.keys(m).length) uidPorItemCot = m;
+    } catch (_) { uidPorItemCot = null; }
+  }
+
   g.forEach(f => {
     let it = null;
-    if (f.item_cot != null) it = its.find(x => !usados.has(x.id) && String(x.item) === String(f.item_cot));
+    if (f.item_cot != null && uidPorItemCot) {
+      const uid = uidPorItemCot[String(f.item_cot)];
+      if (uid) it = its.find(x => !usados.has(x.id) && x.cotizacion_item_uid === uid);
+      // Con el puente armado NO se cae al número: emparejar por un número que ya
+      // sabemos que puede estar corrido es peor que no emparejar. Sigue por texto.
+    } else if (f.item_cot != null) {
+      it = its.find(x => !usados.has(x.id) && String(x.item) === String(f.item_cot));
+    }
     if (!it) {
       const n = norm(f.descripcion);
       it = its.find(x => !usados.has(x.id) && norm(x.descripcion) === n)
