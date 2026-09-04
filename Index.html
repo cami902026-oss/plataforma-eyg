@@ -1215,6 +1215,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #page-op .op-carril[data-c="despachar"] .op-carril-top{ background:var(--op-compra); }
 #page-op .op-carril[data-c="facturar"]  .op-carril-top{ background:var(--op-sin); }
 #page-op .op-carril[data-c="papeles"]   .op-carril-top{ background:var(--gold); }
+#page-op .op-carril[data-c="cerrar"]    .op-carril-top{ background:var(--op-bodega); }
+#page-op .op-carril[data-c="cerrar"] .op-carril-v{ color:var(--op-bodega); }
 #page-op .op-carril-cab{ padding:12px 13px 11px;border-bottom:1px solid rgba(30,58,110,.6); }
 #page-op .op-carril-t{
   font-size:13px;font-weight:800;color:#e6edfb;display:flex;align-items:center;gap:7px;
@@ -23950,7 +23952,13 @@ const OP_CARRILES = [
   // lo que ya salió de bodega y sigue debiendo su MTR, esté facturado o no. Una OP
   // puede salir aquí y en su carril de etapa a la vez; la tarjeta lo dice.
   { c: 'papeles',   t: '📄 Certificados',       d: 'Ya salió el material y falta el MTR. Aparecen también en su carril.',
-    f: o => o.estado === 'despachada' && (_opCertsFalta(o) || 0) > 0 }
+    f: o => o.estado === 'despachada' && (_opCertsFalta(o) || 0) > 0 },
+  // 4-sep-2026 — SIN ESTE CARRIL SE PERDÍAN DE VISTA.
+  // Una OP despachada, ya facturada y con los certificados completos no caía en
+  // ningún carril: no está por facturar ni debe MTR. Desaparecía del tablero
+  // justo cuando lo único que falta es darle a Cerrar. Pasó con la OP-2026-0034.
+  { c: 'cerrar',    t: '✅ Lista para cerrar',  d: 'Despachada, facturada y con sus MTR. Solo falta cerrarla.',
+    f: o => o.estado === 'despachada' && !!_opFactura(o) && (_opCertsFalta(o) === 0) }
 ];
 
 function opVista() {
