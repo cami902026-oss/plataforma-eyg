@@ -94591,7 +94591,7 @@
     "cliente": "CIAM",
     "contacto": "YEISON",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 7320826,
@@ -94790,10 +94790,18 @@
         "precioProveedor": 5090
       }
     ],
-    "fechaGuardado": "2026-09-04T22:42:23.187Z",
+    "fechaGuardado": "2026-09-04T22:43:27.830Z",
     "adjudicadaAt": "2026-09-04",
-    "valorAdjudicado": 298000,
+    "valorAdjudicado": 7320826,
     "itemsAdjudicados": [
+      {
+        "uid": "3913b44d-f754-44df-8846-d7b7406eb0ef",
+        "qty": 100
+      },
+      {
+        "uid": "191ece1a-2d0d-4532-a08a-15b45d25c03a",
+        "qty": 200
+      },
       {
         "uid": "33b7635e-5d6a-4a94-9e15-d2303bb5b1ef",
         "qty": 3
@@ -94839,11 +94847,11 @@
         "qty": 2
       }
     ],
-    "adjudicacionPor": "Andrea",
-    "adjudicacionAt": "2026-09-04T19:07:07.938Z",
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-04T22:43:27.817Z",
     "createdAt": "2026-09-02T16:34:12.058Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-04T22:42:23.187Z",
+    "updatedAt": "2026-09-04T22:43:27.830Z",
     "updatedBy": "alexandra"
   },
   {
