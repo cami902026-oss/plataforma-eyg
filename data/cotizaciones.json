@@ -89523,8 +89523,8 @@
     "cliente": "CIAM",
     "contacto": "DALADIER",
     "correo": "",
-    "estado": "Enviada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "612",
     "iva": 19,
     "subtotal": 365200,
     "ivaVal": 69388,
@@ -89568,26 +89568,23 @@
         "precioProveedor": 2860
       }
     ],
-    "fechaGuardado": "2026-09-03T21:23:50.255Z",
+    "fechaGuardado": "2026-09-04T14:51:41.664Z",
     "fechaEnvio": "2026-09-03T21:23:50.255Z",
+    "facturadaAt": "2026-09-04",
     "adjudicadaAt": "2026-09-02",
-    "valorAdjudicado": 365200,
+    "valorAdjudicado": 90000,
     "itemsAdjudicados": [
       {
         "uid": "eee23bc7-57ca-4883-8e82-daef7c4fbc8e",
         "qty": 60
-      },
-      {
-        "uid": "ecfc2238-07e4-43ae-a9cf-a9ff5cbd1055",
-        "qty": 64
       }
     ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-09-02T17:14:53.453Z",
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-09-04T14:51:08.062Z",
     "createdAt": "2026-09-02T15:10:57.831Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-03T21:23:50.255Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-04T14:51:41.664Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2103",
