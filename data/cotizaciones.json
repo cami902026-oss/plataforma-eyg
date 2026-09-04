@@ -89634,17 +89634,17 @@
   },
   {
     "id": "LM2103",
-    "fecha": "2026-09-04",
-    "fechaVenc": "2026-09-12",
+    "fecha": "2026-09-02",
+    "fechaVenc": "2026-09-10",
     "cliente": "CIAM",
     "contacto": "YEISON",
     "correo": "",
     "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
-    "subtotal": 7320826,
-    "ivaVal": 1390956.94,
-    "total": 8711782.94,
+    "subtotal": 3179000,
+    "ivaVal": 604010,
+    "total": 3783010,
     "formaPago": "45 DÍAS",
     "sitioEntrega": "PTO GAITAN",
     "validez": "8 DÍAS",
@@ -89676,7 +89676,7 @@
         "uid": "191ece1a-2d0d-4532-a08a-15b45d25c03a",
         "desc": "Teldor | Cable de Instrumentación 1x3x16 AWG blindado HFFR 300V 80º ",
         "marca": "",
-        "precio": 15000,
+        "precio": 0,
         "desvTec": "",
         "proveedor": "",
         "obsProveedor": "",
@@ -89690,7 +89690,7 @@
         "uid": "33b7635e-5d6a-4a94-9e15-d2303bb5b1ef",
         "desc": "THREDOLET 1/2\" X 3000 - INOX",
         "marca": "BOTHWELL",
-        "precio": 51942,
+        "precio": 0,
         "desvTec": "SS304",
         "proveedor": "FERR SEAT",
         "obsProveedor": "-10% DE DESCUENTO",
@@ -89704,7 +89704,7 @@
         "uid": "90ee8742-2b7e-4ef9-b390-a45a7ac1d78e",
         "desc": "CODO 90°, 1/2\" X 3000 - INOX - THR- THR",
         "marca": "BOTHWELL",
-        "precio": 38000,
+        "precio": 0,
         "desvTec": "SS304",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -89718,7 +89718,7 @@
         "uid": "ee136273-82ab-42ca-a845-e5dacf56df63",
         "desc": "NIPLE 1 1/4\" X 6\" - NPT - NPT",
         "marca": "MOLONG",
-        "precio": 12800,
+        "precio": 0,
         "desvTec": "A-106",
         "proveedor": "UNINIPLES",
         "obsProveedor": "",
@@ -89732,7 +89732,7 @@
         "uid": "3e9c54fe-60d7-437e-bb02-2c9939de6021",
         "desc": "Reduccion concentrica Macho 1/2\" Hembra de 1/4\" rosca NPT en acero inoxidable ansi 150",
         "marca": "",
-        "precio": 10000,
+        "precio": 0,
         "desvTec": "SS304",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -89746,7 +89746,7 @@
         "uid": "cc798af7-1075-442c-9726-7db94613deb5",
         "desc": "NIPLE 1/2\" X 200- SCH80 - NPT -NPT",
         "marca": "MOLONG",
-        "precio": 6000,
+        "precio": 0,
         "desvTec": "A-106 x 8\"",
         "proveedor": "UNINIPLES",
         "obsProveedor": "",
@@ -89760,7 +89760,7 @@
         "uid": "77fba078-b202-4f46-b57c-7f2985b6b7d5",
         "desc": "ESPARRAGO 3/4\" X 6 1/4\" B7 2H =",
         "marca": "JDF",
-        "precio": 6800,
+        "precio": 0,
         "desvTec": "A-193/194 B7 2H",
         "proveedor": "MUNDIAL",
         "obsProveedor": "",
@@ -89776,7 +89776,7 @@
         "marca": "JDF",
         "precio": 23500,
         "desvTec": "A-193/194 B7 2H",
-        "proveedor": "MUNDIAL",
+        "proveedor": "",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 0
@@ -89788,7 +89788,7 @@
         "uid": "1b950bba-46c3-4e3a-bacf-9a18f1641911",
         "desc": "CODO 3/4\", 90° NPT X 3000",
         "marca": "BOTHWELL",
-        "precio": 18000,
+        "precio": 0,
         "desvTec": "SS304",
         "proveedor": "CODIFER",
         "obsProveedor": "",
@@ -89816,7 +89816,7 @@
         "uid": "3f233278-98fd-4a21-938a-b0ed4b4e6c39",
         "desc": "NIPLE 1/2\" X 200- SCH80 - NPT -NPT",
         "marca": "MOLONG",
-        "precio": 6000,
+        "precio": 0,
         "desvTec": "A-106 x 8\" ",
         "proveedor": "UNINIPLES",
         "obsProveedor": "",
@@ -89838,19 +89838,10 @@
         "precioProveedor": 5090
       }
     ],
-    "fechaGuardado": "2026-09-04T20:18:03.385Z",
-    "fechaEnvio": "2026-09-04T20:17:10.608Z",
+    "fechaGuardado": "2026-09-04T19:08:16.973Z",
     "adjudicadaAt": "2026-09-04",
-    "valorAdjudicado": 7320826,
+    "valorAdjudicado": 298000,
     "itemsAdjudicados": [
-      {
-        "uid": "3913b44d-f754-44df-8846-d7b7406eb0ef",
-        "qty": 100
-      },
-      {
-        "uid": "191ece1a-2d0d-4532-a08a-15b45d25c03a",
-        "qty": 200
-      },
       {
         "uid": "33b7635e-5d6a-4a94-9e15-d2303bb5b1ef",
         "qty": 3
@@ -89884,6 +89875,10 @@
         "qty": 1
       },
       {
+        "uid": "7141172a-9ffe-4a8e-adb3-36e9ef06faf8",
+        "qty": 8
+      },
+      {
         "uid": "3f233278-98fd-4a21-938a-b0ed4b4e6c39",
         "qty": 2
       },
@@ -89893,10 +89888,10 @@
       }
     ],
     "adjudicacionPor": "Andrea",
-    "adjudicacionAt": "2026-09-04T20:18:03.372Z",
+    "adjudicacionAt": "2026-09-04T19:07:07.938Z",
     "createdAt": "2026-09-02T16:34:12.058Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-04T20:18:03.385Z",
+    "updatedAt": "2026-09-04T19:08:16.973Z",
     "updatedBy": "andrea"
   },
   {
