@@ -835,11 +835,11 @@
     "updatedAt": "2026-07-31T22:14:09.027Z",
     "updatedBy": "andrea",
     "faltanFechas": true,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "archivadaAt": "2026-08-31T13:00:43.771Z"
+    "archivadaAt": "2026-09-04T20:49:56.284Z"
   },
   {
     "id": "poc_1780498255267",
@@ -1392,8 +1392,8 @@
     "faltanFechas": false,
     "observaciones": "",
     "facturacion": "",
-    "archivada": false,
-    "archivadaAt": "2026-09-01T01:37:19.167Z"
+    "archivada": true,
+    "archivadaAt": "2026-09-04T20:49:56.284Z"
   },
   {
     "id": "poc_1779461337230",
@@ -4703,8 +4703,8 @@
     "observaciones": "",
     "facturacion": "",
     "faltanFechas": false,
-    "archivada": false,
-    "archivadaAt": "2026-09-04T12:49:05.486Z"
+    "archivada": true,
+    "archivadaAt": "2026-09-04T20:49:56.284Z"
   },
   {
     "id": "poc_1784046230252",
@@ -5315,10 +5315,10 @@
     "updatedAt": "2026-08-02T00:03:40.651Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "",
     "facturacion": "",
-    "archivadaAt": "2026-09-01T01:37:19.167Z"
+    "archivadaAt": "2026-09-04T20:49:56.284Z"
   },
   {
     "id": "poc_1784836265039",
@@ -5420,11 +5420,11 @@
     "updatedAt": "2026-08-05T02:22:03.318Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "REMISION ENVIADA A CLIENTE 24/07",
     "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-09-04T12:49:05.486Z"
+    "archivadaAt": "2026-09-04T20:49:56.284Z"
   },
   {
     "id": "poc_1784845937272",
@@ -5525,10 +5525,10 @@
     "updatedAt": "2026-07-31T13:45:59.013Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "",
     "facturacion": "",
-    "archivadaAt": "2026-08-31T13:00:43.771Z"
+    "archivadaAt": "2026-09-04T20:49:56.284Z"
   },
   {
     "id": "poc_1784907677442",
@@ -5628,10 +5628,10 @@
     "updatedAt": "2026-07-31T15:00:58.643Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "",
     "facturacion": "",
-    "archivadaAt": "2026-08-31T13:00:43.771Z"
+    "archivadaAt": "2026-09-04T20:49:56.284Z"
   },
   {
     "id": "poc_1784990915217",
@@ -5782,10 +5782,10 @@
     "updatedAt": "2026-07-31T14:59:13.451Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "",
     "facturacion": "",
-    "archivadaAt": "2026-08-31T13:00:43.771Z"
+    "archivadaAt": "2026-09-04T20:49:56.284Z"
   },
   {
     "id": "poc_1785289955752",
@@ -6555,59 +6555,6 @@
     "faltanFechas": false,
     "archivada": true,
     "archivadaAt": "2026-09-04T12:49:05.486Z"
-  },
-  {
-    "id": "poc_1785981236609",
-    "num": "15403",
-    "cliente": "BOBINADOS",
-    "desc": "Cotización LM1930 · 8 ítems",
-    "estado": "completado",
-    "fechaIngreso": "2026-08-05",
-    "valor": 576763,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-08-05",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-08-05",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-08-05",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-08-05",
-        "n": "",
-        "factura": "564"
-      }
-    ],
-    "observaciones": "",
-    "facturacion": "",
-    "cotizacionId": "LM1930",
-    "createdAt": "2026-08-06T01:53:56.609Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-08-06T01:54:35.770Z",
-    "updatedBy": "andrea",
-    "faltanFechas": false,
-    "deleted": true,
-    "deletedAt": "2026-08-06T01:54:35.765Z",
-    "deletedBy": "andrea"
   },
   {
     "id": "poc_1786056625525",
