@@ -79554,7 +79554,7 @@
     "cliente": "LUIS ALEJANDRO JIMENEZ VERGARA",
     "contacto": "LUIS ALEJANDRO JIMENEZ VERGARA",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 542860,
@@ -79583,13 +79583,22 @@
         "precioProveedor": 95000
       }
     ],
-    "fechaGuardado": "2026-09-04T18:07:37.363Z",
+    "fechaGuardado": "2026-09-07T13:05:53.349Z",
     "fechaEnvio": "2026-09-04T18:07:03.246Z",
+    "adjudicadaAt": "2026-09-07",
+    "valorAdjudicado": 542860,
+    "itemsAdjudicados": [
+      {
+        "uid": "b1781ee9-4bfc-440e-9674-a24cbf070eb8",
+        "qty": 4
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-07T13:05:53.339Z",
     "createdAt": "2026-09-04T18:07:03.246Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-04T18:11:32.785Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-09-04T18:11:32.785Z"
+    "updatedAt": "2026-09-07T13:05:53.349Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2041",
