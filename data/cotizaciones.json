@@ -41826,7 +41826,7 @@
     "cliente": "HIDROCASANARE",
     "contacto": "ANDRES CASTILLA",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 825230,
@@ -41934,13 +41934,46 @@
         "precioProveedor": 3700
       }
     ],
-    "fechaGuardado": "2026-07-24T17:49:36.853Z",
+    "fechaGuardado": "2026-09-07T16:29:22.563Z",
     "fechaEnvio": "2026-07-24T17:48:59.193Z",
+    "adjudicadaAt": "2026-09-07",
+    "valorAdjudicado": 825230,
+    "itemsAdjudicados": [
+      {
+        "uid": "ea6d4042-ff32-4803-9345-30bda9373093",
+        "qty": 100
+      },
+      {
+        "uid": "b4a9855a-8fee-4e41-87ce-ee55ced8701b",
+        "qty": 12
+      },
+      {
+        "uid": "79fcff38-d2a0-467d-b1bd-5afecab4e7a2",
+        "qty": 5
+      },
+      {
+        "uid": "cd05fafe-be20-4e79-a6cc-e15313516b6f",
+        "qty": 20
+      },
+      {
+        "uid": "8ced6578-ef71-4cdb-826a-d9f3984b6cb7",
+        "qty": 5
+      },
+      {
+        "uid": "73ccdd36-c017-46a9-8d44-8fbbb5a34de7",
+        "qty": 6
+      },
+      {
+        "uid": "24bf1790-6469-4613-a582-9e54c51f7c90",
+        "qty": 6
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-07T16:29:22.553Z",
     "createdAt": "2026-07-24T15:51:28.403Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-02T01:09:31.184Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-08-02T01:09:31.184Z"
+    "updatedAt": "2026-09-07T16:29:22.564Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM1877",
