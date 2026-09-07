@@ -21287,12 +21287,25 @@ async function remiInit(){
   remiVolver();
   if(!remi_rows.length) await remiCargar(); else remiRenderLista();
 }
+// 🔑 7-sep-2026 — EL MÓDULO SOLO VEÍA 1.000 FILAS.
+// El `limit=5000` era un deseo: PostgREST corta en 1.000 pase lo que pase. Con
+// 1.716 filas en la tabla, la lista mostraba 163 de ~250 remisiones y todo lo
+// anterior a la 26148 sencillamente no existía: no se podía abrir, ni buscar, ni
+// servir de base para una entrega parcial. Ahora se pide por páginas hasta que
+// el servidor deja de mandar.
 async function remiCargar(){
   try{
     showToast('Cargando remisiones...','info');
-    remi_rows = await absFetch('remisiones?order=remision.desc,item.asc&limit=5000') || [];
+    const PAG=1000; let todo=[], desde=0;
+    for(let v=0; v<40; v++){
+      const b = await absFetch('remisiones?order=remision.desc,item.asc&limit='+PAG+'&offset='+desde) || [];
+      todo = todo.concat(b);
+      if(b.length < PAG) break;
+      desde += PAG;
+    }
+    remi_rows = todo;
     remiRenderLista();
-    showToast('Remisiones cargadas ✓','ok');
+    showToast('Remisiones cargadas ✓ ('+remi_rows.length+' líneas)','ok');
   }catch(e){ showToast('Error: '+e.message,'error'); }
 }
 // BLINDAJE anti-duplicados (2026-07-08): el guardado "sin pérdida" (inserta lo
@@ -21336,7 +21349,10 @@ function remiRenderLista(){
     return {remision:n, fecha:h.fecha||'', cliente:h.cliente||'', oc:h.oc||'', items:its.length, _match:matches,
       // v240 — marca de entrega parcial/definitiva. Vacías mientras no se corra
       // la migración: la lista se ve exactamente igual que antes.
+      // 7-sep-2026 — una entrega 1 completa NO es parcial: el chip solo sale si es
+      // la 2ª o posterior, si es la definitiva, o si el papel lleva líneas en cero.
       _entN:h.entrega_n||null, _entBase:h.remision_base||'', _entDef:!!h.es_definitiva,
+      _entCeros:its.some(x=>!((+x.cantidad||0)>0)),
       _txt:(n+' '+(h.cliente||'')+' '+(h.oc||'')+' '+its.map(x=>x.descripcion||'').join(' ')).toLowerCase()};
   });
   // v159: rango por N° de remisión (ej: de la 26200 a la 26220)
@@ -21363,7 +21379,7 @@ function remiRenderLista(){
   if(_fl) _fl.textContent = orden==='num-asc' ? '↑' : orden==='num-desc' ? '↓' : '⇅';
   const cnt=document.getElementById('remi-lista-count'); if(cnt) cnt.textContent=lista.length+' remisiones';
   tb.innerHTML=lista.map(r=>`<tr>
-    <td><strong style="color:var(--gold)">${_remiEsc(r.remision)}</strong>${r._entN?`<div style="font-size:10px;margin-top:2px;font-weight:700;letter-spacing:.03em;color:${r._entDef?'#5fd6ab':'#c4b5fd'}">${r._entDef?'🏁 ENTREGA '+r._entN+' · DEFINITIVA':'📦 ENTREGA '+r._entN+' · PARCIAL'}</div>`:''}</td>
+    <td><strong style="color:var(--gold)">${_remiEsc(r.remision)}</strong>${(r._entN&&(r._entDef||r._entN>1||r._entCeros))?`<div style="font-size:10px;margin-top:2px;font-weight:700;letter-spacing:.03em;color:${r._entDef?'#5fd6ab':'#c4b5fd'}">${r._entDef?'🏁 ENTREGA '+r._entN+' · DEFINITIVA':'📦 ENTREGA '+r._entN+' · PARCIAL'}</div>`:''}</td>
     <td style="font-size:12px">${r.fecha?r.fecha.split('-').reverse().join('/'):'—'}</td>
     <td style="font-size:13px">${_remiEsc(r.cliente)||'—'}</td>
     <td style="font-size:12px">${_remiEsc(r.oc)||'—'}</td>
@@ -21559,6 +21575,19 @@ function remiAbrirEditor(titulo){
   document.getElementById('remi-obs').value=c.observaciones;
   remiRenderItems();
   remiMostrarCotizLink();
+  _remiCargarFamilia();
+}
+
+// 7-sep-2026 — las OTRAS entregas de esta misma orden. Se leen una vez al abrir
+// (y cuando se marca la remisión como parcial) para poder decir, línea por línea,
+// si lo que hoy va en 0 ya salió antes o todavía se debe. Una remisión normal no
+// dispara ni una petición: se sale por el primer if.
+async function _remiCargarFamilia(){
+  const c=remi_current; if(!c) return;
+  c._fam=null;
+  if(!(c.remisionBase || c.entregaN>1 || c.esDefinitiva || c.opNumero)) return;
+  try{ c._fam = await _remiCierreDatos(c); }catch(_){ c._fam=null; }
+  if(remi_current===c) remiRenderItems();
 }
 // Trazabilidad: muestra la cotización ligada a la remisión (chip clicable)
 function remiMostrarCotizLink(){
@@ -21612,11 +21641,30 @@ function remiRenderItems(){
   if(bPar) bPar.textContent=parc
     ? ('📦 Entrega '+(remi_current.entregaN||'?')+' de '+remi_current.remisionBase)
     : '📦 Entrega parcial';
+  // 7-sep-2026 — el mismo aviso que sale en el papel, pero en pantalla: una línea
+  // en 0 no se queda muda, dice si ya salió antes o si todavía se debe.
+  const _fam=remi_current._fam, _yaS={};
+  const _nrm=t=>String(t||'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
+  if(parc && _fam && Array.isArray(_fam.filas)){
+    _fam.filas.forEach(f=>{
+      if(String(f.remision)===String(remi_current.remision)) return;
+      if(!((+f.cantidad||0)>0)) return;
+      const k=_nrm(f.descripcion); if(!k) return;
+      (_yaS[k]=_yaS[k]||[]).indexOf(String(f.remision))<0 && _yaS[k].push(String(f.remision));
+    });
+  }
+  const _tag=it=>{
+    if(!parc || parseFloat(it.cantidad)>0) return '';
+    const p=_yaS[_nrm(it.descripcion)];
+    return p
+      ? '<div style="font-size:9.5px;font-weight:700;color:#94a3b8;margin-top:3px;letter-spacing:.03em">✔ ENVIADO EN LA REMISIÓN '+_remiEsc(p.join(' · '))+'</div>'
+      : '<div style="font-size:9.5px;font-weight:700;color:#fbbf24;margin-top:3px;letter-spacing:.03em">⏳ PENDIENTE DE ENTREGA</div>';
+  };
   tb.innerHTML=remi_current.items.map((it,i)=>`<tr>
     <td><input type="text" value="${_remiEsc(it.itemCot).replace(/"/g,'&quot;')}" onchange="remi_current.items[${i}].itemCot=this.value" title="N° del ítem en la cotización adjudicada" placeholder="—" style="width:46px;text-align:center;color:var(--gold);font-weight:700;${inS}"></td>
     ${parc?`<td><input type="number" min="0" step="any" value="${_remiEsc(it.pedido==null?'':it.pedido)}" onchange="remi_current.items[${i}].pedido=this.value" title="Cuánto pidió el cliente EN TOTAL de esta línea. Se escribe una vez; de ahí en adelante la plataforma lleva la cuenta." placeholder="—" style="width:56px;text-align:center;color:#c4b5fd;font-weight:700;${inS}"></td>`:''}
-    <td><input type="number" min="0" step="any" value="${_remiEsc(it.cantidad)}" onchange="remi_current.items[${i}].cantidad=this.value" style="width:56px;${inS}"></td>
-    <td><input type="text" value="${_remiEsc(it.descripcion).replace(/"/g,'&quot;')}" onchange="remi_current.items[${i}].descripcion=this.value" style="width:100%;min-width:200px;${inS}"></td>
+    <td><input type="number" min="0" step="any" value="${_remiEsc(it.cantidad)}" onchange="remi_current.items[${i}].cantidad=this.value;remiRenderItems()" style="width:56px;${inS}"></td>
+    <td><input type="text" value="${_remiEsc(it.descripcion).replace(/"/g,'&quot;')}" onchange="remi_current.items[${i}].descripcion=this.value" style="width:100%;min-width:200px;${inS}">${_tag(it)}</td>
     <td><input type="text" value="${_remiEsc(it.marca).replace(/"/g,'&quot;')}" onchange="remi_current.items[${i}].marca=this.value" style="width:100px;${inS}"></td>
     <td><input type="text" value="${_remiEsc(it.colada).replace(/"/g,'&quot;')}" onchange="remi_current.items[${i}].colada=this.value" style="width:90px;${inS}"></td>
     <td><input type="text" value="${_remiEsc(it.desviacion).replace(/"/g,'&quot;')}" onchange="remi_current.items[${i}].desviacion=this.value" style="width:100px;${inS}"></td>
@@ -21656,8 +21704,10 @@ function remiParcialAbrir(){
   if(!n || n<1) { showToast('Número de entrega inválido','error'); return; }
   c.remisionBase=base; c.entregaN=n;
   showToast('Marcada como entrega '+n+' de '+base+'. Llena la columna «Pedido» con lo que '
-    + 'el cliente pidió EN TOTAL de cada línea, y guarda.', 'info', { durationMs: 12000 });
+    + 'el cliente pidió EN TOTAL de cada línea, y NO OLVIDES darle 💾 Guardar: la marca '
+    + 'solo queda cuando guardas.', 'info', { durationMs: 14000 });
   remiRenderItems();
+  _remiCargarFamilia();
 }
 
 // Marca la remisión abierta como la entrega DEFINITIVA. Mismo criterio que en la
@@ -21734,6 +21784,13 @@ async function remiGuardar(){
     const rows=items.map((it,idx)=>({
       remision:String(c.remision), fecha:c.fecha||null, cliente:c.cliente, lugar:c.lugar, oc:c.oc,
       cotizacion_id:c.cotizacionId||null,
+      // 🔑 7-sep-2026 — EL AMARRE CON LA OP SE PERDÍA AL GUARDAR.
+      // Este map reconstruye la fila entera y `op_numero` no estaba: cada vez que
+      // alguien reabría y guardaba una remisión nacida de una OP, la fila volvía a
+      // insertarse SIN la OP. La remisión quedaba huérfana y, peor, la OP dejaba de
+      // reconocer que ya había habido una entrega — por eso la segunda no salía
+      // como «-1» ni contaba saldo. Pasó en 26271, 26273, 26275, 26280, 26288 y 26291.
+      op_numero: c.opNumero || null,
       ...( _icOn ? { item_cot:(String(it.itemCot||'').trim()||null) } : {} ),
       item:idx+1, descripcion:String(it.descripcion).trim(),
       cantidad:(it.cantidad===''||it.cantidad==null)?null:parseFloat(it.cantidad),
@@ -21801,6 +21858,21 @@ async function remiGuardar(){
         }
       }
     } catch(_) {}
+    // 7-sep-2026 — «la marco como parcial y no queda guardada». Si la marca no
+    // vuelve del servidor, se dice AQUÍ y con nombre propio, en vez de dejar a
+    // la persona creyendo que quedó. Solo se comprueba si había algo que marcar.
+    if(c.remisionBase){
+      try{
+        const vf = await absFetch('remisiones?remision=eq.'+encodeURIComponent(num)
+          + '&select=remision_base,entrega_n&limit=1');
+        const ok = Array.isArray(vf) && vf.length && vf[0].remision_base;
+        if(!ok){
+          showToast('⚠️ La remisión '+num+' se guardó, pero la marca de ENTREGA PARCIAL '
+            + 'no quedó en el servidor. Avisa a sistemas antes de imprimir el papel.',
+            'error', { durationMs: 20000 });
+        }
+      }catch(_){ }
+    }
     showToast('Remisión '+c.remision+' guardada ✓','ok');
     c.nueva=false;
     await remiCargar();
@@ -21887,10 +21959,20 @@ async function _remiCierreDatos(c){
   if(!base) return null;
   const norm = t => String(t||'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
   let fam=[], pedido=[];
+  // 🔑 7-sep-2026 — LA FAMILIA NO SE PUEDE BUSCAR SOLO POR EL NÚMERO.
+  // Antes esto era «26290 o 26290-*». Pero la mitad de las segundas entregas no
+  // llevan sufijo: toman un consecutivo nuevo (26005 → 26006). Esas quedaban
+  // fuera y el papel decía que faltaba TODO, incluido lo que iba en la mano.
+  // Para eso existe `remision_base` (y `op_numero` cuando viene de una OP):
+  // el amarre es el DATO, no cómo se escribió el número.
+  const _q = c.opNumero
+    ? 'op_numero=eq.' + encodeURIComponent(c.opNumero)
+    : 'or=(remision.eq.' + encodeURIComponent(base)
+      + ',remision.like.' + encodeURIComponent(base) + '-*'
+      + ',remision_base.eq.' + encodeURIComponent(base) + ')';
   try{
-    fam = (await absFetch('remisiones?or=(remision.eq.'+encodeURIComponent(base)
-      + ',remision.like.'+encodeURIComponent(base)+'-*)'
-      + '&select=remision,fecha,item,descripcion,cantidad,cantidad_pedida&order=id&limit=3000')) || [];
+    fam = (await absFetch('remisiones?' + _q
+      + '&select=remision,fecha,item,descripcion,cantidad,cantidad_pedida,entrega_n,remision_base&order=id&limit=3000')) || [];
   }catch(_){
     // Sin las columnas nuevas no hay cuadro de cierre, pero el PDF normal sí.
     try{
@@ -21898,6 +21980,18 @@ async function _remiCierreDatos(c){
         + ',remision.like.'+encodeURIComponent(base)+'-*)'
         + '&select=remision,fecha,item,descripcion,cantidad&order=id&limit=3000')) || [];
     }catch(_e){ return null; }
+  }
+  // La remisión abierta puede no estar todavía en el servidor (se está creando) o
+  // tener cambios sin guardar. Lo que se ve en pantalla manda sobre lo guardado.
+  if(c.remision){
+    fam = fam.filter(f=>String(f.remision)!==String(c.remision));
+    (c.items||[]).forEach((it,i)=>{
+      if(String(it.descripcion||'').trim()==='') return;
+      fam.push({ remision:String(c.remision), fecha:c.fecha||'', item:i+1,
+                 descripcion:it.descripcion, cantidad:parseFloat(it.cantidad)||0,
+                 cantidad_pedida:(it.pedido===''||it.pedido==null)?null:parseFloat(it.pedido),
+                 entrega_n:c.entregaN||null, remision_base:c.remisionBase||null });
+    });
   }
   if(!fam.length) return null;
 
@@ -21947,6 +22041,7 @@ async function _remiCierreDatos(c){
       sobrantes.push({remision:e.remision,desc:f.descripcion||'',cantidad:f.cantidad});
   }));
   return { base:base, entregas:entregas, lineas:lineas, sobrantes:sobrantes,
+           filas:fam,                              // todas las líneas de la familia
            conPedido:!!pedido.length,
            saldoTotal:lineas.reduce((s,l)=>s+l.saldo,0) };
 }
@@ -21956,30 +22051,66 @@ async function remiPDF(marca){
   if(!remi_current) return; remiSyncHeader(); const c=remi_current;
   // Solo si es parte de una familia de entregas. Lo demás sale igual que siempre.
   const _cier = (c.esDefinitiva || c.entregaN>1 || c.remisionBase) ? await _remiCierreDatos(c) : null;
-  // 🔑 En una entrega parcial el DATO lleva la orden completa —es el único sitio
-  // donde consta cuánto se pidió de cada línea— pero el PAPEL imprime solo lo
-  // que de verdad sale hoy. Lo que va en 0 se ve abajo, en "queda pendiente".
-  // Sin esto volverían los renglones en cero que el cliente firmaba.
-  const _soloLoQueVa = !!c.remisionBase;
-  const items=c.items.filter(it=>String(it.descripcion||'').trim()!==''
-    && !(_soloLoQueVa && !(parseFloat(it.cantidad)>0)));
+  // 🔑 7-sep-2026 — EL RENGLÓN EN CERO SE CAMBIA POR UNA PALABRA.
+  // Así se despacha aquí desde siempre: la remisión parcial lleva la orden
+  // COMPLETA y lo que no va ese día se escribe en 0. El cliente firmaba ceros.
+  // La v241 los escondía, y entonces el papel no dejaba ver la orden entera.
+  // Ahora la línea se queda, y en la casilla de cantidad va lo que de verdad
+  // pasa con ella —igual que la cotización, que en vez de $0 dice NO COTIZADO—:
+  //     · el número            → sale hoy
+  //     · ENVIADO EN LA REM. X → ya salió en una entrega anterior
+  //     · PENDIENTE DE ENTREGA → todavía se debe
+  const _parc = !!(c.remisionBase || c.entregaN > 1 || c.esDefinitiva);
+  const _nrm = t => String(t||'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
+  const _yaSalio = {};                     // descripción → remisión que la llevó
+  if(_parc && _cier && Array.isArray(_cier.filas)){
+    _cier.filas.forEach(f=>{
+      if(String(f.remision)===String(c.remision)) return;
+      if(!((+f.cantidad||0)>0)) return;
+      const k=_nrm(f.descripcion); if(!k) return;
+      if(!_yaSalio[k]) _yaSalio[k]={rems:[], total:0};
+      if(_yaSalio[k].rems.indexOf(String(f.remision))<0) _yaSalio[k].rems.push(String(f.remision));
+      _yaSalio[k].total += (+f.cantidad||0);
+    });
+  }
+  const items=c.items.filter(it=>String(it.descripcion||'').trim()!=='');
+  // La casilla de cantidad de una línea que hoy no sale.
+  const _celdaCant = it => {
+    const q = parseFloat(it.cantidad);
+    if(!_parc || q > 0) return _remiEsc(it.cantidad);
+    const prev = _yaSalio[_nrm(it.descripcion)];
+    return prev
+      ? `<span style="font-size:7.5px;color:#6b7785;letter-spacing:.3px;line-height:1.3;display:block">ENVIADO EN LA<br>REMISIÓN ${_remiEsc(prev.rems.join(' · '))}</span>`
+      : `<span style="font-size:7.5px;color:#B9761A;font-weight:700;letter-spacing:.3px;line-height:1.3;display:block">PENDIENTE DE<br>ENTREGA</span>`;
+  };
   // v183 — la columna "Ítem cot." SOLO sale si algún ítem trae el número de la
   // cotización. Remisiones sin cotización: PDF idéntico al de siempre.
   const hayItemCot=items.some(it=>String(it.itemCot||'').trim()!=='');
-  const filas=items.map((it,i)=>`<tr><td style="text-align:center">${i+1}</td>${hayItemCot?`<td style="text-align:center;font-weight:700">${_remiEsc(it.itemCot)||'—'}</td>`:''}<td style="text-align:center">${_remiEsc(it.cantidad)}</td><td>${_remiEsc(it.descripcion)}</td><td>${_remiEsc(it.marca)}</td><td>${_remiEsc(it.colada)}</td><td>${_remiEsc(it.desviacion)}</td></tr>`).join('');
+  const filas=items.map((it,i)=>{
+    const hoy = parseFloat(it.cantidad) > 0;
+    return `<tr${(_parc&&!hoy)?' style="background:#fbfbfd;color:#8a94a2"':''}><td style="text-align:center">${i+1}</td>${hayItemCot?`<td style="text-align:center;font-weight:700">${_remiEsc(it.itemCot)||'—'}</td>`:''}<td style="text-align:center">${_celdaCant(it)}</td><td>${_remiEsc(it.descripcion)}</td><td>${_remiEsc(it.marca)}</td><td>${(_parc&&!hoy)?'':_remiEsc(it.colada)}</td><td>${_remiEsc(it.desviacion)}</td></tr>`;
+  }).join('');
 
   // ── v240 · Entregas parciales ────────────────────────────────────────────
   // El sello dice de una qué es este papel. Sin familia no sale nada y el PDF
   // queda EXACTAMENTE como el de siempre.
   const _nEnt = (_cier && _cier.entregas.length) ? _cier.entregas.length : 0;
   const _miN  = c.entregaN || (_cier ? ((_cier.entregas.find(e=>e.remision===c.remision)||{}).n||0) : 0);
-  const _entSello = !_miN ? '' : (c.esDefinitiva
+  const _pend = (_cier && _cier.conPedido) ? _cier.lineas.filter(l=>l.saldo>0) : [];
+  // 🔑 7-sep-2026 — EL SELLO SOLO SI DE VERDAD ES PARCIAL.
+  // Toda remisión nacida de una OP se guarda con `entrega_n = 1` para que la
+  // familia exista desde el primer papel. Pero eso hacía que una entrega ÚNICA y
+  // COMPLETA saliera sellada «ENTREGA 1 · PARCIAL». Parcial no es «tiene número
+  // de entrega»: es «queda algo debiendo». Se sella si es la 2ª o posterior, si
+  // hay saldo, o si el papel lleva líneas que hoy no salen.
+  const _hayCeros = _parc && items.some(it=>!(parseFloat(it.cantidad)>0));
+  const _esParcialDeVerdad = (_miN > 1) || _pend.length > 0 || _hayCeros;
+  const _entSello = (!_miN || !(c.esDefinitiva || _esParcialDeVerdad)) ? '' : (c.esDefinitiva
     ? `<div style="margin-top:9px;display:inline-block;border:2px solid #1FA879;color:#1FA879;border-radius:5px;padding:4px 11px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:1.4px">ENTREGA ${_miN} DE ${_nEnt||_miN} · DEFINITIVA</div>`
     : `<div style="margin-top:9px;display:inline-block;border:2px solid #E8A020;color:#B9761A;border-radius:5px;padding:4px 11px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:10.5px;letter-spacing:1.4px">ENTREGA ${_miN} · PARCIAL</div>`);
 
-  // PARCIAL: al pie, qué queda debiendo. Reemplaza los renglones en CANTIDAD 0
-  // que se usaban hasta hoy — el cliente ve qué falta sin firmar líneas en cero.
-  const _pend = (_cier && _cier.conPedido) ? _cier.lineas.filter(l=>l.saldo>0) : [];
+  // PARCIAL: al pie, el resumen de lo que queda debiendo. Las líneas de arriba ya
+  // lo dicen una por una; esto es el total, que es lo que se reclama por teléfono.
   const _entPend = (!c.esDefinitiva && _miN && _pend.length)
     ? `<div class="sec">Queda pendiente por entregar</div>
        <table class="it"><thead><tr><th style="width:44px;text-align:center">Ítem</th><th>Descripción</th><th style="width:66px;text-align:center">Pedido</th><th style="width:78px;text-align:center">Entregado</th><th style="width:66px;text-align:center">Falta</th></tr></thead><tbody>
@@ -25672,20 +25803,54 @@ async function opLigarConfirmar() {
 
   try {
     // 1) La remisión sabe de qué OP es (todas sus líneas).
-    await absFetch('remisiones?remision=eq.' + encodeURIComponent(num), {
-      method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ op_numero: op_current.numero })
-    });
+    // 7-sep-2026 — y si la OP YA tenía entregas, esta queda marcada como la que
+    // sigue de la familia. Antes solo se marcaban las que nacían de «Alistar y
+    // despachar»: una segunda entrega hecha aparte y ligada quedaba suelta, sin
+    // número de entrega, y el papel salía sin el sello ni el cuadro de saldo.
+    const _cuerpoLigar = { op_numero: op_current.numero };
+    try {
+      const _prev = (await _opEntregasDe(op_current.numero)) || [];
+      const _otras = _prev.filter(e => String(e.remision) !== String(num));
+      if (_otras.length) {
+        _cuerpoLigar.remision_base = _remiBaseDe(_otras[0].remision);
+        _cuerpoLigar.entrega_n = _otras.length + 1;
+      }
+    } catch (_) { }
+    try {
+      await absFetch('remisiones?remision=eq.' + encodeURIComponent(num), {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(_cuerpoLigar)
+      });
+    } catch (e) {
+      // Si a la base le faltan las columnas de entregas, el amarre con la OP —que
+      // es lo que de verdad importa— se guarda igual.
+      if (!('remision_base' in _cuerpoLigar)) throw e;
+      await absFetch('remisiones?remision=eq.' + encodeURIComponent(num), {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ op_numero: op_current.numero })
+      });
+    }
 
-    // 2) Cada ítem emparejado queda despachado con su número y su colada.
+    // 2) Cada ítem emparejado suma lo que ESTA remisión entregó.
+    // 🔑 7-sep-2026 — ANTES SE MARCABA 'despachado' SIEMPRE, con la cantidad que
+    // fuera. Ligar una entrega parcial (la remisión trae 5 de 12) dejaba el ítem
+    // cerrado y la OP pasaba a «despachada» con material pendiente: no quedaba
+    // saldo por ninguna parte y la segunda entrega no tenía de dónde salir.
+    // Ahora `despachada` es ADITIVO y el ítem solo se cierra cuando salió todo.
     for (const p of pares) {
       try {
-        const body = { estado: 'despachado', remision: num, updated_by: yo };
+        const pedida = +p.it.cantidad || 0;
+        const sale = Math.max(0, +p.f.cantidad || 0);
+        // Ligar la MISMA remisión otra vez es corregir, no entregar de nuevo: si no
+        // se distingue, `despachada` se dobla. (La OP-2026-0034 se ligó tres veces
+        // a la 26286.) Con la misma remisión se queda el mayor, no la suma.
+        const yaEsta = String(p.it.remision || '').trim() === String(num).trim();
+        const yaTot = yaEsta ? Math.max(+p.it.despachada || 0, sale)
+                             : (+p.it.despachada || 0) + sale;
+        const body = { remision: num, despachada: yaTot, updated_by: yo };
+        if (pedida <= 0 || yaTot >= pedida - 0.0001) body.estado = 'despachado';
         const col = String(p.f.colada || '').trim();
         if (col && !String(p.it.colada || '').trim()) body.colada = col;
-        await absFetch('op_items?id=eq.' + p.it.id, {
-          method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(body)
-        });
+        await _opRecepPatchItem(p.it.id, body);
         Object.assign(p.it, body);
       } catch (e) { fallos.push(p.it.descripcion + ' (' + (e && e.message || e) + ')'); }
     }
