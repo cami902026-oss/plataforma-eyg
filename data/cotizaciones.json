@@ -98780,7 +98780,7 @@
     "cliente": "QCIEN",
     "contacto": "DIEGO",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 100000,
@@ -98798,23 +98798,24 @@
     "items": [
       {
         "id": 1,
-        "desc": "EMPAQUE FLEXITALICO 14\" X 150  INSERCION EN GRAFITO TIPO SS304",
-        "udm": "EA",
         "qty": 2,
-        "precio": 50000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "bcce165e-4a98-4a3c-afe8-3610bb5138f6",
+        "desc": "EMPAQUE FLEXITALICO 14\" X 150  INSERCION EN GRAFITO TIPO SS304",
         "marca": "SPIRAL PACK",
+        "precio": 50000,
+        "desvTec": "",
         "proveedor": "COLIMPORTADOS",
-        "precioProveedor": 25080,
         "obsProveedor": "",
-        "uid": "bcce165e-4a98-4a3c-afe8-3610bb5138f6"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 25080
       }
     ],
-    "fechaGuardado": "2026-09-08T17:00:21.720Z",
+    "fechaGuardado": "2026-09-08T17:02:09.892Z",
+    "fechaEnvio": "2026-09-08T17:02:09.892Z",
     "createdAt": "2026-09-08T15:07:51.757Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-08T17:00:21.720Z",
+    "updatedAt": "2026-09-08T17:02:09.892Z",
     "updatedBy": "sandra"
   },
   {
