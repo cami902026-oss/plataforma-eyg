@@ -98780,7 +98780,7 @@
     "cliente": "QCIEN",
     "contacto": "DIEGO",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 100000,
@@ -98811,12 +98811,22 @@
         "precioProveedor": 25080
       }
     ],
-    "fechaGuardado": "2026-09-08T17:02:58.311Z",
+    "fechaGuardado": "2026-09-08T17:11:18.317Z",
     "fechaEnvio": "2026-09-08T17:02:09.892Z",
+    "adjudicadaAt": "2026-09-08",
+    "valorAdjudicado": 100000,
+    "itemsAdjudicados": [
+      {
+        "uid": "bcce165e-4a98-4a3c-afe8-3610bb5138f6",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-08T17:11:18.306Z",
     "createdAt": "2026-09-08T15:07:51.757Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-08T17:02:58.311Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-08T17:11:18.317Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2131",
