@@ -98780,7 +98780,7 @@
     "cliente": "QCIEN",
     "contacto": "DIEGO",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 100000,
@@ -98811,12 +98811,22 @@
         "precioProveedor": 25080
       }
     ],
-    "fechaGuardado": "2026-09-08T17:02:58.311Z",
+    "fechaGuardado": "2026-09-08T17:11:54.933Z",
     "fechaEnvio": "2026-09-08T17:02:09.892Z",
+    "adjudicadaAt": "2026-09-08",
+    "valorAdjudicado": 100000,
+    "itemsAdjudicados": [
+      {
+        "uid": "bcce165e-4a98-4a3c-afe8-3610bb5138f6",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-08T17:11:18.306Z",
     "createdAt": "2026-09-08T15:07:51.757Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-08T17:02:58.311Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-08T17:11:54.933Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2131",
@@ -99304,6 +99314,88 @@
     "createdBy": "sandra",
     "updatedAt": "2026-09-08T18:12:38.961Z",
     "updatedBy": "sandra"
+  },
+  {
+    "id": "LM2135",
+    "fecha": "2026-09-08",
+    "fechaVenc": "2026-09-16",
+    "cliente": "ANDES OPERATING",
+    "contacto": "YENNY MORENO",
+    "correo": "andres.bernal@andesoperating.com",
+    "estado": "Borrador",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
+    "formaPago": "30 DÍAS",
+    "sitioEntrega": "PUERTO GAITAN META ",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Alexandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "SOL-20260908-105",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "id": 1,
+        "desc": "Manguera caucho lona de 1\"",
+        "udm": "METROS",
+        "qty": 100,
+        "precio": 0,
+        "tiempoEntrega": "",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "uid": "ff89ab82-a447-48c8-93a9-8117ce7e5d8c"
+      },
+      {
+        "id": 2,
+        "desc": "Electrobomba 1/2 hp succión y descarga 1\"",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 0,
+        "tiempoEntrega": "",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "uid": "271d71d7-1f62-4584-8bda-8bd84b99c6ce"
+      },
+      {
+        "id": 3,
+        "desc": "Espigo roscado de 1\"",
+        "udm": "EA",
+        "qty": 3,
+        "precio": 0,
+        "tiempoEntrega": "",
+        "desvTec": "",
+        "marca": "",
+        "proveedor": "",
+        "precioProveedor": 0,
+        "uid": "a67a09a8-6543-4350-bacc-decc0ec0b8ae"
+      },
+      {
+        "id": 4,
+        "desc": "Abrazadera 1 1/2\"",
+        "udm": "EA",
+        "qty": 6,
+        "precio": 0,
+        "tiempoEntrega": "",
+        "desvTec": "ABRAZADERA DE CREMALLERA ",
+        "marca": "TITAN O SIMILAR",
+        "proveedor": "MONTENEGRO",
+        "precioProveedor": 2773,
+        "uid": "0a54df0f-ce5b-4d6b-9291-77b0fdf1f668"
+      }
+    ],
+    "fechaGuardado": "2026-09-08T19:55:47.950Z",
+    "createdAt": "2026-09-08T19:55:47.950Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-09-08T19:55:47.950Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM629",
