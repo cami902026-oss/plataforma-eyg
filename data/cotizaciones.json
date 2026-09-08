@@ -98824,7 +98824,7 @@
     "cliente": "OTACC",
     "contacto": "DIANA QUINTERO",
     "correo": "asiscomprasmarco4@otacc.com",
-    "estado": "Borrador",
+    "estado": "Revisión gerencia",
     "factura": "",
     "iva": 19,
     "subtotal": 0,
@@ -98842,35 +98842,37 @@
     "items": [
       {
         "id": 1,
-        "desc": "15342 - Tubing 1/2\" espesor 0.049 astm A632 s3 316L",
-        "udm": "MTR",
         "qty": 258,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "TUBING SS316L S/C BR I/E 1/2\"X0.049\"/1.24MM",
+        "udm": "MTR",
+        "uid": "660fd4c2-f01d-40bb-96a7-526a76078d00",
+        "desc": "15342 - Tubing 1/2\" espesor 0.049 astm A632 s3 316L",
         "marca": "YC INOX",
+        "precio": 0,
+        "desvTec": "TUBING SS316L S/C BR I/E 1/2\"X0.049\"/1.24MM",
         "proveedor": "CODIFER",
-        "precioProveedor": 19810,
-        "obsProveedor": ""
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 19810
       },
       {
         "id": 2,
-        "desc": "11339 - Racor recto 1/2\" npt x 1/2\" od 316ss",
-        "udm": "EA",
         "qty": 40,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "c8940bec-0061-488b-8593-bd4b6798a259",
+        "desc": "11339 - Racor recto 1/2\" npt x 1/2\" od 316ss",
         "marca": "HY LOK-COMFIT",
+        "precio": 0,
+        "desvTec": "",
         "proveedor": "LAMAR USA",
-        "precioProveedor": 49600,
-        "obsProveedor": ""
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 49600
       }
     ],
-    "fechaGuardado": "2026-09-08T15:16:33.907Z",
+    "fechaGuardado": "2026-09-08T15:19:55.574Z",
     "createdAt": "2026-09-08T15:16:33.907Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-08T15:16:33.907Z",
+    "updatedAt": "2026-09-08T15:19:55.574Z",
     "updatedBy": "sandra"
   },
   {
