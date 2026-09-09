@@ -93498,107 +93498,6 @@
     "updatedBy": "sheila"
   },
   {
-    "id": "LM2118-1",
-    "fecha": "2026-09-04",
-    "fechaVenc": "2026-09-12",
-    "cliente": "CIAM",
-    "contacto": "Jeisson Yanes ",
-    "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
-    "iva": 19,
-    "subtotal": 5208700,
-    "ivaVal": 989653,
-    "total": 6198353,
-    "formaPago": "45 DIAS",
-    "sitioEntrega": "Pto Boyaca",
-    "validez": "8 DÍAS",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "vendedor": "Sheila Baron",
-    "realizadaPor": "Alexandra",
-    "aprobadaPor": "Alberto",
-    "solicitudId": "",
-    "motivoRechazo": "",
-    "items": [
-      {
-        "qty": 300,
-        "udm": "MTR",
-        "uid": "ff215441-551e-45ab-8e3f-e586194dc7cd",
-        "desc": "Cable de instrumentación 2/Cx16 AWG+Sh. 300V, (marca Teldor o Belden). (Certificado de calidad y Certificado RETIE 2024) - [300 METROS",
-        "marca": "TELDOR",
-        "precio": 11047,
-        "desvTec": "CABLE CONTROL 2X16 APANTALLADO CON FOIL DE ALUMINIO 300V 90º CHAQUETA GRIS",
-        "proveedor": "MARIN",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 6849
-      },
-      {
-        "qty": 50,
-        "udm": "MTR",
-        "uid": "42263073-b8ea-442b-971a-ce5e5cbbff86",
-        "desc": "Cable de instrumentación 3/Cx14 AWG+Sh. 300V, (marca Teldor o Belden). (Certificado de calidad y Certificado RETIE 2024) 50 METROS",
-        "marca": "TELDOR",
-        "precio": 22974,
-        "desvTec": "CABLE CONTROL 3X14 APANTALLADO CON FOIL DE ALUMINIO 600V 90º CHAQUETA GRIS",
-        "proveedor": "MARIN",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 14244
-      },
-      {
-        "qty": 40,
-        "udm": "MTR",
-        "uid": "6cf5ab2d-7cbd-4023-8f42-d1f11bcf6f13",
-        "desc": "Cable encauchutado 4x16 AWG, 600V, color negro, Centelsa, Procables, o Nexan (Certificado de calidad y Certificado RETIE 2024) - [40 METROS",
-        "marca": "PROCABLES",
-        "precio": 10050,
-        "desvTec": "CABLE ENCAUCHETADO 4X16 THHN NEGRO",
-        "proveedor": "MARIN",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 6231
-      },
-      {
-        "qty": 100,
-        "udm": "MTR",
-        "uid": "55408df8-aa1f-4949-ba32-33166d5744f6",
-        "desc": "TERMINAL COBRE ESTAÑADO #2 - OJO DE 3/8\"",
-        "marca": "EG",
-        "precio": 3439,
-        "desvTec": "BORNA ESTAÑADA 2 UN OJO  DE 3/8\"",
-        "proveedor": "MARIN",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 2132
-      }
-    ],
-    "fechaGuardado": "2026-09-09T15:11:32.460Z",
-    "fechaEnvio": "2026-09-07T13:54:21.996Z",
-    "adjudicadaAt": "2026-09-09",
-    "valorAdjudicado": 5208700,
-    "itemsAdjudicados": [
-      {
-        "uid": "ff215441-551e-45ab-8e3f-e586194dc7cd",
-        "qty": 300
-      },
-      {
-        "uid": "42263073-b8ea-442b-971a-ce5e5cbbff86",
-        "qty": 50
-      },
-      {
-        "uid": "6cf5ab2d-7cbd-4023-8f42-d1f11bcf6f13",
-        "qty": 40
-      },
-      {
-        "uid": "55408df8-aa1f-4949-ba32-33166d5744f6",
-        "qty": 100
-      }
-    ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-09-09T14:57:07.842Z",
-    "createdAt": "2026-09-07T13:54:21.996Z",
-    "createdBy": "sandra",
-    "updatedAt": "2026-09-09T15:11:32.460Z",
-    "updatedBy": "alexandra"
-  },
-  {
     "id": "LM2119",
     "fecha": "2026-09-04",
     "fechaVenc": "2026-09-12",
@@ -102394,6 +102293,107 @@
     "createdBy": "sandra",
     "updatedAt": "2026-09-09T04:47:07.603Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "LM2118-1",
+    "fecha": "2026-09-09",
+    "fechaVenc": "2026-09-17",
+    "cliente": "CIAM",
+    "contacto": "Jeisson Yanes ",
+    "correo": "",
+    "estado": "Adjudicada",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 5208700,
+    "ivaVal": 989653,
+    "total": 6198353,
+    "formaPago": "45 DIAS",
+    "sitioEntrega": "Pto Boyaca",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Alexandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "qty": 300,
+        "udm": "MTR",
+        "uid": "ff215441-551e-45ab-8e3f-e586194dc7cd",
+        "desc": "Cable de instrumentación 2/Cx16 AWG+Sh. 300V, (marca Teldor o Belden). (Certificado de calidad y Certificado RETIE 2024) - [300 METROS",
+        "marca": "TELDOR",
+        "precio": 11047,
+        "desvTec": "CABLE CONTROL 2X16 APANTALLADO CON FOIL DE ALUMINIO 300V 90º CHAQUETA GRIS",
+        "proveedor": "MARIN",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 6849
+      },
+      {
+        "qty": 50,
+        "udm": "MTR",
+        "uid": "42263073-b8ea-442b-971a-ce5e5cbbff86",
+        "desc": "Cable de instrumentación 3/Cx14 AWG+Sh. 300V, (marca Teldor o Belden). (Certificado de calidad y Certificado RETIE 2024) 50 METROS",
+        "marca": "TELDOR",
+        "precio": 22974,
+        "desvTec": "CABLE CONTROL 3X14 APANTALLADO CON FOIL DE ALUMINIO 600V 90º CHAQUETA GRIS",
+        "proveedor": "MARIN",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 14244
+      },
+      {
+        "qty": 40,
+        "udm": "MTR",
+        "uid": "6cf5ab2d-7cbd-4023-8f42-d1f11bcf6f13",
+        "desc": "Cable encauchutado 4x16 AWG, 600V, color negro, Centelsa, Procables, o Nexan (Certificado de calidad y Certificado RETIE 2024) - [40 METROS",
+        "marca": "PROCABLES",
+        "precio": 10050,
+        "desvTec": "CABLE ENCAUCHETADO 4X16 THHN NEGRO",
+        "proveedor": "MARIN",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 6231
+      },
+      {
+        "qty": 100,
+        "udm": "MTR",
+        "uid": "55408df8-aa1f-4949-ba32-33166d5744f6",
+        "desc": "TERMINAL COBRE ESTAÑADO #2 - OJO DE 3/8\"",
+        "marca": "EG",
+        "precio": 3439,
+        "desvTec": "BORNA ESTAÑADA 2 UN OJO  DE 3/8\"",
+        "proveedor": "MARIN",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 2132
+      }
+    ],
+    "fechaGuardado": "2026-09-09T15:20:35.157Z",
+    "fechaEnvio": "2026-09-07T13:54:21.996Z",
+    "adjudicadaAt": "2026-09-09",
+    "valorAdjudicado": 5208700,
+    "itemsAdjudicados": [
+      {
+        "uid": "ff215441-551e-45ab-8e3f-e586194dc7cd",
+        "qty": 300
+      },
+      {
+        "uid": "42263073-b8ea-442b-971a-ce5e5cbbff86",
+        "qty": 50
+      },
+      {
+        "uid": "6cf5ab2d-7cbd-4023-8f42-d1f11bcf6f13",
+        "qty": 40
+      },
+      {
+        "uid": "55408df8-aa1f-4949-ba32-33166d5744f6",
+        "qty": 100
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-09T15:20:33.803Z",
+    "createdAt": "2026-09-07T13:54:21.996Z",
+    "createdBy": "sandra",
+    "updatedAt": "2026-09-09T15:20:35.157Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2130",
