@@ -25973,6 +25973,13 @@ async function opRecibirConfirmar() {
           // Ya está en la casa: para lo que sigue (alistar y despachar) sale de bodega.
           origen: completa ? 'BODEGA' : it.origen,
           costo_unit: (L.costo != null ? L.costo : it.costo_unit),
+          // 9-sep-2026 — A QUÉ PRODUCTO ENTRÓ, SIEMPRE.
+          // Esto solo se guardaba cuando el producto se CREABA en la recepción;
+          // si el material entraba contra uno que ya existía, la línea de la OP
+          // quedaba sin código y después no había cómo saber a qué producto fue
+          // a dar. Es lo que dejó las dos tuberías de la OP-2026-0064 sin rastro,
+          // y por eso nadie notó que habían entrado contra el material equivocado.
+          producto_codigo: prod.codigo,
           updated_by: yo
         };
         if (L.sale > 0) { cuerpo.remision = remi; cuerpo.despachada = despTot; }
