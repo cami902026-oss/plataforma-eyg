@@ -21218,20 +21218,51 @@ async function absAnularKardex(id) {
     prod = p[0] || null;
   } catch (_) { }
 
-  const detalle = k.tipo + ' de ' + k.cantidad + ' · ' + k.codigo_producto
+  const cant = +k.cantidad || 0;
+  const esEnt = String(k.tipo || '').toUpperCase() === 'ENTRADA';
+  const detalle = k.tipo + ' de ' + cant + ' · ' + k.codigo_producto
     + '\n' + String(k.descripcion_producto || '').replace(/\s+/g, ' ').substring(0, 70)
     + '\n' + k.fecha + ' ' + String(k.hora || '').substring(0, 5)
     + (k.responsable ? ' · ' + k.responsable : '');
 
-  if (!confirm('Vas a ANULAR este movimiento del kardex:\n\n' + detalle
+  // LA PREGUNTA QUE DECIDE TODO: ¿este movimiento llegó a mover el saldo?
+  // Hay dos casos y se tratan distinto, porque confundirlos daña el inventario:
+  //   · quedó huérfano (el saldo nunca se movió) → basta con borrar el renglón.
+  //   · sí movió el saldo                        → hay que devolverlo, o el
+  //     producto se queda con unas cantidades que ya no tienen respaldo.
+  // No se puede adivinar desde aquí: el movimiento no guarda si su patch pasó.
+  const devolver = confirm('¿Este movimiento SÍ movió el saldo del producto?\n\n' + detalle
     + (prod ? '\n\nHoy el producto tiene: stock ' + prod.stock_actual
               + ' · entradas ' + prod.entradas + ' · salidas ' + prod.salidas : '')
-    + '\n\nEsto BORRA el renglón del historial y NO toca el stock.\n'
-    + 'Úsalo solo si este movimiento no llegó a mover el saldo.\n'
-    + 'Si sí lo movió, cancela y corrige por Ajuste de inventario.\n\n¿Anular?')) return;
+    + '\n\nACEPTAR = sí lo movió → se devuelve el saldo y se borra el renglón.'
+    + '\nCANCELAR = no lo movió (quedó huérfano) → solo se borra el renglón.');
 
-  const motivo = prompt('¿Por qué se anula? Queda en la bitácora del navegador '
-    + 'y es lo único que va a explicar el hueco en la numeración.', '');
+  let upd = null;
+  if (devolver && prod) {
+    // Deshacer es lo contrario de lo que hizo: una entrada resta, una salida suma.
+    upd = { updated_at: new Date().toISOString() };
+    upd.stock_actual = (+prod.stock_actual || 0) + (esEnt ? -cant : cant);
+    if (esEnt) upd.entradas = Math.max(0, (+prod.entradas || 0) - cant);
+    else upd.salidas = Math.max(0, (+prod.salidas || 0) - cant);
+    if (upd.stock_actual < 0 && !confirm('⚠️ Devolver este movimiento deja el stock de '
+      + prod.codigo + ' en ' + upd.stock_actual + ', que es imposible.\n\n'
+      + 'Casi seguro es que el movimiento no había movido el saldo, o que hay otros '
+      + 'movimientos encima. Revisa antes de seguir.\n\n¿Anular de todos modos?')) return;
+  } else if (devolver && !prod) {
+    showToast('No encontré el producto ' + k.codigo_producto + ' para devolverle el saldo. '
+      + 'No se anuló nada.', 'error', { durationMs: 10000 });
+    return;
+  }
+
+  if (!confirm('Vas a ANULAR este movimiento:\n\n' + detalle
+    + (upd ? '\n\nEl producto queda en: stock ' + upd.stock_actual
+             + (upd.entradas != null ? ' · entradas ' + upd.entradas : '')
+             + (upd.salidas != null ? ' · salidas ' + upd.salidas : '')
+       : '\n\nEl saldo del producto NO se toca.')
+    + '\n\nEl renglón desaparece del historial. ¿Anular?')) return;
+
+  const motivo = prompt('¿Por qué se anula? Queda en la bitácora de este equipo '
+    + 'y es lo único que va a explicar el hueco en el historial.', '');
   if (motivo === null) return;
 
   try {
@@ -21240,20 +21271,33 @@ async function absAnularKardex(id) {
     try {
       const caja = JSON.parse(localStorage.getItem('energy_kardex_anulados') || '[]');
       caja.unshift({ ts: new Date().toISOString(), por: (currentUser && (currentUser.name || currentUser.email)) || '—',
-                     motivo: String(motivo || '').trim(), mov: k });
+                     motivo: String(motivo || '').trim(), devolvio: !!upd, mov: k });
       localStorage.setItem('energy_kardex_anulados', JSON.stringify(caja.slice(0, 200)));
     } catch (_) { }
+
+    // Primero el saldo y después el renglón: si el saldo falla, el movimiento
+    // sigue ahí y no se pierde nada. Al revés quedaría un ajuste sin rastro.
+    if (upd) {
+      await absFetch('productos?codigo=eq.' + encodeURIComponent(k.codigo_producto),
+        { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(upd) });
+      const enMem = (abs_productos || []).find(x => x && x.codigo === k.codigo_producto);
+      if (enMem) Object.assign(enMem, upd);
+    }
     await absFetch('kardex?id=eq.' + encodeURIComponent(id),
       { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
     abs_kardex = abs_kardex.filter(x => String(x.id) !== String(id));
-    showToast('Movimiento anulado. Queda copia en este equipo (consola: anuladosEyg()).',
-      'success', { durationMs: 9000 });
+
+    showToast('Movimiento anulado' + (upd ? ' y saldo devuelto' : ' (el saldo no se tocó)')
+      + '. Queda copia en este equipo (consola: anuladosEyg()).', 'success', { durationMs: 9000 });
     absRenderKardex();
+    try { absRenderStock(); } catch (_) { }
     try { absRenderMovHoy(); } catch (_) { }
+    try { absRenderDashboard(); } catch (_) { }
   } catch (e) {
     showToast('No se pudo anular: ' + (e && e.message || e), 'error', { durationMs: 10000 });
   }
 }
+
 // Para verlos desde la consola, como espacioEyg()/liberarEyg().
 function anuladosEyg() {
   try { return JSON.parse(localStorage.getItem('energy_kardex_anulados') || '[]'); }
@@ -25725,6 +25769,7 @@ async function opRecibirConfirmar() {
     : '';
   // Lo que sale necesita su remisión: sin número no hay documento de entrega.
   const salen = listo.filter(L => L.sale > 0);
+  let _remiItemBase = 0;            // desde qué número siguen los ítems de la remisión
   const remi = ((document.getElementById('op-recep-remi') || {}).value || '').trim();
   const lugar = ((document.getElementById('op-recep-lugar') || {}).value || '').trim();
   if (salen.length && !remi) {
@@ -25738,9 +25783,15 @@ async function opRecibirConfirmar() {
     // esté repetido, y es por donde se coló la doble remisión de NEW GRANADA.
     if (!_opConfirmarNoDuplica(salen.map(L => L.x && L.x.it), remi)) return;
     try {
-      const ya = (await absFetch('remisiones?remision=eq.' + encodeURIComponent(remi) + '&select=remision&limit=1')) || [];
+      const ya = (await absFetch('remisiones?remision=eq.' + encodeURIComponent(remi)
+        + '&select=remision,item&order=item.desc&limit=1')) || [];
       if (ya.length && !confirm('La remisión ' + remi + ' YA EXISTE.\n\n'
         + 'Si sigues, estas líneas se le suman a esa misma remisión.\n\n¿Es lo que quieres?')) return;
+      // 9-sep-2026 — LA NUMERACIÓN SIGUE, NO VUELVE A EMPEZAR.
+      // Al sumarle líneas a una remisión que ya existía, los ítems arrancaban
+      // otra vez en 1 y en el papel que firma el cliente quedaban dos renglones
+      // «1». Pasó en la 26306: la tubería de 2" y la de 1" quedaron ambas como 1.
+      _remiItemBase = +(ya[0] || {}).item || 0;
     } catch (_) { }
   }
 
@@ -25877,7 +25928,7 @@ async function opRecibirConfirmar() {
           salidasRemi.push({
             remision: remi, fecha: fecha, cliente: op_current.cliente || '', lugar: lugar,
             oc: op_current.oc_cliente || null, cotizacion_id: opCotizDeItem(op_current, it) || null,
-            op_numero: op_current.numero, item: salidasRemi.length + 1,
+            op_numero: op_current.numero, item: _remiItemBase + salidasRemi.length + 1,
             descripcion: String(it.descripcion || '').trim(), cantidad: L.sale,
             // Igual que en el despacho normal: la desviación llega hasta el cliente.
             marca: '', colada: L.colada, desviacion: it.desviacion_tecnica || '',
