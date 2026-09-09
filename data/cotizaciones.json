@@ -93504,7 +93504,7 @@
     "cliente": "CIAM",
     "contacto": "Jeisson Yanes ",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 5208700,
@@ -93569,12 +93569,34 @@
         "precioProveedor": 2132
       }
     ],
-    "fechaGuardado": "2026-09-07T15:23:56.911Z",
+    "fechaGuardado": "2026-09-09T15:00:13.237Z",
     "fechaEnvio": "2026-09-07T13:54:21.996Z",
+    "adjudicadaAt": "2026-09-09",
+    "valorAdjudicado": 5208700,
+    "itemsAdjudicados": [
+      {
+        "uid": "ff215441-551e-45ab-8e3f-e586194dc7cd",
+        "qty": 300
+      },
+      {
+        "uid": "42263073-b8ea-442b-971a-ce5e5cbbff86",
+        "qty": 50
+      },
+      {
+        "uid": "6cf5ab2d-7cbd-4023-8f42-d1f11bcf6f13",
+        "qty": 40
+      },
+      {
+        "uid": "55408df8-aa1f-4949-ba32-33166d5744f6",
+        "qty": 100
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-09T14:57:07.842Z",
     "createdAt": "2026-09-07T13:54:21.996Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-07T15:23:56.911Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-09T15:00:13.237Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2119",
@@ -99428,7 +99450,7 @@
         "desc": "VALVULA BOLA 1/2\" 800 LBS INOX ROSCAR",
         "marca": "SIO",
         "precio": 0,
-        "desvTec": "",
+        "desvTec": "SE OFERTA X 1000",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
         "precioProveedor": 23700
@@ -99452,7 +99474,7 @@
         "udm": "UN",
         "uid": "90f5445b-96b5-4ea5-a1e1-450622ceb51b",
         "desc": "FLANGE 1\" INOX 316L 150 LBS",
-        "marca": "",
+        "marca": "XF",
         "precio": 0,
         "desvTec": "SLIPON",
         "proveedor": "CODIFER",
@@ -99580,8 +99602,8 @@
         "desc": "FLANGE 3\" INOX 316L 150 LBS SLIP-ON",
         "marca": "XF",
         "precio": 0,
-        "desvTec": "304",
-        "proveedor": "",
+        "desvTec": "SS304",
+        "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 103400
       },
@@ -99593,8 +99615,8 @@
         "desc": "BUSHING 1/2\" A 3/8\" INOX",
         "marca": "",
         "precio": 0,
-        "desvTec": "X150",
-        "proveedor": "",
+        "desvTec": "SE OFERTA X150",
+        "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 2650
       },
@@ -99620,7 +99642,7 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 18380
       },
@@ -99632,9 +99654,10 @@
         "desc": "FLANGE 2\" INOX 316L 150 LBS",
         "marca": "",
         "precio": 0,
-        "desvTec": "",
+        "desvTec": "SLIPON",
         "proveedor": "CODIFER",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 56370
       },
       {
         "id": 19,
@@ -101714,10 +101737,10 @@
         "tiempoEntrega": "1-2 DIAS"
       }
     ],
-    "fechaGuardado": "2026-09-09T13:57:44.731Z",
+    "fechaGuardado": "2026-09-09T14:09:07.220Z",
     "createdAt": "2026-09-08T21:00:11.713Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-09T13:57:44.731Z",
+    "updatedAt": "2026-09-09T14:09:07.220Z",
     "updatedBy": "alexandra"
   },
   {
