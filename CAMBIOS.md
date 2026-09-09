@@ -9,6 +9,8 @@ cambio que ya está en vivo: para verlo hay que recargar con **Ctrl + F5**.
 
 ## 9 de septiembre de 2026
 
+- 📦 v258 — El kardex no puede sobrevivir al movimiento que cuenta  
+  <sub>`83aa4de7`</sub>
 - 🛒 v257 — El plan de compras dice qué líneas deja por fuera  
   <sub>`77f8f8d5`</sub>
 - 📋 CAMBIOS.md — la bitácora de la plataforma, generada del historial  
