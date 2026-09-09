@@ -10,7 +10,7 @@ cambio que ya está en vivo: para verlo hay que recargar con **Ctrl + F5**.
 ## 9 de septiembre de 2026
 
 - 🛒 v257 — El plan de compras dice qué líneas deja por fuera  
-  <sub>`8c7c7a98`</sub>
+  <sub>`77f8f8d5`</sub>
 - 📋 CAMBIOS.md — la bitácora de la plataforma, generada del historial  
   <sub>`75fdf50d`</sub>
 - 🔄 Botar el caché viejo: energy-v249 → v256  
