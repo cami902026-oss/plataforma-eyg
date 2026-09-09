@@ -21188,9 +21188,78 @@ function absRenderKardex() {
     <td style="font-size:11px;color:var(--text-muted)">${k.remision||'—'}</td>
     <td style="font-size:11px;color:var(--text-muted)">${k.lote||k.colada||'—'}</td>
     <td>${(k.tipo==='SALIDA'||k.tipo==='ENTRADA')?`<button onclick="absAlistKardex('${k.id}')" title="${k.tipo==='SALIDA'?'Hoja de alistamiento (junta las salidas de esta remisión)':'Comprobante de entrada (junta las entradas de este lote)'}" style="background:rgba(46,170,74,.15);border:1px solid rgba(46,170,74,.4);color:#86efac;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">🖨️</button>`:''}</td>
-    ${canEd?`<td><button onclick="absEditarKardex('${k.id}')" title="Editar colada/remisión/lote/notas" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:var(--gold);padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">✏️</button></td>`:''}
+    ${canEd?`<td style="white-space:nowrap"><button onclick="absEditarKardex('${k.id}')" title="Editar colada/remisión/lote/notas" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:var(--gold);padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">✏️</button> <button onclick="absAnularKardex('${k.id}')" title="Anular este movimiento: lo borra del historial y NO toca el stock. Para cuando quedó un movimiento que en realidad no ocurrió." style="background:rgba(224,90,74,.14);border:1px solid rgba(224,90,74,.4);color:#ffb3a8;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">🗑️</button></td>`:''}
   </tr>`).join('')||'<tr><td colspan="12" style="text-align:center;color:var(--text-muted);padding:24px">Sin resultados</td></tr>';
 }
+
+// ═══════════ ANULAR UN MOVIMIENTO DEL KARDEX (9-sep-2026) ═══════════════════
+// Hasta hoy un movimiento se podía corregir (colada, remisión, lote, notas) pero
+// nunca quitar, y a veces queda uno que NO ocurrió: la recepción de la
+// OP-2026-0064 escribió una entrada de 360 y el saldo del producto nunca se
+// movió, así que el kardex contaba una historia que el inventario no respalda.
+//
+// LO QUE ESTO HACE Y LO QUE NO. Borra el renglón del kardex y **no toca el
+// stock**, a propósito: se usa justamente cuando el stock NO se movió. Si el
+// movimiento sí alteró el saldo, borrarlo aquí dejaría el inventario mintiendo
+// al revés — para eso está el ajuste de inventario, que sí corrige cantidades.
+// Por eso lo pide en voz alta antes de hacerlo, y solo lo pueden hacer Andrea
+// o Alberto.
+async function absAnularKardex(id) {
+  if (!abs_canAjuste()) return showToast('Solo Andrea y Alberto pueden anular movimientos', 'error');
+  const k = abs_kardex.find(x => String(x.id) === String(id));
+  if (!k) return showToast('Movimiento no encontrado (recarga la página)', 'error');
+
+  // El saldo de verdad, del servidor: es lo único que dice si este movimiento
+  // llegó a contar o se quedó a medias.
+  let prod = null;
+  try {
+    const p = (await absFetch('productos?codigo=eq.' + encodeURIComponent(k.codigo_producto)
+      + '&select=codigo,descripcion,stock_actual,entradas,salidas&limit=1')) || [];
+    prod = p[0] || null;
+  } catch (_) { }
+
+  const detalle = k.tipo + ' de ' + k.cantidad + ' · ' + k.codigo_producto
+    + '\n' + String(k.descripcion_producto || '').replace(/\s+/g, ' ').substring(0, 70)
+    + '\n' + k.fecha + ' ' + String(k.hora || '').substring(0, 5)
+    + (k.responsable ? ' · ' + k.responsable : '');
+
+  if (!confirm('Vas a ANULAR este movimiento del kardex:\n\n' + detalle
+    + (prod ? '\n\nHoy el producto tiene: stock ' + prod.stock_actual
+              + ' · entradas ' + prod.entradas + ' · salidas ' + prod.salidas : '')
+    + '\n\nEsto BORRA el renglón del historial y NO toca el stock.\n'
+    + 'Úsalo solo si este movimiento no llegó a mover el saldo.\n'
+    + 'Si sí lo movió, cancela y corrige por Ajuste de inventario.\n\n¿Anular?')) return;
+
+  const motivo = prompt('¿Por qué se anula? Queda en la bitácora del navegador '
+    + 'y es lo único que va a explicar el hueco en la numeración.', '');
+  if (motivo === null) return;
+
+  try {
+    // Antes de borrar, la copia: si alguien pregunta el mes entrante qué había
+    // en ese renglón, tiene que poderse responder.
+    try {
+      const caja = JSON.parse(localStorage.getItem('energy_kardex_anulados') || '[]');
+      caja.unshift({ ts: new Date().toISOString(), por: (currentUser && (currentUser.name || currentUser.email)) || '—',
+                     motivo: String(motivo || '').trim(), mov: k });
+      localStorage.setItem('energy_kardex_anulados', JSON.stringify(caja.slice(0, 200)));
+    } catch (_) { }
+    await absFetch('kardex?id=eq.' + encodeURIComponent(id),
+      { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+    abs_kardex = abs_kardex.filter(x => String(x.id) !== String(id));
+    showToast('Movimiento anulado. Queda copia en este equipo (consola: anuladosEyg()).',
+      'success', { durationMs: 9000 });
+    absRenderKardex();
+    try { absRenderMovHoy(); } catch (_) { }
+  } catch (e) {
+    showToast('No se pudo anular: ' + (e && e.message || e), 'error', { durationMs: 10000 });
+  }
+}
+// Para verlos desde la consola, como espacioEyg()/liberarEyg().
+function anuladosEyg() {
+  try { return JSON.parse(localStorage.getItem('energy_kardex_anulados') || '[]'); }
+  catch (_) { return []; }
+}
+
 function absEditarKardex(id){
   if(!abs_canAjuste()) return showToast('Solo Andrea y Alberto pueden editar el kardex','error');
   const k=abs_kardex.find(x=>String(x.id)===String(id));
@@ -25497,7 +25566,7 @@ function _opRecepModal(sug) {
       + 'pedidas ' + pedida + (ya ? ' · ya llegaron ' + ya : '') + ' · <b>faltan ' + falta + '</b></small>'
       + '<small>' + (x.prod
           ? 'entra a <b style="color:#3FBF63">' + opEsc(x.prod.codigo) + '</b> · ' + opEsc(x.prod.descripcion)
-            + (x.score < 1 ? ' <i>(propuesto, confirma)</i>' : '')
+            + (x.score < 1 ? ' <b style="color:#fbbf24">⚠️ lo escogió la plataforma por parecido — revísalo</b>' : '')
           : '<b style="color:#E8A020">producto nuevo</b> — se creará en el inventario al recibir')
       + '</small></div>'
       + '<div class="op-recep-c"><input type="number" step="any" min="0" max="' + falta + '" value="' + falta + '"'
@@ -25676,6 +25745,27 @@ async function opRecibirConfirmar() {
   }
 
   const nuevos = listo.filter(L => !L.x.prod).length;
+
+  // 9-sep-2026 — EL PRODUCTO PROPUESTO SE CONFIRMA LEYÉNDOLO, NO DE PASO.
+  // El cruce con inventario propone el producto que más se parece por el nombre,
+  // y basta con que empiecen igual para que dos materiales distintos se junten:
+  // «tuberia acero galv conduit rmc 1"» entró contra «TUBERIA A106 GR.B SCH 40
+  // DIAM 1"», que no es galvanizada. En la pantalla decía «propuesto, confirma»
+  // en letra pequeña. Ahora hay que leer las dos descripciones, una debajo de la
+  // otra, antes de sumarle 360 unidades a un producto que no es.
+  const _propuestos = listo.filter(L => L.x.prod && (+L.x.score || 0) < 1);
+  if (_propuestos.length) {
+    const _txt = _propuestos.slice(0, 6).map(L =>
+      '  LLEGA: ' + String(L.x.it.descripcion || '').replace(/\s+/g, ' ').substring(0, 70)
+      + '\n  ENTRA A: ' + L.x.prod.codigo + ' — '
+      + String(L.x.prod.descripcion || '').replace(/\s+/g, ' ').substring(0, 70)).join('\n\n');
+    if (!confirm('⚠️ ' + _propuestos.length + ' línea(s) van a entrar a un producto del inventario '
+      + 'que la plataforma ESCOGIÓ POR PARECIDO en el nombre. Míralas:\n\n' + _txt
+      + (_propuestos.length > 6 ? '\n\n… y ' + (_propuestos.length - 6) + ' más' : '')
+      + '\n\nSi no es el mismo material, cancela: cierra esta ventana, corrige el '
+      + 'producto en la línea y vuelve a recibir.\n\n¿Es el mismo material?')) return;
+  }
+
   if (!confirm('Vas a recibir ' + listo.length + ' línea(s) en bodega.\n\n'
     + (salen.length ? salen.length + ' línea(s) SALEN DE UNA con la remisión ' + remi
        + (lugar ? ' hacia ' + lugar : '') + '.\n' : '')
@@ -25738,8 +25828,17 @@ async function opRecibirConfirmar() {
         } catch (_) { }
         const nuevo = actual + L.qty;
 
-        await absFetch('kardex', {
-          method: 'POST', headers: { 'Prefer': 'return=minimal' },
+        // 9-sep-2026 — EL KARDEX NO PUEDE SOBREVIVIR AL MOVIMIENTO QUE CUENTA.
+        // El movimiento se escribía primero y el saldo del producto después. Si
+        // lo segundo fallaba, quedaba en el kardex una entrada de material que
+        // nunca ingresó, con el stock intacto: la historia decía una cosa y el
+        // saldo otra. Pasó con las 360 de tubería de la OP-2026-0064.
+        // Ahora se guarda el id de cada movimiento y, si el saldo no se puede
+        // actualizar, se retiran: es preferible no tener rastro de algo que no
+        // pasó, a tener rastro de algo que no pasó.
+        const _movs = [];
+        const _kEnt = await absFetch('kardex', {
+          method: 'POST', headers: { 'Prefer': 'return=representation' },
           body: JSON.stringify({
             fecha: fecha, hora: new Date().toTimeString().split(' ')[0],
             codigo_producto: prod.codigo, descripcion_producto: prod.descripcion,
@@ -25752,6 +25851,7 @@ async function opRecibirConfirmar() {
             notas: 'Recepción de ' + op_current.numero + (obs ? ' · ' + obs : '')
           })
         });
+        try { const _e = Array.isArray(_kEnt) ? _kEnt[0] : _kEnt; if (_e && _e.id) _movs.push(_e.id); } catch (_) { }
         // ── Sale de una ────────────────────────────────────────────────
         // Dos movimientos de verdad, no uno "neto": entró (a quién se le
         // compró, a qué precio, con qué factura) y salió (a quién, con qué
@@ -25760,8 +25860,8 @@ async function opRecibirConfirmar() {
         let stockFinal = nuevo;
         if (L.sale > 0) {
           stockFinal = nuevo - L.sale;
-          await absFetch('kardex', {
-            method: 'POST', headers: { 'Prefer': 'return=minimal' },
+          const _kSal = await absFetch('kardex', {
+            method: 'POST', headers: { 'Prefer': 'return=representation' },
             body: JSON.stringify({
               fecha: fecha, hora: new Date().toTimeString().split(' ')[0],
               codigo_producto: prod.codigo, descripcion_producto: prod.descripcion,
@@ -25773,6 +25873,7 @@ async function opRecibirConfirmar() {
                      + (lugar ? ' · ' + lugar : '') + (obs ? ' · ' + obs : '')
             })
           });
+          try { const _s = Array.isArray(_kSal) ? _kSal[0] : _kSal; if (_s && _s.id) _movs.push(_s.id); } catch (_) { }
           salidasRemi.push({
             remision: remi, fecha: fecha, cliente: op_current.cliente || '', lugar: lugar,
             oc: op_current.oc_cliente || null, cotizacion_id: opCotizDeItem(op_current, it) || null,
@@ -25789,10 +25890,23 @@ async function opRecibirConfirmar() {
                       updated_at: new Date().toISOString() };
         if (L.sale > 0) upd.salidas = salidas + L.sale;
         if (L.costo != null) upd.costo_compra = L.costo;      // el costo REAL de la compra
-        await absFetch('productos?codigo=eq.' + encodeURIComponent(prod.codigo), {
-          method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(upd)
-        });
-
+        try {
+          await absFetch('productos?codigo=eq.' + encodeURIComponent(prod.codigo), {
+            method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(upd)
+          });
+        } catch (ePS) {
+          // El saldo no se movió: se retiran los movimientos que ya se habían
+          // escrito y la línea de la remisión, si alcanzó a entrar. Así el
+          // material queda como lo que es —sin recibir— y se puede reintentar
+          // completo, sin nada a medias que después nadie sabe interpretar.
+          for (const _mid of _movs) {
+            try { await absFetch('kardex?id=eq.' + _mid, { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } }); }
+            catch (_) { }
+          }
+          if (L.sale > 0 && salidasRemi.length) salidasRemi.pop();
+          throw new Error('no se pudo actualizar el saldo de ' + prod.codigo + ': '
+            + (ePS && ePS.message || ePS) + ' — se deshizo el movimiento, esta línea quedó SIN recibir');
+        }
         // La línea de la OP: cuánto llegó en total y en qué estado queda
         const recibidaTot = (+it.recibida || 0) + L.qty;
         const completa = recibidaTot >= (+it.cantidad || 0);
