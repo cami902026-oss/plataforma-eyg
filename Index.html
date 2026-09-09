@@ -27723,6 +27723,24 @@ async function opGenerarPlan() {
   if (!usables.length) { showToast('Esta OP no tiene líneas con origen definido', 'info'); return; }
   const cc = _opCC(op);
 
+  // 9-sep-2026 — LO QUE SE QUEDA POR FUERA HAY QUE DECIRLO.
+  // El plan solo se lleva las líneas con origen definido (bodega o compra); las
+  // que siguen en «Sin definir» se quedaban calladas, el plan salía incompleto y
+  // nadie se enteraba hasta que faltaba el material. Pasó con la OP-2026-0064:
+  // entraron 3 líneas y las 2 de tubería no, porque nadie había dicho de dónde
+  // salían.
+  const _sinDefinir = (op_currentItems || []).filter(i => !['COMPRA', 'BODEGA'].includes(i.origen));
+  if (_sinDefinir.length) {
+    const _lista = _sinDefinir.slice(0, 8)
+      .map(i => '· ' + String(i.descripcion || '').replace(/\s+/g, ' ').substring(0, 60)).join('\n');
+    if (!confirm('⚠️ ' + _sinDefinir.length + ' línea(s) NO van a entrar al plan porque siguen en '
+      + '«Sin definir»:\n\n' + _lista
+      + (_sinDefinir.length > 8 ? '\n· … y ' + (_sinDefinir.length - 8) + ' más' : '')
+      + '\n\nEn cada una hay que decir si sale de bodega o se compra.\n'
+      + 'Puedes generar el plan ahora con las demás y volver a generarlo después: '
+      + 'se agregan las que falten sin tocar lo que ya esté.\n\n¿Generar el plan así?')) return;
+  }
+
   // 25-ago-2026: mirar el inventario ANTES, no después. Si algo marcado como
   // compra ya está en bodega y el plan se genera igual, entra como compra y el
   // plan queda mintiendo hasta que alguien lo corrija a mano.
@@ -27745,8 +27763,18 @@ async function opGenerarPlan() {
     // entrara al plan.
     const ex = (await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc)
       + '&select=descripcion,item&limit=500')) || [];
-    const yaHay = new Set(ex.map(r => String(r.descripcion || '').trim().toLowerCase()));
-    const faltan = usables.filter(i => !yaHay.has(String(i.descripcion || '').trim().toLowerCase()));
+    // Se cuenta CUÁNTAS veces está cada descripción, no si está o no. Con dos
+    // cotizaciones en la misma OP es normal que el mismo material aparezca dos
+    // veces; comparando por presencia, la segunda línea se daba por hecha y
+    // desaparecía del plan sin decir nada.
+    const _normPlan = t => String(t || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    const yaHay = {};
+    ex.forEach(r => { const k = _normPlan(r.descripcion); yaHay[k] = (yaHay[k] || 0) + 1; });
+    const faltan = usables.filter(i => {
+      const k = _normPlan(i.descripcion);
+      if (yaHay[k] > 0) { yaHay[k]--; return false; }
+      return true;
+    });
     if (ex.length && !faltan.length) {
       showToast('El plan ' + cc + ' ya está completo. Ábrelo en vez de crearlo otra vez.', 'info'); return;
     }
