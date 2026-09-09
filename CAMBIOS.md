@@ -9,8 +9,10 @@ cambio que ya está en vivo: para verlo hay que recargar con **Ctrl + F5**.
 
 ## 9 de septiembre de 2026
 
+- 🔗 v260 — La línea de la OP guarda SIEMPRE a qué producto entró el material  
+  <sub>`56e492cb`</sub>
 - 🗑️ v259 — Anular un movimiento sabiendo si tocó el saldo, y la remisión no repite el ítem 1  
-  <sub>`7c28942e`</sub>
+  <sub>`78f52878`</sub>
 - 📦 v258 — El kardex no puede sobrevivir al movimiento que cuenta  
   <sub>`de3d2f8d`</sub>
 - 🛒 v257 — El plan de compras dice qué líneas deja por fuera  
