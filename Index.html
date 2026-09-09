@@ -7031,7 +7031,7 @@ let _opAlertas = [];
 
 async function _opRefrescarAlertas() {
   try {
-    const r = await absFetch('ops?deleted=is.false&estado=eq.pendiente_aprobacion&select=numero,cliente,cotizacion_id,created_by,updated_at&order=updated_at.asc&limit=50');
+    const r = await absFetch('ops?deleted=is.false&estado=eq.pendiente_aprobacion&select=numero,cliente,cotizacion_id,extra,created_by,updated_at&order=updated_at.asc&limit=50');
     const antes = _opAlertas.length;
     _opAlertas = r || [];
     if (_opAlertas.length !== antes) { try { updateNotifBadge(); renderNotifPanel(); } catch (_) { } }
@@ -7051,7 +7051,7 @@ function buildAlerts() {
       type: _esJefe ? 'red' : 'blue', icon: '📑',
       title: _esJefe ? ('OP ' + op.numero + ' ESPERA TU APROBACIÓN')
                      : ('OP ' + op.numero + ' en aprobación'),
-      detail: 'Cliente: ' + (op.cliente || '—') + ' · Cotización ' + (op.cotizacion_id || '—')
+      detail: 'Cliente: ' + (op.cliente || '—') + ' · Cotización ' + (opCotizIds(op).join(' + ') || '—')
               + ' · la creó ' + (op.created_by || '—'),
       badge: { cls: _esJefe ? 'red' : 'blue', txt: _esJefe ? 'APROBAR' : 'EN ESPERA' },
       action: "navigate('op')"
@@ -23662,8 +23662,12 @@ function opEsDuenoDeLaOP(op) {
   };
   if (iguala(op.created_by)) return true;
   try {
-    const c = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === op.cotizacion_id);
-    if (c && (iguala(c.vendedor) || iguala(c.realizadaPor))) return true;
+    // Si la OP lleva varias cotizaciones, el comercial de cualquiera de ellas
+    // es dueño: el pedido también es suyo.
+    const ids = opCotizIds(op);
+    const bd = getData('bd_cotizaciones', []) || [];
+    if (bd.some(x => x && ids.indexOf(String(x.id)) >= 0
+        && (iguala(x.vendedor) || iguala(x.realizadaPor)))) return true;
   } catch (_) { }
   return false;
 }
@@ -23758,7 +23762,7 @@ function opRenderLista() {
       || '').substring(0, 7) === selMes.value);
   }
 
-  if (q) l = l.filter(o => [o.numero, o.cotizacion_id, o.oc_cliente, o.cliente]
+  if (q) l = l.filter(o => [o.numero, opCotizIds(o).join(' '), o.oc_cliente, o.cliente]
     .some(x => String(x || '').toLowerCase().includes(q)));
 
   // Las que esperan al jefe van primero: son las que detienen la operación.
@@ -23804,6 +23808,7 @@ function opRenderLista() {
       + '<small>' + opEsc((o.created_at || '').substring(0, 10)) + '</small></div>'
       + '<div class="op-fila-cli">' + opEsc(o.cliente || 'Sin cliente')
       + '<small>cot ' + opEsc(o.cotizacion_id || '—')
+      + (opCotizIds(o).length > 1 ? ' <span style="color:#c4b5fd">+' + (opCotizIds(o).length - 1) + '</span>' : '')
       + (o.oc_cliente ? ' · o.c. ' + opEsc(o.oc_cliente) : '') + '</small></div>'
       + '<div>' + opChip(o.estado)
       + (o.estado === 'devuelta' && o.nota_devolucion ? '<span class="op-nota">' + opEsc(o.nota_devolucion) + '</span>' : '')
@@ -23847,7 +23852,12 @@ function opRenderEditor() {
   document.getElementById('op-editor-titulo').innerHTML = opEsc(o.numero) + ' &nbsp;' + opChip(o.estado);
 
   const sub = [];
-  sub.push('cotización <b>' + opEsc(o.cotizacion_id || '—') + '</b>');
+  // Una OP puede llevar varias cotizaciones (una sola OC del cliente cubriendo
+  // dos ofertas). Se nombran TODAS: es lo primero que se mira al abrir la hoja.
+  const _cots = opCotizIds(o);
+  sub.push(_cots.length > 1
+    ? 'cotizaciones <b>' + _cots.map(opEsc).join('</b> + <b>') + '</b>'
+    : 'cotización <b>' + opEsc(o.cotizacion_id || '—') + '</b>');
   sub.push('creada por <b>' + opEsc(o.created_by || '—') + '</b> el <b>' + opEsc((o.created_at || '').substring(0, 10)) + '</b>');
   if (o.aprobada_por) sub.push('aprobó <b>' + opEsc(o.aprobada_por) + '</b>');
   document.getElementById('op-hoja-sub').innerHTML = sub.join('<br>');
@@ -23974,6 +23984,12 @@ function opRenderEditor() {
   const acc = document.getElementById('op-editor-acciones');
   const b = [];
   if (editable) b.push('<button class="btn btn-ghost" onclick="opGuardarCabecera()" style="padding:8px 14px;font-size:12px;">Guardar</button>');
+  // Sumar otra cotización: el cliente cubrió dos ofertas con una sola OC. Solo
+  // antes de que gerencia apruebe — después cambiaría el valor ya aprobado.
+  if (opPuedeSumarCotiz(o))
+    b.push('<button class="btn btn-ghost" onclick="opSumarCotizAbrir()"'
+      + ' title="El cliente cubre varias cotizaciones con una sola orden de compra: trae los ítems de la otra oferta a esta misma OP"'
+      + ' style="padding:8px 14px;font-size:12px;">➕ Sumar otra cotización</button>');
   b.push('<button class="btn btn-ghost" onclick="opRevisarStock(false)" title="Comparar cada línea contra el inventario real" style="padding:8px 14px;font-size:12px;">Revisar inventario</button>');
   // Ya despachado: llevar a la remisión, donde están el PDF, la planilla de
   // viaje y los rótulos. La remisión creada desde la OP es una remisión normal.
@@ -24051,6 +24067,7 @@ function opRenderItems() {
   }
 
   const ETQ = { BODEGA: ['op-etq-bodega', 'Bodega'], COMPRA: ['op-etq-compra', 'Comprar'], PENDIENTE: ['op-etq-sin', 'Sin definir'] };
+  const _variasCot = opCotizIds(op_current).length > 1;
   const editable = opPuedeEditar(op_current);
   const dis = editable ? '' : ' disabled';
   tb.innerHTML = op_currentItems.map(it => {
@@ -24074,7 +24091,12 @@ function opRenderItems() {
       + '<div class="op-faja"></div>'
       + '<div class="op-item-n">' + (it.item || '') + '</div>'
       + '<div class="op-desc">' + opEsc(it.descripcion)
-      + '<small><span class="op-etq ' + e[0] + '">' + e[1] + '</span></small>'
+      + '<small><span class="op-etq ' + e[0] + '">' + e[1] + '</span>'
+      // Con dos ofertas en la misma orden hay que poder ver, línea por línea, de
+      // cuál salió: es lo que se factura después por separado.
+      + (_variasCot ? ' <span style="color:#c4b5fd;font-size:10px;">'
+          + opEsc(opCotizDeItem(op_current, it) || '—') + '</span>' : '')
+      + '</small>'
       // La desviación técnica es lo que se le PROMETIÓ al cliente, y va a la vista
       // en la línea: es lo que evita comprar lo que no era. De aquí baja a la O.C.
       // del proveedor (nota del Plan de Compras) y a la remisión del cliente.
@@ -24219,8 +24241,14 @@ let _opTabCertsPidiendo = false;
 function _opFactura(o) {
   const propia = String((o && o.factura) || '').trim();
   if (propia) return propia;
-  if (!_opTabFact || !o || !o.cotizacion_id) return '';
-  return String(_opTabFact[o.cotizacion_id] || '').trim();
+  if (!_opTabFact || !o) return '';
+  // Con varias cotizaciones: solo cuenta como facturada cuando TODAS lo están.
+  // Media orden facturada no es una orden facturada.
+  const ids = opCotizIds(o);
+  if (!ids.length) return '';
+  const fs = ids.map(c => String(_opTabFact[c] || '').trim());
+  if (fs.some(f => !f)) return '';
+  return fs.filter((f, i) => fs.indexOf(f) === i).join(', ');
 }
 // Cuántos ítems de la OP tienen su certificado resuelto. null = todavía no se sabe.
 function _opCertsFalta(o) {
@@ -24283,8 +24311,8 @@ async function _opTabCargarCerts() {
     // si falla, el tablero sigue con lo que tenga la OP en vez de quedarse en
     // blanco. Es el mismo dato que consulta la pantalla de cierre.
     try {
-      const cots = Array.from(new Set((op_lista || [])
-        .map(o => o.cotizacion_id).filter(Boolean)));
+      const cots = Array.from(new Set([].concat.apply([], (op_lista || [])
+        .map(o => opCotizIds(o))).filter(Boolean)));
       if (cots.length) {
         const cr = (await absFetch('cotizaciones?id=in.('
           + cots.map(c => '"' + encodeURIComponent(c) + '"').join(',')
@@ -24361,7 +24389,7 @@ function opRenderTablero() {
   const verPlata = opEsCompras();
   const q = ((document.getElementById('op-search') || {}).value || '').toLowerCase().trim();
   let univ = (op_lista || []).filter(o => o && !OP_ARCHIVADAS.includes(o.estado));
-  if (q) univ = univ.filter(o => [o.numero, o.cotizacion_id, o.oc_cliente, o.cliente]
+  if (q) univ = univ.filter(o => [o.numero, opCotizIds(o).join(' '), o.oc_cliente, o.cliente]
     .some(x => String(x || '').toLowerCase().includes(q)));
   const archivadas = (op_lista || []).filter(o => o && OP_ARCHIVADAS.includes(o.estado)).length;
 
@@ -24473,15 +24501,20 @@ function _opCotizBuscar() {
   // (contra el servidor, ítem por ítem) la hace _opGuardiaCotizConOP al crear.
   const opsPorCotiz = {};
   (op_lista || []).forEach(o => {
-    if (!o || o.estado === 'anulada' || !o.cotizacion_id) return;
-    (opsPorCotiz[String(o.cotizacion_id)] = opsPorCotiz[String(o.cotizacion_id)] || []).push(o);
+    if (!o || o.estado === 'anulada') return;
+    // Una OP puede llevar varias cotizaciones: cuenta para todas las suyas.
+    opCotizIds(o).forEach(cid => {
+      (opsPorCotiz[cid] = opsPorCotiz[cid] || []).push(o);
+    });
   });
   cont.innerHTML = l.slice(0, 40).map(c => {
     const permitido = opPuedeCrear(c);
     const yaOps = opsPorCotiz[String(c.id)] || [];
     const chip = yaOps.length
       ? '<div style="font-size:11px;color:#c4b5fd;margin-top:2px;">📑 Ya tiene '
-        + yaOps.map(o => opEsc(o.numero) + ' <span style="color:var(--text-muted)">('
+        + yaOps.map(o => opEsc(o.numero)
+            + (String(o.cotizacion_id || '') !== String(c.id) ? ' (sumada)' : '')
+            + ' <span style="color:var(--text-muted)">('
             + opEsc((OP_ESTADOS[o.estado] || {}).lbl || o.estado || '—') + ')</span>').join(' · ')
         + '</div>'
       : '';
@@ -24609,6 +24642,76 @@ function _opPreguntar(titulo, cuerpoHTML, botones) {
   });
 }
 
+// ═══════════ UNA OP CON VARIAS COTIZACIONES (9-sep-2026) ════════════════
+// El caso real: el cliente manda UNA orden de compra que cubre DOS ofertas
+// nuestras. Hasta hoy tocaba abrir dos OP, alistarlas por separado y despachar
+// dos veces algo que sale en un solo camión.
+//
+// CÓMO SE GUARDA — sin tocar la estructura que ya existe:
+//   · `ops.cotizacion_id` sigue siendo la cotización que CREÓ la OP. Nada de lo
+//     que ya funciona (informes, cartera, correos) cambia de sitio.
+//   · lo sumado después vive en `ops.extra` (jsonb que ya existía y estaba libre):
+//        extra.cotiz_ids   → TODAS las cotizaciones, la principal incluida.
+//                            Es por donde se busca: `extra->cotiz_ids=cs.["LMxxxx"]`.
+//        extra.cotiz_extra → [{ id, uids, valor, por, at }] — el detalle de cada
+//                            suma, con los uid de los ítems que aportó. Ese uid es
+//                            lo que deja saber, línea por línea, de cuál oferta salió.
+//
+// LA REGLA: mismo cliente y una sola OC. Dos clientes en una OP dejan la orden
+// sin dueño y rompen la factura, así que eso no se permite.
+
+// Todas las cotizaciones de una OP, la principal primero y sin repetidas.
+function opCotizIds(o) {
+  const out = [];
+  const push = v => { const t = String(v || '').trim(); if (t && out.indexOf(t) < 0) out.push(t); };
+  if (o) {
+    push(o.cotizacion_id);
+    const ex = o.extra || {};
+    (ex.cotiz_ids || []).forEach(push);
+    (ex.cotiz_extra || []).forEach(x => push(x && x.id));
+  }
+  return out;
+}
+
+// Solo las sumadas después (con su detalle). La principal no está aquí.
+function opCotizExtra(o) {
+  return (((o || {}).extra || {}).cotiz_extra || []).filter(x => x && x.id);
+}
+
+// ¿De cuál cotización salió esta línea? El puente es `cotizacion_item_uid`, que es
+// exacto. Si no empareja con ninguna suma, es de la cotización que creó la OP.
+function opCotizDeItem(o, it) {
+  const uid = String((it || {}).cotizacion_item_uid || '').trim();
+  if (uid) {
+    const ex = opCotizExtra(o).find(x => (x.uids || []).indexOf(uid) >= 0);
+    if (ex) return ex.id;
+  }
+  return (o || {}).cotizacion_id || '';
+}
+
+// ¿Qué OP vivas incluyen esta cotización, sea como principal o sumada? Son dos
+// consultas y no un `or=(...)`: meter un filtro jsonb con comillas y corchetes
+// dentro de un `or()` de PostgREST es donde se rompe el encoding.
+async function opOpsDeCotiz(cotizId, campos) {
+  const sel = '&select=' + (campos || 'id,numero,estado,valor_venta,created_by,created_at,cotizacion_id,extra');
+  const enc = encodeURIComponent(cotizId);
+  const a = (await absFetch('ops?deleted=is.false&cotizacion_id=eq.' + enc + sel + '&order=numero')) || [];
+  let b = [];
+  try {
+    b = (await absFetch('ops?deleted=is.false&extra->cotiz_ids=cs.'
+      + encodeURIComponent(JSON.stringify([String(cotizId)])) + sel + '&order=numero')) || [];
+  } catch (_) { b = []; }   // base sin el índice o sin la columna: no rompe nada
+  const vistos = {};
+  return a.concat(b).filter(o => { if (vistos[o.id]) return false; vistos[o.id] = 1; return true; });
+}
+
+// Lo mismo pero SIN consultar: contra la lista que el módulo ya tiene cargada.
+function opOpsDeCotizLocal(cotizId) {
+  const k = String(cotizId || '').trim();
+  if (!k) return [];
+  return (op_lista || []).filter(o => o && o.estado !== 'anulada' && opCotizIds(o).indexOf(k) >= 0);
+}
+
 // ─── Guardia: ¿esta cotización YA tiene OP? ──────────────────────────────────
 // De una cotización SÍ pueden salir varias OP, y por DOS razones distintas que
 // no hay que confundir:
@@ -24622,8 +24725,10 @@ function _opPreguntar(titulo, cuerpoHTML, botones) {
 async function _opGuardiaCotizConOP(c) {
   let ops;
   try {
-    ops = (await absFetch('ops?deleted=is.false&cotizacion_id=eq.' + encodeURIComponent(c.id)
-      + '&select=id,numero,estado,valor_venta,created_by,created_at&order=numero')) || [];
+    // También las OP donde esta cotización entró SUMADA a otra: si no se miraran,
+    // la segunda oferta se vería libre y alguien le abriría una OP encima — justo
+    // el despacho doble que este aviso existe para evitar.
+    ops = await opOpsDeCotiz(c.id);
   } catch (e) {
     // Antes este error se tragaba en silencio y la OP se creaba igual. Si no se
     // sabe qué hay, se pregunta: una OP repetida sin querer cuesta un despacho doble.
@@ -24635,6 +24740,8 @@ async function _opGuardiaCotizConOP(c) {
 
   const listaOps = '<ul style="margin:8px 0 0;padding-left:18px;">' + vivas.map(o =>
     '<li style="margin-bottom:3px;"><b style="color:var(--gold)">' + opEsc(o.numero) + '</b> · '
+    + (String(o.cotizacion_id || '') !== String(c.id)
+        ? '<span style="color:#c4b5fd">sumada a esa OP</span> · ' : '')
     + opEsc((OP_ESTADOS[o.estado] || {}).lbl || o.estado || '—') + ' · ' + opMoney(o.valor_venta || 0)
     + ' <span style="color:var(--text-muted)">· la creó ' + opEsc(o.created_by || '—')
     + ' el ' + opEsc(String(o.created_at || '').substring(0, 10)) + '</span></li>').join('') + '</ul>';
@@ -24925,6 +25032,243 @@ async function opCrearDesde(cotizId) {
   } catch (e) {
     console.error('[op] crear', e);
     showToast('No se pudo crear la OP: ' + (e && e.message || e), 'error', { durationMs: 9000 });
+  }
+}
+
+// ════════════ SUMAR OTRA COTIZACIÓN A UNA OP QUE YA EXISTE ═════════════════
+// Cuando el cliente cubre dos ofertas con UNA sola orden de compra. Los ítems de
+// la segunda cotización se agregan a esta OP, con su numeración siguiendo la que
+// hay, y el valor de la orden se recalcula sumando SUS líneas.
+//
+// DÓNDE SÍ Y DÓNDE NO:
+//   · Solo en borrador, devuelta o en compras — o sea, ANTES de que gerencia
+//     apruebe. Sumarle material a una OP ya aprobada le cambia por debajo el
+//     valor que gerencia aprobó, y eso no se hace a espaldas de nadie.
+//   · Solo cotizaciones del MISMO cliente. Dos clientes en una OP dejan la orden
+//     sin dueño y no hay forma de facturarla.
+
+function opPuedeSumarCotiz(o) {
+  return !!o && ['borrador', 'devuelta', 'en_compras'].includes(o.estado) && opPuedeEditar(o);
+}
+
+// Mismo cliente, comparando sin mayúsculas, tildes ni puntuación: en las
+// cotizaciones el mismo cliente aparece escrito de tres maneras distintas.
+function _opMismoCliente(a, b) {
+  const n = t => String(t || '').toUpperCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/\b(S\.?A\.?S|S\.?A|LTDA|SAS|E\.?U|SUCURSAL COLOMBIA)\b/g, '')
+    .replace(/[^A-Z0-9]+/g, ' ').trim();
+  const x = n(a), y = n(b);
+  if (!x || !y) return false;
+  return x === y || x.indexOf(y) === 0 || y.indexOf(x) === 0;
+}
+
+function opSumarCotizAbrir() {
+  const o = op_current;
+  if (!o) return;
+  if (!opPuedeSumarCotiz(o)) {
+    showToast('Solo se puede sumar otra cotización antes de que gerencia apruebe, '
+      + 'y le toca a quien está trabajando el pedido.', 'error', { durationMs: 9000 });
+    return;
+  }
+  const prev = document.getElementById('_opSumaOv'); if (prev) prev.remove();
+  const ov = document.createElement('div');
+  ov.id = '_opSumaOv';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100001;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML = '<div style="background:var(--card-bg,#0f1e33);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:720px;width:100%;max-height:80vh;display:flex;flex-direction:column;">'
+    + '<div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:4px;">➕ Sumar otra cotización a ' + opEsc(o.numero) + '</div>'
+    + '<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">'
+    + 'Para cuando <b>' + opEsc(o.cliente || 'el cliente') + '</b> cubre varias ofertas con una sola orden de compra. '
+    + 'Los ítems se agregan a esta OP y el valor se recalcula solo. Salen las cotizaciones del mismo cliente.</div>'
+    + '<label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-muted);margin-bottom:8px;cursor:pointer;">'
+    + '<input type="checkbox" id="_opSumaTodos" onchange="_opSumaBuscar()"> Ver también las de otros clientes</label>'
+    + '<input type="text" id="_opSumaQ" placeholder="Buscar por número o cliente…" oninput="_opSumaBuscar()" style="width:100%;margin-bottom:10px;">'
+    + '<div id="_opSumaRes" style="overflow-y:auto;flex:1;"></div>'
+    + '<div style="display:flex;justify-content:flex-end;margin-top:14px;"><button onclick="document.getElementById(\'_opSumaOv\').remove()" style="background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:8px;padding:9px 16px;color:#cbd5e1;font-weight:700;cursor:pointer;">Cerrar</button></div>'
+    + '</div>';
+  document.body.appendChild(ov);
+  _opSumaBuscar();
+  setTimeout(() => { try { document.getElementById('_opSumaQ').focus(); } catch (_) { } }, 60);
+}
+
+function _opSumaBuscar() {
+  const o = op_current;
+  const cont = document.getElementById('_opSumaRes');
+  if (!o || !cont) return;
+  const q = ((document.getElementById('_opSumaQ') || {}).value || '').toLowerCase().trim();
+  const todos = !!(document.getElementById('_opSumaTodos') || {}).checked;
+  const yaEstan = opCotizIds(o);
+  const bd = (getData('bd_cotizaciones', []) || []).filter(c => c && !c.deleted);
+  let l = bd.filter(c => (c.items || []).length && yaEstan.indexOf(String(c.id)) < 0);
+  if (!todos) l = l.filter(c => _opMismoCliente(c.cliente, o.cliente));
+  if (q) l = l.filter(c => String(c.id).toLowerCase().includes(q) || String(c.cliente || '').toLowerCase().includes(q));
+  l.sort((a, b) => String(b.fecha || '').localeCompare(String(a.fecha || '')));
+
+  if (!l.length) {
+    cont.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:14px;">'
+      + (todos || q ? 'Sin resultados.'
+         : 'No hay otras cotizaciones de <b>' + opEsc(o.cliente || '—') + '</b> con ítems. '
+           + 'Si el nombre está escrito distinto en la otra oferta, marca <i>ver también las de otros clientes</i>.')
+      + '</div>';
+    return;
+  }
+  cont.innerHTML = l.slice(0, 40).map(c => {
+    const yaOps = opOpsDeCotizLocal(c.id);
+    const distinto = !_opMismoCliente(c.cliente, o.cliente);
+    const chip = yaOps.length
+      ? '<div style="font-size:11px;color:#fbbf24;margin-top:2px;">⚠️ Ya tiene '
+        + yaOps.map(x => opEsc(x.numero)).join(' · ') + ' — se avisa antes de sumarla</div>'
+      : '';
+    const avisoCli = distinto
+      ? '<div style="font-size:11px;color:#ffb3a8;margin-top:2px;">⚠️ Otro cliente: ' + opEsc(c.cliente || '—') + '</div>'
+      : '';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-bottom:1px solid var(--border);">'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:13px;font-weight:700;color:var(--gold)">' + opEsc(c.id)
+      + ' <span style="color:#fff;font-weight:600">' + opEsc(c.cliente || '') + '</span></div>'
+      + '<div style="font-size:11px;color:var(--text-muted)">' + opEsc(c.fecha || '') + ' · '
+      + (c.items || []).length + ' ítems · ' + opMoney(c.subtotal || 0)
+      + ' · ' + opEsc(c.vendedor || c.realizadaPor || 'sin vendedor') + '</div>' + chip + avisoCli + '</div>'
+      + '<button class="btn-sm bd-btn-edit" onclick="opSumarCotiz(\'' + opEsc(c.id).replace(/'/g, "\\'") + '\')">Sumar</button>'
+      + '</div>';
+  }).join('');
+}
+
+async function opSumarCotiz(cotizId) {
+  const o = op_current;
+  if (!o) return;
+  if (!opPuedeSumarCotiz(o)) { showToast('Esta OP ya no admite sumar cotizaciones', 'error'); return; }
+  if (opCotizIds(o).indexOf(String(cotizId)) >= 0) { showToast(cotizId + ' ya está en esta OP', 'info'); return; }
+
+  let c = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === cotizId && !x.deleted);
+  if (!c) { showToast('No encontré la cotización ' + cotizId, 'error'); return; }
+
+  // Los ítems primero, igual que al crear: pueden no estar en este equipo.
+  if (!_opLineasDeCotiz(c).length) {
+    let fr = null;
+    try { fr = await _opItemsFrescos(c); }
+    catch (e) {
+      showToast('No pude leer los ítems de ' + cotizId + ': ' + (e && e.message || e)
+        + ' — no se sumó nada.', 'error', { durationMs: 12000 });
+      return;
+    }
+    if (fr && fr.items.length && !fr.cuadra) {
+      showToast('⚠️ Los ítems de ' + cotizId + ' en el servidor suman ' + opMoney(fr.suma)
+        + ' y la cotización dice ' + opMoney(fr.subtotal) + '. No la sumo con datos que no cuadran: '
+        + 'abre ' + cotizId + ' en Cotizaciones, revísala, guárdala y vuelve a intentar.',
+        'error', { durationMs: 18000 });
+      return;
+    }
+    if (fr && fr.items.length) c = Object.assign({}, c, { items: fr.items });
+  }
+  const lineas = _opLineasDeCotiz(c);
+  if (!lineas.length) {
+    showToast('❌ ' + cotizId + ' no tiene ítems que sumar'
+      + ((c.itemsAdjudicados || []).length ? ' (revisa la adjudicación: puede haber quedado en cero)' : '')
+      + '.', 'error', { durationMs: 12000 });
+    return;
+  }
+
+  // Cliente distinto: se dice y se decide. No se bloquea a ciegas, pero tampoco
+  // pasa en silencio — una OP con dos clientes no se puede facturar.
+  if (!_opMismoCliente(c.cliente, o.cliente)) {
+    const r = await _opPreguntar('⚠️ No es el mismo cliente',
+      'Esta OP es de <b>' + opEsc(o.cliente || '—') + '</b> y ' + opEsc(cotizId)
+      + ' es de <b>' + opEsc(c.cliente || '—') + '</b>.'
+      + '<div style="margin-top:10px;background:rgba(224,90,74,.14);border-left:3px solid #e05a4a;'
+      + 'padding:10px 13px;border-radius:0 6px 6px 0;color:#ffb3a8;">'
+      + 'Unir dos clientes en una sola orden la deja sin dueño: la remisión sale a nombre '
+      + 'de uno y la factura del otro. Si es la misma empresa escrita distinto, sigue; '
+      + 'si de verdad son dos clientes, no lo hagas.</div>',
+      [{ txt: 'Es la misma empresa, sumar', val: 'ok', tono: 'ok' }, { txt: 'Cancelar', val: null }]);
+    if (r !== 'ok') return;
+  }
+
+  // ¿Esa cotización ya tiene su propia OP? Mismo peligro que al crear: el
+  // material terminaría despachado dos veces, una por cada orden.
+  let otras = [];
+  try { otras = (await opOpsDeCotiz(cotizId)).filter(x => x.estado !== 'anulada' && x.id !== o.id); }
+  catch (_) { otras = []; }
+  if (otras.length) {
+    const r = await _opPreguntar('📑 Esa cotización ya tiene OP',
+      opEsc(cotizId) + ' ya está en: '
+      + otras.map(x => '<b style="color:var(--gold)">' + opEsc(x.numero) + '</b> ('
+          + opEsc((OP_ESTADOS[x.estado] || {}).lbl || x.estado || '—') + ')').join(' · ')
+      + '<div style="margin-top:10px;background:rgba(232,160,32,.12);border-left:3px solid #E8A020;'
+      + 'padding:10px 13px;border-radius:0 6px 6px 0;color:#fbbf24;">'
+      + 'Si la sumas aquí, el mismo material queda en dos órdenes y se despacha y descuenta '
+      + 'dos veces. Lo correcto es anular la otra OP primero, y después sumarla.</div>',
+      [{ txt: 'Cancelar', val: null },
+       { txt: 'Sumarla de todos modos', val: 'ok', tono: 'alt' }]);
+    if (r !== 'ok') return;
+  }
+
+  const ov = document.getElementById('_opSumaOv'); if (ov) ov.remove();
+  const yo = (currentUser && (currentUser.email || currentUser.name)) || 'system';
+  showToast('Sumando ' + cotizId + ' a ' + o.numero + '…', 'info');
+
+  try {
+    // La numeración sigue donde iba: los ítems que ya estaban NO se tocan, para
+    // que nada de lo hecho (plan de compras, remisiones, certificados) se corra.
+    let n = (op_currentItems || []).reduce((m, i) => Math.max(m, +i.item || 0), 0);
+    const uids = [];
+    const filas = lineas.map(L => {
+      const it = L.it;
+      n++;
+      const prov = (it.proveedor || '').trim();
+      if (it.uid) uids.push(String(it.uid));
+      return {
+        op_id: o.id,
+        uid: (it.uid || ('op' + o.id + '-' + n)),
+        item: n,
+        descripcion: it.desc || '',
+        udm: it.udm || 'EA',
+        cantidad: L.qty,
+        v_unit: (it.precio != null ? +it.precio : null),
+        v_total: L.qty * (+it.precio || 0),
+        origen: /BODEGA/i.test(prov) ? 'BODEGA' : (prov ? 'COMPRA' : 'PENDIENTE'),
+        proveedor: /BODEGA/i.test(prov) ? null : (prov || null),
+        costo_unit: (it.precioProveedor != null ? +it.precioProveedor : null),
+        estado: 'pendiente',
+        desviacion_tecnica: it.desvTec || null,
+        cotizacion_item_uid: it.uid || null,
+        observaciones: 'De la cotización ' + c.id,
+        updated_by: yo
+      };
+    });
+    await absFetch('op_items', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(filas) });
+
+    // La cabecera: el valor se recalcula desde el SERVIDOR, sumando las líneas
+    // que de verdad quedaron. Sumarle a lo que tenía infla la venta si alguien
+    // ya había corregido una cantidad a mano.
+    let frescos = [];
+    try { frescos = (await absFetch('op_items?op_id=eq.' + o.id + '&select=v_total&limit=2000')) || []; } catch (_) { }
+    const extra = Object.assign({}, o.extra || {});
+    extra.cotiz_extra = (extra.cotiz_extra || []).concat([{
+      id: c.id, uids: uids, valor: filas.reduce((s, f) => s + (+f.v_total || 0), 0),
+      items: filas.length, por: yo, at: new Date().toISOString()
+    }]);
+    extra.cotiz_ids = opCotizIds(Object.assign({}, o, { extra: extra }));
+    const patch = { extra: extra, updated_by: yo };
+    if (frescos.length) patch.valor_venta = frescos.reduce((s, f) => s + (+f.v_total || 0), 0);
+    else patch.valor_venta = (+o.valor_venta || 0) + filas.reduce((s, f) => s + (+f.v_total || 0), 0);
+    await absFetch('ops?id=eq.' + o.id, {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(patch)
+    });
+
+    await opEvento(o.id, 'cotizacion_sumada', c.id + ' · ' + filas.length + ' ítem(s) · '
+      + opMoney(filas.reduce((s, f) => s + (+f.v_total || 0), 0))
+      + ' — el cliente cubre las dos ofertas con la misma orden de compra');
+
+    showToast('✅ ' + c.id + ' sumada a ' + o.numero + ': ' + filas.length
+      + ' ítem(s) más. La orden queda en ' + opMoney(patch.valor_venta) + '.',
+      'success', { durationMs: 11000 });
+    await opAbrir(o.id);
+  } catch (e) {
+    console.error('[op] sumar cotización', e);
+    showToast('No se pudo sumar ' + cotizId + ': ' + (e && e.message || e)
+      + ' — abre la OP otra vez para ver cómo quedó.', 'error', { durationMs: 13000 });
+    try { await opAbrir(o.id); } catch (_) { }
   }
 }
 
@@ -25431,7 +25775,7 @@ async function opRecibirConfirmar() {
           });
           salidasRemi.push({
             remision: remi, fecha: fecha, cliente: op_current.cliente || '', lugar: lugar,
-            oc: op_current.oc_cliente || null, cotizacion_id: op_current.cotizacion_id || null,
+            oc: op_current.oc_cliente || null, cotizacion_id: opCotizDeItem(op_current, it) || null,
             op_numero: op_current.numero, item: salidasRemi.length + 1,
             descripcion: String(it.descripcion || '').trim(), cantidad: L.sale,
             // Igual que en el despacho normal: la desviación llega hasta el cliente.
@@ -25555,25 +25899,35 @@ async function opCerrarRevisar() {
 
   // La factura se busca en el SERVIDOR: la pudo registrar otra persona hace un
   // minuto, y el navegador puede tener la copia vieja.
+  // 9-sep-2026 — SI LA OP LLEVA VARIAS COTIZACIONES, SE EXIGEN TODAS.
+  // Con dos ofertas en una misma orden, mirar solo la principal cerraría el
+  // pedido con la mitad sin facturar. Se revisan una por una y se dice cuál falta.
+  const _cotsCierre = opCotizIds(o);
   let factura = '', estCot = '', okFact = false;
-  if (o.cotizacion_id) {
+  const _faltanFact = [];
+  const _facturas = [];
+  for (const _cid of _cotsCierre) {
+    let est = '', fac = '';
     try {
-      const r = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(o.cotizacion_id)
+      const r = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(_cid)
         + '&select=id,estado,extra&limit=1')) || [];
       if (r.length) {
         const ex = r[0].extra || {};
-        estCot = r[0].estado || ex.estado || '';
-        factura = String(ex.factura || '').trim();
+        est = r[0].estado || ex.estado || '';
+        fac = String(ex.factura || '').trim();
       }
     } catch (_) { }
-    if (!estCot) {                                   // sin red: la copia local sirve
+    if (!est) {                                   // sin red: la copia local sirve
       try {
-        const c = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === o.cotizacion_id);
-        if (c) { estCot = c.estado || ''; factura = String(c.factura || '').trim(); }
+        const c = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === _cid);
+        if (c) { est = c.estado || ''; fac = String(c.factura || '').trim(); }
       } catch (_) { }
     }
+    if (_cid === o.cotizacion_id) { estCot = est; factura = fac; }
+    if (est === 'Facturada' && fac) _facturas.push(_cid + ': ' + fac);
+    else _faltanFact.push(_cid + ' (' + (est || 'sin estado') + ')');
   }
-  okFact = (estCot === 'Facturada') && !!factura;
+  okFact = _cotsCierre.length > 0 && !_faltanFact.length;
 
   const fila = (ok, txt, det) => '<div class="op-cierre-fila">'
     + '<span class="op-cierre-p' + (ok ? ' op-p-ok' : '') + '">' + (ok ? '✓' : '') + '</span>'
@@ -25594,10 +25948,12 @@ async function opCerrarRevisar() {
           : (ctaCert.conCert + ' de ' + ctaCert.aplican + ' · <b>faltan '
              + ctaCert.pendientes + '</b>'))
     + fila(okFact, 'Facturada',
-        okFact ? 'factura ' + opEsc(factura) + ' · cotización ' + opEsc(o.cotizacion_id)
-               : (!o.cotizacion_id ? 'esta OP no tiene cotización ligada'
-                  : 'la cotización ' + opEsc(o.cotizacion_id) + ' está como <b>' + opEsc(estCot || '—')
-                    + '</b>. Se cierra cuando quede <b>Facturada</b> con su número de factura.'))
+        okFact ? _facturas.map(opEsc).join(' · ')
+               : (!_cotsCierre.length ? 'esta OP no tiene cotización ligada'
+                  : 'falta facturar <b>' + _faltanFact.map(opEsc).join('</b>, <b>') + '</b>. '
+                    + 'Se cierra cuando ' + (_cotsCierre.length > 1 ? 'todas queden' : 'quede')
+                    + ' <b>Facturada</b> con su número de factura.'
+                    + (_facturas.length ? '<br>Ya facturada: ' + _facturas.map(opEsc).join(' · ') : '')))
     + (listo
         ? (opEsAdmin()
             ? '<button class="op-cierre-btn" onclick="opCerrar()">🔒 Cerrar el pedido</button>'
@@ -25615,9 +25971,17 @@ async function opCerrar() {
     // aunque después alguien toque la cotización.
     let factura = '';
     try {
-      const r = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(o.cotizacion_id || '')
-        + '&select=extra&limit=1')) || [];
-      factura = String(((r[0] || {}).extra || {}).factura || '').trim();
+      // Con varias cotizaciones son varias facturas: van todas, separadas por
+      // coma. La OP cerrada tiene que poder mostrar con qué se cobró completa.
+      const _ids = opCotizIds(o);
+      const _fs = [];
+      for (const _cid of _ids) {
+        const r = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(_cid)
+          + '&select=extra&limit=1')) || [];
+        const f = String(((r[0] || {}).extra || {}).factura || '').trim();
+        if (f && _fs.indexOf(f) < 0) _fs.push(f);
+      }
+      factura = _fs.join(', ');
     } catch (_) { }
     const sello = {
       cerrada_at: new Date().toISOString(),
@@ -25664,7 +26028,9 @@ async function opLigarAbrir() {
   let filas = [];
   try {
     const partes = [];
-    if (o.cotizacion_id) partes.push('cotizacion_id.eq.' + o.cotizacion_id);
+    // Todas las cotizaciones de la OP, no solo la principal: con dos ofertas en
+    // una orden, la remisión de la segunda quedaba fuera de las candidatas.
+    opCotizIds(o).forEach(cid => partes.push('cotizacion_id.eq.' + cid));
     if (o.cliente) partes.push('cliente.ilike.*' + String(o.cliente).trim() + '*');
     if (!partes.length) { showToast('Esta OP no tiene cliente ni cotización para buscar', 'error'); return; }
     filas = (await absFetch('remisiones?op_numero=is.null&or=(' + encodeURIComponent(partes.join(',')) + ')'
@@ -25686,7 +26052,8 @@ async function opLigarAbrir() {
   const nums = Object.keys(grupos).sort().reverse();
   const cuerpo = nums.map(n => {
     const g = grupos[n];
-    const misma = g.some(x => String(x.cotizacion_id || '') === String(o.cotizacion_id || ''));
+    const _cotsOp = opCotizIds(o);
+    const misma = g.some(x => _cotsOp.indexOf(String(x.cotizacion_id || '')) >= 0);
     return '<label class="op-ligar-op' + (misma ? ' op-ligar-fuerte' : '') + '">'
       + '<input type="radio" name="op-ligar-r" value="' + opEsc(n) + '">'
       + '<div><div class="op-ligar-n">Remisión ' + opEsc(n)
@@ -25753,13 +26120,21 @@ async function opLigarConfirmar() {
   // sin despachar y por eso la OP no se podía cerrar.
   // El puente bueno es el uid del ítem de la cotización, que la OP sí guarda en
   // `cotizacion_item_uid`. El número solo se usa si no se pudo armar ese puente.
+  // 9-sep-2026 — Y LA CLAVE LLEVA LA COTIZACIÓN, no solo el número de ítem.
+  // Con dos ofertas en la misma OP hay un ítem 1 en cada una: una clave que fuera
+  // solo el número se pisaría y emparejaría la línea con el material equivocado.
+  const _cotsOP = opCotizIds(op_current);
   let uidPorItemCot = null;
-  if (op_current.cotizacion_id) {
+  if (_cotsOP.length) {
     try {
-      const ci = (await absFetch('cotizacion_items?cotizacion_id=eq.'
-        + encodeURIComponent(op_current.cotizacion_id) + '&select=item,uid&limit=800')) || [];
+      const ci = (await absFetch('cotizacion_items?cotizacion_id=in.('
+        + _cotsOP.map(x => '"' + encodeURIComponent(x) + '"').join(',')
+        + ')&select=cotizacion_id,item,uid&limit=3000')) || [];
       const m = {};
-      ci.forEach(c => { if (c && c.item != null && c.uid) m[String(c.item)] = c.uid; });
+      ci.forEach(c => {
+        if (!c || c.item == null || !c.uid) return;
+        m[String(c.cotizacion_id) + '#' + String(c.item)] = c.uid;
+      });
       if (Object.keys(m).length) uidPorItemCot = m;
     } catch (_) { uidPorItemCot = null; }
   }
@@ -25767,7 +26142,13 @@ async function opLigarConfirmar() {
   g.forEach(f => {
     let it = null;
     if (f.item_cot != null && uidPorItemCot) {
-      const uid = uidPorItemCot[String(f.item_cot)];
+      // La cotización de la fila de la remisión; si no la trae, la principal.
+      const _cf = String(f.cotizacion_id || op_current.cotizacion_id || '');
+      let uid = uidPorItemCot[_cf + '#' + String(f.item_cot)];
+      // Las candidatas también salen por cliente, así que la remisión puede venir
+      // de otra cotización. Con UNA sola cotización en la OP no hay ambigüedad y
+      // se cae a ella, que es como funcionaba antes; con dos, no se adivina.
+      if (!uid && _cotsOP.length === 1) uid = uidPorItemCot[_cotsOP[0] + '#' + String(f.item_cot)];
       if (uid) it = its.find(x => !usados.has(x.id) && x.cotizacion_item_uid === uid);
       // Con el puente armado NO se cae al número: emparejar por un número que ya
       // sabemos que puede estar corrido es peor que no emparejar. Sigue por texto.
@@ -26534,7 +26915,10 @@ async function opDespacharConfirmar() {
     //    ve qué faltó descontar — al revés sería stock movido sin respaldo.
     const rows = listo.map((x, i) => ({
       remision: num, fecha: fecha, cliente: op_current.cliente || '', lugar: lugar,
-      oc: oc || null, cotizacion_id: op_current.cotizacion_id || null,
+      // La cotización va POR LÍNEA, no por OP: cuando la orden lleva dos ofertas
+      // cada renglón tiene que decir de cuál salió, o la remisión le carga todo a
+      // la primera y después no cuadra contra la factura.
+      oc: oc || null, cotizacion_id: opCotizDeItem(op_current, x.it) || null,
       op_numero: op_current.numero,
       item: i + 1, descripcion: String(x.it.descripcion || '').trim(),
       // La desviación viaja hasta el papel que firma el cliente: es lo que se le
@@ -27400,7 +27784,7 @@ async function opGenerarPlan() {
       n++;
       return {
         cc: cc,
-        cotizacion: op.cotizacion_id || '',
+        cotizacion: opCotizDeItem(op, it) || '',
         cliente: op.cliente || '',
         fecha: new Date().toISOString().slice(0, 10),
         item: n,
@@ -27483,7 +27867,10 @@ function _opVia() {
   const H = [];
   H.push('<div class="op-via-t">Por dónde va</div>');
 
-  H.push(est(aqui > 0 ? 'op-hecho' : 'op-aqui', 'Creada desde ' + opEsc(o.cotizacion_id || '—'),
+  const _cotsLT = opCotizIds(o);
+  H.push(est(aqui > 0 ? 'op-hecho' : 'op-aqui',
+    'Creada desde ' + opEsc(o.cotizacion_id || '—')
+    + (_cotsLT.length > 1 ? ' + ' + opEsc(_cotsLT.slice(1).join(' + ')) : ''),
     opEsc(o.created_by || '') + ' · ' + opEsc((o.created_at || '').substring(0, 10))
     + ' · ' + its.length + ' ítems'));
 
@@ -28010,7 +28397,7 @@ function _opNotificarAprobacion(op) {
         action: 'notificar_op',
         tipo: 'pendiente_aprobacion',
         op: {
-          numero: op.numero, cliente: op.cliente, cotizacion: op.cotizacion_id,
+          numero: op.numero, cliente: op.cliente, cotizacion: opCotizIds(op).join(' + '),
           oc_cliente: op.oc_cliente || '', items: (op_currentItems || []).length,
           creada_por: op.created_by || ''
         }
@@ -28359,14 +28746,14 @@ async function _pcomAvisoOP(){
   if(!m) return;
   const numero = m[1];
   let op = null;
-  try{ op = ((await absFetch('ops?numero=eq.'+encodeURIComponent(numero)+'&select=numero,cliente,cotizacion_id,estado,oc_cliente&limit=1'))||[])[0]; }catch(_){ }
+  try{ op = ((await absFetch('ops?numero=eq.'+encodeURIComponent(numero)+'&select=numero,cliente,cotizacion_id,extra,estado,oc_cliente&limit=1'))||[])[0]; }catch(_){ }
   const d = document.createElement('div');
   d.id = 'pcom-aviso-op';
   d.style.cssText = 'background:rgba(139,92,246,.10);border-left:3px solid rgba(139,92,246,.75);'
     + 'border-radius:0 8px 8px 0;padding:11px 15px;margin:12px 0;font-size:12.5px;color:#cbd5e1;line-height:1.6;';
   d.innerHTML = '<b style="color:#c4b5fd;">Este plan es de la orden de pedido ' + numero + '</b>'
     + (op ? '<br>Cliente ' + String(op.cliente||'—').replace(/</g,'&lt;')
-            + ' · cotización ' + String(op.cotizacion_id||'—').replace(/</g,'&lt;')
+            + ' · cotización ' + String(opCotizIds(op).join(' + ')||'—').replace(/</g,'&lt;')
             + (op.oc_cliente ? ' · O.C. ' + String(op.oc_cliente).replace(/</g,'&lt;') : '')
             + '<br>Lo que quede aquí como costo definitivo es lo que gerencia verá al aprobar la OP.'
           : '<br>No se pudo leer la OP; el plan funciona igual.')
