@@ -93504,7 +93504,7 @@
     "cliente": "CIAM",
     "contacto": "Jeisson Yanes ",
     "correo": "",
-    "estado": "Adjudicada",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 5208700,
@@ -93569,34 +93569,12 @@
         "precioProveedor": 2132
       }
     ],
-    "fechaGuardado": "2026-09-09T14:57:18.361Z",
+    "fechaGuardado": "2026-09-07T15:23:56.911Z",
     "fechaEnvio": "2026-09-07T13:54:21.996Z",
-    "adjudicadaAt": "2026-09-09",
-    "valorAdjudicado": 5208700,
-    "itemsAdjudicados": [
-      {
-        "uid": "ff215441-551e-45ab-8e3f-e586194dc7cd",
-        "qty": 300
-      },
-      {
-        "uid": "42263073-b8ea-442b-971a-ce5e5cbbff86",
-        "qty": 50
-      },
-      {
-        "uid": "6cf5ab2d-7cbd-4023-8f42-d1f11bcf6f13",
-        "qty": 40
-      },
-      {
-        "uid": "55408df8-aa1f-4949-ba32-33166d5744f6",
-        "qty": 100
-      }
-    ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-09-09T14:57:07.842Z",
     "createdAt": "2026-09-07T13:54:21.996Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-09T14:57:18.361Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-09-07T15:23:56.911Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM2119",
@@ -99450,7 +99428,7 @@
         "desc": "VALVULA BOLA 1/2\" 800 LBS INOX ROSCAR",
         "marca": "SIO",
         "precio": 0,
-        "desvTec": "SE OFERTA X 1000",
+        "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
         "precioProveedor": 23700
@@ -99474,7 +99452,7 @@
         "udm": "UN",
         "uid": "90f5445b-96b5-4ea5-a1e1-450622ceb51b",
         "desc": "FLANGE 1\" INOX 316L 150 LBS",
-        "marca": "XF",
+        "marca": "",
         "precio": 0,
         "desvTec": "SLIPON",
         "proveedor": "CODIFER",
@@ -99602,8 +99580,8 @@
         "desc": "FLANGE 3\" INOX 316L 150 LBS SLIP-ON",
         "marca": "XF",
         "precio": 0,
-        "desvTec": "SS304",
-        "proveedor": "CODIFER",
+        "desvTec": "304",
+        "proveedor": "",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 103400
       },
@@ -99615,8 +99593,8 @@
         "desc": "BUSHING 1/2\" A 3/8\" INOX",
         "marca": "",
         "precio": 0,
-        "desvTec": "SE OFERTA X150",
-        "proveedor": "CODIFER",
+        "desvTec": "X150",
+        "proveedor": "",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 2650
       },
@@ -99642,7 +99620,7 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "CODIFER",
+        "proveedor": "",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": 18380
       },
@@ -99654,10 +99632,9 @@
         "desc": "FLANGE 2\" INOX 316L 150 LBS",
         "marca": "",
         "precio": 0,
-        "desvTec": "SLIPON",
+        "desvTec": "",
         "proveedor": "CODIFER",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 56370
+        "tiempoEntrega": "1-2 DIAS"
       },
       {
         "id": 19,
@@ -101737,10 +101714,10 @@
         "tiempoEntrega": "1-2 DIAS"
       }
     ],
-    "fechaGuardado": "2026-09-09T14:09:07.220Z",
+    "fechaGuardado": "2026-09-09T13:57:44.731Z",
     "createdAt": "2026-09-08T21:00:11.713Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-09T14:09:07.220Z",
+    "updatedAt": "2026-09-09T13:57:44.731Z",
     "updatedBy": "alexandra"
   },
   {
@@ -101778,7 +101755,7 @@
         "proveedor": "MUNDIAL",
         "precioProveedor": 2074,
         "obsProveedor": "",
-        "uid": "806e75e3-8ddd-4cab-b716-f24dd2251c4a"
+        "uid": "556324a7-89dc-4492-9de7-340a79caa31e"
       },
       {
         "id": 2,
@@ -101792,7 +101769,7 @@
         "proveedor": "FILLER",
         "precioProveedor": 3500,
         "obsProveedor": "",
-        "uid": "09052634-a724-44e6-b6fc-28f5c6b02830"
+        "uid": "0b6e0daa-585d-484e-bd35-d53b5b5e7328"
       },
       {
         "id": 3,
@@ -101806,7 +101783,7 @@
         "proveedor": "",
         "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "354af141-a271-488e-9d79-8b4905403073"
+        "uid": "b5f982c8-ec23-4b88-b7d4-6ad823986d49"
       },
       {
         "id": 4,
@@ -101820,7 +101797,7 @@
         "proveedor": "COLIMPORTADOS",
         "precioProveedor": 6230,
         "obsProveedor": "",
-        "uid": "e1397913-4124-4064-9a28-6d9b6cb1947f"
+        "uid": "696ca30c-7a3f-42d2-9fc6-3004a7770917"
       },
       {
         "id": 5,
@@ -101834,7 +101811,7 @@
         "proveedor": "COLIMPORTADOS",
         "precioProveedor": 4130,
         "obsProveedor": "",
-        "uid": "a4004bf2-ff43-4c8f-a2b5-540b73851c38"
+        "uid": "ce140f8e-ca19-45b2-b05e-acbc0affe12f"
       },
       {
         "id": 6,
@@ -101848,7 +101825,7 @@
         "proveedor": "COLIMPORTADOS",
         "precioProveedor": 5360,
         "obsProveedor": "",
-        "uid": "e43bf66c-2c44-48fd-9ad3-8a83ee36835f"
+        "uid": "76d22af8-252a-44f7-9026-e2965969c7f1"
       },
       {
         "id": 7,
@@ -101862,7 +101839,7 @@
         "proveedor": "",
         "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "06e53fa2-4c2c-4731-ac68-51c6d6085f71"
+        "uid": "b4dc98be-32e1-4c85-861c-81bc36f179c4"
       },
       {
         "id": 8,
@@ -101876,7 +101853,7 @@
         "proveedor": "FILLER",
         "precioProveedor": 578000,
         "obsProveedor": "",
-        "uid": "280f41a9-bc5e-4ce0-b4b5-c9982f8f39ac"
+        "uid": "52b397d4-78d1-4e2f-824a-1b69e59297ba"
       },
       {
         "id": 9,
@@ -101890,7 +101867,7 @@
         "proveedor": "",
         "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "38fd51ca-7040-497a-a4ab-3f8411658fa7"
+        "uid": "e992d55f-eedb-49df-9ac6-04d15f34a035"
       },
       {
         "id": 10,
@@ -101904,7 +101881,7 @@
         "proveedor": "",
         "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "aea9ca52-93de-4da3-aa2e-a93314840eae"
+        "uid": "b1a9213f-c6f4-415f-85f4-dc2c7800a513"
       },
       {
         "id": 11,
@@ -101918,7 +101895,7 @@
         "proveedor": "CODIFER",
         "precioProveedor": 5140,
         "obsProveedor": "",
-        "uid": "1b4078fc-7a7e-4f7e-9c07-1477a2fecb7a"
+        "uid": "1f2bca3c-7dba-4c32-a9b3-5eea54fc6565"
       },
       {
         "id": 12,
@@ -101932,7 +101909,7 @@
         "proveedor": "",
         "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "dfff6e31-6295-4f77-b502-cb857ad8154c"
+        "uid": "4d96ec86-bd0b-459f-b7bd-c0f88a24236c"
       },
       {
         "id": 13,
@@ -101946,7 +101923,7 @@
         "proveedor": "",
         "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "4743af75-fe9b-409e-a071-aabd04564fa3"
+        "uid": "43004c63-61f3-4e06-a708-6c961c7071c3"
       },
       {
         "id": 14,
@@ -101960,7 +101937,7 @@
         "proveedor": "",
         "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "373c3ac4-34e7-488f-a9bc-d42be908a699"
+        "uid": "364e5763-80fb-4c79-8b81-efcdc24fc7ad"
       },
       {
         "id": 15,
@@ -101974,7 +101951,7 @@
         "proveedor": "",
         "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "71183e47-e308-4b04-8547-360a6389bf9c"
+        "uid": "0c4526de-80e0-4a82-a8d7-a1c25e42ec1c"
       },
       {
         "id": 16,
@@ -101988,7 +101965,7 @@
         "proveedor": "CODIFER",
         "precioProveedor": 17649,
         "obsProveedor": "",
-        "uid": "7cd05f23-e451-4a68-a2ac-878954b3e75c"
+        "uid": "92b0e00e-0ff6-4779-aea7-6648d0a981ef"
       },
       {
         "id": 17,
@@ -102002,7 +101979,7 @@
         "proveedor": "instrugases",
         "precioProveedor": 3500,
         "obsProveedor": "",
-        "uid": "6bb7c23b-8a99-4572-80a0-93e0c597d786"
+        "uid": "29ae4140-749d-4a2f-85dd-7068f5b7de9b"
       },
       {
         "id": 18,
@@ -102016,7 +101993,7 @@
         "proveedor": "INSTRUGASES",
         "precioProveedor": 2500,
         "obsProveedor": "",
-        "uid": "d9ebc4a1-5499-486d-a8b5-ac6673532503"
+        "uid": "34b3fd82-436f-4eb1-9298-bef90ce26a2d"
       },
       {
         "id": 19,
@@ -102030,7 +102007,7 @@
         "proveedor": "FILLER",
         "precioProveedor": 18000,
         "obsProveedor": "",
-        "uid": "e4ae0bcb-1a1b-46be-8ff7-1cf21fab416c"
+        "uid": "6e251b49-612c-4c13-9eea-d3fc799f81d8"
       },
       {
         "id": 20,
@@ -102044,7 +102021,7 @@
         "proveedor": "INSTRUGASES",
         "precioProveedor": 3000,
         "obsProveedor": "",
-        "uid": "c88e430f-4518-4de3-870f-3659f0964d39"
+        "uid": "eb0e341f-dfc1-4488-b21a-ea0189769a10"
       },
       {
         "id": 21,
@@ -102058,7 +102035,7 @@
         "proveedor": "CODIFER",
         "precioProveedor": 99180,
         "obsProveedor": "",
-        "uid": "f3705243-e9da-4560-b161-6aac2944dca1"
+        "uid": "1463997d-41de-4ff8-a86a-28f9ac875ba1"
       },
       {
         "id": 22,
@@ -102072,7 +102049,7 @@
         "proveedor": "",
         "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "08b78ca3-2f14-49ec-96f8-5a0af4364167"
+        "uid": "473f47be-29b4-435d-9ad7-33a60489ec02"
       },
       {
         "id": 23,
@@ -102086,7 +102063,7 @@
         "proveedor": "",
         "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "9a68f9d4-7266-4ab5-bcc2-8abdbfa19b1f"
+        "uid": "820edb92-134b-4178-9a86-4ccc5f1995f1"
       },
       {
         "id": 24,
@@ -102100,7 +102077,7 @@
         "proveedor": "CODIFER",
         "precioProveedor": 697060,
         "obsProveedor": "",
-        "uid": "ae992ef5-4606-4ad8-a88b-530358e12e71"
+        "uid": "72ebd0e3-4a56-4ea7-afa0-a5dd7e5ca297"
       },
       {
         "id": 25,
@@ -102114,7 +102091,7 @@
         "proveedor": "",
         "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "a25de1ac-c5c0-4df5-ba1d-fdc44003e04e"
+        "uid": "71c7ebcb-ae27-473a-b687-940fb22fd213"
       },
       {
         "id": 26,
@@ -102128,7 +102105,7 @@
         "proveedor": "",
         "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "2d952a84-cf0f-42d8-8c85-6f9989895c8b"
+        "uid": "93afe0ad-5399-4d03-911b-1754f1a27296"
       },
       {
         "id": 27,
@@ -102142,7 +102119,7 @@
         "proveedor": "TERMOVAL",
         "precioProveedor": 35000,
         "obsProveedor": "",
-        "uid": "5de0d2f0-3039-408c-bc9e-f2c9f0603c19"
+        "uid": "0094c700-9cc2-49b5-a3b3-889f5f6723c1"
       },
       {
         "id": 28,
@@ -102156,13 +102133,13 @@
         "proveedor": "CODIFER",
         "precioProveedor": 4950,
         "obsProveedor": "",
-        "uid": "771cb5a6-ce4d-4f90-b9b3-8ed1445d2299"
+        "uid": "a67319fb-6239-4fb6-8812-27abb988e37a"
       }
     ],
-    "fechaGuardado": "2026-09-09T14:44:34.669Z",
+    "fechaGuardado": "2026-09-09T14:57:41.275Z",
     "createdAt": "2026-09-08T22:18:39.113Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-09T14:44:34.669Z",
+    "updatedAt": "2026-09-09T14:57:41.275Z",
     "updatedBy": "sandra"
   },
   {
