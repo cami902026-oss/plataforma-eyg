@@ -21662,12 +21662,17 @@ function remiRenderItems(){
   // v240 — la columna "Pedido" SOLO aparece si esta remisión es una entrega
   // parcial. En una remisión normal la tabla queda idéntica a la de siempre.
   const parc=!!remi_current.remisionBase;
+  // El aviso «ya salió / pendiente» vale para toda familia de entregas, venga de
+  // una OP o marcada a mano. La columna «Pedido» NO: cuando hay OP, el pedido lo
+  // sabe la orden y escribirlo otra vez solo invita a que se contradigan.
+  const parcAviso = parc || !!(remi_current._fam && remi_current._fam.entregas
+                               && remi_current._fam.entregas.length > 1);
   const thP=document.getElementById('remi-th-pedido');
   if(thP) thP.style.display=parc?'':'none';
   // El botón de definitiva solo tiene sentido si ya es una entrega parcial.
   const bDef=document.getElementById('remi-btn-definitiva');
   if(bDef){
-    bDef.style.display=parc?'':'none';
+    bDef.style.display=parcAviso?'':'none';
     bDef.textContent=remi_current.esDefinitiva?'🏁 Definitiva ✓':'🏁 Entrega definitiva';
   }
   const bPar=document.getElementById('remi-btn-parcial');
@@ -21678,7 +21683,7 @@ function remiRenderItems(){
   // en 0 no se queda muda, dice si ya salió antes o si todavía se debe.
   const _fam=remi_current._fam, _yaS={};
   const _nrm=t=>String(t||'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
-  if(parc && _fam && Array.isArray(_fam.filas)){
+  if(parcAviso && _fam && Array.isArray(_fam.filas)){
     _fam.filas.forEach(f=>{
       if(String(f.remision)===String(remi_current.remision)) return;
       if(!((+f.cantidad||0)>0)) return;
@@ -21687,7 +21692,7 @@ function remiRenderItems(){
     });
   }
   const _tag=it=>{
-    if(!parc || parseFloat(it.cantidad)>0) return '';
+    if(!parcAviso || parseFloat(it.cantidad)>0) return '';
     const p=_yaS[_nrm(it.descripcion)];
     return p
       ? '<div style="font-size:9.5px;font-weight:700;color:#94a3b8;margin-top:3px;letter-spacing:.03em">✔ ENVIADO EN LA REMISIÓN '+_remiEsc(p.join(' · '))+'</div>'
@@ -21746,7 +21751,7 @@ function remiParcialAbrir(){
 // Marca la remisión abierta como la entrega DEFINITIVA. Mismo criterio que en la
 // OP: si queda saldo se puede cerrar, pero exige motivo escrito.
 async function remiDefinitiva(){
-  if(!remi_current || !remi_current.remisionBase){
+  if(!remi_current || !(remi_current.remisionBase || remi_current.opNumero)){
     showToast('Primero marca esta remisión como entrega parcial de una orden','error'); return;
   }
   const c=remi_current;
@@ -21832,8 +21837,8 @@ async function remiGuardar(){
       created_by: currentUser?.name||'—',
       // v240 — solo si es entrega parcial. Una remisión normal se guarda con las
       // mismas columnas de siempre: estas ni aparecen en el cuerpo.
-      ...( c.remisionBase ? {
-        remision_base: c.remisionBase, entrega_n: c.entregaN || 1,
+      ...( (c.remisionBase || c.entregaN || c.esDefinitiva) ? {
+        remision_base: c.remisionBase || null, entrega_n: c.entregaN || null,
         es_definitiva: !!c.esDefinitiva,
         motivo_cierre: (c.motivoCierre||'').trim() || null,
         cantidad_pedida: (it.pedido===''||it.pedido==null)?null:parseFloat(it.pedido)
@@ -21894,11 +21899,12 @@ async function remiGuardar(){
     // 7-sep-2026 — «la marco como parcial y no queda guardada». Si la marca no
     // vuelve del servidor, se dice AQUÍ y con nombre propio, en vez de dejar a
     // la persona creyendo que quedó. Solo se comprueba si había algo que marcar.
-    if(c.remisionBase){
+    if(c.remisionBase || c.esDefinitiva){
       try{
         const vf = await absFetch('remisiones?remision=eq.'+encodeURIComponent(num)
-          + '&select=remision_base,entrega_n&limit=1');
-        const ok = Array.isArray(vf) && vf.length && vf[0].remision_base;
+          + '&select=remision_base,entrega_n,es_definitiva&limit=1');
+        const ok = Array.isArray(vf) && vf.length
+          && (c.remisionBase ? vf[0].remision_base : vf[0].es_definitiva);
         if(!ok){
           showToast('⚠️ La remisión '+num+' se guardó, pero la marca de ENTREGA PARCIAL '
             + 'no quedó en el servidor. Avisa a sistemas antes de imprimir el papel.',
@@ -22083,7 +22089,10 @@ async function remiPDF(marca){
   const M=MEMBRETES[marca==='asset'?'asset':'eyg'];
   if(!remi_current) return; remiSyncHeader(); const c=remi_current;
   // Solo si es parte de una familia de entregas. Lo demás sale igual que siempre.
-  const _cier = (c.esDefinitiva || c.entregaN>1 || c.remisionBase) ? await _remiCierreDatos(c) : null;
+  // 9-sep-2026 — también cuando viene de una OP: ahí la familia la sabe la orden
+  // (todas sus remisiones comparten `op_numero`) y nadie tiene que marcar nada.
+  const _cier = (c.esDefinitiva || c.entregaN>1 || c.remisionBase || c.opNumero)
+    ? await _remiCierreDatos(c) : null;
   // 🔑 7-sep-2026 — EL RENGLÓN EN CERO SE CAMBIA POR UNA PALABRA.
   // Así se despacha aquí desde siempre: la remisión parcial lleva la orden
   // COMPLETA y lo que no va ese día se escribe en 0. El cliente firmaba ceros.
@@ -22093,7 +22102,10 @@ async function remiPDF(marca){
   //     · el número            → sale hoy
   //     · ENVIADO EN LA REM. X → ya salió en una entrega anterior
   //     · PENDIENTE DE ENTREGA → todavía se debe
-  const _parc = !!(c.remisionBase || c.entregaN > 1 || c.esDefinitiva);
+  // Parcial = la orden se entregó en más de un viaje. Si la familia tiene una sola
+  // entrega, el papel sale EXACTAMENTE como el de siempre.
+  const _parc = !!(c.remisionBase || c.entregaN > 1 || c.esDefinitiva
+                   || (_cier && _cier.entregas && _cier.entregas.length > 1));
   const _nrm = t => String(t||'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
   const _yaSalio = {};                     // descripción → remisión que la llevó
   if(_parc && _cier && Array.isArray(_cier.filas)){
