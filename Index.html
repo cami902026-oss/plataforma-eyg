@@ -25701,7 +25701,16 @@ async function opLigarConfirmar() {
     });
     sinRecibir.forEach(p => {
       // Manda la cantidad de la REMISIÓN: es el papel que firmó el cliente.
-      const q = Math.abs(parseFloat(p.f.cantidad) || 0) || Math.abs(parseFloat(p.it.cantidad) || 0);
+      // 🔑 9-sep-2026 — UN CERO ES UN CERO, NO UN «NO SÉ».
+      // Esto era `remisión || OP`, y el 0 se caía al `||` y tomaba la cantidad de
+      // la ORDEN. Así se despacha aquí desde siempre: la remisión parcial lleva la
+      // orden completa y lo que no va ese día se escribe en 0 (26297 lleva todo
+      // menos los cables; 26297-1 lleva solo los cables). Con el `||`, ligar la
+      // primera movía los 100 m de cable que iban en CERO, y ligar la segunda los
+      // movía otra vez: inventario contado dos veces. La OP solo se usa cuando la
+      // línea viene VACÍA de verdad (sin número), que es otra cosa.
+      const _qf = parseFloat(p.f.cantidad);
+      const q = isNaN(_qf) ? Math.abs(parseFloat(p.it.cantidad) || 0) : Math.abs(_qf);
       if (!q) return;
       const cod = String(p.it.producto_codigo || '').trim();
       let prod = cod ? porCodigo[cod] : null;
@@ -25789,9 +25798,14 @@ async function opLigarConfirmar() {
         const prod = stock[String(p.it.producto_codigo).trim()];
         // Manda la cantidad de la REMISIÓN: es el papel que firmó el cliente y
         // lo que de verdad salió. Si difiere de la OP se avisa, no se corrige solo.
-        const qRem = Math.abs(parseFloat(p.f.cantidad) || 0);
+        // 9-sep-2026 — mismo cero que arriba: si el papel dice 0, de esa línea no
+        // salió nada y no hay nada que descontar. No es «sin descontar», es que
+        // esa entrega no la llevaba.
+        const _qf = parseFloat(p.f.cantidad);
+        const qRem = isNaN(_qf) ? null : Math.abs(_qf);
         const qOp = Math.abs(parseFloat(p.it.cantidad) || 0);
-        const q = qRem || qOp;
+        if (qRem === 0) return;
+        const q = (qRem === null) ? qOp : qRem;
         if (!prod || !q) { sinDescontar.push(String(p.it.descripcion || '').substring(0, 46)); return; }
         if (qRem && qOp && qRem !== qOp) {
           difCantidad.push(String(p.it.descripcion || '').substring(0, 40)
