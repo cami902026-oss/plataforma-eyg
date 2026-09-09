@@ -11831,7 +11831,7 @@ async function cotizCrearRemision(id){
     try {
       // Asegurar que Remisiones tenga sus datos (para el consecutivo correcto)
       try { if (typeof remiCargar === 'function' && !(remi_rows||[]).length) await remiCargar(); } catch(_){}
-      remiNueva();
+      await remiNueva();
       if (!remi_current) return;   // sin permiso de remisiones: remiNueva ya avisó
       await remiCotizAbrir();
       const s = document.getElementById('remi-cotiz-search'); if (s) s.value = String(id);
@@ -21533,11 +21533,44 @@ function remiVolver(){
 function remiNextNum(){
   // Solo la parte ANTES del guion: "26135-1" cuenta como 26135 (no 261351)
   let mx=0; remi_rows.forEach(r=>{ const n=parseInt(String(r.remision).split('-')[0].replace(/\D/g,'')); if(!isNaN(n)&&n>mx) mx=n; });
-  return mx>0 ? String(mx+1) : '26150';
+  return mx>0 ? String(mx+1) : '';
 }
-function remiNueva(){
+
+// 🔑 8-sep-2026 — EL CONSECUTIVO SE LE PREGUNTA AL SERVIDOR, NO A LA MEMORIA.
+// Antes esto salía de `remi_rows`, y cuando esa lista venía vacía —porque la
+// carga todavía no terminaba, o falló— la función devolvía **'26150' quemado en
+// el código**. Ese número YA EXISTE (EIKOS, 14-jul, Lina): la remisión nueva
+// nacía pisando una vieja, y al guardar salía el aviso de «ya existe» que hace
+// perder el trabajo. Pasó el 8-sep armando la remisión de la OP-2026-0060.
+// Ahora: se lee del servidor, la memoria solo sirve de piso, y si no se puede
+// saber NO se inventa un número — se deja en blanco y se avisa.
+async function _remiNumSiguiente(){
+  let mx=0;
+  const tope = r => { const n=parseInt(String((r&&r.remision)||'').split('-')[0].replace(/\D/g,''),10);
+                      if(!isNaN(n) && n>mx) mx=n; };
+  (remi_rows||[]).forEach(tope);                       // lo que ya se ve: piso mínimo
+  const usados = new Set((remi_rows||[]).map(r=>String(r.remision)));
+  try{
+    let desde=0;
+    for(let v=0; v<12; v++){
+      const b = (await absFetch('remisiones?select=remision&order=id.asc&limit=1000&offset='+desde)) || [];
+      b.forEach(tope); b.forEach(r=>usados.add(String(r.remision)));
+      if(b.length<1000) break;
+      desde += 1000;
+    }
+  }catch(_){ }
+  if(!mx) return '';                                   // sin dato no se adivina
+  let n=mx+1;
+  while(usados.has(String(n)) && n<mx+200) n++;         // jamás proponer uno ocupado
+  return String(n);
+}
+
+async function remiNueva(){
   if(!remiCanUse()) return showToast('No tienes permiso para crear remisiones','error');
-  remi_current={ nueva:true, remision:remiNextNum(), remisionOrig:null, fecha:new Date().toISOString().split('T')[0],
+  const _num = await _remiNumSiguiente();
+  if(!_num) showToast('⚠️ No pude leer el consecutivo en el servidor. Escribe tú el número de la '
+    + 'remisión antes de guardar — y revisa que no exista ya.', 'error', { durationMs: 16000 });
+  remi_current={ nueva:true, remision:_num, remisionOrig:null, fecha:new Date().toISOString().split('T')[0],
     cliente:'', lugar:'', oc:'', contiene:'', observaciones:'', cotizacionId:'',
     items:[{cantidad:'',descripcion:'',marca:'',colada:'',desviacion:''}] };
   remiAbrirEditor('Nueva remisión');
@@ -24962,9 +24995,10 @@ async function opRecibirAbrir() {
   // Siguiente número de remisión, por si algo sale de una. Se puede cambiar.
   let sug = '';
   try {
-    const ult = (await absFetch('remisiones?select=remision&order=remision.desc&limit=30')) || [];
-    const nums = ult.map(r => parseInt(String(r.remision).replace(/\D/g, ''), 10)).filter(n => !isNaN(n));
-    if (nums.length) sug = String(Math.max.apply(null, nums) + 1);
+    // 8-sep-2026 — mismo consecutivo que Remisiones, y por el mismo camino.
+    // Antes se miraban 30 filas ordenadas COMO TEXTO: 'PRUEBA01' se cuela de
+    // primera y '26135-1' cuenta como 261351. Ahora lo calcula una sola función.
+    sug = await _remiNumSiguiente();
   } catch (_) { }
 
   op_current._recep = props;
@@ -26180,9 +26214,10 @@ async function opDespacharAbrir() {
   // Siguiente número de remisión, como referencia. Se puede cambiar.
   let sug = '';
   try {
-    const ult = (await absFetch('remisiones?select=remision&order=remision.desc&limit=30')) || [];
-    const nums = ult.map(r => parseInt(String(r.remision).replace(/\D/g, ''), 10)).filter(n => !isNaN(n));
-    if (nums.length) sug = String(Math.max.apply(null, nums) + 1);
+    // 8-sep-2026 — mismo consecutivo que Remisiones, y por el mismo camino.
+    // Antes se miraban 30 filas ordenadas COMO TEXTO: 'PRUEBA01' se cuela de
+    // primera y '26135-1' cuenta como 261351. Ahora lo calcula una sola función.
+    sug = await _remiNumSiguiente();
   } catch (_) { }
 
   // ¿Esta OP ya tuvo entregas? Entonces esta cuelga del mismo tronco.
