@@ -22060,13 +22060,23 @@ async function _remiCierreDatos(c){
   const usados=new Set();
   const lineas=(pedido.length?pedido:[]).map(p=>{
     const np=norm(p.descripcion);
+    const meta=+p.cantidad||0;                 // cuánto pidió ESTA línea
     const porE={}; let total=0;
     entregas.forEach(e=>{
       let s=0;
       porNum[e.remision].forEach((f,idx)=>{
         const k=e.remision+'#'+idx;
         if(usados.has(k)) return;
-        if(norm(f.descripcion)===np){ s+=(+f.cantidad||0); usados.add(k); }
+        if(norm(f.descripcion)!==np) return;
+        // 🔑 9-sep-2026 — NO TRAGARSE MÁS DE LO QUE ESTA LÍNEA PIDIÓ.
+        // La misma descripción puede venir dos veces en una orden: LM2103 trae
+        // el «NIPLE 1/2" X 200- SCH80» dos veces, x1 y x2. Antes la primera se
+        // quedaba con las DOS líneas de la remisión (1+2=3), la segunda se
+        // quedaba en cero, y el papel decía que faltaban 2 unidades que en
+        // realidad ya se habían entregado. Se toma solo hasta cubrir lo pedido
+        // y el resto queda libre para la línea gemela.
+        if(meta>0 && (total+s)>=meta) return;
+        s+=(+f.cantidad||0); usados.add(k);
       });
       if(s) porE[e.remision]=s;
       total+=s;
