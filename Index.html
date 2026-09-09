@@ -12866,6 +12866,110 @@ function cotizAddAlt(i) {
   cotizRender();
   showToast('Alternativa agregada — su valor NO suma al total (el cliente elige una opción)', 'success');
 }
+// ═══ INSERTAR UNA FILA EN LA MITAD (9-sep-2026) ═════════════════════════════
+// El número que se ve (1, 2, 3…) NO está guardado en ningún lado: es la POSICIÓN
+// en la lista, y se reescribe en cada guardado. Insertar es un splice y la
+// renumeración sale sola. Lo que no se puede dejar corriendo es lo que apunta a
+// ese número desde afuera: `remisiones.item_cot` guarda el número TAL COMO SALE
+// EN EL PDF que vio el cliente. Ya mordió una vez —la OP-2026-0034 quedó corrida
+// un puesto y no se podía cerrar—, así que aquí se avisa y, al guardar, se
+// corrigen las remisiones usando el uid como puente: el uid nunca cambia, el
+// número sí. La adjudicación y los ítems de las OP van por uid: son inmunes.
+let _cotizNumAntes = null;          // { id, mapa: uid → n° antes de mover nada }
+
+function _cotizMapaNums(items) {
+  const m = {}; let nums = [];
+  try { nums = _cotizNums(items || []); } catch (_) { nums = []; }
+  (items || []).forEach((it, i) => {
+    if (it && it.uid) m[it.uid] = (nums[i] != null ? String(nums[i]) : String(i + 1));
+  });
+  return m;
+}
+
+async function cotizInsertRow(i) {
+  const base = cotizItems[i]; if (!base) return;
+  // La numeración ORIGINAL se guarda UNA sola vez: si se insertan varias filas
+  // antes de guardar, todas se comparan contra el mismo punto de partida.
+  if (!_cotizNumAntes) _cotizNumAntes = { id: cotizEditId || null, mapa: _cotizMapaNums(cotizItems) };
+
+  // ¿Quién depende de la numeración de esta cotización?
+  let rem = [];
+  if (cotizEditId) {
+    try {
+      rem = (await absFetch('remisiones?cotizacion_id=eq.' + encodeURIComponent(cotizEditId)
+        + '&item_cot=not.is.null&select=remision,item_cot&limit=2000')) || [];
+    } catch (_) { }
+  }
+  const nRem = rem.length;
+  const numsRem = Array.from(new Set(rem.map(r => String(r.remision))));
+  const est = (document.getElementById('cotiz-estado') || {}).value || '';
+  const salio = ['Enviada', 'Adjudicada', 'Facturada', 'Revisión gerencia', 'Aprobada'].includes(est);
+  const _n = _cotizNums(cotizItems);
+  if (salio || nRem) {
+    if (!confirm('Vas a insertar una fila debajo del ítem ' + _n[i] + '.\n\n'
+      + 'Todo lo que está más abajo se corre un número.'
+      + (salio ? ('\n\n⚠️ Esta cotización está ' + est.toUpperCase() + ': el cliente ya tiene un PDF '
+                 + 'con la numeración vieja. Si su orden de compra menciona un n° de ítem, deja de coincidir.') : '')
+      + (nRem ? ('\n\n📄 ' + nRem + ' línea(s) de remisión apuntan a estos números ('
+                 + numsRem.slice(0, 6).join(', ') + (numsRem.length > 6 ? '…' : '')
+                 + ').\nAl GUARDAR la cotización se corrigen solas, para que ninguna quede apuntando mal.') : '')
+      + '\n\n¿Insertar la fila?')) return;
+  }
+
+  let maxId = 0; cotizItems.forEach(x => { const n = Number(x.id) || 0; if (n > maxId) maxId = n; });
+  const nuevo = { id: maxId + 1, desc: '', udm: base.udm || 'EA', qty: 1, precio: 0,
+    tiempoEntrega: base.tiempoEntrega || '1-2 DIAS', desvTec: '', marca: '',
+    proveedor: '', precioProveedor: 0, obsProveedor: '' };
+  _cotizItemUid(nuevo);
+  // Debajo del ítem Y de sus alternativas: partir un grupo 3 / 3.1 / 3.2 por la
+  // mitad dejaría la alternativa colgando del ítem equivocado.
+  let pos = i + 1;
+  if (base.uid && !_cotizEsAlt(base)) {
+    while (pos < cotizItems.length && cotizItems[pos] && cotizItems[pos].altDe === base.uid) pos++;
+  }
+  cotizItems.splice(pos, 0, nuevo);
+  cotizRender();
+  try { cotizUpdateTotals(); } catch (_) { }
+  showToast('Fila insertada. Llénala y GUARDA'
+    + (nRem ? ' — al guardar se corrigen las ' + nRem + ' línea(s) de remisión que apuntaban a los números viejos.' : '.'),
+    'success', { durationMs: nRem ? 12000 : 6000 });
+}
+
+// Después de guardar: correr el «Ítem cot.» de las remisiones lo mismo que se
+// corrió la cotización. Se hace por uid, nunca por texto.
+async function _cotizArreglarItemCot(cotizId) {
+  const pend = _cotizNumAntes; _cotizNumAntes = null;
+  if (!pend || !cotizId) return;
+  if (pend.id && String(pend.id) !== String(cotizId)) return;    // se cambió de cotización
+  const antes = pend.mapa || {}, despues = _cotizMapaNums(cotizItems);
+  const cambio = {};
+  Object.keys(antes).forEach(uid => {
+    const a = antes[uid], b = despues[uid];
+    if (b != null && String(a) !== String(b)) cambio[String(a)] = String(b);
+  });
+  if (!Object.keys(cambio).length) return;
+  let filas = [];
+  try {
+    filas = (await absFetch('remisiones?cotizacion_id=eq.' + encodeURIComponent(cotizId)
+      + '&item_cot=not.is.null&select=id,remision,item_cot&limit=2000')) || [];
+  } catch (_) { return; }
+  const tocar = filas.filter(f => cambio[String(f.item_cot)] != null);
+  if (!tocar.length) return;
+  let ok = 0, mal = 0;
+  for (const f of tocar) {
+    try {
+      await absFetch('remisiones?id=eq.' + f.id, { method: 'PATCH',
+        headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ item_cot: cambio[String(f.item_cot)] }) });
+      ok++;
+    } catch (_) { mal++; }
+  }
+  showToast(mal
+    ? ('⚠️ Se corrigieron ' + ok + ' línea(s) de remisión, pero ' + mal + ' fallaron. Avisa a sistemas.')
+    : ('📄 Se corrigió el N° de ítem en ' + ok + ' línea(s) de remisión, para que sigan apuntando al material correcto.'),
+    mal ? 'error' : 'info', { durationMs: 12000 });
+}
+
 // Borrar con cuidado: si el ítem principal tiene alternativas, se van con él (confirmando)
 function cotizDelItem(i) {
   const it = cotizItems[i]; if (!it) return;
@@ -12920,7 +13024,7 @@ function cotizRender() {
       <td><textarea rows="1" oninput="cotizItems[${i}].obsProveedor=this.value;_cotizAutoGrow(this)" style="min-width:150px" title="Otras opciones de precio. Uso interno: no sale en el PDF del cliente.">${(it.obsProveedor||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea></td>
       <td class="cotiz-col-factor"><input type="number" id="cotiz-factor-${i}" value="${factorVal}" step="0.01" min="0.3" max="0.99" placeholder="0.5–0.9" oninput="_cotizSetFactor(${i},this.value)" style="width:58px" title="V. Unitario = P. Proveedor ÷ Factor"></td>
       <td id="cotiz-margen-${i}" class="cotiz-col-margen" style="text-align:center;font-weight:700;font-size:11px;color:${margenColor};">${margen !== null ? margen+'%' : '—'}</td>
-      <td style="white-space:nowrap"><button onclick="cotizDelItem(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px" title="Borrar ítem">×</button>${esAlt?'':`<br><button type="button" class="cotiz-alt-btn" onclick="cotizAddAlt(${i})" title="Agregar una ALTERNATIVA de este ítem (${_nums[i]}.1) — otra opción que NO suma al total">⤵ Alt</button>`}</td>
+      <td style="white-space:nowrap"><button onclick="cotizDelItem(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:0 4px" title="Borrar ítem">×</button><button type="button" onclick="cotizInsertRow(${i})" style="background:none;border:none;color:#7eb3ff;cursor:pointer;font-size:14px;padding:0 4px" title="Insertar una fila NUEVA justo debajo de este ítem. Lo de abajo se renumera solo.">➕</button>${esAlt?'':`<br><button type="button" class="cotiz-alt-btn" onclick="cotizAddAlt(${i})" title="Agregar una ALTERNATIVA de este ítem (${_nums[i]}.1) — otra opción que NO suma al total">⤵ Alt</button>`}</td>
     </tr>`;
   }).join('');
   // Ajustar el alto de cada descripción para que se vea el renglón completo
@@ -13748,6 +13852,9 @@ async function _cotizGuardarBDCore() {
   try { _cnuFacturaDesdeCotiz(record); } catch(_){}   // ☁️ F3: ofrece crear la factura en Cartera
   window._cotizAdjGuardado = null;   // ya quedó en el registro
   cotizEditId = id;
+  // Si se insertaron filas en la mitad, correr también el «Ítem cot.» de las
+  // remisiones. Va DESPUÉS de guardar: si el guardado no ocurre, nada se movió.
+  try { _cotizArreglarItemCot(id); } catch (_) { }
   // Si hay solicitud vinculada: en_cotizacion mientras se trabaja, enviada cuando se envía,
   // y se le ASIGNA el número de cotización (para el "policía" que evita cotizar 2 veces).
   const solVinc = (document.getElementById('cotiz-sol-vincular')||{}).value || '';
