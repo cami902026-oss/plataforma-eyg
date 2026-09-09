@@ -26023,10 +26023,16 @@ async function opLigarConfirmar() {
         const yaEsta = String(p.it.remision || '').trim() === String(num).trim();
         const yaTot = yaEsta ? Math.max(+p.it.despachada || 0, sale)
                              : (+p.it.despachada || 0) + sale;
-        const body = { remision: num, despachada: yaTot, updated_by: yo };
+        const body = { despachada: yaTot, updated_by: yo };
+        // 9-sep-2026 — UNA LÍNEA EN CERO NO SE ADUEÑA DEL ÍTEM.
+        // Antes se escribía `remision: num` siempre. Al ligar la 26297-1 de la
+        // OP-2026-0054 —que lleva todo en cero menos los cables— los ítems 1 y 2,
+        // entregados en la 26297, quedaron marcados como salidos en la 26297-1.
+        // El número de remisión lo pone la entrega que de verdad llevó material.
+        if (sale > 0 || !String(p.it.remision || '').trim()) body.remision = num;
         if (pedida <= 0 || yaTot >= pedida - 0.0001) body.estado = 'despachado';
         const col = String(p.f.colada || '').trim();
-        if (col && !String(p.it.colada || '').trim()) body.colada = col;
+        if (sale > 0 && col && !String(p.it.colada || '').trim()) body.colada = col;
         await _opRecepPatchItem(p.it.id, body);
         Object.assign(p.it, body);
       } catch (e) { fallos.push(p.it.descripcion + ' (' + (e && e.message || e) + ')'); }
