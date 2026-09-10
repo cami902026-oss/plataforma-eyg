@@ -83605,7 +83605,7 @@
     "cliente": "SAR ENERGY SAS",
     "contacto": "Oscar Sanchez",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 5860275,
@@ -83765,13 +83765,42 @@
         "precioProveedor": 43000
       }
     ],
-    "fechaGuardado": "2026-08-28T22:24:37.016Z",
+    "fechaGuardado": "2026-09-10T17:44:41.008Z",
     "fechaEnvio": "2026-08-28T22:23:57.708Z",
+    "adjudicadaAt": "2026-09-10",
+    "valorAdjudicado": 1424403,
+    "itemsAdjudicados": [
+      {
+        "uid": "d43b6319-98f9-4720-8827-9e0fe629615d",
+        "qty": 100
+      },
+      {
+        "uid": "28f56a0a-7819-42c4-bd5f-be757ae6171a",
+        "qty": 4
+      },
+      {
+        "uid": "de0ee827-af9b-4722-b4be-4272fc4d0ef2",
+        "qty": 6
+      },
+      {
+        "uid": "0d0e71e5-1433-4699-8362-29253d829fc1",
+        "qty": 4
+      },
+      {
+        "uid": "c7aadad5-88cb-483a-b1e6-2044d51850a6",
+        "qty": 2
+      },
+      {
+        "uid": "1b4ade21-79ff-4ffc-9011-7a01f057d369",
+        "qty": 1
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-09-10T17:44:40.993Z",
     "createdAt": "2026-08-28T14:23:29.795Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-07T12:37:47.170Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-09-07T12:37:47.170Z"
+    "updatedAt": "2026-09-10T17:44:41.008Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2075",
