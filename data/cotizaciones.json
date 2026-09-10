@@ -96482,60 +96482,6 @@
     "updatedBy": "sandra"
   },
   {
-    "id": "LM1002",
-    "fecha": "2026-09-07",
-    "fechaVenc": "2026-09-15",
-    "cliente": "CIAM",
-    "contacto": "DALADIER",
-    "correo": "",
-    "estado": "Facturada",
-    "factura": "622",
-    "iva": 19,
-    "subtotal": 320000,
-    "ivaVal": 60800,
-    "total": 380800,
-    "formaPago": "45 DÍAS",
-    "sitioEntrega": "PTO GAITAN",
-    "validez": "8 DÍAS",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "vendedor": "Sheila Baron",
-    "realizadaPor": "Sheila Baron",
-    "aprobadaPor": "Alberto",
-    "solicitudId": "",
-    "motivoRechazo": "",
-    "items": [
-      {
-        "qty": 2,
-        "udm": "EA",
-        "uid": "ab69c279-e523-41c9-8f72-e8d4bdae1c03",
-        "desc": "angulo de 1-1/2 x 1/4  a-36",
-        "marca": "IMPORTADO",
-        "precio": 160000,
-        "desvTec": "",
-        "proveedor": "IMPERIAL",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 68400
-      }
-    ],
-    "fechaGuardado": "2026-09-10T14:50:07.193Z",
-    "fechaEnvio": "2026-09-07T14:27:04.619Z",
-    "facturadaAt": "2026-09-10",
-    "adjudicadaAt": "2026-09-08",
-    "valorAdjudicado": 320000,
-    "itemsAdjudicados": [
-      {
-        "uid": "ab69c279-e523-41c9-8f72-e8d4bdae1c03",
-        "qty": 2
-      }
-    ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-09-08T15:01:33.594Z",
-    "createdAt": "2026-05-23T01:36:30.152Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-09-10T14:50:07.194Z",
-    "updatedBy": "andrea"
-  },
-  {
     "id": "LM2039",
     "fecha": "2026-09-07",
     "fechaVenc": "2026-09-15",
@@ -103741,6 +103687,60 @@
     "createdBy": "sandra",
     "updatedAt": "2026-09-09T22:02:06.223Z",
     "updatedBy": "sandra"
+  },
+  {
+    "id": "LM1002",
+    "fecha": "2026-09-10",
+    "fechaVenc": "2026-09-18",
+    "cliente": "CIAM",
+    "contacto": "DALADIER",
+    "correo": "",
+    "estado": "Facturada",
+    "factura": "622",
+    "iva": 19,
+    "subtotal": 320000,
+    "ivaVal": 60800,
+    "total": 380800,
+    "formaPago": "45 DÍAS",
+    "sitioEntrega": "PTO GAITAN",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Sheila Baron",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "qty": 2,
+        "udm": "EA",
+        "uid": "ab69c279-e523-41c9-8f72-e8d4bdae1c03",
+        "desc": "angulo de 1-1/2 x 1/4  a-36",
+        "marca": "IMPORTADO",
+        "precio": 160000,
+        "desvTec": "",
+        "proveedor": "IMPERIAL",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 68400
+      }
+    ],
+    "fechaGuardado": "2026-09-10T14:54:20.784Z",
+    "fechaEnvio": "2026-09-07T14:27:04.619Z",
+    "facturadaAt": "2026-09-10",
+    "adjudicadaAt": "2026-09-08",
+    "valorAdjudicado": 320000,
+    "itemsAdjudicados": [
+      {
+        "uid": "ab69c279-e523-41c9-8f72-e8d4bdae1c03",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-08T15:01:33.594Z",
+    "createdAt": "2026-05-23T01:36:30.152Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-09-10T14:54:20.784Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2144",
