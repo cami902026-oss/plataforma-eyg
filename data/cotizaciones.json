@@ -108272,7 +108272,7 @@
     "cliente": "QCIEN",
     "contacto": "DIEGO",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 500000,
@@ -108290,24 +108290,25 @@
     "items": [
       {
         "id": 1,
-        "desc": "tapon macho de 2 x 6000 npt a-105 npt",
-        "udm": "EA",
         "qty": 10,
-        "precio": 50000,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "8e3ad4b9-5ff7-401d-b4cd-a03fe75bb56b",
+        "desc": "tapon macho de 2 x 6000 npt a-105 npt",
         "marca": "BOTHWELL",
+        "precio": 50000,
+        "desvTec": "",
         "proveedor": "GRANADA",
-        "precioProveedor": 24100,
         "obsProveedor": "",
-        "uid": "8e3ad4b9-5ff7-401d-b4cd-a03fe75bb56b"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 19280
       }
     ],
-    "fechaGuardado": "2026-09-10T21:55:34.318Z",
+    "fechaGuardado": "2026-09-10T22:08:47.544Z",
+    "adjudicadaAt": "2026-09-10",
     "createdAt": "2026-09-10T21:55:34.318Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-10T21:55:34.318Z",
-    "updatedBy": "sheila"
+    "updatedAt": "2026-09-10T22:08:47.545Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM629",
