@@ -22318,32 +22318,41 @@ async function _remiCierreDatos(c){
 
   // Sin OP no hay "pedido": se muestra lo entregado, sin saldo inventado.
   const usados=new Set();
-  const lineas=(pedido.length?pedido:[]).map(p=>{
-    const np=norm(p.descripcion);
-    const meta=+p.cantidad||0;                 // cuánto pidió ESTA línea
-    const porE={}; let total=0;
-    entregas.forEach(e=>{
-      let s=0;
-      porNum[e.remision].forEach((f,idx)=>{
-        const k=e.remision+'#'+idx;
-        if(usados.has(k)) return;
-        if(norm(f.descripcion)!==np) return;
-        // 🔑 9-sep-2026 — NO TRAGARSE MÁS DE LO QUE ESTA LÍNEA PIDIÓ.
-        // La misma descripción puede venir dos veces en una orden: LM2103 trae
-        // el «NIPLE 1/2" X 200- SCH80» dos veces, x1 y x2. Antes la primera se
-        // quedaba con las DOS líneas de la remisión (1+2=3), la segunda se
-        // quedaba en cero, y el papel decía que faltaban 2 unidades que en
-        // realidad ya se habían entregado. Se toma solo hasta cubrir lo pedido
-        // y el resto queda libre para la línea gemela.
-        if(meta>0 && (total+s)>=meta) return;
-        s+=(+f.cantidad||0); usados.add(k);
+  const lineas=(pedido.length?pedido:[]).map(p=>({ item:p.item, desc:p.descripcion||'',
+    pedido:(+p.cantidad||0), porE:{}, total:0, _np:norm(p.descripcion) }));
+  // 🔑 9-sep-2026 — NO TRAGARSE MÁS DE LO QUE UNA LÍNEA PIDIÓ.
+  // La misma descripción puede venir dos veces en una orden: LM2103 trae el
+  // «NIPLE 1/2" X 200- SCH80» dos veces, x1 y x2. Antes la primera se quedaba con
+  // las DOS líneas de la remisión (1+2=3), la segunda en cero, y el papel decía
+  // que faltaban 2 unidades que ya se habían entregado.
+  // 11-sep-2026 — Y AL REVÉS: UN RENGLÓN QUE CUBRE VARIAS LÍNEAS GEMELAS.
+  // OP-2026-0049 tiene la «UNION UNIVERSAL 1/2" GALVANIZADA» en tres líneas
+  // (11 + 8 + 8) y la 26299 las despachó en UN renglón de 27. La primera línea se
+  // quedaba con las 27 y las otras dos decían «faltan 8»: la definitiva salía
+  // «SE CIERRA CON 16 UNIDADES SIN ENTREGAR». Como las unidades de líneas gemelas
+  // son indistinguibles, el renglón se REPARTE en orden hasta llenar cada una.
+  // Con líneas sin gemela el resultado es el mismo de antes: si la línea ya está
+  // cubierta el renglón queda como sobrante, y si se pasa, la línea se lo lleva.
+  const gemelas={};
+  lineas.forEach(l=>{ (gemelas[l._np]=gemelas[l._np]||[]).push(l); });
+  entregas.forEach(e=>{
+    porNum[e.remision].forEach((f,idx)=>{
+      const grp=gemelas[norm(f.descripcion)];
+      if(!grp) return;                                   // no está en la orden → sobrante
+      const abiertas=grp.filter(l=>!(l.pedido>0 && l.total>=l.pedido));
+      if(!abiertas.length) return;                       // todo cubierto → sobrante
+      usados.add(e.remision+'#'+idx);
+      let q=(+f.cantidad||0);
+      abiertas.forEach((l,j)=>{
+        if(q<=0) return;
+        const cabe=(j===abiertas.length-1) ? q            // la última se lleva el resto
+          : (l.pedido>0 ? Math.max(0,l.pedido-l.total) : q);
+        const t=Math.min(q,cabe); if(t<=0) return;
+        l.porE[e.remision]=(l.porE[e.remision]||0)+t; l.total+=t; q-=t;
       });
-      if(s) porE[e.remision]=s;
-      total+=s;
     });
-    return { item:p.item, desc:p.descripcion||'', pedido:(+p.cantidad||0),
-             porE:porE, total:total, saldo:Math.max(0,(+p.cantidad||0)-total) };
   });
+  lineas.forEach(l=>{ l.saldo=Math.max(0,l.pedido-l.total); delete l._np; });
   const sobrantes=[];
   entregas.forEach(e=>porNum[e.remision].forEach((f,idx)=>{
     if(!usados.has(e.remision+'#'+idx) && (+f.cantidad||0)>0)
