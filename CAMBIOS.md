@@ -7,10 +7,15 @@ cambio que ya está en vivo: para verlo hay que recargar con **Ctrl + F5**.
 > repositorio. No se escribe a mano: si algo falta aquí, es que no se desplegó.
 
 
+## 10 de septiembre de 2026
+
+- 🔗 v261 — Guardar una remisión ligada le avisa a su OP lo que cambió  
+  <sub>`78dde113`</sub>
+
 ## 9 de septiembre de 2026
 
 - 🔗 v260 — La línea de la OP guarda SIEMPRE a qué producto entró el material  
-  <sub>`56e492cb`</sub>
+  <sub>`ab7de119`</sub>
 - 🗑️ v259 — Anular un movimiento sabiendo si tocó el saldo, y la remisión no repite el ítem 1  
   <sub>`78f52878`</sub>
 - 📦 v258 — El kardex no puede sobrevivir al movimiento que cuenta  
