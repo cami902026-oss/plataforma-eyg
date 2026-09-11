@@ -5987,7 +5987,8 @@
     "cliente": "PETROLABIN",
     "contacto": "CRISTIAN GALLEGO",
     "correo": "Gestor Compras (lider.compras@petrolabin.com)",
-    "estado": "Borrador",
+    "estado": "Enviada",
+    "factura": "",
     "iva": 19,
     "subtotal": 1548550,
     "ivaVal": 294224.5,
@@ -5999,7 +6000,8 @@
     "vendedor": "Sheila Baron",
     "realizadaPor": "Alexandra",
     "aprobadaPor": "Alberto",
-    "solicitudId": "SOL-20260612-939",
+    "solicitudId": "",
+    "motivoRechazo": "",
     "items": [
       {
         "id": 1,
@@ -6011,7 +6013,8 @@
         "desvTec": "X 3000, AC",
         "marca": "KINTRONG",
         "proveedor": "CODIFER",
-        "precioProveedor": 156230
+        "precioProveedor": 156230,
+        "uid": "f83775b9-8e9f-438c-bb23-a04aea387658"
       },
       {
         "id": 2,
@@ -6023,7 +6026,8 @@
         "desvTec": "X 1500 TRIM 8, AC",
         "marca": "YDF",
         "proveedor": "CODIFER",
-        "precioProveedor": 244800
+        "precioProveedor": 244800,
+        "uid": "043ba5b8-4f7a-46e6-a770-f4bccc5e46eb"
       },
       {
         "id": 3,
@@ -6035,7 +6039,8 @@
         "desvTec": "",
         "marca": "MOLONG",
         "proveedor": "INSTRUGASES",
-        "precioProveedor": 30000
+        "precioProveedor": 30000,
+        "uid": "4ececfe4-c77b-43ff-81c2-1bafe22b007f"
       },
       {
         "id": 4,
@@ -6047,7 +6052,8 @@
         "desvTec": "X 6000",
         "marca": "APCO",
         "proveedor": "INDUVACOL",
-        "precioProveedor": 10800
+        "precioProveedor": 10800,
+        "uid": "119549dc-a54f-4309-b604-4b103f1e0848"
       },
       {
         "id": 5,
@@ -6059,7 +6065,8 @@
         "desvTec": "X 6000",
         "marca": "BOTHWELL",
         "proveedor": "CODIFER",
-        "precioProveedor": 21530
+        "precioProveedor": 21530,
+        "uid": "7a92feb1-f5ff-426f-b734-c61a92871b67"
       },
       {
         "id": 6,
@@ -6071,13 +6078,15 @@
         "desvTec": "",
         "marca": "MOLONG",
         "proveedor": "INSTRUGASES",
-        "precioProveedor": 6000
+        "precioProveedor": 6000,
+        "uid": "275502d8-7a65-4af6-bd86-14386af7c825"
       }
     ],
-    "fechaGuardado": "2026-06-12T17:02:05.583Z",
+    "fechaGuardado": "2026-09-11T15:27:47.490Z",
+    "fechaEnvio": "2026-09-11T15:27:47.490Z",
     "createdAt": "2026-06-12T15:18:28.993Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-06-12T17:02:05.583Z",
+    "updatedAt": "2026-09-11T15:27:47.490Z",
     "updatedBy": "alexandra"
   },
   {
