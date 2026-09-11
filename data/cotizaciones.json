@@ -6148,7 +6148,8 @@
     "cliente": "COSTA DIAZ",
     "contacto": "NATALIA",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Rechazada",
+    "factura": "",
     "iva": 19,
     "subtotal": 0,
     "ivaVal": 0,
@@ -6161,6 +6162,7 @@
     "realizadaPor": "Alexandra",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
+    "motivoRechazo": "Cliente no respondió",
     "items": [
       {
         "id": 1,
@@ -6172,13 +6174,15 @@
         "desvTec": "TUBO LI P 05\" SCH80 SC A106/A53/API5L",
         "marca": "",
         "proveedor": "GYJ",
-        "precioProveedor": 966386
+        "precioProveedor": 966386,
+        "uid": "77408022-9830-4276-bcb4-0981adb262c7"
       }
     ],
-    "fechaGuardado": "2026-06-12T17:06:25.252Z",
+    "fechaGuardado": "2026-09-11T15:28:21.882Z",
+    "rechazadaAt": "2026-09-11",
     "createdAt": "2026-06-12T17:06:25.252Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-06-12T17:06:25.252Z",
+    "updatedAt": "2026-09-11T15:28:21.882Z",
     "updatedBy": "alexandra"
   },
   {
