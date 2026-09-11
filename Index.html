@@ -25646,18 +25646,25 @@ async function opRecibirAbrir() {
     && (+i.recibida || 0) < (+i.cantidad || 0));
   if (!com.length) { showToast('No hay compras pendientes de recibir', 'info'); return; }
 
-  // Se propone el producto de inventario que corresponde, con el mismo cruce
-  // que ya usa la OP. Si no hay, se podrá crear al recibir.
+  // 11-sep-2026 — LO QUE SE COMPRA PARA EL PEDIDO NO ES DE BODEGA.
+  // Antes cada compra se proponía contra un producto del inventario: el que la
+  // línea traía pegado de cuando alguien la marcó «de bodega», o el más parecido
+  // por el nombre. Así la UNIÓN UNIVERSAL 2" entró y salió como «UNION EMT 2"», la
+  // VÁLVULA CHEQUE como una «VALVULA DE BOLA», y la recepción además les pisó el
+  // costo de inventario con el de la compra (OP-2026-0068 y OP-2026-0039).
+  // Decisión de gerencia: la compra lleva su propio producto de la OP, con el
+  // costo del plan de compras. El único que se reutiliza es el que ESTA misma
+  // línea creó en una llegada anterior (compra que llega por partes).
   let idx = null;
   try { idx = await _opStockIndice(true); } catch (_) { }
   const props = com.map(it => {
-    if (it.producto_codigo) {
+    const propio = it.producto_codigo && /^OP-/.test(String(it.producto_codigo))
+                   && (+it.recibida || 0) > 0;
+    if (propio) {
       const e = idx && idx.find(x => x.p.codigo === it.producto_codigo);
-      return { it: it, prod: e ? e.p : null, score: 1 };
+      if (e) return { it: it, prod: e.p, score: 1 };
     }
-    const r = idx ? _opBuscarStock(it.descripcion, idx) : [];
-    return (r[0] && r[0].score >= 0.62) ? { it: it, prod: r[0].prod, score: r[0].score }
-                                        : { it: it, prod: null, score: 0 };
+    return { it: it, prod: null, score: 0 };
   });
   // Siguiente número de remisión, por si algo sale de una. Se puede cambiar.
   let sug = '';
@@ -25692,7 +25699,7 @@ function _opRecepModal(sug) {
       + '<small>' + (x.prod
           ? 'entra a <b style="color:#3FBF63">' + opEsc(x.prod.codigo) + '</b> · ' + opEsc(x.prod.descripcion)
             + (x.score < 1 ? ' <b style="color:#fbbf24">⚠️ lo escogió la plataforma por parecido — revísalo</b>' : '')
-          : '<b style="color:#E8A020">producto nuevo</b> — se creará en el inventario al recibir')
+          : '<b style="color:#E8A020">producto de la compra</b> — se crea para este pedido, con el costo del plan (no toca bodega)')
       + '</small></div>'
       + '<div class="op-recep-c"><input type="number" step="any" min="0" max="' + falta + '" value="' + falta + '"'
       + ' data-n="' + n + '" data-campo="cantidad" class="op-inp op-inp-num"></div>'
@@ -26021,7 +26028,9 @@ async function opRecibirConfirmar() {
         const upd = { stock_actual: stockFinal, entradas: entradas + L.qty,
                       updated_at: new Date().toISOString() };
         if (L.sale > 0) upd.salidas = salidas + L.sale;
-        if (L.costo != null) upd.costo_compra = L.costo;      // el costo REAL de la compra
+        // El costo REAL de la compra, solo en el producto de la compra: nunca se
+        // le pisa el costo a un producto de bodega (le pasó a la UNION EMT 2").
+        if (L.costo != null && /^OP-/.test(String(prod.codigo))) upd.costo_compra = L.costo;
         try {
           await absFetch('productos?codigo=eq.' + encodeURIComponent(prod.codigo), {
             method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(upd)
@@ -27641,7 +27650,22 @@ const OP_EJES = {
   // El material NO es un detalle: una pieza en inoxidable no reemplaza una en
   // acero al carbono ni al reves, por mucho que coincidan medida y forma.
   material:    [[['INOX', 'INOXIDABLE', 'SS', 'INOXIDABLES'], 'INOX'],
-                [['AC', 'CARBON', 'CARBONO'], 'CARBON']]
+                [['AC', 'CARBON', 'CARBONO'], 'CARBON'],
+                // 11-sep-2026 — galvanizado (hierro maleable, 150 psi) no es acero
+                // forjado 3000: «UNION UNIVERSAL 1/2" GALVANIZADA» ≠ «UNIVERSAL AC NPT».
+                [['GALV', 'GALVANIZADO', 'GALVANIZADA', 'GALVANIZADOS', 'GALVANIZADAS'], 'GALV']],
+  // 11-sep-2026 — EL APELLIDO DE LA PIEZA. «Unión» y «válvula» son familias, no
+  // piezas: una UNIÓN UNIVERSAL 2" entró contra «UNION EMT 2"» (tubería eléctrica)
+  // y una VÁLVULA CHEQUE 1/2" contra una «VALVULA DE BOLA 1/2"» (OP-2026-0068 y
+  // OP-2026-0039). Este eje es ESTRICTO (ver _opBuscarStock): si cualquiera de
+  // las dos dice su apellido, la otra tiene que decir el mismo.
+  subtipo:     [[['UNIVERSAL'], 'UNIVERSAL'], [['EMT', 'CONDUIT'], 'EMT'],
+                [['GOLPE', 'HAMMER', 'WECO'], 'GOLPE'],
+                [['BOLA', 'BALL', 'ESFERICA'], 'BOLA'],
+                [['CHEQUE', 'CHECK', 'RETENCION', 'CHEK'], 'CHEQUE'],
+                [['COMPUERTA', 'GATE'], 'COMPUERTA'], [['GLOBO', 'GLOBE'], 'GLOBO'],
+                [['AGUJA', 'NEEDLE'], 'AGUJA'], [['MARIPOSA', 'BUTTERFLY'], 'MARIPOSA'],
+                [['ALIVIO', 'RELIEF', 'SEGURIDAD'], 'ALIVIO'], [['VENTEO'], 'VENTEO']]
 };
 const OP_MATERIAL = [105, 234, 106, 193, 194, 304, 316, 321];
 const OP_PRESION = [3000, 6000, 9000];
@@ -27651,6 +27675,8 @@ function _opBase(s) {
   s = String(s == null ? '' : s).toUpperCase();
   s = s.normalize ? s.normalize('NFD').replace(/[̀-ͯ]/g, '') : s;
   s = s.replace(/["”“’#×]/g, ' ').replace(/-/g, ' ');
+  // «A/C» es acero al carbono, no la fracción ni dos letras sueltas.
+  s = s.replace(/\bA\s*\/\s*C\b/g, ' AC ');
   return s.replace(/[^A-Z0-9/. ]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 function _opPal(s) { return new Set(_opBase(s).replace(/\//g, ' ').split(' ').filter(Boolean)); }
@@ -27730,6 +27756,12 @@ function _opBuscarStock(desc, idx) {
       const a = vd[eje], b = e.va[eje];
       if (eje === 'forma') {
         if (a.has('REDUCIDA') !== b.has('REDUCIDA')) { choca = true; break; }
+      } else if (eje === 'subtipo') {
+        // Estricto: «VALVULA 1/2"» sin apellido tampoco reemplaza a una cheque.
+        if (a.size || b.size) {
+          let comun = false; a.forEach(x => { if (b.has(x)) comun = true; });
+          if (!comun) { choca = true; break; }
+        }
       } else if (a.size && b.size) {
         let comun = false; a.forEach(x => { if (b.has(x)) comun = true; });
         if (!comun) { choca = true; break; }
@@ -27741,6 +27773,7 @@ function _opBuscarStock(desc, idx) {
     let sobra = 0; e.med.forEach(m => { if (!nd.medidas.has(m)) sobra++; });
     let varok = 0;
     for (const eje in OP_EJES) {
+      if (eje === 'subtipo') continue;           // el apellido filtra; no suma puntaje
       const a = vd[eje], b = e.va[eje];
       if (a.size && b.size) { a.forEach(x => { if (b.has(x)) varok = 1; }); }
     }
@@ -27779,7 +27812,9 @@ async function opRevisarStock(silencioso) {
     const qty = +it.cantidad || 0;
 
     if (it.origen === 'COMPRA') {
-      // ¿Se iba a comprar algo que sí hay?
+      // ¿Se iba a comprar algo que sí hay? — salvo que alguien ya haya decidido
+      // comprarlo («Comprar igual» / pasada a compra): eso no se vuelve a discutir.
+      if (it.confirmado_por) continue;
       if (mejor && mejor.score >= 0.62) {
         const hay = +mejor.prod.stock_actual || 0;
         if (hay > 0) avisos.push({ it: it, tipo: 'hay', prod: mejor.prod, hay: hay,
@@ -27839,8 +27874,35 @@ function _opPintarAvisosStock() {
 
 function opIgnorarAviso(n) {
   if (!op_current || !op_current._avisosStock) return;
+  const a = op_current._avisosStock[n];
   op_current._avisosStock.splice(n, 1);
   _opPintarAvisosStock();
+  // 11-sep-2026 — «COMPRAR IGUAL» ES UNA DECISIÓN, NO UN «DESPUÉS VEO».
+  // Antes solo escondía el aviso: la línea seguía pudiendo tomarse de bodega y
+  // el aviso volvía a salir en la siguiente revisión. Ahora queda guardado que se
+  // compra, se le quita cualquier producto de bodega y no se vuelve a proponer.
+  if (a && a.tipo === 'hay' && a.it) _opFijarCompra(a.it, 'Comprar igual');
+}
+
+// Deja una línea como COMPRA confirmada: sin producto de bodega y sin avisos de
+// «esto ya está en bodega». `confirmado_por` en una línea de COMPRA es eso: que
+// alguien decidió comprarla (en una de BODEGA sigue siendo qué producto sale).
+async function _opFijarCompra(it, motivo) {
+  if (!it || !op_current) return;
+  const yo = (currentUser && (currentUser.email || currentUser.name)) || 'system';
+  const body = { origen: 'COMPRA', producto_codigo: null, confirmado_por: yo,
+                 confirmado_at: new Date().toISOString(), updated_by: yo };
+  try {
+    await absFetch('op_items?id=eq.' + it.id, {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(body)
+    });
+    Object.assign(it, body);
+    try { await opEvento(op_current.id, 'compra_confirmada',
+      String(it.descripcion || '') + ' · se compra (' + motivo + '): no sale de bodega'); } catch (_) { }
+    showToast('🛒 Se compra: esta línea ya no puede salir de bodega', 'success');
+  } catch (e) {
+    showToast('No se pudo guardar la decisión de comprar: ' + (e && e.message || e), 'error');
+  }
 }
 
 // Cambiar un campo sin tener que pasar por el input de la línea.
@@ -27861,6 +27923,16 @@ async function opTomarDeBodega(id, codigo, hay) {
   if (!it) return;
   const qty = +it.cantidad || 0;
   const yo = (currentUser && (currentUser.email || currentUser.name)) || 'system';
+  // 11-sep-2026 — LA SALIDA DE BODEGA SE CONFIRMA LEYENDO LAS DOS PIEZAS.
+  // Este botón amarra la línea a un producto y de ahí sale el descuento del
+  // inventario. Con un clic «UNION UNIVERSAL 2"» quedó amarrada a «UNION EMT 2"».
+  const _pb = (_opStockIdx || []).find(x => x.p && x.p.codigo === codigo);
+  const _dp = _pb ? String(_pb.p.descripcion || '') : '(no pude leer la descripción)';
+  if (!confirm('¿Es EXACTAMENTE la misma pieza?\n\n'
+    + '  PIDIÓ EL CLIENTE:\n  ' + String(it.descripcion || '').replace(/\s+/g, ' ').trim() + '\n\n'
+    + '  SALE DE BODEGA:\n  ' + codigo + ' — ' + _dp.replace(/\s+/g, ' ').trim() + '\n\n'
+    + 'Revisa tipo, medida, material y conexión. Si no es la misma, cancela y '
+    + 'oprime «Comprar igual».')) return;
   try {
     if (hay >= qty) {
       await absFetch('op_items?id=eq.' + id, {
@@ -28561,7 +28633,14 @@ async function opItemCampo(el) {
   // limpia, quedan líneas que dicen "sale de bodega" con proveedor pegado.
   if (campo === 'origen') {
     if (v === 'BODEGA') { it.proveedor = null; body.proveedor = null; }
-    if (v === 'COMPRA') { it.producto_codigo = null; body.producto_codigo = null; }
+    if (v === 'COMPRA') {
+      it.producto_codigo = null; body.producto_codigo = null;
+      // 11-sep-2026 — pasarla a comprar es la decisión: queda firmada y la
+      // revisión contra inventario ya no la vuelve a mandar a bodega.
+      body.confirmado_por = it.confirmado_por = body.updated_by;
+      body.confirmado_at = it.confirmado_at = new Date().toISOString();
+    }
+    if (v === 'BODEGA') { body.confirmado_por = it.confirmado_por = null; body.confirmado_at = it.confirmado_at = null; }
   }
 
   try {
@@ -29081,7 +29160,8 @@ function pcomCotizAgregar(c){
 // hecho en dos sitios.
 // El enlace es por DESCRIPCIÓN dentro de la misma OP — es lo que hay: el plan
 // guarda `op_numero`, no el id del ítem. Si no cuadra, no pasa nada.
-async function _pcomAvisarOP(it){
+async function _pcomAvisarOP(it, opts){
+  opts = opts || {};
   if(!pcom_current) return;
   const m = String(pcom_current.cc||'').match(/^CC-(OP-\d{4}-\d+)$/);
   if(!m) return;                                   // este plan no es de una OP
@@ -29095,8 +29175,29 @@ async function _pcomAvisarOP(it){
     const ops = await absFetch('ops?numero=eq.'+encodeURIComponent(numero)+'&select=id&limit=1');
     if(!ops || !ops.length) return;
     const its = await absFetch('op_items?op_id=eq.'+ops[0].id
-      + '&descripcion=eq.'+encodeURIComponent(desc)+'&select=id,estado,origen&limit=5');
+      + '&descripcion=eq.'+encodeURIComponent(desc)+'&select=id,estado,origen,recibida,despachada&limit=5');
     if(!its || !its.length) return;
+    // 11-sep-2026 — el plan dice que se COMPRA. La línea de la OP que seguía como
+    // BODEGA pasa a COMPRA y suelta el producto de bodega. Solo si nada ha
+    // llegado ni salido todavía, y NO si la línea está partida (una parte de
+    // bodega y otra comprada, con la misma descripción): ahí la parte de bodega
+    // es de verdad de bodega.
+    if(opts.aCompra){
+      const partida = its.some(y => y.origen === 'COMPRA');
+      for(const x of its){
+        if(partida || x.origen !== 'BODEGA' || x.estado === 'despachado'
+           || (+x.recibida||0) > 0 || (+x.despachada||0) > 0) continue;
+        const yo = (currentUser&&(currentUser.email||currentUser.name))||'plan';
+        await absFetch('op_items?id=eq.'+x.id,{method:'PATCH', headers:{'Prefer':'return=minimal'},
+          body:JSON.stringify({ origen:'COMPRA', producto_codigo:null, confirmado_por:yo,
+                                confirmado_at:new Date().toISOString(), updated_by:yo })});
+        x.origen = 'COMPRA';
+        try{ await opEvento(ops[0].id, 'origen_desde_plan',
+          desc + ' · compras lo pasó a COMPRA en el plan ' + pcom_current.cc
+          + ' · ya no sale de bodega'); }catch(_){}
+        showToast('🛒 '+numero+': «'+desc.substring(0,40)+'» pasa a compra y ya no sale de bodega','success',{durationMs:7000});
+      }
+    }
     // 25-ago-2026 — el ORIGEN también viaja. Si compras escribe BODEGA en el plan
     // porque el material ya lo tenemos, la OP decía COMPRA y bodega no se
     // enteraba de que le tocaba alistarlo: los dos documentos decían cosas
@@ -29837,6 +29938,7 @@ function pcomSyncHeader(){
 function pcomUpd(i, campo, valor){
   if(!pcom_current||!pcom_current.items[i]) return;
   const it = pcom_current.items[i];
+  const _antes = it[campo];
   it[campo] = valor;
   // v186: si ya llegó algo del proveedor, esa línea estaba comprada por definición
   if(campo==='recibida' && _pcomNum(valor)>0 && !it.comprado){
@@ -29852,7 +29954,11 @@ function pcomUpd(i, campo, valor){
     if(campo!=='cantidad' && !pcom_current.nueva) pcomGuardarCola();
     // 24-ago-2026: si este plan es de una OP, el avance viaja allá solo. Antes
     // había que marcarlo en dos sitios y la vía de la OP mostraba 0 comprados.
-    if(campo==='comprado' || campo==='recibida') { try{ _pcomAvisarOP(it); }catch(_){} }
+    // ✔Compró a un proveedor de verdad = se compró: la OP no puede seguir
+    // ofreciéndolo de bodega.
+    const _compraReal = campo==='comprado' && !!it.comprado
+      && String(it.proveedor||'').trim() && !/^BODEGA/i.test(String(it.proveedor||'').trim());
+    if(campo==='comprado' || campo==='recibida') { try{ _pcomAvisarOP(it, { aCompra:_compraReal }); }catch(_){} }
   }
   // 25-ago-2026: escribir BODEGA como proveedor es decir "este ya lo tenemos".
   // La OP tiene que enterarse o seguirá diciendo COMPRA, y bodega no sabrá que
@@ -29860,6 +29966,14 @@ function pcomUpd(i, campo, valor){
   // porque el origen puede haber cambiado por otra razón en la OP.
   if(campo==='proveedor' && /^BODEGA/i.test(String(it.proveedor||'').trim())){
     try{ _pcomAvisarOP(it); }catch(_){}
+  }
+  // 11-sep-2026 — Y AL REVÉS: si compras cambia BODEGA por un proveedor de
+  // verdad, eso ya no sale de bodega. La OP seguía diciendo BODEGA con el código
+  // del producto de bodega pegado, y al recibir la compra entraba contra ese
+  // producto (UNION UNIVERSAL 2" → «UNION EMT 2"», OP-2026-0068).
+  if(campo==='proveedor' && /^BODEGA/i.test(String(_antes||'').trim())
+     && String(valor||'').trim() && !/^BODEGA/i.test(String(valor||'').trim())){
+    try{ _pcomAvisarOP(it, { aCompra:true }); }catch(_){}
   }
 }
 function pcomRenderItems(){
