@@ -22352,7 +22352,19 @@ async function _remiCierreDatos(c){
       });
     });
   });
-  lineas.forEach(l=>{ l.saldo=Math.max(0,l.pedido-l.total); delete l._np; });
+  lineas.forEach(l=>{ l.saldo=Math.max(0,l.pedido-l.total); });
+  // Mismo N° de ítem y misma descripción = una sola línea para el cliente. La OP
+  // las parte por dentro (un proveedor por línea: 11 + 8 + 8), pero el cliente
+  // pidió «ítem 5 × 27» y así se imprime. El saldo total no cambia.
+  const _porItem={}, _lin=[];
+  lineas.forEach(l=>{
+    const k=String(l.item)+'|'+l._np;
+    const u=_porItem[k];
+    if(!u){ _porItem[k]=l; _lin.push(l); return; }
+    u.pedido+=l.pedido; u.total+=l.total; u.saldo+=l.saldo;
+    Object.keys(l.porE).forEach(r=>{ u.porE[r]=(u.porE[r]||0)+l.porE[r]; });
+  });
+  lineas.length=0; _lin.forEach(l=>{ delete l._np; lineas.push(l); });
   const sobrantes=[];
   entregas.forEach(e=>porNum[e.remision].forEach((f,idx)=>{
     if(!usados.has(e.remision+'#'+idx) && (+f.cantidad||0)>0)
@@ -22410,7 +22422,17 @@ async function remiPDF(marca){
   // v183 — la columna "Ítem cot." SOLO sale si algún ítem trae el número de la
   // cotización. Remisiones sin cotización: PDF idéntico al de siempre.
   const hayItemCot=items.some(it=>String(it.itemCot||'').trim()!=='');
+  // 11-sep-2026 — EN LA DEFINITIVA, LO QUE YA SALIÓ VIVE EN EL RESUMEN.
+  // Los renglones «ENVIADO EN LA REMISIÓN X» se quedaban arriba Y abajo, en el
+  // cuadro de cierre, y empujaban las firmas a otra hoja (26299-1, SAR ENERGY).
+  // Con el cuadro impreso, la orden entera se sigue viendo completa; arriba solo
+  // va lo que se entrega hoy. Si queda algo PENDIENTE, el renglón no se esconde.
+  const _cierreImpreso = !!(c.esDefinitiva && _cier && _cier.conPedido);
+  const _ocultoArriba = it => _cierreImpreso && _parc && !(parseFloat(it.cantidad) > 0)
+                              && !!_yaSalio[_nrm(it.descripcion)];
+  const _nOcultos = items.filter(_ocultoArriba).length;
   const filas=items.map((it,i)=>{
+    if(_ocultoArriba(it)) return '';
     const hoy = parseFloat(it.cantidad) > 0;
     return `<tr${(_parc&&!hoy)?' style="background:#fbfbfd;color:#8a94a2"':''}><td style="text-align:center">${i+1}</td>${hayItemCot?`<td style="text-align:center;font-weight:700">${_remiEsc(it.itemCot)||'—'}</td>`:''}<td style="text-align:center">${_celdaCant(it)}</td><td>${_remiEsc(it.descripcion)}</td><td>${_remiEsc(it.marca)}</td><td>${(_parc&&!hoy)?'':_remiEsc(it.colada)}</td><td>${_remiEsc(it.desviacion)}</td></tr>`;
   }).join('');
@@ -22521,6 +22543,7 @@ async function remiPDF(marca){
     </div>
     <div class="sec">Elementos entregados</div>
     <table class="it"><thead><tr><th style="width:36px;text-align:center">Ítem</th>${hayItemCot?`<th style="width:52px;text-align:center">Ítem cot.${c.cotizacionId?('<br><span style="font-size:7.5px;font-weight:400;text-transform:none;letter-spacing:0">'+_remiEsc(c.cotizacionId)+'</span>'):''}</th>`:''}<th style="width:48px;text-align:center">Cant.</th><th>Descripción</th><th style="width:90px">Marca</th><th style="width:76px;text-align:center"># Colada</th><th style="width:92px">Desviación</th></tr></thead><tbody>${filas}</tbody></table>
+    ${_nOcultos?`<div style="font-size:9.5px;color:#6b7785;margin-top:5px">Las otras ${_nOcultos} línea(s) de la orden se entregaron en remisiones anteriores: ver el resumen de la orden.</div>`:''}
     ${_entPend}
     ${_entCierre}
     <div class="sec">Observaciones</div>
