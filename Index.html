@@ -22074,6 +22074,17 @@ async function remiGuardar(){
       while (claves.length > 40) { delete cajaN[claves.shift()]; }   // guardar las 40 últimas
       localStorage.setItem('energy_remi_cajanegra', JSON.stringify(cajaN));
     } catch(_) {}
+    // 10-sep-2026 — Si es de una OP, se lee cómo estaba ANTES de pisarla: la OP
+    // se ajusta con la diferencia (ver _remiSincronizarOP). Si no se puede leer,
+    // la remisión se guarda igual y se avisa que la OP no se ajustó.
+    const _numAntes = (!c.nueva && c.remisionOrig && c.remisionOrig!==num) ? c.remisionOrig : null;
+    let _viejas = null;
+    if(c.opNumero){
+      try{ _viejas = (await absFetch('remisiones?remision=eq.'+encodeURIComponent(_numAntes||num)
+        +'&select=item,item_cot,descripcion,cantidad,cotizacion_id&order=id&limit=500'))||[]; }
+      catch(_){ _viejas = null; }
+    }
+    let _ambas = false;
     let nuevas;
     try{
       nuevas = await absFetch('remisiones',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify(rows)});
@@ -22098,6 +22109,7 @@ async function remiGuardar(){
       if(confirm('⚠️ Cambiaste el número: '+c.remisionOrig+' → '+num+'.\n\nSi aceptas, la remisión '+c.remisionOrig+' DEJARÁ DE EXISTIR (queda solo la '+num+').\n\nAceptar = renombrar · Cancelar = dejar también la '+c.remisionOrig)){
         await absFetch('remisiones?remision=eq.'+encodeURIComponent(c.remisionOrig),{method:'DELETE',headers:{'Prefer':'return=minimal'}});
       } else {
+        _ambas = true;
         showToast('Se conservan AMBAS: la '+c.remisionOrig+' y la '+num,'info');
       }
     }
@@ -22132,7 +22144,35 @@ async function remiGuardar(){
         }
       }catch(_){ }
     }
-    showToast('Remisión '+c.remision+' guardada ✓','ok');
+    // La OP se entera de lo que cambió en el papel (OP-2026-0048).
+    let _avisoOP = null;
+    if(c.opNumero){
+      if(_viejas===null || _ambas){
+        _avisoOP = ['⚠️ Remisión '+num+' guardada, pero la '+c.opNumero+' NO se ajustó'
+          + (_ambas ? ' (quedaron dos remisiones con el mismo contenido)' : ' (no pude leer cómo estaba antes)')
+          + '. Abre la OP y revisa qué quedó despachado.', 'error', 16000];
+      } else {
+        try{
+          const r = await _remiSincronizarOP(c.opNumero, num, _viejas, rows, _numAntes);
+          if(r && r.fuera){
+            if(JSON.stringify(_viejas.map(x=>[x.descripcion,x.cantidad])) !== JSON.stringify(rows.map(x=>[x.descripcion,x.cantidad])))
+              _avisoOP = ['Remisión '+num+' guardada ✓ · ⚠️ la '+c.opNumero+' está '+r.op.estado
+                + ' y no se tocó: si cambió lo entregado, avísale a Andrea o a gerencia.', 'error', 14000];
+          } else if(r && r.txt && r.txt.length){
+            _avisoOP = ['Remisión '+num+' guardada ✓ · 🔗 la '+c.opNumero+' se ajustó: '+r.txt.join(' · ')
+              + (r.estadoNuevo!==r.op.estado ? ' · la OP pasa a «'+r.estadoNuevo+'»' : '')
+              + (r.kardexDif.length ? ' · ⚠️ el inventario NO se movió y no cuadra: '+r.kardexDif.join(' · ')
+                  + '. Corrígelo en Abastecimiento.' : ''),
+              r.kardexDif.length ? 'error' : 'success', 16000];
+          }
+        }catch(e){
+          _avisoOP = ['⚠️ Remisión '+num+' guardada, pero la '+c.opNumero+' no se pudo ajustar ('
+            + (e&&e.message||e) + '). Abre la OP y revisa qué quedó despachado.', 'error', 16000];
+        }
+      }
+    }
+    if(_avisoOP) showToast(_avisoOP[0], _avisoOP[1], { durationMs: _avisoOP[2] });
+    else showToast('Remisión '+c.remision+' guardada ✓','ok');
     c.nueva=false;
     await remiCargar();
     remiVolver();
@@ -26263,21 +26303,12 @@ async function opLigarAbrir() {
 let op_ligar_grupos = {};
 function _opLigarCerrar() { const m = document.getElementById('op-ligar-modal'); if (m) m.remove(); }
 
-async function opLigarConfirmar() {
-  if (!op_current) return;
-  const sel = document.querySelector('#op-ligar-modal input[name="op-ligar-r"]:checked');
-  const av = document.getElementById('op-ligar-aviso');
-  if (!sel) {
-    if (av) av.innerHTML = '<div class="op-ligar-err">Marca cuál remisión es.</div>';
-    return;
-  }
-  const num = sel.value;
-  const g = op_ligar_grupos[num] || [];
-  const its = op_currentItems || [];
-
-  // Emparejar línea de remisión con ítem de la OP. Primero por el N° de ítem de
-  // la cotización, que es exacto; si no lo trae, por texto. Lo que no empareje
-  // se dice, no se adivina.
+// Empareja las líneas de una remisión con los ítems de la OP. Lo usan «Ligar»
+// y el guardado de una remisión ya ligada: los dos tienen que decir lo MISMO
+// sobre qué línea es qué ítem, o una corrección desharía lo que hizo la otra.
+// Primero por el N° de ítem de la cotización, que es exacto; si no lo trae, por
+// texto. Lo que no empareje se dice, no se adivina.
+async function _opEmparejarLineas(op, its, lineas) {
   const usados = new Set();
   const pares = [];
   const norm = t => String(t || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
@@ -26295,7 +26326,7 @@ async function opLigarConfirmar() {
   // 9-sep-2026 — Y LA CLAVE LLEVA LA COTIZACIÓN, no solo el número de ítem.
   // Con dos ofertas en la misma OP hay un ítem 1 en cada una: una clave que fuera
   // solo el número se pisaría y emparejaría la línea con el material equivocado.
-  const _cotsOP = opCotizIds(op_current);
+  const _cotsOP = opCotizIds(op);
   let uidPorItemCot = null;
   if (_cotsOP.length) {
     try {
@@ -26311,11 +26342,11 @@ async function opLigarConfirmar() {
     } catch (_) { uidPorItemCot = null; }
   }
 
-  g.forEach(f => {
+  lineas.forEach(f => {
     let it = null;
     if (f.item_cot != null && uidPorItemCot) {
       // La cotización de la fila de la remisión; si no la trae, la principal.
-      const _cf = String(f.cotizacion_id || op_current.cotizacion_id || '');
+      const _cf = String(f.cotizacion_id || op.cotizacion_id || '');
       let uid = uidPorItemCot[_cf + '#' + String(f.item_cot)];
       // Las candidatas también salen por cliente, así que la remisión puede venir
       // de otra cotización. Con UNA sola cotización en la OP no hay ambigüedad y
@@ -26334,6 +26365,120 @@ async function opLigarConfirmar() {
     }
     if (it) { usados.add(it.id); pares.push({ f: f, it: it }); }
   });
+  return pares;
+}
+
+// ═══════════ LA REMISIÓN LIGADA SE EDITA → LA OP SE ENTERA ══════════════════
+// 10-sep-2026 · la OP-2026-0048 (SAR ENERGY).
+// Se ligó la 26302 con el silenciador y los tornillos en 0; a la mañana
+// siguiente se volvió a guardar con 3 y 500. La OP nunca se enteró: siguió con
+// esos dos ítems pendientes y en «Por despachar», como si no tuviera remisión,
+// aunque el material ya iba en el camión.
+//
+// Lo que se aplica es la DIFERENCIA entre lo que la remisión decía antes de
+// guardar y lo que dice ahora, ítem por ítem. No se recalcula la OP entera desde
+// todas sus remisiones: hay OPs con datos viejos (líneas repetidas, `despachada`
+// vacío) y recalcular movería ítems que esta remisión ni toca.
+//
+// NO MUEVE INVENTARIO. Solo dice qué salió. Si el kardex de esta remisión no
+// cuadra con el papel nuevo, se avisa con el nombre del producto.
+async function _remiSincronizarOP(opNumero, num, viejas, nuevas, numAntes) {
+  const o = ((await absFetch('ops?numero=eq.' + encodeURIComponent(opNumero) + '&limit=1')) || [])[0];
+  if (!o) return null;
+  // Una OP cerrada o anulada no se mueve por debajo: cerrarla exigió revisar
+  // justamente esto. Y una que no ha arrancado no debería tener remisión.
+  if (!['aprobada', 'en_ejecucion', 'despachada'].includes(o.estado)) return { op: o, fuera: true, cambios: [] };
+  const its = (await absFetch('op_items?op_id=eq.' + o.id + '&order=item.asc&limit=2000')) || [];
+  // Un cero es un cero, y una línea vacía no entregó nada: igual que al ligar.
+  const q = f => { const v = parseFloat(f && f.cantidad); return isNaN(v) ? 0 : Math.abs(v); };
+  const antes = {}, ahora = {};
+  (await _opEmparejarLineas(o, its, viejas || [])).forEach(p => { antes[p.it.id] = q(p.f); });
+  (await _opEmparejarLineas(o, its, nuevas || [])).forEach(p => { ahora[p.it.id] = q(p.f); });
+  const yo = (currentUser && (currentUser.name || currentUser.email)) || 'SISTEMA';
+  const cambios = [];
+
+  for (const it of its) {
+    const a = antes[it.id] || 0, b = ahora[it.id] || 0;
+    const renombro = !!numAntes && String(it.remision || '').trim() === String(numAntes);
+    if (a === b && !renombro) continue;
+    const body = { updated_by: yo };
+    if (a !== b) {
+      const pedida = +it.cantidad || 0;
+      // Lo ligado antes del 7-sep quedaba 'despachado' con `despachada` vacío:
+      // ese ítem cuenta como entregado completo, igual que en `_opPendiente`.
+      const base = (it.estado === 'despachado' && !(+it.despachada)) ? pedida : (+it.despachada || 0);
+      const desp = Math.max(0, base + b - a);
+      body.despachada = desp;
+      if (pedida <= 0 || desp >= pedida - 0.0001) body.estado = 'despachado';
+      else if (it.estado === 'despachado') {
+        body.estado = (pedida > 0 && (+it.recibida || 0) >= pedida) ? 'recibido' : 'pendiente';
+      }
+      // El número lo pone la entrega que de verdad llevó material (regla de ligar).
+      if (b > 0 && (a === 0 || !String(it.remision || '').trim())) body.remision = num;
+      else if (b === 0 && desp === 0 && String(it.remision || '').trim() === String(num)) body.remision = null;
+    }
+    if (renombro && !('remision' in body)) body.remision = num;
+    await _opRecepPatchItem(it.id, body);
+    cambios.push({ it: it, a: a, b: b, estadoAntes: it.estado });
+    Object.assign(it, body);
+  }
+  if (!cambios.length) return { op: o, cambios: [] };
+
+  let estadoNuevo = o.estado;
+  if (cambios.some(c => c.a !== c.b)) {
+    const quedan = its.filter(i => i.estado !== 'despachado').length;
+    estadoNuevo = quedan ? 'en_ejecucion' : 'despachada';
+    if (estadoNuevo !== o.estado) {
+      await absFetch('ops?id=eq.' + o.id, {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ estado: estadoNuevo, updated_by: yo })
+      });
+      if (estadoNuevo === 'despachada') { try { _opDispararAvisos(); } catch (_) { } }
+    }
+  }
+
+  // El kardex de ESTA remisión contra el papel nuevo. Solo lo que tiene código.
+  const kardexDif = [];
+  const conCod = cambios.filter(c => c.a !== c.b && String(c.it.producto_codigo || '').trim());
+  if (conCod.length) {
+    try {
+      const mov = (await absFetch('kardex?tipo=eq.SALIDA&remision=eq.' + encodeURIComponent(num)
+        + '&select=codigo_producto,cantidad&limit=500')) || [];
+      const sal = {};
+      mov.forEach(m => { const k = String(m.codigo_producto || '').trim(); sal[k] = (sal[k] || 0) + (+m.cantidad || 0); });
+      conCod.forEach(c => {
+        const k = String(c.it.producto_codigo).trim();
+        if ((sal[k] || 0) !== c.b) kardexDif.push(String(c.it.descripcion || '').trim().substring(0, 40)
+          + ' (kardex ' + (sal[k] || 0) + ' · remisión ' + c.b + ')');
+      });
+    } catch (_) { kardexDif.push('no se pudo leer el kardex para comprobarlo'); }
+  }
+
+  const txt = cambios.filter(c => c.a !== c.b)
+    .map(c => String(c.it.descripcion || '').trim().substring(0, 40) + ' ' + c.a + '→' + c.b);
+  try {
+    await opEvento(o.id, 'remision_editada', 'Se volvió a guardar la remisión ' + num
+      + (numAntes ? ' (antes ' + numAntes + ')' : '') + ' y la OP se ajustó'
+      + (txt.length ? ': ' + txt.join(' · ') : '')
+      + (estadoNuevo !== o.estado ? ' · la OP pasa a ' + estadoNuevo : '')
+      + (kardexDif.length ? ' · ⚠️ inventario sin mover: ' + kardexDif.join(' · ') : ''));
+  } catch (_) { }
+  return { op: o, cambios: cambios, txt: txt, estadoNuevo: estadoNuevo, kardexDif: kardexDif };
+}
+
+async function opLigarConfirmar() {
+  if (!op_current) return;
+  const sel = document.querySelector('#op-ligar-modal input[name="op-ligar-r"]:checked');
+  const av = document.getElementById('op-ligar-aviso');
+  if (!sel) {
+    if (av) av.innerHTML = '<div class="op-ligar-err">Marca cuál remisión es.</div>';
+    return;
+  }
+  const num = sel.value;
+  const g = op_ligar_grupos[num] || [];
+  const its = op_currentItems || [];
+  const norm = t => String(t || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+  const pares = await _opEmparejarLineas(op_current, its, g);
 
   const sueltas = g.length - pares.length;
   if (!pares.length) {
