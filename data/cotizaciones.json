@@ -84876,7 +84876,7 @@
     "cliente": "ORLANDO",
     "contacto": "ING ORLANDO",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Rechazada",
     "factura": "",
     "iva": 19,
     "subtotal": 0,
@@ -84890,27 +84890,28 @@
     "realizadaPor": "Alexandra",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
-    "motivoRechazo": "",
+    "motivoRechazo": "Otro: COT DUPLICADA",
     "items": [
       {
         "id": 1,
-        "desc": "VALVE CHECK",
-        "udm": "EA",
         "qty": 12,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "cdafa221-76f6-49b9-b162-8169cd6a8d3b",
+        "desc": "VALVE CHECK",
         "marca": "",
+        "precio": 0,
+        "desvTec": "",
         "proveedor": "",
-        "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "cdafa221-76f6-49b9-b162-8169cd6a8d3b"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-08-29T14:44:47.276Z",
+    "fechaGuardado": "2026-09-11T15:21:04.790Z",
+    "rechazadaAt": "2026-09-11",
     "createdAt": "2026-08-29T14:44:47.277Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-29T14:44:47.277Z",
+    "updatedAt": "2026-09-11T15:21:04.790Z",
     "updatedBy": "alexandra"
   },
   {
