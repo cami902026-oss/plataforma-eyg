@@ -22436,7 +22436,16 @@ async function remiPDF(marca){
 
   // DEFINITIVA: el cuadro de cierre de toda la orden. Es lo que el cliente firma
   // para dar por recibido el pedido completo, no solo la caja de hoy.
-  const _entCierre = (c.esDefinitiva && _cier && _cier.conPedido)
+  // 11-sep-2026 — UNA SOLA ENTREGA Y SALDO CERO: el cuadro repetía, renglón por
+  // renglón, la tabla de arriba (pedido = esta remisión = total) y empujaba las
+  // firmas a una segunda hoja (26309 SAR ENERGY). Ahí basta la franja verde.
+  const _cierUnica = !!(_cier && _cier.entregas.length === 1 && _cier.saldoTotal === 0
+                        && !_cier.sobrantes.length && !c.motivoCierre);
+  const _entCierre = (c.esDefinitiva && _cier && _cier.conPedido && _cierUnica)
+    ? `<div style="margin-top:14px;border:2px solid #1FA879;border-radius:6px;padding:9px 13px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;color:#1FA879;text-align:center;letter-spacing:.6px">
+         SALDO PENDIENTE: 0 &nbsp;·&nbsp; ORDEN${c.opNumero?' '+_remiEsc(c.opNumero):''} ENTREGADA COMPLETA
+       </div>`
+    : (c.esDefinitiva && _cier && _cier.conPedido)
     ? `<div class="sec">Resumen de la orden${c.opNumero?' · '+_remiEsc(c.opNumero):''} — todas las entregas</div>
        <table class="it"><thead><tr><th style="width:44px;text-align:center">Ítem</th><th>Descripción</th><th style="width:60px;text-align:center">Pedido</th>
        ${_cier.entregas.map(e=>`<th style="width:62px;text-align:center">${_remiEsc(e.remision)}</th>`).join('')}
