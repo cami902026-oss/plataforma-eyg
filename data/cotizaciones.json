@@ -108273,13 +108273,13 @@
   },
   {
     "id": "LM2150",
-    "fecha": "2026-09-10",
-    "fechaVenc": "2026-09-18",
+    "fecha": "2026-09-11",
+    "fechaVenc": "2026-09-19",
     "cliente": "QCIEN",
     "contacto": "DIEGO",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "624",
     "iva": 19,
     "subtotal": 500000,
     "ivaVal": 95000,
@@ -108295,26 +108295,25 @@
     "motivoRechazo": "",
     "items": [
       {
-        "id": 1,
-        "qty": 10,
-        "udm": "EA",
-        "uid": "8e3ad4b9-5ff7-401d-b4cd-a03fe75bb56b",
         "desc": "tapon macho de 2 x 6000 npt a-105 npt",
-        "marca": "BOTHWELL",
+        "udm": "EA",
+        "qty": 10,
         "precio": 50000,
-        "desvTec": "",
+        "marca": "BOTHWELL",
         "proveedor": "GRANADA",
-        "obsProveedor": "",
+        "precioProveedor": 19280,
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 19280
+        "desvTec": "",
+        "uid": "d56adec7-74e7-4d05-8427-de406edc981f"
       }
     ],
-    "fechaGuardado": "2026-09-10T22:08:47.544Z",
+    "fechaGuardado": "2026-09-11T01:02:57.489Z",
+    "facturadaAt": "2026-09-10",
     "adjudicadaAt": "2026-09-10",
     "createdAt": "2026-09-10T21:55:34.318Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-10T22:08:47.545Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-09-11T01:02:57.489Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM629",
