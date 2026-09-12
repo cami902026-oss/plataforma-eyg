@@ -2065,17 +2065,17 @@
     "updatedBy": "alexandra"
   },
   {
-    "id": "LM1577",
+    "id": "LM1581",
     "fecha": "2026-05-25",
     "fechaVenc": "2026-06-02",
-    "cliente": "ANDES OPERATING",
-    "contacto": "Andres Bernal",
-    "correo": "andres.bernal@andesoperating.com",
+    "cliente": "JE JAIMES",
+    "contacto": "Luis Garzon ",
+    "correo": "contacto@jejaimes.com.co",
     "estado": "Vencida",
     "iva": 19,
-    "subtotal": 6500000,
-    "ivaVal": 1235000,
-    "total": 7735000,
+    "subtotal": 122760000,
+    "ivaVal": 23324400,
+    "total": 146084400,
     "formaPago": "CONTADO",
     "sitioEntrega": "INSTALACIONES ENERGY GROUP CHIA",
     "validez": "8 DÍAS",
@@ -2083,27 +2083,27 @@
     "vendedor": "",
     "realizadaPor": "",
     "aprobadaPor": "",
-    "solicitudId": "SOL-20260525-221",
+    "solicitudId": "SOL-20260525-609",
     "items": [
       {
-        "id": 2,
-        "desc": "BOMA IHM  10X16 SM",
+        "id": 1,
+        "desc": "TUBERIA  4 PULGADAS SCH 40 RANGO SENCILLO ",
         "udm": "EA",
-        "qty": 1,
-        "precio": 6500000,
-        "tiempoEntrega": "5 DIAS",
-        "desvTec": "",
-        "marca": "",
-        "proveedor": "IHM",
-        "precioProveedor": 4156000
+        "qty": 330,
+        "precio": 372000,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "SE COTIZA TUBO POR 6 METROS",
+        "marca": "BAOLAI",
+        "proveedor": "BODEGA",
+        "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-05-25T17:32:47.278Z",
+    "fechaGuardado": "2026-05-25T17:12:32.709Z",
     "createdAt": "2026-05-25T15:30:18.871Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-08-25T02:09:07.524Z",
+    "updatedAt": "2026-09-12T01:54:20.935Z",
     "updatedBy": "auto",
-    "vencidaAutoAt": "2026-08-25T02:09:07.524Z"
+    "vencidaAutoAt": "2026-09-12T01:54:20.935Z"
   },
   {
     "id": "LM1582",
@@ -92971,7 +92971,7 @@
     "cliente": "CIAM",
     "contacto": "YEISON",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 7320826,
@@ -93170,8 +93170,7 @@
         "precioProveedor": 5090
       }
     ],
-    "fechaGuardado": "2026-09-12T01:52:18.104Z",
-    "fechaEnvio": "2026-09-12T01:52:18.104Z",
+    "fechaGuardado": "2026-09-04T22:43:35.975Z",
     "adjudicadaAt": "2026-09-04",
     "valorAdjudicado": 7320826,
     "itemsAdjudicados": [
@@ -93232,8 +93231,8 @@
     "adjudicacionAt": "2026-09-04T22:43:27.817Z",
     "createdAt": "2026-09-02T16:34:12.058Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-12T01:52:18.108Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-09-04T22:43:35.975Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2103-1",
@@ -93242,7 +93241,7 @@
     "cliente": "CIAM",
     "contacto": "YEISON",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 17597706,
@@ -93404,17 +93403,17 @@
         "udm": "EA",
         "uid": "7141172a-9ffe-4a8e-adb3-36e9ef06faf8",
         "desc": "Valvula para venteo automatico de 1/2\" 10 Bar 120C [8 un]",
-        "altDe": null,
         "marca": "",
-        "fotoId": "F1788617330312569",
         "precio": 1284610,
         "desvTec": "1/2\" X 1/2\"",
-        "fotoEnPDF": true,
         "proveedor": "AIRMATIC",
-        "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 860689
+        "precioProveedor": 860689,
+        "fotoId": "F1788617330312569",
+        "fotoEnPDF": true,
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 12,
@@ -93445,13 +93444,12 @@
         "precioProveedor": 5090
       }
     ],
-    "fechaGuardado": "2026-09-12T01:52:51.890Z",
-    "fechaEnvio": "2026-09-12T01:52:51.890Z",
+    "fechaGuardado": "2026-09-05T14:25:59.969Z",
     "adjudicadaAt": "2026-09-05",
     "createdAt": "2026-09-05T13:53:39.846Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-12T01:52:51.890Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-09-05T14:25:59.969Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM2118",
