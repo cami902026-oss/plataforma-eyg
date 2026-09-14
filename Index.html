@@ -12380,6 +12380,16 @@ function _cotizNumEsPendiente(v) {
 // siempre: el reconciliador lo confirma al sincronizar).
 async function _cotizAsignarNumeroServidor(datos) {
   let cand = cotizGetNextNum();
+  // 14-sep-2026: con la BD local vacía o incompleta cotizGetNextNum() arranca en LM1001
+  // y el reclamo encontraba "huecos" viejos libres (así nacieron LM1003 y LM1004). Se
+  // toma como piso el mayor consecutivo creado en el servidor (las 300 más recientes).
+  try {
+    const recientes = (await absFetch('cotizaciones?select=id&order=created_at.desc.nullslast&limit=300')) || [];
+    let maxSrv = 0;
+    recientes.forEach(r => { const m = /^LM(\d+)$/.exec(String(r.id || '')); if (m && +m[1] > maxSrv) maxSrv = +m[1]; });
+    const mc = /^LM(\d+)$/.exec(String(cand));
+    if (maxSrv && mc && +mc[1] <= maxSrv) cand = 'LM' + (maxSrv + 1);
+  } catch(_) {}
   for (let i = 0; i < 15; i++) {
     let r = null;
     try {
@@ -13743,7 +13753,16 @@ async function _cotizGuardarBDCore() {
   }
   if (!id) { id = cotizGetNextNum(); cotizWriteNum(id); }
   const bd = getData('bd_cotizaciones', []);
-  const idx = bd.findIndex(c => c.id === id);
+  let idx = bd.findIndex(c => c.id === id);
+  // 14-sep-2026 (incidente LM2137): se está EDITANDO una cotización que existe en el
+  // servidor pero que este equipo todavía no tiene en su BD local (recién entró,
+  // Chrome recién abierto, BD local vacía). Antes se guardaba como NUEVA → firma nueva
+  // → el reconciliador la renumeraba y aparecían copias. Ahora se toma la copia con la
+  // que se abrió, así se conserva su firma original y se actualiza la misma cotización.
+  if (idx < 0 && cotizEditId && id === cotizEditId && window._cotizAbierta && window._cotizAbierta.id === id) {
+    bd.push(JSON.parse(JSON.stringify(window._cotizAbierta)));
+    idx = bd.length - 1;
+  }
   // Anti-duplicado: si la solicitud vinculada YA tiene otra cotización, no dejar crear otra.
   const _solVinculada = (document.getElementById('cotiz-sol-vincular')||{}).value || '';
   if (_solVinculada) {
@@ -15336,6 +15355,31 @@ function _cotizItemRow(record, it, n) {
   if (it.altDe) row.alt_de = it.altDe;
   return row;
 }
+// 14-sep-2026 (incidente LM2137): borrar filas de ítems por uid. Antes el filtro iba
+// con comillas (uid=in.("a","b")) y con TODOS los uid en una sola URL: el proxy lo
+// rechazaba, la escritura caía al respaldo directo con la key de solo-lectura y
+// Supabase respondía "204, 0 filas" → nada se borraba y NADIE se enteraba. Esas
+// filas huérfanas luego se "adoptaban" como ítems nuevos y la cotización se duplicaba.
+// Ahora: sin comillas (los uid son uuid) y en lotes de 20; al final se verifica.
+async function _cotizBorrarFilasUid(cotId, uids) {
+  uids = (uids || []).filter(Boolean);
+  if (!uids.length) return true;
+  const enc = encodeURIComponent(cotId);
+  const fmt = u => /^[A-Za-z0-9_-]+$/.test(u) ? u : encodeURIComponent('"' + u + '"');
+  for (let i = 0; i < uids.length; i += 20) {
+    const lote = uids.slice(i, i + 20);
+    await absFetch('cotizacion_items?cotizacion_id=eq.' + enc + '&uid=in.(' + lote.map(fmt).join(',') + ')', { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+  }
+  try {
+    const quedan = ((await absFetch('cotizacion_items?cotizacion_id=eq.' + enc + '&select=uid&limit=2000')) || []).filter(r => uids.indexOf(r.uid) >= 0);
+    if (quedan.length) {
+      console.warn('[cotiz→Supabase] no se borraron', quedan.length, 'fila(s) de', cotId);
+      showToast('⚠️ ' + cotId + ': no se pudieron quitar ' + quedan.length + ' ítem(s) viejos en el servidor. Avisa a Andrea antes de seguir editando (pueden verse ítems repetidos).', 'error', { durationMs: 15000 });
+      return false;
+    }
+  } catch(_) {}
+  return true;
+}
 async function _cotizSyncSupabase(record) {
   if (!record || !record.id) return false;
   try {
@@ -15410,24 +15454,38 @@ async function _cotizSyncSupabase(record) {
         if (srv) borrarUids.push(uid);
       }
       if (subir.length) await absFetch('cotizacion_items?on_conflict=cotizacion_id,uid', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(subir) });
-      if (borrarUids.length) await absFetch('cotizacion_items?cotizacion_id=eq.' + enc + '&uid=in.(' + borrarUids.map(u => '"' + u + '"').join(',') + ')', { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+      if (borrarUids.length) await _cotizBorrarFilasUid(record.id, borrarUids);
       // ADOPTAR al registro local: versión del servidor para (a) ítems que no toqué y
       // otro cambió, (b) ítems en conflicto (ganó el servidor), (c) ítems nuevos de otros.
       const rowAWeb = rw => ({ uid: rw.uid, desc: rw.descripcion || '', udm: rw.udm || '', qty: (rw.qty != null ? +rw.qty : 0), precio: (rw.v_unit != null ? +rw.v_unit : 0), marca: rw.marca || '', proveedor: rw.proveedor || '', precioProveedor: (rw.precio_proveedor != null ? +rw.precio_proveedor : null), tiempoEntrega: rw.tiempo_entrega || '', desvTec: rw.desviacion_tecnica || '', obsProveedor: rw.obs_proveedor || '', fotoGrande: !!rw.foto_grande, altDe: rw.alt_de || null });
       const conflictUids = new Set(conflictos.filter(c => c.srv).map(c => c.srv.uid));
       let itemsMerge = (record.items || []).map(it => {
         const srv = freshByUid[it.uid];
-        if (!srv) return it;
         const snap = _cotizSnap.porUid[it.uid];
+        if (!srv) {
+          // 14-sep-2026: estaba en la foto, YO no lo toqué y ya no está en el servidor →
+          // otra persona lo quitó: quitarlo aquí también (antes quedaba vivo en el
+          // registro local/extra y la cotización terminaba con ítems de más).
+          if (fresh.length && snap && snap.j === _cotizRowCanon(_cotizItemRow(record, it, 0))) { adoptados++; return null; }
+          return it;
+        }
         const dirty = !snap || snap.j !== _cotizRowCanon(_cotizItemRow(record, it, 0));
         if (conflictUids.has(it.uid) || (!dirty && _cotizRowCanon(srv) !== (snap && snap.j))) { adoptados++; return Object.assign({}, it, rowAWeb(srv)); }
         return it;
-      });
+      }).filter(Boolean);
       // ítems agregados por otros (en servidor, no locales, no borrados por mí)
       let _maxItemId = 0; itemsMerge.forEach(it => { if (+it.id > _maxItemId) _maxItemId = +it.id; });
+      // 14-sep-2026: una fila del servidor IDÉNTICA a un ítem que ya tengo no es un ítem
+      // nuevo de otra persona: es una copia huérfana (borrado fallido). No se adopta.
+      const _canonLocal = new Set(itemsMerge.map(it => _cotizRowCanon(_cotizItemRow(record, it, 0))));
+      let _repetidas = 0;
       fresh.forEach(rw => {
-        if (rw.uid && !localByUid[rw.uid] && !(rw.uid in _cotizSnap.porUid)) { itemsMerge.push(Object.assign({ id: ++_maxItemId }, rowAWeb(rw))); adoptados++; }
+        if (rw.uid && !localByUid[rw.uid] && !(rw.uid in _cotizSnap.porUid)) {
+          if (_canonLocal.has(_cotizRowCanon(rw))) { _repetidas++; return; }
+          itemsMerge.push(Object.assign({ id: ++_maxItemId }, rowAWeb(rw))); adoptados++;
+        }
       });
+      if (_repetidas) console.warn('[cotiz] ' + record.id + ': ' + _repetidas + ' fila(s) repetidas del servidor NO adoptadas');
       if (adoptados > 0 || conflictos.length) {
         record.items = itemsMerge;
         // Re-subir la cabecera para que `extra` refleje el estado FINAL (post-merge)
@@ -15456,10 +15514,15 @@ async function _cotizSyncSupabase(record) {
       // reemplazo de antes, pero conservando el updated_at de filas intactas.
       if (items.length) {
         await absFetch('cotizacion_items?on_conflict=cotizacion_id,uid', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(items) });
-        const uids = items.map(r => '"' + r.uid + '"').join(',');
         // filas viejas sin uid (formato anterior) + ítems borrados en esta edición
         await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(record.id) + '&uid=is.null', { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
-        await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(record.id) + '&uid=not.in.(' + uids + ')', { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+        // 14-sep-2026: antes era UN solo DELETE con uid=not.in.("…" x todos) — con
+        // comillas y URL enorme fallaba en silencio y dejaba las filas viejas (ítems x2).
+        // Ahora se leen los uid del servidor y se borran los sobrantes en lotes.
+        const _mios = new Set(items.map(r => r.uid));
+        const _srv = (await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(record.id) + '&select=uid&limit=2000')) || [];
+        const _sobran = _srv.map(r => r.uid).filter(u => u && !_mios.has(u));
+        if (_sobran.length) await _cotizBorrarFilasUid(record.id, _sobran);
       } else {
         await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(record.id), { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
       }
@@ -15752,6 +15815,11 @@ function _bdLoadIntoEditor(c, msg, adopted) {
   // Bandera de adopción: si viene del LIBRO, al guardar NO se notifica como "nueva"
   // (es una cotización vieja que se está trayendo a la plataforma, no una creación real).
   window._bdAdoptId = adopted ? c.id : null;
+  // 14-sep-2026 (incidente LM2137): copia de la cotización TAL COMO SE ABRIÓ. Si al
+  // guardar este equipo aún no la tiene en su BD local, se usa esta copia para
+  // conservar su firma (createdAt/createdBy) en vez de tratarla como NUEVA — eso
+  // era lo que hacía que el reconciliador la renumerara (LM2156, LM2157, LM2159).
+  try { window._cotizAbierta = (c && c.id && c.createdAt) ? JSON.parse(JSON.stringify(c)) : null; } catch(_) { window._cotizAbierta = null; }
   cotizEditId = c.id;
   cotizItems = JSON.parse(JSON.stringify(c.items || []));
   // Si esta cotización referencia fotos que no tenemos en memoria (agregadas en otro
@@ -16115,6 +16183,13 @@ async function bdEditarHistorico(id) {
     const cab = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id) + '&limit=1')) || [];
     const h = cab[0];
     if (!h) { showToast('No se encontró ' + id, 'error'); return; }
+    // 14-sep-2026 (incidente LM2137): si la fila trae el registro COMPLETO de la
+    // plataforma (extra con firma), NO es del LIBRO — solo que este equipo aún no la
+    // tiene en su BD local. Se abre por bdCargar (ítems con su uid, observaciones y
+    // "foto" de colaboración). Antes se rearmaba desde las filas: ítems sin uid → al
+    // guardar salían TODOS como nuevos y la cotización quedaba con los ítems x2.
+    if (h.extra && typeof h.extra === 'object' && h.extra.id && h.extra.createdAt) return bdCargar(id);
+    _cotizSnapshotSet(id, null);   // sin foto de otra apertura: el LIBRO se guarda por el flujo completo
     const its = (await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(id) + '&order=item.asc&limit=2000')) || [];
     const c = {
       id: h.id, cliente: h.cliente || '', contacto: h.contacto || '', correo: h.correo || '',
