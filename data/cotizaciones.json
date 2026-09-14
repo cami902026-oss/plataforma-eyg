@@ -99436,9 +99436,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 47763,
-    "ivaVal": 9074.97,
-    "total": 56837.97,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
     "formaPago": "CONTADO",
     "sitioEntrega": "CAJICA",
     "validez": "8 DÍAS",
@@ -100054,7 +100054,7 @@
         "uid": "4d1d8ef9-4e3c-40cb-baef-167920d65ed7",
         "desc": "CODO 2\" INOX 304 SCH 40 SOLDAR ",
         "marca": "XF/FI",
-        "precio": 47763,
+        "precio": 0,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -100128,11 +100128,12 @@
         "udm": "UN",
         "uid": "17ed8d32-1b7a-4142-be2b-09ee8f0ffd4e",
         "desc": "FLANGE 6\" AC 150 LBS SLIP-ON",
-        "marca": "",
+        "marca": "XF",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "proveedor": "CODIFER",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 52100
       },
       {
         "id": 54,
@@ -100152,12 +100153,13 @@
         "qty": 1,
         "udm": "UN",
         "uid": "f040cd38-92a0-489e-b4e0-daa8c44dbe68",
-        "desc": "TUBERIA 3\" INOX 316L SCH 40 SC TUBERIA 3\" INOX 316L SCH 40 SC",
+        "desc": "TUBERIA 3\" INOX 316L SCH 40 SC ",
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "proveedor": "CODIFER",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
       },
       {
         "id": 56,
@@ -101791,10 +101793,10 @@
         "tiempoEntrega": "1-2 DIAS"
       }
     ],
-    "fechaGuardado": "2026-09-14T15:20:56.338Z",
+    "fechaGuardado": "2026-09-14T15:30:12.424Z",
     "createdAt": "2026-09-08T21:00:11.713Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-14T15:20:56.339Z",
+    "updatedAt": "2026-09-14T15:30:12.424Z",
     "updatedBy": "alexandra"
   },
   {
