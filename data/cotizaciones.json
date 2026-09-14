@@ -99426,9 +99426,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 40255006,
-    "ivaVal": 7648451.14,
-    "total": 47903457.14,
+    "subtotal": 145124106,
+    "ivaVal": 27573580.14,
+    "total": 172697686.14,
     "formaPago": "CONTADO",
     "sitioEntrega": "CAJICA",
     "validez": "8 DÍAS",
@@ -99516,7 +99516,9 @@
         "proveedor": "CODIFER",
         "obsProveedor": "BODEGA",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 149720
+        "precioProveedor": 149720,
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 7,
@@ -99525,7 +99527,7 @@
         "uid": "d5504f5e-38ee-48db-afd9-06b6a2045c64",
         "desc": "CODO 1\" INOX 316L SW 3000 LB",
         "marca": "BOTHWELL",
-        "precio": 0,
+        "precio": 200000,
         "desvTec": "",
         "proveedor": "SEGEFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99538,7 +99540,7 @@
         "uid": "a3a3fa8a-121b-4c9b-98c3-a5f2725105e4",
         "desc": "NIPLE 1/2\" X 3 INOX 304 SC ROSCAR SCH 80",
         "marca": "MOLONG ",
-        "precio": 0,
+        "precio": 4580,
         "desvTec": "",
         "proveedor": "CASTELAR",
         "tiempoEntrega": "4-5 DÍAS HABILES",
@@ -99551,7 +99553,7 @@
         "uid": "2cce9009-0c31-4bc3-808e-49681b525466",
         "desc": "NIPLE 1/2\" X 75 MM INOX ROSCAR",
         "marca": "MOLONG ",
-        "precio": 0,
+        "precio": 4569,
         "desvTec": "",
         "proveedor": "CASTELAR",
         "tiempoEntrega": "4-5 DÍAS HABILES",
@@ -99564,7 +99566,7 @@
         "uid": "58400d0f-6b11-4476-ad07-312729c25bf0",
         "desc": "FLANGE 3\" AC 150 LBS SLIP-ON",
         "marca": "XF",
-        "precio": 0,
+        "precio": 29105,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -99577,7 +99579,7 @@
         "uid": "b5459ae4-814f-4037-b7c4-ef11812ca9a0",
         "desc": "FLANGE 2\" AC 150 LBS SLIP-ON",
         "marca": "XF",
-        "precio": 0,
+        "precio": 19347,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -99590,7 +99592,7 @@
         "uid": "c077f2d7-3921-40bb-893e-ff37e3f7410e",
         "desc": "FLANGE 4\" AC 150 LBS SLIP-ON",
         "marca": "XF",
-        "precio": 0,
+        "precio": 42126,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -99603,7 +99605,7 @@
         "uid": "750f0472-4873-4490-a368-b0de584eda3b",
         "desc": "FLANGE 2\" INOX 304 150 LBS SLIP-ON",
         "marca": "",
-        "precio": 0,
+        "precio": 59337,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -99616,7 +99618,7 @@
         "uid": "e2f57a61-52fe-4c5d-b2f5-d0f87bda809d",
         "desc": "FLANGE 3\" INOX 316L 150 LBS SLIP-ON",
         "marca": "XF",
-        "precio": 0,
+        "precio": 108842,
         "desvTec": "SS304",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -99629,7 +99631,7 @@
         "uid": "4e82d209-8de1-4346-940e-7896923db2b8",
         "desc": "BUSHING 1/2\" A 3/8\" INOX",
         "marca": "",
-        "precio": 0,
+        "precio": 2789,
         "desvTec": "SE OFERTA X150",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -99642,7 +99644,7 @@
         "uid": "7b97e431-48c3-48be-a67d-f24c8106d455",
         "desc": "FLANGE 4\" AC 150 LBS SLIP-ON",
         "marca": "",
-        "precio": 0,
+        "precio": 42124,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -99655,7 +99657,7 @@
         "uid": "30a00f47-b541-4b7e-b65e-61341561b095",
         "desc": "FLANGE 2\" AC 150 LBS SLIP-ON",
         "marca": "",
-        "precio": 0,
+        "precio": 19347,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -99668,7 +99670,7 @@
         "uid": "3190237c-e984-4485-8bf8-0d1b909eedd7",
         "desc": "FLANGE 2\" INOX 316L 150 LBS",
         "marca": "",
-        "precio": 0,
+        "precio": 59337,
         "desvTec": "SLIPON",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -99681,7 +99683,7 @@
         "uid": "92aa27b2-511d-46b5-9845-a6d1be963806",
         "desc": "NIPLE 1/2\" X 2 INOX 304 SC ROSCAR SCH 80",
         "marca": "",
-        "precio": 0,
+        "precio": 4353,
         "desvTec": "",
         "proveedor": "CASTELAR",
         "tiempoEntrega": "4-5 DÍAS HABILES",
@@ -99694,7 +99696,7 @@
         "uid": "c7efa544-0243-4d84-82df-7c67459923c7",
         "desc": "UNION 1/2\" INOX 304 SCH 40",
         "marca": "",
-        "precio": 0,
+        "precio": 3032,
         "desvTec": "X 150",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -99707,7 +99709,7 @@
         "uid": "7bc42c18-43b2-4a8f-bbbc-56f4fb607e1c",
         "desc": "FLANGE 6\" 300 PSI WN INOX 304 CUELLO",
         "marca": "",
-        "precio": 0,
+        "precio": 597295,
         "desvTec": "FLANCHE CUELLO SCH40, SS304",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99720,7 +99722,7 @@
         "uid": "4ffdb23f-f592-42fa-84ba-0ff2f9092702",
         "desc": "BUSHING 3/4\" A 1/2\" INOX 304 R",
         "marca": "",
-        "precio": 0,
+        "precio": 3600,
         "desvTec": "SS304, NPT X 150",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99733,7 +99735,7 @@
         "uid": "535b158a-4ccc-48fd-b04f-daa86cd131a1",
         "desc": "FLANGE 3\" AC 150 LBS SLIP-ON",
         "marca": "",
-        "precio": 0,
+        "precio": 29105,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99746,7 +99748,7 @@
         "uid": "d3981f84-4371-4568-b078-44975e5b7cd2",
         "desc": "BUSHING 1\" A 3/4\" INOX 304 ROS",
         "marca": "",
-        "precio": 0,
+        "precio": 5021,
         "desvTec": "X 150 SS304 NPT",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99759,7 +99761,7 @@
         "uid": "10d1778d-e124-444d-8f19-546ff3707aef",
         "desc": "TEE 1/2\" INOX 304 ROSCAR",
         "marca": "XF",
-        "precio": 0,
+        "precio": 4853,
         "desvTec": "X150",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
@@ -99772,7 +99774,7 @@
         "uid": "2d60b2c2-d19b-4c16-9274-f23ab2b98688",
         "desc": "FLANGE 1\" AC 150 LBS SLIP-ON",
         "marca": "XF",
-        "precio": 0,
+        "precio": 9579,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99785,7 +99787,7 @@
         "uid": "ec76617c-beed-4865-ae21-c91fdb5277a2",
         "desc": "FLEXITALICO 1\" 150 RWI/304/304/FG/CS GAR",
         "marca": "JAGUAR",
-        "precio": 0,
+        "precio": 2063,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99798,7 +99800,7 @@
         "uid": "61fc1f94-84ee-4360-9cef-019e0aa7e13d",
         "desc": "FLANGE 6\" AC 150 LBS SLIP-ON",
         "marca": "XF",
-        "precio": 0,
+        "precio": 57032,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99811,7 +99813,7 @@
         "uid": "a4444d24-ad13-4aa3-88a1-d4c227835c89",
         "desc": "FLANGE 1\" INOX 304 150 LBS SLIP-ON",
         "marca": "XF",
-        "precio": 0,
+        "precio": 25589,
         "desvTec": "304",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99824,7 +99826,7 @@
         "uid": "0d7d7ab2-cbb9-45d0-b8ad-4fe033eb75f1",
         "desc": "FLANGE 1-1/2\" INOX 316L 150 LB ",
         "marca": "XF",
-        "precio": 0,
+        "precio": 57137,
         "desvTec": "CUELLO X 150",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99837,7 +99839,7 @@
         "uid": "b6f8e575-75b8-40ca-ba5a-784ca55595c6",
         "desc": "CODO 10\" AC SCH 40 SOLDAR",
         "marca": "XF",
-        "precio": 0,
+        "precio": 294484,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99850,7 +99852,7 @@
         "uid": "ec43222e-310f-49d0-bb37-f521c129d5ff",
         "desc": "BUSHING 1/2\" A 1/4\" INOX 304 R",
         "marca": "XF",
-        "precio": 0,
+        "precio": 2789,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99863,7 +99865,7 @@
         "uid": "089db8cb-4a29-43da-90a8-c6c30ca85ee1",
         "desc": "FLANGE 1\" INOX 304 150 LBS SLIP-ON",
         "marca": "XF",
-        "precio": 0,
+        "precio": 25589,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
@@ -99876,11 +99878,14 @@
         "uid": "162ff849-baf2-43e9-94ff-2884cf54d0c0",
         "desc": "NIPLE 1/4\" X 2\" INOX SCH 40",
         "marca": "XF",
-        "precio": 0,
+        "precio": 3748,
         "desvTec": "",
         "proveedor": "CASTELAR",
         "tiempoEntrega": "4-5 DÍAS HABILES",
-        "precioProveedor": 2548.43
+        "precioProveedor": 2548.43,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 35,
@@ -99889,11 +99894,14 @@
         "uid": "eeb3a927-fd74-45a6-b379-cfb34863b7b8",
         "desc": "FLANGE 1\" AC 150 LBS SLIP-ON",
         "marca": "XF",
-        "precio": 0,
+        "precio": 9568,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 9090
+        "precioProveedor": 9090,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 36,
@@ -99902,11 +99910,14 @@
         "uid": "f0fb793f-f06e-434d-a86e-cbed3b511b10",
         "desc": "CODO 1-1/2\" INOX 316L SCH 40",
         "marca": "XF",
-        "precio": 0,
+        "precio": 26842,
         "desvTec": "SS316",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 25500
+        "precioProveedor": 25500,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 37,
@@ -99915,11 +99926,14 @@
         "uid": "0074bbc3-59b0-4560-a07a-6726518f2c6c",
         "desc": "CODO 1/2\" INOX 304 SCH 40 ROSCAR",
         "marca": "",
-        "precio": 0,
+        "precio": 3505,
         "desvTec": "X150",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 3330
+        "precioProveedor": 3330,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 38,
@@ -99928,11 +99942,14 @@
         "uid": "ea42704d-1061-4e73-80f5-fd43bdf22ce4",
         "desc": "CODO 1/2\" INOX 316L THR 3000LB",
         "marca": "BOTHWELL",
-        "precio": 0,
+        "precio": 38084,
         "desvTec": "304",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 36180
+        "precioProveedor": 36180,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 39,
@@ -99941,11 +99958,14 @@
         "uid": "70fe4b1b-f205-4cd2-b092-71f69d15f4bb",
         "desc": "CODO 2\" AC SCH 40 SOLDAR",
         "marca": "XF",
-        "precio": 0,
+        "precio": 5568,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 5290
+        "precioProveedor": 5290,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 40,
@@ -99954,11 +99974,14 @@
         "uid": "eb3ebac6-d8b6-4b3b-ad14-04ce4bcd38fc",
         "desc": "BUSHING 1\" A 1/2\" INOX 316",
         "marca": "",
-        "precio": 0,
+        "precio": 5021,
         "desvTec": "SS304",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 4770
+        "precioProveedor": 4770,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 41,
@@ -99972,7 +99995,9 @@
         "proveedor": "GERENCIA",
         "obsProveedor": "CODIFER 102050",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 42,
@@ -99981,11 +100006,14 @@
         "uid": "3f5df6b4-d35c-4767-8917-ad81522ca990",
         "desc": "CODO 2\" INOX 304 SCH 40 SOLAR",
         "marca": "",
-        "precio": 0,
+        "precio": 27284,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 25920
+        "precioProveedor": 25920,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 43,
@@ -99994,11 +100022,14 @@
         "uid": "3e4b6d7f-e1f4-4a10-9bd6-f8b5b25d3b56",
         "desc": "CODO 1/2\" INOX SCH 40 CALLE NPT",
         "marca": "",
-        "precio": 0,
+        "precio": 3505,
         "desvTec": "ROSCAR",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 3330
+        "precioProveedor": 3330,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 44,
@@ -100007,11 +100038,14 @@
         "uid": "92d5175e-5961-4c29-8df5-2abe8e1ac1c1",
         "desc": "NIPLE 1/2\" X 4\" INOX SCH 40",
         "marca": "",
-        "precio": 0,
+        "precio": 4591,
         "desvTec": "",
         "proveedor": "CASTELAR",
         "tiempoEntrega": "4-5 DÍAS HABILES",
-        "precioProveedor": 3122.1
+        "precioProveedor": 3122.1,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 45,
@@ -100025,7 +100059,9 @@
         "proveedor": "CODIFER",
         "obsProveedor": "CODIFER 295450",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 295450
+        "precioProveedor": 295450,
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 46,
@@ -100034,11 +100070,14 @@
         "uid": "d73089a4-c8c6-4484-9a65-652676536792",
         "desc": "FLANGE 1-1/2\" AC 150 LBS SLIP-ON",
         "marca": "XF",
-        "precio": 0,
+        "precio": 13326,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 12660
+        "precioProveedor": 12660,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 47,
@@ -100047,11 +100086,14 @@
         "uid": "4d1d8ef9-4e3c-40cb-baef-167920d65ed7",
         "desc": "CODO 2\" INOX 304 SCH 40 SOLDAR ",
         "marca": "XF/FI",
-        "precio": 0,
+        "precio": 40221,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 38210
+        "precioProveedor": 38210,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 48,
@@ -100060,11 +100102,14 @@
         "uid": "2ccd23e1-ad91-4446-8a70-80864c86fef6",
         "desc": "VALVULA BOLA 2\" INOX 304 MARCA KTS",
         "marca": "SIO",
-        "precio": 0,
+        "precio": 126211,
         "desvTec": "X 1000 NPT",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 119900
+        "precioProveedor": 119900,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 49,
@@ -100076,7 +100121,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 50,
@@ -100088,7 +100137,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 51,
@@ -100101,7 +100154,10 @@
         "desvTec": "SS304",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 24310
+        "precioProveedor": 24310,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 52,
@@ -100114,7 +100170,10 @@
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 4020
+        "precioProveedor": 4020,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 53,
@@ -100127,7 +100186,10 @@
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 52100
+        "precioProveedor": 52100,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 54,
@@ -100140,7 +100202,10 @@
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 15110
+        "precioProveedor": 15110,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 55,
@@ -100153,20 +100218,26 @@
         "desvTec": "5.80 MTR",
         "proveedor": "GERENCIA",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 56,
         "qty": 1,
         "udm": "UN",
         "uid": "bc98ad94-14b1-404d-ba82-db79042f308d",
-        "desc": "CODO 2\" INOX 316L SCH 10 SOLDAR CODO 2\" INOX 316L SCH 10 SOLDAR CODO 2\" INOX 316L SCH 10 SOLDAR",
+        "desc": "CODO 2\" INOX 316L SCH 10 SOLDAR CODO 2\" INOX 316L SCH 10 SOLDAR",
         "marca": "XF",
         "precio": 0,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 30420
+        "precioProveedor": 30420,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 57,
@@ -100179,32 +100250,42 @@
         "desvTec": "",
         "proveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 58,
         "qty": 1,
         "udm": "UN",
         "uid": "fc41f56a-27b9-40cc-a2bd-450c20783685",
-        "desc": "CODO 6\" AC SCH 40 SOLDAR CODO 6\" AC SCH 40 SOLDAR E16 9 ASTM A234",
+        "desc": "CODO 6\" AC SCH 40 SOLDAR E16 9 ASTM A234",
         "marca": "",
         "precio": 0,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 67360
+        "precioProveedor": 67360,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 59,
         "qty": 1,
         "udm": "UN",
         "uid": "328038c6-f2b8-44e2-a28e-07c5c7c80e12",
-        "desc": "BUSCHING 1/2\" 3/4\" INOX BUSCHING 1/2\" 3/4\" INOX",
+        "desc": "BUSCHING 1/2\" 3/4\" INOX ",
         "marca": "",
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 60,
@@ -100216,7 +100297,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 61,
@@ -100228,7 +100313,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 62,
@@ -100241,7 +100330,10 @@
         "desvTec": "",
         "proveedor": "CASTELAR",
         "tiempoEntrega": "4-5 DÍAS HABILES",
-        "precioProveedor": 2686.86
+        "precioProveedor": 2686.86,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 63,
@@ -100253,7 +100345,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 64,
@@ -100266,7 +100362,10 @@
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 16260
+        "precioProveedor": 16260,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 65,
@@ -100278,19 +100377,27 @@
         "precio": 101840,
         "desvTec": "5.80 MTR.",
         "proveedor": "GERENCIA",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 66,
         "qty": 1,
         "udm": "UN",
         "uid": "56a51270-c205-47fd-91a1-39193448cbe1",
-        "desc": "CODO 2\" INOX 316L SCH 10 SOLDAR CODO 2\" INOX 316L SCH 10 SOLDAR CODO 2\" INOX 316L SCH 10 SOLDAR",
+        "desc": "CODO 2\" INOX 316L SCH 10 SOLDAR CODO 2\" INOX 316L SCH 10 SOLDAR",
         "marca": "",
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 67,
@@ -100303,7 +100410,10 @@
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 23850
+        "precioProveedor": 23850,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 68,
@@ -100315,7 +100425,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 69,
@@ -100328,45 +100442,58 @@
         "desvTec": "",
         "proveedor": "CASTELAR",
         "tiempoEntrega": "4-5 DÍAS HABILES",
-        "precioProveedor": 3114.67
+        "precioProveedor": 3114.67,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 70,
         "qty": 1,
         "udm": "UN",
         "uid": "9f641c9a-665c-4927-af0a-72e8588bd0a8",
-        "desc": "NIPLE 1/2\" X 3\" INOX 304 SC ROSCAR SCH 80 NIPLE 1/2\" X 3\" INOX 304 SC ROSCAR SCH 80",
+        "desc": "NIPLE 1/2\" X 3\" INOX 304 SC ROSCAR SCH 80 ",
         "marca": "",
         "precio": 0,
         "desvTec": "",
         "proveedor": "CASTELAR",
         "tiempoEntrega": "4-5 DÍAS HABILES",
-        "precioProveedor": 3114.57
+        "precioProveedor": 3114.57,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 71,
         "qty": 1,
         "udm": "UN",
         "uid": "9626f9fd-d5d1-4c43-905e-6aad3180090a",
-        "desc": "CODO 4\" AC SCH 40 SOLDAR CODO 4\" AC SCH 40 SOLDAR CODO 4\" AC SCH 40 SOLDAR",
+        "desc": "CODO 4\" AC SCH 40 SOLDAR CODO 4\" AC SCH 40 SOLDAR",
         "marca": "",
         "precio": 0,
         "desvTec": "",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 27960
+        "precioProveedor": 27960,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 72,
         "qty": 1,
         "udm": "UN",
         "uid": "d96461ba-80a9-42f3-b31f-ddda850db837",
-        "desc": "FLANGE 2\" INOX 316L 150 LBS SLIP-ON FLANGE 2\" INOX 316L 150 LBS SLIP-ON",
+        "desc": "FLANGE 2\" INOX 316L 150 LBS SLIP-ON F",
         "marca": "",
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 73,
@@ -100378,7 +100505,11 @@
         "precio": 32404,
         "desvTec": "",
         "proveedor": "GERENCIA",
-        "tiempoEntrega": "1-2 DIAS HABILES"
+        "tiempoEntrega": "1-2 DIAS HABILES",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 74,
@@ -100390,7 +100521,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 75,
@@ -100403,7 +100538,10 @@
         "desvTec": "",
         "proveedor": "CASTELAR",
         "tiempoEntrega": "4-5 DÍAS HABILES",
-        "precioProveedor": 3565.08
+        "precioProveedor": 3565.08,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 76,
@@ -100416,7 +100554,10 @@
         "desvTec": "",
         "proveedor": "CASTELAR",
         "tiempoEntrega": "4-5 DÍAS HABILES",
-        "precioProveedor": 4569.42
+        "precioProveedor": 4569.42,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 77,
@@ -100428,7 +100569,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 78,
@@ -100440,7 +100585,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 79,
@@ -100452,7 +100601,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 80,
@@ -100464,7 +100617,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 81,
@@ -100476,7 +100633,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 82,
@@ -100489,7 +100650,10 @@
         "desvTec": "",
         "proveedor": "GERENCIA",
         "tiempoEntrega": "1-2 DÍAS HABILES",
-        "precioProveedor": 0
+        "precioProveedor": 0,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 83,
@@ -100501,7 +100665,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DÍAS HABILES"
+        "tiempoEntrega": "1-2 DÍAS HABILES",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 84,
@@ -100514,7 +100682,10 @@
         "desvTec": "",
         "proveedor": "CASTELAR",
         "tiempoEntrega": "4-5 DÍAS HABILES",
-        "precioProveedor": 4974.57
+        "precioProveedor": 4974.57,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 85,
@@ -100526,7 +100697,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 86,
@@ -100538,7 +100713,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 87,
@@ -100550,7 +100729,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 88,
@@ -100562,7 +100745,11 @@
         "precio": 212868,
         "desvTec": "",
         "proveedor": "GERENCIA",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 89,
@@ -100574,7 +100761,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 90,
@@ -100586,7 +100777,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 91,
@@ -100598,7 +100793,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 92,
@@ -100610,7 +100809,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 93,
@@ -100622,7 +100825,11 @@
         "precio": 22000,
         "desvTec": "",
         "proveedor": "GERENCIA",
-        "tiempoEntrega": "1-2 DIAS HABILES"
+        "tiempoEntrega": "1-2 DIAS HABILES",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 94,
@@ -100634,7 +100841,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "GERENCIA",
-        "tiempoEntrega": "1-2 DIAS HABILES"
+        "tiempoEntrega": "1-2 DIAS HABILES",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 95,
@@ -100646,7 +100857,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 96,
@@ -100658,7 +100873,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 97,
@@ -100670,7 +100889,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 98,
@@ -100682,7 +100905,11 @@
         "precio": 14940,
         "desvTec": "TUBO X 6 MTS, PRECIO X MTERO",
         "proveedor": "GERENCIA",
-        "tiempoEntrega": "1-2 DIAS HABILES"
+        "tiempoEntrega": "1-2 DIAS HABILES",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 99,
@@ -100694,7 +100921,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 100,
@@ -100706,7 +100937,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 101,
@@ -100718,7 +100953,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 102,
@@ -100730,7 +100969,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 103,
@@ -100742,7 +100985,11 @@
         "precio": 101840,
         "desvTec": "5.80 MTR",
         "proveedor": "GERENCIA",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 104,
@@ -100754,7 +101001,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 105,
@@ -100766,7 +101017,11 @@
         "precio": 58194,
         "desvTec": "",
         "proveedor": "GERENCIA",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 106,
@@ -100778,7 +101033,11 @@
         "precio": 70445,
         "desvTec": "",
         "proveedor": "GERENCIA",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 107,
@@ -100790,7 +101049,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 108,
@@ -100802,7 +101065,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 109,
@@ -100814,7 +101081,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 110,
@@ -100826,7 +101097,11 @@
         "precio": 64000,
         "desvTec": "SE OFERTA TUBO X 6 METROS",
         "proveedor": "BODEGA",
-        "tiempoEntrega": "1-2 DIAS HABILES"
+        "tiempoEntrega": "1-2 DIAS HABILES",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 111,
@@ -100838,7 +101113,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 112,
@@ -100850,7 +101129,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 113,
@@ -100862,7 +101145,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 114,
@@ -100874,7 +101161,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 115,
@@ -100886,7 +101177,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 116,
@@ -100898,7 +101193,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 117,
@@ -100910,7 +101209,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 118,
@@ -100922,7 +101225,11 @@
         "precio": 58194,
         "desvTec": "",
         "proveedor": "GERENCIA",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 119,
@@ -100934,7 +101241,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 120,
@@ -100946,7 +101257,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 121,
@@ -100958,7 +101273,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 122,
@@ -100970,7 +101289,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 123,
@@ -100982,7 +101305,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 124,
@@ -100994,7 +101321,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 125,
@@ -101006,7 +101337,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 126,
@@ -101018,7 +101353,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 127,
@@ -101030,7 +101369,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 128,
@@ -101042,7 +101385,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 129,
@@ -101054,7 +101401,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 130,
@@ -101066,7 +101417,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 131,
@@ -101078,7 +101433,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 132,
@@ -101090,7 +101449,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 133,
@@ -101102,7 +101465,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 134,
@@ -101114,7 +101481,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 135,
@@ -101126,7 +101497,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 136,
@@ -101138,7 +101513,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 137,
@@ -101150,7 +101529,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 138,
@@ -101162,7 +101545,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 139,
@@ -101174,7 +101561,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 140,
@@ -101186,7 +101577,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 141,
@@ -101198,7 +101593,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 142,
@@ -101210,7 +101609,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 143,
@@ -101222,7 +101625,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 144,
@@ -101234,7 +101641,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 145,
@@ -101246,7 +101657,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 146,
@@ -101258,7 +101673,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 147,
@@ -101270,7 +101689,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 148,
@@ -101282,7 +101705,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 149,
@@ -101294,7 +101721,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 150,
@@ -101306,7 +101737,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 151,
@@ -101318,7 +101753,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 152,
@@ -101330,7 +101769,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 153,
@@ -101342,7 +101785,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 154,
@@ -101354,7 +101801,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 155,
@@ -101366,7 +101817,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 156,
@@ -101378,7 +101833,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 157,
@@ -101390,7 +101849,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 158,
@@ -101402,7 +101865,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 159,
@@ -101414,7 +101881,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 160,
@@ -101426,7 +101897,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 161,
@@ -101438,7 +101913,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 162,
@@ -101450,7 +101929,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 163,
@@ -101462,7 +101945,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 164,
@@ -101474,7 +101961,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 165,
@@ -101486,7 +101977,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 166,
@@ -101498,7 +101993,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 167,
@@ -101510,7 +102009,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 168,
@@ -101522,7 +102025,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 169,
@@ -101534,7 +102041,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 170,
@@ -101546,7 +102057,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 171,
@@ -101558,7 +102073,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 172,
@@ -101570,7 +102089,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 173,
@@ -101582,7 +102105,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 174,
@@ -101594,7 +102121,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 175,
@@ -101606,7 +102137,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 176,
@@ -101618,7 +102153,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 177,
@@ -101630,7 +102169,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 178,
@@ -101642,7 +102185,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 179,
@@ -101654,7 +102201,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 180,
@@ -101666,7 +102217,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 181,
@@ -101678,7 +102233,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 182,
@@ -101690,7 +102249,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 183,
@@ -101702,7 +102265,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 184,
@@ -101714,7 +102281,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 185,
@@ -101726,7 +102297,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 186,
@@ -101738,7 +102313,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 187,
@@ -101750,7 +102329,11 @@
         "precio": 442582,
         "desvTec": "",
         "proveedor": "GERENCIA",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 188,
@@ -101762,7 +102345,11 @@
         "precio": 442582,
         "desvTec": "",
         "proveedor": "GERENCA",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 189,
@@ -101774,7 +102361,11 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       },
       {
         "id": 190,
@@ -101786,13 +102377,17 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null,
+        "obsProveedor": "",
+        "fotoGrande": false,
+        "altDe": null
       }
     ],
-    "fechaGuardado": "2026-09-14T16:45:22.737Z",
+    "fechaGuardado": "2026-09-14T16:49:23.680Z",
     "createdAt": "2026-09-08T21:00:11.713Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-14T16:45:22.737Z",
+    "updatedAt": "2026-09-14T16:49:23.680Z",
     "updatedBy": "alberto"
   },
   {
