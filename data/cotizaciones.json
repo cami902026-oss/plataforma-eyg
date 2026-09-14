@@ -99436,9 +99436,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 11893572,
+    "ivaVal": 2259778.68,
+    "total": 14153350.68,
     "formaPago": "CONTADO",
     "sitioEntrega": "CAJICA",
     "validez": "8 DÍAS",
@@ -99975,12 +99975,13 @@
         "udm": "UN",
         "uid": "66d6dc8e-6329-4760-a6f3-78fe9cb29d81",
         "desc": "TUBERIA 2\" INOX 304 SCH 40 SC",
-        "marca": "YC INOX",
-        "precio": 0,
+        "marca": "YONKS",
+        "precio": 120982,
         "desvTec": "5.80 MTR",
-        "proveedor": "CODIFER",
+        "proveedor": "GERENCIA",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 102050
+        "precioProveedor": 0,
+        "obsProveedor": "CODIFER 102050"
       },
       {
         "id": 42,
@@ -100027,12 +100028,13 @@
         "udm": "MT",
         "uid": "6827bcc7-9fb6-4e0d-b358-fda9f6a9de50",
         "desc": "TUBERIA 3\" INOX 304 SCH 80 SC",
-        "marca": "YC INOX",
-        "precio": 0,
-        "desvTec": "5.80, SOLO 4 TUBOS",
+        "marca": "YONKS",
+        "precio": 339000,
+        "desvTec": "5.80",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 295450
+        "precioProveedor": 295450,
+        "obsProveedor": "CODIFER 295450"
       },
       {
         "id": 46,
@@ -100179,12 +100181,13 @@
         "qty": 1,
         "udm": "UN",
         "uid": "ef43f147-abb5-4091-9ae2-18934ba9542a",
-        "desc": "TUBERIA 1-1/2\" AGUAS NEGRAS TUBERIA 1-1/2\" AGUAS NEGRAS",
+        "desc": "TUBERIA 1-1/2\" AGUAS NEGRAS",
         "marca": "",
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
       },
       {
         "id": 58,
@@ -100278,11 +100281,11 @@
         "qty": 1,
         "udm": "UN",
         "uid": "e4b1fe1a-4723-412c-9828-1d9793dcfb34",
-        "desc": "TUBERIA 1\" INOX 316L SCH 40 TUBERIA 1\" INOX 316L SCH 40",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "desc": "TUBERIA 1\" INOX 316L SCH 40",
+        "marca": "YONKS",
+        "precio": 101840,
+        "desvTec": "5.80 MTR.",
+        "proveedor": "GERENCIA",
         "tiempoEntrega": "1-2 DIAS"
       },
       {
@@ -100488,12 +100491,13 @@
         "qty": 1,
         "udm": "UN",
         "uid": "c5708b2f-d517-45c6-be0f-a0c92642aeec",
-        "desc": "TUBERIA 2\" INOX 304 SCH 40 SC TUBERIA 2\" INOX 304 SCH 40 SC ",
-        "marca": "",
+        "desc": "TUBERIA 2\" INOX 304 SCH 40 SC ",
+        "marca": "YONKS",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "proveedor": "GERENCIA",
+        "tiempoEntrega": "1-2 DÍAS HABILES",
+        "precioProveedor": 120982
       },
       {
         "id": 83,
@@ -100505,7 +100509,7 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "tiempoEntrega": "1-2 DÍAS HABILES"
       },
       {
         "id": 84,
@@ -100561,11 +100565,11 @@
         "qty": 16,
         "udm": "UN",
         "uid": "ec7a54c4-0a70-4d71-957e-1f73af8d7be5",
-        "desc": "TUBERIA 2'' INOX 316L SCH 40 S TUBERIA 2'' INOX 316L SCH 40 S",
-        "marca": "",
-        "precio": 0,
+        "desc": "TUBERIA 2'' INOX 316L SCH 40 S ",
+        "marca": "YONKS",
+        "precio": 212868,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "GERENCIA",
         "tiempoEntrega": "1-2 DIAS"
       },
       {
@@ -100741,11 +100745,11 @@
         "qty": 13,
         "udm": "UN",
         "uid": "1d7b324a-0e3d-46c6-9a7e-45d0b59df4e9",
-        "desc": "TUBERIA 1'' INOX 316L SCH 40 TUBERIA 1'' INOX 316L SCH 40 TUBERIA 1'' INOX 316L SCH 40",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "desc": "TUBERIA 1'' INOX 316L SCH 40 ",
+        "marca": "YONKS",
+        "precio": 101840,
+        "desvTec": "5.80 MTR",
+        "proveedor": "GERENCIA",
         "tiempoEntrega": "1-2 DIAS"
       },
       {
@@ -100766,10 +100770,10 @@
         "udm": "UN",
         "uid": "3ffa4508-6253-4f61-82de-b80106d5887d",
         "desc": "TUBERIA 1'' INOX 304 SCH 40 SC ASTM A-312",
-        "marca": "",
-        "precio": 0,
+        "marca": "YONKS",
+        "precio": 58194,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "GERENCIA",
         "tiempoEntrega": "1-2 DIAS"
       },
       {
@@ -100778,10 +100782,10 @@
         "udm": "UN",
         "uid": "68163577-1f15-4f83-9b7e-32ca44581db7",
         "desc": "TUBERIA 3/4'' INOX 316L SCH 40 ASTM-312",
-        "marca": "",
-        "precio": 0,
+        "marca": "YONKS",
+        "precio": 70445,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "GERENCIA",
         "tiempoEntrega": "1-2 DIAS"
       },
       {
@@ -100922,10 +100926,10 @@
         "udm": "UN",
         "uid": "944e1373-5181-42d0-a5f7-d8242841bdc6",
         "desc": "TUBERIA 1'' INOX 304 SCH 40 SC ASTM A-312",
-        "marca": "",
-        "precio": 0,
+        "marca": "YONKS",
+        "precio": 58194,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "GERENCIA",
         "tiempoEntrega": "1-2 DIAS"
       },
       {
@@ -101761,7 +101765,7 @@
         "qty": 2,
         "udm": "UN",
         "uid": "cda55b19-f110-4412-976f-b5e769930321",
-        "desc": "TUBERIA 3\" INOX 316L SCH 40 TUBERIA 3\" INOX 316L",
+        "desc": "TUBERIA 3\" INOX 316L SCH 40 ",
         "marca": "",
         "precio": 0,
         "desvTec": "",
@@ -101793,10 +101797,10 @@
         "tiempoEntrega": "1-2 DIAS"
       }
     ],
-    "fechaGuardado": "2026-09-14T15:30:12.424Z",
+    "fechaGuardado": "2026-09-14T15:48:03.184Z",
     "createdAt": "2026-09-08T21:00:11.713Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-14T15:30:12.424Z",
+    "updatedAt": "2026-09-14T15:48:03.185Z",
     "updatedBy": "alexandra"
   },
   {
