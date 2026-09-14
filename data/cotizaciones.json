@@ -99436,9 +99436,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 14106482,
-    "ivaVal": 2680231.58,
-    "total": 16786713.58,
+    "subtotal": 26562482,
+    "ivaVal": 5046871.58,
+    "total": 31609353.58,
     "formaPago": "CONTADO",
     "sitioEntrega": "CAJICA",
     "validez": "8 DÍAS",
@@ -99521,11 +99521,12 @@
         "uid": "ed28c2b7-1798-4f61-8a0b-0c11d6590b22",
         "desc": "TUBERIA 6\" AC SCH 40 SC ASTM",
         "marca": "BAOLAI",
-        "precio": 0,
+        "precio": 113000,
         "desvTec": "GRADO B",
         "proveedor": "CODIFER",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 149720
+        "precioProveedor": 149720,
+        "obsProveedor": "BODEGA"
       },
       {
         "id": 7,
@@ -100105,11 +100106,12 @@
         "udm": "UN",
         "uid": "f85f3785-9098-4871-b8b8-f257b1ac0a97",
         "desc": "FLANGE 1\" INOX 316L 150 LBS",
-        "marca": "",
+        "marca": "XF",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "desvTec": "SS304",
+        "proveedor": "CODIFER",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 24310
       },
       {
         "id": 52,
@@ -100830,11 +100832,11 @@
         "udm": "UN",
         "uid": "45788f07-61f1-471b-b0d9-20a6faf6fdb5",
         "desc": "TUBERIA 4'' AC SCH 40 SC ASTM A-53 GR B",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS"
+        "marca": "BAOLAI",
+        "precio": 64000,
+        "desvTec": "SE OFERTA TUBO X 6 METROS",
+        "proveedor": "BODEGA",
+        "tiempoEntrega": "1-2 DIAS HABILES"
       },
       {
         "id": 111,
@@ -101797,10 +101799,10 @@
         "tiempoEntrega": "1-2 DIAS"
       }
     ],
-    "fechaGuardado": "2026-09-14T15:52:11.300Z",
+    "fechaGuardado": "2026-09-14T15:58:39.810Z",
     "createdAt": "2026-09-08T21:00:11.713Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-14T15:52:11.300Z",
+    "updatedAt": "2026-09-14T15:58:39.810Z",
     "updatedBy": "alexandra"
   },
   {
