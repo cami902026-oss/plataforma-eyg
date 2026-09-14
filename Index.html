@@ -4488,14 +4488,14 @@ function userCanSeeModule(mod) {
   if (mod === 'programacion') return true;
   // Abastecimiento: andrea, alberto, yesid
   if (mod === 'abastecimiento') return email === 'andrea' || email === 'alberto' || email === 'yesid';
-  // Remisiones: todo el equipo MENOS Nelsy
-  if (mod === 'remisiones') return email !== 'nelsy';
+  // Remisiones: todo el equipo MENOS Nelsy y Mario (Mario: 14-sep-2026, pedido de gerencia)
+  if (mod === 'remisiones') return email !== 'nelsy' && email !== 'mario';
   // Plan de Compras: todo el equipo MENOS Nelsy
   if (mod === 'compras') return email !== 'nelsy';
   // Órdenes de Pedido: todo el equipo MENOS Nelsy (25-ago-2026). El resto lo ve
   // completo para saber por dónde va cada pedido; editarlo es otra cosa
-  // (opPuedeEditar).
-  if (mod === 'op') return email !== 'nelsy';
+  // (opPuedeEditar). Mario tampoco lo ve (14-sep-2026, pedido de gerencia).
+  if (mod === 'op') return email !== 'nelsy' && email !== 'mario';
   // Admin/Jefe ve todo el resto siempre
   if (isAdmin) return true;
   const cfg = getUserModules();
