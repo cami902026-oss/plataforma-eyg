@@ -69039,7 +69039,7 @@
     "cliente": "ANDES OPERATING",
     "contacto": "ANDRES BERNAL",
     "correo": "andres.bernal@andesoperating.com",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 14112103,
@@ -69307,13 +69307,62 @@
         "uid": "558dbb5b-7869-43b0-928a-431bb5ba7522"
       }
     ],
-    "fechaGuardado": "2026-08-12T16:58:31.074Z",
+    "fechaGuardado": "2026-09-15T15:02:10.471Z",
     "fechaEnvio": "2026-08-12T15:54:03.759Z",
+    "adjudicadaAt": "2026-09-15",
+    "valorAdjudicado": 12805433,
+    "itemsAdjudicados": [
+      {
+        "uid": "4afee7df-5b45-428a-b061-2a35ce25f1fe",
+        "qty": 1
+      },
+      {
+        "uid": "38d8dde9-2b65-4e92-a41c-76112f0f9c1c",
+        "qty": 6
+      },
+      {
+        "uid": "1c494d64-9802-4464-b5f3-29dc2248cee9",
+        "qty": 2
+      },
+      {
+        "uid": "aaf767ac-f5b9-430f-aa3e-8ea852cf27eb",
+        "qty": 150
+      },
+      {
+        "uid": "4a32270b-d135-464e-9ceb-050dcf43e487",
+        "qty": 10
+      },
+      {
+        "uid": "8035ac3b-9f3f-4086-9411-f48e78166f7c",
+        "qty": 16
+      },
+      {
+        "uid": "ed9662c7-834e-453b-b215-e2ca19a127f1",
+        "qty": 32
+      },
+      {
+        "uid": "a54df924-4d0a-462f-9908-d9b80c9fcbd4",
+        "qty": 16
+      },
+      {
+        "uid": "26131df2-f44c-4de3-a5ca-519c36c33680",
+        "qty": 4
+      },
+      {
+        "uid": "ec3af164-2960-4c02-98de-9ed92a331eb6",
+        "qty": 1
+      },
+      {
+        "uid": "558dbb5b-7869-43b0-928a-431bb5ba7522",
+        "qty": 6
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-15T15:02:10.456Z",
     "createdAt": "2026-07-30T14:57:03.909Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-21T13:30:36.349Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-08-21T13:30:36.349Z"
+    "updatedAt": "2026-09-15T15:02:10.471Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM1975",
@@ -118940,11 +118989,11 @@
         "precioProveedor": 39750
       }
     ],
-    "fechaGuardado": "2026-09-15T15:02:03.395Z",
+    "fechaGuardado": "2026-09-15T14:49:16.352Z",
     "createdAt": "2026-09-15T13:46:33.460Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-15T15:02:03.395Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-15T14:49:16.352Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM2164",
@@ -118953,7 +119002,7 @@
     "cliente": "ELAWA S.A.S",
     "contacto": "PAOLA VILLARREAL",
     "correo": "lidercomercialriego@elawa.com.co",
-    "estado": "Enviada",
+    "estado": "Borrador",
     "factura": "",
     "iva": 19,
     "subtotal": 43201800,
@@ -118968,13 +119017,27 @@
     "aprobadaPor": "Alberto",
     "solicitudId": "",
     "motivoRechazo": "",
-    "items": [],
-    "fechaGuardado": "2026-09-15T15:01:01.058Z",
-    "fechaEnvio": "2026-09-15T15:01:01.058Z",
+    "items": [
+      {
+        "id": 1,
+        "qty": 600,
+        "udm": "MTR",
+        "uid": "d7022d11-70cf-4316-be9d-988572c4bef6",
+        "desc": "cable Centelsa referencia Monoflex calibre 1/0 AWG 90°C  1000 V XLPE",
+        "marca": "CENTELSA",
+        "precio": 72003,
+        "desvTec": "CABLE CENTELSA MONOFLEX  XLP (XLPE) calibre 1/0 AWG 1Kv\nDISPONIBLES 2 TRAMOS (406MTS Y 194 MTS)\n",
+        "proveedor": "MARISOL",
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 50402
+      }
+    ],
+    "fechaGuardado": "2026-09-15T14:55:10.044Z",
     "createdAt": "2026-09-15T14:20:28.857Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-15T15:01:01.058Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-15T14:55:10.044Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM629",
