@@ -107578,7 +107578,7 @@
     "cliente": "CIAM",
     "contacto": "JEISON",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 9361800,
@@ -107756,12 +107756,66 @@
         "precioProveedor": 19400
       }
     ],
-    "fechaGuardado": "2026-09-15T15:05:50.218Z",
+    "fechaGuardado": "2026-09-15T20:15:04.295Z",
     "fechaEnvio": "2026-09-15T15:05:06.009Z",
+    "adjudicadaAt": "2026-09-15",
+    "valorAdjudicado": 9361800,
+    "itemsAdjudicados": [
+      {
+        "uid": "dcc7c835-55cc-45e1-9812-432e940463e4",
+        "qty": 10
+      },
+      {
+        "uid": "2110ab86-0720-441f-990c-ef68a855378a",
+        "qty": 10
+      },
+      {
+        "uid": "ddb96eae-7280-442e-930f-6321ef5e5a6e",
+        "qty": 1
+      },
+      {
+        "uid": "578b6a82-4355-4db7-9cd3-c557a2b9fdb7",
+        "qty": 20
+      },
+      {
+        "uid": "6645f0a1-57ad-4604-acb6-4b2dfc7fe208",
+        "qty": 40
+      },
+      {
+        "uid": "fbf8bec9-48ec-4f4f-8553-528062db9ddb",
+        "qty": 50
+      },
+      {
+        "uid": "0e5f4516-f559-4a6f-a079-e3b52d664d20",
+        "qty": 300
+      },
+      {
+        "uid": "f366bcf1-5054-4105-8c76-f8c666a402fc",
+        "qty": 29
+      },
+      {
+        "uid": "d988298d-3afa-4190-b456-a25afa6292c0",
+        "qty": 15
+      },
+      {
+        "uid": "766e1fbf-b522-400f-924f-8086bcdb70ef",
+        "qty": 40
+      },
+      {
+        "uid": "8e0276ae-5e70-41bd-9c12-d7406ee9e62d",
+        "qty": 90
+      },
+      {
+        "uid": "86adc9f4-2e72-4dce-8817-ff801ad4536d",
+        "qty": 30
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-15T20:15:04.286Z",
     "createdAt": "2026-09-15T15:05:06.009Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-15T15:05:50.218Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-15T20:15:04.295Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2140",
