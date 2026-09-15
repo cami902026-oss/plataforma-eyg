@@ -13051,6 +13051,8 @@ function cotizRender() {
   cotizUpdateTotals();
   // Re-aplicar el resaltado de presencia (el innerHTML de arriba lo borra)
   try { _presPintar(); } catch(_) {}
+  // 15-sep-2026: filtros tipo Excel (bloque <script> propio al final; SOLO de vista)
+  try { if (typeof _cfAplicar === 'function') _cfAplicar(); } catch(_) {}
 }
 
 // ===== Descripción que crece de alto (renglón completo) =====
@@ -31731,6 +31733,264 @@ async function absGuardarEdicionProducto(codigo) {
     </div>
   </div>
 </div>
+
+<script id="cf-filtros">
+/* ═══ 🔎 FILTROS TIPO EXCEL — TABLA DE ÍTEMS DE COTIZACIÓN (2026-09-14) ═══════
+   100% ADITIVO y SOLO DE VISTA: oculta / reordena FILAS en pantalla. No toca
+   cotizItems (orden, numeración, precios): total, PDF, guardado y colaboración
+   siguen usando TODOS los ítems en su orden real. Bloque <script> PROPIO: si
+   algo aquí fallara, el resto de la plataforma no se entera. Enganche: una sola
+   línea al final de cotizRender() → _cfAplicar().
+   Blindajes: (1) filas que editaste con el filtro activo y la fila donde está tu
+   cursor NUNCA se ocultan; (2) ítems agregados con filtro activo se ven siempre;
+   (3) al abrir otra cotización el filtro se limpia; (4) Margen solo gerencia.
+   PILOTO: solo los usuarios de CF_PILOTO (o localStorage energy_cf='1'). */
+const CF_PILOTO = ['andrea'];
+function _cfHabilitado() {
+  try {
+    if (typeof currentUser === 'undefined' || !currentUser) return false;
+    if (CF_PILOTO.indexOf('*') >= 0 || CF_PILOTO.indexOf(String(currentUser.email || '').toLowerCase()) >= 0) return true;
+    return localStorage.getItem('energy_cf') === '1';
+  } catch (_) { return false; }
+}
+const _CF_COLS = [
+  { k: 'udm',     th: 'UDM',            t: 'cat', lbl: 'UDM',            v: it => String(it.udm || '').trim() },
+  { k: 'qty',     th: 'CANTIDAD',       t: 'num', lbl: 'Cantidad',       v: it => +it.qty || 0 },
+  { k: 'desc',    th: 'DESCRIPCIÓN',    t: 'txt', lbl: 'Descripción',    v: it => String(it.desc || '').trim() },
+  { k: 'entrega', th: 'T. ENTREGA',     t: 'cat', lbl: 'T. entrega',     v: it => String(it.tiempoEntrega || '').trim() },
+  { k: 'desv',    th: 'DESV. TÉCNICA',  t: 'txt', lbl: 'Desv. técnica',  v: it => String(it.desvTec || '').trim() },
+  { k: 'marca',   th: 'MARCA',          t: 'cat', lbl: 'Marca',          v: it => String(it.marca || '').trim() },
+  { k: 'precio',  th: 'V. UNITARIO',    t: 'num', lbl: 'V. unitario',    v: it => +it.precio || 0 },
+  { k: 'vtotal',  th: 'V. TOTAL',       t: 'num', lbl: 'V. total',       v: it => (+it.qty || 0) * (+it.precio || 0) },
+  { k: 'prov',    th: 'PROVEEDOR',      t: 'cat', lbl: 'Proveedor',      v: it => String(it.proveedor || '').trim() },
+  { k: 'pprov',   th: 'P. PROVEEDOR',   t: 'num', lbl: 'P. proveedor',   v: it => +it.precioProveedor || 0 },
+  { k: 'obs',     th: 'OBS. PROVEEDOR', t: 'txt', lbl: 'Obs. proveedor', v: it => String(it.obsProveedor || '').trim() },
+  { k: 'margen',  th: 'MARGEN',         t: 'num', lbl: 'Margen', ger: true, v: it => (+it.precio > 0 ? Math.round(((+it.precio - (+it.precioProveedor || 0)) / +it.precio) * 100) : ((+it.precioProveedor || 0) > 0 ? -100 : null)) },  // mismo cálculo que la columna MARGEN de cotizRender
+];
+const _CF_VACIAS = '(Vacías)';
+const _CF_RAPIDOS = {
+  cero:   { txt: '= $0 (sin precio)', f: v => (v || 0) === 0 },
+  mayor0: { txt: '> $0',              f: v => (v || 0) > 0 },
+  neg:    { txt: 'Negativo (< 0%)',   f: v => v != null && v < 0 },
+  bajo20: { txt: 'Menor a 20%',       f: v => v != null && v < 20 },
+};
+let _cfF = {};            // k -> { sel:Set|null, rap:string|null }
+let _cfOrden = null;      // { k, dir } — SOLO de vista
+let _cfBase = null;       // uids existentes al activar el primer filtro
+let _cfTocados = new Set(); // uids editados con filtro activo (nunca se ocultan)
+let _cfClaveCot = null;   // qué cotización está abierta (si cambia, se limpia)
+let _cfReordenado = false;
+
+const _cfNorm = s => String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const _cfCol = k => _CF_COLS.find(c => c.k === k);
+const _cfEsc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+function _cfItems() { return (typeof cotizItems !== 'undefined' && Array.isArray(cotizItems)) ? cotizItems : []; }
+function _cfGer() { try { return typeof cotiz_showFactor === 'function' && !!cotiz_showFactor(); } catch (_) { return false; } }
+function _cfClave(col, it) { const v = col.v(it); if (col.t === 'num') return v == null ? _CF_VACIAS : String(v); return v === '' ? _CF_VACIAS : v; }
+function _cfEtiqueta(col, c) {
+  if (c === _CF_VACIAS || col.t !== 'num') return c;
+  const n = +c;
+  if (col.k === 'margen') return n + '%';
+  if (col.k === 'qty') return n.toLocaleString('es-CO');
+  return '$' + n.toLocaleString('es-CO');
+}
+function _cfActivo() { return Object.keys(_cfF).some(k => _cfF[k] && (_cfF[k].sel || _cfF[k].rap)) || !!_cfOrden; }
+function _cfPasa(it, excepto) {
+  for (const k in _cfF) {
+    if (k === excepto) continue;
+    const f = _cfF[k]; if (!f) continue;
+    const col = _cfCol(k); if (!col) continue;
+    if (f.sel && !f.sel.has(_cfClave(col, it))) return false;
+    if (f.rap && !_CF_RAPIDOS[f.rap].f(col.v(it))) return false;
+  }
+  return true;
+}
+function _cfSiempreVisible(it) { return !!(it && it.uid && ((_cfBase && !_cfBase.has(it.uid)) || _cfTocados.has(it.uid))); }
+function _cfMarcarBase() { if (!_cfBase) _cfBase = new Set(_cfItems().map(it => it.uid).filter(Boolean)); }
+function _cfLimpiar() { _cfF = {}; _cfOrden = null; _cfBase = null; _cfTocados = new Set(); }
+
+function _cfEstilos() {
+  if (document.getElementById('cf-estilos')) return;
+  const st = document.createElement('style');
+  st.id = 'cf-estilos';
+  st.textContent =
+    '.cf-btn{display:inline-block;margin-left:5px;padding:0 4px;border-radius:4px;cursor:pointer;color:var(--text-muted);font-size:10px;border:1px solid transparent;user-select:none}' +
+    '.cf-btn:hover{border-color:var(--border);color:#fff}.cf-btn.on{color:#071525;background:var(--gold);font-weight:800}' +
+    '#cf-banner{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 8px;font-size:11px;color:var(--text-muted)}#cf-banner .cf-lbl{font-weight:700}' +
+    '#cf-banner .cf-info{background:rgba(232,160,32,.12);border:1px solid rgba(232,160,32,.45);color:#f6d58e;border-radius:6px;padding:4px 8px}' +
+    '.cf-chip{background:rgba(255,255,255,.05);border:1px solid var(--border);color:#cfd8ee;border-radius:14px;padding:3px 10px;font-size:11px;cursor:pointer}' +
+    '.cf-chip:hover{border-color:var(--gold)}.cf-chip.on{background:var(--gold);color:#071525;border-color:var(--gold);font-weight:700}.cf-chip.cf-quitar{border-color:rgba(229,62,62,.6);color:#fca5a5}' +
+    '#cotiz-tbody tr.cf-nuevo td{background:rgba(46,170,74,.10)}' +
+    '#cf-pop{position:absolute;z-index:99999;width:300px;background:#0b1a33;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.55);padding:10px;font-size:12px;color:#e8eefc}' +
+    '#cf-pop .cf-t{font-weight:800;color:var(--gold);margin-bottom:6px}#cf-pop .cf-o{display:block;width:100%;text-align:left;background:none;border:none;color:#dbe4fa;padding:5px 6px;border-radius:6px;cursor:pointer;font-size:12px}' +
+    '#cf-pop .cf-o:hover{background:rgba(26,58,143,.35)}#cf-pop .cf-rap{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}' +
+    '#cf-pop .cf-q{width:100%;margin:6px 0;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:#fff;font-size:12px}' +
+    '#cf-pop .cf-list{max-height:260px;overflow:auto;border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:4px}' +
+    '#cf-pop label{display:flex;align-items:flex-start;gap:6px;padding:3px 4px;border-radius:4px;cursor:pointer;line-height:1.3}#cf-pop label:hover{background:rgba(255,255,255,.04)}' +
+    '#cf-pop label span{flex:1;word-break:break-word}#cf-pop label em{font-style:normal;color:var(--text-muted);font-size:10px}' +
+    '#cf-pop .cf-bot{display:flex;gap:6px;margin-top:8px}#cf-pop .cf-bot button{flex:1;border-radius:6px;padding:6px;cursor:pointer;font-size:12px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:#fff}' +
+    '#cf-pop .cf-bot .cf-ok{background:var(--green);border-color:var(--green);font-weight:700}';
+  document.head.appendChild(st);
+}
+
+// Embudos en los encabezados + barra de aviso + "tocados" (una sola vez)
+function _cfInit() {
+  const tabla = document.getElementById('cotiz-table'); if (!tabla) return false;
+  _cfEstilos();
+  const ths = Array.from(tabla.querySelectorAll('thead th'));
+  _CF_COLS.forEach(col => {
+    const th = ths.find(x => _cfNorm(x.firstChild && x.firstChild.nodeType === 3 ? x.firstChild.nodeValue : x.textContent).trim() === _cfNorm(col.th));
+    if (!th || th.querySelector('.cf-btn')) return;
+    const b = document.createElement('span');
+    b.className = 'cf-btn'; b.dataset.k = col.k; b.textContent = '▾';
+    b.title = 'Filtrar / ordenar ' + col.lbl + ' (como en Excel)';
+    b.onclick = ev => { ev.stopPropagation(); _cfAbrir(col.k, th); };
+    th.appendChild(b);
+  });
+  if (!document.getElementById('cf-banner')) {
+    const ban = document.createElement('div'); ban.id = 'cf-banner';
+    const wrap = tabla.parentElement; wrap.parentElement.insertBefore(ban, wrap);
+  }
+  const tb = document.getElementById('cotiz-tbody');
+  if (tb && !tb._cfEscucha) {
+    tb._cfEscucha = true;
+    tb.addEventListener('input', ev => {
+      try {
+        if (!_cfActivo()) return;
+        const tr = ev.target && ev.target.closest ? ev.target.closest('tr[data-idx]') : null;
+        const it = tr ? _cfItems()[+tr.dataset.idx] : null;
+        if (it && it.uid) _cfTocados.add(it.uid);
+      } catch (_) {}
+    });
+  }
+  return true;
+}
+
+// Se llama al final de cada cotizRender()
+function _cfAplicar() {
+  try {
+    if (!_cfHabilitado()) return;
+    const tbody = document.getElementById('cotiz-tbody'); if (!tbody) return;
+    if (!_cfInit()) return;
+    const items = _cfItems();
+    const clave = (typeof cotizEditId !== 'undefined' && cotizEditId) ? String(cotizEditId) : '(nueva)';
+    if (_cfClaveCot !== clave || !items.length) { if (_cfClaveCot !== null && _cfActivo()) _cfLimpiar(); _cfClaveCot = clave; }
+    if (!_cfGer()) { delete _cfF.margen; if (_cfOrden && _cfOrden.k === 'margen') _cfOrden = null; }
+    const foco = document.activeElement && tbody.contains(document.activeElement) ? document.activeElement.closest('tr[data-idx]') : null;
+    const filas = Array.from(tbody.querySelectorAll('tr[data-idx]'));
+    const uidsAll = {}; items.forEach(it => { if (it && it.uid) uidsAll[it.uid] = 1; });
+    let vis = 0, subVis = 0, ocultosOtro = 0;
+    filas.forEach(tr => {
+      const it = items[+tr.dataset.idx]; if (!it) return;
+      const ok = _cfPasa(it) || _cfSiempreVisible(it) || tr === foco;
+      tr.style.display = ok ? '' : 'none';
+      tr.classList.toggle('cf-nuevo', !!(_cfBase && it.uid && !_cfBase.has(it.uid)));
+      if (ok) { vis++; if (!(it.altDe && uidsAll[it.altDe])) subVis += (+it.qty || 0) * (+it.precio || 0); }
+      else if (tr.classList.contains('rt-row-otro')) ocultosOtro++;
+    });
+    if (_cfOrden) {
+      const col = _cfCol(_cfOrden.k), d = _cfOrden.dir;
+      filas.slice().sort((a, b) => {
+        const va = col.v(items[+a.dataset.idx] || {}), vb = col.v(items[+b.dataset.idx] || {});
+        const c = col.t === 'num' ? ((va == null ? -Infinity : va) - (vb == null ? -Infinity : vb)) : String(va).localeCompare(String(vb), 'es', { numeric: true, sensitivity: 'base' });
+        return (c * d) || (+a.dataset.idx - +b.dataset.idx);
+      }).forEach(tr => tbody.appendChild(tr));
+      _cfReordenado = true;
+    } else if (_cfReordenado) {
+      filas.slice().sort((a, b) => +a.dataset.idx - +b.dataset.idx).forEach(tr => tbody.appendChild(tr));
+      _cfReordenado = false;
+    }
+    document.querySelectorAll('#cotiz-table .cf-btn').forEach(b => {
+      const col = _cfCol(b.dataset.k);
+      if (col && col.ger) b.style.display = _cfGer() ? '' : 'none';
+      const f = _cfF[b.dataset.k]; const on = !!(f && (f.sel || f.rap));
+      const ord = _cfOrden && _cfOrden.k === b.dataset.k ? (_cfOrden.dir === 1 ? ' ↑' : ' ↓') : '';
+      b.classList.toggle('on', on || !!ord); b.textContent = (on ? '⏷' : '▾') + ord;
+    });
+    const ban = document.getElementById('cf-banner');
+    if (ban) {
+      const rap = [['precio', 'cero', '💲 Sin precio'], ['prov', 'vacio', '🏭 Sin proveedor']];
+      if (_cfGer()) rap.push(['margen', 'neg', '📉 Margen negativo']);
+      const chips = rap.map(([k, r, t]) => {
+        const f = _cfF[k];
+        const on = r === 'vacio' ? !!(f && f.sel && f.sel.size === 1 && f.sel.has(_CF_VACIAS)) : !!(f && f.rap === r);
+        return '<button type="button" class="cf-chip' + (on ? ' on' : '') + '" onclick="_cfRapido(\'' + k + '\',\'' + r + '\')">' + t + '</button>';
+      }).join('');
+      ban.innerHTML = '<span class="cf-lbl">Filtros rápidos:</span>' + chips + (_cfActivo()
+        ? '<span class="cf-info">🔎 Mostrando <b>' + vis + '</b> de <b>' + items.length + '</b> ítems · subtotal visible <b>$' + subVis.toLocaleString('es-CO') + '</b> · el TOTAL de abajo es de toda la cotización' + (_cfOrden ? ' · orden SOLO de vista (el PDF sale en el orden original)' : '') + (ocultosOtro ? ' · ✏️ un compañero está en un ítem OCULTO por el filtro' : '') + '</span><button type="button" class="cf-chip cf-quitar" onclick="_cfQuitarTodo()">✕ Quitar filtros</button>'
+        : '');
+    }
+  } catch (e) { try { console.warn('[filtros] no se aplicó:', e); } catch (_) {} }
+}
+function _cfQuitarTodo() { _cfLimpiar(); _cfCerrar(); _cfAplicar(); }
+function _cfRapido(k, r) {
+  try {
+    const f = _cfF[k] || {};
+    if (r === 'vacio') { const on = f.sel && f.sel.size === 1 && f.sel.has(_CF_VACIAS); _cfF[k] = on ? null : { sel: new Set([_CF_VACIAS]), rap: null }; }
+    else _cfF[k] = (f.rap === r) ? null : { sel: null, rap: r };
+    if (_cfActivo()) _cfMarcarBase(); else _cfLimpiar();
+    _cfAplicar();
+  } catch (_) {}
+}
+function _cfCerrar() { const p = document.getElementById('cf-pop'); if (p) p.remove(); document.removeEventListener('mousedown', _cfFuera, true); }
+function _cfFuera(ev) { const p = document.getElementById('cf-pop'); if (p && !p.contains(ev.target) && !(ev.target.classList && ev.target.classList.contains('cf-btn'))) _cfCerrar(); }
+function _cfAbrir(k, th) {
+  try {
+    const ya = document.getElementById('cf-pop');
+    if (ya && ya.dataset.k === k) { _cfCerrar(); return; }
+    _cfCerrar();
+    const col = _cfCol(k), items = _cfItems(), f = _cfF[k] || {};
+    const cuenta = new Map();
+    items.forEach(it => { if (_cfPasa(it, k)) { const c = _cfClave(col, it); cuenta.set(c, (cuenta.get(c) || 0) + 1); } });
+    const claves = Array.from(cuenta.keys()).sort((a, b) => {
+      if (a === _CF_VACIAS) return -1; if (b === _CF_VACIAS) return 1;
+      return col.t === 'num' ? (+a - +b) : a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' });
+    });
+    const marcado = c => !f.sel || f.sel.has(c);
+    const rapidos = k === 'margen' ? ['neg', 'bajo20'] : (col.t === 'num' && k !== 'qty' ? ['cero', 'mayor0'] : []);
+    const p = document.createElement('div');
+    p.id = 'cf-pop'; p.dataset.k = k;
+    p.innerHTML = '<div class="cf-t">' + col.lbl + '</div>' +
+      '<button type="button" class="cf-o" data-d="1">' + (col.t === 'num' ? '↑ Menor a mayor' : '↑ Ordenar A → Z') + '</button>' +
+      '<button type="button" class="cf-o" data-d="-1">' + (col.t === 'num' ? '↓ Mayor a menor' : '↓ Ordenar Z → A') + '</button>' +
+      (rapidos.length ? '<div class="cf-rap">' + rapidos.map(r => '<button type="button" class="cf-chip' + (f.rap === r ? ' on' : '') + '" data-r="' + r + '">' + _CF_RAPIDOS[r].txt + '</button>').join('') + '</div>' : '') +
+      '<input type="text" class="cf-q" placeholder="🔍 Buscar…">' +
+      '<div class="cf-list"><label class="cf-todo"><input type="checkbox" class="cf-all"> <b>(Seleccionar todo)</b></label>' +
+      claves.map(c => '<label class="cf-it" data-n="' + _cfEsc(_cfNorm(_cfEtiqueta(col, c))) + '"><input type="checkbox" value="' + _cfEsc(c) + '"' + (marcado(c) ? ' checked' : '') + '> <span>' + _cfEsc(_cfEtiqueta(col, c)) + '</span> <em>' + cuenta.get(c) + '</em></label>').join('') +
+      '</div><div class="cf-bot"><button type="button" class="cf-ok">Aceptar</button><button type="button" class="cf-clr">Borrar filtro</button><button type="button" class="cf-cancel">Cancelar</button></div>';
+    document.body.appendChild(p);
+    const r = th.getBoundingClientRect();
+    p.style.left = Math.max(8, Math.min(window.scrollX + r.left, window.scrollX + document.documentElement.clientWidth - 308)) + 'px';
+    p.style.top = (window.scrollY + r.bottom + 2) + 'px';
+    const all = p.querySelector('.cf-all'), q = p.querySelector('.cf-q');
+    const visibles = () => Array.from(p.querySelectorAll('.cf-it')).filter(l => l.style.display !== 'none');
+    const syncAll = () => { const v = visibles(); all.checked = v.length > 0 && v.every(l => l.querySelector('input').checked); };
+    syncAll();
+    all.onchange = () => visibles().forEach(l => { l.querySelector('input').checked = all.checked; });
+    p.querySelectorAll('.cf-it input').forEach(i => { i.onchange = syncAll; });
+    q.oninput = () => {
+      const t = _cfNorm(q.value.trim());
+      p.querySelectorAll('.cf-it').forEach(l => { const hit = !t || l.dataset.n.indexOf(t) >= 0; l.style.display = hit ? '' : 'none'; if (t) l.querySelector('input').checked = hit; });
+      syncAll();
+    };
+    p.querySelectorAll('.cf-o').forEach(b => { b.onclick = () => { _cfOrden = { k: k, dir: +b.dataset.d }; _cfMarcarBase(); _cfCerrar(); _cfAplicar(); }; });
+    p.querySelectorAll('.cf-rap .cf-chip').forEach(b => { b.onclick = () => { _cfCerrar(); _cfRapido(k, b.dataset.r); }; });
+    const aceptar = () => {
+      const t = q.value.trim();
+      const sel = new Set(Array.from(p.querySelectorAll('.cf-it')).filter(l => (!t || l.style.display !== 'none') && l.querySelector('input').checked).map(l => l.querySelector('input').value));
+      _cfF[k] = (!t && sel.size === claves.length) ? null : { sel: sel, rap: null };
+      if (_cfActivo()) _cfMarcarBase(); else _cfLimpiar();
+      _cfCerrar(); _cfAplicar();
+    };
+    p.querySelector('.cf-ok').onclick = aceptar;
+    p.querySelector('.cf-clr').onclick = () => { _cfF[k] = null; if (_cfOrden && _cfOrden.k === k) _cfOrden = null; if (!_cfActivo()) _cfLimpiar(); _cfCerrar(); _cfAplicar(); };
+    p.querySelector('.cf-cancel').onclick = _cfCerrar;
+    p.onkeydown = ev => { if (ev.key === 'Enter') { ev.preventDefault(); aceptar(); } if (ev.key === 'Escape') _cfCerrar(); };
+    setTimeout(() => { try { q.focus(); } catch (_) {} document.addEventListener('mousedown', _cfFuera, true); }, 0);
+  } catch (e) { try { console.warn('[filtros] menú:', e); } catch (_) {} }
+}
+
+</script>
 
 </body>
 </html>
