@@ -5634,14 +5634,18 @@ function _cotizReconciliar(remoto, local, nowStamp) {
 
 // Envoltura async: trae el remoto fresco, reconcilia, persiste y avisa de colisiones.
 async function _cotizMergeConRemoto(local) {
-  try {
-    const remoto = await _loadDataGHRaw('data/cotizaciones.json');
-    if (!Array.isArray(remoto)) return local;
-    const { unidas, conflictos } = _cotizReconciliar(remoto, local, new Date().toISOString());
-    try { localStorage.setItem('max_bd_cotizaciones', JSON.stringify(unidas)); } catch(_) {}
-    if (conflictos.length) { try { _cotizAvisarColision(conflictos); } catch(_) {} }
-    return unidas;
-  } catch(_) { return local; }
+  // 15-sep-2026 (incidente 10:34): si NO se pudo leer el archivo de GitHub (internet
+  // lento) antes se subía SOLO lo local. Con la BD local vacía (almacenamiento lleno)
+  // eso dejó cotizaciones.json con UNA cotización. Ahora se lanza error: el guardado
+  // se va a la cola y se reintenta, sin pisar nunca el archivo del servidor.
+  let remoto = null;
+  try { remoto = await _loadDataGHRaw('data/cotizaciones.json'); } catch(_) { remoto = null; }
+  if (!Array.isArray(remoto) || !remoto.length) throw new Error('No se pudo leer cotizaciones.json del servidor (internet). Se reintenta sin pisar el archivo.');
+  const { unidas, conflictos } = _cotizReconciliar(remoto, local, new Date().toISOString());
+  if (!Array.isArray(unidas) || unidas.length < remoto.length) throw new Error('Unión de cotizaciones incompleta: no se sube para no perder datos.');
+  try { localStorage.setItem('max_bd_cotizaciones', JSON.stringify(unidas)); } catch(_) {}
+  if (conflictos.length) { try { _cotizAvisarColision(conflictos); } catch(_) {} }
+  return unidas;
 }
 
 // Aviso al equipo cuando se resolvió una colisión de consecutivo (renumeración).
@@ -15451,6 +15455,12 @@ async function _cotizSyncSupabase(record) {
     try {
       await absFetch('cotizaciones', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(cab) });
     } catch (e) {
+      // 15-sep-2026 (LM2164): el modo viejo BORRA todas las filas y las reinserta SIN
+      // uid. Estaba pensado para una tabla sin columnas nuevas, pero se activaba con
+      // CUALQUIER error (un bajón de internet o del proxy) y dejaba filas sin uid → la
+      // colaboración creía que el ítem se había borrado. Ahora solo si el error es de
+      // columna inexistente; cualquier otro error corta la sincronización (y se avisa).
+      if (!/column|PGRST204|42703/i.test(String(e && e.message || ''))) throw e;
       _legacy = true;
       const cabViejo = { id: cab.id, fecha: cab.fecha, fecha_venc: cab.fecha_venc, cliente: cab.cliente, contacto: cab.contacto, correo: cab.correo, estado: cab.estado, subtotal: cab.subtotal, iva: cab.iva, total: cab.total, forma_pago: cab.forma_pago, sitio_entrega: cab.sitio_entrega, validez: cab.validez, observaciones: cab.observaciones, vendedor: cab.vendedor, realizada_por: cab.realizada_por, aprobada_por: cab.aprobada_por, fuente: 'Plataforma' };
       await absFetch('cotizaciones', { method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(cabViejo) });
@@ -15496,6 +15506,9 @@ async function _cotizSyncSupabase(record) {
       // otro cambió, (b) ítems en conflicto (ganó el servidor), (c) ítems nuevos de otros.
       const rowAWeb = rw => ({ uid: rw.uid, desc: rw.descripcion || '', udm: rw.udm || '', qty: (rw.qty != null ? +rw.qty : 0), precio: (rw.v_unit != null ? +rw.v_unit : 0), marca: rw.marca || '', proveedor: rw.proveedor || '', precioProveedor: (rw.precio_proveedor != null ? +rw.precio_proveedor : null), tiempoEntrega: rw.tiempo_entrega || '', desvTec: rw.desviacion_tecnica || '', obsProveedor: rw.obs_proveedor || '', fotoGrande: !!rw.foto_grande, altDe: rw.alt_de || null });
       const conflictUids = new Set(conflictos.filter(c => c.srv).map(c => c.srv.uid));
+      // 15-sep-2026 (LM2164): si el servidor tiene filas SIN uid (guardado del modo viejo)
+      // no se puede saber qué se borró: no se quita ningún ítem por "borrado ajeno".
+      const _hayFilasSinUid = fresh.some(rw => !rw.uid);
       let itemsMerge = (record.items || []).map(it => {
         const srv = freshByUid[it.uid];
         const snap = _cotizSnap.porUid[it.uid];
@@ -15503,7 +15516,7 @@ async function _cotizSyncSupabase(record) {
           // 14-sep-2026: estaba en la foto, YO no lo toqué y ya no está en el servidor →
           // otra persona lo quitó: quitarlo aquí también (antes quedaba vivo en el
           // registro local/extra y la cotización terminaba con ítems de más).
-          if (fresh.length && snap && snap.j === _cotizRowCanon(_cotizItemRow(record, it, 0))) { adoptados++; return null; }
+          if (fresh.length && !_hayFilasSinUid && snap && snap.j === _cotizRowCanon(_cotizItemRow(record, it, 0))) { adoptados++; return null; }
           return it;
         }
         const dirty = !snap || snap.j !== _cotizRowCanon(_cotizItemRow(record, it, 0));
@@ -15574,6 +15587,8 @@ async function _cotizSyncSupabase(record) {
     return true;
   } catch (e) {
     console.warn('[cotiz→Supabase] no se pudo sincronizar', record.id, e && e.message);
+    // 15-sep-2026: antes esto quedaba solo en la consola y nadie se enteraba.
+    try { showToast('⚠️ ' + record.id + ' se guardó en este equipo pero NO llegó al servidor (internet/proxy). Cuando se estabilice, vuelve a darle GUARDAR.', 'error', { durationMs: 15000 }); } catch(_) {}
     return false;
   }
 }
