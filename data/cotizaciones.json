@@ -69039,7 +69039,7 @@
     "cliente": "ANDES OPERATING",
     "contacto": "ANDRES BERNAL",
     "correo": "andres.bernal@andesoperating.com",
-    "estado": "Adjudicada",
+    "estado": "Vencida",
     "factura": "",
     "iva": 19,
     "subtotal": 14112103,
@@ -69307,62 +69307,13 @@
         "uid": "558dbb5b-7869-43b0-928a-431bb5ba7522"
       }
     ],
-    "fechaGuardado": "2026-09-15T15:02:10.471Z",
+    "fechaGuardado": "2026-08-12T16:58:31.074Z",
     "fechaEnvio": "2026-08-12T15:54:03.759Z",
-    "adjudicadaAt": "2026-09-15",
-    "valorAdjudicado": 12805433,
-    "itemsAdjudicados": [
-      {
-        "uid": "4afee7df-5b45-428a-b061-2a35ce25f1fe",
-        "qty": 1
-      },
-      {
-        "uid": "38d8dde9-2b65-4e92-a41c-76112f0f9c1c",
-        "qty": 6
-      },
-      {
-        "uid": "1c494d64-9802-4464-b5f3-29dc2248cee9",
-        "qty": 2
-      },
-      {
-        "uid": "aaf767ac-f5b9-430f-aa3e-8ea852cf27eb",
-        "qty": 150
-      },
-      {
-        "uid": "4a32270b-d135-464e-9ceb-050dcf43e487",
-        "qty": 10
-      },
-      {
-        "uid": "8035ac3b-9f3f-4086-9411-f48e78166f7c",
-        "qty": 16
-      },
-      {
-        "uid": "ed9662c7-834e-453b-b215-e2ca19a127f1",
-        "qty": 32
-      },
-      {
-        "uid": "a54df924-4d0a-462f-9908-d9b80c9fcbd4",
-        "qty": 16
-      },
-      {
-        "uid": "26131df2-f44c-4de3-a5ca-519c36c33680",
-        "qty": 4
-      },
-      {
-        "uid": "ec3af164-2960-4c02-98de-9ed92a331eb6",
-        "qty": 1
-      },
-      {
-        "uid": "558dbb5b-7869-43b0-928a-431bb5ba7522",
-        "qty": 6
-      }
-    ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-09-15T15:02:10.456Z",
     "createdAt": "2026-07-30T14:57:03.909Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-15T15:02:10.471Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-08-21T13:30:36.349Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-08-21T13:30:36.349Z"
   },
   {
     "id": "LM1975",
@@ -118830,9 +118781,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 6847827,
+    "ivaVal": 1301087.13,
+    "total": 8148914.13,
     "formaPago": "CONTADO",
     "sitioEntrega": "AEROPUERTO CARTAGENA",
     "validez": "8 DÍAS",
@@ -118845,24 +118796,24 @@
     "items": [
       {
         "id": 1,
-        "desc": "Tubería HDPE/PEAD fabricada y rotulada específicamente para uso eléctrico (conduit), bajo cumplimiento de normas aplicables como ASTM F2160, NEMA TC 7 o la norma nacional NTC 2050 / RETIE. (Debe estar certificada)",
-        "udm": "RLL",
         "qty": 3,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "IMP ROLLO TUBO CONDUIT DE 2\" CORRUGADO DE DOBLE \nPARED PEAD DN 50 MM X 100 MTS NEGRO",
+        "udm": "RLL",
+        "uid": "400c6ed4-9e96-4ea7-9050-826f99f04c96",
+        "desc": "Tubería HDPE/PEAD fabricada y rotulada específicamente para uso eléctrico (conduit), bajo cumplimiento de normas aplicables como ASTM F2160, NEMA TC 7 o la norma nacional NTC 2050 / RETIE. (Debe estar certificada)",
         "marca": "",
+        "precio": 2282609,
+        "desvTec": "IMP ROLLO TUBO CONDUIT DE 2\" CORRUGADO DE DOBLE \nPARED PEAD DN 50 MM X 100 MTS NEGRO",
         "proveedor": "JIMACO",
-        "precioProveedor": 1060000,
         "obsProveedor": "",
-        "uid": "400c6ed4-9e96-4ea7-9050-826f99f04c96"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 1050000
       }
     ],
-    "fechaGuardado": "2026-09-14T22:33:20.590Z",
+    "fechaGuardado": "2026-09-15T15:02:14.725Z",
     "createdAt": "2026-09-14T22:33:20.591Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-14T22:33:20.591Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-15T15:02:14.725Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM2162",
