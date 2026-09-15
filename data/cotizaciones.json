@@ -89988,7 +89988,7 @@
     "cliente": "HIDROCASANARE",
     "contacto": "FREDDY RIVERA",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 2597150,
@@ -90017,13 +90017,22 @@
         "precioProveedor": 1038860
       }
     ],
-    "fechaGuardado": "2026-09-02T21:04:24.214Z",
+    "fechaGuardado": "2026-09-15T21:26:25.235Z",
     "fechaEnvio": "2026-09-02T21:04:24.214Z",
+    "adjudicadaAt": "2026-09-15",
+    "valorAdjudicado": 2597150,
+    "itemsAdjudicados": [
+      {
+        "uid": "df3a6647-796d-436a-a68e-a2d94f2246a5",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-15T21:26:25.227Z",
     "createdAt": "2026-09-02T21:00:37.471Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-11T00:34:36.182Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-09-11T00:34:36.182Z"
+    "updatedAt": "2026-09-15T21:26:25.236Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2109",
