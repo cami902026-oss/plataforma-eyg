@@ -31745,7 +31745,8 @@ async function absGuardarEdicionProducto(codigo) {
    cursor NUNCA se ocultan; (2) ítems agregados con filtro activo se ven siempre;
    (3) al abrir otra cotización el filtro se limpia; (4) Margen solo gerencia.
    PILOTO: solo los usuarios de CF_PILOTO (o localStorage energy_cf='1'). */
-const CF_PILOTO = ['andrea'];
+// 15-sep-2026: abierto a TODO el equipo (antes piloto ['andrea']). Margen sigue solo gerencia.
+const CF_PILOTO = ['*'];
 function _cfHabilitado() {
   try {
     if (typeof currentUser === 'undefined' || !currentUser) return false;
