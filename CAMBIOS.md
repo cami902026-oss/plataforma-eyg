@@ -7,6 +7,33 @@ cambio que ya está en vivo: para verlo hay que recargar con **Ctrl + F5**.
 > repositorio. No se escribe a mano: si algo falta aquí, es que no se desplegó.
 
 
+## 15 de septiembre de 2026
+
+- 🔗 v270 — Ligar no deja pasar un ítem de BODEGA sin producto  
+  <sub>`d7ac05a6`</sub>
+- Cotizaciones: no pisar GitHub si no se pudo leer + no perder ítems (LM2164, 15-sep)  
+  <sub>`4e4896c5`</sub>
+
+## 14 de septiembre de 2026
+
+- Cotizaciones: alarma anti-duplicado + portero de versión (SB_WRITE_V 130)  
+  <sub>`5d0ffaf1`</sub>
+- Cotizaciones: evitar ítems duplicados y copias renumeradas (incidente LM2137 14-sep)  
+  <sub>`4637ecd2`</sub>
+- 🔒 Mario sin acceso a Remisiones ni Órdenes de Pedido (SW v266)  
+  <sub>`ff8bfe24`</sub>
+
+## 11 de septiembre de 2026
+
+- OP: lo que se compra no sale de bodega, y el cruce distingue la pieza exacta (v265)  
+  <sub>`6942d381`</sub>
+- Definitiva: lo ya entregado solo en el resumen y líneas gemelas unidas (v264)  
+  <sub>`03dfd917`</sub>
+- Cuadro de cierre: un renglón que cubre varias líneas gemelas se reparte (v263)  
+  <sub>`dfa705b6`</sub>
+- ﻿Remisión definitiva de una sola entrega: sin cuadro repetido, cabe en una hoja (v262)  
+  <sub>`626b9346`</sub>
+
 ## 10 de septiembre de 2026
 
 - 🔗 v261 — Guardar una remisión ligada le avisa a su OP lo que cambió  
