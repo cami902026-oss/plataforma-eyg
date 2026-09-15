@@ -1390,12 +1390,12 @@
     "createdBy": "andrea",
     "updatedAt": "2026-07-29T01:51:25.090Z",
     "updatedBy": "andrea",
-    "faltanFechas": false,
     "archivada": true,
+    "archivadaAt": "2026-09-01T01:37:19.167Z",
+    "faltanFechas": false,
     "cotizacionId": "",
     "observaciones": "",
-    "facturacion": "",
-    "archivadaAt": "2026-09-01T01:37:19.167Z"
+    "facturacion": ""
   },
   {
     "id": "poc_1781749319612",
@@ -1675,11 +1675,11 @@
         "factura": "502"
       }
     ],
-    "cotizacionId": "",
     "createdAt": "2026-06-24T01:57:34.730Z",
     "createdBy": "andrea",
     "updatedAt": "2026-08-12T22:08:48.213Z",
     "updatedBy": "lina",
+    "cotizacionId": "",
     "faltanFechas": true,
     "archivada": true,
     "archivadaAt": "2026-09-01T20:40:18.815Z"
@@ -1725,11 +1725,11 @@
         "factura": "498"
       }
     ],
-    "cotizacionId": "",
     "createdAt": "2026-06-24T01:01:01.638Z",
     "createdBy": "andrea",
     "updatedAt": "2026-08-12T22:08:48.213Z",
     "updatedBy": "lina",
+    "cotizacionId": "",
     "faltanFechas": true,
     "archivada": true,
     "archivadaAt": "2026-09-01T20:40:18.815Z"
@@ -1775,11 +1775,11 @@
         "factura": "501"
       }
     ],
-    "cotizacionId": "",
     "createdAt": "2026-06-24T00:59:49.457Z",
     "createdBy": "andrea",
     "updatedAt": "2026-08-12T22:08:48.213Z",
     "updatedBy": "lina",
+    "cotizacionId": "",
     "faltanFechas": true,
     "archivada": true,
     "archivadaAt": "2026-09-01T20:40:18.815Z"
@@ -7834,6 +7834,8 @@
     "createdAt": "2026-07-01T22:21:41.501Z",
     "createdBy": "alexandra",
     "updatedAt": "2026-07-01T22:21:41.501Z",
-    "updatedBy": "alexandra"
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
   }
 ]
