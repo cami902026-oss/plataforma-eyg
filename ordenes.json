@@ -128,11 +128,11 @@
         "factura": "518"
       }
     ],
-    "cotizacionId": "",
     "createdAt": "2026-05-22T17:09:06.912Z",
     "createdBy": "andrea",
     "updatedAt": "2026-07-15T22:05:18.193Z",
     "updatedBy": "lina",
+    "cotizacionId": "",
     "faltanFechas": false,
     "archivada": true,
     "archivadaAt": "2026-08-27T18:05:55.637Z"
@@ -244,7 +244,7 @@
         "n": "438"
       }
     ],
-    "updatedAt": "2026-09-12T01:54:14.926Z",
+    "updatedAt": "2026-09-15T13:58:52.361Z",
     "faltanFechas": true,
     "archivada": true,
     "archivadaAt": "2026-09-01T20:40:18.815Z"
@@ -290,11 +290,11 @@
         "factura": "514"
       }
     ],
-    "cotizacionId": "",
     "createdAt": "2026-05-22T17:09:02.939Z",
     "createdBy": "andrea",
     "updatedAt": "2026-07-27T21:16:05.000Z",
     "updatedBy": "andrea",
+    "cotizacionId": "",
     "faltanFechas": false,
     "archivada": true,
     "observaciones": "",
@@ -586,7 +586,7 @@
     ],
     "createdAt": "2026-05-29T22:46:37.361Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-12T01:54:14.926Z",
+    "updatedAt": "2026-09-15T13:58:52.361Z",
     "updatedBy": "andrea",
     "faltanFechas": true,
     "archivada": true,
@@ -634,7 +634,7 @@
     ],
     "createdAt": "2026-06-01T18:49:58.100Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-09-12T01:54:14.926Z",
+    "updatedAt": "2026-09-15T13:58:52.362Z",
     "updatedBy": "andrea",
     "faltanFechas": true,
     "archivada": true,
@@ -987,7 +987,7 @@
     ],
     "createdAt": "2026-06-06T15:30:56.719Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-09-12T01:54:14.926Z",
+    "updatedAt": "2026-09-15T13:58:52.362Z",
     "updatedBy": "andrea",
     "faltanFechas": true,
     "archivada": true,
@@ -1240,11 +1240,11 @@
         "factura": "522"
       }
     ],
-    "cotizacionId": "",
     "createdAt": "2026-06-10T21:19:27.539Z",
     "createdBy": "andrea",
     "updatedAt": "2026-08-01T23:51:48.738Z",
     "updatedBy": "andrea",
+    "cotizacionId": "",
     "faltanFechas": false,
     "observaciones": "",
     "facturacion": "",
@@ -1625,11 +1625,11 @@
         "n": "504"
       }
     ],
-    "cotizacionId": "",
     "createdAt": "2026-06-11T05:00:00.000Z",
     "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-08-12T22:08:48.213Z",
+    "updatedAt": "2026-09-15T13:58:52.362Z",
     "updatedBy": "lina",
+    "cotizacionId": "",
     "faltanFechas": true,
     "archivada": true,
     "archivadaAt": "2026-09-01T20:40:18.815Z"
@@ -1675,11 +1675,11 @@
         "factura": "502"
       }
     ],
-    "cotizacionId": "",
     "createdAt": "2026-06-24T01:57:34.730Z",
     "createdBy": "andrea",
     "updatedAt": "2026-08-12T22:08:48.213Z",
     "updatedBy": "lina",
+    "cotizacionId": "",
     "faltanFechas": true,
     "archivada": true,
     "archivadaAt": "2026-09-01T20:40:18.815Z"
@@ -1725,11 +1725,11 @@
         "factura": "498"
       }
     ],
-    "cotizacionId": "",
     "createdAt": "2026-06-24T01:01:01.638Z",
     "createdBy": "andrea",
     "updatedAt": "2026-08-12T22:08:48.213Z",
     "updatedBy": "lina",
+    "cotizacionId": "",
     "faltanFechas": true,
     "archivada": true,
     "archivadaAt": "2026-09-01T20:40:18.815Z"
@@ -1775,11 +1775,11 @@
         "factura": "501"
       }
     ],
-    "cotizacionId": "",
     "createdAt": "2026-06-24T00:59:49.457Z",
     "createdBy": "andrea",
     "updatedAt": "2026-08-12T22:08:48.213Z",
     "updatedBy": "lina",
+    "cotizacionId": "",
     "faltanFechas": true,
     "archivada": true,
     "archivadaAt": "2026-09-01T20:40:18.815Z"
@@ -2553,6 +2553,13 @@
     "cliente": "CIAM",
     "desc": "Niples roscados en acero al carbón 3/4 x 4\" SCH 80 y SCH 160",
     "estado": "cancelado",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -2580,16 +2587,9 @@
         "n": "428N/C 445"
       }
     ],
-    "updatedAt": "2026-06-25T16:24:09.266Z",
-    "fechaIngreso": "",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
     "createdAt": "2026-06-25T16:24:09.266Z",
     "createdBy": "lina",
+    "updatedAt": "2026-06-25T16:24:09.266Z",
     "updatedBy": "lina",
     "faltanFechas": false
   },
@@ -2635,6 +2635,13 @@
     "cliente": "PETROLEUM GOLD SERVICES SAS",
     "desc": "Flame arrester de 4 ANSI 150",
     "estado": "completado",
+    "fechaIngreso": "",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
@@ -2662,16 +2669,9 @@
         "n": "479"
       }
     ],
-    "updatedAt": "2026-06-12T21:18:16.482Z",
-    "fechaIngreso": "",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
     "createdAt": "2026-06-12T21:18:16.482Z",
     "createdBy": "lina",
+    "updatedAt": "2026-06-12T21:18:16.482Z",
     "updatedBy": "lina",
     "archivada": true,
     "archivadaAt": "2026-07-28T14:46:45.014Z",
@@ -7789,5 +7789,51 @@
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false
+  },
+  {
+    "id": "poc_1782944501501",
+    "num": "ODC-AA-ELEC-SKID-469-24-579",
+    "cliente": "SKID EXPERTS",
+    "desc": "Cotización LM1603 · 43 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-01",
+    "valor": 24745455,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "cotizacionId": "LM1603",
+    "createdAt": "2026-07-01T22:21:41.501Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-01T22:21:41.501Z",
+    "updatedBy": "alexandra"
   }
 ]
