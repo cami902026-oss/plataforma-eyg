@@ -121179,9 +121179,9 @@
     "estado": "Enviada",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 66000,
+    "ivaVal": 12540,
+    "total": 78540,
     "formaPago": "CONTADO",
     "sitioEntrega": "PUERTO ASIS",
     "validez": "8 DÍAS",
@@ -121194,23 +121194,24 @@
     "items": [
       {
         "id": 1,
-        "desc": "esparragos de 5/8\" x 5\" CON DOBLE TUERCA",
+        "qty": 12,
         "udm": "EA",
-        "qty": 1,
-        "precio": 5500,
-        "tiempoEntrega": "INMEDIATO",
-        "desvTec": "GRADO B, A193, 2H A194",
+        "uid": "dd5d7485-3f21-4c04-8b63-c95ea5f9fae9",
+        "desc": "esparragos de 5/8\" x 5\" CON DOBLE TUERCA",
         "marca": "JDF",
+        "precio": 5500,
+        "desvTec": "GRADO B, A193, 2H A194",
         "proveedor": "MUNDIAL",
-        "precioProveedor": 2339,
-        "obsProveedor": ""
+        "obsProveedor": "",
+        "tiempoEntrega": "INMEDIATO",
+        "precioProveedor": 2339
       }
     ],
-    "fechaGuardado": "2026-09-15T16:49:32.990Z",
+    "fechaGuardado": "2026-09-15T16:49:50.388Z",
     "fechaEnvio": "2026-09-15T16:49:32.990Z",
     "createdAt": "2026-09-15T16:49:32.990Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-15T16:49:32.990Z",
+    "updatedAt": "2026-09-15T16:49:50.388Z",
     "updatedBy": "alexandra"
   },
   {
