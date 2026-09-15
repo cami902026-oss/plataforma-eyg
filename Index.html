@@ -5423,7 +5423,9 @@ function _proxySecret() { return 'eyg_prx_c70613f89a19d97c73d8800612029462'; }
 // ({status, body}) porque Apps Script siempre responde 200.
 // Versión del protocolo de escritura: el proxy puede exigir un mínimo
 // (propiedad MIN_WRITE_VERSION) para frenar pestañas con código viejo.
-const SB_WRITE_V = 129;
+// 130 (14-sep-2026): v267 corrigió la duplicación de ítems (LM2137). Con la propiedad
+// MIN_WRITE_VERSION=130 en el proxy, las pestañas anteriores no pueden guardar.
+const SB_WRITE_V = 130;
 async function _sbWriteRaw(path, method, bodyStr, prefer, ms) {
   const proxy = _ghWriteProxyURL();
   if (proxy) {
@@ -13650,7 +13652,10 @@ function _cotizGuardarYNueva() {
   }
   // v134: cotizGuardarBD es async (reclama el consecutivo del servidor) — esperar
   // a que termine antes de limpiar, o el número naciente se perdería del formulario.
-  Promise.resolve(cotizGuardarBD()).then(() => {
+  Promise.resolve(cotizGuardarBD()).then(r => {
+    // 14-sep-2026: si NO se guardó (falta el motivo de rechazo, alarma de duplicados…)
+    // no limpiar — antes se borraba el formulario igual y se perdía lo escrito.
+    if (r === false) return;
     // Las nuevas: cotizGuardarBD ya limpia el formulario. Las existentes: limpiar aquí.
     setTimeout(() => { try { if (_cotizHasContent()) cotizNueva(); } catch (_) {} }, 80);
   }).catch(() => {});
@@ -13698,6 +13703,30 @@ function cotizNueva(silent) {
 // (caso real 15-jul: Transmena LM1813/1814/1815 por triple clic de Lina).
 // Mientras un guardado está en curso, los clics extra se ignoran con aviso.
 let _cotizGuardandoLock = false;
+// Alarma anti-duplicado (14-sep-2026): ítems IDÉNTICOS = misma descripción, cantidad,
+// unidad, precio y alternativa (las filas en blanco no cuentan). Calibrada con las 545
+// cotizaciones reales: hay legítimas con MUCHOS repetidos (ARROW lista el mismo ítem
+// en líneas seguidas: hasta 73% de sus ítems tienen gemelo), así que NO basta contar.
+//  (a) duplicación TOTAL: ≥95% de los ítems distintos tienen gemelo (la LM2137 x2 = 100%)
+//  (b) duplicación PARCIAL: los repetidos AUMENTARON frente a la versión que se abrió
+function _cotizDupStats(items) {
+  const c = {}; let n = 0, dist = 0, gem = 0;
+  (items || []).forEach(it => {
+    const d = String((it && it.desc) || '').trim().toUpperCase().replace(/\s+/g, ' ');
+    if (!d) return;
+    const k = [d, +it.qty || 0, String(it.udm || '').trim().toUpperCase(), +it.precio || 0, it.altDe || ''].join('|');
+    n++; c[k] = (c[k] || 0) + 1;
+    if (c[k] === 1) dist++; else if (c[k] === 2) gem++;
+  });
+  return { n: n, dist: dist, rep: n - dist, share: dist ? gem / dist : 0 };
+}
+function _cotizPareceDuplicada(items, base) {
+  const s = _cotizDupStats(items);
+  const total = s.n >= 10 && s.rep >= 5 && s.share >= 0.95;
+  let aumento = false;
+  if (Array.isArray(base)) { const b = _cotizDupStats(base); aumento = (s.rep - b.rep) >= Math.max(3, Math.ceil(0.2 * b.n)); }
+  return { n: s.n, rep: s.rep, alarma: total || aumento };
+}
 async function cotizGuardarBD() {
   if (_cotizGuardandoLock) { showToast('⏳ Guardando… un momento (clic extra ignorado para no duplicar).', 'info'); return; }
   _cotizGuardandoLock = true;
@@ -13719,7 +13748,7 @@ async function _cotizGuardarBDCore() {
       const _mb2 = document.getElementById('cotiz-motivo-box'); if (_mb2) _mb2.style.display = '';
       const _mi = document.getElementById('cotiz-motivo-otro'); if (_mi) { _mi.style.display = ''; try { _mi.focus(); } catch(_){} }
       showToast('Escribe cuál fue el motivo del rechazo','error');
-      return;
+      return false;
     }
     _motivoRech = _mo ? 'Otro: ' + _mo : 'Otro';
   }
@@ -13727,7 +13756,15 @@ async function _cotizGuardarBDCore() {
     const _mb = document.getElementById('cotiz-motivo-box'); if (_mb) _mb.style.display = '';
     const _ms = document.getElementById('cotiz-motivo-rechazo'); if (_ms) { try { _ms.focus(); } catch(_){} }
     showToast('Selecciona el MOTIVO DE RECHAZO — es obligatorio para marcar Rechazada','error');
-    return;
+    return false;
+  }
+  // 14-sep-2026 — ALARMA ANTI-DUPLICADO (incidente LM2137 190→380): si la cotización
+  // parece duplicada (ver _cotizPareceDuplicada) se frena y se pregunta ANTES de guardar.
+  const _abrBase = (cotizEditId && cotizReadNum() === cotizEditId && window._cotizAbierta && window._cotizAbierta.id === cotizEditId) ? window._cotizAbierta.items : null;
+  const _dupChk = _cotizPareceDuplicada(cotizItems, _abrBase);
+  if (_dupChk.alarma && !confirm('⚠️ ALERTA: POSIBLES ÍTEMS DUPLICADOS\n\n' + _dupChk.rep + ' de ' + _dupChk.n + ' ítems están REPETIDOS (misma descripción, cantidad, unidad y precio).\nEso suele ser una duplicación por error, no algo agregado a propósito.\n\n• Cancelar = NO guardar (recomendado) y avisar a Andrea para revisarla.\n• Aceptar = guardar así de todas formas.')) {
+    showToast('No se guardó: la cotización tiene ' + _dupChk.rep + ' ítems repetidos. Revísala (o avisa a Andrea) antes de guardar.', 'error', { durationMs: 12000 });
+    return false;
   }
   const iva = parseFloat(document.getElementById('cotiz-iva').value) || 0;
   const subtotal = _cotizSubtotalSinAlts(cotizItems);   // v151: las ALTERNATIVAS no suman
@@ -15822,6 +15859,11 @@ function _bdLoadIntoEditor(c, msg, adopted) {
   try { window._cotizAbierta = (c && c.id && c.createdAt) ? JSON.parse(JSON.stringify(c)) : null; } catch(_) { window._cotizAbierta = null; }
   cotizEditId = c.id;
   cotizItems = JSON.parse(JSON.stringify(c.items || []));
+  // 14-sep-2026: aviso al ABRIR si la cotización ya viene con muchos ítems repetidos
+  try {
+    const _d = _cotizPareceDuplicada(cotizItems);
+    if (_d.alarma) setTimeout(() => showToast('⚠️ ' + c.id + ' tiene ' + _d.rep + ' de ' + _d.n + ' ítems REPETIDOS (misma descripción, cantidad y precio). Puede ser una duplicación: revísala antes de guardar.', 'error', { durationMs: 15000 }), 700);
+  } catch(_) {}
   // Si esta cotización referencia fotos que no tenemos en memoria (agregadas en otro
   // equipo), volver a descargar el archivo de fotos para mostrarlas.
   if (cotizItems.some(it => it && it.fotoId && !_cotizFotos[it.fotoId])) {
