@@ -26648,6 +26648,41 @@ async function _remiSincronizarOP(opNumero, num, viejas, nuevas, numAntes) {
   return { op: o, cambios: cambios, txt: txt, estadoNuevo: estadoNuevo, kardexDif: kardexDif };
 }
 
+// El cuadro de «¿de cuál producto sale?» dentro del modal de ligar. Los
+// candidatos salen del mismo cruce de «Revisar inventario»; si no propone nada
+// (pasa: «STUD BOLT» contra «ESPARRAGO»), se escribe el código a mano.
+async function _opLigarPedirProducto(sinProd, num) {
+  const av = document.getElementById('op-ligar-aviso');
+  if (!av) return;
+  let idx = [];
+  try { idx = await _opStockIndice(false); } catch (_) { }
+  const est = 'max-width:100%;background:#0b1526;color:#e6edf7;border:1px solid #33415c;border-radius:6px;padding:4px 6px;font-size:12px';
+  const box = document.createElement('div');
+  box.id = 'op-ligar-prod';
+  box.dataset.num = String(num);
+  box.className = 'op-ligar-warn';
+  box.innerHTML = '<b>' + sinProd.length + ' ítem(s) de BODEGA no dicen de cuál producto salen.</b> '
+    + 'Sin eso no se descuenta nada del inventario. Escoge la pieza (o escribe su código) y vuelve a oprimir «Ligar».'
+    + sinProd.map(p => {
+        // Las fichas «OP-…» son de material comprado para una OP (regla v265): no
+        // son de bodega y ofrecerlas aquí descontaría de un saldo que no existe.
+        const cand = idx.length ? _opBuscarStock(p.it.descripcion, idx)
+          .filter(c => !/^OP-/i.test(String(c.prod.codigo || ''))).slice(0, 6) : [];
+        return '<div style="margin-top:9px">'
+          + '<div style="font-size:12px">' + opEsc(String(p.it.descripcion || '').replace(/\s+/g, ' ').trim())
+          + ' · sale <b>' + opEsc(p.f.cantidad == null ? p.it.cantidad : p.f.cantidad) + '</b></div>'
+          + '<select id="op-ligar-prod-' + p.it.id + '" style="' + est + '">'
+          + '<option value="">— ¿de cuál producto sale? —</option>'
+          + cand.map(c => '<option value="' + opEsc(c.prod.codigo) + '">' + opEsc(c.prod.codigo + ' · '
+              + c.prod.descripcion + ' · hay ' + (+c.prod.stock_actual || 0)) + '</option>').join('')
+          + '<option value="__compra__">No salió de bodega: se compró todo</option></select> '
+          + '<input id="op-ligar-cod-' + p.it.id + '" placeholder="o escribe el código" style="' + est + ';width:140px">'
+          + '</div>';
+      }).join('')
+    + '<div id="op-ligar-prod-err"></div>';
+  av.parentNode.insertBefore(box, av);
+}
+
 async function opLigarConfirmar() {
   if (!op_current) return;
   const sel = document.querySelector('#op-ligar-modal input[name="op-ligar-r"]:checked');
@@ -26672,6 +26707,55 @@ async function opLigarConfirmar() {
     ? '<div class="op-ligar-warn"><b>' + sueltas + ' línea(s)</b> de la remisión no coinciden con ningún ítem de la OP. '
       + 'Se liga igual: la remisión queda amarrada y esas líneas simplemente no marcan ningún ítem.</div>'
     : '';
+
+  // 15-sep-2026 · la 26301 de HIDROCASANARE (OP-2026-0058).
+  // El STUD BOLT 5/8" x 4" iba de BODEGA pero sin decir de cuál producto salía
+  // (compras lo pasó a bodega y nadie confirmó la pieza). Ligar solo descuenta
+  // lo que tiene código, así que se lo saltó callado y el aviso decía «No hay
+  // nada que descontar»: salieron 10 espárragos y el stock siguió diciendo 10.
+  // Ahora se pregunta AQUÍ, antes de ligar: de qué producto sale, o si en
+  // realidad se compró (y entonces entra y sale como cualquier compra).
+  const _enCero = p => { const v = parseFloat(p.f.cantidad); return !isNaN(v) && v === 0; };
+  const sinProd = pares.filter(p => p.it.origen === 'BODEGA'
+    && !String(p.it.producto_codigo || '').trim() && !_enCero(p));
+  if (sinProd.length) {
+    let box = document.getElementById('op-ligar-prod');
+    if (box && box.dataset.num !== String(num)) { box.remove(); box = null; }   // cambió de remisión
+    if (!box) { await _opLigarPedirProducto(sinProd, num); return; }
+    let idx = null;
+    try { idx = await _opStockIndice(false); } catch (_) { }
+    const falta = [];
+    for (const p of sinProd) {
+      const sel = document.getElementById('op-ligar-prod-' + p.it.id);
+      const txt = document.getElementById('op-ligar-cod-' + p.it.id);
+      const cod = String((txt && txt.value) || '').trim() || String((sel && sel.value) || '').trim();
+      const nom = String(p.it.descripcion || '').replace(/\s+/g, ' ').trim().substring(0, 50);
+      if (!cod) { falta.push(nom + ': falta escoger'); continue; }
+      if (cod === '__compra__') { p.it.origen = 'COMPRA'; p._origenCompra = true; continue; }
+      const e = idx ? idx.find(x => x.p.codigo === cod) : null;
+      if (idx && !e) { falta.push(nom + ': el código ' + cod + ' no existe'); continue; }
+      // Mitad de bodega y mitad comprada — el caso real de la 26301: 100 espárragos,
+      // 10 de bodega y 90 comprados a MUNDIAL. Sin esta pregunta salían los 100 de
+      // bodega y el stock quedaba en −90, echándole la culpa al maestro.
+      const hay = e ? Math.max(0, +e.p.stock_actual || 0) : null;
+      const _qf = parseFloat(p.f.cantidad);
+      const sale = isNaN(_qf) ? Math.abs(+p.it.cantidad || 0) : Math.abs(_qf);
+      if (hay != null && hay < sale && confirm('En bodega hay ' + hay + ' de ' + cod + ' y la remisión dice ' + sale + '.\n\n'
+          + '¿Salieron ' + hay + ' de bodega y los otros ' + (sale - hay) + ' se COMPRARON?\n\n'
+          + 'Aceptar = sí: se descuentan ' + hay + ' y los ' + (sale - hay) + ' entran y salen como compra.\n'
+          + 'Cancelar = no: salen los ' + sale + ' de bodega y el stock queda en negativo (hay que revisar el conteo).')) {
+        if (!hay) { p.it.origen = 'COMPRA'; p._origenCompra = true; continue; }
+        p._split = { cod: cod, bodega: hay, compra: sale - hay };
+      }
+      p.it.producto_codigo = cod; p._prodElegido = cod;
+    }
+    const err = document.getElementById('op-ligar-prod-err');
+    if (falta.length) {
+      if (err) err.innerHTML = '<div class="op-ligar-err">' + falta.map(opEsc).join('<br>') + '</div>';
+      return;
+    }
+    if (err) err.innerHTML = '';
+  }
 
   // 29-ago-2026 — REGLA DEL NEGOCIO: si el material pasó por nosotros, SIEMPRE
   // ingresa a bodega. Ligar no toca inventario porque asume que la remisión ya
@@ -26738,6 +26822,14 @@ async function opLigarConfirmar() {
       });
     });
   }
+  // La parte COMPRADA de una línea partida entra y sale en su propia ficha (regla
+  // v265: lo comprado nunca entra a un producto de bodega). La parte de bodega
+  // sigue abajo, en el descuento normal.
+  pares.filter(p => p._split).forEach(p => aIngresar.push({
+    it: p.it, f: p.f, prod: null, qty: p._split.compra, parte: true,
+    costo: (p.it.costo_unit != null ? +p.it.costo_unit : 0),
+    colada: String(p.f.colada || p.it.colada || '').trim()
+  }));
   if (aIngresar.length) {
     const nuevos = aIngresar.filter(x => !x.prod).length;
     // Solo puede quedar negativo si algo figura como recibido y no está en el
@@ -26773,7 +26865,8 @@ async function opLigarConfirmar() {
   const aDescontar = [], sinDescontar = [], negativos = [], difCantidad = [];
   // Lo que va a entrar YA sale en su propio paso (entra y sale el mismo día). Si
   // se dejara aquí también, se descontaría dos veces la misma línea.
-  const _yaIngresa = new Set(aIngresar.map(x => x.it.id));
+  // (La línea partida sí sigue: su parte de bodega se descuenta aquí.)
+  const _yaIngresa = new Set(aIngresar.filter(x => !x.parte).map(x => x.it.id));
   const conCodigo = pares.filter(p => String(p.it.producto_codigo || '').trim()
     && !_yaIngresa.has(p.it.id));
   if (conCodigo.length) {
@@ -26814,9 +26907,9 @@ async function opLigarConfirmar() {
         const qRem = isNaN(_qf) ? null : Math.abs(_qf);
         const qOp = Math.abs(parseFloat(p.it.cantidad) || 0);
         if (qRem === 0) return;
-        const q = (qRem === null) ? qOp : qRem;
+        const q = p._split ? p._split.bodega : ((qRem === null) ? qOp : qRem);
         if (!prod || !q) { sinDescontar.push(String(p.it.descripcion || '').substring(0, 46)); return; }
-        if (qRem && qOp && qRem !== qOp) {
+        if (!p._split && qRem && qOp && qRem !== qOp) {
           difCantidad.push(String(p.it.descripcion || '').substring(0, 40)
             + ' (OP ' + qOp + ' · remisión ' + qRem + ')');
         }
@@ -26913,6 +27006,17 @@ async function opLigarConfirmar() {
         if (pedida <= 0 || yaTot >= pedida - 0.0001) body.estado = 'despachado';
         const col = String(p.f.colada || '').trim();
         if (sale > 0 && col && !String(p.it.colada || '').trim()) body.colada = col;
+        // Lo que se escogió en el cuadro de «¿de cuál producto sale?» queda en la
+        // línea, igual que con «Tomar de bodega»: la próxima vez ya no se pregunta.
+        if (p._prodElegido) Object.assign(body, { producto_codigo: p._prodElegido,
+          confirmado_por: yo, confirmado_at: new Date().toISOString() });
+        if (p._origenCompra) Object.assign(body, { origen: 'COMPRA',
+          confirmado_por: yo, confirmado_at: new Date().toISOString() });
+        // La línea partida lo deja escrito: el código de la línea termina siendo el
+        // de la compra (paso 2.5), y sin esta nota se perdería de dónde salió el resto.
+        if (p._split) body.observaciones = (String(p.it.observaciones || '').trim() ? p.it.observaciones + ' · ' : '')
+          + p._split.bodega + ' salieron de bodega (' + p._split.cod + ') y ' + p._split.compra
+          + ' se compraron · remisión ' + num;
         await _opRecepPatchItem(p.it.id, body);
         Object.assign(p.it, body);
       } catch (e) { fallos.push(p.it.descripcion + ' (' + (e && e.message || e) + ')'); }
