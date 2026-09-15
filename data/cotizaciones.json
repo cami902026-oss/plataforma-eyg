@@ -118970,12 +118970,12 @@
     "cliente": "RCH CONSTRUCTORES",
     "contacto": "SOFIA MENA ",
     "correo": "Compras@rchconstructores.com",
-    "estado": "Enviada",
+    "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 6847827,
-    "ivaVal": 1301087.13,
-    "total": 8148914.13,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
     "formaPago": "CONTADO",
     "sitioEntrega": "AEROPUERTO CARTAGENA",
     "validez": "8 DÍAS",
@@ -118988,24 +118988,23 @@
     "items": [
       {
         "id": 1,
-        "qty": 3,
-        "udm": "RLL",
-        "uid": "400c6ed4-9e96-4ea7-9050-826f99f04c96",
         "desc": "Tubería HDPE/PEAD fabricada y rotulada específicamente para uso eléctrico (conduit), bajo cumplimiento de normas aplicables como ASTM F2160, NEMA TC 7 o la norma nacional NTC 2050 / RETIE. (Debe estar certificada)",
-        "marca": "",
-        "precio": 2282609,
-        "desvTec": "IMP ROLLO TUBO CONDUIT DE 2\" CORRUGADO DE DOBLE \nPARED PEAD DN 50 MM X 100 MTS NEGRO",
-        "proveedor": "JIMACO",
-        "obsProveedor": "",
+        "udm": "RLL",
+        "qty": 3,
+        "precio": 0,
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 1050000
+        "desvTec": "IMP ROLLO TUBO CONDUIT DE 2\" CORRUGADO DE DOBLE \nPARED PEAD DN 50 MM X 100 MTS NEGRO",
+        "marca": "",
+        "proveedor": "JIMACO",
+        "precioProveedor": 1060000,
+        "obsProveedor": "",
+        "uid": "400c6ed4-9e96-4ea7-9050-826f99f04c96"
       }
     ],
-    "fechaGuardado": "2026-09-15T15:12:35.860Z",
-    "fechaEnvio": "2026-09-15T15:12:35.860Z",
+    "fechaGuardado": "2026-09-14T22:33:20.590Z",
     "createdAt": "2026-09-14T22:33:20.591Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-15T15:12:35.861Z",
+    "updatedAt": "2026-09-14T22:33:20.591Z",
     "updatedBy": "sandra"
   },
   {
@@ -119015,7 +119014,7 @@
     "cliente": "DISICO",
     "contacto": "LUZ MERY",
     "correo": "leonellinares@disico.com.co",
-    "estado": "Enviada",
+    "estado": "Borrador",
     "factura": "",
     "iva": 19,
     "subtotal": 16205460,
@@ -119046,12 +119045,12 @@
         "precioProveedor": 297100
       }
     ],
-    "fechaGuardado": "2026-09-15T15:14:39.846Z",
+    "fechaGuardado": "2026-09-15T14:54:45.759Z",
     "fechaEnvio": "2026-09-15T14:35:17.186Z",
     "createdAt": "2026-09-15T02:49:35.800Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-09-15T15:14:39.846Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-15T14:54:45.759Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM2163",
@@ -119060,7 +119059,7 @@
     "cliente": "CMU",
     "contacto": "CAROLINA ARIAS",
     "correo": "carolina.arias@cmuconsulting.com",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 2397744,
@@ -119133,11 +119132,12 @@
         "precioProveedor": 39750
       }
     ],
-    "fechaGuardado": "2026-09-15T14:49:16.352Z",
+    "fechaGuardado": "2026-09-15T15:15:17.514Z",
+    "fechaEnvio": "2026-09-15T15:15:17.514Z",
     "createdAt": "2026-09-15T13:46:33.460Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-15T14:49:16.352Z",
-    "updatedBy": "alberto"
+    "updatedAt": "2026-09-15T15:15:17.514Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM2164",
