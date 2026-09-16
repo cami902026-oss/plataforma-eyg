@@ -9,6 +9,14 @@ cambio que ya está en vivo: para verlo hay que recargar con **Ctrl + F5**.
 
 ## 15 de septiembre de 2026
 
+- 🏷️ v271 — caché energy-v272 para que el módulo Proveedores llegue a los equipos  
+  <sub>`26e73c3e`</sub>
+- 🏷️ v271 — Módulo Proveedores: a cómo nos venden y qué les compramos  
+  <sub>`8f45df3f`</sub>
+- Cotizaciones: filtros tipo Excel abiertos a todo el equipo  
+  <sub>`582dcec7`</sub>
+- Cotizaciones: filtros tipo Excel en la tabla de ítems (piloto solo Andrea)  
+  <sub>`751c0111`</sub>
 - 🔗 v270 — Ligar no deja pasar un ítem de BODEGA sin producto  
   <sub>`d7ac05a6`</sub>
 - Cotizaciones: no pisar GitHub si no se pudo leer + no perder ítems (LM2164, 15-sep)  
