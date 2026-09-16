@@ -32344,7 +32344,8 @@ function pvdExcel() {
 
 // ═══════════ 📈 ANALIZA EL MES ═════════════════════════════════════════════
 // 15-sep-2026 · pedido de Andrea: «un botón que le diga al dueño qué producto
-// debo comprar más y cosas que aporten valor».
+// debo comprar más y cosas que aporten valor». Ampliado el mismo día: que la
+// pantalla quepa y que diga TAMBIÉN qué importar, mirando el kardex.
 //
 // LA REGLA: los números los calcula la plataforma, la IA solo los lee y los
 // escribe. Nunca al revés. Si la IA falla o no está configurada, el informe se
@@ -32373,6 +32374,9 @@ const _anaMes = ym => {
 const _anaIni = ym => ym + '-01';
 const _anaFin = ym => { const p = ym.split('-'); const d = new Date(+p[0], +p[1], 0); return ym + '-' + String(d.getDate()).padStart(2, '0'); };
 const _anaAntes = (ym, n) => { const p = ym.split('-'); const d = new Date(+p[0], +p[1] - 1 - n, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+// Lo IMPORTADO se reconoce por el proveedor «IMP» del maestro (165 productos).
+const _anaEsImportado = p => /^IMP\b|^PZ$/i.test(String((p && p.proveedor) || '').trim());
+const ANA_MESES_IMPORT = 6;   // la importación se pide para medio año, no para el mes
 
 // El botón vive en el Dashboard, que es lo primero que abre el dueño.
 function anaBotonInit() {
@@ -32381,7 +32385,8 @@ function anaBotonInit() {
   if (!anaPuedeVer()) { cont.innerHTML = ''; return; }
   cont.innerHTML = '<div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">'
     + '<div><div style="font-family:Montserrat,sans-serif;font-weight:700;color:#fff;font-size:15px;">📈 Analiza el mes</div>'
-    + '<div style="color:var(--text-muted);font-size:12.5px;margin-top:3px;">Qué hay que comprar y dónde se está perdiendo plata, con las cifras de ' + opEsc(_anaMes(_anaAntes(new Date().toISOString().slice(0, 7), 1))) + '.</div></div>'
+    + '<div style="color:var(--text-muted);font-size:12.5px;margin-top:3px;">Qué comprar, qué importar y dónde se está perdiendo plata, con las cifras de '
+    + opEsc(_anaMes(_anaAntes(new Date().toISOString().slice(0, 7), 1))) + '.</div></div>'
     + '<button class="btn btn-primary" onclick="anaAbrir()" style="width:auto;padding:9px 18px;font-size:13px;">Analizar</button></div>';
 }
 
@@ -32391,14 +32396,12 @@ function anaAbrir() {
   const meses = [];
   for (let i = 1; i <= 6; i++) meses.push(_anaAntes(hoy, i));
   _anaModal('📈 Analiza el mes',
-    '<div class="op-plan-d" style="margin-bottom:12px">Los números salen de la plataforma: facturación, kardex, inventario, cotizaciones y órdenes de pedido. '
-    + 'La inteligencia artificial solo los interpreta y los redacta — no inventa cifras.</div>'
-    + '<div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">'
-    + '<div><label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Mes a analizar</label>'
-    + '<select id="ana-mes" style="background:#0b1526;color:#e6edf7;border:1px solid #33415c;border-radius:6px;padding:7px 10px;font-size:13px">'
+    '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">'
+    + '<select id="ana-mes" style="background:#0b1526;color:#e6edf7;border:1px solid #33415c;border-radius:6px;padding:8px 10px;font-size:13px">'
     + meses.map((m, i) => '<option value="' + m + '"' + (i === 0 ? ' selected' : '') + '>' + opEsc(_anaMes(m)) + '</option>').join('')
-    + '</select></div>'
+    + '</select>'
     + '<button class="btn btn-primary" id="ana-btn" onclick="anaCorrer()" style="width:auto;padding:9px 18px;font-size:13px;">Analizar</button>'
+    + '<span style="color:var(--text-muted);font-size:11.5px;max-width:430px">Los números salen de la plataforma; la IA solo los interpreta.</span>'
     + '</div><div id="ana-salida"></div>');
 }
 
@@ -32410,23 +32413,19 @@ async function anaCorrer() {
   const btn = document.getElementById('ana-btn');
   ana_corriendo = true;
   if (btn) { btn.disabled = true; btn.textContent = 'Leyendo la base…'; }
-  if (out) out.innerHTML = '<div class="op-plan-d">Sacando las cifras de ' + opEsc(_anaMes(ym)) + '…</div>';
+  if (out) out.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:10px 0">Sacando las cifras de ' + opEsc(_anaMes(ym)) + '…</div>';
   try {
     const d = await anaCalcular(ym);
     ana_datos = d;
-    if (out) out.innerHTML = anaCifrasHTML(d)
-      + '<div id="ana-ia" class="op-plan-d" style="margin-top:14px">✍️ La IA está leyendo estas cifras…</div>';
+    if (out) out.innerHTML = anaCifrasHTML(d);
     if (btn) btn.textContent = 'Redactando…';
     let texto = '';
     try { texto = await anaIA(d); } catch (e) { texto = ''; console.warn('[ana] IA', e && e.message); }
     const ia = document.getElementById('ana-ia');
-    if (ia) {
-      ia.className = '';
-      ia.innerHTML = texto
-        ? '<div class="op-barrera op-libre" style="margin-top:4px"><h4>Lectura del mes</h4><div style="font-size:13px;line-height:1.75">' + _anaTexto(texto) + '</div></div>'
-        : '<div class="op-ligar-warn">La IA no pudo redactar la lectura (revisa la URL del proxy en Configuración). '
-          + 'Las cifras de arriba son las buenas: están calculadas por la plataforma.</div>';
-    }
+    if (ia) ia.innerHTML = texto
+      ? '<div style="font-size:13.5px;line-height:1.75">' + _anaTexto(texto) + '</div>'
+      : '<div style="color:#fca5a5;font-size:12.5px">La IA no pudo redactar la lectura (revisa la URL del proxy en Configuración). '
+        + 'Las cifras de abajo son las buenas: las calcula la plataforma.</div>';
   } catch (e) {
     console.error('[ana]', e);
     if (out) out.innerHTML = '<div class="op-ligar-err">No se pudo calcular: ' + opEsc(e && e.message || e) + '</div>';
@@ -32440,11 +32439,12 @@ async function anaCorrer() {
 async function anaCalcular(ym) {
   const ini = _anaIni(ym), fin = _anaFin(ym);
   const prev = _anaAntes(ym, 1), prev2 = _anaAntes(ym, 2);
-  const [fact, kx, prods, cots, ops] = await Promise.all([
+  const ini6 = _anaIni(_anaAntes(ym, ANA_MESES_IMPORT - 1));   // ventana larga para importación
+  const [fact, kx6, prods, cots, ops] = await Promise.all([
     // La facturación de verdad vive en Cartera, no en la cotización.
     _pvdPaginar('cartera_facturas?select=numero,cliente_nombre,fecha_facturacion,monto_antes_iva,monto_total,saldo,estado,vendedor&fecha_facturacion=gte.' + _anaIni(prev2)),
-    _pvdPaginar('kardex?select=codigo_producto,cantidad,fecha,tipo&tipo=eq.SALIDA&fecha=gte.' + ini + '&fecha=lte.' + fin),
-    _pvdPaginar('productos?select=codigo,descripcion,stock_actual,costo_compra,proveedor&activo=not.eq.false'),
+    _pvdPaginar('kardex?select=codigo_producto,cantidad,fecha,tipo&tipo=eq.SALIDA&fecha=gte.' + ini6 + '&fecha=lte.' + fin),
+    _pvdPaginar('productos?select=codigo,descripcion,marca,stock_actual,costo_compra,proveedor&activo=not.eq.false'),
     _pvdPaginar('cotizaciones?select=id,fecha,cliente,estado&fecha=gte.' + ini + '&fecha=lte.' + fin),
     _pvdPaginar('ops?select=id,numero,cliente,cotizacion_id,estado,valor_venta,created_at&deleted=is.false')
   ]);
@@ -32469,30 +32469,52 @@ async function anaCalcular(ym) {
   const clientes = Object.keys(porCliente).map(k => ({ cliente: k, monto: porCliente[k] }))
     .sort((a, b) => b.monto - a.monto).slice(0, 5);
 
-  // 2) QUÉ COMPRAR — lo que salió de bodega en el mes contra lo que queda hoy.
+  // 2) LO QUE SALIÓ DE BODEGA — el mes, y los últimos 6 para la importación.
   // Se dejan por fuera las fichas «OP-…»: son material comprado para un pedido
   // puntual que entra y sale el mismo día, no inventario que haya que reponer.
   const pIdx = {};
   (prods || []).forEach(p => { pIdx[p.codigo] = p; });
-  const salio = {};
-  (kx || []).forEach(m => {
+  const mes = {}, largo = {}, mesesCon = {};
+  (kx6 || []).forEach(m => {
     const c = String(m.codigo_producto || '').trim();
     if (!c || /^OP-/i.test(c)) return;
-    salio[c] = (salio[c] || 0) + Math.abs(+m.cantidad || 0);
+    const q = Math.abs(+m.cantidad || 0), f = String(m.fecha || '');
+    largo[c] = (largo[c] || 0) + q;
+    (mesesCon[c] = mesesCon[c] || {})[f.slice(0, 7)] = 1;
+    if (f >= ini && f <= fin) mes[c] = (mes[c] || 0) + q;
   });
-  const comprar = Object.keys(salio).map(c => {
+  const ficha = c => {
     const p = pIdx[c] || {};
-    const stock = +p.stock_actual || 0;
-    return {
-      codigo: c, desc: p.descripcion || c, salio: salio[c], stock: stock,
-      costo: +p.costo_compra || 0, proveedor: p.proveedor || '',
-      alcanza: salio[c] > 0 ? +(stock / salio[c]).toFixed(1) : null
-    };
-  }).filter(x => x.stock <= 0 || x.alcanza < 1).sort((a, b) => b.salio - a.salio).slice(0, 15);
+    return { codigo: c, desc: p.descripcion || c, marca: p.marca || '', stock: +p.stock_actual || 0,
+             costo: +p.costo_compra || 0, proveedor: p.proveedor || '', importado: _anaEsImportado(p) };
+  };
+  // COMPRAR YA: lo que salió ESTE mes y hoy no alcanza para otro mes igual.
+  const comprar = Object.keys(mes).map(c => {
+    const f = ficha(c);
+    f.salio = mes[c];
+    f.alcanza = f.salio > 0 ? +(f.stock / f.salio).toFixed(1) : null;
+    return f;
+  }).filter(f => !f.importado && (f.stock <= 0 || f.alcanza < 1)).sort((a, b) => b.salio - a.salio).slice(0, 12);
+
+  // QUÉ IMPORTAR: la importación se pide para medio año, así que se mira la
+  // rotación de los últimos 6 meses, no la del mes. La cantidad sugerida es lo
+  // que hace falta para cubrir otros 6 meses al ritmo al que viene saliendo.
+  const importar = Object.keys(largo).map(c => {
+    const f = ficha(c);
+    f.salio6 = largo[c];
+    f.mesesConSalida = Object.keys(mesesCon[c] || {}).length;
+    f.promedio = +(f.salio6 / ANA_MESES_IMPORT).toFixed(1);
+    f.cobertura = f.promedio > 0 ? +(f.stock / f.promedio).toFixed(1) : null;   // en meses
+    f.sugerido = Math.max(0, Math.ceil(f.promedio * ANA_MESES_IMPORT - f.stock));
+    f.valor = f.sugerido * f.costo;
+    return f;
+  }).filter(f => f.importado && f.sugerido > 0 && f.cobertura != null && f.cobertura < ANA_MESES_IMPORT)
+    .sort((a, b) => (a.cobertura - b.cobertura) || (b.salio6 - a.salio6)).slice(0, 15);
+  const importarValor = importar.reduce((a, x) => a + x.valor, 0);
 
   // 3) DÓNDE SE PIERDE PLATA
   const ganadas = (cots || []).filter(c => ['Adjudicada', 'Facturada'].includes(c.estado));
-  let malMargen = [], sinCosto = [], enCero = [];
+  let malMargen = [], datoMalo = [], sinCosto = [], enCero = [];
   if (ganadas.length) {
     const ids = ganadas.map(c => '"' + encodeURIComponent(c.id) + '"').join(',');
     const its = await _pvdPaginar('cotizacion_items?select=cotizacion_id,descripcion,qty,v_unit,v_total,proveedor,precio_proveedor&cotizacion_id=in.(' + ids + ')');
@@ -32500,13 +32522,19 @@ async function anaCalcular(ym) {
     ganadas.forEach(c => { cli[c.id] = c.cliente || ''; });
     (its || []).forEach(r => {
       const venta = +r.v_unit || 0, costo = +r.precio_proveedor || 0;
-      const fila = { cot: r.cotizacion_id, cliente: cli[r.cotizacion_id] || '', desc: String(r.descripcion || '').slice(0, 60), qty: +r.qty || 0, venta: venta, costo: costo };
+      const fila = { cot: r.cotizacion_id, cliente: cli[r.cotizacion_id] || '', desc: String(r.descripcion || '').slice(0, 60), qty: +r.qty || 0, venta: venta, costo: costo, proveedor: r.proveedor || '' };
       if (!venta) { enCero.push(fila); return; }                      // se cotizó en $0: sale como NO COTIZADO
       if (!costo) { sinCosto.push(fila); return; }                    // no hay con qué medir el margen
       const m = Math.round((venta - costo) / venta * 100);
+      // 15-sep-2026 — COSTO POR ENCIMA DE LA VENTA CASI NUNCA ES UNA VENTA MALA:
+      // es un dato malo. El empaque flexitálico de CIAM salía en −217 % porque
+      // heredó el costo del anillo R45 que estaba antes en esa línea. Se separa
+      // para no asustar con pérdidas que no ocurrieron.
+      if (costo > venta) { datoMalo.push(Object.assign(fila, { margen: m })); return; }
       if (m < 15) malMargen.push(Object.assign(fila, { margen: m }));
     });
     malMargen.sort((a, b) => a.margen - b.margen);
+    datoMalo.sort((a, b) => (b.costo - b.venta) * (b.qty || 1) - (a.costo - a.venta) * (a.qty || 1));
   }
   // Órdenes de pedido del mes donde el costo quedó por ENCIMA de la venta.
   const opsMes = (ops || []).filter(o => String(o.created_at || '').slice(0, 7) === ym);
@@ -32524,10 +32552,9 @@ async function anaCalcular(ym) {
   (cotsFact || []).forEach(c => { yaFact[c.id] = true; });
   const sinFacturar = (ops || []).filter(o => ['despachada', 'en_ejecucion'].includes(o.estado) && !yaFact[o.cotizacion_id]);
 
-  // 4) COMERCIAL — del mes, sin adornos.
   const vivas = (cots || []).filter(c => !['Borrador'].includes(c.estado));
   return {
-    ym: ym, mes: _anaMes(ym),
+    ym: ym, mes: _anaMes(ym), desdeImport: _anaMes(_anaAntes(ym, ANA_MESES_IMPORT - 1)),
     ventas: {
       total: (porMes[ym] || {}).total || 0, n: (porMes[ym] || {}).n || 0,
       pendiente: (porMes[ym] || {}).saldo || 0, conIva: (porMes[ym] || {}).conIva || 0,
@@ -32536,8 +32563,10 @@ async function anaCalcular(ym) {
       clientes: clientes
     },
     comprar: comprar,
+    importar: importar, importarValor: importarValor,
     plata: {
       malMargen: malMargen.slice(0, 10), malMargenN: malMargen.length,
+      datoMalo: datoMalo.slice(0, 10), datoMaloN: datoMalo.length,
       sinCosto: sinCosto.slice(0, 5), sinCostoN: sinCosto.length,
       enCero: enCero.slice(0, 5), enCeroN: enCero.length,
       opPerdida: opPerdida,
@@ -32547,60 +32576,108 @@ async function anaCalcular(ym) {
         .map(o => ({ op: o.numero, cliente: o.cliente, valor: +o.valor_venta || 0 }))
     },
     comercial: {
-      cotizadas: vivas.length,
-      ganadas: ganadas.length,
+      cotizadas: vivas.length, ganadas: ganadas.length,
       tasa: vivas.length ? Math.round(ganadas.length / vivas.length * 100) : 0
     }
   };
 }
 
-// ─── Las cifras en pantalla (se ven con IA o sin ella) ──────────────────────
+// ─── La pantalla: cuatro números grandes, la lectura, y el detalle plegado ──
+// Todo cabe en la ventana: el cuerpo tiene su propio scroll y cada tabla el suyo.
+function _anaTile(t, v, sub, color) {
+  return '<div style="flex:1 1 170px;min-width:150px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);'
+    + 'border-radius:10px;padding:10px 12px">'
+    + '<div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px">' + t + '</div>'
+    + '<div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:19px;color:' + (color || '#fff') + ';margin-top:2px">' + v + '</div>'
+    + (sub ? '<div style="font-size:11.5px;color:var(--text-muted);margin-top:2px">' + sub + '</div>' : '')
+    + '</div>';
+}
+function _anaTabla(cab, filas, alto) {
+  return '<div style="overflow:auto;max-height:' + (alto || 240) + 'px;border:1px solid rgba(255,255,255,.08);border-radius:8px;margin-top:8px">'
+    + '<table class="abs-table" style="margin:0"><thead><tr>' + cab.map(c => '<th>' + c + '</th>').join('')
+    + '</tr></thead><tbody>' + filas + '</tbody></table></div>';
+}
+function _anaBloque(titulo, abierto, html) {
+  return '<details' + (abierto ? ' open' : '') + ' style="margin-top:10px;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 12px;background:rgba(255,255,255,.02)">'
+    + '<summary style="cursor:pointer;font-family:Montserrat,sans-serif;font-weight:700;color:#fff;font-size:13.5px">' + titulo + '</summary>'
+    + '<div style="margin-top:8px;font-size:12.5px;color:var(--text-muted);line-height:1.6">' + html + '</div></details>';
+}
+
 function anaCifrasHTML(d) {
   const v = d.ventas, p = d.plata;
   const dif = v.prev ? Math.round((v.total - v.prev) / v.prev * 100) : null;
-  const tabla = (cab, filas) => '<div class="abs-table-wrap" style="margin-top:6px"><table class="abs-table"><thead><tr>'
-    + cab.map(c => '<th>' + c + '</th>').join('') + '</tr></thead><tbody>' + filas + '</tbody></table></div>';
-  let h = '<div class="op-barrera" style="margin-bottom:12px"><h4>💵 Ventas de ' + opEsc(d.mes) + '</h4><p>'
-    + '<b style="font-size:16px;color:var(--gold)">' + _anaM(v.total) + '</b> en <b>' + v.n + '</b> factura(s), antes de IVA'
-    + (dif != null ? ' · contra ' + opEsc(v.prevMes) + ' (' + _anaM(v.prev) + ') <b style="color:' + (dif >= 0 ? '#86efac' : '#fca5a5') + '">'
-      + (dif >= 0 ? '+' : '') + dif + '%</b>' : '')
-    + (v.pendiente ? '<br>De ese mes quedan <b style="color:#fbbf24">' + _anaM(v.pendiente) + '</b> sin cobrar, de '
-      + _anaM(v.conIva) + ' facturados <b>con IVA</b>.' : '')
-    + (v.clientes.length ? '<br>Quién compró: ' + v.clientes.map(c => opEsc(c.cliente) + ' <b>' + _anaM(c.monto) + '</b>').join(' · ') : '')
-    + '<br>Cotizaciones del mes: <b>' + d.comercial.cotizadas + '</b> · ganadas <b>' + d.comercial.ganadas + '</b> (' + d.comercial.tasa + '%).'
-    + '</p></div>';
+  let h = '<div style="display:flex;gap:10px;flex-wrap:wrap">'
+    + _anaTile('Ventas ' + opEsc(d.mes.split(' de ')[0]), _anaM(v.total),
+        v.n + ' factura(s), antes de IVA' + (dif != null ? ' · <b style="color:' + (dif >= 0 ? '#86efac' : '#fca5a5') + '">'
+          + (dif >= 0 ? '+' : '') + dif + '%</b> vs ' + opEsc(v.prevMes.split(' de ')[0]) : ''), 'var(--gold)')
+    + _anaTile('Sin cobrar de ese mes', _anaM(v.pendiente), 'de ' + _anaM(v.conIva) + ' con IVA', '#fbbf24')
+    + _anaTile('Por reponer', _anaNum(d.comprar.length) + ' producto(s)', d.importar.length + ' por importar (' + _anaM(d.importarValor) + ')', '#8ce8a6')
+    + _anaTile('Despachado sin facturar', _anaM(p.sinFacturar), p.sinFacturarN + ' orden(es)', '#fca5a5')
+    + '</div>';
 
-  h += '<div class="op-barrera op-alto"><h4>🛒 Qué hay que comprar</h4><p>'
-    + (d.comprar.length
-      ? 'Salió de bodega en el mes y hoy no alcanza para otro mes igual:'
-        + tabla(['Producto', 'Salió', 'Hay hoy', 'Proveedor', 'Costo'],
-          d.comprar.map(x => '<tr><td>' + opEsc(x.desc.slice(0, 52)) + '</td>'
+  // La lectura de la IA va arriba: es el resumen, y llega unos segundos después.
+  h += '<div style="margin-top:12px;border-left:3px solid var(--green);background:rgba(63,191,99,.07);border-radius:8px;padding:10px 14px">'
+    + '<div style="font-family:Montserrat,sans-serif;font-weight:700;color:#fff;font-size:13.5px;margin-bottom:4px">Lectura del mes</div>'
+    + '<div id="ana-ia" style="color:var(--text-muted);font-size:12.5px">✍️ La IA está leyendo estas cifras…</div></div>';
+
+  // 🛒 COMPRAR
+  h += _anaBloque('🛒 Comprar ya — ' + d.comprar.length + ' producto(s)', true,
+    d.comprar.length
+      ? 'Salió de bodega en ' + opEsc(d.mes) + ' y hoy no alcanza para otro mes igual.'
+        + _anaTabla(['Producto', 'Salió', 'Hay hoy', 'Proveedor', 'Costo'],
+          d.comprar.map(x => '<tr><td>' + opEsc(x.desc.slice(0, 46)) + '</td>'
             + '<td style="text-align:right">' + _anaNum(x.salio) + '</td>'
             + '<td style="text-align:right;' + (x.stock <= 0 ? 'color:#fca5a5;font-weight:700' : '') + '">' + _anaNum(x.stock) + '</td>'
             + '<td>' + opEsc(x.proveedor || '—') + '</td>'
             + '<td style="text-align:right">' + (x.costo ? _anaM(x.costo) : '') + '</td></tr>').join(''))
-      : 'Nada urgente: lo que salió en el mes todavía tiene existencias.')
-    + '</p></div>';
+      : 'Nada urgente: lo que salió en el mes todavía tiene existencias.');
 
-  const bloques = [];
-  if (p.malMargenN) bloques.push('<b>' + p.malMargenN + ' línea(s) vendidas con menos del 15 % de margen</b>'
-    + tabla(['Producto', 'Cliente', 'Venta', 'Costo', 'Margen'],
-      p.malMargen.map(x => '<tr><td>' + opEsc(x.desc) + '</td><td>' + opEsc(String(x.cliente).slice(0, 22)) + '</td>'
+  // 🚢 IMPORTAR
+  h += _anaBloque('🚢 Qué importar — ' + d.importar.length + ' producto(s) · ' + _anaM(d.importarValor), d.importar.length > 0,
+    d.importar.length
+      ? 'Material de importación (proveedor <b>IMP</b>) según el kardex de los últimos ' + ANA_MESES_IMPORT
+        + ' meses (' + opEsc(d.desdeImport) + ' → ' + opEsc(d.mes) + '). La cantidad sugerida cubre otros '
+        + ANA_MESES_IMPORT + ' meses al ritmo al que viene saliendo.'
+        + _anaTabla(['Producto', 'Salió ' + ANA_MESES_IMPORT + 'm', 'Al mes', 'Hay hoy', 'Alcanza', 'Pedir', 'Costo est.'],
+          d.importar.map(x => '<tr><td>' + opEsc(x.desc.slice(0, 44)) + (x.marca ? ' <small style="color:var(--text-muted)">' + opEsc(x.marca) + '</small>' : '') + '</td>'
+            + '<td style="text-align:right">' + _anaNum(x.salio6) + '</td>'
+            + '<td style="text-align:right">' + x.promedio + '</td>'
+            + '<td style="text-align:right;' + (x.stock <= 0 ? 'color:#fca5a5;font-weight:700' : '') + '">' + _anaNum(x.stock) + '</td>'
+            + '<td style="text-align:right;' + (x.cobertura < 2 ? 'color:#fca5a5' : '') + '">' + (x.cobertura != null ? x.cobertura + ' m' : '') + '</td>'
+            + '<td style="text-align:right;font-weight:700;color:var(--gold)">' + _anaNum(x.sugerido) + '</td>'
+            + '<td style="text-align:right">' + (x.valor ? _anaM(x.valor) : '<span title="El maestro no tiene costo de este producto">—</span>') + '</td></tr>').join(''), 300)
+      : 'Nada de importación por pedir: lo que rota tiene cobertura para más de ' + ANA_MESES_IMPORT + ' meses.');
+
+  // 💸 PLATA
+  const bl = [];
+  if (p.malMargenN) bl.push('<b>' + p.malMargenN + ' línea(s) vendidas con menos del 15 % de margen</b>'
+    + _anaTabla(['Producto', 'Cliente', 'Venta', 'Costo', 'Margen'],
+      p.malMargen.map(x => '<tr><td>' + opEsc(x.desc) + '</td><td>' + opEsc(String(x.cliente).slice(0, 20)) + '</td>'
         + '<td style="text-align:right">' + _anaM(x.venta) + '</td><td style="text-align:right">' + _anaM(x.costo) + '</td>'
-        + '<td style="text-align:right;color:' + (x.margen < 0 ? '#fca5a5' : '#fbbf24') + ';font-weight:700">' + x.margen + '%</td></tr>').join('')));
-  if (p.opPerdida.length) bloques.push('<b>' + p.opPerdida.length + ' línea(s) de órdenes de pedido con el costo POR ENCIMA de la venta</b>'
-    + tabla(['O.P.', 'Producto', 'Venta', 'Costo'],
+        + '<td style="text-align:right;color:#fbbf24;font-weight:700">' + x.margen + '%</td></tr>').join('')));
+  if (p.datoMaloN) bl.push('<b style="color:#fca5a5">' + p.datoMaloN + ' línea(s) con el costo POR ENCIMA de la venta</b> — casi siempre es un dato malo, '
+    + 'no una venta mala: un costo viejo que quedó pegado a la línea, o los miles que se cayeron al digitar. <b>Revisar antes de creerlo.</b>'
+    + _anaTabla(['Producto', 'Cliente', 'Venta', 'Costo', 'Proveedor'],
+      p.datoMalo.map(x => '<tr><td>' + opEsc(x.desc) + '</td><td>' + opEsc(String(x.cliente).slice(0, 20)) + '</td>'
+        + '<td style="text-align:right">' + _anaM(x.venta) + '</td>'
+        + '<td style="text-align:right;color:#fca5a5">' + _anaM(x.costo) + '</td>'
+        + '<td>' + opEsc(x.proveedor || '—') + '</td></tr>').join('')));
+  if (p.opPerdida.length) bl.push('<b>' + p.opPerdida.length + ' línea(s) de órdenes de pedido con el costo por encima de la venta</b>'
+    + _anaTabla(['O.P.', 'Producto', 'Venta', 'Costo'],
       p.opPerdida.map(x => '<tr><td>' + opEsc(x.op) + '</td><td>' + opEsc(x.desc) + '</td>'
         + '<td style="text-align:right">' + _anaM(x.venta) + '</td>'
         + '<td style="text-align:right;color:#fca5a5;font-weight:700">' + _anaM(x.costo) + '</td></tr>').join('')));
-  if (p.sinCostoN) bloques.push('<b>' + p.sinCostoN + ' línea(s) adjudicadas sin costo de proveedor</b>: no se sabe si dejaron plata. '
-    + 'Por ejemplo: ' + p.sinCosto.map(x => opEsc(x.desc.slice(0, 34)) + ' (' + opEsc(x.cliente) + ')').join(' · '));
-  if (p.enCeroN) bloques.push('<b>' + p.enCeroN + ' línea(s) adjudicadas que se cotizaron en $0</b>: se entregan sin cobrarse. '
-    + 'Por ejemplo: ' + p.enCero.map(x => opEsc(x.desc.slice(0, 34)) + ' (' + opEsc(x.cliente) + ')').join(' · '));
-  if (p.sinFacturarN) bloques.push('<b>' + _anaM(p.sinFacturar) + ' despachado y todavía sin facturar</b> en ' + p.sinFacturarN + ' orden(es): '
+  if (p.sinCostoN) bl.push('<b>' + p.sinCostoN + ' línea(s) adjudicadas sin costo de proveedor</b>: no se sabe si dejaron plata. '
+    + 'Por ejemplo: ' + p.sinCosto.map(x => opEsc(x.desc.slice(0, 32)) + ' (' + opEsc(x.cliente) + ')').join(' · '));
+  if (p.enCeroN) bl.push('<b>' + p.enCeroN + ' línea(s) adjudicadas cotizadas en $0</b>: se entregan sin cobrarse. '
+    + 'Por ejemplo: ' + p.enCero.map(x => opEsc(x.desc.slice(0, 32)) + ' (' + opEsc(x.cliente) + ')').join(' · '));
+  if (p.sinFacturarN) bl.push('<b>' + _anaM(p.sinFacturar) + ' despachado y todavía sin facturar</b> en ' + p.sinFacturarN + ' orden(es): '
     + p.sinFacturarTop.map(o => opEsc(o.op) + ' ' + opEsc(o.cliente) + ' ' + _anaM(o.valor)).join(' · '));
-  h += '<div class="op-barrera op-alto" style="margin-top:12px"><h4>💸 Dónde se está perdiendo plata</h4><p>'
-    + (bloques.length ? bloques.join('<br><br>') : 'Nada que reportar con los datos del mes.') + '</p></div>';
+  h += _anaBloque('💸 Dónde se está perdiendo plata', false, bl.length ? bl.join('<br><br>') : 'Nada que reportar con los datos del mes.');
+
+  h += _anaBloque('📋 Comercial del mes', false,
+    'Cotizaciones vivas: <b>' + d.comercial.cotizadas + '</b> · ganadas <b>' + d.comercial.ganadas + '</b> · efectividad <b>' + d.comercial.tasa + '%</b>.'
+    + (d.ventas.clientes.length ? '<br>Quién compró: ' + d.ventas.clientes.map(c => opEsc(c.cliente) + ' <b>' + _anaM(c.monto) + '</b>').join(' · ') : ''));
   return h;
 }
 
@@ -32618,8 +32695,9 @@ async function anaIA(d) {
     principales_clientes: d.ventas.clientes,
     cotizaciones_del_mes: d.comercial.cotizadas, ganadas: d.comercial.ganadas, tasa_de_exito: d.comercial.tasa + '%',
     comprar_ya: d.comprar,
+    importar: { desde: d.desdeImport, meses_mirados: ANA_MESES_IMPORT, valor_estimado: d.importarValor, productos: d.importar },
     margen_bajo: d.plata.malMargen, margen_bajo_total: d.plata.malMargenN,
-    costo_mayor_que_venta: d.plata.opPerdida,
+    costo_mayor_que_venta_REVISAR_DATO: d.plata.datoMalo, costo_mayor_que_venta_total: d.plata.datoMaloN,
     lineas_sin_costo: d.plata.sinCostoN, lineas_en_cero: d.plata.enCeroN,
     despachado_sin_facturar: d.plata.sinFacturar, ordenes_sin_facturar: d.plata.sinFacturarN
   };
@@ -32630,18 +32708,20 @@ async function anaIA(d) {
     + '\n\nEscribe un análisis corto en español colombiano, directo y sin adornos. Reglas estrictas:\n'
     + '1. NO inventes ni estimes ninguna cifra: usa ÚNICAMENTE las de arriba. Si algo no está, no lo menciones.\n'
     + '2. Los pesos van en formato colombiano ($1.234.567). Nada de decimales.\n'
-    + '3. Máximo 280 palabras, en cuatro bloques con estos títulos exactos, cada uno en una línea que empiece con "## ":\n'
-    + '## Cómo estuvo el mes\n## Qué comprar ya\n## Dónde se está perdiendo plata\n## Tres cosas para hacer esta semana\n'
-    + '4. En "Qué comprar ya" nombra máximo 5 productos concretos, con cuánto salió y cuánto queda, y a quién comprárselo si aparece el proveedor.\n'
-    + '5. En las acciones, cada una debe ser concreta, con nombre y número — nada de "mejorar procesos".\n'
-    + '6. No saludes, no te despidas, no expliques qué vas a hacer. Empieza directo con el primer título.\n'
-    + '7. Si una cifra llama la atención (una caída fuerte, un margen negativo, plata sin cobrar), dilo sin rodeos.';
+    + '3. Máximo 320 palabras, en cinco bloques con estos títulos exactos, cada uno en una línea que empiece con "## ":\n'
+    + '## Cómo estuvo el mes\n## Qué comprar ya\n## Qué importar\n## Dónde se está perdiendo plata\n## Tres cosas para hacer esta semana\n'
+    + '4. En "Qué comprar ya" nombra máximo 4 productos, con cuánto salió y cuánto queda, y a quién comprárselo.\n'
+    + '5. En "Qué importar" nombra máximo 4, con la cantidad sugerida y para cuántos meses alcanza hoy. Recuerda que la '
+    + 'importación demora, así que se pide para ' + ANA_MESES_IMPORT + ' meses.\n'
+    + '6. Lo que venga en "costo_mayor_que_venta_REVISAR_DATO" NO son pérdidas: son datos por corregir. Dilo así.\n'
+    + '7. En las acciones, cada una concreta, con nombre y número — nada de "mejorar procesos".\n'
+    + '8. No saludes, no te despidas, no expliques qué vas a hacer. Empieza directo con el primer título.';
   // Sonnet escribe mejor este tipo de lectura; si falla, Haiku responde igual.
   const pedir = async modelo => {
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': (/script\.google\.com/i.test(url) ? 'text/plain;charset=utf-8' : 'application/json') },
-      body: JSON.stringify({ model: modelo, max_tokens: 1600, messages: [{ role: 'user', content: prompt }], secret: _proxySecret() }),
+      body: JSON.stringify({ model: modelo, max_tokens: 1800, messages: [{ role: 'user', content: prompt }], secret: _proxySecret() }),
       redirect: 'follow'
     });
     const data = await resp.json();
@@ -32658,7 +32738,7 @@ function _anaTexto(t) {
   return opEsc(t).split(/\n+/).map(l => {
     l = l.trim();
     if (!l) return '';
-    if (/^##\s*/.test(l)) return '<div style="font-weight:700;color:var(--gold);margin:12px 0 4px">' + l.replace(/^##\s*/, '') + '</div>';
+    if (/^##\s*/.test(l)) return '<div style="font-weight:700;color:var(--gold);margin:10px 0 3px">' + l.replace(/^##\s*/, '') + '</div>';
     const neg = s => s.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
     if (/^[-*•]\s+/.test(l)) return '<div style="margin:2px 0 2px 14px">• ' + neg(l.replace(/^[-*•]\s+/, '')) + '</div>';
     if (/^\d+[.)]\s+/.test(l)) return '<div style="margin:2px 0 2px 14px">' + neg(l) + '</div>';
@@ -32666,17 +32746,20 @@ function _anaTexto(t) {
   }).join('');
 }
 
+// La ventana cabe SIEMPRE en la pantalla: alto máximo, cabecera fija y el
+// cuerpo con su propio scroll. Antes crecía con el contenido y el final del
+// informe quedaba por fuera.
 function _anaModal(titulo, html) {
   const prev = document.getElementById('ana-modal'); if (prev) prev.remove();
   const ov = document.createElement('div');
   ov.id = 'ana-modal';
-  ov.style.cssText = 'position:fixed;inset:0;background:rgba(3,8,18,.82);z-index:100004;'
-    + 'display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(3,8,18,.86);z-index:100004;'
+    + 'display:flex;align-items:center;justify-content:center;padding:16px;';
   ov.onclick = e => { if (e.target === ov) ov.remove(); };
-  ov.innerHTML = '<div class="op-modal-hoja" style="max-width:980px;width:100%">'
-    + '<div class="op-modal-cab"><h3>' + opEsc(titulo) + '</h3>'
+  ov.innerHTML = '<div class="op-modal-hoja" style="max-width:1080px;width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden">'
+    + '<div class="op-modal-cab" style="flex:0 0 auto"><h3>' + opEsc(titulo) + '</h3>'
     + '<button onclick="document.getElementById(\'ana-modal\').remove()" aria-label="Cerrar">×</button></div>'
-    + html + '</div>';
+    + '<div style="flex:1 1 auto;overflow:auto;padding-right:4px">' + html + '</div></div>';
   document.body.appendChild(ov);
 }
 
