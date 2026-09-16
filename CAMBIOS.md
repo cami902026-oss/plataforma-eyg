@@ -9,6 +9,8 @@ cambio que ya está en vivo: para verlo hay que recargar con **Ctrl + F5**.
 
 ## 15 de septiembre de 2026
 
+- 📈 v272 — Botón «Analiza el mes»: qué comprar y dónde se pierde plata  
+  <sub>`2f09e47a`</sub>
 - 🏷️ v271 — caché energy-v272 para que el módulo Proveedores llegue a los equipos  
   <sub>`26e73c3e`</sub>
 - 🏷️ v271 — Módulo Proveedores: a cómo nos venden y qué les compramos  
