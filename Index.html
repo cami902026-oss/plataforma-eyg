@@ -14013,7 +14013,13 @@ async function _cotizGuardarBDCore() {
   if (_adoptada) window._bdAdoptId = null;
   // Tras CREAR una cotización nueva, limpiar el formulario para la siguiente
   // (queda con el número que sigue). Para el PDF de una ya guardada, reábrela con ✏️ Editar.
-  if (idx < 0) cotizNueva(true);
+  // EXCEPCIÓN (16-sep-2026): si se está guardando PARA generar el PDF/Excel, la
+  // cotización se queda ABIERTA con su número definitivo — el documento se arma
+  // leyendo la pantalla, y un formulario recién limpiado saldría vacío.
+  if (idx < 0) {
+    if (_cotizGuardarSinLimpiar) cotizEditId = id;
+    else cotizNueva(true);
+  }
 }
 
 // ===== GENERAR PDF DE COTIZACIÓN =====
@@ -14047,10 +14053,70 @@ function _pdfOverlay(html, titulo) {
   };
   return ov;
 }
+// ── EL DOCUMENTO QUE SALE PARA EL CLIENTE SE GUARDA PRIMERO (16-sep-2026) ───
+// Incidente DISTRITUBERIAS RB: se podía armar la cotización entera, generar el PDF,
+// mandárselo al cliente y que en la plataforma no quedara NADA. cotizGenerarPDF y
+// cotizDownloadExcel leen de la PANTALLA y no guardaban: solo exigían que hubiera
+// número. Mario guardó un cascarón de un renglón en $0 a las 9:15 pm, siguió
+// llenándola en pantalla, generó el PDF ($24.204.600) y nunca volvió a guardar —
+// el cliente recibió la cotización completa y el servidor se quedó con el cascarón.
+// Ahora, antes de armar el documento, si lo que se ve en pantalla NO coincide con
+// lo guardado, se guarda. Si el guardado se frena (cliente vacío, número repetido,
+// ítems duplicados), NO se genera el documento: nunca sale para el cliente algo que
+// no quedó en la base.
+let _cotizGuardarSinLimpiar = false;
+
+// Huella del contenido que le importa al cliente. Sirve para comparar pantalla vs
+// guardado; si difieren, hay cambios sin guardar.
+function _cotizHuellaDe(o) {
+  const its = (o.items || []).map(x => [
+    String((x && x.desc) || '').trim(), +((x && x.qty) || 0),
+    String((x && x.udm) || '').trim(), +((x && x.precio) || 0),
+    String((x && x.desvTec) || '').trim(), String((x && x.marca) || '').trim(),
+    String((x && x.tiempoEntrega) || '').trim()
+  ].join('~'));
+  return [o.cliente, o.contacto, o.correo, o.estado, o.iva, o.formaPago, o.sitioEntrega,
+          o.validez, o.fecha, o.fechaVenc, o.observaciones]
+         .map(v => String(v == null ? '' : v).trim()).join('|') + '||' + its.join('|');
+}
+function _cotizHuellaForm() {
+  const g = id => { const e = document.getElementById(id); return e ? e.value : ''; };
+  return _cotizHuellaDe({
+    cliente: g('cotiz-cliente'), contacto: g('cotiz-contacto'), correo: g('cotiz-correo'),
+    estado: g('cotiz-estado'), iva: parseFloat(g('cotiz-iva')) || 0, formaPago: g('cotiz-pago'),
+    sitioEntrega: g('cotiz-sitio'), validez: g('cotiz-validez'), fecha: g('cotiz-fecha-gen'),
+    fechaVenc: g('cotiz-fecha-venc'), observaciones: g('cotiz-observaciones'), items: cotizItems
+  });
+}
+// ¿Lo que hay en pantalla está sin guardar?
+function _cotizSinGuardar() {
+  if (_cotizNumEsPendiente(cotizReadNum())) return true;          // nunca se guardó
+  const id = cotizEditId || cotizReadNum();
+  const rec = (getData('bd_cotizaciones', []) || []).find(c => c && c.id === id && !c.deleted);
+  if (!rec) return true;                                          // este equipo no la tiene guardada
+  return _cotizHuellaForm() !== _cotizHuellaDe(rec);
+}
+// Guarda antes de generar el documento. Devuelve false si NO se debe generar.
+async function _cotizGuardarAntesDelDoc() {
+  if (!_cotizSinGuardar()) return true;                           // ya está guardada tal cual se ve
+  _cotizGuardarSinLimpiar = true;
+  let r;
+  try { r = await cotizGuardarBD(); }
+  finally { _cotizGuardarSinLimpiar = false; }
+  if (r === false) return false;                                  // frenado a propósito (ya avisó)
+  if (_cotizSinGuardar()) {                                       // sigue sin quedar guardada
+    showToast('⛔ No se generó el documento porque la cotización NO se pudo guardar. '
+      + 'Corrige lo que falta y vuelve a intentarlo — así no sale para el cliente algo que no quedó en la base.',
+      'error', { durationMs: 14000 });
+    return false;
+  }
+  return true;
+}
+
 async function cotizGenerarPDF() {
   if (!cotizItems.length) { showToast('Agrega ítems primero','error'); return; }
-  // v134: el número nace al guardar — sin guardar no hay número para el PDF
-  if (_cotizNumEsPendiente(cotizReadNum())) { showToast('💾 Guarda la cotización primero — al guardar se le asigna su número definitivo.','error'); return; }
+  // v134: el número nace al guardar. 16-sep-2026: además se guarda lo que haya cambiado.
+  if (!(await _cotizGuardarAntesDelDoc())) return;
   // Asegurar que las fotos marcadas para PDF estén cargadas (se guardan en archivo aparte)
   if (cotizItems.some(it => it && it.fotoId && it.fotoEnPDF !== false)) {
     if (cotizItems.some(it => it && it.fotoId && it.fotoEnPDF !== false && !_cotizFotos[it.fotoId])) _cotizFotosLoaded = false;
@@ -14610,10 +14676,11 @@ function hpAgregar(k){
   showToast('Ítem agregado con el precio de ' + r.id, 'success');
 }
 
-function cotizDownloadExcel() {
+async function cotizDownloadExcel() {
   if (!cotizItems.length) { showToast('Agrega ítems primero','error'); return; }
-  // v134: el número nace al guardar — sin guardar no hay número para el Excel
-  if (_cotizNumEsPendiente(cotizReadNum())) { showToast('💾 Guarda la cotización primero — al guardar se le asigna su número definitivo.','error'); return; }
+  // v134: el número nace al guardar. 16-sep-2026: el Excel también sale para el
+  // cliente, así que se guarda primero igual que el PDF.
+  if (!(await _cotizGuardarAntesDelDoc())) return;
   const cliente = document.getElementById('cotiz-cliente').value || 'Cliente';
   const contacto = document.getElementById('cotiz-contacto').value || '';
   const correo = document.getElementById('cotiz-correo').value || '';
