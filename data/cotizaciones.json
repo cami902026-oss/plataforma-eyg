@@ -84936,8 +84936,8 @@
     "cliente": "SAR ENERGY",
     "contacto": "LAURA ROJAS",
     "correo": "lrojas@sarenergy.com",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "633",
     "iva": 19,
     "subtotal": 111382641,
     "ivaVal": 21162701.79,
@@ -85963,8 +85963,9 @@
         "precioProveedor": 17260
       }
     ],
-    "fechaGuardado": "2026-09-03T21:08:50.432Z",
+    "fechaGuardado": "2026-09-16T21:32:25.085Z",
     "fechaEnvio": "2026-08-31T21:33:59.529Z",
+    "facturadaAt": "2026-09-16",
     "adjudicadaAt": "2026-09-03",
     "valorAdjudicado": 10298865,
     "itemsAdjudicados": [
@@ -85993,8 +85994,8 @@
     "adjudicacionAt": "2026-09-03T16:56:27.261Z",
     "createdAt": "2026-08-31T21:22:41.544Z",
     "createdBy": "alberto",
-    "updatedAt": "2026-09-03T21:08:50.432Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-09-16T21:32:25.085Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2078",
@@ -100403,12 +100404,12 @@
         "udm": "UN",
         "uid": "b3deb202-cefd-414e-9a57-8287f9774cd3",
         "desc": "TEE 6\" AC SCH 40 SOLDAR ",
-        "marca": "GELDBACH",
+        "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "GRANADA",
+        "proveedor": "",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 172200
+        "precioProveedor": null
       },
       {
         "qty": 1,
@@ -100703,12 +100704,12 @@
         "udm": "UN",
         "uid": "3a24ff8c-8f6b-4e81-95a8-520cbbc81edf",
         "desc": "CODO 4'' 45 AC SCH 40 SOLDAR ",
-        "marca": "XF",
+        "marca": "",
         "precio": 0,
-        "desvTec": "SE OFERTA SEMICODO",
-        "proveedor": "CODIFER",
-        "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 17700
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null
       },
       {
         "qty": 12,
@@ -101302,7 +101303,7 @@
         "qty": 6,
         "udm": "UN",
         "uid": "58c9d265-057c-495a-bc8c-ccfdc9b26d2b",
-        "desc": "TEE 2\" INOX 316L 150 SOLDAR",
+        "desc": "TEE 2\" INOX 316L 50 SOLDAR",
         "marca": "",
         "precio": 0,
         "desvTec": "",
@@ -101339,13 +101340,12 @@
         "udm": "UN",
         "uid": "e3023c2b-84cc-4645-b459-b5d0d0fa79c4",
         "desc": "TEE 3\" AC SCH 40 SOLDAR",
-        "marca": "XF-GELDBACH",
+        "marca": "XF",
         "precio": 22100,
         "desvTec": "A 234",
         "proveedor": "BODEGA",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 22100,
-        "obsProveedor": "GELDBACH 52100"
+        "precioProveedor": 22100
       },
       {
         "qty": 5,
@@ -101744,10 +101744,10 @@
         "precioProveedor": null
       }
     ],
-    "fechaGuardado": "2026-09-16T21:28:01.331Z",
+    "fechaGuardado": "2026-09-16T21:11:34.281Z",
     "createdAt": "2026-09-08T21:00:11.713Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-16T21:28:01.331Z",
+    "updatedAt": "2026-09-16T21:11:34.281Z",
     "updatedBy": "alexandra"
   },
   {
