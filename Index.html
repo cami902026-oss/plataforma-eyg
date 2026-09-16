@@ -2159,7 +2159,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <div style="min-width:210px;">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
                   <span style="color:var(--text-muted);font-size:11px;font-weight:700;">COTIZACIÓN No.</span>
-                  <input type="text" id="cotiz-numero" class="cotiz-no-val" style="background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:6px;padding:4px 10px;width:130px;text-align:center;" placeholder="LM----">
+                  <input type="text" id="cotiz-numero" class="cotiz-no-val" onblur="try{cotizWriteNum(cotizReadNum());_cotizNumVigilar();}catch(_){}" style="background:rgba(15,43,91,0.5);border:1px solid var(--border);border-radius:6px;padding:4px 10px;width:130px;text-align:center;" placeholder="LM----">
                   <button type="button" onclick="cotizRegenerarNum()" title="Generar siguiente consecutivo automáticamente" style="background:rgba(46,170,74,.15);color:#86efac;border:1px solid rgba(46,170,74,.4);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;">🔄 Auto</button>
                 </div>
                 <div class="form-group" style="margin-bottom:8px;">
@@ -12395,11 +12395,31 @@ function cotizGetNextNum() {
   return 'LM' + (max + 1);
 }
 
+// ── NORMALIZAR EL NÚMERO ESCRITO A MANO (16-sep-2026) ──────────────────────
+// El formulario nuevo muestra 'LM — pendiente' y alguien escribe el número encima.
+// Así nacieron 'LM —2169' (borró solo la palabra) y 'LM 2169' (borró también el
+// guión). Como el id es la LLAVE, Supabase los tomó como cotizaciones DISTINTAS y
+// en la lista salían tres "2169" — una de PSI (la buena) y dos borradores vacíos.
+// Se limpia aquí, el único punto por el que se lee ese campo: espacios fuera,
+// guiones raros (— – −) a guión normal, mayúsculas y prefijo LM siempre.
+// Revisado contra las 1170 cotizaciones de la base: solo cambia esas dos; los
+// números adoptados del LIBRO con sufijo (LM1653-GEP) quedan igual.
+function _cotizNumNormalizar(v) {
+  let s = String(v == null ? '' : v).trim();
+  if (!s || /pendiente/i.test(s)) return s;              // el centinela se respeta tal cual
+  s = s.replace(/[‐-―−]/g, '-')          // ‐ ‑ ‒ – — ― − → -
+       .replace(/\s+/g, '')                              // fuera espacios
+       .toUpperCase();
+  const m = s.match(/^LM?-*(\d+)(?:-(\d+))?$/) || s.match(/^-*(\d+)(?:-(\d+))?$/);
+  if (!m) return s;                                      // formato con sufijo (LM1653-GEP): solo limpio
+  return 'LM' + m[1] + (m[2] ? '-' + m[2] : '');
+}
+
 // Lee el valor del input/span del número de cotización (compat con ambos casos)
 function cotizReadNum() {
   const el = document.getElementById('cotiz-numero');
   if (!el) return '';
-  return (el.value !== undefined ? el.value : el.textContent || '').trim();
+  return _cotizNumNormalizar(el.value !== undefined ? el.value : el.textContent || '');
 }
 
 // Asigna el valor al input/span del número de cotización
@@ -13820,6 +13840,21 @@ async function _cotizGuardarBDCore() {
   const numCampo = cotizReadNum();
   // Si el número del campo difiere del id en edición → es cotización nueva (no sobrescribir)
   let id = (cotizEditId && numCampo === cotizEditId) ? cotizEditId : numCampo;
+  // 16-sep-2026 — NÚMERO A MANO QUE YA ES DE OTRA COTIZACIÓN: antes solo salía el
+  // aviso del vigilante (cada 8s) y se podía guardar encima igual. Ahora se frena
+  // en seco. El consecutivo automático ('LM — pendiente') no pasa por aquí, y los
+  // números adoptados del LIBRO tampoco: solo frena si ese id YA está ocupado.
+  if (!_cotizNumEsPendiente(id) && id !== cotizEditId) {
+    const _bdChk = getData('bd_cotizaciones', []) || [];
+    const _ocup = _bdChk.find(c => c && c.id === id && !c.deleted);
+    if (_ocup) {
+      showToast('⛔ El número ' + id + ' ya es de la cotización de ' + (_ocup.cliente || 'otro cliente') +
+        '. NO se guardó, para no crear una copia. Déjalo en "' + COTIZ_NUM_PENDIENTE +
+        '" y la plataforma le pone el suyo, o escribe ' + _cotizNumSiguienteLibre(id, _bdChk) + '.',
+        'error', { durationMs: 16000 });
+      return false;
+    }
+  }
   // v134 — CONSECUTIVO AL GUARDAR: si el campo dice 'LM — pendiente' (cotización nueva),
   // el número definitivo se reclama en el servidor AQUÍ. Un número digitado a MANO
   // (adoptadas del LIBRO, sufijos tipo LM1653-GEP) se respeta y sigue el flujo de siempre.
