@@ -83619,8 +83619,8 @@
     "cliente": "SAR ENERGY SAS",
     "contacto": "Oscar Sanchez",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "632",
     "iva": 19,
     "subtotal": 5860275,
     "ivaVal": 1113452.25,
@@ -83779,8 +83779,9 @@
         "precioProveedor": 43000
       }
     ],
-    "fechaGuardado": "2026-09-10T21:47:13.445Z",
+    "fechaGuardado": "2026-09-16T21:22:33.324Z",
     "fechaEnvio": "2026-08-28T22:23:57.708Z",
+    "facturadaAt": "2026-09-16",
     "adjudicadaAt": "2026-09-10",
     "valorAdjudicado": 1424403,
     "itemsAdjudicados": [
@@ -83813,8 +83814,8 @@
     "adjudicacionAt": "2026-09-10T17:44:40.993Z",
     "createdAt": "2026-08-28T14:23:29.795Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-10T21:47:13.446Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-09-16T21:22:33.324Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2075",
@@ -122133,8 +122134,8 @@
     "cliente": "PSI",
     "contacto": "MAURICIO",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "631",
     "iva": 19,
     "subtotal": 4000360,
     "ivaVal": 760068.4,
@@ -122192,8 +122193,9 @@
         "precioProveedor": 1835
       }
     ],
-    "fechaGuardado": "2026-09-16T14:49:02.301Z",
+    "fechaGuardado": "2026-09-16T21:07:48.830Z",
     "fechaEnvio": "2026-09-15T21:43:12.678Z",
+    "facturadaAt": "2026-09-16",
     "adjudicadaAt": "2026-09-16",
     "valorAdjudicado": 4000360,
     "itemsAdjudicados": [
@@ -122214,8 +122216,8 @@
     "adjudicacionAt": "2026-09-16T14:03:45.154Z",
     "createdAt": "2026-09-15T21:19:19.053Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-16T14:49:02.301Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-09-16T21:07:48.830Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2170",
@@ -122246,13 +122248,13 @@
         "udm": "EA",
         "uid": "1f87b8a2-5efd-46a9-8d5f-c0cc8b5c6a6b",
         "desc": " MANIFOLD 5 VIAS                          \n",
-        "marca": "COMFIT ",
+        "marca": "",
         "precio": 0,
-        "desvTec": "CONEXION DE 1/2\" INOXIDABLE ",
-        "proveedor": "GRANADA",
+        "desvTec": "",
+        "proveedor": "",
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 981000
+        "precioProveedor": 0
       },
       {
         "id": 2,
@@ -122745,11 +122747,11 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-09-16T21:21:52.155Z",
+    "fechaGuardado": "2026-09-16T21:05:00.607Z",
     "createdAt": "2026-09-16T16:06:03.754Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-16T21:21:52.155Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-16T21:05:00.607Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2171",
