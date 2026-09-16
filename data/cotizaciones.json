@@ -98168,8 +98168,8 @@
     "cliente": "MAG SERVICIOS",
     "contacto": "HERNAN PEREZ",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "634",
     "iva": 19,
     "subtotal": 4420000,
     "ivaVal": 839800,
@@ -98199,8 +98199,9 @@
         "precioProveedor": 28000
       }
     ],
-    "fechaGuardado": "2026-09-12T13:34:06.650Z",
+    "fechaGuardado": "2026-09-16T21:47:49.281Z",
     "fechaEnvio": "2026-09-07T20:28:06.698Z",
+    "facturadaAt": "2026-09-16",
     "adjudicadaAt": "2026-09-12",
     "valorAdjudicado": 4420000,
     "itemsAdjudicados": [
@@ -98213,8 +98214,8 @@
     "adjudicacionAt": "2026-09-12T13:33:40.659Z",
     "createdAt": "2026-09-07T19:44:52.140Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-12T13:34:06.650Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-09-16T21:47:49.281Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2129",
@@ -99447,9 +99448,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 149930366,
-    "ivaVal": 28486769.54,
-    "total": 178417135.54,
+    "subtotal": 149610366,
+    "ivaVal": 28425969.54,
+    "total": 178036335.54,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "CAJICA",
     "validez": "8 DÍAS",
@@ -100404,12 +100405,12 @@
         "udm": "UN",
         "uid": "b3deb202-cefd-414e-9a57-8287f9774cd3",
         "desc": "TEE 6\" AC SCH 40 SOLDAR ",
-        "marca": "GELDBACH",
+        "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "GRANADA",
+        "proveedor": "",
         "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 172200
+        "precioProveedor": null
       },
       {
         "qty": 1,
@@ -100704,12 +100705,12 @@
         "udm": "UN",
         "uid": "3a24ff8c-8f6b-4e81-95a8-520cbbc81edf",
         "desc": "CODO 4'' 45 AC SCH 40 SOLDAR ",
-        "marca": "XF",
+        "marca": "",
         "precio": 0,
-        "desvTec": "SE OFERTA SEMICODO",
-        "proveedor": "CODIFER",
-        "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 17700
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null
       },
       {
         "qty": 12,
@@ -101008,7 +101009,7 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS HABILES",
+        "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": null
       },
       {
@@ -101064,12 +101065,12 @@
         "udm": "UN",
         "uid": "0750ef85-f276-4736-97e9-df7630f44cd2",
         "desc": "TUBERIA 10\" AC SCH 40 SC ASTM A106 GR B",
-        "marca": "BT / WUXI / BAOLAI  / MOLONG ",
+        "marca": "",
         "precio": 0,
-        "desvTec": "TRINORMA",
-        "proveedor": "TUVACOL",
-        "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 248250
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": null
       },
       {
         "qty": 7,
@@ -101272,7 +101273,7 @@
         "precio": 0,
         "desvTec": "",
         "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS HABILES",
+        "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": null
       },
       {
@@ -101303,7 +101304,7 @@
         "qty": 6,
         "udm": "UN",
         "uid": "58c9d265-057c-495a-bc8c-ccfdc9b26d2b",
-        "desc": "TEE 2\" INOX 316L 150 SOLDAR",
+        "desc": "TEE 2\" INOX 316L 50 SOLDAR",
         "marca": "",
         "precio": 0,
         "desvTec": "",
@@ -101328,11 +101329,11 @@
         "udm": "UN",
         "uid": "38d11421-0807-41a1-9ab8-e3d0947edfe9",
         "desc": "TUBERIA 4\" AC SCH 40 SC A-106",
-        "marca": "BAOLAI",
-        "precio": 64000,
-        "desvTec": "SE OFERTA TUBO X 6 METROS",
-        "proveedor": "BODEGA",
-        "tiempoEntrega": "1-2 DIAS HABILES",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": null
       },
       {
@@ -101340,13 +101341,12 @@
         "udm": "UN",
         "uid": "e3023c2b-84cc-4645-b459-b5d0d0fa79c4",
         "desc": "TEE 3\" AC SCH 40 SOLDAR",
-        "marca": "XF-GELDBACH",
+        "marca": "XF",
         "precio": 22100,
         "desvTec": "A 234",
         "proveedor": "BODEGA",
-        "tiempoEntrega": "1-2 DIAS HABILES",
-        "precioProveedor": 22100,
-        "obsProveedor": "GRANADA GELDBACH 52100"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 22100
       },
       {
         "qty": 5,
@@ -101644,7 +101644,7 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER|",
         "tiempoEntrega": "1-2 DIAS",
         "precioProveedor": null
       },
@@ -101745,10 +101745,10 @@
         "precioProveedor": null
       }
     ],
-    "fechaGuardado": "2026-09-16T21:46:32.882Z",
+    "fechaGuardado": "2026-09-16T21:11:34.281Z",
     "createdAt": "2026-09-08T21:00:11.713Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-16T21:46:32.882Z",
+    "updatedAt": "2026-09-16T21:11:34.281Z",
     "updatedBy": "alexandra"
   },
   {
