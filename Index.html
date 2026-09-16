@@ -30540,7 +30540,15 @@ function _pcomGuardarDatosProv(nombre){
   if(idx>=0){ bd[idx]=Object.assign({}, bd[idx], datos, {updatedAt:new Date().toISOString()}); }
   else { bd.push(Object.assign({id:'prov_'+Date.now(), nombre:nombre, categoria:'', correo:'', notas:'', createdAt:new Date().toISOString()}, datos)); idx=bd.length-1; }
   saveData('bd_proveedores', bd);
-  try { const ni=pcom_prov.findIndex(p=>String(p.nombre||'').trim().toUpperCase()===n); if(ni>=0) pcom_prov[ni]=bd[idx]; else pcom_prov.push(bd[idx]); } catch(_){}
+  // ⚠️ NO pisar el registro que vino de Supabase con el de la libreta local: la libreta
+  // NO guarda "autoretenedor" (ni el id real). Al reemplazarlo, el proveedor perdía la
+  // marca de autoretenedor justo antes de calcular la OC y se le aplicaba retefuente 2,5%
+  // aunque fuera autoretenedor (caso MUNDIAL, OC 26085-26089 del 16-sep-2026). Se fusiona.
+  try {
+    const ni=pcom_prov.findIndex(p=>String(p.nombre||'').trim().toUpperCase()===n);
+    if(ni>=0) pcom_prov[ni]=Object.assign({}, pcom_prov[ni], datos);
+    else pcom_prov.push(Object.assign({nombre:nombre}, datos));
+  } catch(_){}
 }
 async function pcomOCConfirmar(){
   if(!pcom_current||!pcom_oc_prov) return;
