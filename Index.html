@@ -29001,10 +29001,17 @@ async function _opPlanDesdeOrigen(it, origen) {
 // cuando el cliente solo pidió 10. Los dos cables que sobraban no se podían sacar
 // por ningún lado y dejaban la orden trabada en «en ejecución» para siempre,
 // esperando material que nadie había pedido.
+//
+// PREGUNTA CON MODAL PROPIO, NO CON confirm()/prompt() (misma tarde): a quien ha
+// pasado por varios diálogos, Chrome le ofrece "impedir que esta página cree
+// cuadros de diálogo adicionales" — y desde ahí confirm() devuelve false SIN
+// mostrar nada. El botón parecía muerto. Con modal propio eso no puede pasar, y
+// de paso el motivo se escribe en un campo de verdad.
+//
 // Lo ya despachado NO se puede quitar: salió de la bodega y está en una remisión
 // que el cliente firmó. Se quita solo de ESTA orden; la cotización no se toca.
-async function opItemQuitar(id) {
-  if (!op_current) return;
+function opItemQuitar(id) {
+  if (!op_current) { showToast('Abre la orden primero', 'error'); return; }
   if (!opPuedeEditar(op_current)) { showToast('Esta OP ya no se puede editar', 'error'); return; }
   const it = (op_currentItems || []).find(x => x && x.id === id);
   if (!it) { showToast('Esa línea ya no está en la orden', 'error'); return; }
@@ -29013,24 +29020,79 @@ async function opItemQuitar(id) {
       + ': no se puede quitar de la orden.', 'error', { durationMs: 10000 });
     return;
   }
+  const desc = String(it.descripcion || '').substring(0, 90);
+  const cant = (it.cantidad != null ? it.cantidad : '—') + ' ' + (it.udm || '');
+
+  const prev = document.getElementById('op-quitar-modal'); if (prev) prev.remove();
+  const ov = document.createElement('div');
+  ov.id = 'op-quitar-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:99999;'
+    + 'display:flex;align-items:center;justify-content:center;padding:18px;';
+  ov.onclick = ev => { if (ev.target === ov) ov.remove(); };
+  ov.innerHTML = '<div style="background:var(--dark,#071525);border:1px solid var(--border,#234);'
+    + 'border-radius:12px;max-width:480px;width:100%;padding:22px;color:#fff;">'
+    + '<div style="font-weight:800;font-size:17px;margin-bottom:10px;">Quitar una línea de '
+    + opEsc(op_current.numero) + '</div>'
+    + '<div style="background:rgba(255,255,255,.05);border:1px solid var(--border,#234);'
+    + 'border-radius:8px;padding:11px 13px;font-size:13px;line-height:1.45;margin-bottom:14px;">'
+    + opEsc(desc) + '<br><span style="color:var(--text-muted,#9fb3c8)">cantidad '
+    + opEsc(cant) + '</span></div>'
+    + '<div style="font-size:12.5px;color:var(--text-muted,#9fb3c8);margin-bottom:12px;">'
+    + 'Se quita solo de esta orden — la cotización no se toca. Queda en la bitácora.</div>'
+    + '<label for="op-quitar-motivo" style="display:block;font-size:12px;font-weight:700;'
+    + 'margin-bottom:5px;">¿Por qué se quita?</label>'
+    + '<input id="op-quitar-motivo" type="text" autocomplete="off" '
+    + 'placeholder="Ej: el cliente no la adjudicó" '
+    + 'style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border,#234);'
+    + 'border-radius:8px;padding:10px 12px;color:#fff;font-size:13px;margin-bottom:16px;">'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+    + '<button type="button" id="op-quitar-ok" style="flex:1 1 180px;background:rgba(224,90,74,.22);'
+    + 'border:1px solid #e05a4a;color:#ffb3a8;padding:11px;border-radius:8px;font-weight:700;'
+    + 'cursor:pointer;font-size:14px;">Quitar de la orden</button>'
+    + '<button type="button" id="op-quitar-no" style="flex:0 1 130px;background:rgba(255,255,255,.08);'
+    + 'border:1px solid var(--border,#234);color:#fff;padding:11px;border-radius:8px;'
+    + 'cursor:pointer;font-size:14px;">Cancelar</button>'
+    + '</div><div id="op-quitar-aviso" style="font-size:12.5px;color:#fca5a5;margin-top:10px;"></div>'
+    + '</div>';
+  document.body.appendChild(ov);
+
+  const inp = document.getElementById('op-quitar-motivo');
+  const avi = document.getElementById('op-quitar-aviso');
+  const ok = document.getElementById('op-quitar-ok');
+  document.getElementById('op-quitar-no').onclick = () => ov.remove();
+  const lanzar = () => {
+    const motivo = (inp.value || '').trim();
+    if (!motivo) {
+      avi.textContent = 'Escribe el motivo: en seis meses nadie se acuerda de por qué se quitó.';
+      try { inp.focus(); } catch (_) {}
+      return;
+    }
+    ok.disabled = true; ok.textContent = 'Quitando…';
+    _opItemQuitarYa(id, motivo, ov);
+  };
+  ok.onclick = lanzar;
+  inp.onkeydown = ev => { if (ev.key === 'Enter') { ev.preventDefault(); lanzar(); } };
+  try { inp.focus(); } catch (_) {}
+}
+
+async function _opItemQuitarYa(id, motivo, ov) {
+  const it = (op_currentItems || []).find(x => x && x.id === id);
+  if (!it) { if (ov) ov.remove(); return; }
   const desc = String(it.descripcion || '').substring(0, 70);
   const cant = (it.cantidad != null ? it.cantidad : '—') + ' ' + (it.udm || '');
-  if (!confirm('¿Quitar esta línea de ' + op_current.numero + '?\n\n'
-    + desc + '\ncantidad ' + cant
-    + '\n\nSe quita SOLO de esta orden — la cotización no se toca.\n'
-    + 'Queda registrado en la bitácora.')) return;
-  const motivo = (prompt('¿Por qué se quita?\n\n'
-    + 'Ej: \"el cliente no la adjudicó\", \"se pidió en otra orden\".\n'
-    + 'Queda en la bitácora de la OP.', '') || '').trim();
-  if (!motivo) { showToast('Sin motivo no se quita la línea', 'info'); return; }
-
   try {
     await absFetch('op_items?id=eq.' + id, { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
   } catch (e) {
-    showToast('No se pudo quitar la línea: ' + (e && e.message || e)
-      + '. Si tiene certificados cargados, quítalos primero.', 'error', { durationMs: 14000 });
+    const msg = 'No se pudo quitar: ' + (e && e.message || e);
+    const avi2 = document.getElementById('op-quitar-aviso');
+    if (avi2) avi2.textContent = msg;
+    const ok2 = document.getElementById('op-quitar-ok');
+    if (ok2) { ok2.disabled = false; ok2.textContent = 'Reintentar'; }
+    showToast(msg + '. Si la línea tiene certificados cargados, quítalos primero.',
+      'error', { durationMs: 16000 });
     return;
   }
+  if (ov) ov.remove();
   op_currentItems = (op_currentItems || []).filter(x => x && x.id !== id);
   await opEvento(op_current.id, 'linea_quitada', desc + ' · cantidad ' + cant + ' · ' + motivo);
 
@@ -29055,8 +29117,8 @@ async function opItemQuitar(id) {
     const quedan = (op_currentItems || []).filter(i => i.estado !== 'despachado').length;
     if (vivas && !quedan && ['aprobada', 'en_ejecucion'].includes(op_current.estado)) {
       await opCambiarEstado('despachada', {});
-      showToast('🚚 ' + op_current.numero + ' quedó DESPACHADA: ya no hay nada pendiente', 'success',
-        { durationMs: 10000 });
+      showToast('🚚 ' + op_current.numero + ' quedó DESPACHADA: ya no hay nada pendiente',
+        'success', { durationMs: 10000 });
     }
   } catch (_) { }
 
