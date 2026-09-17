@@ -861,6 +861,13 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   font-family:var(--op-mono);font-size:9.5px;font-weight:600;letter-spacing:.07em;
   text-transform:uppercase;padding:2px 6px;border-radius:2px;white-space:nowrap;
 }
+#page-op .op-quitar{
+  font-family:var(--op-mono);font-size:9.5px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;padding:2px 7px;border-radius:2px;white-space:nowrap;cursor:pointer;
+  background:rgba(224,90,74,.10);border:1px solid rgba(224,90,74,.38);color:#e8897c;
+}
+#page-op .op-quitar:hover{ background:rgba(224,90,74,.22);color:#ffb3a8; }
+#page-op .op-quitar:focus-visible{ outline:2px solid #e05a4a;outline-offset:1px; }
 #page-op .op-etq-bodega{ background:rgba(63,191,99,.14);color:var(--op-bodega); }
 #page-op .op-etq-compra{ background:rgba(232,160,32,.14);color:var(--op-compra); }
 #page-op .op-etq-sin{    background:rgba(224,90,74,.14);color:var(--op-sin); }
@@ -24567,6 +24574,12 @@ function opRenderItems() {
       // cuál salió: es lo que se factura después por separado.
       + (_variasCot ? ' <span style="color:#c4b5fd;font-size:10px;">'
           + opEsc(opCotizDeItem(op_current, it) || '—') + '</span>' : '')
+      // Quitar la línea. Solo si la OP se puede editar y la línea NO salió aún:
+      // lo despachado está en una remisión firmada y no se toca desde aquí.
+      + (editable && it.estado !== 'despachado'
+          ? ' <button type="button" class="op-quitar" onclick="opItemQuitar(' + id + ')"'
+            + ' title="Quitar esta línea de la orden (la cotización no se toca)">✕ quitar</button>'
+          : '')
       + '</small>'
       // La desviación técnica es lo que se le PROMETIÓ al cliente, y va a la vista
       // en la línea: es lo que evita comprar lo que no era. De aquí baja a la O.C.
@@ -28980,6 +28993,76 @@ async function _opPlanDesdeOrigen(it, origen) {
         : '📦 ' + cc + ' ya lo marca de bodega', 'success', { durationMs: 6000 });
     }
   } catch (_) { /* el plan no manda sobre la OP: si falla, no bloquea el cambio */ }
+}
+
+// QUITAR UNA LÍNEA DE LA ORDEN (17-sep-2026).
+// Nació con la OP-2026-0074 de CIAM: se armó a las 3:15 p.m. y la adjudicación se
+// registró a las 3:28, así que la orden se llevó las 12 líneas de la cotización
+// cuando el cliente solo pidió 10. Los dos cables que sobraban no se podían sacar
+// por ningún lado y dejaban la orden trabada en «en ejecución» para siempre,
+// esperando material que nadie había pedido.
+// Lo ya despachado NO se puede quitar: salió de la bodega y está en una remisión
+// que el cliente firmó. Se quita solo de ESTA orden; la cotización no se toca.
+async function opItemQuitar(id) {
+  if (!op_current) return;
+  if (!opPuedeEditar(op_current)) { showToast('Esta OP ya no se puede editar', 'error'); return; }
+  const it = (op_currentItems || []).find(x => x && x.id === id);
+  if (!it) { showToast('Esa línea ya no está en la orden', 'error'); return; }
+  if (it.estado === 'despachado') {
+    showToast('Esa línea ya se despachó' + (it.remision ? ' en la remisión ' + it.remision : '')
+      + ': no se puede quitar de la orden.', 'error', { durationMs: 10000 });
+    return;
+  }
+  const desc = String(it.descripcion || '').substring(0, 70);
+  const cant = (it.cantidad != null ? it.cantidad : '—') + ' ' + (it.udm || '');
+  if (!confirm('¿Quitar esta línea de ' + op_current.numero + '?\n\n'
+    + desc + '\ncantidad ' + cant
+    + '\n\nSe quita SOLO de esta orden — la cotización no se toca.\n'
+    + 'Queda registrado en la bitácora.')) return;
+  const motivo = (prompt('¿Por qué se quita?\n\n'
+    + 'Ej: \"el cliente no la adjudicó\", \"se pidió en otra orden\".\n'
+    + 'Queda en la bitácora de la OP.', '') || '').trim();
+  if (!motivo) { showToast('Sin motivo no se quita la línea', 'info'); return; }
+
+  try {
+    await absFetch('op_items?id=eq.' + id, { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+  } catch (e) {
+    showToast('No se pudo quitar la línea: ' + (e && e.message || e)
+      + '. Si tiene certificados cargados, quítalos primero.', 'error', { durationMs: 14000 });
+    return;
+  }
+  op_currentItems = (op_currentItems || []).filter(x => x && x.id !== id);
+  await opEvento(op_current.id, 'linea_quitada', desc + ' · cantidad ' + cant + ' · ' + motivo);
+
+  // El valor de la orden es la suma de sus líneas: si no se recalcula, la OP
+  // sigue diciendo que vale lo que valía con la línea de más.
+  try {
+    const nuevoValor = (op_currentItems || []).reduce((t, x) => t + (+x.v_total || 0), 0);
+    if (nuevoValor !== (+op_current.valor_venta || 0)) {
+      await absFetch('ops?id=eq.' + op_current.id, {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ valor_venta: nuevoValor,
+          updated_by: (currentUser && (currentUser.email || currentUser.name)) || 'system' })
+      });
+      op_current.valor_venta = nuevoValor;
+    }
+  } catch (_) { }
+
+  // Quitar la última línea pendiente puede COMPLETAR la orden. Se recalcula el
+  // estado igual que al despachar, para que no quede trabada por lo que se fue.
+  try {
+    const vivas = (op_currentItems || []).length;
+    const quedan = (op_currentItems || []).filter(i => i.estado !== 'despachado').length;
+    if (vivas && !quedan && ['aprobada', 'en_ejecucion'].includes(op_current.estado)) {
+      await opCambiarEstado('despachada', {});
+      showToast('🚚 ' + op_current.numero + ' quedó DESPACHADA: ya no hay nada pendiente', 'success',
+        { durationMs: 10000 });
+    }
+  } catch (_) { }
+
+  opRenderItems();
+  try { opRenderEventos(op_current.id); } catch (_) { }
+  showToast('Línea quitada de ' + op_current.numero, 'success');
 }
 
 async function opItemCampo(el) {
