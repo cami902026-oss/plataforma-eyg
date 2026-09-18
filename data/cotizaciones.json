@@ -107919,8 +107919,8 @@
     "cliente": "CIAM",
     "contacto": "JEISON",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "637",
     "iva": 19,
     "subtotal": 9361800,
     "ivaVal": 1778742,
@@ -108097,58 +108097,59 @@
         "precioProveedor": 19400
       }
     ],
-    "fechaGuardado": "2026-09-15T20:28:47.997Z",
+    "fechaGuardado": "2026-09-18T01:28:50.601Z",
     "fechaEnvio": "2026-09-15T15:05:06.009Z",
+    "facturadaAt": "2026-09-17",
     "adjudicadaAt": "2026-09-15",
     "valorAdjudicado": 9361800,
     "itemsAdjudicados": [
       {
-        "uid": "dcc7c835-55cc-45e1-9812-432e940463e4",
-        "qty": 10
+        "qty": 10,
+        "uid": "dcc7c835-55cc-45e1-9812-432e940463e4"
       },
       {
-        "uid": "2110ab86-0720-441f-990c-ef68a855378a",
-        "qty": 10
+        "qty": 10,
+        "uid": "2110ab86-0720-441f-990c-ef68a855378a"
       },
       {
-        "uid": "ddb96eae-7280-442e-930f-6321ef5e5a6e",
-        "qty": 1
+        "qty": 1,
+        "uid": "ddb96eae-7280-442e-930f-6321ef5e5a6e"
       },
       {
-        "uid": "578b6a82-4355-4db7-9cd3-c557a2b9fdb7",
-        "qty": 20
+        "qty": 20,
+        "uid": "578b6a82-4355-4db7-9cd3-c557a2b9fdb7"
       },
       {
-        "uid": "6645f0a1-57ad-4604-acb6-4b2dfc7fe208",
-        "qty": 40
+        "qty": 40,
+        "uid": "6645f0a1-57ad-4604-acb6-4b2dfc7fe208"
       },
       {
-        "uid": "fbf8bec9-48ec-4f4f-8553-528062db9ddb",
-        "qty": 50
+        "qty": 50,
+        "uid": "fbf8bec9-48ec-4f4f-8553-528062db9ddb"
       },
       {
-        "uid": "0e5f4516-f559-4a6f-a079-e3b52d664d20",
-        "qty": 300
+        "qty": 300,
+        "uid": "0e5f4516-f559-4a6f-a079-e3b52d664d20"
       },
       {
-        "uid": "766e1fbf-b522-400f-924f-8086bcdb70ef",
-        "qty": 40
+        "qty": 40,
+        "uid": "766e1fbf-b522-400f-924f-8086bcdb70ef"
       },
       {
-        "uid": "8e0276ae-5e70-41bd-9c12-d7406ee9e62d",
-        "qty": 90
+        "qty": 90,
+        "uid": "8e0276ae-5e70-41bd-9c12-d7406ee9e62d"
       },
       {
-        "uid": "86adc9f4-2e72-4dce-8817-ff801ad4536d",
-        "qty": 30
+        "qty": 30,
+        "uid": "86adc9f4-2e72-4dce-8817-ff801ad4536d"
       }
     ],
     "adjudicacionPor": "Alexandra",
     "adjudicacionAt": "2026-09-15T20:28:46.310Z",
     "createdAt": "2026-09-15T15:05:06.009Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-15T20:28:47.997Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-09-18T01:28:50.601Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2140",
