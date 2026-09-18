@@ -130737,7 +130737,7 @@
     "cliente": "INDUMEC",
     "contacto": "PEDRO",
     "correo": "--------------3-",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 160000,
@@ -130768,12 +130768,22 @@
         "precioProveedor": 40020
       }
     ],
-    "fechaGuardado": "2026-09-18T22:20:54.754Z",
+    "fechaGuardado": "2026-09-18T22:50:49.259Z",
     "fechaEnvio": "2026-09-18T21:48:22.556Z",
+    "adjudicadaAt": "2026-09-18",
+    "valorAdjudicado": 160000,
+    "itemsAdjudicados": [
+      {
+        "uid": "0fac5b14-54e1-43c3-a537-9ca1e5600b69",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-18T22:50:49.247Z",
     "createdAt": "2026-09-18T21:47:39.983Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-18T22:20:54.754Z",
-    "updatedBy": "sheila"
+    "updatedAt": "2026-09-18T22:50:49.259Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM629",
