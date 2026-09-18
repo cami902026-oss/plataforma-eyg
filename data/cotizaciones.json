@@ -123635,12 +123635,12 @@
     "cliente": "INDUMEC",
     "contacto": "PEDRO",
     "correo": "",
-    "estado": "Revisión gerencia",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 5608800,
+    "ivaVal": 1065672,
+    "total": 6674472,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "CABUYARO META",
     "validez": "8 DÍAS",
@@ -123652,32 +123652,18 @@
     "motivoRechazo": "",
     "items": [
       {
-        "id": 1,
-        "qty": 8,
-        "udm": "GL",
-        "uid": "0720f067-ff73-4505-8e07-85d7dbbf6cb5",
-        "desc": " pintura PPG 550",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "obsProveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
         "id": 2,
         "qty": 8,
         "udm": "GL",
         "uid": "1adf3e25-a6b9-49b7-b1c1-a67efb7f3484",
         "desc": "sigmadur 550 ral 9004 negro",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "obsProveedor": "",
+        "marca": "PPG",
+        "precio": 587050,
+        "desvTec": "SET DE 4 LITROS",
+        "proveedor": "FERROBRERO",
+        "obsProveedor": "IVA INCLUIDO",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 498000
       },
       {
         "id": 3,
@@ -123686,7 +123672,7 @@
         "uid": "a8ee344e-33ce-45e0-a200-1c36fe424e97",
         "desc": "ESMALTE NEGRO BRILLANTE X GL PINTUCO",
         "marca": "PINTUCO",
-        "precio": 0,
+        "precio": 114050,
         "desvTec": "",
         "proveedor": "FILLER",
         "obsProveedor": "IVA INCLUIDO",
@@ -123694,10 +123680,11 @@
         "precioProveedor": 95000
       }
     ],
-    "fechaGuardado": "2026-09-17T17:39:35.942Z",
+    "fechaGuardado": "2026-09-18T13:56:05.410Z",
+    "fechaEnvio": "2026-09-18T13:56:05.410Z",
     "createdAt": "2026-09-17T15:24:14.646Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-17T17:39:35.942Z",
+    "updatedAt": "2026-09-18T13:56:05.411Z",
     "updatedBy": "sandra"
   },
   {
