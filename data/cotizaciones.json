@@ -93700,7 +93700,7 @@
     "cliente": "CIAM",
     "contacto": "GERARDO",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 897000,
@@ -93731,12 +93731,22 @@
         "precioProveedor": 19800
       }
     ],
-    "fechaGuardado": "2026-09-18T16:50:02.395Z",
+    "fechaGuardado": "2026-09-18T23:08:34.954Z",
     "fechaEnvio": "2026-09-09T13:43:47.705Z",
+    "adjudicadaAt": "2026-09-18",
+    "valorAdjudicado": 897000,
+    "itemsAdjudicados": [
+      {
+        "uid": "62eb5411-4f32-449a-a612-245490cd780a",
+        "qty": 30
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-18T23:08:34.938Z",
     "createdAt": "2026-09-09T13:43:47.705Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-18T16:50:02.395Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-18T23:08:34.954Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2120",
