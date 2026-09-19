@@ -129082,7 +129082,7 @@
     "cliente": "ITC",
     "contacto": "RODOLFO",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 312200,
@@ -129155,12 +129155,34 @@
         "precioProveedor": 15300
       }
     ],
-    "fechaGuardado": "2026-09-18T17:54:16.847Z",
+    "fechaGuardado": "2026-09-19T17:27:14.652Z",
     "fechaEnvio": "2026-09-18T17:50:09.087Z",
+    "adjudicadaAt": "2026-09-19",
+    "valorAdjudicado": 312200,
+    "itemsAdjudicados": [
+      {
+        "uid": "79601957-911e-4b73-ad27-c287bd8c567a",
+        "qty": 1
+      },
+      {
+        "uid": "2004b3c6-8f03-4a3b-82df-b8dbdbb4a92f",
+        "qty": 24
+      },
+      {
+        "uid": "cd52ef0b-bd8c-4ebf-9db8-f202ecd6c8ff",
+        "qty": 2
+      },
+      {
+        "uid": "0b15c89e-a499-4409-9ed6-1937d1991835",
+        "qty": 1
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-09-19T17:27:14.647Z",
     "createdAt": "2026-09-18T17:49:23.347Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-18T17:54:16.847Z",
-    "updatedBy": "sheila"
+    "updatedAt": "2026-09-19T17:27:14.652Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2192",
