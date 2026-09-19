@@ -27767,8 +27767,11 @@ async function opDespacharConfirmar() {
     if (!fallos.length) await _opCerrarEntrega(num, d.ent || { n: 1 });
 
     // La OP solo pasa a despachada si TODO salió y no queda nada de bodega.
+    // 19-sep-2026 — NI DE COMPRA. Solo se contaban las líneas de BODEGA: la
+    // OP-2026-0085 quedó «despachada» con el threadolet de 2" (COMPRA) sin
+    // recibir ni despachar, porque su recepción había fallado a mitad.
     if (!fallos.length) {
-      const quedan = (op_currentItems || []).filter(i => i.origen === 'BODEGA' && i.estado !== 'despachado').length;
+      const quedan = (op_currentItems || []).filter(i => i.estado !== 'despachado').length;
       if (!quedan) {
         await opCambiarEstado('despachada', {});
         try { _opDispararAvisos(); } catch (_) { }
