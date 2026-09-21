@@ -123756,7 +123756,7 @@
     "cliente": "CIAM",
     "contacto": "GILMAR",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 8950000,
@@ -123787,12 +123787,22 @@
         "precioProveedor": 6055
       }
     ],
-    "fechaGuardado": "2026-09-18T19:28:40.982Z",
+    "fechaGuardado": "2026-09-21T14:44:52.829Z",
     "fechaEnvio": "2026-09-18T19:28:40.982Z",
+    "adjudicadaAt": "2026-09-21",
+    "valorAdjudicado": 8950000,
+    "itemsAdjudicados": [
+      {
+        "uid": "30944fe8-dbd9-4f44-b84d-b10e74e9c3f4",
+        "qty": 1000
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-21T14:44:52.818Z",
     "createdAt": "2026-09-18T19:28:40.983Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-18T19:28:40.983Z",
-    "updatedBy": "sheila"
+    "updatedAt": "2026-09-21T14:44:52.829Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2176",
