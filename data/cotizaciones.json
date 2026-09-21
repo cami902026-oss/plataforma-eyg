@@ -125583,7 +125583,7 @@
     "cliente": "PSI",
     "contacto": "MAURICIO",
     "correo": "",
-    "estado": "Borrador",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 533760,
@@ -125628,11 +125628,25 @@
         "precioProveedor": 4826
       }
     ],
-    "fechaGuardado": "2026-09-18T16:38:36.549Z",
+    "fechaGuardado": "2026-09-21T19:04:08.241Z",
+    "adjudicadaAt": "2026-09-21",
+    "valorAdjudicado": 627520,
+    "itemsAdjudicados": [
+      {
+        "uid": "81e5402b-836f-4f98-aaaa-5d97aa06c3ba",
+        "qty": 16
+      },
+      {
+        "uid": "a04f06aa-43e2-43aa-8cea-0a330caf5a3a",
+        "qty": 32
+      }
+    ],
+    "adjudicacionPor": "Andrea",
+    "adjudicacionAt": "2026-09-21T19:04:08.232Z",
     "createdAt": "2026-09-17T22:03:11.453Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-18T16:38:36.549Z",
-    "updatedBy": "sheila"
+    "updatedAt": "2026-09-21T19:04:08.241Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1944",
