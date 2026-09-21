@@ -123756,7 +123756,7 @@
     "cliente": "CIAM",
     "contacto": "GILMAR",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 8950000,
@@ -123787,12 +123787,22 @@
         "precioProveedor": 6055
       }
     ],
-    "fechaGuardado": "2026-09-18T19:28:40.982Z",
+    "fechaGuardado": "2026-09-21T14:45:02.031Z",
     "fechaEnvio": "2026-09-18T19:28:40.982Z",
+    "adjudicadaAt": "2026-09-21",
+    "valorAdjudicado": 8950000,
+    "itemsAdjudicados": [
+      {
+        "uid": "30944fe8-dbd9-4f44-b84d-b10e74e9c3f4",
+        "qty": 1000
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-21T14:44:52.818Z",
     "createdAt": "2026-09-18T19:28:40.983Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-18T19:28:40.983Z",
-    "updatedBy": "sheila"
+    "updatedAt": "2026-09-21T14:45:02.031Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2176",
@@ -124051,7 +124061,7 @@
     "cliente": "INGSECOL",
     "contacto": "ISABEL BOLIVAR",
     "correo": "asistentepresupuestos@ingsecol.com",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 271430,
@@ -124082,12 +124092,22 @@
         "precioProveedor": 92000
       }
     ],
-    "fechaGuardado": "2026-09-17T19:44:01.672Z",
+    "fechaGuardado": "2026-09-21T15:19:44.275Z",
     "fechaEnvio": "2026-09-17T19:01:06.270Z",
+    "adjudicadaAt": "2026-09-21",
+    "valorAdjudicado": 271430,
+    "itemsAdjudicados": [
+      {
+        "uid": "ddce6241-fd2b-4c85-8e6e-7e2bc825737a",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-21T15:19:44.267Z",
     "createdAt": "2026-09-17T16:58:50.326Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-17T19:44:01.672Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-21T15:19:44.275Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2180",
