@@ -28677,6 +28677,8 @@ async function opPlanCargar() {
   const bodega = (op_currentItems || []).filter(i => i.origen === 'BODEGA');
   op_current._plan = plan;
 
+  const sinDef = (op_currentItems || []).filter(i => !['COMPRA', 'BODEGA'].includes(i.origen));
+
   if (!plan.length) {
     // 22-sep-2026 · CUANDO NO HAY NINGUNA LÍNEA CON ORIGEN, EL PANEL SE BORRABA.
     // Desaparecía entero: ni botón, ni aviso, ni pista de qué faltaba. Pasó con la
@@ -28687,7 +28689,6 @@ async function opPlanCargar() {
     // El origen NO se rellena solo desde la cotización: puede haber cambiado de
     // proveedor, o haber aparecido en bodega. Lo dice una persona. Pero hay que
     // decirle QUÉ falta y DÓNDE, no callarse.
-    const sinDef = (op_currentItems || []).filter(i => !['COMPRA', 'BODEGA'].includes(i.origen));
     if (!compra.length && !bodega.length) {
       if (!sinDef.length) { cont.innerHTML = ''; return; }    // OP sin ítems: no hay nada que decir
       cont.innerHTML = '<div class="op-plan-caja">'
@@ -28702,7 +28703,9 @@ async function opPlanCargar() {
         + '</ul>'
         + '<div class="op-plan-d" style="margin-top:9px;">Si la cotización ya trae proveedor y '
         + 'precio, es normal que la OP no los tenga: se copian en el momento de crearla, y lo que '
-        + 'se escriba en la cotización después no viaja solo hasta aquí.</div>'
+        + 'se escriba en la cotización después no viaja solo hasta aquí. El botón de abajo los trae.</div>'
+        + ((opPuedeEditar(op_current) && sinDef.some(i => i.cotizacion_item_uid))
+            ? '<button class="btn btn-ghost" onclick="opTraerDeCotiz()" style="margin-top:10px;padding:8px 16px;font-size:13px;">⬇️ Traer proveedor y costo de la cotización</button>' : '')
         + '</div>';
       return;
     }
@@ -28712,9 +28715,15 @@ async function opPlanCargar() {
       + (bodega.length ? ' y ' + bodega.length + ' de bodega' : '')
       + '. El plan es el centro de costos del pedido: lleva lo que se compra <b>y</b> lo que '
       + 'sale de bodega con su costo de inventario, para que el margen sea el real.</div>'
+      + (sinDef.length
+          ? '<div class="op-plan-d" style="margin-top:8px;color:#fbbf24;">Ojo: ' + sinDef.length
+            + ' línea(s) siguen en \u00abSin definir\u00bb y NO van a entrar al plan.</div>'
+          : '')
       + (opPuedeGenerarPlan()
           ? '<button class="btn btn-primary" onclick="opGenerarPlan()" style="margin-top:10px;padding:8px 16px;font-size:13px;">Generar plan de compras</button>'
           : '<div class="op-plan-d" style="margin-top:8px;">Lo genera compras (Alexandra o Andrea) o gerencia.</div>')
+        + ((opPuedeEditar(op_current) && sinDef.some(i => i.cotizacion_item_uid))
+            ? '<button class="btn btn-ghost" onclick="opTraerDeCotiz()" style="margin-top:10px;padding:8px 16px;font-size:13px;">⬇️ Traer proveedor y costo de la cotización</button>' : '')
       + '</div>';
     return;
   }
@@ -28751,6 +28760,147 @@ async function opPlanCargar() {
           + 'Agregar las ' + faltan + ' líneas que faltan</button>'
         : '')
     + '</div>';
+}
+
+// ══════ TRAER PROVEEDOR Y COSTO DE LA COTIZACIÓN (22-sep-2026) ══════════
+// EL CASO QUE RESUELVE. La OP copia proveedor y costo de la cotización en el
+// momento de crearse, y ahí se acaba: lo que se escriba en la cotización DESPUÉS
+// no viaja solo hasta aquí. Pasó con OP-2026-0092 (LM2205, CIAM) — creada 13:21,
+// proveedor puesto en la cotización 13:27 — y la OP se quedó con su única línea
+// en «Sin definir», sin poder generar el plan, obligando a teclear a mano un dato
+// que la cotización ya tenía.
+//
+// POR QUÉ ES UN BOTÓN Y NO AUTOMÁTICO. Entre crear la OP y comprar puede haber
+// cambiado el proveedor, o el material puede haber aparecido en bodega. Rellenarlo
+// solo pisaría una decisión que toma una persona. Aquí se pide, se ve ANTES lo que
+// va a entrar, y se acepta.
+//
+// LO QUE NO TOCA, pase lo que pase:
+//   · las líneas que YA tienen origen (bodega o compra). Solo entra a «Sin definir».
+//   · nada que no venga amarrado por `cotizacion_item_uid`. Ese uid es exacto; sin
+//     él no se adivina por descripción — hay ítems casi idénticos en una misma
+//     oferta y traer el proveedor equivocado es peor que no traer nada.
+async function opTraerDeCotiz() {
+  const op = op_current;
+  if (!op) return;
+  if (!opPuedeEditar(op)) { showToast('Esta OP ya no se puede editar', 'error'); return; }
+  const sinDef = (op_currentItems || []).filter(i => !['COMPRA', 'BODEGA'].includes(i.origen));
+  if (!sinDef.length) { showToast('No hay líneas en \u00abSin definir\u00bb', 'info'); return; }
+  const ids = opCotizIds(op);
+  if (!ids.length) { showToast('Esta OP no dice de qué cotización salió', 'error'); return; }
+
+  showToast('Mirando qué dice la cotización…', 'info');
+  let filas = [];
+  try {
+    // Al SERVIDOR, no a la copia local: el caso entero es que la cotización cambió
+    // después, y la copia de este equipo puede ser justo la de antes del cambio.
+    filas = (await absFetch('cotizacion_items?cotizacion_id=in.('
+      + ids.map(x => '"' + String(x).replace(/"/g, '') + '"').join(',') + ')'
+      + '&select=uid,item,cotizacion_id,descripcion,proveedor,precio_proveedor,updated_at&limit=3000')) || [];
+  } catch (e) {
+    showToast('No pude leer la cotización: ' + (e && e.message || e), 'error', { durationMs: 10000 });
+    return;
+  }
+  // `cotizacion_items` trae filas repetidas (medido el 1-sep: 50 cotizaciones con
+  // algún número de ítem duplicado). De cada uid se queda la MÁS RECIENTE, que es
+  // la corregida — el mismo criterio que usa `_opItemsFrescos` al crear la OP.
+  const porUid = {};
+  filas.forEach(r => {
+    const k = String(r.uid || '').trim(); if (!k) return;
+    if (!porUid[k] || String(r.updated_at || '') > String(porUid[k].updated_at || '')) porUid[k] = r;
+  });
+
+  const traer = [], huerfanas = [], sinDato = [];
+  sinDef.forEach(it => {
+    const k = String(it.cotizacion_item_uid || '').trim();
+    const c = k ? porUid[k] : null;
+    if (!c) { huerfanas.push(it); return; }
+    const prov = String(c.proveedor || '').trim();
+    const costo = (c.precio_proveedor != null ? +c.precio_proveedor : null);
+    if (!prov && costo == null) { sinDato.push(it); return; }
+    traer.push({ it: it, prov: prov, costo: costo });
+  });
+
+  if (!traer.length) {
+    showToast('La cotización tampoco tiene proveedor ni costo para esas líneas: '
+      + 'hay que ponerlos a mano.', 'info', { durationMs: 11000 });
+    return;
+  }
+
+  // Se VE antes de escribir. Mismo mapeo que usa la creación de la OP: «BODEGA»
+  // en el proveedor de la cotización significa que sale de inventario.
+  const esBodega = p => /BODEGA/i.test(p);
+  const fila = t => '<li style="margin-bottom:5px;">'
+    + opEsc(String(t.it.descripcion || '').replace(/\s+/g, ' ').substring(0, 58))
+    + '<br><span style="color:var(--text-muted);font-size:11.5px;">→ '
+    + (esBodega(t.prov) ? '<b style="color:#8ce8a6">Sale de bodega</b>'
+       : t.prov ? '<b style="color:#fbd38d">Se compra</b> a <b>' + opEsc(t.prov) + '</b>'
+       : '<i>sin proveedor: solo se trae el costo, sigue \u00abSin definir\u00bb</i>')
+    + (t.costo != null ? ' · costo ' + opMoney(t.costo) + ' c/u' : ' · sin costo')
+    + '</span></li>';
+  const aviso = (lista, txt) => lista.length
+    ? '<div style="margin-top:10px;color:#fbbf24;font-size:12.5px;">' + lista.length + ' línea(s) ' + txt + '</div>' : '';
+
+  const ok = await _opPreguntar('⬇️ Traer de la cotización',
+    '<div>Se van a tocar <b>' + traer.length + '</b> de las ' + sinDef.length
+    + ' línea(s) que están en \u00abSin definir\u00bb. Las que ya tienen origen <b>no se tocan</b>.</div>'
+    + '<ul style="margin:10px 0 0;padding-left:18px;font-size:12.5px;">'
+    + traer.slice(0, 12).map(fila).join('')
+    + (traer.length > 12 ? '<li style="color:var(--text-muted)">… y ' + (traer.length - 12) + ' más</li>' : '')
+    + '</ul>'
+    + aviso(huerfanas, 'no se pueden amarrar a ninguna línea de la cotización (les falta el uid): se quedan como están.')
+    + aviso(sinDato, 'no tienen proveedor ni costo en la cotización: hay que ponerlos a mano.')
+    + '<div style="margin-top:12px;color:var(--text-muted);font-size:12px;">Si el proveedor cambió '
+    + 'o el material apareció en bodega, cancela y ponlo a mano: esto copia lo que dice la '
+    + 'cotización <b>ahora mismo</b>.</div>',
+    [{ txt: '⬇️ Traer las ' + traer.length, val: 'si', tono: 'ok' }, { txt: 'Cancelar', val: null }]);
+  if (ok !== 'si') return;
+
+  const yo = (currentUser && (currentUser.email || currentUser.name)) || 'system';
+  let hechas = 0, fallo = null;
+  for (const t of traer) {
+    // Mismas reglas que `opItemCampo` al cambiar el origen a mano: si pasa a bodega
+    // el proveedor deja de aplicar, y si pasa a compra queda firmado quién lo
+    // decidió — eso es lo que impide que la revisión de inventario lo devuelva.
+    const cuerpo = { updated_by: yo };
+    if (t.costo != null) cuerpo.costo_unit = t.costo;
+    if (esBodega(t.prov)) {
+      cuerpo.origen = 'BODEGA'; cuerpo.proveedor = null;
+      cuerpo.confirmado_por = null; cuerpo.confirmado_at = null;
+    } else if (t.prov) {
+      cuerpo.origen = 'COMPRA'; cuerpo.proveedor = t.prov; cuerpo.producto_codigo = null;
+      cuerpo.confirmado_por = yo; cuerpo.confirmado_at = new Date().toISOString();
+    }
+    try {
+      await absFetch('op_items?id=eq.' + t.it.id, {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(cuerpo)
+      });
+      Object.assign(t.it, cuerpo);
+      hechas++;
+      // Si el plan ya existía, que se entere del cambio (no toca lo ya comprado).
+      if (cuerpo.origen) { try { await _opPlanDesdeOrigen(t.it, cuerpo.origen); } catch (_) { } }
+    } catch (e) {
+      // Se para en la primera que falle: dejar la mitad puesta sin decirlo es
+      // exactamente lo que hace dudar de si el pedido está completo.
+      fallo = (e && e.message) || String(e);
+      break;
+    }
+  }
+
+  if (hechas) {
+    await opEvento(op.id, 'traido_de_cotiz', hechas + ' línea(s) con proveedor y costo traídos de '
+      + ids.join(', ') + (fallo ? ' · se paró por un error tras la ' + hechas : ''));
+  }
+  try { op_currentItems = (await absFetch('op_items?op_id=eq.' + op.id + '&order=item.asc&limit=2000')) || []; } catch (_) { }
+  opRenderItems(); await opPlanCargar(); try { _opVia(); } catch (_) { }
+  try { await opRenderEventos(op.id); } catch (_) { }
+
+  if (fallo) {
+    showToast('Se trajeron ' + hechas + ' de ' + traer.length + ' y ahí paró: ' + fallo
+      + ' — vuelve a darle para seguir con las que faltan.', 'error', { durationMs: 14000 });
+  } else {
+    showToast('✅ ' + hechas + ' línea(s) actualizadas desde la cotización', 'success', { durationMs: 8000 });
+  }
 }
 
 // Genera el plan lo mismo que compras y gerencia; el comercial no compra.
