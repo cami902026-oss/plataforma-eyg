@@ -132559,7 +132559,7 @@
     "cliente": "MAG SERVICIOS",
     "contacto": "HERNAN PEREZ",
     "correo": "",
-    "estado": "Adjudicada",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
     "subtotal": 1539200,
@@ -132674,42 +132674,12 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-09-22T16:32:01.970Z",
+    "fechaGuardado": "2026-09-22T14:19:22.079Z",
     "fechaEnvio": "2026-09-22T14:18:55.374Z",
-    "adjudicadaAt": "2026-09-22",
-    "valorAdjudicado": 1539200,
-    "itemsAdjudicados": [
-      {
-        "qty": 12,
-        "uid": "8230a79b-5e8e-4aac-8f10-7c1dc47a09b5"
-      },
-      {
-        "qty": 10,
-        "uid": "bd6d7244-7da7-4d97-9eed-96d5b2e10039"
-      },
-      {
-        "qty": 16,
-        "uid": "96ae698f-0ca4-4c38-bac1-6caada25dbdc"
-      },
-      {
-        "qty": 20,
-        "uid": "f3367667-5282-4735-8328-b9e010ca7d65"
-      },
-      {
-        "qty": 8,
-        "uid": "ab191430-c493-4ec0-aaee-b75e9aed84b4"
-      },
-      {
-        "qty": 16,
-        "uid": "7381a452-423a-4c3a-83d9-9139ef1ac06a"
-      }
-    ],
-    "adjudicacionPor": "Andrea",
-    "adjudicacionAt": "2026-09-22T16:31:35.343Z",
     "createdAt": "2026-09-22T14:08:47.381Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-22T16:32:01.970Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-09-22T14:19:22.079Z",
+    "updatedBy": "sheila"
   },
   {
     "id": "LM2210",
@@ -132718,12 +132688,12 @@
     "cliente": "CONSORCIO SKF - OMIA",
     "contacto": "Leidy Lorena Espejo Ramirez",
     "correo": "leidy.espejo@ccso.com.co",
-    "estado": "Borrador",
+    "estado": "Enviada",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 1660411,
+    "ivaVal": 315478.09,
+    "total": 1975889.09,
     "formaPago": "Crédito a 30 días",
     "sitioEntrega": "NACIONAL",
     "validez": "8 DÍAS",
@@ -132740,15 +132710,15 @@
         "udm": "EA",
         "uid": "4b362f31-5ccb-4d0b-a6de-7c4c50de89e8",
         "desc": "Espirometalico,1\",Cl1500,RF.B16.5,1/8\",Ss-304",
-        "marca": "",
+        "altDe": null,
+        "marca": "SPIRAL PACK",
         "precio": 0,
-        "desvTec": "",
+        "desvTec": "SS-304",
         "proveedor": "COLIMPORTADOS",
+        "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0,
-        "fotoGrande": false,
-        "altDe": null
+        "precioProveedor": 0
       },
       {
         "id": 2,
@@ -132756,15 +132726,15 @@
         "udm": "EA",
         "uid": "6ff0a2e9-b325-491c-8a62-b4403b77e31e",
         "desc": "Espirometalico,3\",Cl300,RF.B16.5,1/8\",SS-304",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
+        "altDe": null,
+        "marca": "SPIRAL PACK",
+        "precio": 7342,
+        "desvTec": "SS-304",
         "proveedor": "COLIMPORTADOS",
+        "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 5360,
-        "fotoGrande": false,
-        "altDe": null
+        "precioProveedor": 5360
       },
       {
         "id": 3,
@@ -132772,15 +132742,15 @@
         "udm": "EA",
         "uid": "88ecb9da-1512-4dd5-b759-014a343d0eec",
         "desc": "Espirometalico,3\",Cl150,RF.B16.5,1/8\",SS-304",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
+        "altDe": null,
+        "marca": "SPIRAL PACK",
+        "precio": 5658,
+        "desvTec": "SS-304",
         "proveedor": "COLIMPORTADOS",
+        "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 4130,
-        "fotoGrande": false,
-        "altDe": null
+        "precioProveedor": 4130
       },
       {
         "id": 4,
@@ -132788,13 +132758,13 @@
         "udm": "EA",
         "uid": "e0f6f58a-acdd-4d4a-b0b8-37631b6a730e",
         "desc": "Kit Aislamiento Bridas\nDiametro:3\"\nMaterial Aislamiento:Laminado Epoxico Fibra Vidrio\nMaterial Aislamiento:Nucleo Acero Inoxidable 316\nRating:Clase 900\nTipo Brida:Cara Realzada ASME B16.5\nMaterial Tubo Aislante:G10\nMaterial Arandela:Acero Galvanizado ASTMA153/G10\nCaracteristicas Adicionales:Sello Teflon",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "marca": "NACIONAL",
+        "precio": 1173529,
+        "desvTec": "KIT DE AISL TIPO F, FSS GASKET-SS316-G10 / PTFE-ENERG, M-G10 / A-G11-ZPS 3\" X 900 Lbs, SCH STD\nCaracterísticas de diseño Kit Tipo: F Ref: FULL SEALING SERVICE Material Empaque: Caras de Resina Epoxica Reforzada con Fibra de Vidrio, Grado Nema G-10, adheridas a un alma en acero inoxidable SS316; espesor de 1/4 (6,35 mm) Material del Sello: Sello en PTFE con Resorte Energizado activado por presión. Material Arandelas aislantes: Resina Epoxica Reforzada con tejido de Fibra de Vidrio, Grado Nema G-11, espesor de 1/8 (3.2 mm) Material Arandelas metálicas: Acero al Carbono Zincadas - F-436, espesor de 1/8 (3.2 mm) Material Bujes Aislantes: Resina Epoxy Reforzado con Fibra de Vidrio, Grado Nema G-10, de 1/32 de espesor Instalar en Bridas: ASME B16.5 / RF-RF Marca Ofertada: FSS / FABRICACION NACIONAL",
+        "proveedor": "FSS INTER",
         "obsProveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "tiempoEntrega": "3-4 DIAS",
+        "precioProveedor": 798000
       },
       {
         "id": 5,
@@ -132802,15 +132772,15 @@
         "udm": "EA",
         "uid": "9f8190ea-034a-447c-a9cd-621bc8fa25d5",
         "desc": "Reduccion,Botella.Conc,CS,3\",SCH80,1-1/2",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
+        "altDe": null,
+        "marca": "NACIONAL",
+        "precio": 279412,
+        "desvTec": "FABRICACION NACIONAL A PARTIR DE TUBERIA A-106",
         "proveedor": "CASTELLAR",
+        "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 190000,
-        "fotoGrande": false,
-        "altDe": null
+        "precioProveedor": 190000
       },
       {
         "id": 6,
@@ -132818,21 +132788,22 @@
         "udm": "EA",
         "uid": "1dbe1371-aa13-4534-b797-1b2b9abf689f",
         "desc": "Te,Reduc,CS,6\",SCH80,3\",SCH80,BW,A234,WPb",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
+        "altDe": null,
+        "marca": "XF",
+        "precio": 194470,
+        "desvTec": "A-234 WPB",
         "proveedor": "CODIFER",
+        "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0,
-        "fotoGrande": false,
-        "altDe": null
+        "precioProveedor": 161410
       }
     ],
-    "fechaGuardado": "2026-09-22T15:21:09.442Z",
+    "fechaGuardado": "2026-09-22T16:32:05.957Z",
+    "fechaEnvio": "2026-09-22T16:32:05.957Z",
     "createdAt": "2026-09-22T14:20:49.987Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-22T15:21:09.442Z",
+    "updatedAt": "2026-09-22T16:32:05.957Z",
     "updatedBy": "sandra"
   },
   {
