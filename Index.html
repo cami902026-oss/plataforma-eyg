@@ -28678,7 +28678,34 @@ async function opPlanCargar() {
   op_current._plan = plan;
 
   if (!plan.length) {
-    if (!compra.length && !bodega.length) { cont.innerHTML = ''; return; }
+    // 22-sep-2026 · CUANDO NO HAY NINGUNA LÍNEA CON ORIGEN, EL PANEL SE BORRABA.
+    // Desaparecía entero: ni botón, ni aviso, ni pista de qué faltaba. Pasó con la
+    // OP-2026-0092 (LM2205, CIAM): Alexandra la creó a las 13:21 y el proveedor se
+    // escribió en la cotización a las 13:27 — seis minutos después. La OP nació bien,
+    // con su única línea en «Sin definir», pero al no haber panel no había forma de
+    // enterarse: parecía que la plataforma se había comido el botón.
+    // El origen NO se rellena solo desde la cotización: puede haber cambiado de
+    // proveedor, o haber aparecido en bodega. Lo dice una persona. Pero hay que
+    // decirle QUÉ falta y DÓNDE, no callarse.
+    const sinDef = (op_currentItems || []).filter(i => !['COMPRA', 'BODEGA'].includes(i.origen));
+    if (!compra.length && !bodega.length) {
+      if (!sinDef.length) { cont.innerHTML = ''; return; }    // OP sin ítems: no hay nada que decir
+      cont.innerHTML = '<div class="op-plan-caja">'
+        + '<div class="op-plan-t">Plan de compras</div>'
+        + '<div class="op-plan-d">Todavía no se puede generar: las <b>' + sinDef.length
+        + ' línea(s)</b> de esta OP están en <b>«Sin definir»</b>. En cada una hay que decir '
+        + 'si <b>sale de bodega</b> o <b>se compra</b> — se hace arriba, en la columna '
+        + '<b>Origen</b> de cada ítem. Cuando al menos una lo tenga, aparece el botón.</div>'
+        + '<ul style="margin:8px 0 0;padding-left:18px;font-size:12.5px;color:var(--text-muted);">'
+        + sinDef.slice(0, 6).map(i => '<li>' + opEsc(String(i.descripcion || '').substring(0, 70)) + '</li>').join('')
+        + (sinDef.length > 6 ? '<li>… y ' + (sinDef.length - 6) + ' más</li>' : '')
+        + '</ul>'
+        + '<div class="op-plan-d" style="margin-top:9px;">Si la cotización ya trae proveedor y '
+        + 'precio, es normal que la OP no los tenga: se copian en el momento de crearla, y lo que '
+        + 'se escriba en la cotización después no viaja solo hasta aquí.</div>'
+        + '</div>';
+      return;
+    }
     cont.innerHTML = '<div class="op-plan-caja">'
       + '<div class="op-plan-t">Plan de compras</div>'
       + '<div class="op-plan-d">' + compra.length + ' por comprar'
