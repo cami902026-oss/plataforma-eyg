@@ -130578,7 +130578,7 @@
     "cliente": "INDUMEC",
     "contacto": "PEDRO",
     "correo": "--------------3-",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 539200,
@@ -130651,12 +130651,34 @@
         "precioProveedor": 23400
       }
     ],
-    "fechaGuardado": "2026-09-22T13:13:06.988Z",
+    "fechaGuardado": "2026-09-22T13:46:13.089Z",
     "fechaEnvio": "2026-09-21T20:14:53.010Z",
+    "adjudicadaAt": "2026-09-22",
+    "valorAdjudicado": 539200,
+    "itemsAdjudicados": [
+      {
+        "uid": "ba60e6d9-58f9-4903-b30c-ab49c83c3c88",
+        "qty": 16
+      },
+      {
+        "uid": "fa0112da-7d1f-46cf-a2ed-9032049d9623",
+        "qty": 8
+      },
+      {
+        "uid": "10fd380d-b03e-4c76-8a28-8e39f60db6f3",
+        "qty": 2
+      },
+      {
+        "uid": "80e24e3e-d6dc-49ae-8e4e-c35b14f18a57",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-22T13:46:13.077Z",
     "createdAt": "2026-09-18T21:45:32.542Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-22T13:13:06.988Z",
-    "updatedBy": "sheila"
+    "updatedAt": "2026-09-22T13:46:13.098Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2190",
