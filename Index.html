@@ -2671,6 +2671,20 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <br>Esta URL se sincroniza automáticamente con todo el equipo via <code>data/config.json</code>.
           </p>
         </div>
+        <div class="config-section" style="border-left:3px solid #E8A020;">
+          <div class="config-title">⚡ Proxy Supabase (carril rápido de guardado)</div>
+          <div class="api-key-row">
+            <div class="form-group" style="flex:1;margin:0;">
+              <input type="text" id="sb-proxy-input" placeholder="https://script.google.com/macros/s/.../exec">
+            </div>
+            <button class="btn btn-primary" onclick="saveSbProxyUrl()" style="width:auto;white-space:nowrap;">Guardar</button>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:10px;">
+            <b>Un Apps Script aparte que solo escribe en Supabase.</b> El proxy de arriba hace tres trabajos, y uno de ellos es subir <code>data/cotizaciones.json</code> (4,5 MB). Apps Script atiende por turnos, así que guardar una OP hacía cola detrás de esa subida: el 22-sep se midieron 24 s de media y 70 s en el peor caso, y ahí es donde se perdían las OP.
+            <br>Se despliega con el archivo <code>energy-sb-proxy.gs</code> (trae las instrucciones dentro). Al guardar se prueba antes de repartirla.
+            <br><b>Dejarlo vacío y Guardar lo apaga</b> para todo el equipo y se vuelve al proxy de siempre. Si esta URL falla, la plataforma se va sola por el otro: no deja a nadie sin guardar.
+          </p>
+        </div>
         <div class="config-section" style="border-left:3px solid #38bdf8;">
           <div class="config-title">🩺 Diagnóstico de sincronización (todo el equipo)</div>
           <p style="font-size:12px;color:var(--text-muted);margin:6px 0 12px;">Revisa en segundos si el proxy y el token del servidor funcionan, y muestra el estado de <b>cada usuario</b>: quién tiene su token vencido, a quién se le quedaron cambios sin subir y quién está OK. Solo Andrea y Alberto.</p>
@@ -5459,6 +5473,16 @@ async function _saveDataGH(filename, data, label) {
 // el abuso de la cuota de Claude y la escritura no autorizada en GitHub.
 function _proxySecret() { return 'eyg_prx_c70613f89a19d97c73d8800612029462'; }
 
+// CARRIL RÁPIDO DE ESCRITURA (22-sep-2026). Un Apps Script aparte que SOLO escribe
+// en Supabase (energy-sb-proxy.gs). El de siempre hace tres trabajos, y uno de ellos
+// es subir data/cotizaciones.json — 4,5 MB, 239 veces en cinco horas ese día. Apps
+// Script atiende por turnos, así que guardar una OP hacía cola detrás de esos 4,5 MB:
+// 24,4 s de media, 70 s la peor. Este carril solo lleva peticiones de unos KB.
+// Mientras no se configure, esto devuelve '' y todo sigue por donde iba.
+function _sbProxyURL() {
+  return (localStorage.getItem('energy_sb_proxy_url') || '').trim().replace(/\/+$/, '');
+}
+
 // ─── ESCRITURA SUPABASE VÍA PROXY (RLS cerrada, 2026-07-13) ──────────────────
 // La key publishable del HTML quedó SOLO-LECTURA (RLS). Toda escritura a Supabase
 // (POST/PATCH/DELETE) viaja por el energy-proxy, que tiene la key secreta en sus
@@ -5483,13 +5507,44 @@ const SB_WRITE_V = 130;
 // configurado NO se intenta el camino directo — no salva ninguna escritura y el
 // PATCH pierde datos en silencio. El directo queda solo para equipos sin proxy.
 async function _sbWriteRaw(path, method, bodyStr, prefer, ms, nIntentos) {
-  const proxy = _ghWriteProxyURL();
+  // Se prueban en orden los proxies que haya: primero el carril rápido (si está
+  // configurado), y si agota sus turnos, el de siempre. Ese respaldo es el que hace
+  // que desplegar el carril nuevo no pueda romperle el guardado a nadie: si la URL
+  // nueva está mal puesta, mal desplegada o caída, el trabajo sigue por donde iba.
+  const carriles = [_sbProxyURL(), _ghWriteProxyURL()].filter(Boolean)
+    .filter((u, i, a) => a.indexOf(u) === i);   // si alguien pega la misma URL, no se prueba dos veces
+  for (let ci = 0; ci < carriles.length; ci++) {
+    const r = await _sbWriteVia(carriles[ci], path, method, bodyStr, prefer, ms, nIntentos);
+    if (r) return r;                            // el proxy contestó (aunque sea un error de Supabase)
+    if (ci + 1 < carriles.length) console.warn('[sbWrite] carril ' + (ci + 1) + ' sin respuesta, paso al siguiente');
+  }
+  if (carriles.length) {
+    return { status: 0, ok: false,
+             body: 'el servidor de guardado no respondió por ninguna vía. No se escribió nada. '
+                 + 'Espera unos segundos y vuelve a intentar.' };
+  }
+  return await _sbWriteVia('', path, method, bodyStr, prefer, ms, nIntentos);
+}
+
+// Un solo proxy, con sus turnos. Devuelve la respuesta, o null si ese proxy no
+// contestó — null es la señal de "prueba el siguiente carril".
+async function _sbWriteVia(proxy, path, method, bodyStr, prefer, ms, nIntentos) {
   if (proxy) {
     // Quien pide un plazo corto (< 20 s) es una comprobación de paso que NO puede
     // frenar el guardado —reclamar el consecutivo de una cotización— y ya sabe vivir
     // sin respuesta. Esa conserva su intento único de siempre. `nIntentos` permite
     // fijarlo a mano cuando ninguna de las dos medidas sirve (el ping).
     const intentos = nIntentos || ((ms && ms < 20000) ? 1 : 3);
+    // CUÁNDO SE PUEDE REINTENTAR SIN DUPLICAR (22-sep-2026, tercera pasada).
+    // Un PATCH o un DELETE repetidos dejan la base igual, así que reintentarlos es
+    // gratis. Un POST no: si la primera petición SÍ entró y lo que se perdió fue la
+    // respuesta, repetirla inserta la fila dos veces — que es como nacieron los
+    // ítems duplicados de LM2137. Por eso se distingue el motivo del fallo:
+    //   · Google contestó 404/500, o contestó algo que no es nuestro JSON
+    //       → el script NI SE EJECUTÓ. La escritura no ocurrió. Reintentar es seguro.
+    //   · se acabó el tiempo con la petición en vuelo (AbortError)
+    //       → NO SE SABE si entró. Con POST se para en seco y lo dice.
+    const idempotente = (method === 'PATCH' || method === 'DELETE');
     let ultimo = 'sin respuesta';
     for (let i = 0; i < intentos; i++) {
       if (i) await new Promise(r => setTimeout(r, i * 1500));   // 1,5 s y luego 3 s
@@ -5500,7 +5555,20 @@ async function _sbWriteRaw(path, method, bodyStr, prefer, ms, nIntentos) {
           body: JSON.stringify({ secret: _proxySecret(), sb: { path: path, method: method, body: bodyStr || null, prefer: prefer || '', v: SB_WRITE_V } }),
           redirect: 'follow'
         }, ms || 45000);
-        const j = await resp.json();
+        if (!resp.ok) {
+          // Apps Script saturado responde 404 en vez de ejecutar. Nada se escribió.
+          ultimo = 'el puente devolvió HTTP ' + resp.status;
+          console.warn('[sbWrite] ' + ultimo + ' (' + (i + 1) + '/' + intentos + ')');
+          continue;
+        }
+        let j = null;
+        try { j = await resp.json(); }
+        catch (_) {
+          // 200 con algo que no es nuestro JSON: tampoco corrió el script.
+          ultimo = 'el puente contestó algo que no es JSON';
+          console.warn('[sbWrite] ' + ultimo + ' (' + (i + 1) + '/' + intentos + ')');
+          continue;
+        }
         if (j && typeof j.status === 'number') {
           if (j.status === 426) {
             // Gate de versión: esta pestaña es vieja para escribir
@@ -5514,14 +5582,22 @@ async function _sbWriteRaw(path, method, bodyStr, prefer, ms, nIntentos) {
         console.warn('[sbWrite] proxy sin soporte Supabase:', ultimo);
         break;
       } catch (e) {
+        const abortado = !!(e && (e.name === 'AbortError' || /abort/i.test(String(e.message || ''))));
         ultimo = (e && e.message) || String(e);
         console.warn('[sbWrite] proxy no respondió (' + (i + 1) + '/' + intentos + '):', ultimo);
+        if (abortado && !idempotente) {
+          // Aquí NO se reintenta ni se prueba el otro carril: repetir un POST que
+          // pudo haber entrado es peor que fallar. Se devuelve un error propio para
+          // que el llamador no lo confunda con "no llegó nunca".
+          return { status: 0, ok: false, dudoso: true,
+                   body: 'se acabó el tiempo con el guardado en vuelo y no se sabe si entró. '
+                       + 'NO se repite para no duplicar: recarga (Ctrl+F5) y comprueba antes de volver a intentarlo.' };
+        }
       }
     }
-    // Aquí se PARA. Antes se escribía directo, y eso era el 401 de cada día.
-    return { status: 0, ok: false,
-             body: 'el servidor de guardado no respondió (' + ultimo + '). No se escribió nada. '
-                 + 'Espera unos segundos y vuelve a intentar.' };
+    // Este proxy no contestó. Antes se escribía directo, y eso era el 401 de cada día;
+    // ahora se devuelve null para que el llamador pruebe el carril siguiente.
+    return null;
   }
   // Equipo SIN proxy configurado: único caso en que queda el camino directo.
   const headers = { 'apikey': ABS_KEY, 'Authorization': 'Bearer ' + ABS_KEY, 'Content-Type': 'application/json' };
@@ -6570,6 +6646,17 @@ async function _loadCompanyConfig() {
     localStorage.setItem('energy_gh_proxy_url', cfg.ghProxyUrl);
     console.log('[ENERGY] Proxy GitHub sincronizado desde config compartida');
   }
+  // Carril rápido de escritura (22-sep-2026). Llega solo a cada equipo, igual que
+  // el de GitHub: nadie tiene que pegar nada en su máquina. Si un día hay que
+  // apagarlo, se borra `sbProxyUrl` de data/config.json y aquí se quita de encima.
+  if (cfg.sbProxyUrl && localStorage.getItem('energy_sb_proxy_url') !== cfg.sbProxyUrl) {
+    localStorage.setItem('energy_sb_proxy_url', cfg.sbProxyUrl);
+    console.log('[ENERGY] Proxy Supabase (carril rápido) sincronizado desde config compartida');
+  }
+  if (!cfg.sbProxyUrl && localStorage.getItem('energy_sb_proxy_url')) {
+    localStorage.removeItem('energy_sb_proxy_url');
+    console.log('[ENERGY] Carril rápido retirado por la config compartida');
+  }
   // Aplicar acceso a módulos por usuario (decidido por el admin)
   if (cfg.userModules && typeof cfg.userModules === 'object') {
     localStorage.setItem('energy_user_modules', JSON.stringify(cfg.userModules));
@@ -7107,7 +7194,7 @@ function navigate(page) {
   if(page==='ayuda') ayudaRender();
   if(page==='cartera') { setTimeout(()=>{ try { cnuCargar(false); } catch(_){} }, 100); setTimeout(loadCarteraUrlUI, 400); }
   if(page==='pdfstudio') { const _f=document.getElementById('pdfstudio-frame'); if(_f && !_f.src) _f.src='pdf-studio.html'; }   // v155: carga perezosa (las librerías PDF solo se bajan al entrar)
-  if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
+  if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadSbProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
   if(page==='historico') { setTimeout(historicoListMonths, 100); }
   if(page==='procesos') renderProcesos();
   if(page==='op') { try{ opInit(); }catch(e){ console.error('[op]',e); } }
@@ -8543,6 +8630,31 @@ function loadGhProxyUrlUI() {
   const el = document.getElementById('gh-proxy-input');
   if(!el) return;
   el.value = localStorage.getItem('energy_gh_proxy_url') || '';
+}
+// Carril rápido de escritura (energy-sb-proxy.gs). Dejarlo vacío y Guardar lo apaga
+// para todo el equipo: se vuelve al proxy de siempre sin tocar código.
+async function saveSbProxyUrl() {
+  const raw = document.getElementById('sb-proxy-input').value.trim().replace(/\/+$/,'');
+  if (raw && !/^https?:\/\//i.test(raw)) { showToast('La URL debe empezar con https://','error'); return; }
+  if (raw) {
+    showToast('Probando el carril rápido…', 'info');
+    // Antes de repartirla al equipo se comprueba que de verdad escribe: un PATCH
+    // sobre id=-1, que no existe ni puede existir. Repartir una URL mala no tumbaría
+    // el guardado (hay respaldo), pero sí lo dejaría lento por gastar turnos en balde.
+    const prueba = await _sbWriteVia(raw, 'ops?id=eq.-1', 'PATCH', '{"updated_by":"ping"}', 'return=minimal', 22000, 2);
+    if (!prueba) { showToast('Esa URL no contesta. Revisa que la implementación sea «Aplicación web» con acceso «Cualquier usuario».','error',{durationMs:14000}); return; }
+    if (!prueba.ok) { showToast('Contesta, pero no puede escribir: ' + (prueba.body||'').substring(0,150) + ' — revisa SUPABASE_SECRET y SHARED_SECRET.','error',{durationMs:16000}); return; }
+    localStorage.setItem('energy_sb_proxy_url', raw);
+  } else {
+    localStorage.removeItem('energy_sb_proxy_url');
+  }
+  await _saveCompanyConfig({ sbProxyUrl: raw });
+  showToast(raw ? '⚡ Carril rápido probado y repartido a todo el equipo' : 'Carril rápido apagado; se vuelve al proxy de siempre','success',{durationMs:9000});
+}
+function loadSbProxyUrlUI() {
+  const el = document.getElementById('sb-proxy-input');
+  if(!el) return;
+  el.value = localStorage.getItem('energy_sb_proxy_url') || '';
 }
 function loadProxyUrlUI() {
   const el = document.getElementById('proxy-url-input');
