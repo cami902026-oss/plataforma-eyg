@@ -83365,8 +83365,8 @@
     "cliente": "ANDES OPERATING",
     "contacto": "ANDRES BERNAL",
     "correo": "andres.bernal@andesoperating.com",
-    "estado": "Vencida",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "642",
     "iva": 19,
     "subtotal": 12834445,
     "ivaVal": 2438544.55,
@@ -83633,13 +83633,63 @@
         "precioProveedor": 43830
       }
     ],
-    "fechaGuardado": "2026-08-28T17:15:13.368Z",
+    "fechaGuardado": "2026-09-22T01:51:55.393Z",
     "fechaEnvio": "2026-08-28T17:09:52.446Z",
+    "facturadaAt": "2026-09-21",
+    "adjudicadaAt": "2026-09-14",
+    "valorAdjudicado": 11575361,
+    "itemsAdjudicados": [
+      {
+        "qty": 1,
+        "uid": "4afee7df-5b45-428a-b061-2a35ce25f1fe"
+      },
+      {
+        "qty": 6,
+        "uid": "38d8dde9-2b65-4e92-a41c-76112f0f9c1c"
+      },
+      {
+        "qty": 2,
+        "uid": "1c494d64-9802-4464-b5f3-29dc2248cee9"
+      },
+      {
+        "qty": 150,
+        "uid": "aaf767ac-f5b9-430f-aa3e-8ea852cf27eb"
+      },
+      {
+        "qty": 10,
+        "uid": "4a32270b-d135-464e-9ceb-050dcf43e487"
+      },
+      {
+        "qty": 16,
+        "uid": "8035ac3b-9f3f-4086-9411-f48e78166f7c"
+      },
+      {
+        "qty": 32,
+        "uid": "ed9662c7-834e-453b-b215-e2ca19a127f1"
+      },
+      {
+        "qty": 16,
+        "uid": "a54df924-4d0a-462f-9908-d9b80c9fcbd4"
+      },
+      {
+        "qty": 4,
+        "uid": "26131df2-f44c-4de3-a5ca-519c36c33680"
+      },
+      {
+        "qty": 1,
+        "uid": "ec3af164-2960-4c02-98de-9ed92a331eb6"
+      },
+      {
+        "qty": 6,
+        "uid": "558dbb5b-7869-43b0-928a-431bb5ba7522"
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-14T19:48:54.255Z",
     "createdAt": "2026-08-28T17:02:25.929Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-09-07T12:37:47.170Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-09-07T12:37:47.170Z"
+    "updatedAt": "2026-09-22T01:51:55.393Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM2073",
