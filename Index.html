@@ -5841,12 +5841,59 @@ function _cotizAvisarColision(conflictos) {
   } catch(_) {}
 }
 const _ghBackupTimers = {};
+// 22-sep-2026 · CADA TECLEO DISPARABA SU PROPIA SUBIDA DE 5,8 MB.
+// La espera era de 1,5 s para todos los archivos por igual. Con
+// `data/cotizaciones.json` en 4,35 MB — 5,8 MB una vez empaquetado para GitHub —
+// eso significa que una ráfaga de ediciones manda una subida entera por cada una.
+// Medido ese día: 345 subidas de ese archivo en cinco horas, y 263 de ellas eran
+// REINTENTOS de subidas que ya habían fallado por lentitud. Esa bola de nieve es
+// lo que le dejaba a Alexandra el aviso de «cambio sin subir» todo el día.
+// Con una espera más larga, una ráfaga de ediciones se junta en UNA sola subida.
+// Solo cambia CUÁNDO sale el espejo de GitHub, y solo para los archivos pesados.
+// No toca lo local (instantáneo) ni Supabase (instantáneo): el dato está a salvo
+// desde el primer segundo, esto es el respaldo.
+const GH_BACKUP_ESPERA = { bd_cotizaciones: 10000, bd_clientes: 6000 };
+const _ghBackupPend = {};
 function _scheduleBackupGH(key, val) {
   const cfg = GH_BACKUP_MAP[key];
   if (!cfg) return;
   clearTimeout(_ghBackupTimers[key]);
-  _ghBackupTimers[key] = setTimeout(() => _enqueueOrSave(cfg.file, val, cfg.label), 1500);
+  _ghBackupPend[key] = { cfg: cfg, val: val };     // anotado por si se cierra la pestaña
+  _ghBackupTimers[key] = setTimeout(() => {
+    delete _ghBackupPend[key];
+    _enqueueOrSave(cfg.file, val, cfg.label);
+  }, GH_BACKUP_ESPERA[key] || 1500);
 }
+
+// Si la pestaña se cierra con una subida todavía esperando, se deja anotada en la
+// cola AHORA MISMO. Es lo único que hacía falta para que alargar la espera no
+// pudiera perder un cambio — y de paso tapa el mismo hueco que ya existía con los
+// 1,5 s de antes.
+// Funciona en un cierre porque NO usa la red: desde v247 la cola guarda solo una
+// referencia a la clave local, así que esto es una escritura diúscula en
+// localStorage. Al volver a abrir, la cola se drena sola con lo ÚLTIMO que haya en
+// local, no con una foto vieja.
+// Solo en `pagehide` (la página se va de verdad). En `visibilitychange` NO: ahí el
+// temporizador sigue vivo y subirá igual, y encolar por un alt-tab encendería el
+// aviso de «sin subir» sin motivo — justo lo que venimos a quitar.
+function _ghBackupFlush() {
+  const pend = Object.keys(_ghBackupPend);
+  if (!pend.length) return;
+  try {
+    const q = _getSyncQueue();
+    pend.forEach(key => {
+      const e = _ghBackupPend[key];
+      clearTimeout(_ghBackupTimers[key]);
+      delete _ghBackupPend[key];
+      if (!e || !e.cfg) return;
+      const i = q.findIndex(x => x && x.file === e.cfg.file);
+      if (i >= 0) q.splice(i, 1);                  // una sola entrada por archivo
+      q.push(_colaEntrada(e.cfg.file, e.val, e.cfg.label));
+    });
+    _setSyncQueue(q);
+  } catch (_) { }
+}
+window.addEventListener('pagehide', _ghBackupFlush);
 // Backup para keys que no usan el prefijo max_ (visitas, mensajería)
 function _scheduleBackupGHCustom(storageKey, file, label, val) {
   clearTimeout(_ghBackupTimers[storageKey]);
