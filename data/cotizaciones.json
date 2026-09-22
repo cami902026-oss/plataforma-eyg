@@ -130651,11 +130651,11 @@
         "precioProveedor": 23400
       }
     ],
-    "fechaGuardado": "2026-09-22T13:17:58.216Z",
+    "fechaGuardado": "2026-09-22T13:13:06.988Z",
     "fechaEnvio": "2026-09-21T20:14:53.010Z",
     "createdAt": "2026-09-18T21:45:32.542Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-22T13:17:58.217Z",
+    "updatedAt": "2026-09-22T13:13:06.988Z",
     "updatedBy": "sheila"
   },
   {
@@ -131591,7 +131591,7 @@
     "cliente": "CIAM",
     "contacto": "GILMAR",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 14255000,
@@ -131609,25 +131609,35 @@
     "items": [
       {
         "id": 1,
-        "desc": "CAB CONTROL 7x14+16D F.AL.GRL 600V 90° PLTC-FR-PVC NG\n",
-        "udm": "MTR",
         "qty": 500,
-        "precio": 28510,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "MTR",
+        "uid": "79c59b18-0fbd-4d82-967f-f485d97ead52",
+        "desc": "CAB CONTROL 7x14+16D F.AL.GRL 600V 90° PLTC-FR-PVC NG\n",
         "marca": "TELDOR",
+        "precio": 28510,
+        "desvTec": "",
         "proveedor": "",
-        "precioProveedor": 0,
         "obsProveedor": "",
-        "uid": "79c59b18-0fbd-4d82-967f-f485d97ead52"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-09-21T19:49:28.536Z",
+    "fechaGuardado": "2026-09-22T13:21:00.846Z",
     "fechaEnvio": "2026-09-21T19:49:28.536Z",
+    "adjudicadaAt": "2026-09-22",
+    "valorAdjudicado": 14255000,
+    "itemsAdjudicados": [
+      {
+        "uid": "79c59b18-0fbd-4d82-967f-f485d97ead52",
+        "qty": 500
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-22T13:21:00.831Z",
     "createdAt": "2026-09-21T19:49:28.536Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-21T19:49:28.536Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-22T13:21:00.846Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2206",
