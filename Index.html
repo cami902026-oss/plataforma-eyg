@@ -22805,6 +22805,19 @@ async function _remiCierreDatos(c){
     const na=String(a).split('-'), nb=String(b).split('-');
     return (na[0]===nb[0])?((+na[1]||0)-(+nb[1]||0)):String(a).localeCompare(String(b));
   }).map((n,i)=>({remision:n,n:i+1,fecha:(porNum[n][0]||{}).fecha||''}));
+  // 🔑 22-sep-2026 — UNA PARCIAL NO CUENTA LAS ENTREGAS QUE VIENEN DESPUÉS.
+  // La 26320-2 (lo que falta) se dejó creada sin fecha antes de imprimir la
+  // 26320-1. El cálculo sumaba la -2 como ya entregada y el papel de la -1 salía
+  // sin «Queda pendiente»: las 14 bridas ciegas y los 2 codos cortos no aparecían.
+  // Si la entrega que se imprime NO es la definitiva, las posteriores no cuentan.
+  // Sin entregas posteriores (el caso de siempre) el resultado es idéntico.
+  if(c.remision && !c.esDefinitiva){
+    const _k=entregas.findIndex(e=>e.remision===String(c.remision));
+    if(_k>=0 && _k<entregas.length-1){
+      entregas.splice(_k+1).forEach(e=>{ delete porNum[e.remision]; });
+      fam=fam.filter(f=>porNum[f.remision]);
+    }
+  }
 
   // Sin OP no hay "pedido": se muestra lo entregado, sin saldo inventado.
   const usados=new Set();
