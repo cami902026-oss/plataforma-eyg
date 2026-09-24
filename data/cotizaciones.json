@@ -77342,7 +77342,7 @@
     "cliente": "BOBINADOS",
     "contacto": "JESUS",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 15149223,
@@ -77387,13 +77387,26 @@
         "precioProveedor": 342000
       }
     ],
-    "fechaGuardado": "2026-08-27T16:00:17.545Z",
+    "fechaGuardado": "2026-09-24T14:35:17.895Z",
     "fechaEnvio": "2026-08-21T20:51:14.436Z",
+    "adjudicadaAt": "2026-09-24",
+    "valorAdjudicado": 15149223,
+    "itemsAdjudicados": [
+      {
+        "uid": "f01d05e1-33f1-4e4c-ad5c-29b4e8ced23a",
+        "qty": 16
+      },
+      {
+        "uid": "33e04224-75fa-456c-bed6-a7a364fd902a",
+        "qty": 9
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-24T14:35:17.878Z",
     "createdAt": "2026-08-21T20:25:34.549Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-08-31T13:01:06.795Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-08-31T13:01:06.795Z"
+    "updatedAt": "2026-09-24T14:35:17.895Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2036",
