@@ -133198,7 +133198,7 @@
     "cliente": "SOLDISMAN",
     "contacto": "SANDRA",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 1576530,
@@ -133226,18 +133226,28 @@
         "desvTec": "ADJUNTO ENVIO IMAGEN TERMOPOZO 3/4\" CON SALIDA HEMBRA A 1/2\" ",
         "fotoEnPDF": true,
         "proveedor": "CASTELAR",
+        "fotoGrande": true,
         "obsProveedor": "",
         "tiempoEntrega": "3-4 DIAS",
-        "precioProveedor": 130000,
-        "fotoGrande": true
+        "precioProveedor": 130000
       }
     ],
-    "fechaGuardado": "2026-09-24T20:51:13.759Z",
+    "fechaGuardado": "2026-09-24T21:31:49.753Z",
     "fechaEnvio": "2026-09-24T20:32:07.766Z",
+    "adjudicadaAt": "2026-09-24",
+    "valorAdjudicado": 1576530,
+    "itemsAdjudicados": [
+      {
+        "uid": "71022240-c21b-4a4b-9dba-306594326069",
+        "qty": 5
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-24T21:31:49.742Z",
     "createdAt": "2026-09-24T20:32:07.766Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-24T20:51:13.759Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-24T21:31:49.753Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2217",
