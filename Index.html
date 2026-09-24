@@ -22967,6 +22967,23 @@ async function remiPDF(marca){
        </tbody></table>
        <div style="font-size:10px;color:#6b7785;margin-top:6px">Este material se entrega en un despacho posterior, con su propia remisión.</div>`
     : '';
+  // 24-sep-2026 — PARCIAL A PARTIR DE LA 2ª ENTREGA: TODO LO ENTREGADO HASTA HOY.
+  // En la 26320-2 (HIDROCASANARE) el cliente no veía lo que ya había recibido en
+  // la 26320 y la -1: solo lo de hoy y lo que falta. Desde la 2ª entrega va el
+  // mismo cuadro de la definitiva (una columna por remisión hasta esta) con su
+  // saldo, en lugar de la tabla corta de pendientes. La 1ª entrega no cambia.
+  const _entResumenParc = (!c.esDefinitiva && _miN > 1 && _cier && _cier.conPedido)
+    ? `<div class="sec">Resumen de la orden${c.opNumero?' · '+_remiEsc(c.opNumero):''} — entregado hasta esta remisión</div>
+       <table class="it"><thead><tr><th style="width:44px;text-align:center">Ítem</th><th>Descripción</th><th style="width:60px;text-align:center">Pedido</th>
+       ${_cier.entregas.map(e=>`<th style="width:62px;text-align:center">${_remiEsc(e.remision)}</th>`).join('')}
+       <th style="width:60px;text-align:center">Total</th><th style="width:58px;text-align:center">Saldo</th></tr></thead><tbody>
+       ${_cier.lineas.map(l=>`<tr><td style="text-align:center">${_remiEsc(l.item)}</td><td>${_remiEsc(l.desc)}</td><td style="text-align:center">${l.pedido}</td>
+         ${_cier.entregas.map(e=>`<td style="text-align:center">${l.porE[e.remision]||'—'}</td>`).join('')}
+         <td style="text-align:center;font-weight:700">${l.total}</td>
+         <td style="text-align:center;font-weight:800;color:${l.saldo>0?'#B9761A':'#1FA879'}">${l.saldo>0?l.saldo:'0'}</td></tr>`).join('')}
+       </tbody></table>
+       ${_pend.length?`<div style="font-size:10px;color:#6b7785;margin-top:6px">Queda pendiente por entregar: ${_pend.map(l=>_remiEsc(l.saldo)+' × '+_remiEsc(String(l.desc).slice(0,60))).join(' · ')}. Se entrega en un despacho posterior, con su propia remisión.</div>`:''}`
+    : '';
 
   // DEFINITIVA: el cuadro de cierre de toda la orden. Es lo que el cliente firma
   // para dar por recibido el pedido completo, no solo la caja de hoy.
@@ -23047,7 +23064,7 @@ async function remiPDF(marca){
     <div class="sec">Elementos entregados</div>
     <table class="it"><thead><tr><th style="width:36px;text-align:center">Ítem</th>${hayItemCot?`<th style="width:52px;text-align:center">Ítem cot.${c.cotizacionId?('<br><span style="font-size:7.5px;font-weight:400;text-transform:none;letter-spacing:0">'+_remiEsc(c.cotizacionId)+'</span>'):''}</th>`:''}<th style="width:48px;text-align:center">Cant.</th><th>Descripción</th><th style="width:90px">Marca</th><th style="width:76px;text-align:center"># Colada</th><th style="width:92px">Desviación</th></tr></thead><tbody>${filas}</tbody></table>
     ${_nOcultos?`<div style="font-size:9.5px;color:#6b7785;margin-top:5px">Las otras ${_nOcultos} línea(s) de la orden se entregaron en remisiones anteriores: ver el resumen de la orden.</div>`:''}
-    ${_entPend}
+    ${_entResumenParc||_entPend}
     ${_entCierre}
     <div class="sec">Observaciones</div>
     <div class="obs">${_remiEsc(c.observaciones)||'—'}</div>
