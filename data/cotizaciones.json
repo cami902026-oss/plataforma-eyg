@@ -37339,8 +37339,8 @@
     "cliente": "SAR ENERGY",
     "contacto": "OSCAR SANCHEZ",
     "correo": "osanchez@sarenergy.com",
-    "estado": "Facturada",
-    "factura": "644",
+    "estado": "Adjudicada",
+    "factura": "",
     "iva": 19,
     "subtotal": 3900924,
     "ivaVal": 741175.56,
@@ -37525,9 +37525,8 @@
         "precioProveedor": 92000
       }
     ],
-    "fechaGuardado": "2026-09-24T02:07:39.230Z",
+    "fechaGuardado": "2026-09-15T18:48:17.831Z",
     "fechaEnvio": "2026-07-23T14:08:43.152Z",
-    "facturadaAt": "2026-09-23",
     "adjudicadaAt": "2026-09-09",
     "valorAdjudicado": 1225001,
     "itemsAdjudicados": [
@@ -37544,8 +37543,8 @@
     "adjudicacionAt": "2026-09-15T18:48:17.797Z",
     "createdAt": "2026-07-22T14:14:25.729Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-24T02:07:39.230Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-09-15T18:48:17.831Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM1854",
@@ -119571,7 +119570,7 @@
     "cliente": "CMU",
     "contacto": "CAROLINA ARIAS",
     "correo": "carolina.arias@cmuconsulting.com",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "factura": "",
     "iva": 19,
     "subtotal": 2397744,
@@ -119648,8 +119647,9 @@
     "fechaEnvio": "2026-09-15T15:15:17.514Z",
     "createdAt": "2026-09-15T13:46:33.460Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-15T15:15:17.514Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-24T02:09:21.224Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-09-24T02:09:21.224Z"
   },
   {
     "id": "LM2164",
@@ -119658,7 +119658,7 @@
     "cliente": "ELAWA S.A.S",
     "contacto": "PAOLA VILLARREAL",
     "correo": "lidercomercialriego@elawa.com.co",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "factura": "",
     "iva": 19,
     "subtotal": 77060400,
@@ -119707,8 +119707,9 @@
     "fechaEnvio": "2026-09-15T15:01:01.058Z",
     "createdAt": "2026-09-15T14:20:28.857Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-15T19:57:02.825Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-24T02:09:21.224Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-09-24T02:09:21.224Z"
   },
   {
     "id": "LM2165",
