@@ -130711,7 +130711,7 @@
     "cliente": "INGSECOL",
     "contacto": "ISABEL BOLIVAR",
     "correo": "asistentepresupuestos@ingsecol.com",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 1100220,
@@ -130826,12 +130826,22 @@
         "precioProveedor": 34640
       }
     ],
-    "fechaGuardado": "2026-09-22T16:47:31.541Z",
+    "fechaGuardado": "2026-09-24T21:06:36.199Z",
     "fechaEnvio": "2026-09-22T16:42:20.293Z",
+    "adjudicadaAt": "2026-09-24",
+    "valorAdjudicado": 333832,
+    "itemsAdjudicados": [
+      {
+        "uid": "d40ed0aa-5c26-4343-b8ad-e1a87b46bdd6",
+        "qty": 1
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-24T21:06:26.690Z",
     "createdAt": "2026-09-21T19:24:46.157Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-22T16:47:31.541Z",
-    "updatedBy": "sandra"
+    "updatedAt": "2026-09-24T21:06:36.199Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2204",
