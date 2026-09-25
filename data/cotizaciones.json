@@ -136779,9 +136779,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 695000,
+    "ivaVal": 132050,
+    "total": 827050,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "",
     "validez": "8 DÍAS",
@@ -136794,23 +136794,25 @@
     "items": [
       {
         "id": 1,
-        "desc": "VALVULA TIPO BOLA AC ASTM A105,  ASIENTOS EN 1\" CLASE 800 NPT",
+        "qty": 2,
         "udm": "EA",
-        "qty": 1,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "CUMPLE CON ASME B16,34\nESFERA E INTERNOS SS316\nSEAT NYLON",
+        "uid": "ab578ede-1a8b-4c06-a3d6-9b37dac31a12",
+        "desc": "VALVULA TIPO BOLA AC ASTM A105,  ASIENTOS EN 1\" CLASE 800 NPT",
         "marca": "WALWORTH",
+        "precio": 347500,
+        "desvTec": "CUMPLE CON ASME B16,34\nESFERA E INTERNOS SS316\nSEAT NYLON",
         "proveedor": "",
-        "precioProveedor": 348000,
         "obsProveedor": "",
-        "uid": "ab578ede-1a8b-4c06-a3d6-9b37dac31a12"
+        "tiempoEntrega": "1 DIA",
+        "precioProveedor": 348000,
+        "fotoId": "F1790371164845372",
+        "fotoEnPDF": true
       }
     ],
-    "fechaGuardado": "2026-09-25T21:17:18.568Z",
+    "fechaGuardado": "2026-09-25T21:20:05.133Z",
     "createdAt": "2026-09-25T21:17:18.569Z",
     "createdBy": "mario",
-    "updatedAt": "2026-09-25T21:17:18.569Z",
+    "updatedAt": "2026-09-25T21:20:05.133Z",
     "updatedBy": "mario"
   },
   {
