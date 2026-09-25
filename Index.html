@@ -11854,7 +11854,7 @@ function _cotizAdjRender(){
     // Los id de fila/cantidad/valor permiten repintar SOLO lo que cambió, sin
     // reconstruir el modal (ver _cotizAdjPintar).
     return '<tr id="cadj-tr-'+i+'" style="opacity:'+(x.marcado?'1':'.45')+'">'
-      +'<td style="padding:5px 6px;text-align:center;"><input type="checkbox" '+(x.marcado?'checked':'')+' onchange="_cotizAdjSet('+i+',\'marcado\',this.checked)"></td>'
+      +'<td style="padding:5px 6px;text-align:center;"><input type="checkbox" id="cadj-chk-'+i+'" '+(x.marcado?'checked':'')+' onchange="_cotizAdjSet('+i+',\'marcado\',this.checked)"></td>'
       +'<td style="padding:5px 6px;text-align:center;font-weight:700;color:var(--gold);font-size:12px;">'+esc(x.num)+'</td>'
       +'<td style="padding:5px 6px;font-size:12px;">'+esc(x.ref.desc)+'</td>'
       +'<td style="padding:5px 6px;text-align:center;color:var(--text-muted);font-size:12px;">'+_cadjNum(x.ref.qty)+'</td>'
@@ -11869,7 +11869,11 @@ function _cotizAdjRender(){
   ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9600;display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto;';
   ov.innerHTML='<div style="background:#0f2034;border:1px solid var(--border);border-radius:14px;max-width:900px;width:100%;padding:20px;margin:auto;">'
     +'<h3 style="margin:0 0 4px;color:#fff;font-family:Montserrat,sans-serif;">✅ ¿Qué le adjudicaron de esta cotización?</h3>'
-    +'<p style="color:var(--text-muted);font-size:12.5px;margin:0 0 14px;">Están todos marcados. Si le adjudicaron todo, dale Confirmar y listo. Si fue parcial, desmarca lo que no entró o corrige la cantidad.</p>'
+    +'<p style="color:var(--text-muted);font-size:12.5px;margin:0 0 14px;">Están todos marcados. Si le adjudicaron todo, dale Confirmar y listo. Si fue parcial, desmarca lo que no entró o corrige la cantidad. Si fueron pocos ítems, usa «No seleccionar nada» y marca solo esos.</p>'
+    // 25-sep-2026 — marcar / desmarcar todo de un clic (cotizaciones largas).
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">'
+    +'<button type="button" onclick="_cotizAdjTodos(true)" style="background:rgba(46,170,74,.15);border:1px solid rgba(46,170,74,.45);color:#86efac;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;">☑ Seleccionar todo</button>'
+    +'<button type="button" onclick="_cotizAdjTodos(false)" style="background:transparent;border:1px solid var(--border);color:#cbd5ff;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;">☐ No seleccionar nada</button></div>'
     +'<div style="overflow-x:auto;border:1px solid rgba(255,255,255,.08);border-radius:10px;margin-bottom:12px;">'
     +'<table style="width:100%;border-collapse:collapse;min-width:640px;"><thead><tr>'+cab+'</tr></thead><tbody>'+filas+'</tbody></table></div>'
     +'<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-bottom:14px;font-size:13px;">'
@@ -11911,6 +11915,13 @@ function _cotizAdjSet(i,campo,val){
     x.qty=_cadjNum(val);
   }
   _cotizAdjPintar(i);
+}
+function _cotizAdjTodos(marcar){
+  const d=_cotizAdjPend; if(!d) return;
+  d.sel.forEach(function(x,i){
+    const chk=document.getElementById('cadj-chk-'+i); if(chk) chk.checked=!!marcar;
+    _cotizAdjSet(i,'marcado',!!marcar);
+  });
 }
 function _cotizAdjPintar(i){
   const d=_cotizAdjPend; if(!d) return;
