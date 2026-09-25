@@ -9327,8 +9327,20 @@ async function cnuFactGuardar() {
   const btn = document.getElementById('cnuf-guardar-btn'); btn.disabled = true;
   try {
     const noYo = _cnuFactEdit ? '&id=neq.' + _cnuFactEdit.id : '';
-    const dup = await sbCartera('GET', 'cartera_facturas?cliente_id=eq.' + c.id + '&numero=eq.' + encodeURIComponent(numero) + noYo + '&select=id');
-    if (dup && dup.length) { showToast('⛔ La factura #' + numero + ' de ' + c.nombre + ' YA está registrada en la nube.', 'error'); btn.disabled = false; return; }
+    // 25-sep-2026 — EL NÚMERO DE FACTURA ES ÚNICO EN TODA LA CARTERA.
+    // Antes solo se buscaba dentro del mismo cliente, y así entraron la 551
+    // (CIAM y Willer) y la 642 (CIAM y Andes). Una factura DIAN tiene un solo
+    // número para un solo cliente: si ya existe, con quien sea, no se guarda.
+    const dup = await sbCartera('GET', 'cartera_facturas?numero=eq.' + encodeURIComponent(numero) + noYo + '&select=id,cliente_nombre,cotizacion_id,monto_total,fecha_facturacion');
+    if (dup && dup.length) {
+      const o = dup[0];
+      const mismo = String(o.cliente_nombre || '').trim().toUpperCase() === String(c.nombre || '').trim().toUpperCase();
+      showToast('⛔ FACTURA REPETIDA: la #' + numero + ' ya está registrada' + (mismo ? '' : ' a nombre de ' + (o.cliente_nombre || '—'))
+        + (o.cotizacion_id ? ' (cotización ' + o.cotizacion_id + ')' : '') + ' por ' + _cnuFmt(o.monto_total || 0)
+        + (o.fecha_facturacion ? ' del ' + String(o.fecha_facturacion).split('-').reverse().join('/') : '')
+        + '. Un número de factura solo puede existir una vez: revisa el número en el sistema de facturación.', 'error', { durationMs: 15000 });
+      btn.disabled = false; return;
+    }
     const oc = document.getElementById('cnuf-oc').value.trim();
     // v161: la retefuente NO la paga el cliente → el saldo de cartera es el NETO
     const _rf = Math.max(0, _cnuN('cnuf-rf-val'));
@@ -10095,6 +10107,16 @@ async function _cnuFacturaDesdeCotiz(record) {
   try {
     const ya = await sbCartera('GET', 'cartera_facturas?cotizacion_id=eq.' + encodeURIComponent(record.id) + '&numero=eq.' + encodeURIComponent(num) + '&select=id');
     if (ya && ya.length) return;   // esa factura ya está en Cartera
+    // 25-sep-2026 — ¿ese número ya lo tiene OTRA cotización en Cartera? (caso 642:
+    // LM2119-1 de CIAM y LM1723-2 de Andes quedaron con la misma factura).
+    const otra = await sbCartera('GET', 'cartera_facturas?numero=eq.' + encodeURIComponent(num) + '&select=cliente_nombre,cotizacion_id,monto_total');
+    if (otra && otra.length) {
+      const o = otra[0];
+      showToast('⛔ FACTURA REPETIDA: la #' + num + ' ya está en Cartera a nombre de ' + (o.cliente_nombre || '—')
+        + (o.cotizacion_id ? ' (cotización ' + o.cotizacion_id + ')' : '') + ' por ' + _cnuFmt(o.monto_total || 0)
+        + '. Revisa el número de factura de ' + record.id + ' — un número solo puede existir una vez.', 'error', { durationMs: 15000 });
+      return;
+    }
   } catch(_) { return; }           // sin nube no se interrumpe el guardado de la cotización
   let oc = '';
   try { const o = (getPOC() || []).find(x => x && x.cotizacionId === record.id); if (o) oc = String(o.num || o.id || ''); } catch(_) {}
