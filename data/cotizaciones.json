@@ -136254,7 +136254,7 @@
     "cliente": "SAR ENERGY",
     "contacto": "LAURA ROJAS ",
     "correo": "lrojas@sarenergy.com",
-    "estado": "Revisión gerencia",
+    "estado": "Borrador",
     "factura": "",
     "iva": 19,
     "subtotal": 0,
@@ -136537,10 +136537,10 @@
         "precioProveedor": 5300
       }
     ],
-    "fechaGuardado": "2026-09-25T21:13:38.405Z",
+    "fechaGuardado": "2026-09-25T21:10:03.085Z",
     "createdAt": "2026-09-25T18:21:47.808Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-25T21:13:38.405Z",
+    "updatedAt": "2026-09-25T21:10:03.085Z",
     "updatedBy": "sandra"
   },
   {
@@ -136768,6 +136768,50 @@
     "createdBy": "sandra",
     "updatedAt": "2026-09-25T20:33:12.419Z",
     "updatedBy": "sandra"
+  },
+  {
+    "id": "LM2236",
+    "fecha": "2026-09-25",
+    "fechaVenc": "2026-10-03",
+    "cliente": "ARCOMAT",
+    "contacto": "ING FRANCISCO QUINTERO",
+    "correo": "",
+    "estado": "Borrador",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 0,
+    "ivaVal": 0,
+    "total": 0,
+    "formaPago": "30 DÍAS",
+    "sitioEntrega": "",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Mario",
+    "realizadaPor": "Mario",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "id": 1,
+        "desc": "VALVULA TIPO BOLA AC ASTM A105,  ASIENTOS EN 1\" CLASE 800 NPT",
+        "udm": "EA",
+        "qty": 1,
+        "precio": 0,
+        "tiempoEntrega": "1-2 DIAS",
+        "desvTec": "CUMPLE CON ASME B16,34\nESFERA E INTERNOS SS316\nSEAT NYLON",
+        "marca": "WALWORTH",
+        "proveedor": "",
+        "precioProveedor": 348000,
+        "obsProveedor": "",
+        "uid": "ab578ede-1a8b-4c06-a3d6-9b37dac31a12"
+      }
+    ],
+    "fechaGuardado": "2026-09-25T21:17:18.568Z",
+    "createdAt": "2026-09-25T21:17:18.569Z",
+    "createdBy": "mario",
+    "updatedAt": "2026-09-25T21:17:18.569Z",
+    "updatedBy": "mario"
   },
   {
     "id": "LM629",
