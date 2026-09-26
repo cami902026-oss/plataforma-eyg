@@ -2854,5 +2854,43 @@
   "total": 373660,
   "created_by": "Andrea",
   "created_at": "2026-09-22T15:33:43.15671+00:00"
+ },
+ {
+  "id": 87,
+  "oc": 26093,
+  "cc": "CC-OP-2026-0112",
+  "cotizacion": "LM2192",
+  "proveedor": "SEGEFER",
+  "fecha": "2026-09-25",
+  "condiciones": {
+   "lugar": "BOGOTA",
+   "plazo": "Contado",
+   "entrega": "25 DE SEPTIEMBRE",
+   "observaciones": ""
+  },
+  "items": [
+   {
+    "udm": "EA",
+    "nota": "A-105",
+    "cantidad": 2,
+    "subtotal": 765000,
+    "costo_unit": 382500,
+    "descripcion": "BRIDA 3 1/8\" X 5K WN RTJ SCH 160"
+   },
+   {
+    "udm": "EA",
+    "nota": "A-105",
+    "cantidad": 1,
+    "subtotal": 340000,
+    "costo_unit": 340000,
+    "descripcion": "BRIDA 3 1/8\" X 5K WN RTJ SCH 80"
+   }
+  ],
+  "subtotal": 1105000,
+  "iva": 209950,
+  "retencion": 27625,
+  "total": 1287325,
+  "created_by": "Alexandra",
+  "created_at": "2026-09-25T16:07:23.281008+00:00"
  }
 ]
