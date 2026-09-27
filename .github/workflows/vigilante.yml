@@ -1,0 +1,49 @@
+name: 🔎 Vigilante de la plataforma
+
+# Revisa la base todos los días a las 7 a. m. Colombia (12:00 UTC) y le escribe a
+# Andrea SOLO si hay algo nuevo para corregir. Sin hallazgos nuevos, no hay correo.
+# No usa Claude: son reglas fijas (ver scripts/vigilante.py). Pedido 27-sep-2026.
+on:
+  schedule:
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: vigilante
+  cancel-in-progress: false
+
+jobs:
+  vigilar:
+    runs-on: ubuntu-latest
+    name: 🔎 Revisar la plataforma
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Lo ya avisado vive en el caché de Actions, no en el repo (un `git push`
+      # diario de un archivo de estado ya dio problemas en otro aviso).
+      - name: 🧠 Recordar lo ya avisado
+        uses: actions/cache/restore@v4
+        with:
+          path: vigilante_estado.json
+          key: vigilante-estado-${{ github.run_id }}
+          restore-keys: vigilante-estado-
+
+      - name: 🔎 Revisar y avisar
+        env:
+          MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          SUPABASE_URL:     ${{ secrets.SUPABASE_URL }}
+          REMITENTE:        'info@eygenergygroup.com'
+        run: python scripts/vigilante.py
+
+      - name: 💾 Guardar lo avisado
+        if: always() && hashFiles('vigilante_estado.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: vigilante_estado.json
+          key: vigilante-estado-${{ github.run_id }}
