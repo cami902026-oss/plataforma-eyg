@@ -4835,11 +4835,21 @@ const _NETLIFY_HOST = /\.netlify\.app$/i.test(location.hostname) || location.hos
   // cotizaciones si con soltar una caché de fotos ya cabía.
   function _liberarEspacio(objetivo){
     const conPendientes = _hayPendientesSinSubir();
+    // 27-sep-2026 — UNA COPIA CON UN CAMBIO PENDIENTE NO SE SUELTA.
+    // Desde la v247 la cola guarda solo la CLAVE local, no el contenido: si aquí se
+    // soltaba max_bd_cotizaciones (o visitas, mensajería) con un cambio sin subir,
+    // al reintentar `_colaDatos` no encontraba nada y el cambio se descartaba callado.
+    let _enCola = [];
+    try {
+      _enCola = (JSON.parse(localStorage.getItem('energy_sync_queue') || '[]') || [])
+        .map(e => e && e.key).filter(Boolean);
+    } catch(_) {}
     let liberados = 0;
     for (const k of _CACHES_REGENERABLES) {
       try {
         const v = localStorage.getItem(k);
         if (v === null) continue;
+        if (_enCola.indexOf(k) >= 0) continue;
         // Con cambios sin subir, las FOTOS no se tocan: podrían no estar aún en el servidor.
         if (conPendientes && (k === 'energy_cotiz_fotos' || k === 'energy_fotos_inv')) continue;
         localStorage.removeItem(k);
@@ -5894,6 +5904,21 @@ function _ghBackupFlush() {
   } catch (_) { }
 }
 window.addEventListener('pagehide', _ghBackupFlush);
+// 27-sep-2026 — AVISO AL CERRAR CON ALGO SIN SUBIR. No existía ninguno: cerrar la
+// pestaña con una subida a medio camino (o con la cola llena) no decía nada. El
+// navegador muestra su propio mensaje; solo sale si de verdad hay algo pendiente,
+// así que no se vuelve paisaje.
+window.addEventListener('beforeunload', ev => {
+  try {
+    const hay = (_getSyncQueue().length > 0) || (Object.keys(_ghBackupPend).length > 0)
+      || (typeof _subidasEnCurso === 'number' && _subidasEnCurso > 0)
+      || (typeof _sbEscriturasEnCurso === 'number' && _sbEscriturasEnCurso > 0);
+    if (!hay) return;
+    ev.preventDefault();
+    ev.returnValue = 'Hay cambios que todavía no se han subido. ¿Salir de todos modos?';
+    return ev.returnValue;
+  } catch (_) { }
+});
 // Backup para keys que no usan el prefijo max_ (visitas, mensajería)
 function _scheduleBackupGHCustom(storageKey, file, label, val) {
   clearTimeout(_ghBackupTimers[storageKey]);
@@ -6014,8 +6039,10 @@ async function _enqueueOrSave(file, data, label) {
     return;
   }
   _setSyncStatus('syncing', 'Sincronizando…');
+  _subidasEnCurso++;
   try {
     await _saveDataGH(file, data, label);
+    _subidasEnCurso = Math.max(0, _subidasEnCurso - 1);
     // Limpiar entrada vieja del mismo archivo antes de drenar la cola
     // (evita que datos obsoletos de la cola sobreescriban lo recién guardado)
     const qAfter = _getSyncQueue().filter(item => item.file !== file);
@@ -6023,10 +6050,12 @@ async function _enqueueOrSave(file, data, label) {
     await _drainSyncQueue();
     _refreshSyncBadge();
   } catch(e) {
+    _subidasEnCurso = Math.max(0, _subidasEnCurso - 1);
     // Falló: encolar para reintentar
     const q = _getSyncQueue();
     const filtered = q.filter(item => item.file !== file);
-    filtered.push(_colaEntrada(file, data, label));
+    filtered.push(Object.assign(_colaEntrada(file, data, label),
+      { motivo: String((e && e.message) || e || '').slice(0, 140) }));
     _setSyncQueue(filtered);
     _refreshSyncBadge();
   }
@@ -6047,13 +6076,31 @@ async function _mergeAntesDeSubir(file, data) {
   } catch(_) {}
   return data;
 }
-async function _drainSyncQueue() {
+// 27-sep-2026 — LO QUE SUBIÓ BIEN SALE DE LA LISTA, Y SE VACÍA DE A UNA VEZ.
+// Antes, al final se releía la cola guardada —que todavía tenía las entradas que
+// acababan de subir bien— y se volvían a meter porque no estaban en `remaining`.
+// La lista solo se limpiaba si ese mismo archivo se volvía a guardar directo. Así:
+//   · la píldora se quedaba en «⚠️ N sin subir» para siempre, y
+//   · cada 1-2 min se re-subía el ARCHIVO ENTERO con lo que hubiera en ese equipo,
+//     pisando lo que otros guardaron entretanto (tareas, clientes, visitas…).
+// Ahora sale de la lista lo subido —salvo que durante la subida haya entrado un
+// cambio MÁS NUEVO del mismo archivo— y dos vaciados no corren a la vez (cada
+// uno podía mandar los 4,5 MB de cotizaciones).
+var _subidasEnCurso = 0;
+var _drenandoCola = null;
+function _drainSyncQueue() {
+  if (_drenandoCola) return _drenandoCola;
+  _drenandoCola = _drainSyncQueueReal().finally(() => { _drenandoCola = null; });
+  return _drenandoCola;
+}
+async function _drainSyncQueueReal() {
   if (!navigator.onLine) return;
   if (!_ghToken() && !_ghWriteProxyURL()) return;
   const q = _getSyncQueue();
   if (!q.length) return;
   _setSyncStatus('syncing', 'Subiendo '+q.length+'…');
   const remaining = [];
+  const subidos = [];                      // { file, ts } de lo que subió bien
   for (const item of q) {
     try {
       if (item.__ordenes) {
@@ -6072,19 +6119,31 @@ async function _drainSyncQueue() {
         const datos = _colaDatos(item);
         if (datos == null) { console.warn('[cola] sin datos para', item.file, '— se descarta'); continue; }
         const dataFinal = await _mergeAntesDeSubir(item.file, datos);
-        await _saveDataGH(item.file, dataFinal, item.label + ' (cola)');
+        _subidasEnCurso++;
+        try { await _saveDataGH(item.file, dataFinal, item.label + ' (cola)'); }
+        finally { _subidasEnCurso = Math.max(0, _subidasEnCurso - 1); }
+        subidos.push({ file: item.file, ts: +item.ts || 0 });
       }
-    } catch(_) {
-      remaining.push(item);
+    } catch(e) {
+      remaining.push(Object.assign({}, item, {
+        intentos: (+item.intentos || 0) + 1,
+        motivo: String((e && e.message) || e || '').slice(0, 140)
+      }));
     }
   }
-  // Mergear remaining con lo que pueda haber re-encolado _saveOrdenesGH durante el reintento
-  const after = _getSyncQueue();
-  const merged = [...remaining];
-  for (const it of after) {
-    if (!merged.find(m => m.file === it.file)) merged.push(it);
-  }
-  _setSyncQueue(merged);
+  // Lo que haya re-encolado _saveOrdenesGH, o un cambio nuevo que entró mientras se
+  // subía, se conserva; lo que subió bien (y no tiene nada más nuevo) sale.
+  const yaSubido = it => subidos.some(s => s.file === it.file && (+it.ts || 0) <= s.ts);
+  const porArchivo = {};
+  remaining.forEach(r => { porArchivo[r.file] = r; });
+  _getSyncQueue().forEach(it => {
+    if (!it || yaSubido(it)) return;
+    const prev = porArchivo[it.file];
+    if (!prev) { porArchivo[it.file] = it; return; }
+    if ((+it.ts || 0) > (+prev.ts || 0)) porArchivo[it.file] = Object.assign({}, it,
+      { intentos: prev.intentos, motivo: prev.motivo });
+  });
+  _setSyncQueue(Object.values(porArchivo));
 }
 // Borra localStorage compartido y recarga desde el servidor (GitHub).
 // Útil cuando el merge quedó atrapado con items demos que el servidor ya no tiene.
@@ -12990,6 +13049,14 @@ function cotizMarcarEnviada(id) {
   if (idx < 0) { showToast('Cotización no encontrada','error'); return; }
   bd[idx] = _audit({...bd[idx], estado:'Enviada'}, false);
   saveData('bd_cotizaciones', bd);
+  // 27-sep-2026 — también a la base. Antes solo cambiaba el archivo y la base se
+  // quedaba en el estado viejo. PATCH (no upsert): si la fila no existe en la base
+  // no se inventa una a medias.
+  const _rec = bd[idx];
+  absFetch('cotizaciones?id=eq.' + encodeURIComponent(id), {
+    method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ estado: 'Enviada', extra: _rec })
+  }).catch(e => console.warn('[cotiz] marcar enviada en la base', e));
   showToast('Cotización ' + id + ' marcada como Enviada ✅', 'success');
   cotizRenderAgente();
 }
@@ -15192,6 +15259,14 @@ async function bdAdjCompleta(id) {
     await absFetch('cotizaciones', {
       method: 'POST', headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify({ id: id, extra: c })
+    });
+    // 27-sep-2026 — y las COLUMNAS: el centro de costos, la OP y los informes leen
+    // `valor_adjudicado` / `items_adjudicados`, no `extra`. Antes se quedaban vacías.
+    await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id), {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ valor_adjudicado: sello.valorAdjudicado,
+        items_adjudicados: sello.itemsAdjudicados,
+        adjudicacion_por: sello.adjudicacionPor, adjudicacion_at: sello.adjudicacionAt })
     });
     showToast('✅ ' + id + ' marcada como adjudicada COMPLETA', 'success');
   } catch (e) {
@@ -20911,6 +20986,7 @@ let abs_conteo_activo = null, abs_rotacion = [];
 // decidir qué se mueve y qué no). Por eso se cargan aparte y solo Rotación los usa.
 let abs_prod_archivados = [];
 
+var _sbEscriturasEnCurso = 0;
 async function absFetch(endpoint, opts={}) {
   // RLS cerrada (2026-07-13): las ESCRITURAS ya no van directas — pasan por el
   // energy-proxy con la key secreta (_sbWriteRaw). Las lecturas siguen directas
@@ -20919,7 +20995,11 @@ async function absFetch(endpoint, opts={}) {
   const _m = String(opts.method || 'GET').toUpperCase();
   if (_m === 'POST' || _m === 'PATCH' || _m === 'DELETE' || _m === 'PUT') {
     const _prefer = (opts.headers || {})['Prefer'] || (opts.headers || {})['prefer'] || '';
-    const w = await _sbWriteRaw(endpoint, _m, (typeof opts.body === 'string' ? opts.body : (opts.body ? JSON.stringify(opts.body) : null)), _prefer);
+    let w;
+    _sbEscriturasEnCurso++;             // para el aviso al cerrar la pestaña
+    try {
+      w = await _sbWriteRaw(endpoint, _m, (typeof opts.body === 'string' ? opts.body : (opts.body ? JSON.stringify(opts.body) : null)), _prefer);
+    } finally { _sbEscriturasEnCurso = Math.max(0, _sbEscriturasEnCurso - 1); }
     if (!w.ok) throw new Error(`Supabase ${w.status}: ${w.body}`);
     if (w.status === 204) return null;
     return w.body ? JSON.parse(w.body) : null;
