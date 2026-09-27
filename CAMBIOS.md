@@ -9,6 +9,8 @@ cambio que ya está en vivo: para verlo hay que recargar con **Ctrl + F5**.
 
 ## 27 de septiembre de 2026
 
+- v296 — Paso 3: planes de compra y remisiones ya no pisan el trabajo de otro (SW v296)  
+  <sub>`6b7fb71f7`</sub>
 - v295 — Paso 0: la cola ya no re-sube ni pisa, no se pierden cambios con el navegador lleno, aviso al cerrar (SW v295)  
   <sub>`310a4e18c`</sub>
 
