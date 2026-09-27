@@ -102,6 +102,27 @@ function procesarCorreosNuevos() {
       var msgId = msg.getId();
       if (procesados.indexOf(msgId) >= 0) continue;
 
+      // 27-sep-2026 — TOPE DE INTENTOS. Si un correo fallaba (Claude no encontraba
+      // el N° de O.C., o el guardado fallaba), NO se marcaba y se volvía a mandar a
+      // Claude CON SUS PDF cada minuto durante los 7 días de la búsqueda: ~1.440
+      // llamadas diarias por correo atascado. Ahora, al 3er fallo se marca con el
+      // label ENERGY-OC-Revisar, se deja de intentar y queda para revisión manual.
+      var intentos = _getIntentosOC();
+      if ((intentos[msgId] || 0) >= OC_MAX_INTENTOS) {
+        try {
+          var lblR = GmailApp.getUserLabelByName('ENERGY-OC-Revisar') || GmailApp.createLabel('ENERGY-OC-Revisar');
+          thread.addLabel(lblR);
+        } catch (_) {}
+        procesados.push(msgId);
+        _setMsgIdsProcesados(procesados);
+        delete intentos[msgId];
+        _setIntentosOC(intentos);
+        Logger.log('  ⛔ ' + OC_MAX_INTENTOS + ' intentos fallidos: se deja para revisión manual (label ENERGY-OC-Revisar)');
+        continue;
+      }
+      intentos[msgId] = (intentos[msgId] || 0) + 1;
+      _setIntentosOC(intentos);
+
       try {
         Logger.log('Procesando msg: "' + subj + '" de ' + msg.getFrom());
         // Construir el body que normalmente arma Power Automate
@@ -161,6 +182,7 @@ function procesarCorreosNuevos() {
           thread.addLabel(label);
           procesados.push(msgId);
           _setMsgIdsProcesados(procesados);
+          var _it = _getIntentosOC(); delete _it[msgId]; _setIntentosOC(_it);
           Logger.log('  ✅ Procesado (msgId ' + msgId + ')');
         } else {
           Logger.log('  ⚠️ NO procesado (reintentará en próximo trigger)');
@@ -174,6 +196,18 @@ function procesarCorreosNuevos() {
 }
 
 // Set de IDs de mensajes de Gmail ya convertidos en OC (dedup por mensaje, no por hilo).
+// Intentos por mensaje (ver TOPE DE INTENTOS en procesarCorreosNuevos).
+var OC_MAX_INTENTOS = 3;
+function _getIntentosOC() {
+  try { return JSON.parse(PROPS.getProperty('OC_INTENTOS') || '{}') || {}; }
+  catch(_) { return {}; }
+}
+function _setIntentosOC(obj) {
+  var ks = Object.keys(obj || {});
+  if (ks.length > 200) { ks.slice(0, ks.length - 200).forEach(function(k){ delete obj[k]; }); }
+  PROPS.setProperty('OC_INTENTOS', JSON.stringify(obj || {}));
+}
+
 function _getMsgIdsProcesados() {
   try { return JSON.parse(PROPS.getProperty('OC_MSGIDS_PROCESADOS') || '[]') || []; }
   catch(_) { return []; }
