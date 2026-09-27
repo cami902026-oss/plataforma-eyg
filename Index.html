@@ -30457,6 +30457,20 @@ async function ccCargar() {
     (getData('bd_cotizaciones', []) || []).forEach(c => {
       if (c && c.id) cots[String(c.id).trim().toUpperCase()] = c;
     });
+    // 26-sep-2026 — lo adjudicado se lee del SERVIDOR. La copia local se suelta
+    // cuando el navegador se llena y no siempre trae lo último: queda de respaldo.
+    try {
+      const ids = [...new Set((lineas || []).map(r => String(r.cotizacion || '').trim()).filter(Boolean))];
+      for (let i = 0; i < ids.length; i += 80) {
+        const lista = ids.slice(i, i + 80).map(x => '"' + x.replace(/"/g, '') + '"').join(',');
+        const rs = (await absFetch('cotizaciones?id=in.(' + encodeURIComponent(lista) + ')'
+          + '&select=id,subtotal,valor_adjudicado&limit=1000')) || [];
+        rs.forEach(r => {
+          cots[String(r.id).trim().toUpperCase()] = { id: r.id, subtotal: r.subtotal,
+            valorAdjudicado: r.valor_adjudicado == null ? null : +r.valor_adjudicado };
+        });
+      }
+    } catch (e) { console.warn('[cc] cotizaciones del servidor', e); }
 
     const g = {};
     (lineas || []).forEach(r => {
@@ -30691,11 +30705,48 @@ let pcom_gastos = [];
 const _ccMoney = n => '$' + Math.round(+n || 0).toLocaleString('es-CO');
 const _ccEsc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 
+// 26-sep-2026 — LA VENTA SE LEE DEL SERVIDOR, NO DE LA COPIA DEL NAVEGADOR.
+// El centro de costos y el reporte de utilidad buscaban el precio de venta en
+// `max_bd_cotizaciones` (la copia local). Esa copia es lo primero que se suelta
+// cuando el navegador se llena (ver _CACHES_REGENERABLES) y no siempre trae las
+// cotizaciones nuevas: la CC-OP-2026-0106 (LM2035, ya adjudicada y con sus dos
+// precios en la base) salía «no está ligado a una cotización con precios».
+// Ahora manda `cotizacion_items`; la copia local queda solo de respaldo para una
+// cotización que el servidor no devuelva.
+let pcom_precios = null;
+async function _pcomPreciosVenta(cotIds) {
+  const norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const porCotiz = {}, global = {};
+  const put = (id, desc, precio) => {
+    const k = norm(desc); if (!k) return;
+    const m = porCotiz[id] = porCotiz[id] || {};
+    if (m[k] == null) m[k] = +precio || 0;
+    if (global[k] == null) global[k] = +precio || 0;
+  };
+  const ids = (cotIds || []).map(x => String(x).trim()).filter(Boolean);
+  if (ids.length) {
+    try {
+      const lista = ids.map(x => '"' + x.replace(/"/g, '') + '"').join(',');
+      const rows = (await absFetch('cotizacion_items?cotizacion_id=in.(' + encodeURIComponent(lista) + ')'
+        + '&select=cotizacion_id,descripcion,v_unit&order=cotizacion_id,item&limit=1000')) || [];
+      rows.forEach(r => put(String(r.cotizacion_id), r.descripcion, r.v_unit));
+    } catch (e) { console.warn('[pcom] precios de venta del servidor', e); }
+    const data = (typeof remiCotizData === 'function' ? remiCotizData() : []);
+    ids.forEach(id => {
+      if (porCotiz[id]) return;
+      const cot = data.find(x => String(x.id) === id);
+      (cot && cot.items || []).forEach(it => put(id, it.desc, it.precio));
+    });
+  }
+  return { porCotiz, global, norm };
+}
+
 async function pcomCentroCostos() {
   if (!pcomEsGerencia()) { showToast('El centro de costos lo ven Andrea y gerencia', 'error'); return; }
   if (!pcom_current) return;
   if (typeof pcomSyncHeader === 'function') pcomSyncHeader();
   const cc = String(pcom_current.cc || '');
+  pcom_precios = await _pcomPreciosVenta(pcomCotizIds(pcom_current));
   try {
     pcom_gastos = (await absFetch('plan_gastos?cc=eq.' + encodeURIComponent(cc)
       + '&select=id,concepto,proveedor,valor,aplica_iva,nota&order=id.asc&limit=200')) || [];
@@ -30753,16 +30804,11 @@ function _ccPintar() {
   // Venta: se busca en la(s) cotización(es) del plan. Si no hay, no se inventa.
   let venta = 0, hayVenta = false;
   try {
-    const cotIds = pcomCotizIds(pcom_current);
-    const data = (typeof remiCotizData === 'function' ? remiCotizData() : []);
-    const norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
-    const precio = {};
-    cotIds.forEach(id => {
-      const cot = data.find(x => String(x.id) === String(id));
-      (cot && cot.items || []).forEach(it => { const k = norm(it.desc); if (k && precio[k] == null) precio[k] = +it.precio || 0; });
-    });
+    const pv = pcom_precios || { porCotiz: {}, global: {}, norm: s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ') };
     items.forEach(it => {
-      const p = precio[norm(it.descripcion)];
+      const k = pv.norm(it.descripcion);
+      const m = pv.porCotiz[String(it.cotizacion || pcom_current.cotizacion || '').trim()];
+      const p = (m && m[k] != null) ? m[k] : pv.global[k];
       if (p != null) { venta += (parseFloat(it.cantidad) || 0) * p; hayVenta = true; }
     });
   } catch (_) { }
@@ -30868,24 +30914,17 @@ async function pcomCentroCostosRecargar() {
   _ccPintar();
 }
 
-function pcomUtilidad(){
+async function pcomUtilidad(){
   if(!pcomEsGerencia()){ showToast('Solo gerencia y Andrea pueden ver la utilidad','error'); return; }
   const c = pcom_current; if(!c){ return; }
   if(typeof pcomSyncHeader==='function') pcomSyncHeader();
   // v186 — el plan puede venir de VARIAS cotizaciones: se arma el precio de venta de cada una
   // y cada línea busca primero en la suya; si no aparece, busca en las demás (fallback).
+  // 26-sep-2026 — los precios salen del servidor (ver _pcomPreciosVenta).
   const cotIds = pcomCotizIds(c);
-  const _data = (typeof remiCotizData==='function'?remiCotizData():[]);
-  const norm = s => String(s||'').trim().toLowerCase().replace(/\s+/g,' ');
-  const ventaPorCotiz = {}, ventaGlobal = {};
-  cotIds.forEach(id=>{
-    const cot = _data.find(x=>String(x.id)===String(id));
-    if(!cot || !Array.isArray(cot.items)) return;
-    const m = ventaPorCotiz[String(id)] = {};
-    cot.items.forEach(it=>{ const k=norm(it.desc); if(!k) return;
-      if(m[k]==null) m[k]=Number(it.precio)||0;
-      if(ventaGlobal[k]==null) ventaGlobal[k]=Number(it.precio)||0; });
-  });
+  const _pv = await _pcomPreciosVenta(cotIds);
+  const norm = _pv.norm;
+  const ventaPorCotiz = _pv.porCotiz, ventaGlobal = _pv.global;
   if(!Object.keys(ventaPorCotiz).length){
     showToast('Este plan no está ligado a una cotización con precios de venta; no se puede calcular la utilidad.','error');
     return;
