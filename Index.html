@@ -22398,10 +22398,23 @@ async function remiNueva(){
     items:[{cantidad:'',descripcion:'',marca:'',colada:'',desviacion:''}] };
   remiAbrirEditor('Nueva remisión');
 }
-function remiAbrir(remision, pdf){
+// 27-sep-2026 — LA REMISIÓN SE ABRE COMO ESTÁ EN EL SERVIDOR. La lista se carga
+// una vez; abrirla desde ahí mostraba la versión de hace horas y guardarla pisaba
+// lo que otra persona (o una corrección) hizo después. Se anotan además los ids
+// que había al abrir, para avisar al guardar si alguien la cambió entretanto.
+async function remiAbrir(remision, pdf){
+  let _idsBase = null;
+  try{
+    const fr = await absFetch('remisiones?remision=eq.'+encodeURIComponent(String(remision))+'&order=item.asc,id.asc&limit=500');
+    if(Array.isArray(fr) && fr.length){
+      remi_rows = remi_rows.filter(r=>String(r.remision)!==String(remision)).concat(fr);
+      _idsBase = fr.map(r=>r.id).filter(x=>x!=null);
+    }
+  }catch(_){ }
   const its=remiGrupos()[String(remision)]; if(!its||!its.length) return showToast('Remisión no encontrada','error');
   const h=its[0];
   remi_current={ nueva:false, remision:String(remision), remisionOrig:String(remision), fecha:h.fecha||'', cliente:h.cliente||'', lugar:h.lugar||'',
+    _idsBase: _idsBase,
     oc:h.oc||'', contiene:h.contiene||'', observaciones:h.observaciones||'', cotizacionId:h.cotizacion_id||'',
     // Marcas de entrega parcial (v240). Si la base no tiene las columnas llegan
     // vacías y la remisión se comporta exactamente como antes.
@@ -22619,6 +22632,25 @@ async function remiGuardar(){
   // pisar por error). MEJORA 2026-07-08: consulta el SERVIDOR (no la memoria local,
   // que puede estar vieja) — así frena aunque otra persona haya creado ese número
   // hace un momento (fue lo que pasó cuando SERSOLCA pisó a QCIEN en la 26150).
+  // 27-sep-2026 — CANDADO: ¿ALGUIEN CAMBIÓ ESTA REMISIÓN DESDE QUE LA ABRISTE?
+  // Una remisión es un papel: si sigues, TU versión la reemplaza entera (como
+  // siempre). Lo nuevo es que ya no pasa sin avisar.
+  if(!c.nueva && num===(c.remisionOrig||'') && Array.isArray(c._idsBase)){
+    try{
+      const srv = (await absFetch('remisiones?remision=eq.'+encodeURIComponent(num)+'&select=id,created_by,created_at&limit=500'))||[];
+      const base = new Set(c._idsBase.map(String));
+      const distinto = srv.length !== base.size || srv.some(r=>!base.has(String(r.id)));
+      if(distinto){
+        const quien = [...new Set(srv.filter(r=>!base.has(String(r.id))).map(r=>r.created_by).filter(Boolean))].join(', ') || 'otra persona';
+        if(!confirm('⚠️ '+quien+' guardó esta remisión ('+num+') después de que la abriste.\n\n'
+            + 'ACEPTAR = guardar TU versión (reemplaza la que está en el servidor).\n'
+            + 'CANCELAR = no guardar, para que la cierres y la vuelvas a abrir con lo último.')){
+          showToast('No se guardó. Cierra y vuelve a abrir la remisión '+num+' para ver lo último.','info',{durationMs:9000});
+          return;
+        }
+      }
+    }catch(_){ }
+  }
   if(num!==(c.remisionOrig||'')){
     let existe=null;
     try{ existe = await absFetch('remisiones?remision=eq.'+encodeURIComponent(num)+'&select=cliente,item'); }
@@ -22705,6 +22737,7 @@ async function remiGuardar(){
     const nuevosIds = (Array.isArray(nuevas)?nuevas:[]).map(r=>r&&r.id).filter(x=>x!=null);
     if(nuevosIds.length){
       await absFetch('remisiones?remision=eq.'+encodeURIComponent(num)+'&id=not.in.('+nuevosIds.join(',')+')',{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+      c._idsBase = nuevosIds.slice();      // lo último guardado por este equipo
     }
     // Si se renombró (ej: 1741 → 1741-1), borrar la versión con el número anterior AL FINAL.
     // v158: se avisa SIEMPRE, porque renombrar hace desaparecer el número anterior.
@@ -30059,8 +30092,13 @@ async function pcomInit(){
 async function pcomCargar(){
   try{
     showToast('Cargando planes de compra...','info');
+    // 27-sep-2026 — PAGINADO. `limit=8000` es un deseo: PostgREST corta en 1.000.
+    // Con más de 1.000 líneas los planes viejos salían CORTADOS y guardarlos
+    // borraba las líneas que no alcanzaron a cargar (hoy van 833).
     const [rows, ocs, provs] = await Promise.all([
-      absFetch('plan_compras?order=cc.desc,item.asc&limit=8000'),
+      (typeof _pvdPaginar === 'function'
+        ? _pvdPaginar('plan_compras?order=cc.desc,item.asc,id.asc')
+        : absFetch('plan_compras?order=cc.desc,item.asc&limit=8000')),
       absFetch('oc_compras?order=oc.desc&limit=2000'),
       absFetch('proveedores?order=nombre.asc&limit=500')
     ]);
@@ -30367,10 +30405,25 @@ function pcomCrearVacio(){
   pcomCotizCerrar();
   pcomAbrirEditor('Plan de compras manual (nuevo)');
 }
-function pcomAbrir(cc){
-  const its = pcomGrupos()[String(cc)]; if(!its||!its.length) return showToast('Plan no encontrado','error');
+// 27-sep-2026 — EL PLAN SE ABRE COMO ESTÁ EN EL SERVIDOR, NO COMO ESTABA EN LA LISTA.
+// La lista se carga una vez; abrir un plan desde ahí mostraba la versión de hace
+// horas, y el autoguardado la escribía encima de lo que otra persona hizo después
+// (el guardado reemplaza el plan entero). Además se anotan los ids de las líneas
+// que había al abrir: al guardar solo se reemplazan ESAS, nunca las de otro.
+async function pcomAbrir(cc){
+  let its = null;
+  try {
+    const fr = await absFetch('plan_compras?cc=eq.' + encodeURIComponent(String(cc)) + '&order=item.asc,id.asc&limit=1000');
+    if (Array.isArray(fr) && fr.length) {
+      its = fr;
+      pcom_rows = pcom_rows.filter(r => String(r.cc) !== String(cc)).concat(fr);
+    }
+  } catch (_) { }
+  if (!its) its = pcomGrupos()[String(cc)];
+  if(!its||!its.length) return showToast('Plan no encontrado','error');
   const h = its[0];
   pcom_current = { nueva:false, cc:String(cc), cotizacion:h.cotizacion||'', cliente:h.cliente||'', fecha:h.fecha||'',
+    _idsBase: its.map(r => r.id).filter(x => x != null),
     items: its.slice().sort((a,b)=>(a.item||0)-(b.item||0)).map(r=>({
       descripcion:r.descripcion||'', udm:r.udm||'', cantidad:(r.cantidad==null?'':r.cantidad), nota:r.nota||'',
       proveedor:r.proveedor||'', costo_unit:(r.costo_unit==null?'':r.costo_unit), pago:r.pago||'PENDIENTE', sin_oc:!!r.sin_oc,
@@ -31286,6 +31339,9 @@ function pcomRenderOCs(){
 async function pcomGuardar(silencioso){
   if(!pcomCanUse()) return showToast('No tienes permiso','error');
   if(!pcom_current) return;
+  // El botón espera a que termine un autoguardado en curso: si corrían a la vez,
+  // el segundo veía el plan «cambiado» por el primero.
+  if(!silencioso && _pcomSaving){ try{ await _pcomSaving; }catch(_){} }
   pcomSyncHeader();
   const c = pcom_current;
   if(!c.cliente && !silencioso) return showToast('Ingresa el cliente / proyecto','error');
@@ -31295,6 +31351,52 @@ async function pcomGuardar(silencioso){
   // creó otra persona para la misma cotización), avisar ANTES de reemplazarlo —
   // antes se sobrescribía en silencio y se perdía el plan del otro. Igual que en
   // Remisiones. En auto-guardado (silencioso) no se pregunta.
+  // 27-sep-2026 — Y EN AUTOGUARDADO TAMPOCO SE REEMPLAZA UN PLAN AJENO. Antes el
+  // silencioso se saltaba esta pregunta y un plan NUEVO con un CC que ya existía
+  // borraba el existente sin decir nada (p. ej. al generar una O.C. desde un plan
+  // sin guardar). Ahora no se guarda y se avisa.
+  if(c.nueva && silencioso){
+    try{
+      const ex = await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc)+'&select=id&limit=1');
+      if(Array.isArray(ex) && ex.length){
+        showToast('⚠️ Ya existe un plan '+c.cc+'. No se guardó nada para no reemplazarlo: usa 💾 Guardar plan y confirma, o abre el existente.','error',{durationMs:15000});
+        throw new Error('El plan '+c.cc+' ya existe: no se reemplazó');
+      }
+    }catch(e){ if(/ya existe/.test(String(e&&e.message))) throw e; }
+  }
+  // 27-sep-2026 — CANDADO: ¿ALGUIEN CAMBIÓ ESTE PLAN DESDE QUE LO ABRISTE?
+  // Se compara el juego de líneas del servidor con el que había al abrir (o al
+  // último guardado propio). Si no es el mismo, otra persona guardó o agregó algo.
+  //   · autoguardado → no se escribe (sería pisarla) y se avisa una vez;
+  //   · botón Guardar → se pregunta; si se sigue, SUS líneas nuevas se conservan.
+  let _reemplazarTodo = false;
+  if(!c.nueva && Array.isArray(c._idsBase)){
+    try{
+      const srv = ((await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc)+'&select=id,created_by&limit=1000'))||[]);
+      const base = new Set(c._idsBase.map(String));
+      const nuevosAjenos = srv.filter(r => !base.has(String(r.id)));
+      const faltan = c._idsBase.filter(id => !srv.some(r => String(r.id) === String(id)));
+      if(nuevosAjenos.length || faltan.length){
+        const quien = [...new Set(nuevosAjenos.map(r => r.created_by).filter(Boolean))].join(', ') || 'otra persona';
+        if(silencioso){
+          if(!c._avisoConflicto){
+            c._avisoConflicto = true;
+            showToast('⚠️ '+quien+' cambió este plan mientras lo tenías abierto. Tus últimos cambios NO se guardaron solos para no borrar los suyos: cierra y vuelve a abrir el plan (o usa 💾 Guardar plan para decidir).','error',{durationMs:20000});
+          }
+          return;       // no se escribe; quien llama sigue (el cambio queda en pantalla)
+        }
+        if(!confirm('⚠️ '+quien+' cambió este plan desde que lo abriste ('
+            + (nuevosAjenos.length ? nuevosAjenos.length+' línea(s) nuevas' : '')
+            + (nuevosAjenos.length && faltan.length ? ' y ' : '')
+            + (faltan.length ? faltan.length+' línea(s) que ya no están' : '') + ').\n\n'
+            + 'ACEPTAR = guardar tu versión. Las líneas nuevas de la otra persona se CONSERVAN (pueden quedar repetidas: revísalas).\n'
+            + 'CANCELAR = no guardar, para que cierres y vuelvas a abrir el plan con lo último.')) {
+          showToast('No se guardó. Cierra y vuelve a abrir el plan para ver lo último.','info',{durationMs:9000});
+          return;
+        }
+      }
+    }catch(_){ }
+  }
   if(c.nueva && !silencioso){
     try{
       // Consulta FRESCA al servidor (no la memoria local, que puede estar vieja)
@@ -31304,6 +31406,7 @@ async function pcomGuardar(silencioso){
           showToast('Guardado cancelado — el plan '+c.cc+' existente NO se tocó','info');
           return;
         }
+        _reemplazarTodo = true;
       }
     }catch(_){}
   }
@@ -31349,7 +31452,17 @@ async function pcomGuardar(silencioso){
     }
     const idsPC = (Array.isArray(nuevasPC)?nuevasPC:[]).map(r=>r&&r.id).filter(x=>x!=null);
     if(idsPC.length){
-      await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc)+'&id=not.in.('+idsPC.join(',')+')',{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+      // 27-sep-2026 — Solo se borran las líneas que ESTE plan tenía al abrirlo (o al
+      // último guardado propio). Antes era «todo el CC menos lo que acabo de subir»:
+      // eso borraba lo que otra persona o la OP («completar plan») agregó entretanto.
+      const viejos = (Array.isArray(c._idsBase) ? c._idsBase : []).filter(id => idsPC.indexOf(id) < 0);
+      if(_reemplazarTodo){
+        await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc)+'&id=not.in.('+idsPC.join(',')+')',{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+      } else if(viejos.length){
+        await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc)+'&id=in.('+viejos.join(',')+')',{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+      }
+      c._idsBase = idsPC.slice();
+      c._avisoConflicto = false;
     }
     c.nueva = false;
     // refrescar memoria local sin perder la edición abierta
