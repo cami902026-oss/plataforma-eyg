@@ -7,6 +7,11 @@ cambio que ya está en vivo: para verlo hay que recargar con **Ctrl + F5**.
 > repositorio. No se escribe a mano: si algo falta aquí, es que no se desplegó.
 
 
+## 27 de septiembre de 2026
+
+- v295 — Paso 0: la cola ya no re-sube ni pisa, no se pierden cambios con el navegador lleno, aviso al cerrar (SW v295)  
+  <sub>`310a4e18c`</sub>
+
 ## 26 de septiembre de 2026
 
 - v294 — Centro de costos y Utilidad leen la venta del servidor, no de la copia del navegador (SW v294)  
