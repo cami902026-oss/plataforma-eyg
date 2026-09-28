@@ -60590,8 +60590,8 @@
     "cliente": "SKID EXPERTS",
     "contacto": "SANDY",
     "correo": "abastecimiento1@skidexpert.com",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "656",
     "iva": 19,
     "subtotal": 5272000,
     "ivaVal": 1001680,
@@ -60608,46 +60608,47 @@
     "items": [
       {
         "id": 1,
-        "desc": "Tomacorriente industrial trifásico 208/120 Vac, 60 Hz, 20 A, \nconfiguración 3P+N+T (L1/L2/L3/N/G), tipo NEMA L21-20R, para \ninstalación en ambiente industrial.\nConstrucción en material metálico de uso pesado, grado de protección \nmínimo IP65.\nIncluye tapa abatible con resorte, terminal de puesta a tierra, y \naccesorios de montaje.\nCumplimiento con RETIE, NTC 2050 y NFPA 70.\nPara áreas clasificadas: suministro en envolvente certificada Clase I \nDivisión 2.\n",
-        "udm": "EA",
         "qty": 2,
-        "precio": 300000,
-        "tiempoEntrega": "1-2 DIAS HABILES",
-        "desvTec": "SE OFERTA SIN TAPA ",
+        "udm": "EA",
+        "uid": "b8b57b93-39ee-4cb7-ac0a-e82672b4e83d",
+        "desc": "Tomacorriente industrial trifásico 208/120 Vac, 60 Hz, 20 A, \nconfiguración 3P+N+T (L1/L2/L3/N/G), tipo NEMA L21-20R, para \ninstalación en ambiente industrial.\nConstrucción en material metálico de uso pesado, grado de protección \nmínimo IP65.\nIncluye tapa abatible con resorte, terminal de puesta a tierra, y \naccesorios de montaje.\nCumplimiento con RETIE, NTC 2050 y NFPA 70.\nPara áreas clasificadas: suministro en envolvente certificada Clase I \nDivisión 2.\n",
         "marca": "LEVINTON ",
+        "precio": 300000,
+        "desvTec": "SE OFERTA SIN TAPA ",
         "proveedor": "CAMILA",
-        "precioProveedor": 180000,
-        "uid": "b8b57b93-39ee-4cb7-ac0a-e82672b4e83d"
+        "tiempoEntrega": "1-2 DIAS HABILES",
+        "precioProveedor": 180000
       },
       {
         "id": 2,
-        "desc": "Caja tipo FD profunda de aluminio fundido, 1 gang, roscada 1\" NPT \n(conduit IMC 1\"), para montaje de tomacorriente NEMA Legrand Turnlok \nL16-30R, con tapa industrial weatherproof y empaque, apta para \nambiente industrial, uso exterior NEMA 4X, tornillería inoxidable .",
-        "udm": "EA",
         "qty": 2,
-        "precio": 73000,
-        "tiempoEntrega": "1-2 DIAS HABILES",
-        "desvTec": "SE OFERTA TAPA PLÁSTICA MARCA LEVINTON ",
+        "udm": "EA",
+        "uid": "27314505-3e97-44a5-b253-365ed9197ecc",
+        "desc": "Caja tipo FD profunda de aluminio fundido, 1 gang, roscada 1\" NPT \n(conduit IMC 1\"), para montaje de tomacorriente NEMA Legrand Turnlok \nL16-30R, con tapa industrial weatherproof y empaque, apta para \nambiente industrial, uso exterior NEMA 4X, tornillería inoxidable .",
         "marca": "LEVINTON ",
+        "precio": 73000,
+        "desvTec": "SE OFERTA TAPA PLÁSTICA MARCA LEVINTON ",
         "proveedor": "ALBERTO ",
-        "precioProveedor": 41055,
-        "uid": "27314505-3e97-44a5-b253-365ed9197ecc"
+        "tiempoEntrega": "1-2 DIAS HABILES",
+        "precioProveedor": 41055
       },
       {
         "id": 3,
-        "desc": "Caja tipo FD profunda de aluminio fundido, 1 gang, roscada 1\" NPT \n(conduit IMC 1\"), para montaje de tomacorriente NEMA Legrand Turnlok \nL520-R, con tapa industrial weatherproof y empaque, apta para \nambiente industrial, uso exterior NEMA 4X, tornillería inoxidable .\n",
-        "udm": "EA",
         "qty": 62,
-        "precio": 73000,
-        "tiempoEntrega": "1-2 DIAS HABILES",
-        "desvTec": "SE OFERTA TAPA PLÁSTICA MARCA LEVINTON ",
+        "udm": "EA",
+        "uid": "c0109169-1f57-4c15-bc86-992b139b7a1a",
+        "desc": "Caja tipo FD profunda de aluminio fundido, 1 gang, roscada 1\" NPT \n(conduit IMC 1\"), para montaje de tomacorriente NEMA Legrand Turnlok \nL520-R, con tapa industrial weatherproof y empaque, apta para \nambiente industrial, uso exterior NEMA 4X, tornillería inoxidable .\n",
         "marca": "LEVINTON ",
+        "precio": 73000,
+        "desvTec": "SE OFERTA TAPA PLÁSTICA MARCA LEVINTON ",
         "proveedor": "ALBERTO",
-        "precioProveedor": 41055,
-        "uid": "c0109169-1f57-4c15-bc86-992b139b7a1a"
+        "tiempoEntrega": "1-2 DIAS HABILES",
+        "precioProveedor": 41055
       }
     ],
-    "fechaGuardado": "2026-09-09T16:14:55.134Z",
+    "fechaGuardado": "2026-09-28T21:22:42.669Z",
     "fechaEnvio": "2026-08-05T23:31:57.327Z",
+    "facturadaAt": "2026-09-28",
     "adjudicadaAt": "2026-09-09",
     "valorAdjudicado": 5272000,
     "itemsAdjudicados": [
@@ -60668,8 +60669,8 @@
     "adjudicacionAt": "2026-09-09T16:14:48.391Z",
     "createdAt": "2026-08-05T23:31:57.327Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-09T16:14:55.134Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-09-28T21:22:42.687Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1930",
