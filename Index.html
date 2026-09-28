@@ -4538,6 +4538,11 @@ function userCanSeeModule(mod) {
   // Proveedores: SOLO Alberto y Andrea (pedido de Andrea, 15-sep-2026). Muestra
   // precios de proveedor y márgenes, igual que el Centro de Costos.
   if (mod === 'proveedores') return email === 'alberto' || email === 'andrea';
+  // Visitas Comerciales y Mensajería: fuera para Alexandra y Sandra (28-sep-2026,
+  // pedido del usuario). Hoy no se usan y sus archivos (1,2 MB + 0,6 MB) llenaban
+  // el almacenamiento del navegador: en el equipo de Alexandra eso tumbó la copia
+  // local de cotizaciones y «Crear OP» de LM2244 no hacía nada.
+  if ((mod === 'visitas' || mod === 'mensajeria') && _sinVisMsg()) return false;
   // Cartera: Andrea, Alberto y Nelsy (no se puede destrabar por config)
   if (mod === 'cartera') return email === 'andrea' || email === 'alberto' || email === 'nelsy';
   // Programación Equipo: TODO el equipo la VE (para saber quién está presencial);
@@ -4559,8 +4564,24 @@ function userCanSeeModule(mod) {
   const denied = cfg[email] || [];
   return !denied.includes(mod);
 }
+// Quién NO lleva Visitas ni Mensajería: ni menú, ni descarga, ni copia local.
+var _SIN_VISMSG_USERS = ['alexandra', 'sandra'];
+var _VISMSG_KEYS = ['energy_visitas', 'energy_visitas_plan', 'energy_visitas_actas', 'energy_mensajeria'];
+function _sinVisMsg() {
+  return !!(currentUser && _SIN_VISMSG_USERS.includes(String(currentUser.email || '').toLowerCase()));
+}
+// Suelta lo que ya estaba guardado en el navegador de esas personas.
+function _liberarVisMsg() {
+  if (!_sinVisMsg()) return;
+  let b = 0;
+  _VISMSG_KEYS.forEach(k => {
+    try { const v = localStorage.getItem(k); if (v != null) { b += v.length; localStorage.removeItem(k); } } catch (_) { }
+  });
+  if (b) console.info('[almacenamiento] Visitas/Mensajería liberados: ' + Math.round(b / 1024) + ' KB');
+}
 function applyUserModuleVisibility() {
   if (!currentUser) return;
+  try { _liberarVisMsg(); } catch (_) { }
   document.querySelectorAll('.nav-item').forEach(el => {
     const onclick = el.getAttribute('onclick') || '';
     const m = onclick.match(/navigate\(['"]([^'"]+)['"]\)/);
@@ -6553,6 +6574,7 @@ async function _pollOne(target) {
   // FIX CORS: NO usar If-None-Match ni Cache-Control: no-cache → disparan preflight
   // OPTIONS que raw.githubusercontent.com no responde → bloquea todo el polling.
   // En su lugar: GET simple con cache-buster ?t= y comparar contenido contra hash previo.
+  if (target.storageKey && _VISMSG_KEYS.includes(target.storageKey) && _sinVisMsg()) return false;   // 28-sep-2026
   const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${target.file}?t=${Date.now()}`;
   try {
     const r = await fetch(url);
@@ -6855,6 +6877,7 @@ async function _loadAllBackupsGH() {
     }
   } catch(_){}
   for (const c of customExtras) {
+    if (_VISMSG_KEYS.includes(c.storageKey) && _sinVisMsg()) continue;   // 28-sep-2026
     const remote = await _loadDataGH(c.file);
     if (Array.isArray(remote) && remote.length > 0) {
       const localRaw = localStorage.getItem(c.storageKey);
@@ -25386,7 +25409,16 @@ function _opCotizBuscar() {
   l.sort((a, b) => String(b.fecha || '').localeCompare(String(a.fecha || '')));
   const cont = document.getElementById('_opCotizRes');
   if (!cont) return;
-  if (!l.length) { cont.innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:14px;">Sin resultados.</div>'; return; }
+  // 28-sep-2026: si el número no está en ESTE equipo (almacenamiento lleno, copia
+  // vieja), se ofrece traerlo del servidor en vez de decir «Sin resultados».
+  const _lmQ = (q.match(/^lm\s*\d{3,}(-\d+)?$/i) || [])[0];
+  const _filaSrv = (_lmQ && !l.some(c => String(c.id).toLowerCase() === _lmQ.replace(/\s+/g, '')))
+    ? '<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-bottom:1px solid var(--border);">'
+      + '<div style="flex:1;font-size:12.5px;color:#fbbf24;">' + opEsc(_lmQ.replace(/\s+/g, '').toUpperCase())
+      + ' no está en este equipo. Se puede traer del servidor.</div>'
+      + '<button class="btn-sm bd-btn-edit" onclick="opCrearDesde(\'' + opEsc(_lmQ.replace(/\s+/g, '').toUpperCase()) + '\')">Crear OP</button></div>'
+    : '';
+  if (!l.length) { cont.innerHTML = _filaSrv || '<div style="color:var(--text-muted);font-size:13px;padding:14px;">Sin resultados.</div>'; return; }
   // Qué cotización ya tiene OP, dicho ANTES de dar clic. Sale de op_lista, que
   // el módulo ya trae cargada: sin una consulta más. La comprobación de verdad
   // (contra el servidor, ítem por ítem) la hace _opGuardiaCotizConOP al crear.
@@ -25758,11 +25790,39 @@ async function opCrearDesde(cotizId) {
   try { await _opCrearDesdeReal(cotizId); }
   finally { _opCreandoOP = false; }
 }
+// 28-sep-2026 · LM2244: Alexandra la adjudicó y «Crear OP» no hizo nada. Su equipo
+// tenía el almacenamiento lleno («[cuota] localStorage lleno»), así que la copia
+// local de cotizaciones no alcanzó a guardar la adjudicación. La cotización
+// completa vive también en Supabase (`cotizaciones.extra`, mismo formato que la
+// copia local): se trae de ahí y gana la más reciente.
+async function _opCotizDelServidor(id) {
+  try {
+    const r = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id)
+      + '&select=extra,estado,deleted,items_adjudicados,valor_adjudicado,updated_at&limit=1')) || [];
+    const f = r[0];
+    if (!f || f.deleted || !f.extra || typeof f.extra !== 'object') return null;
+    const c = Object.assign({}, f.extra, { id: id });
+    if (f.estado) c.estado = f.estado;
+    if (f.items_adjudicados) c.itemsAdjudicados = f.items_adjudicados;
+    if (f.valor_adjudicado != null) c.valorAdjudicado = f.valor_adjudicado;
+    c._sbUpdatedAt = f.updated_at || '';
+    return c;
+  } catch (e) { console.warn('[op] cotización del servidor', id, e); return null; }
+}
 async function _opCrearDesdeReal(cotizId) {
   // `let` y no `const`: si los ítems no están en este equipo, se reemplaza por
   // una copia con los que trae el servidor (ver más abajo).
   let c = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === cotizId && !x.deleted);
-  if (!c) { showToast('No encontré la cotización ' + cotizId, 'error'); return; }
+  const cSrv = await _opCotizDelServidor(cotizId);
+  if (cSrv) {
+    const tLoc = Date.parse((c && (c.updatedAt || c.fechaGuardado)) || '') || 0;
+    const tSrv = Math.max(Date.parse(cSrv.updatedAt || cSrv.fechaGuardado || '') || 0, Date.parse(cSrv._sbUpdatedAt) || 0);
+    if (!c || tSrv > tLoc) {
+      if (!c) console.warn('[op] ' + cotizId + ' no está en la copia local: se usa la del servidor');
+      c = cSrv;
+    }
+  }
+  if (!c) { showToast('No encontré la cotización ' + cotizId + ' ni en este equipo ni en el servidor', 'error'); return; }
   if (!opPuedeCrear(c)) { showToast('Esa cotización no es tuya. La crea su comercial, Andrea o gerencia.', 'error'); return; }
 
   // Los ítems ANTES que nada: sin material no hay OP que valga, y el consecutivo
