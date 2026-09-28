@@ -136790,7 +136790,7 @@
     "cliente": "INDUMEC",
     "contacto": "PEDRO",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 846000,
@@ -136863,12 +136863,34 @@
         "precioProveedor": 25000
       }
     ],
-    "fechaGuardado": "2026-09-28T19:32:27.330Z",
+    "fechaGuardado": "2026-09-28T20:03:48.774Z",
     "fechaEnvio": "2026-09-25T21:45:33.205Z",
+    "adjudicadaAt": "2026-09-28",
+    "valorAdjudicado": 846000,
+    "itemsAdjudicados": [
+      {
+        "uid": "e7ee4fcd-b744-4b90-aa5f-750736316ede",
+        "qty": 6
+      },
+      {
+        "uid": "a32e45ee-11f5-40c8-b2b1-833c00d9537a",
+        "qty": 30
+      },
+      {
+        "uid": "0c1017d3-6b48-43a3-a164-421909861e3b",
+        "qty": 12
+      },
+      {
+        "uid": "6cd7d2f6-9f75-43e8-8aab-6ef0d05c5b50",
+        "qty": 2
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-28T20:03:48.754Z",
     "createdAt": "2026-09-25T21:44:44.550Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-28T19:32:27.330Z",
-    "updatedBy": "sheila"
+    "updatedAt": "2026-09-28T20:03:48.775Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2238",
