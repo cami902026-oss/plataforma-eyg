@@ -132158,6 +132158,135 @@
     "updatedBy": "sandra"
   },
   {
+    "id": "LM2208-1",
+    "fecha": "2026-09-22",
+    "fechaVenc": "2026-09-30",
+    "cliente": "SERSOLCA",
+    "contacto": "SEBASTIAN",
+    "correo": "",
+    "estado": "Enviada",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 6017200,
+    "ivaVal": 1143268,
+    "total": 7160468,
+    "formaPago": "CONTADO",
+    "sitioEntrega": "YOPAL",
+    "validez": "8 DÍAS",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vendedor": "Sheila Baron",
+    "realizadaPor": "Sheila Baron",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "id": 2,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "9cd4e560-b3d2-43e5-b7f0-7d469490fbae",
+        "desc": "UNION DE 1 X 3000 INOX NPT",
+        "marca": "BOTHWELL ",
+        "precio": 45600,
+        "desvTec": "SS-304",
+        "proveedor": "CODIFER",
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 41560
+      },
+      {
+        "id": 4,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "3f613869-b20b-4d88-8893-3b981ca63b7d",
+        "desc": "BRIDA CIEGA DE 12 X 150 INOX",
+        "marca": "XF",
+        "precio": 1200000,
+        "desvTec": "SS-304",
+        "proveedor": "CODIFER",
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 1054890
+      },
+      {
+        "id": 6,
+        "qty": 2,
+        "udm": "EA",
+        "uid": "dd08de5f-85a4-4ac7-9503-b12bcef319a7",
+        "desc": "TUBERIA DE 1 SCH 40 INOX",
+        "marca": "YC  INOX",
+        "precio": 333400,
+        "desvTec": "SS-304 S/C",
+        "proveedor": "CODIFER",
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 51860
+      },
+      {
+        "id": 8,
+        "qty": 14,
+        "udm": "EA",
+        "uid": "74df361b-eed0-4d53-92ab-5a22a2e5cdc4",
+        "desc": "CODO DE 1 INOX X 3000  NPT",
+        "marca": "BOTHWELL",
+        "precio": 100600,
+        "desvTec": "SS-304",
+        "proveedor": "CODIFER",
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 93890
+      },
+      {
+        "id": 10,
+        "qty": 8,
+        "udm": "EA",
+        "uid": "14503977-9d65-4439-94d6-ae4624d6783a",
+        "desc": "TE DE 1 X 3000 NPT INOX",
+        "marca": "BOTHWELL",
+        "precio": 165300,
+        "desvTec": "SS-304",
+        "proveedor": "SEAT",
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 128700
+      },
+      {
+        "id": 12,
+        "qty": 8,
+        "udm": "EA",
+        "uid": "25b3bc97-9e67-4d8e-a45a-c9cedc6e5736",
+        "desc": "UNIVERSAL DE 1 X 3000 INOX NPT",
+        "marca": "BOTHWELL",
+        "precio": 113000,
+        "desvTec": "SS-304",
+        "proveedor": "CODIFER",
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 104920
+      },
+      {
+        "id": 14,
+        "qty": 10,
+        "udm": "EA",
+        "uid": "e7b9b979-631f-403f-b40a-5f5cad4e638b",
+        "desc": "VALVULA BOLA DE 1 X 1000 INOX NPT",
+        "marca": "BOTHWELL",
+        "precio": 47000,
+        "desvTec": "SS-316",
+        "proveedor": "CODIFER",
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 43940
+      }
+    ],
+    "fechaGuardado": "2026-09-28T22:19:12.119Z",
+    "fechaEnvio": "2026-09-28T22:17:40.861Z",
+    "createdAt": "2026-09-28T22:17:40.861Z",
+    "createdBy": "sandra",
+    "updatedAt": "2026-09-28T22:19:12.119Z",
+    "updatedBy": "sandra"
+  },
+  {
     "id": "LM2209",
     "fecha": "2026-09-22",
     "fechaVenc": "2026-09-30",
@@ -139447,7 +139576,7 @@
     "ivaVal": 0,
     "total": 0,
     "formaPago": "30 DÍAS",
-    "sitioEntrega": "",
+    "sitioEntrega": "Planta Hidrocasanare, ubicada en el Km 17 de la vía que conduce de Yopal a Paz de Ariporo, vereda la Niata",
     "validez": "8 DÍAS",
     "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
     "vendedor": "Sheila Baron",
@@ -139968,11 +140097,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 565340
       },
       {
         "id": 35,
@@ -140000,11 +140129,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 1903390
       },
       {
         "id": 37,
@@ -140016,11 +140145,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 1530730
       },
       {
         "id": 38,
@@ -140032,11 +140161,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 2206440
       },
       {
         "id": 39,
@@ -140064,11 +140193,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 790090
       },
       {
         "id": 41,
@@ -140080,11 +140209,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 165560
       },
       {
         "id": 42,
@@ -140138,11 +140267,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "INDUVACOL",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 6400
       },
       {
         "id": 46,
@@ -140154,11 +140283,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 14070
       },
       {
         "id": 47,
@@ -140170,11 +140299,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 18360
       },
       {
         "id": 48,
@@ -140202,11 +140331,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 45490
       },
       {
         "id": 50,
@@ -140250,11 +140379,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 26340
       },
       {
         "id": 53,
@@ -140298,11 +140427,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 6180
       },
       {
         "id": 56,
@@ -140314,11 +140443,11 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 25050
       },
       {
         "id": 57,
@@ -140355,14 +140484,14 @@
         "uid": "d8a480d9-123f-45b3-bacc-dee6985ecea3",
         "desc": "CARBON STEEL, GATE VALVE, ASTM A-105, ACCORDING TO API 602, SOCKET WELDING ENDS AS PER ASME B16.11, CONSTRUCTION AS PER ASME B16.34, TESTS AS PER API 598, TRIM F8, AISI 304 SPIRAL WOUND BONNET GASKET GRAPHITE FILLER, BOLTED BONNET, OUTSIDE SCREW AND YOKE, SOLID WEDGE, STELLITE INTEGRAL SEAT RINGS, GRAPHITE STEM PACKING REPLACEABLE UNDER PRESSURE, HANDWHEEL   1\"  X 800 PSI ",
         "altDe": null,
-        "marca": "",
+        "marca": "SIO",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 134180
       },
       {
         "id": 60,
@@ -140387,12 +140516,12 @@
         "altDe": null,
         "marca": "",
         "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
+        "desvTec": "SE OFERTA TEE 1\" X 3000 PSI SOCKET WELDING  A-105",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 21530
       },
       {
         "id": 62,
@@ -140433,14 +140562,14 @@
         "uid": "68f468a9-bf1a-4f2d-bd9c-2ed115db9b03",
         "desc": "CARBON STEEL, GLOBE VALVE, ASTM A-105, DIMENSIONS AS PER ASME B16.10, SOCKET WELDING ENDS AS PER ASME B16.11, CONSTRUCTION AS PER ASME B16.34, TESTS AS PER API 598, TRIM F8, AISI 304 SPIRAL WOUND GASKET WITH GRAPHITE FILLER, BOLTED BONNET, OUTSIDE SCREW AND YOKE, SWIVEL DISC PLUG TYPE, STELLITE INTEGRAL SEAT RINGS, GRAPHITE STEM PACKING REPLACEABLE UNDER PRESSURE, HANDWHEEL   3/4\" X 800 PSI ",
         "altDe": null,
-        "marca": "",
+        "marca": "SIO",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 91870
       },
       {
         "id": 65,
@@ -140449,14 +140578,14 @@
         "uid": "17b9e162-8ed6-4387-be98-0dbcb3b4c5f1",
         "desc": "CARBON STEEL, GLOBE VALVE, ASTM A-105, DIMENSIONS AS PER ASME B16.10, SOCKET WELDING ENDS AS PER ASME B16.11, CONSTRUCTION AS PER ASME B16.34, TESTS AS PER API 598, TRIM F8, AISI 304 SPIRAL WOUND GASKET WITH GRAPHITE FILLER, BOLTED BONNET, OUTSIDE SCREW AND YOKE, SWIVEL DISC PLUG TYPE, STELLITE INTEGRAL SEAT RINGS, GRAPHITE STEM PACKING REPLACEABLE UNDER PRESSURE, HANDWHEEL   1 1/2\" X 800 PSI ",
         "altDe": null,
-        "marca": "",
+        "marca": "SIO",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 252970
       },
       {
         "id": 66,
@@ -140465,14 +140594,14 @@
         "uid": "7728342d-28cb-4d6a-985a-1d1e8b11f315",
         "desc": "CARBON STEEL, GLOBE VALVE, ASTM A-105, DIMENSIONS AS PER ASME B16.10, SOCKET WELDING ENDS AS PER ASME B16.11, CONSTRUCTION AS PER ASME B16.34, TESTS AS PER API 598, TRIM F8, AISI 304 SPIRAL WOUND GASKET WITH GRAPHITE FILLER, BOLTED BONNET, OUTSIDE SCREW AND YOKE, SWIVEL DISC PLUG TYPE, STELLITE INTEGRAL SEAT RINGS, GRAPHITE STEM PACKING REPLACEABLE UNDER PRESSURE, HANDWHEEL  1\" X 800 PSI  ",
         "altDe": null,
-        "marca": "",
+        "marca": "SIO",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 129820
       },
       {
         "id": 67,
@@ -140500,14 +140629,14 @@
         "marca": "",
         "precio": 0,
         "desvTec": "",
-        "proveedor": "",
+        "proveedor": "CODIFER",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 14070
       }
     ],
-    "fechaGuardado": "2026-09-28T22:38:34.434Z",
+    "fechaGuardado": "2026-09-28T22:51:27.127Z",
     "adjudicadaAt": "2026-09-28",
     "valorAdjudicado": 0,
     "itemsAdjudicados": [
@@ -140788,8 +140917,8 @@
     "adjudicacionAt": "2026-09-28T22:19:29.264Z",
     "createdAt": "2026-09-28T21:39:09.970Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-28T22:38:34.434Z",
-    "updatedBy": "sheila"
+    "updatedAt": "2026-09-28T22:51:27.127Z",
+    "updatedBy": "sandra"
   },
   {
     "id": "LM2249",
