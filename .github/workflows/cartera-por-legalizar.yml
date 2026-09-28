@@ -1,0 +1,30 @@
+name: 💼 Cartera por legalizar (gerencia)
+
+# Todos los días 7 a. m. Colombia (12:00 UTC): lo adjudicado y sin facturar.
+# Mientras SOLO_ANDREA = True en el script, llega solo a Andrea (revisión).
+on:
+  schedule:
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: cartera-por-legalizar
+  cancel-in-progress: false
+
+jobs:
+  informe:
+    runs-on: ubuntu-latest
+    name: 💼 Enviar informe
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 💼 Armar y enviar
+        env:
+          MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          SUPABASE_URL:     ${{ secrets.SUPABASE_URL }}
+          REMITENTE:        'info@eygenergygroup.com'
+        run: python scripts/cartera_por_legalizar.py
