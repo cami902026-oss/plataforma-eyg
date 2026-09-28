@@ -6563,7 +6563,35 @@ function _cheapHash(str) {
   for (let i = 0; i < str.length; i++) { h = ((h << 5) + h + str.charCodeAt(i)) | 0; }
   return h >>> 0;
 }
-async function _pollOne(target) {
+// 28-sep-2026 · COTIZACIONES: PREGUNTAR ANTES DE BAJAR 4,9 MB.
+// Cada 8 s se bajaba entero data/cotizaciones.json (4,9 MB, ~450 veces por hora
+// por persona) y se recorría completo para ver si cambió. En el equipo de
+// Alexandra la plataforma estaba en 434 MB de memoria y 17 % de CPU sin tocar
+// nada. Ahora primero se pregunta a Supabase la última modificación (51 bytes):
+//   · si cambió → se baja ya, y durante 3 min cada 20 s (el archivo de GitHub
+//     llega unos segundos o minutos después que Supabase);
+//   · si no cambió → se baja igual cada 60 s, por si algo cambió sin tocar esa fecha;
+//   · si Supabase no contesta → se baja como siempre.
+// La primera carga y el botón «Actualizar» (que borran _pollEtags) bajan siempre.
+var _cotizPollSig = null, _cotizPollUltFull = 0, _cotizPollCaliente = 0;
+async function _cotizPollToca() {
+  const ahora = Date.now();
+  let sig;
+  try {
+    const r = await absFetch('cotizaciones?select=updated_at&order=updated_at.desc.nullslast&limit=1');
+    sig = String((r && r[0] && r[0].updated_at) || '');
+  } catch (_) { return true; }
+  if (_cotizPollSig !== null && sig !== _cotizPollSig) _cotizPollCaliente = ahora + 180000;
+  _cotizPollSig = sig;
+  const pasado = ahora - _cotizPollUltFull;
+  if (pasado >= 60000 || (ahora < _cotizPollCaliente && pasado >= 20000)) return true;
+  return false;
+}
+async function _pollOne(target, forzar) {
+  if (target.file === 'data/cotizaciones.json' && _pollEtags[target.file] && !forzar) {
+    if (!(await _cotizPollToca())) return false;
+  }
+  if (target.file === 'data/cotizaciones.json') _cotizPollUltFull = Date.now();
   // FIX SYNC: antes, si había una escritura pendiente para este archivo se hacía
   // `return false` y se dejaba de DESCARGAR. Eso provocaba que un cambio atascado
   // (p.ej. en un dispositivo sin permiso de escritura) bloqueara para siempre la
@@ -16707,7 +16735,7 @@ async function bdCargar(id) {
       const tgt = POLL_TARGETS.find(t => t.file === 'data/cotizaciones.json');
       if (tgt && navigator.onLine) {
         const timeout = new Promise(res => setTimeout(() => res('__timeout__'), 2500));
-        const r = await Promise.race([_pollOne(tgt), timeout]);
+        const r = await Promise.race([_pollOne(tgt, true), timeout]);
         if (r === '__timeout__') _verificado = false;
       }
     } catch(_) { _verificado = false; }
