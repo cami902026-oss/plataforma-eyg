@@ -128135,7 +128135,7 @@
     "cliente": "CIAM",
     "contacto": "GILMAR ",
     "correo": "",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 9167033,
@@ -128460,13 +128460,38 @@
         "precioProveedor": 16050
       }
     ],
-    "fechaGuardado": "2026-09-21T13:48:16.207Z",
+    "fechaGuardado": "2026-09-28T16:50:06.260Z",
     "fechaEnvio": "2026-09-21T13:47:01.741Z",
+    "adjudicadaAt": "2026-09-28",
+    "valorAdjudicado": 322500,
+    "itemsAdjudicados": [
+      {
+        "uid": "d5704022-83af-4f50-ba08-9744ca1f2804",
+        "qty": 15
+      },
+      {
+        "uid": "764cc211-7a94-4516-b74a-8e025f12a529",
+        "qty": 15
+      },
+      {
+        "uid": "4a8f2bcb-68fb-44e9-be66-16f009503dc3",
+        "qty": 2
+      },
+      {
+        "uid": "12103e77-b689-48c9-a46c-a29a762011a1",
+        "qty": 4
+      },
+      {
+        "uid": "372d3381-d96f-4ecf-bbbf-e844261da0f5",
+        "qty": 10
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-28T16:50:06.242Z",
     "createdAt": "2026-09-18T17:14:36.880Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-27T00:16:40.108Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-09-27T00:16:40.108Z"
+    "updatedAt": "2026-09-28T16:50:06.260Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2191",
