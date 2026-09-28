@@ -138447,7 +138447,7 @@
     "cliente": "CIAM",
     "contacto": "GILMAR",
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 106025,
@@ -138465,24 +138465,34 @@
     "items": [
       {
         "id": 1,
-        "desc": "Interruptores triples Interruptor Tripolar de 3x20A tipo Riel Din 33 Marca Schneider, siemens o Eaton. 10KA",
-        "udm": "EA",
         "qty": 1,
-        "precio": 106025,
-        "tiempoEntrega": "1-2 DIAS HABILES",
-        "desvTec": "BREAKER RIEL 3X 20 AMP 6KAX|X",
+        "udm": "EA",
+        "uid": "f12d308f-2df7-426c-befc-75fd6b6fc785",
+        "desc": "Interruptores triples Interruptor Tripolar de 3x20A tipo Riel Din 33 Marca Schneider, siemens o Eaton. 10KA",
         "marca": "SIEMENS",
+        "precio": 106025,
+        "desvTec": "BREAKER RIEL 3X 20 AMP 6KAX|X",
         "proveedor": "INTERLECTRICAS",
-        "precioProveedor": 63615,
         "obsProveedor": "",
-        "uid": "f12d308f-2df7-426c-befc-75fd6b6fc785"
+        "tiempoEntrega": "1-2 DIAS HABILES",
+        "precioProveedor": 63615
       }
     ],
-    "fechaGuardado": "2026-09-26T16:17:28.333Z",
+    "fechaGuardado": "2026-09-28T14:37:33.974Z",
     "fechaEnvio": "2026-09-26T16:17:28.333Z",
+    "adjudicadaAt": "2026-09-28",
+    "valorAdjudicado": 106025,
+    "itemsAdjudicados": [
+      {
+        "uid": "f12d308f-2df7-426c-befc-75fd6b6fc785",
+        "qty": 1
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-28T14:37:33.973Z",
     "createdAt": "2026-09-26T16:17:28.333Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-26T16:17:28.333Z",
+    "updatedAt": "2026-09-28T14:37:33.974Z",
     "updatedBy": "alexandra"
   },
   {
