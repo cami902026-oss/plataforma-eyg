@@ -85,7 +85,7 @@
     "createdBy": "andrea",
     "updatedBy": "andrea",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-26T21:23:37.102Z"
+    "archivadaAt": "2026-08-27T18:05:55.637Z"
   },
   {
     "id": "poc_1777926438588",
@@ -135,7 +135,7 @@
     "updatedBy": "lina",
     "faltanFechas": false,
     "archivada": true,
-    "archivadaAt": "2026-08-14T22:43:57.224Z"
+    "archivadaAt": "2026-08-27T18:05:55.637Z"
   },
   {
     "id": "poc_1777493314013",
@@ -244,7 +244,7 @@
         "n": "438"
       }
     ],
-    "updatedAt": "2026-08-25T02:08:58.658Z",
+    "updatedAt": "2026-09-15T13:58:52.361Z",
     "faltanFechas": true,
     "archivada": true,
     "archivadaAt": "2026-09-01T20:40:18.815Z"
@@ -300,7 +300,7 @@
     "observaciones": "",
     "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-26T21:23:37.102Z"
+    "archivadaAt": "2026-08-27T18:05:55.637Z"
   },
   {
     "id": "poc_1778168100636",
@@ -498,54 +498,6 @@
     "archivada": false
   },
   {
-    "id": "poc_1779461405791",
-    "num": "CMC-000034",
-    "cliente": "ANDES OPERATING",
-    "desc": "VÁLVULAS BOLA Y ACCESORIOS PARA COMBUSTIBLE",
-    "estado": "activo",
-    "fechaIngreso": "2026-05-22",
-    "valor": 622000,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-04",
-        "n": "CODIFER"
-      },
-      {
-        "s": "done",
-        "f": "2026-05-24",
-        "n": "costo 34700",
-        "envio": "transportadora",
-        "transp": "INTERRAPIDISIMO",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-05-22",
-        "n": "SERVIDOR"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-01",
-        "n": "458"
-      }
-    ],
-    "createdAt": "2026-05-22T20:38:55.909Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-12T21:08:03.843Z",
-    "updatedBy": "andrea",
-    "archivada": false,
-    "archivadaAt": "2026-07-28T14:46:45.014Z",
-    "faltanFechas": false
-  },
-  {
     "id": "poc_1779830815163",
     "num": "LM1592",
     "cliente": "CIAM",
@@ -593,54 +545,6 @@
     "archivada": false
   },
   {
-    "id": "poc_1780065847891",
-    "num": "ODC-AA-MEC-SKID-469-24-531",
-    "cliente": "SKID EXPERT",
-    "desc": "Acoples, válvulas, accesorios filtración y tanque agua pozo",
-    "estado": "completado",
-    "fechaIngreso": "2026-05-29",
-    "valor": 3856548,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-05-28",
-        "n": "INDUVACOL\nCODIFER\nHIDROLING\nSEGEFER\nMUNDIAL\nCODIFER\n"
-      },
-      {
-        "s": "done",
-        "f": "2026-01-06",
-        "n": "",
-        "envio": "moto",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-01",
-        "n": "SERVIDOR"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-04",
-        "n": "466"
-      }
-    ],
-    "createdAt": "2026-05-29T15:27:15.070Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-19T21:47:04.915Z",
-    "updatedBy": "lina",
-    "archivada": true,
-    "archivadaAt": "2026-07-28T14:46:45.014Z",
-    "faltanFechas": false
-  },
-  {
     "id": "poc_1780068534688",
     "num": "280526U3517",
     "cliente": "CIAM",
@@ -682,7 +586,7 @@
     ],
     "createdAt": "2026-05-29T22:46:37.361Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-25T02:08:58.658Z",
+    "updatedAt": "2026-09-15T13:58:52.361Z",
     "updatedBy": "andrea",
     "faltanFechas": true,
     "archivada": true,
@@ -730,7 +634,7 @@
     ],
     "createdAt": "2026-06-01T18:49:58.100Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-08-25T02:08:58.658Z",
+    "updatedAt": "2026-09-15T13:58:52.362Z",
     "updatedBy": "andrea",
     "faltanFechas": true,
     "archivada": true,
@@ -787,7 +691,7 @@
     "facturacion": "",
     "cotizacionId": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-26T21:23:37.102Z"
+    "archivadaAt": "2026-08-27T18:05:55.637Z"
   },
   {
     "id": "poc_1780498017972",
@@ -835,11 +739,11 @@
     "updatedAt": "2026-07-31T22:14:09.027Z",
     "updatedBy": "andrea",
     "faltanFechas": true,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "",
     "facturacion": "",
     "cotizacionId": "",
-    "archivadaAt": "2026-08-31T13:00:43.771Z"
+    "archivadaAt": "2026-09-01T01:37:19.167Z"
   },
   {
     "id": "poc_1780498255267",
@@ -986,7 +890,7 @@
     "facturacion": "",
     "cotizacionId": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-26T21:23:37.102Z"
+    "archivadaAt": "2026-08-27T18:05:55.637Z"
   },
   {
     "id": "poc_1780685275512",
@@ -1039,7 +943,7 @@
     "facturacion": "",
     "cotizacionId": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-26T21:23:37.102Z"
+    "archivadaAt": "2026-08-27T18:05:55.637Z"
   },
   {
     "id": "poc_1780759794347",
@@ -1083,7 +987,7 @@
     ],
     "createdAt": "2026-06-06T15:30:56.719Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-08-25T02:08:58.658Z",
+    "updatedAt": "2026-09-15T13:58:52.362Z",
     "updatedBy": "andrea",
     "faltanFechas": true,
     "archivada": true,
@@ -1140,7 +1044,7 @@
     "facturacion": "",
     "cotizacionId": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-26T21:23:37.102Z"
+    "archivadaAt": "2026-08-27T18:05:55.638Z"
   },
   {
     "id": "poc_1781024695284",
@@ -1193,7 +1097,7 @@
     "facturacion": "",
     "cotizacionId": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-26T21:23:37.102Z"
+    "archivadaAt": "2026-08-27T18:05:55.638Z"
   },
   {
     "id": "poc_1781034415013",
@@ -1293,55 +1197,7 @@
     "facturacion": "",
     "cotizacionId": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-26T21:23:37.102Z"
-  },
-  {
-    "id": "poc_1781116679153",
-    "num": "090626E4379",
-    "cliente": "CIAM",
-    "desc": "Viga HEA, Perfil UPN 100 X 6 MTR y Flete para Diálisis de Crudo",
-    "estado": "completado",
-    "fechaIngreso": "2026-06-10",
-    "valor": 4758067,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-10",
-        "n": "imperial"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-11",
-        "n": "",
-        "envio": "transportadora",
-        "transp": "Yopal cargo",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-12-06",
-        "n": "SERVER"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-11",
-        "n": "477N/C. 494'493"
-      }
-    ],
-    "createdAt": "2026-06-10T18:39:13.914Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-25T16:32:08.263Z",
-    "updatedBy": "lina",
-    "archivada": true,
-    "archivadaAt": "2026-07-28T14:46:45.014Z",
-    "faltanFechas": false
+    "archivadaAt": "2026-08-27T18:05:55.638Z"
   },
   {
     "id": "poc_1781126215905",
@@ -1392,8 +1248,835 @@
     "faltanFechas": false,
     "observaciones": "",
     "facturacion": "",
-    "archivada": false,
+    "archivada": true,
     "archivadaAt": "2026-09-01T01:37:19.167Z"
+  },
+  {
+    "id": "poc_1781713617271",
+    "num": "LM1677",
+    "cliente": "METAL INDUSTRIALES",
+    "desc": "THREADOLET DE 2 X 6000 A-105 NPT",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-17",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-24",
+        "n": "CODIFER"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-16",
+        "n": "482"
+      }
+    ],
+    "createdAt": "2026-06-17T22:33:24.576Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-06-19T17:41:57.751Z",
+    "updatedBy": "alexandra",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1781740932503",
+    "num": "160626G0445",
+    "cliente": "CIAM",
+    "desc": "Esparrago zincado de diámetro 7/8\" x 5\" de largo con doble tuerca",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-16",
+    "valor": 66378,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-16",
+        "n": "MUDNIAL\nGALVANIZADO"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-20",
+        "n": "487"
+      }
+    ],
+    "createdAt": "2026-06-16T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-06-20T19:34:20.653Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1781748545065",
+    "num": "ODC-AA-MEC-SKID-469-24-559",
+    "cliente": "SKID EXPERTS",
+    "desc": "UNION COUPLING DE 1 X 3000 INOX 304",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-18",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "2026-06-25",
+      "estado": "recibida"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-17",
+        "n": "CODIFER"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-17",
+        "n": "",
+        "envio": "camion_energy",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-17",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-25",
+        "n": "495",
+        "factura": ""
+      }
+    ],
+    "createdAt": "2026-06-18T02:09:30.622Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-29T01:51:25.090Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": true,
+    "cotizacionId": "",
+    "observaciones": "",
+    "facturacion": "",
+    "archivadaAt": "2026-09-01T01:37:19.167Z"
+  },
+  {
+    "id": "poc_1781749319612",
+    "num": "160626S5553",
+    "cliente": "CIAM",
+    "desc": "Esparrago zincado diámetro 3/4\" x 7-1/2\" con doble tuerca",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-18",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-16",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-20",
+        "n": "486"
+      }
+    ],
+    "createdAt": "2026-06-18T02:25:23.596Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-20T19:33:43.084Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1781749399665",
+    "num": "160626Z2342",
+    "cliente": "CIAM",
+    "desc": "ESPÁRRAGO ZINCADO DIÁMETRO 3/4\" X 7-1/2\" CON DOBLE TUERCA",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-17",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-16",
+        "n": "MUNDIAL \nZINCADO"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-20",
+        "n": "488"
+      }
+    ],
+    "createdAt": "2026-06-18T02:25:12.027Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-20T19:33:16.185Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1781823116739",
+    "num": "OC4374",
+    "cliente": "SERVINCI",
+    "desc": "PASTA ANTIADHERENTE DUPONT MOLYKOTE 1000 X 1KG",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-17",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-17",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-19",
+        "n": "",
+        "envio": "moto",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": "YESID"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-19",
+        "n": "483"
+      }
+    ],
+    "createdAt": "2026-06-17T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-06-19T19:48:26.122Z",
+    "updatedBy": "lina",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1781890555759",
+    "num": "LM1700",
+    "cliente": "CIAM",
+    "desc": "Discos lámina y esparragos para estructuras metálicas",
+    "estado": "activo",
+    "fechaIngreso": "2026-06-19",
+    "valor": 2395974,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-19",
+        "n": "Mundial\nCampiña\n"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-20",
+        "n": "489"
+      }
+    ],
+    "createdAt": "2026-06-19T17:51:43.302Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-20T19:55:23.490Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1781891276346",
+    "num": "13160",
+    "cliente": "HIDROCASANARE",
+    "desc": "SPIRAL WND GKT, GRAPH.FILLER+SS EXT.CNTR RING",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-11",
+    "valor": 453152,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "2026-07-01",
+      "estado": "recibida"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-11",
+        "n": "Colimportados"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "recoge_bodega",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-19",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-01",
+        "n": "504"
+      }
+    ],
+    "cotizacionId": "",
+    "createdAt": "2026-06-11T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-09-15T13:58:52.362Z",
+    "updatedBy": "lina",
+    "faltanFechas": true,
+    "archivada": true,
+    "archivadaAt": "2026-09-01T20:40:18.815Z"
+  },
+  {
+    "id": "poc_1782232555872",
+    "num": "ODC-AA-ELEC-SKID-675-25-565",
+    "cliente": "SKID EXPERTS",
+    "desc": "TUBING SIN COSTURA, S.S. 316, BRILLANTE 1/2\" OD 0,35",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-24",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-17",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "moto",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-24",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-29",
+        "n": "",
+        "factura": "502"
+      }
+    ],
+    "cotizacionId": "",
+    "createdAt": "2026-06-24T01:57:34.730Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-12T22:08:48.213Z",
+    "updatedBy": "lina",
+    "faltanFechas": true,
+    "archivada": true,
+    "archivadaAt": "2026-09-01T20:40:18.815Z"
+  },
+  {
+    "id": "poc_1782232616140",
+    "num": "ODC-AA-MEC-SKID-647-25-563",
+    "cliente": "SKID EXPERTS",
+    "desc": "Tubing 1/2\" OD 316 SS X 0.035\" de espesor nominal de pared A269-TP316",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-23",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-20",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "moto",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-22",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-29",
+        "n": "",
+        "factura": "498"
+      }
+    ],
+    "cotizacionId": "",
+    "createdAt": "2026-06-24T01:01:01.638Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-12T22:08:48.213Z",
+    "updatedBy": "lina",
+    "faltanFechas": true,
+    "archivada": true,
+    "archivadaAt": "2026-09-01T20:40:18.815Z"
+  },
+  {
+    "id": "poc_1782241629019",
+    "num": "ODC-AA-MEC-SKID-469-24-566",
+    "cliente": "SKID EXPERTS",
+    "desc": "Flanges NPS 2\" y 3\" acero inoxidable clase 150",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-23",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "moto",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-29",
+        "n": "",
+        "factura": "501"
+      }
+    ],
+    "cotizacionId": "",
+    "createdAt": "2026-06-24T00:59:49.457Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-12T22:08:48.213Z",
+    "updatedBy": "lina",
+    "faltanFechas": true,
+    "archivada": true,
+    "archivadaAt": "2026-09-01T20:40:18.815Z"
+  },
+  {
+    "id": "poc_1782861396337",
+    "num": "1107",
+    "cliente": "EIKOS",
+    "desc": "Cotización LM1736 · 4 ítems",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-30",
+    "valor": 3426962,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-27",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-30",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-30",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-30",
+        "n": "503",
+        "factura": ""
+      }
+    ],
+    "createdAt": "2026-06-30T23:16:36.338Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": true,
+    "observaciones": "",
+    "facturacion": "",
+    "cotizacionId": "",
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-27T18:05:55.638Z"
+  },
+  {
+    "id": "poc_1782876574385",
+    "num": "4400002941",
+    "cliente": "NIKOIL ENERGY",
+    "desc": "Cotización LM1730-1 · 1 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-01",
+    "valor": 40605180,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-30",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-08",
+        "n": "",
+        "factura": "509"
+      }
+    ],
+    "cotizacionId": "LM1730-1",
+    "createdAt": "2026-07-01T03:29:34.386Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-17T22:48:52.081Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1779461405791",
+    "num": "CMC-000034",
+    "cliente": "ANDES OPERATING",
+    "desc": "VÁLVULAS BOLA Y ACCESORIOS PARA COMBUSTIBLE",
+    "estado": "activo",
+    "fechaIngreso": "2026-05-22",
+    "valor": 622000,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-04",
+        "n": "CODIFER"
+      },
+      {
+        "s": "done",
+        "f": "2026-05-24",
+        "n": "costo 34700",
+        "envio": "transportadora",
+        "transp": "INTERRAPIDISIMO",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-05-22",
+        "n": "SERVIDOR"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-01",
+        "n": "458"
+      }
+    ],
+    "createdAt": "2026-05-22T20:38:55.909Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-12T21:08:03.843Z",
+    "updatedBy": "andrea",
+    "archivada": false,
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
+    "faltanFechas": false
+  },
+  {
+    "id": "poc_1780065847891",
+    "num": "ODC-AA-MEC-SKID-469-24-531",
+    "cliente": "SKID EXPERT",
+    "desc": "Acoples, válvulas, accesorios filtración y tanque agua pozo",
+    "estado": "completado",
+    "fechaIngreso": "2026-05-29",
+    "valor": 3856548,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-28",
+        "n": "INDUVACOL\nCODIFER\nHIDROLING\nSEGEFER\nMUNDIAL\nCODIFER\n"
+      },
+      {
+        "s": "done",
+        "f": "2026-01-06",
+        "n": "",
+        "envio": "moto",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-01",
+        "n": "SERVIDOR"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-04",
+        "n": "466"
+      }
+    ],
+    "createdAt": "2026-05-29T15:27:15.070Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-19T21:47:04.915Z",
+    "updatedBy": "lina",
+    "archivada": true,
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
+    "faltanFechas": false
+  },
+  {
+    "id": "poc_1781116679153",
+    "num": "090626E4379",
+    "cliente": "CIAM",
+    "desc": "Viga HEA, Perfil UPN 100 X 6 MTR y Flete para Diálisis de Crudo",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-10",
+    "valor": 4758067,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-10",
+        "n": "imperial"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-11",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "Yopal cargo",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-12-06",
+        "n": "SERVER"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-11",
+        "n": "477N/C. 494'493"
+      }
+    ],
+    "createdAt": "2026-06-10T18:39:13.914Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-25T16:32:08.263Z",
+    "updatedBy": "lina",
+    "archivada": true,
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
+    "faltanFechas": false
+  },
+  {
+    "id": "poc_1781208714339",
+    "num": "LM1654",
+    "cliente": "BOBINADOS",
+    "desc": "VALVULA MARIPOSA DSS304 EDPM 150 3\" ENGRANAJE",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-10",
+    "valor": 345100,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-10",
+        "n": "CODIFER"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-12",
+        "n": "",
+        "envio": "taquilla_bus",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-11",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-11",
+        "n": "478"
+      }
+    ],
+    "createdAt": "2026-06-10T05:00:00.000Z",
+    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
+    "updatedAt": "2026-06-12T21:35:09.298Z",
+    "updatedBy": "andrea",
+    "archivada": true,
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
+    "faltanFechas": false
   },
   {
     "id": "poc_1779461337230",
@@ -1440,7 +2123,7 @@
     "updatedAt": "2026-06-05T21:34:53.546Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-08-25T02:08:58.704Z",
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
     "faltanFechas": false
   },
   {
@@ -1488,7 +2171,7 @@
     "updatedAt": "2026-06-05T21:34:32.068Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-08-25T02:08:58.704Z",
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
     "faltanFechas": false
   },
   {
@@ -1607,7 +2290,7 @@
     "updatedAt": "2026-05-22T17:10:32.702Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-08-25T02:08:58.704Z",
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
     "faltanFechas": true
   },
   {
@@ -1825,7 +2508,7 @@
     ],
     "updatedAt": "2026-05-22T21:56:25.580Z",
     "archivada": true,
-    "archivadaAt": "2026-08-25T02:08:58.704Z",
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
     "faltanFechas": false
   },
   {
@@ -2039,7 +2722,7 @@
     "updatedAt": "2026-05-25T17:20:52.680Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-08-25T02:08:58.704Z",
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
     "faltanFechas": false
   },
   {
@@ -2086,7 +2769,7 @@
     "updatedAt": "2026-05-22T21:50:54.203Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-08-25T02:08:58.704Z",
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
     "faltanFechas": false
   },
   {
@@ -2169,89 +2852,133 @@
     "updatedAt": "2026-05-22T21:46:16.368Z",
     "updatedBy": "andrea",
     "archivada": true,
-    "archivadaAt": "2026-08-25T02:08:58.704Z",
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
     "faltanFechas": false
   },
   {
-    "id": "poc_1779461375131",
-    "num": "LM1527",
+    "id": "poc_1781279696156",
+    "num": "110626M9881",
     "cliente": "CIAM",
-    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
-    "estado": "activo",
+    "desc": "Niple galvanizado CROUSE HINDS 1/2x 2 Pulgadas (15 unidades)",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-12",
+    "valor": 255987,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
-        "f": "2026-05-11",
-        "n": "Auto-creada desde correo"
+        "f": "2026-06-11",
+        "n": "Marin"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-12",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "0026-06-20",
+        "n": "server"
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-12",
+        "n": "480"
       }
     ],
-    "updatedAt": "❌ Pendiente",
-    "faltanFechas": false,
-    "archivada": false
+    "createdAt": "2026-06-12T21:07:00.160Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-12T21:12:01.056Z",
+    "updatedBy": "andrea",
+    "archivada": true,
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
+    "faltanFechas": false
   },
   {
-    "id": "poc_1779461366604",
-    "num": "LM1551",
-    "cliente": "MMT",
-    "desc": "Bridas, válvulas, codos, espárragos, tés, reducción y niples varios",
-    "estado": "activo",
+    "id": "poc_1781300058074",
+    "num": "LM1671",
+    "cliente": "PGS",
+    "desc": "MATERIAL MECANICO",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-12",
+    "valor": 799630,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
-        "f": "2026-05-15",
-        "n": "Auto-creada desde correo"
+        "f": "2026-06-12",
+        "n": "HIDROLING"
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-06-13",
+        "n": "",
+        "envio": "flota",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-12",
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
+        "s": "done",
+        "f": "2026-06-12",
+        "n": "481"
       }
     ],
-    "updatedAt": "❌ Pendiente",
-    "faltanFechas": false,
-    "archivada": false
+    "createdAt": "2026-06-12T21:34:18.075Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-17T22:32:58.385Z",
+    "updatedBy": "alexandra",
+    "archivada": true,
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
+    "faltanFechas": false
   },
   {
-    "id": "poc_1779461576086",
-    "num": "LM1551",
-    "cliente": "MMT",
-    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
-    "estado": "activo",
+    "id": "poc_1781804395600",
+    "num": "ODC-AA-MEC-SKID-469-24-558",
+    "cliente": "SKID EXPERTS",
+    "desc": "Tubo inoxidable y bridas para mezcladores estáticos",
+    "estado": "cancelado",
+    "fechaIngreso": "2026-06-18",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
     "stages": [
       {
         "s": "done",
-        "f": "2026-05-15",
+        "f": "2026-06-17",
         "n": "Auto-creada desde correo"
       },
       {
         "s": "pending",
         "f": "",
-        "n": ""
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
       },
       {
         "s": "pending",
@@ -2264,9 +2991,160 @@
         "n": ""
       }
     ],
-    "updatedAt": "❌ Pendiente",
+    "createdAt": "2026-06-18T17:40:32.020Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-06T18:16:34.369Z",
+    "updatedBy": "andrea",
+    "faltanFechas": false
+  },
+  {
+    "id": "poc_1781892389551",
+    "num": "4426",
+    "cliente": "SAR ENERGY",
+    "desc": "Material mecánico",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-17",
+    "valor": 2383869,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "2026-06-22",
+      "estado": "recibida"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-17",
+        "n": "Bodega\nCodifer\nJose montenegro"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-18",
+        "n": "",
+        "envio": "camion_energy",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-18",
+        "n": "Sevidor"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-22",
+        "n": "490"
+      }
+    ],
+    "createdAt": "2026-06-19T18:06:29.551Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-22T21:20:50.056Z",
+    "updatedBy": "lina",
+    "archivada": true,
+    "archivadaAt": "2026-07-28T14:46:45.014Z",
+    "faltanFechas": false
+  },
+  {
+    "id": "poc_1782231414655",
+    "num": "02CMP9947",
+    "cliente": "PSI",
+    "desc": "ESPARRAGO 1 3/8-8 UNX 11.250 LONG CON DOBLE TUERCA",
+    "estado": "completado",
+    "fechaIngreso": "2026-06-24",
+    "valor": 0,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": "",
+        "envio": "moto",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-06-23",
+        "n": "492"
+      }
+    ],
+    "createdAt": "2026-06-24T01:57:52.394Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-06-30T21:23:29.710Z",
+    "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": true,
+    "archivadaAt": "2026-07-31T12:59:13.469Z"
+  },
+  {
+    "id": "poc_1783020744499",
+    "num": "",
+    "cliente": "COPCOL",
+    "desc": "Cotización LM1749-1 · 3 ítems",
+    "estado": "completado",
+    "fechaIngreso": "2026-07-02",
+    "valor": 414120,
+    "hojaEntrada": {
+      "requerida": false,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-07-02",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-02",
+        "n": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-07-02",
+        "n": "",
+        "factura": "505"
+      }
+    ],
+    "cotizacionId": "LM1749-1",
+    "createdAt": "2026-07-02T19:32:24.499Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-07-27T21:16:05.000Z",
+    "updatedBy": "andrea",
+    "faltanFechas": true,
+    "archivada": true,
+    "observaciones": "",
+    "facturacion": "",
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-08-27T18:05:55.638Z"
   },
   {
     "id": "poc_1776469165261",
@@ -3205,1054 +4083,6 @@
     "faltanFechas": true
   },
   {
-    "id": "poc_1775760891345",
-    "num": "LM1320",
-    "cliente": "PETRORIOS",
-    "desc": "SUMINSTRO DE MATERIAL",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "active",
-        "f": "2026-04-09",
-        "n": "CODFIER, BETHEL, JOSE MONTE NEGRO"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-04-09T19:00:39.637Z",
-    "faltanFechas": false,
-    "archivada": false
-  },
-  {
-    "id": "poc_1775761216556",
-    "num": "LM1358",
-    "cliente": "GLADYZ BUCHELI",
-    "desc": "SUMINSITRO DE NIPLES",
-    "estado": "activo",
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-06",
-        "n": "DISEFER"
-      },
-      {
-        "s": "done",
-        "f": "2026-04-07",
-        "n": "",
-        "envio": "transportadora",
-        "transp": "COOTRANMAYO",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-04-06",
-        "n": "ENVIADO POR ASESOR COMERCIAL"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "updatedAt": "2026-04-09T19:00:16.556Z",
-    "faltanFechas": false,
-    "archivada": false
-  },
-  {
-    "id": "poc_1781713617271",
-    "num": "LM1677",
-    "cliente": "METAL INDUSTRIALES",
-    "desc": "THREADOLET DE 2 X 6000 A-105 NPT",
-    "estado": "activo",
-    "fechaIngreso": "2026-06-17",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-24",
-        "n": "CODIFER"
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "",
-        "envio": "flota",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-16",
-        "n": "482"
-      }
-    ],
-    "createdAt": "2026-06-17T22:33:24.576Z",
-    "createdBy": "alexandra",
-    "updatedAt": "2026-06-19T17:41:57.751Z",
-    "updatedBy": "alexandra",
-    "faltanFechas": false,
-    "archivada": false
-  },
-  {
-    "id": "poc_1781740932503",
-    "num": "160626G0445",
-    "cliente": "CIAM",
-    "desc": "Esparrago zincado de diámetro 7/8\" x 5\" de largo con doble tuerca",
-    "estado": "activo",
-    "fechaIngreso": "2026-06-16",
-    "valor": 66378,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-16",
-        "n": "MUDNIAL\nGALVANIZADO"
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "",
-        "envio": "flota",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-20",
-        "n": "487"
-      }
-    ],
-    "createdAt": "2026-06-16T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-06-20T19:34:20.653Z",
-    "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": false
-  },
-  {
-    "id": "poc_1781748545065",
-    "num": "ODC-AA-MEC-SKID-469-24-559",
-    "cliente": "SKID EXPERTS",
-    "desc": "UNION COUPLING DE 1 X 3000 INOX 304",
-    "estado": "completado",
-    "fechaIngreso": "2026-06-18",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "2026-06-25",
-      "estado": "recibida"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-17",
-        "n": "CODIFER"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-17",
-        "n": "",
-        "envio": "camion_energy",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-17",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-25",
-        "n": "495",
-        "factura": ""
-      }
-    ],
-    "createdAt": "2026-06-18T02:09:30.622Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-07-29T01:51:25.090Z",
-    "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": true,
-    "cotizacionId": "",
-    "observaciones": "",
-    "facturacion": "",
-    "archivadaAt": "2026-08-28T16:46:47.967Z"
-  },
-  {
-    "id": "poc_1781749319612",
-    "num": "160626S5553",
-    "cliente": "CIAM",
-    "desc": "Esparrago zincado diámetro 3/4\" x 7-1/2\" con doble tuerca",
-    "estado": "activo",
-    "fechaIngreso": "2026-06-18",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-16",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "",
-        "envio": "flota",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-20",
-        "n": "486"
-      }
-    ],
-    "createdAt": "2026-06-18T02:25:23.596Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-20T19:33:43.084Z",
-    "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": false
-  },
-  {
-    "id": "poc_1781749399665",
-    "num": "160626Z2342",
-    "cliente": "CIAM",
-    "desc": "ESPÁRRAGO ZINCADO DIÁMETRO 3/4\" X 7-1/2\" CON DOBLE TUERCA",
-    "estado": "activo",
-    "fechaIngreso": "2026-06-17",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-16",
-        "n": "MUNDIAL \nZINCADO"
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "",
-        "envio": "flota",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-20",
-        "n": "488"
-      }
-    ],
-    "createdAt": "2026-06-18T02:25:12.027Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-20T19:33:16.185Z",
-    "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": false
-  },
-  {
-    "id": "poc_1781823116739",
-    "num": "OC4374",
-    "cliente": "SERVINCI",
-    "desc": "PASTA ANTIADHERENTE DUPONT MOLYKOTE 1000 X 1KG",
-    "estado": "activo",
-    "fechaIngreso": "2026-06-17",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-17",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-19",
-        "n": "",
-        "envio": "moto",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": "YESID"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-19",
-        "n": "483"
-      }
-    ],
-    "createdAt": "2026-06-17T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-06-19T19:48:26.122Z",
-    "updatedBy": "lina",
-    "faltanFechas": false,
-    "archivada": false
-  },
-  {
-    "id": "poc_1781890555759",
-    "num": "LM1700",
-    "cliente": "CIAM",
-    "desc": "Discos lámina y esparragos para estructuras metálicas",
-    "estado": "activo",
-    "fechaIngreso": "2026-06-19",
-    "valor": 2395974,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-19",
-        "n": "Mundial\nCampiña\n"
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "",
-        "envio": "flota",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-20",
-        "n": "489"
-      }
-    ],
-    "createdAt": "2026-06-19T17:51:43.302Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-20T19:55:23.490Z",
-    "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": false
-  },
-  {
-    "id": "poc_1781891276346",
-    "num": "13160",
-    "cliente": "HIDROCASANARE",
-    "desc": "SPIRAL WND GKT, GRAPH.FILLER+SS EXT.CNTR RING",
-    "estado": "completado",
-    "fechaIngreso": "2026-06-11",
-    "valor": 453152,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "2026-07-01",
-      "estado": "recibida"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-11",
-        "n": "Colimportados"
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "",
-        "envio": "recoge_bodega",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-19",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-07-01",
-        "n": "504"
-      }
-    ],
-    "cotizacionId": "",
-    "createdAt": "2026-06-11T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-08-12T22:08:48.213Z",
-    "updatedBy": "lina",
-    "faltanFechas": true,
-    "archivada": true,
-    "archivadaAt": "2026-09-01T20:40:18.815Z"
-  },
-  {
-    "id": "poc_1782232555872",
-    "num": "ODC-AA-ELEC-SKID-675-25-565",
-    "cliente": "SKID EXPERTS",
-    "desc": "TUBING SIN COSTURA, S.S. 316, BRILLANTE 1/2\" OD 0,35",
-    "estado": "completado",
-    "fechaIngreso": "2026-06-24",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-17",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "",
-        "envio": "moto",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-24",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-29",
-        "n": "",
-        "factura": "502"
-      }
-    ],
-    "cotizacionId": "",
-    "createdAt": "2026-06-24T01:57:34.730Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-08-12T22:08:48.213Z",
-    "updatedBy": "lina",
-    "faltanFechas": true,
-    "archivada": true,
-    "archivadaAt": "2026-09-01T20:40:18.815Z"
-  },
-  {
-    "id": "poc_1782232616140",
-    "num": "ODC-AA-MEC-SKID-647-25-563",
-    "cliente": "SKID EXPERTS",
-    "desc": "Tubing 1/2\" OD 316 SS X 0.035\" de espesor nominal de pared A269-TP316",
-    "estado": "completado",
-    "fechaIngreso": "2026-06-23",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-04-20",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "",
-        "envio": "moto",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-22",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-29",
-        "n": "",
-        "factura": "498"
-      }
-    ],
-    "cotizacionId": "",
-    "createdAt": "2026-06-24T01:01:01.638Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-08-12T22:08:48.213Z",
-    "updatedBy": "lina",
-    "faltanFechas": true,
-    "archivada": true,
-    "archivadaAt": "2026-09-01T20:40:18.815Z"
-  },
-  {
-    "id": "poc_1782241629019",
-    "num": "ODC-AA-MEC-SKID-469-24-566",
-    "cliente": "SKID EXPERTS",
-    "desc": "Flanges NPS 2\" y 3\" acero inoxidable clase 150",
-    "estado": "completado",
-    "fechaIngreso": "2026-06-23",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-23",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "",
-        "envio": "moto",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-23",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-07-29",
-        "n": "",
-        "factura": "501"
-      }
-    ],
-    "cotizacionId": "",
-    "createdAt": "2026-06-24T00:59:49.457Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-08-12T22:08:48.213Z",
-    "updatedBy": "lina",
-    "faltanFechas": true,
-    "archivada": true,
-    "archivadaAt": "2026-09-01T20:40:18.815Z"
-  },
-  {
-    "id": "poc_1782861396337",
-    "num": "1107",
-    "cliente": "EIKOS",
-    "desc": "Cotización LM1736 · 4 ítems",
-    "estado": "completado",
-    "fechaIngreso": "2026-06-30",
-    "valor": 3426962,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-27",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-30",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-30",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-30",
-        "n": "503",
-        "factura": ""
-      }
-    ],
-    "createdAt": "2026-06-30T23:16:36.338Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-07-27T21:16:05.000Z",
-    "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": true,
-    "observaciones": "",
-    "facturacion": "",
-    "cotizacionId": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-26T21:23:37.102Z"
-  },
-  {
-    "id": "poc_1782876574385",
-    "num": "4400002941",
-    "cliente": "NIKOIL ENERGY",
-    "desc": "Cotización LM1730-1 · 1 ítems",
-    "estado": "activo",
-    "fechaIngreso": "2026-07-01",
-    "valor": 40605180,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-30",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-07-08",
-        "n": "",
-        "factura": "509"
-      }
-    ],
-    "cotizacionId": "LM1730-1",
-    "createdAt": "2026-07-01T03:29:34.386Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-07-17T22:48:52.081Z",
-    "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": false
-  },
-  {
-    "id": "poc_1781208714339",
-    "num": "LM1654",
-    "cliente": "BOBINADOS",
-    "desc": "VALVULA MARIPOSA DSS304 EDPM 150 3\" ENGRANAJE",
-    "estado": "completado",
-    "fechaIngreso": "2026-06-10",
-    "valor": 345100,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-10",
-        "n": "CODIFER"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-12",
-        "n": "",
-        "envio": "taquilla_bus",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-11",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-11",
-        "n": "478"
-      }
-    ],
-    "createdAt": "2026-06-10T05:00:00.000Z",
-    "createdBy": "Auto (correo de Andrea Bernal <andrea.bernal@eygenergygroup.com>)",
-    "updatedAt": "2026-06-12T21:35:09.298Z",
-    "updatedBy": "andrea",
-    "archivada": true,
-    "archivadaAt": "2026-07-28T14:46:45.014Z",
-    "faltanFechas": false
-  },
-  {
-    "id": "poc_1781279696156",
-    "num": "110626M9881",
-    "cliente": "CIAM",
-    "desc": "Niple galvanizado CROUSE HINDS 1/2x 2 Pulgadas (15 unidades)",
-    "estado": "completado",
-    "fechaIngreso": "2026-06-12",
-    "valor": 255987,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-11",
-        "n": "Marin"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-12",
-        "n": "",
-        "envio": "flota",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "0026-06-20",
-        "n": "server"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-12",
-        "n": "480"
-      }
-    ],
-    "createdAt": "2026-06-12T21:07:00.160Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-12T21:12:01.056Z",
-    "updatedBy": "andrea",
-    "archivada": true,
-    "archivadaAt": "2026-07-28T14:46:45.014Z",
-    "faltanFechas": false
-  },
-  {
-    "id": "poc_1781300058074",
-    "num": "LM1671",
-    "cliente": "PGS",
-    "desc": "MATERIAL MECANICO",
-    "estado": "completado",
-    "fechaIngreso": "2026-06-12",
-    "valor": 799630,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-12",
-        "n": "HIDROLING"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-13",
-        "n": "",
-        "envio": "flota",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-12",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-12",
-        "n": "481"
-      }
-    ],
-    "createdAt": "2026-06-12T21:34:18.075Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-17T22:32:58.385Z",
-    "updatedBy": "alexandra",
-    "archivada": true,
-    "archivadaAt": "2026-07-28T14:46:45.014Z",
-    "faltanFechas": false
-  },
-  {
-    "id": "poc_1781804395600",
-    "num": "ODC-AA-MEC-SKID-469-24-558",
-    "cliente": "SKID EXPERTS",
-    "desc": "Tubo inoxidable y bridas para mezcladores estáticos",
-    "estado": "cancelado",
-    "fechaIngreso": "2026-06-18",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-17",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      },
-      {
-        "s": "pending",
-        "f": "",
-        "n": ""
-      }
-    ],
-    "createdAt": "2026-06-18T17:40:32.020Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-07-06T18:16:34.369Z",
-    "updatedBy": "andrea",
-    "faltanFechas": false
-  },
-  {
-    "id": "poc_1781892389551",
-    "num": "4426",
-    "cliente": "SAR ENERGY",
-    "desc": "Material mecánico",
-    "estado": "completado",
-    "fechaIngreso": "2026-06-17",
-    "valor": 2383869,
-    "hojaEntrada": {
-      "requerida": true,
-      "fecha": "2026-06-22",
-      "estado": "recibida"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-17",
-        "n": "Bodega\nCodifer\nJose montenegro"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-18",
-        "n": "",
-        "envio": "camion_energy",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-18",
-        "n": "Sevidor"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-22",
-        "n": "490"
-      }
-    ],
-    "createdAt": "2026-06-19T18:06:29.551Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-22T21:20:50.056Z",
-    "updatedBy": "lina",
-    "archivada": true,
-    "archivadaAt": "2026-07-28T14:46:45.014Z",
-    "faltanFechas": false
-  },
-  {
-    "id": "poc_1782231414655",
-    "num": "02CMP9947",
-    "cliente": "PSI",
-    "desc": "ESPARRAGO 1 3/8-8 UNX 11.250 LONG CON DOBLE TUERCA",
-    "estado": "completado",
-    "fechaIngreso": "2026-06-24",
-    "valor": 0,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-06-23",
-        "n": "Auto-creada desde correo"
-      },
-      {
-        "s": "done",
-        "f": "2026-06-23",
-        "n": "",
-        "envio": "moto",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-23",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-06-23",
-        "n": "492"
-      }
-    ],
-    "createdAt": "2026-06-24T01:57:52.394Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-06-30T21:23:29.710Z",
-    "updatedBy": "andrea",
-    "faltanFechas": false,
-    "archivada": true,
-    "archivadaAt": "2026-07-31T12:59:13.469Z"
-  },
-  {
-    "id": "poc_1783020744499",
-    "num": "",
-    "cliente": "COPCOL",
-    "desc": "Cotización LM1749-1 · 3 ítems",
-    "estado": "completado",
-    "fechaIngreso": "2026-07-02",
-    "valor": 414120,
-    "hojaEntrada": {
-      "requerida": false,
-      "fecha": "",
-      "estado": "pendiente"
-    },
-    "stages": [
-      {
-        "s": "done",
-        "f": "2026-07-02",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "",
-        "n": "",
-        "envio": "",
-        "transp": "",
-        "guia": "",
-        "dest": "",
-        "resp": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-07-02",
-        "n": ""
-      },
-      {
-        "s": "done",
-        "f": "2026-07-02",
-        "n": "",
-        "factura": "505"
-      }
-    ],
-    "cotizacionId": "LM1749-1",
-    "createdAt": "2026-07-02T19:32:24.499Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-07-27T21:16:05.000Z",
-    "updatedBy": "andrea",
-    "faltanFechas": true,
-    "archivada": true,
-    "observaciones": "",
-    "facturacion": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-26T21:23:37.102Z"
-  },
-  {
     "id": "poc_1783111268042",
     "num": "LM1755",
     "cliente": "ROMA INTEGRAL GROUP SAS",
@@ -4448,7 +4278,8 @@
     "faltanFechas": true,
     "archivada": false,
     "observaciones": "",
-    "facturacion": ""
+    "facturacion": "",
+    "archivadaAt": "2026-09-12T16:25:55.669Z"
   },
   {
     "id": "poc_1783548505564",
@@ -4602,7 +4433,8 @@
     "faltanFechas": true,
     "archivada": false,
     "observaciones": "",
-    "facturacion": ""
+    "facturacion": "",
+    "archivadaAt": "2026-09-12T16:25:55.669Z"
   },
   {
     "id": "poc_1783720491105",
@@ -4652,7 +4484,7 @@
     "updatedBy": "andrea",
     "faltanFechas": true,
     "archivada": true,
-    "archivadaAt": "2026-08-26T21:52:10.266Z"
+    "archivadaAt": "2026-08-27T18:05:55.638Z"
   },
   {
     "id": "poc_1784044650417",
@@ -4703,7 +4535,8 @@
     "observaciones": "",
     "facturacion": "",
     "faltanFechas": false,
-    "archivada": false
+    "archivada": true,
+    "archivadaAt": "2026-09-09T19:38:05.565Z"
   },
   {
     "id": "poc_1784046230252",
@@ -4756,7 +4589,7 @@
     "observaciones": "",
     "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-28T16:46:47.967Z"
+    "archivadaAt": "2026-09-01T01:37:19.167Z"
   },
   {
     "id": "poc_1784082497944",
@@ -4859,7 +4692,7 @@
     "observaciones": "",
     "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-26T21:23:37.102Z"
+    "archivadaAt": "2026-08-27T18:05:55.638Z"
   },
   {
     "id": "poc_1784328344190",
@@ -4960,7 +4793,7 @@
     "updatedBy": "andrea",
     "faltanFechas": true,
     "archivada": true,
-    "archivadaAt": "2026-08-26T21:52:10.266Z"
+    "archivadaAt": "2026-08-27T18:05:55.638Z"
   },
   {
     "id": "poc_1784682485492",
@@ -5010,7 +4843,7 @@
     "updatedBy": "andrea",
     "faltanFechas": true,
     "archivada": true,
-    "archivadaAt": "2026-08-26T21:52:10.266Z"
+    "archivadaAt": "2026-08-27T18:05:55.638Z"
   },
   {
     "id": "poc_1784325991849",
@@ -5061,7 +4894,7 @@
     "faltanFechas": false,
     "archivada": true,
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-28T16:46:47.967Z"
+    "archivadaAt": "2026-09-01T01:37:19.167Z"
   },
   {
     "id": "poc_1784727547251",
@@ -5265,7 +5098,8 @@
     "faltanFechas": false,
     "archivada": false,
     "observaciones": "",
-    "facturacion": ""
+    "facturacion": "",
+    "archivadaAt": "2026-09-14T15:06:10.574Z"
   },
   {
     "id": "poc_1784836135127",
@@ -5314,7 +5148,7 @@
     "updatedAt": "2026-08-02T00:03:40.651Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "",
     "facturacion": "",
     "archivadaAt": "2026-09-01T01:37:19.167Z"
@@ -5370,7 +5204,7 @@
     "observaciones": "",
     "facturacion": "",
     "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
-    "archivadaAt": "2026-08-28T16:46:47.967Z"
+    "archivadaAt": "2026-09-01T01:37:19.167Z"
   },
   {
     "id": "poc_1784845570814",
@@ -5419,10 +5253,11 @@
     "updatedAt": "2026-08-05T02:22:03.318Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "REMISION ENVIADA A CLIENTE 24/07",
     "facturacion": "",
-    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)"
+    "restauradoDe": "commit 3e53ea1e (26-jul 22:19)",
+    "archivadaAt": "2026-09-09T19:38:05.565Z"
   },
   {
     "id": "poc_1784845937272",
@@ -5474,7 +5309,7 @@
     "observaciones": "",
     "facturacion": "",
     "archivada": true,
-    "archivadaAt": "2026-08-29T14:26:41.189Z"
+    "archivadaAt": "2026-09-01T01:37:19.167Z"
   },
   {
     "id": "poc_1784907649372",
@@ -5523,10 +5358,10 @@
     "updatedAt": "2026-07-31T13:45:59.013Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "",
     "facturacion": "",
-    "archivadaAt": "2026-08-31T13:00:43.771Z"
+    "archivadaAt": "2026-09-01T01:37:19.167Z"
   },
   {
     "id": "poc_1784907677442",
@@ -5626,10 +5461,10 @@
     "updatedAt": "2026-07-31T15:00:58.643Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "",
     "facturacion": "",
-    "archivadaAt": "2026-08-31T13:00:43.771Z"
+    "archivadaAt": "2026-09-01T01:37:19.167Z"
   },
   {
     "id": "poc_1784990915217",
@@ -5680,7 +5515,8 @@
     "faltanFechas": true,
     "archivada": false,
     "observaciones": "",
-    "facturacion": ""
+    "facturacion": "",
+    "archivadaAt": "2026-09-10T12:53:34.422Z"
   },
   {
     "id": "poc_1785123684788",
@@ -5780,10 +5616,10 @@
     "updatedAt": "2026-07-31T14:59:13.451Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
-    "archivada": false,
+    "archivada": true,
     "observaciones": "",
     "facturacion": "",
-    "archivadaAt": "2026-08-31T13:00:43.771Z"
+    "archivadaAt": "2026-09-01T01:37:19.167Z"
   },
   {
     "id": "poc_1785289955752",
@@ -5820,10 +5656,10 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-09-09",
         "n": "",
-        "factura": ""
+        "factura": "619"
       }
     ],
     "observaciones": "",
@@ -5831,7 +5667,7 @@
     "cotizacionId": "LM1378",
     "createdAt": "2026-07-29T01:52:35.752Z",
     "createdBy": "andrea",
-    "updatedAt": "2026-07-31T15:01:42.488Z",
+    "updatedAt": "2026-09-10T01:56:01.503Z",
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false
@@ -5987,7 +5823,8 @@
     "updatedAt": "2026-08-13T15:18:00.260Z",
     "updatedBy": "alexandra",
     "faltanFechas": true,
-    "archivada": false
+    "archivada": false,
+    "archivadaAt": "2026-09-12T16:25:55.669Z"
   },
   {
     "id": "poc_1785362362821",
@@ -6192,7 +6029,7 @@
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": true,
-    "archivadaAt": "2026-08-31T13:00:43.771Z"
+    "archivadaAt": "2026-09-01T01:37:19.167Z"
   },
   {
     "id": "poc_1785538076174",
@@ -6244,7 +6081,7 @@
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": true,
-    "archivadaAt": "2026-08-31T13:00:43.771Z"
+    "archivadaAt": "2026-09-01T01:37:19.167Z"
   },
   {
     "id": "poc_1785538208510",
@@ -6296,7 +6133,7 @@
     "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": true,
-    "archivadaAt": "2026-08-31T13:00:43.771Z"
+    "archivadaAt": "2026-09-01T01:37:19.167Z"
   },
   {
     "id": "poc_1785592672556",
@@ -6347,7 +6184,8 @@
     "updatedAt": "2026-08-19T15:32:59.100Z",
     "updatedBy": "andrea",
     "faltanFechas": true,
-    "archivada": false
+    "archivada": false,
+    "archivadaAt": "2026-09-18T16:35:27.927Z"
   },
   {
     "id": "poc_1785794695993",
@@ -6448,7 +6286,9 @@
     "createdBy": "andrea",
     "updatedAt": "2026-08-05T12:57:43.925Z",
     "updatedBy": "alexandra",
-    "faltanFechas": false
+    "faltanFechas": false,
+    "archivada": true,
+    "archivadaAt": "2026-09-09T19:38:05.565Z"
   },
   {
     "id": "poc_1785896258785",
@@ -6498,7 +6338,9 @@
     "createdBy": "andrea",
     "updatedAt": "2026-08-06T13:41:16.424Z",
     "updatedBy": "alexandra",
-    "faltanFechas": false
+    "faltanFechas": false,
+    "archivada": true,
+    "archivadaAt": "2026-09-09T19:38:05.565Z"
   },
   {
     "id": "poc_1785897432719",
@@ -6548,7 +6390,9 @@
     "createdBy": "andrea",
     "updatedAt": "2026-08-05T02:37:22.902Z",
     "updatedBy": "andrea",
-    "faltanFechas": false
+    "faltanFechas": false,
+    "archivada": true,
+    "archivadaAt": "2026-09-09T19:38:05.565Z"
   },
   {
     "id": "poc_1786056625525",
@@ -6649,7 +6493,9 @@
     "createdBy": "andrea",
     "updatedAt": "2026-08-11T02:04:57.279Z",
     "updatedBy": "andrea",
-    "faltanFechas": false
+    "faltanFechas": false,
+    "archivada": true,
+    "archivadaAt": "2026-09-10T12:53:34.422Z"
   },
   {
     "id": "poc_1786480641367",
@@ -6907,6 +6753,176 @@
     "archivada": false
   },
   {
+    "id": "poc_1779461375131",
+    "num": "LM1527",
+    "cliente": "CIAM",
+    "desc": "CODOS DE 12 SCH 120 A-234 WPB",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-11",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1779461366604",
+    "num": "LM1551",
+    "cliente": "MMT",
+    "desc": "Bridas, válvulas, codos, espárragos, tés, reducción y niples varios",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-15",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1779461576086",
+    "num": "LM1551",
+    "cliente": "MMT",
+    "desc": "Bridas, válvulas, codos, espárragos, tes, reducción y niples",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-05-15",
+        "n": "Auto-creada desde correo"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "❌ Pendiente",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1775760891345",
+    "num": "LM1320",
+    "cliente": "PETRORIOS",
+    "desc": "SUMINSTRO DE MATERIAL",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "active",
+        "f": "2026-04-09",
+        "n": "CODFIER, BETHEL, JOSE MONTE NEGRO"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-04-09T19:00:39.637Z",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1775761216556",
+    "num": "LM1358",
+    "cliente": "GLADYZ BUCHELI",
+    "desc": "SUMINSITRO DE NIPLES",
+    "estado": "activo",
+    "stages": [
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "DISEFER"
+      },
+      {
+        "s": "done",
+        "f": "2026-04-07",
+        "n": "",
+        "envio": "transportadora",
+        "transp": "COOTRANMAYO",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "done",
+        "f": "2026-04-06",
+        "n": "ENVIADO POR ASESOR COMERCIAL"
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "updatedAt": "2026-04-09T19:00:16.556Z",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
     "id": "poc_1786804238255",
     "num": "130826A1661",
     "cliente": "CIAM",
@@ -6954,7 +6970,9 @@
     "createdBy": "andrea",
     "updatedAt": "2026-08-15T14:30:51.248Z",
     "updatedBy": "andrea",
-    "faltanFechas": false
+    "faltanFechas": false,
+    "archivada": true,
+    "archivadaAt": "2026-09-14T15:05:17.884Z"
   },
   {
     "id": "poc_1786806506054",
@@ -7004,7 +7022,9 @@
     "createdBy": "andrea",
     "updatedAt": "2026-08-15T15:09:12.893Z",
     "updatedBy": "andrea",
-    "faltanFechas": false
+    "faltanFechas": false,
+    "archivada": true,
+    "archivadaAt": "2026-09-14T15:11:05.003Z"
   },
   {
     "id": "poc_1786806672656",
@@ -7398,10 +7418,10 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-09-08",
         "n": "",
-        "factura": ""
+        "factura": "617"
       }
     ],
     "observaciones": "",
@@ -7409,8 +7429,8 @@
     "cotizacionId": "LM1941",
     "createdAt": "2026-08-19T22:13:55.829Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-19T22:13:55.829Z",
-    "updatedBy": "alexandra",
+    "updatedAt": "2026-09-09T01:31:35.704Z",
+    "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false
   },
@@ -7551,10 +7571,10 @@
         "n": ""
       },
       {
-        "s": "pending",
-        "f": "",
+        "s": "done",
+        "f": "2026-09-04",
         "n": "",
-        "factura": ""
+        "factura": "613"
       }
     ],
     "observaciones": "",
@@ -7562,8 +7582,8 @@
     "cotizacionId": "LM2011",
     "createdAt": "2026-08-21T13:30:38.564Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-08-21T13:30:38.564Z",
-    "updatedBy": "alexandra",
+    "updatedAt": "2026-09-04T14:58:21.098Z",
+    "updatedBy": "andrea",
     "faltanFechas": false,
     "archivada": false
   },
@@ -7768,6 +7788,54 @@
     "createdBy": "alexandra",
     "updatedAt": "2026-08-26T19:11:00.222Z",
     "updatedBy": "andrea",
+    "faltanFechas": false,
+    "archivada": false
+  },
+  {
+    "id": "poc_1782944501501",
+    "num": "ODC-AA-ELEC-SKID-469-24-579",
+    "cliente": "SKID EXPERTS",
+    "desc": "Cotización LM1603 · 43 ítems",
+    "estado": "activo",
+    "fechaIngreso": "2026-07-01",
+    "valor": 24745455,
+    "hojaEntrada": {
+      "requerida": true,
+      "fecha": "",
+      "estado": "pendiente"
+    },
+    "stages": [
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": "",
+        "envio": "",
+        "transp": "",
+        "guia": "",
+        "dest": "",
+        "resp": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      },
+      {
+        "s": "pending",
+        "f": "",
+        "n": ""
+      }
+    ],
+    "cotizacionId": "LM1603",
+    "createdAt": "2026-07-01T22:21:41.501Z",
+    "createdBy": "alexandra",
+    "updatedAt": "2026-07-01T22:21:41.501Z",
+    "updatedBy": "alexandra",
     "faltanFechas": false,
     "archivada": false
   }
