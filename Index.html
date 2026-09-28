@@ -5555,6 +5555,15 @@ async function _sbWriteVia(proxy, path, method, bodyStr, prefer, ms, nIntentos) 
     //   · se acabó el tiempo con la petición en vuelo (AbortError)
     //       → NO SE SABE si entró. Con POST se para en seco y lo dice.
     const idempotente = (method === 'PATCH' || method === 'DELETE');
+    // 28-sep-2026 · EL PLAN DE LA OP-2026-0114 ENTRÓ TRES VECES (y el de la 0087 dos).
+    // La regla de arriba solo miraba el AbortError. Pero un «Failed to fetch», un
+    // HTTP raro o una página de error de Google también pueden llegar DESPUÉS de que
+    // el script escribió. Con POST solo se repite cuando Google dice claramente que
+    // no lo ejecutó (404 saturado, 429 cuota, 503 no disponible); todo lo demás se
+    // trata como dudoso: se para y se avisa, igual que el AbortError.
+    const _dudoso = () => ({ status: 0, ok: false, dudoso: true,
+      body: 'se perdió la respuesta del guardado y no se sabe si entró. '
+          + 'NO se repite para no duplicar: recarga (Ctrl+F5) y comprueba antes de volver a intentarlo.' });
     let ultimo = 'sin respuesta';
     for (let i = 0; i < intentos; i++) {
       if (i) await new Promise(r => setTimeout(r, i * 1500));   // 1,5 s y luego 3 s
@@ -5569,14 +5578,17 @@ async function _sbWriteVia(proxy, path, method, bodyStr, prefer, ms, nIntentos) 
           // Apps Script saturado responde 404 en vez de ejecutar. Nada se escribió.
           ultimo = 'el puente devolvió HTTP ' + resp.status;
           console.warn('[sbWrite] ' + ultimo + ' (' + (i + 1) + '/' + intentos + ')');
+          if (!idempotente && [404, 429, 503].indexOf(resp.status) < 0) return _dudoso();
           continue;
         }
         let j = null;
         try { j = await resp.json(); }
         catch (_) {
-          // 200 con algo que no es nuestro JSON: tampoco corrió el script.
+          // 200 con algo que no es nuestro JSON: página de error de Google. Puede
+          // ser «demasiadas llamadas» (no corrió) o «se pasó del tiempo» (sí corrió).
           ultimo = 'el puente contestó algo que no es JSON';
           console.warn('[sbWrite] ' + ultimo + ' (' + (i + 1) + '/' + intentos + ')');
+          if (!idempotente) return _dudoso();
           continue;
         }
         if (j && typeof j.status === 'number') {
@@ -5595,6 +5607,9 @@ async function _sbWriteVia(proxy, path, method, bodyStr, prefer, ms, nIntentos) 
         const abortado = !!(e && (e.name === 'AbortError' || /abort/i.test(String(e.message || ''))));
         ultimo = (e && e.message) || String(e);
         console.warn('[sbWrite] proxy no respondió (' + (i + 1) + '/' + intentos + '):', ultimo);
+        // 28-sep-2026: un «Failed to fetch» también puede llegar con el POST ya
+        // escrito (se cae la conexión en el regreso). Mismo trato que el AbortError.
+        if (!idempotente && !abortado) return _dudoso();
         if (abortado && !idempotente) {
           // Aquí NO se reintenta ni se prueba el otro carril: repetir un POST que
           // pudo haber entrado es peor que fallar. Se devuelve un error propio para
@@ -25734,7 +25749,16 @@ function _opCabecera(numero, c, yo) {
   };
 }
 
+// 28-sep-2026 · Mismo candado que «Generar plan»: mientras una OP se está creando,
+// otro clic no arranca una segunda (cada una gastaría su propio consecutivo).
+var _opCreandoOP = false;
 async function opCrearDesde(cotizId) {
+  if (_opCreandoOP) { showToast('⏳ Ya se está creando una OP. Espera a que termine.', 'info'); return; }
+  _opCreandoOP = true;
+  try { await _opCrearDesdeReal(cotizId); }
+  finally { _opCreandoOP = false; }
+}
+async function _opCrearDesdeReal(cotizId) {
   // `let` y no `const`: si los ítems no están en este equipo, se reemplaza por
   // una copia con los que trae el servidor (ver más abajo).
   let c = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === cotizId && !x.deleted);
@@ -25928,12 +25952,15 @@ async function opCrearDesde(cotizId) {
     }
     // El motivo queda escrito: dentro de un mes, ver dos OP de la misma cotización
     // sin saber por qué es lo que hace dudar si alguien despachó doble.
-    await opEvento(op.id, 'creada', 'Desde la cotización ' + c.id + ' · ' + filas.length + ' ítems'
-      + (mapaAdj ? ' (solo lo adjudicado)' : '')
-      + (dec.nota ? ' · ' + dec.nota : ''));
-
+    // 28-sep-2026: la bitácora y la recarga de la lista van a la vez (antes eran
+    // dos viajes al servidor uno detrás del otro, 3-7 s cada uno).
     showToast('✅ ' + numero + ' creada con ' + filas.length + ' ítems', 'success', { durationMs: 7000 });
-    await opCargar(false);
+    await Promise.all([
+      opEvento(op.id, 'creada', 'Desde la cotización ' + c.id + ' · ' + filas.length + ' ítems'
+        + (mapaAdj ? ' (solo lo adjudicado)' : '')
+        + (dec.nota ? ' · ' + dec.nota : '')),
+      opCargar(false)
+    ]);
     await opAbrir(op.id);
   } catch (e) {
     console.error('[op] crear', e);
@@ -28952,7 +28979,7 @@ async function opPlanCargar() {
             + ' línea(s) siguen en \u00abSin definir\u00bb y NO van a entrar al plan.</div>'
           : '')
       + (opPuedeGenerarPlan()
-          ? '<button class="btn btn-primary" onclick="opGenerarPlan()" style="margin-top:10px;padding:8px 16px;font-size:13px;">Generar plan de compras</button>'
+          ? '<button class="btn btn-primary" onclick="opGenerarPlan(this)" style="margin-top:10px;padding:8px 16px;font-size:13px;">Generar plan de compras</button>'
           : '<div class="op-plan-d" style="margin-top:8px;">Lo genera compras (Alexandra o Andrea) o gerencia.</div>')
         + ((opPuedeEditar(op_current) && sinDef.some(i => i.cotizacion_item_uid))
             ? '<button class="btn btn-ghost" onclick="opTraerDeCotiz()" style="margin-top:10px;padding:8px 16px;font-size:13px;">⬇️ Traer proveedor y costo de la cotización</button>' : '')
@@ -28988,7 +29015,7 @@ async function opPlanCargar() {
         + 'Comprar sale ' + opMoney(dif) + ' más caro que lo que se cotizó. Gerencia lo verá al aprobar.</div>' : '')
     + '<button class="btn btn-ghost" onclick="opAbrirPlan()" style="margin-top:10px;padding:7px 14px;font-size:12px;">Abrir el plan</button>'
     + (faltan && opPuedeGenerarPlan()
-        ? ' <button class="btn btn-primary" onclick="opGenerarPlan()" style="margin-top:10px;padding:7px 14px;font-size:12px;">'
+        ? ' <button class="btn btn-primary" onclick="opGenerarPlan(this)" style="margin-top:10px;padding:7px 14px;font-size:12px;">'
           + 'Agregar las ' + faltan + ' líneas que faltan</button>'
         : '')
     + '</div>';
@@ -29141,7 +29168,65 @@ function opPuedeGenerarPlan() {
   return ['alexandra', 'andrea', 'alberto'].includes(e);
 }
 
-async function opGenerarPlan() {
+// 28-sep-2026 · CANDADO. El plan de la OP-2026-0114 entró tres veces: el botón
+// seguía vivo mientras el primer guardado tardaba, y cada clic leía el plan
+// todavía vacío e insertaba otra vez. Un clic a la vez por pestaña.
+var _opGenerandoPlan = false;
+async function opGenerarPlan(btn) {
+  if (_opGenerandoPlan) { showToast('⏳ El plan ya se está generando. Espera a que termine.', 'info'); return; }
+  _opGenerandoPlan = true;
+  const _btns = Array.from(document.querySelectorAll('button[onclick^="opGenerarPlan"]'));
+  _btns.forEach(b => { b.disabled = true; b.dataset.txt = b.textContent; b.textContent = '⏳ Generando plan…'; });
+  try { await _opGenerarPlanReal(); }
+  finally {
+    _opGenerandoPlan = false;
+    _btns.forEach(b => { b.disabled = false; if (b.dataset.txt) b.textContent = b.dataset.txt; });
+  }
+}
+
+// 28-sep-2026 · LO QUE EL CANDADO NO ALCANZA: dos personas generando a la vez
+// (CC-OP-2026-0035: Andrea y Alexandra con 0,6 s de diferencia) o un guardado que
+// sí entró aunque la respuesta se perdió. No se puede frenar en la base con un
+// índice único porque el editor del plan guarda «insertar nuevas y luego borrar
+// viejas». Así que el plan se revisa a sí mismo DESPUÉS de insertar:
+//   · solo mira líneas que NO estaban antes de este clic (`idsAntes`);
+//   · por descripción, deja las que la OP justifica y borra el resto;
+//   · solo borra copias IDÉNTICAS a una que se queda, sin compra ni recepción;
+//   · se queda siempre con los id más bajos — si dos personas lo corren a la
+//     vez, las dos borran exactamente las mismas filas.
+async function _opPlanQuitarRepetidas(cc, usables, idsAntes, normPlan) {
+  const plan = (await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc)
+    + '&select=id,descripcion,cantidad,proveedor,costo_unit,nota,comprado,recibida&order=id.asc&limit=1000')) || [];
+  const antes = new Set((idsAntes || []).map(String));
+  const esperado = {}, previas = {};
+  usables.forEach(i => { const k = normPlan(i.descripcion); esperado[k] = (esperado[k] || 0) + 1; });
+  plan.filter(r => antes.has(String(r.id))).forEach(r => { const k = normPlan(r.descripcion); previas[k] = (previas[k] || 0) + 1; });
+  const firma = r => JSON.stringify([normPlan(r.descripcion), +r.cantidad || 0, String(r.proveedor || '').trim().toUpperCase(),
+                                     +r.costo_unit || 0, String(r.nota || '').trim(), !!r.comprado]);
+  const nuevasPorK = {};
+  plan.filter(r => !antes.has(String(r.id))).forEach(r => { const k = normPlan(r.descripcion); (nuevasPorK[k] = nuevasPorK[k] || []).push(r); });
+  const borrar = [];
+  Object.keys(nuevasPorK).forEach(k => {
+    const nuevas = nuevasPorK[k];                       // ya vienen por id ascendente
+    const caben = Math.max(0, (esperado[k] || 0) - (previas[k] || 0));
+    const quedan = nuevas.slice(0, caben);
+    nuevas.slice(caben).forEach(r => {
+      // Recibida = alguien ya trabajó sobre ella: no se toca. (La marca de compra va
+      // en la firma: las de bodega nacen compradas y sus copias sí se limpian.)
+      if (r.recibida != null) return;
+      if (!quedan.some(q => firma(q) === firma(r))) return;   // no es copia exacta: no se toca
+      borrar.push(r.id);
+    });
+  });
+  if (borrar.length) {
+    await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc) + '&id=in.(' + borrar.join(',') + ')',
+      { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+    console.warn('[op] plan ' + cc + ': se quitaron ' + borrar.length + ' línea(s) repetidas', borrar);
+  }
+  return { borradas: borrar.length, nuevas: plan.filter(r => !antes.has(String(r.id))).length - borrar.length };
+}
+
+async function _opGenerarPlanReal() {
   const op = op_current;
   if (!op) return;
   if (!opPuedeGenerarPlan()) { showToast('El plan lo genera compras (Alexandra o Andrea) o gerencia', 'error'); return; }
@@ -29188,7 +29273,7 @@ async function opGenerarPlan() {
     // Es lo que pasó con CC-OP-2026-0007, generado antes de que lo de bodega
     // entrara al plan.
     const ex = (await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc)
-      + '&select=descripcion,item&limit=500')) || [];
+      + '&select=id,descripcion,item&limit=500')) || [];
     // Se cuenta CUÁNTAS veces está cada descripción, no si está o no. Con dos
     // cotizaciones en la misma OP es normal que el mismo material aparezca dos
     // veces; comparando por presencia, la segunda línea se daba por hecha y
@@ -29257,15 +29342,36 @@ async function opGenerarPlan() {
         created_by: (currentUser && (currentUser.name || currentUser.email)) || '—'
       };
     });
-    await absFetch('plan_compras', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(rows) });
+    const idsAntes = ex.map(r => r.id);
+    try {
+      await absFetch('plan_compras', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(rows) });
+    } catch (ePost) {
+      // Guardado en duda: en vez de dejar a la persona adivinando (y darle otra vez
+      // al botón), se mira el servidor. Si las líneas están, el plan sí se generó.
+      if (!/se perdió la respuesta|no se sabe si entró/.test(String(ePost && ePost.message))) throw ePost;
+      showToast('Comprobando si el plan alcanzó a guardarse…', 'info', { durationMs: 6000 });
+      const chk = await _opPlanQuitarRepetidas(cc, usables, idsAntes, _normPlan);
+      if (!chk.nuevas) throw new Error('el servidor tardó y el plan NO quedó guardado. Vuelve a darle a «Generar plan».');
+    }
+    // Pasada de limpieza, también cuando todo salió bien: otra persona pudo estar
+    // generando el mismo plan en ese mismo momento.
+    let _quitadas = 0;
+    try { _quitadas = (await _opPlanQuitarRepetidas(cc, usables, idsAntes, _normPlan)).borradas; }
+    catch (eLimp) { console.warn('[op] limpieza del plan', eLimp); }
     const nBod = rows.filter(r => r.sin_oc).length;
-    await opEvento(op.id, ex.length ? 'plan_completado' : 'plan_generado',
-      cc + ' · ' + rows.length + ' líneas (' + nBod + ' de bodega)');
     const sinCosto = rows.filter(r => r.sin_oc && r.costo_unit == null).length;
     showToast('✅ Plan ' + cc + (ex.length ? ' completado con ' : ' generado con ') + rows.length + ' líneas'
       + (nBod ? ' · ' + nBod + ' de bodega' : '')
-      + (sinCosto ? ' · ⚠️ ' + sinCosto + ' sin costo de inventario' : ''), 'success', { durationMs: 9000 });
-    await opPlanCargar();
+      + (sinCosto ? ' · ⚠️ ' + sinCosto + ' sin costo de inventario' : '')
+      + (_quitadas ? ' · se quitaron ' + _quitadas + ' repetidas' : ''), 'success', { durationMs: 9000 });
+    // La bitácora y el panel del plan van a la vez: son dos viajes independientes
+    // al servidor y antes se esperaban uno detrás del otro.
+    await Promise.all([
+      opEvento(op.id, ex.length ? 'plan_completado' : 'plan_generado',
+        cc + ' · ' + rows.length + ' líneas (' + nBod + ' de bodega)'
+        + (_quitadas ? ' · ' + _quitadas + ' repetida(s) quitadas' : '')),
+      opPlanCargar()
+    ]);
     opRenderEventos(op.id);
   } catch (e) {
     showToast('No se pudo generar el plan: ' + (e && e.message || e), 'error', { durationMs: 9000 });
