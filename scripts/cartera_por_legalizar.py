@@ -1,25 +1,34 @@
 """
 CARTERA POR LEGALIZAR — E&G Energy Group
 =========================================
-Informe diario (7 a. m.) para gerencia: lo que el cliente YA nos compró
-(cotización Adjudicada) y todavía no se ha facturado. Pedido 27-sep-2026.
+Informe diario (7 a. m.) para gerencia: lo que el cliente YA nos compró y
+todavía no se ha facturado. Pedido 27-sep-2026; rehecho POR ORDEN DE PEDIDO
+el 29-sep-2026 y cruzado contra Cartera.
 
-De dónde sale cada número
-  · Cotizaciones en estado «Adjudicada» (no borradas) en Supabase.
-  · Valor = lo ADJUDICADO (valor_adjudicado). Si nunca se registró, se usa el
-    subtotal cotizado y la fila dice «valor cotizado»: puede estar inflado.
-  · Estado del pedido según su(s) OP: despachada / en proceso / sin OP.
-  · Días = desde la adjudicación (o desde la fecha de la cotización si la
-    adjudicación no tiene fecha).
-  · N° de O.C. del cliente: de la OP o del módulo Procesos O.C. (ordenes.json).
+Secciones
+  1. ENTREGADO SIN FACTURAR (el número que importa): una fila por OP sin cerrar
+     con algo entregado y SIN factura en Cartera. Valor = lo ENTREGADO, no lo
+     cotizado: cada remisión de la OP se valora al precio unitario de la
+     cotización (item_cot → cotizacion_items), con la cantidad topada a lo
+     cotizado; si la remisión no trae ítem, se usa lo despachado en op_items.
+     Se toma el mayor de los dos. Días = desde la primera remisión.
+  2. FACTURADO EN CARTERA, OP SIN CERRAR: la factura ya existe en Cartera
+     (mismo N° de cotización) pero la OP no se cerró. No suma: es trámite.
+  3. OP EN CURSO SIN ENTREGAS: pedido vivo, falta despachar. Informativo.
+  4. ADJUDICADAS SIN OP: se cruzan con Cartera por N° de cotización, por la
+     O.C. del cliente (módulo Procesos O.C.) o por cliente + monto (±2 %).
+     Con coincidencia → «posiblemente ya facturada»; sin nada → confirmar.
 
 Solo LEE. Prueba local sin enviar:
     TEST_OUT=1 PYTHONIOENCODING=utf-8 python scripts/cartera_por_legalizar.py
 """
 
 import os
+import re
 import json
 import datetime
+import unicodedata
+import collections
 import urllib.request
 import urllib.parse
 
@@ -28,9 +37,8 @@ SB_KEY = os.environ.get('SUPABASE_KEY', '') or 'sb_publishable_zZrmpmvqbz4AJCGHR
 REMITENTE = os.environ.get('REMITENTE', 'info@eygenergygroup.com')
 ANDREA = 'andrea.bernal@eygenergygroup.com'
 GERENCIA = 'gerenciageneral@eygenergygroup.com'
-# El primer informe va SOLO a Andrea para que lo revise. Cuando ella dé el visto
-# bueno se pasa a False y desde ahí va a gerencia con copia a Andrea.
-SOLO_ANDREA = True
+# 29-sep-2026: aprobado por Andrea → va a gerencia con copia a ella.
+SOLO_ANDREA = False
 PLATAFORMA = 'https://cami902026-oss.github.io/plataforma-eyg/Index.html'
 
 
@@ -64,6 +72,37 @@ def fecha(s):
         return None
 
 
+def num(x):
+    try:
+        return float(x or 0)
+    except Exception:
+        return 0.0
+
+
+def clave(s):
+    """LM2092 / lm-2092 / 'LM 2092' → LM2092 (para cruzar textos escritos a mano)."""
+    return re.sub(r'[^A-Z0-9]', '', str(s or '').upper())
+
+
+_SOCIETARIA = r'\b(S ?A ?S|S ?A|LTDA|E ?U|BIC|SUCURSAL COLOMBIA(NA)?)\b'
+
+
+def cliente_norm(s):
+    s = unicodedata.normalize('NFKD', str(s or '')).encode('ascii', 'ignore').decode().upper()
+    s = re.sub(r'[^A-Z0-9 ]', ' ', s)
+    s = re.sub(_SOCIETARIA, ' ', s)
+    return ' '.join(s.split())
+
+
+def mismo_cliente(a, b):
+    """Mismo criterio que Cartera en la plataforma: exacto, normalizado o uno
+    contiene al otro (4+ letras)."""
+    a, b = cliente_norm(a), cliente_norm(b)
+    if not a or not b:
+        return False
+    return a == b or (len(min(a, b, key=len)) >= 4 and (a in b or b in a))
+
+
 def ocs_del_modulo():
     """cotizacionId → N° de O.C. del cliente, desde el módulo Procesos O.C."""
     m = {}
@@ -81,87 +120,211 @@ def ocs_del_modulo():
     return m
 
 
+def _cot_items(ids):
+    """{cotizacion_id: {item(str): (v_unit, qty)}} — sin alternativas."""
+    out = collections.defaultdict(dict)
+    ids = sorted(set(i for i in ids if i))
+    for k in range(0, len(ids), 40):
+        lote = ','.join('"%s"' % i.replace('"', '') for i in ids[k:k + 40])
+        for x in todo('cotizacion_items?cotizacion_id=in.(' + urllib.parse.quote(lote, safe=',"()')
+                      + ')&select=cotizacion_id,item,v_unit,qty,alt_de'):
+            if x.get('alt_de'):
+                continue
+            out[x['cotizacion_id']][str(x.get('item'))] = (num(x.get('v_unit')), num(x.get('qty')))
+    return out
+
+
 def datos():
     hoy = datetime.date.today()
-    cots = todo('cotizaciones?estado=eq.Adjudicada&deleted=is.false'
-                '&select=id,cliente,fecha,subtotal,valor_adjudicado,adjudicada_at,adjudicacion_at,vendedor&order=id')
-    ops = todo('ops?estado=neq.anulada&select=numero,cotizacion_id,estado,oc_cliente,enviada_at')
-    por_cot = {}
-    for o in ops:
-        por_cot.setdefault(o.get('cotizacion_id'), []).append(o)
-    oc_mod = ocs_del_modulo()
-    filas = []
-    for c in cots:
-        va = c.get('valor_adjudicado')
-        valor = float(va) if va is not None else float(c.get('subtotal') or 0)
-        sus = por_cot.get(c['id'], [])
-        if not sus:
-            est = 'Sin OP'
-        elif any(o.get('estado') in ('despachada', 'cerrada') for o in sus):
-            est = 'Despachada'
+    ops = [o for o in todo('ops?select=id,numero,cotizacion_id,cliente,estado,oc_cliente,factura,deleted,valor_venta')
+           if not o.get('deleted') and o.get('estado') != 'anulada']   # borrador vivo = OP en curso
+    abiertas = [o for o in ops if o.get('estado') != 'cerrada' and not o.get('factura')]
+    ids_op = set(o['id'] for o in abiertas)
+    op_items = collections.defaultdict(list)
+    for x in todo('op_items?select=op_id,cantidad,v_unit,v_total,estado,despachada'):
+        if x.get('op_id') in ids_op:
+            op_items[x['op_id']].append(x)
+    nums = set(o['numero'] for o in abiertas)
+    rems = collections.defaultdict(list)
+    for r in todo('remisiones?op_numero=not.is.null&select=remision,fecha,op_numero,item_cot,cantidad,cotizacion_id'):
+        if r.get('op_numero') in nums:
+            rems[r['op_numero']].append(r)
+    precios = _cot_items([o.get('cotizacion_id') for o in abiertas])
+
+    cartera = todo('cartera_facturas?select=numero,cliente_nombre,cotizacion_id,oc,oc_num,monto_antes_iva,fecha_facturacion')
+    fac_por_cot = collections.defaultdict(list)
+    fac_por_oc = collections.defaultdict(list)
+    for f in cartera:
+        for c in re.split(r'[,;/ ]+', str(f.get('cotizacion_id') or '')):
+            if clave(c):
+                fac_por_cot[clave(c)].append(f)
+        for oc in (f.get('oc'), f.get('oc_num')):
+            if len(clave(oc)) >= 4:
+                fac_por_oc[clave(oc)].append(f)
+
+    entregado, facturado, en_curso = [], [], []
+    for o in abiertas:
+        its = op_items.get(o['id'], [])
+        valor_op = sum(num(x.get('v_total')) or num(x.get('cantidad')) * num(x.get('v_unit')) for x in its) \
+            or num(o.get('valor_venta'))
+        # Entregado según la OP (op_items). «despachado» sin cantidad = todo.
+        ent_op = 0.0
+        for x in its:
+            q = num(x.get('cantidad'))
+            d = q if (x.get('estado') == 'despachado' and not x.get('despachada')) else min(num(x.get('despachada')), q)
+            ent_op += d * num(x.get('v_unit'))
+        # Entregado según las remisiones, al precio de la cotización.
+        rs = rems.get(o['numero'], [])
+        pre = precios.get(o.get('cotizacion_id'), {})
+        q_item = collections.defaultdict(float)
+        for r in rs:
+            if r.get('item_cot') is not None and str(r['item_cot']) in pre:
+                q_item[str(r['item_cot'])] += num(r.get('cantidad'))
+        ent_rem = sum(min(q, pre[i][1] or q) * pre[i][0] for i, q in q_item.items())
+        ent = min(max(ent_op, ent_rem), valor_op) if valor_op else max(ent_op, ent_rem)
+        fechas = [fecha(r.get('fecha')) for r in rs if fecha(r.get('fecha'))]
+        f0 = min(fechas) if fechas else None
+        fila = {
+            'op': o['numero'], 'cot': o.get('cotizacion_id') or '—', 'cliente': o.get('cliente') or '—',
+            'oc': o.get('oc_cliente') or '—', 'estado': o.get('estado'),
+            'rem': ', '.join(sorted(set(str(r['remision']) for r in rs))) or '—',
+            'valor_op': valor_op, 'entregado': ent, 'parcial': ent < valor_op * 0.995,
+            'dias': (hoy - f0).days if f0 else None}
+        facs = fac_por_cot.get(clave(o.get('cotizacion_id')), [])
+        if facs:
+            fila['facturas'] = ', '.join(sorted(set(str(f['numero']) for f in facs)))
+            fila['monto_fac'] = sum(num(f.get('monto_antes_iva')) for f in facs)
+            facturado.append(fila)
+        elif ent > 0:
+            entregado.append(fila)
         else:
-            est = 'En proceso'
+            en_curso.append(fila)
+
+    # Adjudicadas sin OP, cruzadas con Cartera.
+    con_op = set(o.get('cotizacion_id') for o in ops)
+    oc_mod = ocs_del_modulo()
+    sin_op = []
+    for c in todo('cotizaciones?estado=eq.Adjudicada&deleted=is.false'
+                  '&select=id,cliente,fecha,subtotal,valor_adjudicado,adjudicada_at,adjudicacion_at&order=id'):
+        if c['id'] in con_op:
+            continue
+        va = c.get('valor_adjudicado')
+        valor = num(va) if va is not None else num(c.get('subtotal'))
+        pistas = []
+        for f in fac_por_cot.get(clave(c['id']), []):
+            pistas.append('Fact. %s (misma cotización, %s)' % (f['numero'], money(f.get('monto_antes_iva'))))
+        for oc in oc_mod.get(c['id'], []):
+            for f in fac_por_oc.get(clave(oc), []):
+                pistas.append('Fact. %s (misma O.C. %s, %s)' % (f['numero'], oc, money(f.get('monto_antes_iva'))))
+        if not pistas and valor > 0:
+            for f in cartera:
+                m = num(f.get('monto_antes_iva'))
+                if m and abs(m - valor) / valor < 0.02 and mismo_cliente(f.get('cliente_nombre'), c.get('cliente')):
+                    pistas.append('Fact. %s (mismo cliente y monto, %s)' % (f['numero'], f.get('fecha_facturacion') or ''))
         f = fecha(c.get('adjudicada_at')) or fecha(c.get('adjudicacion_at')) or fecha(c.get('fecha'))
-        dias = (hoy - f).days if f else None
-        ocs = [o.get('oc_cliente') for o in sus if o.get('oc_cliente')] + oc_mod.get(c['id'], [])
-        filas.append({
-            'cot': c['id'], 'cliente': c.get('cliente') or '—', 'valor': valor,
-            'estimado': va is None, 'estado': est, 'dias': dias,
-            'ops': ', '.join(o['numero'] for o in sus) or '—',
-            'oc': ', '.join(dict.fromkeys(ocs)) or '—', 'vendedor': c.get('vendedor') or '—'})
-    return filas
+        sin_op.append({'cot': c['id'], 'cliente': c.get('cliente') or '—', 'valor': valor, 'estimado': va is None,
+                       'dias': (hoy - f).days if f else None, 'pistas': list(dict.fromkeys(pistas))})
+    return entregado, facturado, en_curso, sin_op
 
 
-def html(filas):
+TD = 'style="padding:5px 8px;border-bottom:1px solid #e5e7eb;vertical-align:top"'
+TDR = 'style="padding:5px 8px;border-bottom:1px solid #e5e7eb;text-align:right;white-space:nowrap;vertical-align:top"'
+
+
+def _tabla(cab, filas):
+    p = ['<table style="border-collapse:collapse;font-size:12.5px;width:100%"><tr style="background:#f3f4f6">']
+    for c in cab:
+        p.append('<th %s>%s</th>' % (TDR if c.startswith('>') else TD, c.lstrip('>')))
+    p.append('</tr>')
+    for f in filas:
+        p.append('<tr>' + ''.join('<td %s>%s</td>' % (TDR if cab[i].startswith('>') else TD, v)
+                                  for i, v in enumerate(f)) + '</tr>')
+    p.append('</table>')
+    return ''.join(p)
+
+
+def _caja(titulo, valor, n, fuerte=False):
+    borde = '2px solid #1a3a8f' if fuerte else '1px solid #e5e7eb'
+    color = '#1a3a8f' if fuerte else '#1f2937'
+    return ('<td style="padding:8px 14px;border:%s">'
+            '<div style="font-size:11px;color:#6b7280">%s</div>'
+            '<div style="font-size:18px;font-weight:800;color:%s">%s</div>'
+            '<div style="font-size:11px;color:#6b7280">%s</div></td>' % (borde, titulo, color, money(valor), n))
+
+
+def html(entregado, facturado, en_curso, sin_op):
     hoy = datetime.date.today().strftime('%d/%m/%Y')
-    total = sum(f['valor'] for f in filas)
-    orden = ['Despachada', 'En proceso', 'Sin OP']
-    nota = {'Despachada': 'Ya se entregó: es lo primero que hay que facturar.',
-            'En proceso': 'Tiene OP en curso.',
-            'Sin OP': 'Adjudicada pero sin OP creada: confirmar si sigue viva o si ya se facturó y falta cambiar el estado.'}
-    tramos = [('Más de 60 días', lambda d: d is not None and d > 60),
-              ('30 a 60 días', lambda d: d is not None and 30 < d <= 60),
-              ('Menos de 30 días', lambda d: d is None or d <= 30)]
-    td = 'style="padding:5px 8px;border-bottom:1px solid #e5e7eb"'
-    tdr = 'style="padding:5px 8px;border-bottom:1px solid #e5e7eb;text-align:right;white-space:nowrap"'
+    t_ent = sum(f['entregado'] for f in entregado)
+    t_fac = sum(f['entregado'] for f in facturado)
+    t_cur = sum(f['valor_op'] for f in en_curso) + sum(f['valor_op'] - f['entregado'] for f in entregado)
+    sin_rastro = [f for f in sin_op if not f['pistas']]
+    con_pista = [f for f in sin_op if f['pistas']]
     p = ['<div style="font-family:Segoe UI,Arial,sans-serif;font-size:13.5px;color:#1f2937">',
          '<h2 style="color:#1a3a8f;margin:0 0 2px">💼 Cartera por legalizar · %s</h2>' % hoy,
-         '<p style="margin:0 0 12px;color:#4b5563">Lo adjudicado por el cliente que todavía <b>no se ha facturado</b> '
-         '(valores antes de IVA).</p>',
-         '<table style="border-collapse:collapse;margin-bottom:14px"><tr>']
-    for et in orden:
-        fs = [f for f in filas if f['estado'] == et]
-        p.append('<td style="padding:8px 14px;border:1px solid #e5e7eb;border-radius:6px">'
-                 '<div style="font-size:11px;color:#6b7280">%s</div><div style="font-size:17px;font-weight:700">%s</div>'
-                 '<div style="font-size:11px;color:#6b7280">%d cotización(es)</div></td>'
-                 % (et, money(sum(f['valor'] for f in fs)), len(fs)))
-    p.append('<td style="padding:8px 14px;border:2px solid #1a3a8f"><div style="font-size:11px;color:#6b7280">TOTAL</div>'
-             '<div style="font-size:19px;font-weight:800;color:#1a3a8f">%s</div><div style="font-size:11px;color:#6b7280">%d</div></td></tr></table>'
-             % (money(total), len(filas)))
-    p.append('<p style="margin:0 0 14px;font-size:12px;color:#4b5563">Antigüedad: '
-             + ' · '.join('%s <b>%s</b>' % (t, money(sum(f['valor'] for f in filas if fn(f['dias'])))) for t, fn in tramos)
-             + '</p>')
-    for et in orden:
-        fs = sorted([f for f in filas if f['estado'] == et], key=lambda f: -(f['dias'] or 0))
-        if not fs:
-            continue
-        p.append('<h3 style="color:#b45309;margin:14px 0 2px">%s — %s</h3>' % (et, money(sum(f['valor'] for f in fs))))
-        p.append('<p style="margin:0 0 6px;font-size:12px;color:#6b7280">%s</p>' % nota[et])
-        p.append('<table style="border-collapse:collapse;font-size:12.5px;width:100%%"><tr style="background:#f3f4f6">'
-                 '<th %s>Cotización</th><th %s>Cliente</th><th %s>O.C. cliente</th><th %s>OP</th><th %s>Días</th><th %s>Valor</th></tr>'
-                 % (td, td, td, td, tdr, tdr))
-        for f in fs:
-            p.append('<tr><td %s><b>%s</b></td><td %s>%s</td><td %s>%s</td><td %s>%s</td><td %s>%s</td><td %s>%s%s</td></tr>'
-                     % (td, f['cot'], td, f['cliente'], td, f['oc'], td, f['ops'],
-                        tdr, f['dias'] if f['dias'] is not None else '—', tdr, money(f['valor']),
-                        '<br><span style="font-size:10.5px;color:#b45309">valor cotizado</span>' if f['estimado'] else ''))
-        p.append('</table>')
-    n_est = sum(1 for f in filas if f['estimado'])
-    if n_est:
-        p.append('<p style="margin-top:12px;font-size:11.5px;color:#b45309">%d cotización(es) dicen «valor cotizado»: '
-                 'no tienen registrado cuánto adjudicó el cliente, así que el valor puede ser mayor al real.</p>' % n_est)
-    p.append('<p style="margin-top:14px;font-size:11.5px;color:#6b7280">Si una ya se facturó, marcarla '
-             '«Facturada» con su número en la plataforma y sale de este informe. '
+         '<p style="margin:0 0 12px;color:#4b5563">Por <b>orden de pedido</b>: lo que ya se le entregó al cliente '
+         'y no se ha facturado, cruzado con Cartera. Valores antes de IVA.</p>',
+         '<table style="border-collapse:collapse;margin-bottom:16px"><tr>',
+         _caja('ENTREGADO SIN FACTURAR', t_ent, '%d OP' % len(entregado), True),
+         _caja('Facturado, falta cerrar OP', t_fac, '%d OP' % len(facturado)),
+         _caja('Pedido pendiente de entregar', t_cur, '%d OP' % (len(en_curso) + sum(1 for f in entregado if f['parcial']))),
+         _caja('Adjudicado sin OP (por confirmar)', sum(f['valor'] for f in sin_rastro), '%d cotiz.' % len(sin_rastro)),
+         '</tr></table>']
+
+    if entregado:
+        p.append('<h3 style="color:#b91c1c;margin:14px 0 2px">1 · Entregado sin facturar — %s</h3>' % money(t_ent))
+        p.append('<p style="margin:0 0 6px;font-size:12px;color:#6b7280">Ya salió de bodega y no hay factura en Cartera: '
+                 'es lo primero que hay que facturar. Ordenado por antigüedad.</p>')
+        filas = []
+        for f in sorted(entregado, key=lambda f: -(f['dias'] or 0)):
+            valor = '<b>%s</b>' % money(f['entregado'])
+            if f['parcial']:
+                valor += '<br><span style="font-size:10.5px;color:#b45309">parcial de %s</span>' % money(f['valor_op'])
+            filas.append(['<b>%s</b>' % f['op'], f['cot'], f['cliente'], f['oc'], f['rem'],
+                          f['dias'] if f['dias'] is not None else '—', valor])
+        p.append(_tabla(['OP', 'Cotización', 'Cliente', 'O.C. cliente', 'Remisiones', '>Días', '>Entregado'], filas))
+
+    if facturado:
+        p.append('<h3 style="color:#047857;margin:18px 0 2px">2 · Ya facturado en Cartera, falta cerrar la OP — %s</h3>' % money(t_fac))
+        p.append('<p style="margin:0 0 6px;font-size:12px;color:#6b7280">La factura existe en Cartera con el mismo N° de '
+                 'cotización. No es plata pendiente: hay que <b>cerrar la OP con ese N° de factura</b> para que salga de aquí.</p>')
+        filas = []
+        for f in sorted(facturado, key=lambda f: f['op']):
+            dif = f['monto_fac'] - f['entregado']
+            nota = ''
+            if abs(dif) > max(1000, f['entregado'] * 0.01):
+                nota = '<br><span style="font-size:10.5px;color:#b45309">factura %s %s que lo entregado</span>' % (
+                    money(abs(dif)), 'más' if dif > 0 else 'menos')
+            filas.append(['<b>%s</b>' % f['op'], f['cot'], f['cliente'], 'Fact. <b>%s</b>' % f['facturas'],
+                          money(f['monto_fac']) + nota, money(f['entregado'])])
+        p.append(_tabla(['OP', 'Cotización', 'Cliente', 'Cartera', '>Facturado', '>Entregado'], filas))
+
+    if en_curso:
+        p.append('<h3 style="color:#1a3a8f;margin:18px 0 2px">3 · OP en curso sin entregas — %s</h3>'
+                 % money(sum(f['valor_op'] for f in en_curso)))
+        p.append('<p style="margin:0 0 6px;font-size:12px;color:#6b7280">Pedido vivo, todavía no se ha despachado nada.</p>')
+        filas = [['<b>%s</b>' % f['op'], f['cot'], f['cliente'], f['oc'], f['estado'].replace('_', ' '), money(f['valor_op'])]
+                 for f in sorted(en_curso, key=lambda f: f['op'])]
+        p.append(_tabla(['OP', 'Cotización', 'Cliente', 'O.C. cliente', 'Estado', '>Valor OP'], filas))
+
+    if sin_op:
+        p.append('<h3 style="color:#6b7280;margin:18px 0 2px">4 · Adjudicadas sin OP</h3>')
+        p.append('<p style="margin:0 0 6px;font-size:12px;color:#6b7280">No tienen orden de pedido. Las que tienen una pista '
+                 'en Cartera probablemente ya se facturaron y solo falta pasarlas a «Facturada». Las demás hay que '
+                 'confirmarlas con el comercial: ¿sigue vivo el pedido?</p>')
+        filas = []
+        for f in sorted(sin_op, key=lambda f: (bool(f['pistas']), -(f['valor']))):
+            valor = money(f['valor']) + ('<br><span style="font-size:10.5px;color:#b45309">valor cotizado</span>'
+                                         if f['estimado'] else '')
+            pista = '<br>'.join(f['pistas']) if f['pistas'] else '<span style="color:#b91c1c">Sin rastro en Cartera</span>'
+            filas.append(['<b>%s</b>' % f['cot'], f['cliente'], f['dias'] if f['dias'] is not None else '—', valor, pista])
+        p.append(_tabla(['Cotización', 'Cliente', '>Días', '>Valor', 'En Cartera'], filas))
+        if con_pista:
+            p.append('<p style="margin:6px 0 0;font-size:11.5px;color:#6b7280">%d con pista en Cartera por %s; '
+                     '%d sin rastro por %s.</p>' % (len(con_pista), money(sum(f['valor'] for f in con_pista)),
+                                                   len(sin_rastro), money(sum(f['valor'] for f in sin_rastro))))
+
+    p.append('<p style="margin-top:14px;font-size:11.5px;color:#6b7280">Cómo sale de este informe: facturar y registrar '
+             'la factura en Cartera con el N° de cotización, y cerrar la OP con ese N° de factura. '
              '<a href="%s">Abrir la plataforma</a></p></div>' % PLATAFORMA)
     return ''.join(p)
 
@@ -190,14 +353,15 @@ def enviar(asunto, cuerpo, para, copia):
 
 
 def main():
-    filas = datos()
-    total = sum(f['valor'] for f in filas)
-    print('Adjudicadas sin facturar: %d · %s' % (len(filas), money(total)))
-    if not filas:
+    entregado, facturado, en_curso, sin_op = datos()
+    total = sum(f['entregado'] for f in entregado)
+    print('Entregado sin facturar: %d OP · %s | facturado sin cerrar OP: %d | en curso: %d | sin OP: %d'
+          % (len(entregado), money(total), len(facturado), len(en_curso), len(sin_op)))
+    if not (entregado or facturado or en_curso or sin_op):
         print('Nada por legalizar: no se manda correo.')
         return
-    asunto = '💼 Cartera por legalizar: %s en %d cotización(es)' % (money(total), len(filas))
-    cuerpo = html(filas)
+    asunto = '💼 Cartera por legalizar: %s entregado sin facturar en %d OP' % (money(total), len(entregado))
+    cuerpo = html(entregado, facturado, en_curso, sin_op)
     if os.environ.get('TEST_OUT'):
         with open('cartera_legalizar_prueba.html', 'w', encoding='utf-8') as f:
             f.write(cuerpo)
