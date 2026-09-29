@@ -72002,7 +72002,7 @@
     "cliente": "SKID EXPERTS",
     "contacto": "JENNY ARIAS",
     "correo": "abastecimiento1@skidexpert.com",
-    "estado": "Adjudicada",
+    "estado": "Vencida",
     "factura": "",
     "iva": 19,
     "subtotal": 400000,
@@ -72033,9 +72033,8 @@
         "precioProveedor": 128000
       }
     ],
-    "fechaGuardado": "2026-09-29T16:57:45.436Z",
+    "fechaGuardado": "2026-08-14T22:47:03.109Z",
     "fechaEnvio": "2026-08-14T16:58:12.543Z",
-    "adjudicadaAt": "2026-09-29",
     "valorAdjudicado": 400000,
     "itemsAdjudicados": [
       {
@@ -72043,12 +72042,13 @@
         "qty": 2
       }
     ],
-    "adjudicacionPor": "Andrea",
-    "adjudicacionAt": "2026-09-29T16:57:43.590Z",
+    "adjudicacionPor": "Sandra",
+    "adjudicacionAt": "2026-08-14T22:34:24.788Z",
     "createdAt": "2026-08-14T14:53:10.768Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-29T16:57:45.436Z",
-    "updatedBy": "andrea"
+    "updatedAt": "2026-08-24T01:35:31.738Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-08-24T01:35:31.738Z"
   },
   {
     "id": "LM1992",
@@ -139582,9 +139582,9 @@
     "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
-    "subtotal": 42670248,
-    "ivaVal": 8107347.12,
-    "total": 50777595.12,
+    "subtotal": 43497648,
+    "ivaVal": 8264553.12,
+    "total": 51762201.12,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "Planta Hidrocasanare, ubicada en el Km 17 de la vía que conduce de Yopal a Paz de Ariporo, vereda la Niata",
     "validez": "8 DÍAS",
@@ -140547,13 +140547,13 @@
         "desc": "CARBON STEEL, SEAMLESS PIPE, ASTM A-106 GR. B, DIMENSIONS AS PER ASME B36.10, BEVELED ENDS AS PER ASME B16.25  6\" SCH 40 ",
         "altDe": null,
         "marca": "BAOLAI",
-        "precio": 0,
+        "precio": 137900,
         "desvTec": "",
         "proveedor": "GERENCIA",
         "fotoGrande": false,
         "obsProveedor": "",
         "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
+        "precioProveedor": 137900
       },
       {
         "id": 61,
@@ -140684,7 +140684,7 @@
         "precioProveedor": 14070
       }
     ],
-    "fechaGuardado": "2026-09-29T16:56:32.819Z",
+    "fechaGuardado": "2026-09-29T16:57:52.409Z",
     "adjudicadaAt": "2026-09-28",
     "valorAdjudicado": 0,
     "itemsAdjudicados": [
@@ -140965,7 +140965,7 @@
     "adjudicacionAt": "2026-09-28T22:19:29.264Z",
     "createdAt": "2026-09-28T21:39:09.970Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-29T16:56:32.819Z",
+    "updatedAt": "2026-09-29T16:57:52.409Z",
     "updatedBy": "alberto"
   },
   {
