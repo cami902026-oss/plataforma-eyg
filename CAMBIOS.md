@@ -9,6 +9,8 @@ cambio que ya está en vivo: para verlo hay que recargar con **Ctrl + F5**.
 
 ## 29 de septiembre de 2026
 
+- 💼 Cartera por legalizar: por ORDEN DE PEDIDO, valor ENTREGADO y cruce con Cartera → gerencia  
+  <sub>`15165039e`</sub>
 - v300 — PDF/Excel de cotización: si la copia local no cabe, se confirma contra el servidor (SW v300)  
   <sub>`a033533ca`</sub>
 
