@@ -7,8 +7,28 @@ cambio que ya está en vivo: para verlo hay que recargar con **Ctrl + F5**.
 > repositorio. No se escribe a mano: si algo falta aquí, es que no se desplegó.
 
 
+## 29 de septiembre de 2026
+
+- v300 — PDF/Excel de cotización: si la copia local no cabe, se confirma contra el servidor (SW v300)  
+  <sub>`a033533ca`</sub>
+
+## 28 de septiembre de 2026
+
+- v299 — Cotizaciones: preguntar a Supabase antes de bajar 4,9 MB cada 8 s (SW v299)  
+  <sub>`b6e15d7f7`</sub>
+- v298 — Crear OP trae la cotización del servidor + Visitas/Mensajería fuera para Alexandra y Sandra (SW v298)  
+  <sub>`2317d39eb`</sub>
+- 💼 Informe diario «Cartera por legalizar» para gerencia (7 a. m.)  
+  <sub>`54440fda9`</sub>
+- v297 — Plan de compras de la OP ya no se duplica + OP más rápida (SW v297)  
+  <sub>`e1abdeeea`</sub>
+
 ## 27 de septiembre de 2026
 
+- 🔎 Vigilante diario de la plataforma (7 a. m., solo a Andrea, sin Claude)  
+  <sub>`9e50d596b`</sub>
+- email-to-oc.gs: tope de 3 intentos por correo (no re-llamar a Claude cada minuto)  
+  <sub>`3b69928f7`</sub>
 - v296 — Paso 3: planes de compra y remisiones ya no pisan el trabajo de otro (SW v296)  
   <sub>`6b7fb71f7`</sub>
 - v295 — Paso 0: la cola ya no re-sube ni pisa, no se pierden cambios con el navegador lleno, aviso al cerrar (SW v295)  
