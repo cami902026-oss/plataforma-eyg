@@ -149,7 +149,7 @@ def _cot_items(ids):
 
 def datos():
     hoy = datetime.date.today()
-    ops = [o for o in todo('ops?select=id,numero,cotizacion_id,cliente,estado,oc_cliente,factura,deleted,valor_venta,extra')
+    ops = [o for o in todo('ops?select=id,numero,cotizacion_id,cliente,estado,oc_cliente,factura,deleted,valor_venta,extra,requiere_certificados')
            if not o.get('deleted') and o.get('estado') != 'anulada']   # borrador vivo = OP en curso
     abiertas = [o for o in ops if o.get('estado') != 'cerrada' and not o.get('factura')]
     ids_op = set(o['id'] for o in abiertas)
@@ -211,6 +211,11 @@ def datos():
         if facs:
             fila['facturas'] = ', '.join(sorted(set(str(f['numero']) for f in facs)))
             fila['monto_fac'] = sum(num(f.get('monto_antes_iva')) for f in facs)
+            # La base NO deja cerrar una OP sin al menos un certificado (trigger
+            # op_valida_cierre), salvo requiere_certificados = false. Por eso se
+            # quedan abiertas aunque ya estén facturadas: se dice qué falta.
+            fila['req_cert'] = o.get('requiere_certificados') is not False
+            fila['n_cert'] = len(sb('op_certificados?op_id=eq.%s&select=id' % o['id']) or []) if fila['req_cert'] else 0
             facturado.append(fila)
         elif ent > 0:
             entregado.append(fila)
@@ -303,7 +308,8 @@ def html(entregado, facturado, en_curso, sin_op):
     if facturado:
         p.append('<h3 style="color:#047857;margin:18px 0 2px">2 · Ya facturado en Cartera, falta cerrar la OP — %s</h3>' % money(t_fac))
         p.append('<p style="margin:0 0 6px;font-size:12px;color:#6b7280">La factura existe en Cartera con el mismo N° de '
-                 'cotización. No es plata pendiente: hay que <b>cerrar la OP con ese N° de factura</b> para que salga de aquí.</p>')
+                 'cotización. No es plata pendiente: hay que <b>cerrar la OP con ese N° de factura</b> para que salga de aquí. '
+                 'La plataforma no deja cerrar una OP sin su certificado (MTR): la columna «Para cerrar» dice qué falta.</p>')
         filas = []
         for f in sorted(facturado, key=lambda f: f['op']):
             dif = f['monto_fac'] - f['entregado']
@@ -311,9 +317,19 @@ def html(entregado, facturado, en_curso, sin_op):
             if abs(dif) > max(1000, f['entregado'] * 0.01):
                 nota = '<br><span style="font-size:10.5px;color:#b45309">factura %s %s que lo entregado</span>' % (
                     money(abs(dif)), 'más' if dif > 0 else 'menos')
+            if f['req_cert'] and not f['n_cert']:
+                falta = '<span style="color:#b91c1c">Falta MTR</span>'
+            elif nota:
+                falta = '<span style="color:#b45309">Revisar monto</span>'
+            else:
+                falta = '<span style="color:#047857"><b>Lista</b></span>'
             filas.append(['<b>%s</b>' % f['op'], f['cot'], f['cliente'], 'Fact. <b>%s</b>' % f['facturas'],
-                          money(f['monto_fac']) + nota, money(f['entregado'])])
-        p.append(_tabla(['OP', 'Cotización', 'Cliente', 'Cartera', '>Facturado', '>Entregado'], filas))
+                          money(f['monto_fac']) + nota, money(f['entregado']), falta])
+        p.append(_tabla(['OP', 'Cotización', 'Cliente', 'Cartera', '>Facturado', '>Entregado', 'Para cerrar'], filas))
+        n_mtr = sum(1 for f in facturado if f['req_cert'] and not f['n_cert'])
+        if n_mtr:
+            p.append('<p style="margin:6px 0 0;font-size:11.5px;color:#6b7280">%d OP esperan el MTR. Si en alguna no aplica '
+                     '(p. ej. tornillería o servicios), gerencia puede marcarla «no requiere certificados» y se cierra.</p>' % n_mtr)
 
     if en_curso:
         p.append('<h3 style="color:#1a3a8f;margin:18px 0 2px">3 · OP en curso sin entregas — %s</h3>'
