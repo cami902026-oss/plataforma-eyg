@@ -14475,6 +14475,29 @@ function _cotizSinGuardar() {
   if (!rec) return true;                                          // este equipo no la tiene guardada
   return _cotizHuellaForm() !== _cotizHuellaDe(rec);
 }
+// ¿La versión del SERVIDOR (cotizaciones.extra, mismo formato que la copia local)
+// es exactamente lo que se ve en pantalla? Reintenta ~10 s porque la subida a
+// Supabase no se espera al guardar. Cualquier fallo → false (se frena como antes).
+async function _cotizServidorCoincide(id) {
+  if (!id || !navigator.onLine) return false;
+  const huella = _cotizHuellaForm();
+  for (let i = 0; i < 6; i++) {
+    try {
+      const r = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id) + '&select=extra,estado,deleted&limit=1')) || [];
+      const f = r[0];
+      if (f && !f.deleted && f.extra && typeof f.extra === 'object') {
+        const c = Object.assign({}, f.extra);
+        if (f.estado) c.estado = f.estado;
+        if (_cotizHuellaDe(c) === huella) {
+          console.info('[pdf] ' + id + ': la copia local no cabe/está vieja, pero el servidor coincide → se genera.');
+          return true;
+        }
+      }
+    } catch (_) { }
+    await new Promise(res => setTimeout(res, 1800));
+  }
+  return false;
+}
 // Guarda antes de generar el documento. Devuelve false si NO se debe generar.
 async function _cotizGuardarAntesDelDoc() {
   if (!_cotizSinGuardar()) return true;                           // ya está guardada tal cual se ve
@@ -14483,6 +14506,12 @@ async function _cotizGuardarAntesDelDoc() {
   try { r = await cotizGuardarBD(); }
   finally { _cotizGuardarSinLimpiar = false; }
   if (r === false) return false;                                  // frenado a propósito (ya avisó)
+  // 29-sep-2026 · Sandra no podía sacar el PDF: la copia LOCAL de cotizaciones
+  // (4,8 MB) ya no cabe en el navegador, así que la comparación de abajo veía la
+  // versión vieja y frenaba el documento aunque el servidor SÍ lo tenía guardado.
+  // Antes de frenar se pregunta a Supabase (la subida va en segundo plano: se
+  // espera hasta ~10 s). Si el servidor tiene exactamente lo que se ve, sale.
+  if (_cotizSinGuardar() && await _cotizServidorCoincide(cotizEditId || cotizReadNum())) return true;
   if (_cotizSinGuardar()) {                                       // sigue sin quedar guardada
     showToast('⛔ No se generó el documento porque la cotización NO se pudo guardar. '
       + 'Corrige lo que falta y vuelve a intentarlo — así no sale para el cliente algo que no quedó en la base.',
