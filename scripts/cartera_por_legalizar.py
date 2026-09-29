@@ -40,6 +40,9 @@ GERENCIA = 'gerenciageneral@eygenergygroup.com'
 # 29-sep-2026: aprobado por Andrea → va a gerencia con copia a ella.
 SOLO_ANDREA = False
 PLATAFORMA = 'https://cami902026-oss.github.io/plataforma-eyg/Index.html'
+# 29-sep-2026: gerencia pidió quitar la sección «Adjudicadas sin OP». El cálculo
+# se deja por si se vuelve a pedir: basta con poner esto en True.
+MOSTRAR_SIN_OP = False
 
 
 def sb(path):
@@ -289,7 +292,8 @@ def html(entregado, facturado, en_curso, sin_op):
          _caja('ENTREGADO SIN FACTURAR', t_ent, '%d OP' % len(entregado), True),
          _caja('Facturado, falta cerrar OP', t_fac, '%d OP' % len(facturado)),
          _caja('Pedido pendiente de entregar', t_cur, '%d OP' % (len(en_curso) + sum(1 for f in entregado if f['parcial']))),
-         _caja('Adjudicado sin OP (por confirmar)', sum(f['valor'] for f in sin_rastro), '%d cotiz.' % len(sin_rastro)),
+         _caja('Adjudicado sin OP (por confirmar)', sum(f['valor'] for f in sin_rastro), '%d cotiz.' % len(sin_rastro))
+         if MOSTRAR_SIN_OP else '',
          '</tr></table>']
 
     if entregado:
@@ -339,7 +343,7 @@ def html(entregado, facturado, en_curso, sin_op):
                  for f in sorted(en_curso, key=lambda f: f['op'])]
         p.append(_tabla(['OP', 'Cotización', 'Cliente', 'O.C. cliente', 'Estado', '>Valor OP'], filas))
 
-    if sin_op:
+    if sin_op and MOSTRAR_SIN_OP:
         p.append('<h3 style="color:#6b7280;margin:18px 0 2px">4 · Adjudicadas sin OP</h3>')
         p.append('<p style="margin:0 0 6px;font-size:12px;color:#6b7280">No tienen orden de pedido. Las que tienen una pista '
                  'en Cartera probablemente ya se facturaron y solo falta pasarlas a «Facturada». Las demás hay que '
@@ -390,7 +394,7 @@ def main():
     total = sum(f['entregado'] for f in entregado)
     print('Entregado sin facturar: %d OP · %s | facturado sin cerrar OP: %d | en curso: %d | sin OP: %d'
           % (len(entregado), money(total), len(facturado), len(en_curso), len(sin_op)))
-    if not (entregado or facturado or en_curso or sin_op):
+    if not (entregado or facturado or en_curso):
         print('Nada por legalizar: no se manda correo.')
         return
     asunto = '💼 Cartera por legalizar: %s entregado sin facturar en %d OP' % (money(total), len(entregado))
