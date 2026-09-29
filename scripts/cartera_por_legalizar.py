@@ -120,6 +120,19 @@ def ocs_del_modulo():
     return m
 
 
+def cot_ids(o):
+    """Todas las cotizaciones de una OP (igual que opCotizIds en la plataforma):
+    la principal + extra.cotiz_ids + extra.cotiz_extra. Ej.: OP-2026-0064 lleva
+    LM1784 y LM1946, y se facturó junta en la 656."""
+    out = []
+    ex = o.get('extra') or {}
+    for v in [o.get('cotizacion_id')] + list(ex.get('cotiz_ids') or []) + [x and x.get('id') for x in (ex.get('cotiz_extra') or [])]:
+        t = str(v or '').strip()
+        if t and t not in out:
+            out.append(t)
+    return out
+
+
 def _cot_items(ids):
     """{cotizacion_id: {item(str): (v_unit, qty)}} — sin alternativas."""
     out = collections.defaultdict(dict)
@@ -136,7 +149,7 @@ def _cot_items(ids):
 
 def datos():
     hoy = datetime.date.today()
-    ops = [o for o in todo('ops?select=id,numero,cotizacion_id,cliente,estado,oc_cliente,factura,deleted,valor_venta')
+    ops = [o for o in todo('ops?select=id,numero,cotizacion_id,cliente,estado,oc_cliente,factura,deleted,valor_venta,extra')
            if not o.get('deleted') and o.get('estado') != 'anulada']   # borrador vivo = OP en curso
     abiertas = [o for o in ops if o.get('estado') != 'cerrada' and not o.get('factura')]
     ids_op = set(o['id'] for o in abiertas)
@@ -149,7 +162,7 @@ def datos():
     for r in todo('remisiones?op_numero=not.is.null&select=remision,fecha,op_numero,item_cot,cantidad,cotizacion_id'):
         if r.get('op_numero') in nums:
             rems[r['op_numero']].append(r)
-    precios = _cot_items([o.get('cotizacion_id') for o in abiertas])
+    precios = _cot_items([c for o in abiertas for c in cot_ids(o)])
 
     cartera = todo('cartera_facturas?select=numero,cliente_nombre,cotizacion_id,oc,oc_num,monto_antes_iva,fecha_facturacion')
     fac_por_cot = collections.defaultdict(list)
@@ -175,22 +188,26 @@ def datos():
             ent_op += d * num(x.get('v_unit'))
         # Entregado según las remisiones, al precio de la cotización.
         rs = rems.get(o['numero'], [])
-        pre = precios.get(o.get('cotizacion_id'), {})
+        ids = cot_ids(o)
         q_item = collections.defaultdict(float)
         for r in rs:
-            if r.get('item_cot') is not None and str(r['item_cot']) in pre:
-                q_item[str(r['item_cot'])] += num(r.get('cantidad'))
-        ent_rem = sum(min(q, pre[i][1] or q) * pre[i][0] for i, q in q_item.items())
+            cid = r.get('cotizacion_id') if r.get('cotizacion_id') in ids else (ids[0] if ids else None)
+            if r.get('item_cot') is not None and str(r['item_cot']) in precios.get(cid, {}):
+                q_item[(cid, str(r['item_cot']))] += num(r.get('cantidad'))
+        ent_rem = 0.0
+        for (cid, i), q in q_item.items():
+            vu, qc = precios[cid][i]
+            ent_rem += min(q, qc or q) * vu
         ent = min(max(ent_op, ent_rem), valor_op) if valor_op else max(ent_op, ent_rem)
         fechas = [fecha(r.get('fecha')) for r in rs if fecha(r.get('fecha'))]
         f0 = min(fechas) if fechas else None
         fila = {
-            'op': o['numero'], 'cot': o.get('cotizacion_id') or '—', 'cliente': o.get('cliente') or '—',
+            'op': o['numero'], 'cot': ' + '.join(ids) or '—', 'cliente': o.get('cliente') or '—',
             'oc': o.get('oc_cliente') or '—', 'estado': o.get('estado'),
             'rem': ', '.join(sorted(set(str(r['remision']) for r in rs))) or '—',
             'valor_op': valor_op, 'entregado': ent, 'parcial': ent < valor_op * 0.995,
             'dias': (hoy - f0).days if f0 else None}
-        facs = fac_por_cot.get(clave(o.get('cotizacion_id')), [])
+        facs = list({f['numero']: f for c in ids for f in fac_por_cot.get(clave(c), [])}.values())
         if facs:
             fila['facturas'] = ', '.join(sorted(set(str(f['numero']) for f in facs)))
             fila['monto_fac'] = sum(num(f.get('monto_antes_iva')) for f in facs)
@@ -201,7 +218,7 @@ def datos():
             en_curso.append(fila)
 
     # Adjudicadas sin OP, cruzadas con Cartera.
-    con_op = set(o.get('cotizacion_id') for o in ops)
+    con_op = set(c for o in ops for c in cot_ids(o))
     oc_mod = ocs_del_modulo()
     sin_op = []
     for c in todo('cotizaciones?estado=eq.Adjudicada&deleted=is.false'
