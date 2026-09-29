@@ -150,9 +150,29 @@ def _cot_items(ids):
     return out
 
 
+def _factura_de_esta_op(f, o, rs, ids, f0):
+    """¿La factura (que trae el mismo N° de cotización) es de ESTE pedido?
+    29-sep-2026 · SKF OMIA: la LM1396 se pidió dos veces. O.C. 17824 (junio,
+    factura 552, pagada) y O.C. 18614 (septiembre, OP-2026-0113, sin facturar).
+    Cruzar solo por cotización daba la 552 como factura de la OP nueva.
+    No es de esta OP si: las O.C. se conocen de ambos lados y no coinciden, o
+    la factura es de más de 15 días antes de que existiera la OP / su entrega."""
+    cot = set(clave(c) for c in ids)
+    oc_op = set(k for k in [clave(o.get('oc_cliente'))] + [clave(r.get('oc')) for r in rs]
+                if len(k) >= 4 and k not in cot)          # «LM2202» como O.C. no dice nada
+    oc_f = set(k for k in (clave(f.get('oc')), clave(f.get('oc_num'))) if len(k) >= 4 and k not in cot)
+    if oc_op and oc_f and not (oc_op & oc_f):
+        return False
+    ref = [d for d in (f0, fecha(o.get('created_at'))) if d]
+    ff = fecha(f.get('fecha_facturacion'))
+    if ff and ref and ff < min(ref) - datetime.timedelta(days=15):
+        return False
+    return True
+
+
 def datos():
     hoy = datetime.date.today()
-    ops = [o for o in todo('ops?select=id,numero,cotizacion_id,cliente,estado,oc_cliente,factura,deleted,valor_venta,extra,requiere_certificados')
+    ops = [o for o in todo('ops?select=id,numero,cotizacion_id,cliente,estado,oc_cliente,factura,deleted,valor_venta,extra,requiere_certificados,created_at')
            if not o.get('deleted') and o.get('estado') != 'anulada']   # borrador vivo = OP en curso
     abiertas = [o for o in ops if o.get('estado') != 'cerrada' and not o.get('factura')]
     ids_op = set(o['id'] for o in abiertas)
@@ -162,12 +182,13 @@ def datos():
             op_items[x['op_id']].append(x)
     nums = set(o['numero'] for o in abiertas)
     rems = collections.defaultdict(list)
-    for r in todo('remisiones?op_numero=not.is.null&select=remision,fecha,op_numero,item_cot,cantidad,cotizacion_id'):
+    for r in todo('remisiones?op_numero=not.is.null&select=remision,fecha,op_numero,item_cot,cantidad,cotizacion_id,oc'):
         if r.get('op_numero') in nums:
             rems[r['op_numero']].append(r)
     precios = _cot_items([c for o in abiertas for c in cot_ids(o)])
 
-    cartera = todo('cartera_facturas?select=numero,cliente_nombre,cotizacion_id,oc,oc_num,monto_antes_iva,fecha_facturacion')
+    cartera = todo('cartera_facturas?select=numero,cliente_nombre,cotizacion_id,oc,oc_num,monto_antes_iva,fecha_facturacion,estado')
+    cartera = [f for f in cartera if str(f.get('estado') or '').upper() != 'ANULADA']
     fac_por_cot = collections.defaultdict(list)
     fac_por_oc = collections.defaultdict(list)
     for f in cartera:
@@ -206,11 +227,13 @@ def datos():
         f0 = min(fechas) if fechas else None
         fila = {
             'op': o['numero'], 'cot': ' + '.join(ids) or '—', 'cliente': o.get('cliente') or '—',
-            'oc': o.get('oc_cliente') or '—', 'estado': o.get('estado'),
+            'oc': o.get('oc_cliente') or ', '.join(dict.fromkeys(str(r['oc']) for r in rs if r.get('oc'))) or '—',
+            'estado': o.get('estado'),
             'rem': ', '.join(sorted(set(str(r['remision']) for r in rs))) or '—',
             'valor_op': valor_op, 'entregado': ent, 'parcial': ent < valor_op * 0.995,
             'dias': (hoy - f0).days if f0 else None}
         facs = list({f['numero']: f for c in ids for f in fac_por_cot.get(clave(c), [])}.values())
+        facs = [f for f in facs if _factura_de_esta_op(f, o, rs, ids, f0)]
         if facs:
             fila['facturas'] = ', '.join(sorted(set(str(f['numero']) for f in facs)))
             fila['monto_fac'] = sum(num(f.get('monto_antes_iva')) for f in facs)
