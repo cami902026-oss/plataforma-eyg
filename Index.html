@@ -26714,6 +26714,8 @@ async function opRecibirConfirmar() {
   // Lo que sale necesita su remisión: sin número no hay documento de entrega.
   const salen = listo.filter(L => L.sale > 0);
   let _remiItemBase = 0;            // desde qué número siguen los ítems de la remisión
+  let _remiYa = [];                 // renglones que esa remisión ya tenía
+  let _icMapR = {};                 // uid del ítem de la cotización → su N°
   const remi = ((document.getElementById('op-recep-remi') || {}).value || '').trim();
   const lugar = ((document.getElementById('op-recep-lugar') || {}).value || '').trim();
   if (salen.length && !remi) {
@@ -26728,7 +26730,8 @@ async function opRecibirConfirmar() {
     if (!_opConfirmarNoDuplica(salen.map(L => L.x && L.x.it), remi)) return;
     try {
       const ya = (await absFetch('remisiones?remision=eq.' + encodeURIComponent(remi)
-        + '&select=remision,item&order=item.desc&limit=1')) || [];
+        + '&select=id,remision,item,item_cot,op_numero,descripcion,cantidad,colada&order=item.desc&limit=500')) || [];
+      _remiYa = ya;
       if (ya.length && !confirm('La remisión ' + remi + ' YA EXISTE.\n\n'
         + 'Si sigues, estas líneas se le suman a esa misma remisión.\n\n¿Es lo que quieres?')) return;
       // 9-sep-2026 — LA NUMERACIÓN SIGUE, NO VUELVE A EMPEZAR.
@@ -26737,6 +26740,7 @@ async function opRecibirConfirmar() {
       // «1». Pasó en la 26306: la tubería de 2" y la de 1" quedaron ambas como 1.
       _remiItemBase = +(ya[0] || {}).item || 0;
     } catch (_) { }
+    _icMapR = await _opItemCotMapa(op_current);
   }
 
   const nuevos = listo.filter(L => !L.x.prod).length;
@@ -26870,6 +26874,8 @@ async function opRecibirConfirmar() {
           });
           try { const _s = Array.isArray(_kSal) ? _kSal[0] : _kSal; if (_s && _s.id) _movs.push(_s.id); } catch (_) { }
           salidasRemi.push({
+            _k: (it.cotizacion_item_uid || ('#' + it.id)) + '|' + String(it.descripcion || '').trim(),
+            item_cot: _icMapR[it.cotizacion_item_uid] != null ? String(_icMapR[it.cotizacion_item_uid]) : null,
             remision: remi, fecha: fecha, cliente: op_current.cliente || '', lugar: lugar,
             oc: op_current.oc_cliente || null, cotizacion_id: opCotizDeItem(op_current, it) || null,
             op_numero: op_current.numero, item: _remiItemBase + salidasRemi.length + 1,
@@ -26941,8 +26947,24 @@ async function opRecibirConfirmar() {
     // nunca entró.
     if (salidasRemi.length) {
       try {
-        await absFetch('remisiones', { method: 'POST', headers: { 'Prefer': 'return=minimal' },
-                                       body: JSON.stringify(salidasRemi) });
+        // 29-sep-2026 · OP-2026-0116 — lo comprado se SUMA al renglón del mismo
+        // ítem si la remisión ya lo tiene (8 bolas de bodega + 4 compradas = un
+        // renglón de 12), en vez de abrir otro renglón con el mismo material.
+        const _norm = t => String(t || '').trim().toUpperCase();
+        const nuevas = [];
+        for (const r of salidasRemi) {
+          const ex = r.item_cot == null ? null : _remiYa.find(y => y.op_numero === r.op_numero
+            && String(y.item_cot) === String(r.item_cot) && _norm(y.descripcion) === _norm(r.descripcion));
+          if (!ex) { nuevas.push(r); continue; }
+          const cs = [ex.colada, r.colada].map(c => String(c || '').trim()).filter(Boolean);
+          const cuerpoR = { cantidad: (+ex.cantidad || 0) + (+r.cantidad || 0), colada: [...new Set(cs)].join(' / ') };
+          await absFetch('remisiones?id=eq.' + ex.id, { method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+                                                        body: JSON.stringify(cuerpoR) });
+          Object.assign(ex, cuerpoR);
+        }
+        const _filas = _opUnirRenglones(nuevas, _remiItemBase);
+        if (_filas.length) await absFetch('remisiones', { method: 'POST', headers: { 'Prefer': 'return=minimal' },
+                                       body: JSON.stringify(_filas) });
       } catch (e) {
         fallos.push('la remisión ' + remi + ' no se pudo crear (' + (e && e.message || e)
                     + '). El material YA salió del inventario: créala a mano.');
@@ -28044,6 +28066,43 @@ function _opPendiente(it) {
   return Math.max(0, q - (+it.despachada || 0));
 }
 
+// 29-sep-2026 · N° del ítem en la COTIZACIÓN para cada línea de la OP (por el
+// uid, que es exacto). La remisión lo imprime en su columna «Ítem cot.»: la
+// numeración propia de la OP (1..n) no le dice nada al cliente.
+async function _opItemCotMapa(op) {
+  const m = {};
+  const cots = opCotizIds(op);
+  if (!cots.length) return m;
+  try {
+    const ci = (await absFetch('cotizacion_items?cotizacion_id=in.('
+      + cots.map(x => '"' + encodeURIComponent(x) + '"').join(',')
+      + ')&select=item,uid&limit=3000')) || [];
+    ci.forEach(c => { if (c && c.uid && c.item != null) m[c.uid] = c.item; });
+  } catch (_) { }
+  return m;
+}
+
+// Un renglón por ítem: dos líneas de la OP del mismo ítem (la partida entre
+// bodega y compra, o dos salidas del mismo material) salen juntas, con las
+// cantidades sumadas y las coladas una detrás de otra. Numera 1..n.
+function _opUnirRenglones(rows, base) {
+  const out = [], por = {};
+  rows.forEach(r => {
+    const k = r._k; delete r._k;
+    if (k && por[k]) {
+      const u = por[k];
+      u.cantidad = (+u.cantidad || 0) + (+r.cantidad || 0);
+      const cs = [u.colada, r.colada].map(c => String(c || '').trim()).filter(Boolean);
+      u.colada = [...new Set(cs)].join(' / ');
+      return;
+    }
+    if (k) por[k] = r;
+    out.push(r);
+  });
+  out.forEach((r, i) => { r.item = (+base || 0) + i + 1; });
+  return out;
+}
+
 async function opDespacharAbrir() {
   if (!op_current) return;
   if (!opPuedeDespachar()) { showToast('Despacha bodega (Yesid), Andrea o gerencia', 'error'); return; }
@@ -28081,7 +28140,10 @@ async function opDespacharAbrir() {
   const entregas = await _opEntregasDe(op_current.numero);
   const ent = _opNumEntrega(entregas, sug);
 
-  op_current._despacho = { items: bod, stock: stock, entregas: entregas || [], ent: ent };
+  // Lo que se compra y todavía no se ha recibido NO entra aquí (no hay qué
+  // descontar). Se dice en el modal y se explica cómo sumarlo a esta remisión.
+  const comprasPend = (op_currentItems || []).filter(i => i.origen === 'COMPRA' && _opPendiente(i) > 0);
+  op_current._despacho = { items: bod, stock: stock, entregas: entregas || [], ent: ent, comprasPend: comprasPend };
   _opDespachoModal(ent.num || sug);
 }
 
@@ -28093,6 +28155,10 @@ function _opDespachoModal(sug) {
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100003;'
     + 'display:flex;align-items:center;justify-content:center;padding:16px;';
 
+  // 29-sep-2026 · OP-2026-0116 — dos líneas del mismo producto se comparaban
+  // cada una contra TODO el stock. Ahora se compara el total que sale.
+  const _totCod = {};
+  d.items.forEach(x => { _totCod[x.producto_codigo] = (_totCod[x.producto_codigo] || 0) + (_opPendiente(x) || (+x.cantidad || 0)); });
   const filas = d.items.map((it, n) => {
     const p = d.stock[it.producto_codigo] || {};
     const hay = +p.stock_actual || 0;
@@ -28101,7 +28167,7 @@ function _opDespachoModal(sug) {
     const pend = _opPendiente(it);
     const q = pend || (+it.cantidad || 0);
     const yaSalio = (+it.cantidad || 0) - pend;
-    const falta = hay < q;
+    const falta = hay < q || hay < (_totCod[it.producto_codigo] || 0);
     return '<div class="op-desp-fila' + (falta ? ' op-desp-mal' : '') + '">'
       + '<div class="op-desp-d">' + opEsc(it.descripcion)
       + '<small>' + opEsc(it.producto_codigo) + ' · ' + opEsc(p.descripcion || '')
@@ -28147,6 +28213,16 @@ function _opDespachoModal(sug) {
     + '</div>'
     + '<div class="op-desp-cab"><div>Material</div><div class="op-desp-c">Cantidad</div><div>Colada</div></div>'
     + filas
+    + ((d.comprasPend && d.comprasPend.length)
+      ? '<div style="margin-top:12px;background:rgba(232,160,32,.10);border-left:3px solid #E8A020;'
+        + 'padding:9px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#fbbf24;line-height:1.6;">'
+        + '<b>No entran aquí ' + d.comprasPend.length + ' ítem(s) de COMPRA que todavía no se han recibido:</b><br>'
+        + d.comprasPend.slice(0, 8).map(i => '· ' + opEsc(String(i.descripcion || '').trim()) + ' × ' + _opPendiente(i)
+            + (i.proveedor ? ' (' + opEsc(i.proveedor) + ')' : '')).join('<br>')
+        + (d.comprasPend.length > 8 ? '<br>· … y ' + (d.comprasPend.length - 8) + ' más' : '')
+        + '<br>Para que salgan en <b>esta misma remisión</b>: <b>📥 Recibir</b> → columna <b>«Sale de una»</b> '
+        + '→ el mismo N° de remisión. Se suman a ella.</div>'
+      : '')
     + '<div class="form-group" style="margin-top:12px;"><label style="font-size:10px;letter-spacing:.1em;">OBSERVACIONES</label>'
     + '<textarea id="op-desp-obs" rows="2" style="width:100%;"></textarea></div>'
     + '<div id="op-desp-aviso"></div></div>'
@@ -28194,6 +28270,16 @@ async function opDespacharConfirmar() {
       + '" (piden ' + q + ', quedan ' + (+p.stock_actual || 0) + ')');
     return { it: it, prod: p, qty: q, colada: colada };
   });
+  // 29-sep-2026 · OP-2026-0116 — y sumando las líneas del MISMO producto: dos
+  // líneas de 4 y 8 pasaban cada una contra un stock de 8, y salieron 12.
+  const _porCod = {};
+  listo.forEach(x => { if (x.prod.codigo && x.qty > 0) _porCod[x.prod.codigo] = (_porCod[x.prod.codigo] || 0) + x.qty; });
+  Object.keys(_porCod).forEach(c => {
+    const st = +((d.stock[c] || {}).stock_actual) || 0;
+    const nL = listo.filter(x => x.prod.codigo === c).length;
+    if (nL > 1 && _porCod[c] > st) errores.push('No alcanza el stock de ' + c + ': ' + nL
+      + ' líneas piden en total ' + _porCod[c] + ' y quedan ' + st);
+  });
   const av = document.getElementById('op-desp-aviso');
   if (errores.length) {
     av.innerHTML = '<div style="background:rgba(224,90,74,.12);border-left:3px solid #e05a4a;padding:11px 14px;'
@@ -28240,7 +28326,10 @@ async function opDespacharConfirmar() {
   try {
     // 1) La remisión (el documento). Si algo falla después, queda el papel y se
     //    ve qué faltó descontar — al revés sería stock movido sin respaldo.
-    const rows = listo.map((x, i) => ({
+    const _icMap = await _opItemCotMapa(op_current);
+    const rows = _opUnirRenglones(listo.map((x, i) => ({
+      _k: (x.it.cotizacion_item_uid || ('#' + x.it.id)) + '|' + String(x.it.descripcion || '').trim(),
+      item_cot: _icMap[x.it.cotizacion_item_uid] != null ? String(_icMap[x.it.cotizacion_item_uid]) : null,
       remision: num, fecha: fecha, cliente: op_current.cliente || '', lugar: lugar,
       // La cotización va POR LÍNEA, no por OP: cuando la orden lleva dos ofertas
       // cada renglón tiene que decir de cuál salió, o la remisión le carga todo a
@@ -28254,7 +28343,7 @@ async function opDespacharConfirmar() {
       desviacion: x.it.desviacion_tecnica || '',
       observaciones: obs, contiene: '', recibido_por: op_current.cliente || '',
       created_by: yo
-    }));
+    })));
     // Sello de la familia: solo desde la 2ª entrega. Una remisión de una sola
     // entrega se guarda exactamente como antes, sin base y sin número.
     const _ent = (d.ent || { n: 1 });
@@ -28278,9 +28367,15 @@ async function opDespacharConfirmar() {
 
     // 2) El inventario, ítem por ítem. Misma mecánica que el carrito de
     //    Abastecimiento: kardex + productos, y se anota cuál falla.
+    // Saldo CORRIDO por producto: con dos líneas del mismo código, la segunda
+    // tiene que partir de lo que dejó la primera, no del stock leído al abrir
+    // (OP-2026-0116: dos salidas seguidas escribieron el mismo saldo).
+    const _vivo = {};
     for (const x of listo) {
       try {
-        const nuevo = (+x.prod.stock_actual || 0) - x.qty;
+        const _c = x.prod.codigo;
+        if (!_vivo[_c]) _vivo[_c] = { st: +x.prod.stock_actual || 0, sal: +x.prod.salidas || 0 };
+        const nuevo = _vivo[_c].st - x.qty;
         await absFetch('kardex', {
           method: 'POST', headers: { 'Prefer': 'return=minimal' },
           body: JSON.stringify({
@@ -28294,9 +28389,10 @@ async function opDespacharConfirmar() {
         });
         await absFetch('productos?codigo=eq.' + encodeURIComponent(x.prod.codigo), {
           method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
-          body: JSON.stringify({ stock_actual: nuevo, salidas: (+x.prod.salidas || 0) + x.qty,
+          body: JSON.stringify({ stock_actual: nuevo, salidas: _vivo[_c].sal + x.qty,
                                  updated_at: new Date().toISOString() })
         });
+        _vivo[_c].st = nuevo; _vivo[_c].sal += x.qty;
         // El ítem de la OP, con su colada y su ACUMULADO de lo entregado.
         // `despachada` es aditivo. Y la línea solo queda 'despachado' cuando
         // salió TODO: antes se marcaba completa aunque salieran 1 de 4, y así
@@ -28759,6 +28855,24 @@ function _opBuscarStock(desc, idx) {
   return out.slice(0, 3);
 }
 
+// 29-sep-2026 · OP-2026-0116 (SAR ENERGY) — EL MISMO STOCK SE PROMETIÓ DOS VECES.
+// Había 1 válvula de aguja y 8 de bola. Al tomar de bodega, la línea se partió
+// (1 de bodega + 19 por comprar); la parte por comprar volvió a ver «hay 1 en
+// bodega» y se partió OTRA vez. Con la de bola igual: 8 + 4, y las 4 también
+// «de bodega». El despacho sacó 2 agujas y 12 bolas de un inventario de 1 y 8.
+// Lo que ya tomó otra línea de ESTA OP no está disponible para la siguiente.
+function _opBodegaComprometida(codigo, exceptoId) {
+  if (!codigo) return 0;
+  return (op_currentItems || [])
+    .filter(x => x && x.id !== exceptoId && x.origen === 'BODEGA' && x.producto_codigo === codigo)
+    .reduce((a, x) => a + _opPendiente(x), 0);
+}
+// Stock físico según el inventario ya leído. Si no está leído, no limita.
+function _opStockDe(codigo) {
+  const e = (_opStockIdx || []).find(x => x && x.p && x.p.codigo === codigo);
+  return e ? (+e.p.stock_actual || 0) : Infinity;
+}
+
 // ─── Revisión de una OP entera ───────────────────────────────────────────────
 // Devuelve solo lo que MERECE atención: lo que se iba a comprar y sí hay, y lo
 // que se prometió de bodega y ya no está.
@@ -28779,16 +28893,20 @@ async function opRevisarStock(silencioso) {
       // comprarlo («Comprar igual» / pasada a compra): eso no se vuelve a discutir.
       if (it.confirmado_por) continue;
       if (mejor && mejor.score >= 0.62) {
-        const hay = +mejor.prod.stock_actual || 0;
+        // Lo que otra línea de esta OP ya tomó de ese producto no se ofrece otra vez.
+        const hay = Math.max(0, (+mejor.prod.stock_actual || 0)
+          - _opBodegaComprometida(mejor.prod.codigo, it.id));
         if (hay > 0) avisos.push({ it: it, tipo: 'hay', prod: mejor.prod, hay: hay,
           alcanza: hay >= qty, score: mejor.score });
       }
     } else if (it.origen === 'BODEGA') {
-      // ¿Se prometió de bodega algo que ya no está?
+      // ¿Se prometió de bodega algo que ya no está? Descontando lo que otras
+      // líneas de esta misma OP ya tomaron del mismo producto.
       let hay = null;
       if (it.producto_codigo) {
         const e = idx.find(x => x.p.codigo === it.producto_codigo);
-        hay = e ? (+e.p.stock_actual || 0) : null;
+        hay = e ? Math.max(0, (+e.p.stock_actual || 0)
+          - _opBodegaComprometida(it.producto_codigo, it.id)) : null;
       } else if (mejor && mejor.score >= 0.62) hay = +mejor.prod.stock_actual || 0;
       if (hay != null && hay < qty) avisos.push({ it: it, tipo: 'falta', hay: hay,
         prod: (mejor && mejor.prod) || null });
@@ -28853,6 +28971,7 @@ function opIgnorarAviso(n) {
 async function _opFijarCompra(it, motivo) {
   if (!it || !op_current) return;
   const yo = (currentUser && (currentUser.email || currentUser.name)) || 'system';
+  const eraBodega = it.origen === 'BODEGA';
   const body = { origen: 'COMPRA', producto_codigo: null, confirmado_por: yo,
                  confirmado_at: new Date().toISOString(), updated_by: yo };
   try {
@@ -28863,6 +28982,7 @@ async function _opFijarCompra(it, motivo) {
     try { await opEvento(op_current.id, 'compra_confirmada',
       String(it.descripcion || '') + ' · se compra (' + motivo + '): no sale de bodega'); } catch (_) { }
     showToast('🛒 Se compra: esta línea ya no puede salir de bodega', 'success');
+    if (eraBodega) { try { await _opPlanDesdeOrigen(it, 'COMPRA'); } catch (_) { } }
   } catch (e) {
     showToast('No se pudo guardar la decisión de comprar: ' + (e && e.message || e), 'error');
   }
@@ -28886,6 +29006,22 @@ async function opTomarDeBodega(id, codigo, hay) {
   if (!it) return;
   const qty = +it.cantidad || 0;
   const yo = (currentUser && (currentUser.email || currentUser.name)) || 'system';
+  // 29-sep-2026 · OP-2026-0116 — lo que ya tomó otra línea de esta OP no se
+  // vuelve a prometer (el aviso pudo pintarse antes de la otra decisión).
+  hay = Math.min(+hay || 0, Math.max(0, _opStockDe(codigo) - _opBodegaComprometida(codigo, id)));
+  if (hay <= 0) {
+    showToast('De ' + codigo + ' ya no queda disponible: lo que hay en bodega ya lo tomó otra línea '
+      + 'de esta misma OP. Esta línea se compra.', 'error', { durationMs: 10000 });
+    await opRevisarStock(true);
+    return;
+  }
+  // ¿Ya hay una línea de BODEGA del mismo ítem y el mismo producto? Entonces se
+  // le suma a esa, en vez de abrir otra gemela (la remisión salía con dos
+  // renglones «VALV AGUJA ×1» del mismo ítem).
+  const gemela = (op_currentItems || []).find(x => x && x.id !== id && x.origen === 'BODEGA'
+    && x.producto_codigo === codigo && x.estado !== 'despachado'
+    && (x.cotizacion_item_uid || null) === (it.cotizacion_item_uid || null)
+    && String(x.descripcion || '').trim() === String(it.descripcion || '').trim());
   // 11-sep-2026 — LA SALIDA DE BODEGA SE CONFIRMA LEYENDO LAS DOS PIEZAS.
   // Este botón amarra la línea a un producto y de ahí sale el descuento del
   // inventario. Con un clic «UNION UNIVERSAL 2"» quedó amarrada a «UNION EMT 2"».
@@ -28897,6 +29033,32 @@ async function opTomarDeBodega(id, codigo, hay) {
     + 'Revisa tipo, medida, material y conexión. Si no es la misma, cancela y '
     + 'oprime «Comprar igual».')) return;
   try {
+    if (gemela) {
+      const toma = Math.min(hay, qty);
+      const nG = (+gemela.cantidad || 0) + toma;
+      const cG = { cantidad: nG, v_total: nG * (+gemela.v_unit || 0), updated_by: yo };
+      await absFetch('op_items?id=eq.' + gemela.id, {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(cG) });
+      Object.assign(gemela, cG);
+      if (toma >= qty) {
+        // Esta línea era solo el resto de una partición: queda absorbida.
+        await absFetch('op_items?id=eq.' + id, { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+        op_currentItems = op_currentItems.filter(x => x && x.id !== id);
+      } else {
+        const r = qty - toma;
+        const cR = { cantidad: r, v_total: r * (+it.v_unit || 0), updated_by: yo };
+        await absFetch('op_items?id=eq.' + id, {
+          method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(cR) });
+        Object.assign(it, cR);
+      }
+      await opEvento(op_current.id, 'stock_confirmado', it.descripcion + ' → bodega ' + codigo
+        + ' · +' + toma + ' a la línea de bodega que ya existía (queda en ' + nG + ')');
+      showToast('Sale de bodega: ' + toma + ' más de ' + codigo + ' en la misma línea', 'success');
+      opRenderItems(); _opVia();
+      await opRevisarStock(true);
+      try { await opPlanCargar(); } catch (_) { }
+      return;
+    }
     if (hay >= qty) {
       await absFetch('op_items?id=eq.' + id, {
         method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
@@ -28937,7 +29099,7 @@ async function opTomarDeBodega(id, codigo, hay) {
     // Se corrige sola: BODEGA, costo de inventario, sin O.C. y ya nuestra.
     // (El caso OP-2026-0017: el plan se generó un minuto antes de esta decisión.)
     try {
-      const _sync = await _opPlanSyncBodega(it);
+      const _sync = await _opPlanSyncBodega(it, Math.max(0, qty - (+it.cantidad || 0)));
       if (_sync) {
         await opEvento(op_current.id, 'plan_corregido',
           it.descripcion + ' · ' + (_sync.antes ? 'era compra a ' + _sync.antes + ', ' : '')
@@ -28969,7 +29131,12 @@ async function opTomarDeBodega(id, codigo, hay) {
 // Corrige en el plan la línea de un ítem que acaba de pasar a BODEGA.
 // Silenciosa a propósito: es una consecuencia de lo que la persona ya decidió,
 // no una pregunta nueva. Si el plan todavía no existe, no hace nada.
-async function _opPlanSyncBodega(it) {
+// 29-sep-2026 · (revisando la OP-2026-0116) — se corregían TODAS las filas del
+// plan con la misma descripción y a todas se les ponía la cantidad de la parte
+// de bodega: si una línea de 20 se partía en 1 de bodega + 19 por comprar con
+// el plan ya hecho, el plan quedaba con «1 de BODEGA» y las 19 desaparecían.
+// Ahora se corrige UNA fila y, si la línea se partió, el resto entra como compra.
+async function _opPlanSyncBodega(it, resto) {
   if (!op_current || !it) return null;
   const cc = _opCC(op_current);
   const desc = String(it.descripcion || '').trim();
@@ -29003,12 +29170,32 @@ async function _opPlanSyncBodega(it) {
     // La cantidad pudo partirse (parte de bodega, resto por comprar).
     if (it.cantidad != null) cuerpo.cantidad = +it.cantidad;
 
-    for (const f of filas) {
-      await absFetch('plan_compras?id=eq.' + f.id, {
-        method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(cuerpo)
-      });
+    // Una sola fila: la que todavía se compra (no la que ya es de bodega).
+    const f = filas.find(r => !/^BODEGA/i.test(String(r.proveedor || ''))) || null;
+    if (!f) return null;
+    await absFetch('plan_compras?id=eq.' + f.id, {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(cuerpo)
+    });
+    // Lo que no alcanzó en bodega se sigue comprando: tiene que quedar en el plan.
+    if (+resto > 0) {
+      try {
+        const cab = (await absFetch('plan_compras?id=eq.' + f.id + '&select=*&limit=1')) || [];
+        const base = cab[0] || {};
+        const mx = (await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc)
+          + '&select=item&order=item.desc&limit=1')) || [];
+        await absFetch('plan_compras', { method: 'POST', headers: { 'Prefer': 'return=minimal' },
+          body: JSON.stringify({
+            cc: cc, cotizacion: base.cotizacion || opCotizDeItem(op_current, it) || '',
+            cliente: base.cliente || op_current.cliente || '', fecha: new Date().toISOString().slice(0, 10),
+            item: ((mx[0] && +mx[0].item) || 0) + 1, descripcion: desc, udm: it.udm || base.udm || '',
+            cantidad: +resto, proveedor: f.proveedor || '', costo_unit: f.costo_unit,
+            nota: String(it.desviacion_tecnica || '').trim() || null,
+            pago: 'PENDIENTE', sin_oc: false, comprado: false, op_numero: op_current.numero,
+            created_by: (currentUser && (currentUser.name || currentUser.email)) || '—'
+          }) });
+      } catch (eR) { console.warn('[op→plan] resto', eR); }
     }
-    return { n: filas.length, costo: costo, antes: filas[0].proveedor || '' };
+    return { n: 1, costo: costo, antes: f.proveedor || '' };
   } catch (e) { console.warn('[op→plan]', e); return null; }
 }
 
@@ -29116,6 +29303,20 @@ async function opPlanCargar() {
   const enPlan = new Set(plan.map(r => String(r.descripcion || '').trim().toLowerCase()));
   const faltan = compra.concat(bodega)
     .filter(i => !enPlan.has(String(i.descripcion || '').trim().toLowerCase())).length;
+  // 29-sep-2026 · OP-2026-0116 — el plan decía 1 válvula de aguja y la OP 20.
+  // La descripción SÍ estaba en el plan, así que el aviso de arriba (que solo
+  // mira si aparece) no dijo nada y 18 agujas quedaron sin que nadie las
+  // comprara. Se cuadran CANTIDADES por material: lo que la OP pide contra lo
+  // que el plan lleva (compra + bodega).
+  const _nq = t => String(t || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  const _qOP = {}, _qPl = {}, _ejemplo = {};
+  compra.concat(bodega).forEach(i => { const k = _nq(i.descripcion); _qOP[k] = (_qOP[k] || 0) + (+i.cantidad || 0);
+    if (!_ejemplo[k] || i.origen === 'COMPRA') _ejemplo[k] = i; });
+  plan.forEach(r => { const k = _nq(r.descripcion); _qPl[k] = (_qPl[k] || 0) + (+r.cantidad || 0); });
+  const descuadre = Object.keys(_qOP)
+    .filter(k => (_qPl[k] || 0) > 0 && _qOP[k] - (_qPl[k] || 0) > 0.0001)
+    .map(k => ({ k: k, it: _ejemplo[k], op: _qOP[k], plan: _qPl[k] || 0, falta: _qOP[k] - (_qPl[k] || 0) }));
+  op_current._planDescuadre = descuadre;
 
   cont.innerHTML = '<div class="op-plan-caja">'
     + '<div class="op-plan-t">Plan de compras · <b style="color:var(--gold)">' + opEsc(cc) + '</b></div>'
@@ -29130,7 +29331,16 @@ async function opPlanCargar() {
     + '</div>'
     + (dif > 0.5 ? '<div class="op-plan-d" style="color:#e05a4a;margin-top:8px;">'
         + 'Comprar sale ' + opMoney(dif) + ' más caro que lo que se cotizó. Gerencia lo verá al aprobar.</div>' : '')
-    + '<button class="btn btn-ghost" onclick="opAbrirPlan()" style="margin-top:10px;padding:7px 14px;font-size:12px;">Abrir el plan</button>'
+    + (descuadre.length
+        ? '<div class="op-plan-d" style="margin-top:8px;background:rgba(224,90,74,.12);border-left:3px solid #e05a4a;'
+          + 'padding:9px 12px;border-radius:0 6px 6px 0;color:#fecaca;"><b>El plan lleva menos de lo que pide la OP:</b><br>'
+          + descuadre.map(x => '· ' + opEsc(String(x.it.descripcion || '').trim()) + ' — OP <b>' + x.op
+              + '</b>, plan <b>' + x.plan + '</b> → faltan <b>' + x.falta + '</b>').join('<br>')
+          + (opPuedeGenerarPlan()
+              ? '<br><button class="btn btn-primary" onclick="opPlanAgregarDescuadre(this)" style="margin-top:8px;padding:6px 14px;font-size:12px;">'
+                + 'Agregar lo que falta al plan</button>' : '')
+          + '</div>' : '')
+    + '<button class="btn btn-ghost" onclick="opAbrirPlan()"style="margin-top:10px;padding:7px 14px;font-size:12px;">Abrir el plan</button>'
     + (faltan && opPuedeGenerarPlan()
         ? ' <button class="btn btn-primary" onclick="opGenerarPlan(this)" style="margin-top:10px;padding:7px 14px;font-size:12px;">'
           + 'Agregar las ' + faltan + ' líneas que faltan</button>'
@@ -29289,6 +29499,44 @@ function opPuedeGenerarPlan() {
 // seguía vivo mientras el primer guardado tardaba, y cada clic leía el plan
 // todavía vacío e insertaba otra vez. Un clic a la vez por pestaña.
 var _opGenerandoPlan = false;
+// 29-sep-2026 · El botón del descuadre: mete en el plan, como COMPRA, lo que la
+// OP pide y el plan no lleva. Proveedor y costo, los de la línea de compra de
+// la OP. No toca ni borra ninguna fila que ya esté.
+async function opPlanAgregarDescuadre(btn) {
+  const op = op_current;
+  const des = (op && op._planDescuadre) || [];
+  if (!des.length) return;
+  if (!opPuedeGenerarPlan()) { showToast('Lo agrega compras (Alexandra o Andrea) o gerencia', 'error'); return; }
+  if (!confirm('Se van a AGREGAR al plan ' + _opCC(op) + ':\n\n'
+    + des.map(x => '· ' + x.falta + ' × ' + String(x.it.descripcion || '').trim()
+        + (x.it.proveedor ? ' (' + x.it.proveedor + ')' : ' (sin proveedor)')).join('\n')
+    + '\n\nNo se toca nada de lo que ya está. ¿Continuar?')) return;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Agregando…'; }
+  try {
+    const cc = _opCC(op);
+    const mx = (await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc)
+      + '&select=item&order=item.desc&limit=1')) || [];
+    let n = (mx[0] && +mx[0].item) || 0;
+    const yo = (currentUser && (currentUser.name || currentUser.email)) || '—';
+    const rows = des.map(x => ({
+      cc: cc, cotizacion: opCotizDeItem(op, x.it) || '', cliente: op.cliente || '',
+      fecha: new Date().toISOString().slice(0, 10), item: ++n,
+      descripcion: String(x.it.descripcion || '').trim(), udm: x.it.udm || '', cantidad: x.falta,
+      proveedor: x.it.origen === 'COMPRA' ? String(x.it.proveedor || '').trim() : '',
+      costo_unit: (x.it.origen === 'COMPRA' && x.it.costo_unit != null) ? +x.it.costo_unit : null,
+      nota: String(x.it.desviacion_tecnica || '').trim() || null,
+      pago: 'PENDIENTE', sin_oc: false, comprado: false, op_numero: op.numero, created_by: yo
+    }));
+    await absFetch('plan_compras', { method: 'POST', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify(rows) });
+    try { await opEvento(op.id, 'plan_corregido', 'Agregado al plan lo que faltaba: '
+      + rows.map(r => r.cantidad + ' × ' + r.descripcion).join(' · ')); } catch (_) { }
+    showToast('✅ Se agregaron ' + rows.length + ' línea(s) al plan', 'success');
+  } catch (e) {
+    showToast('No se pudo agregar al plan: ' + (e && e.message || e), 'error');
+  }
+  try { await opPlanCargar(); } catch (_) { }
+}
+
 async function opGenerarPlan(btn) {
   if (_opGenerandoPlan) { showToast('⏳ El plan ya se está generando. Espera a que termine.', 'info'); return; }
   _opGenerandoPlan = true;
@@ -29787,9 +30035,14 @@ async function _opPlanDesdeOrigen(it, origen) {
   try {
     const filas = (await absFetch('plan_compras?cc=eq.' + encodeURIComponent(cc)
       + '&descripcion=eq.' + encodeURIComponent(desc)
-      + '&select=id,proveedor,nota,pago,sin_oc,comprado&limit=5')) || [];
+      + '&select=id,proveedor,nota,pago,sin_oc,comprado,cantidad&limit=10')) || [];
     if (!filas.length) return;
-    for (const f of filas) {
+    // 29-sep-2026 — UNA sola fila: con la línea partida (8 de bodega + 4 de
+    // compra) hay varias filas con la misma descripción, y cambiarlas todas
+    // volvía de bodega o de compra lo que no era.
+    const _cand = filas.filter(f => !f.comprado && (origen === 'COMPRA' ? esBodega(f.proveedor) : !esBodega(f.proveedor)));
+    const _una = _cand.find(f => +f.cantidad === +it.cantidad) || _cand[0];
+    for (const f of (_una ? [_una] : [])) {
       // Ya comprado: el plan es el hecho consumado, no se toca.
       if (f.comprado) continue;
       const cuerpo = {};
