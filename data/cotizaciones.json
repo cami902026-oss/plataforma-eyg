@@ -124788,7 +124788,7 @@
     "cliente": "SAR ENERGY",
     "contacto": "LAURA ROJAS ",
     "correo": "lrojas@sarenergy.com",
-    "estado": "Adjudicada",
+    "estado": "Vencida",
     "factura": "",
     "iva": 19,
     "subtotal": 28583076,
@@ -125135,22 +125135,13 @@
         "precioProveedor": 17260
       }
     ],
-    "fechaGuardado": "2026-09-30T16:30:19.062Z",
+    "fechaGuardado": "2026-09-17T22:26:40.258Z",
     "fechaEnvio": "2026-09-17T22:26:40.258Z",
-    "adjudicadaAt": "2026-09-30",
-    "valorAdjudicado": 11193000,
-    "itemsAdjudicados": [
-      {
-        "uid": "2fccfe4f-48e9-48ab-b1e8-c69df17515e4",
-        "qty": 7
-      }
-    ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-09-30T16:30:14.035Z",
     "createdAt": "2026-09-17T19:56:12.093Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-30T16:30:19.062Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-09-26T02:48:57.510Z",
+    "updatedBy": "auto",
+    "vencidaAutoAt": "2026-09-26T02:48:57.510Z"
   },
   {
     "id": "LM2181-1",
@@ -143110,9 +143101,9 @@
     "estado": "Borrador",
     "factura": "",
     "iva": 19,
-    "subtotal": 0,
-    "ivaVal": 0,
-    "total": 0,
+    "subtotal": 4962543,
+    "ivaVal": 942883.17,
+    "total": 5905426.17,
     "formaPago": "30 DÍAS",
     "sitioEntrega": "",
     "validez": "8 DÍAS",
@@ -143130,7 +143121,7 @@
         "uid": "c921fa57-eea5-446c-a23c-40da08d9ddbc",
         "desc": "CHEQUE SWING AC A105 1-1/2\" CLASE 800 NPT",
         "marca": "VIZA",
-        "precio": 0,
+        "precio": 228767,
         "desvTec": "",
         "proveedor": "INDUVACOL",
         "obsProveedor": "",
@@ -143139,52 +143130,52 @@
       },
       {
         "id": 2,
-        "desc": "VALVULA TIPO BOLA AC A105, 1-1/2\" CLASE 800 NPT",
-        "udm": "EA",
         "qty": 4,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "135d3e33-0a86-43f1-bc81-ca25e75bd42d",
+        "desc": "VALVULA TIPO BOLA AC A105, 1-1/2\" CLASE 800 NPT",
         "marca": "SIO",
+        "precio": 580822,
+        "desvTec": "",
         "proveedor": "INDUVACOL",
-        "precioProveedor": 424000,
         "obsProveedor": "",
-        "uid": "135d3e33-0a86-43f1-bc81-ca25e75bd42d"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 424000
       },
       {
         "id": 3,
-        "desc": "VALVULA TIPO BOLA AC A105, 1-1/4\" CLASE 1000 NPT",
-        "udm": "EA",
         "qty": 5,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "PRESION DE TRABAJO 1000 W.O.G.",
+        "udm": "EA",
+        "uid": "00e1c7b9-b059-4a39-91b3-5d7e03b910d8",
+        "desc": "VALVULA TIPO BOLA AC A105, 1-1/4\" CLASE 1000 NPT",
         "marca": "VALTAC",
+        "precio": 93605,
+        "desvTec": "PRESION DE TRABAJO 1000 W.O.G.",
         "proveedor": "SEAT",
-        "precioProveedor": 68332,
         "obsProveedor": "",
-        "uid": "00e1c7b9-b059-4a39-91b3-5d7e03b910d8"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 68332
       },
       {
         "id": 4,
-        "desc": "VALVULA TIPO BOLA AC A105, 3/4\" CLASE 800 NPT",
-        "udm": "EA",
         "qty": 5,
-        "precio": 0,
-        "tiempoEntrega": "1-2 DIAS",
-        "desvTec": "",
+        "udm": "EA",
+        "uid": "4158d0b0-c0e0-4e1e-8c4b-ad0a4eff7dbb",
+        "desc": "VALVULA TIPO BOLA AC A105, 3/4\" CLASE 800 NPT",
         "marca": "SIO",
+        "precio": 205479,
+        "desvTec": "",
         "proveedor": "INDUVACOL",
-        "precioProveedor": 150000,
         "obsProveedor": "",
-        "uid": "4158d0b0-c0e0-4e1e-8c4b-ad0a4eff7dbb"
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 150000
       }
     ],
-    "fechaGuardado": "2026-09-30T15:57:29.240Z",
+    "fechaGuardado": "2026-09-30T16:32:24.940Z",
     "createdAt": "2026-09-30T14:57:55.058Z",
     "createdBy": "mario",
-    "updatedAt": "2026-09-30T15:57:29.240Z",
-    "updatedBy": "mario"
+    "updatedAt": "2026-09-30T16:32:24.940Z",
+    "updatedBy": "alberto"
   },
   {
     "id": "LM2256",
