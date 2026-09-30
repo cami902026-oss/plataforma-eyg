@@ -1,11 +1,32 @@
 name: 💼 Cartera por legalizar (gerencia)
 
-# Todos los días 7 a. m. Colombia (12:00 UTC): lo adjudicado y sin facturar.
+# Todos los días hacia las 7 a. m. Colombia: lo adjudicado y sin facturar.
 # Mientras SOLO_ANDREA = True en el script, llega solo a Andrea (revisión).
+#
+# 30-sep-2026 — GITHUB LANZA LOS PROGRAMADOS CON 3 A 7 HORAS DE RETRASO.
+# Con un solo horario a las 12:00 UTC (7 a. m.), el 29-sep salió a las 12:08 p. m.
+# y el 30-sep a las 10:30 a. m. todavía no había salido: gerencia no lo recibió.
+# Ahora hay VARIOS intentos desde la madrugada y un candado: el primero que
+# arranque después de las 5:30 a. m. Colombia lo envía; los demás ven que ya
+# salió hoy y no hacen nada. Así nunca llegan dos, y nunca llega de madrugada.
+# «Run workflow» a mano (workflow_dispatch) envía siempre.
 on:
   schedule:
-    - cron: '0 12 * * *'
+    - cron: '7 6 * * *'     # 1:07 a. m. Colombia (con el retraso cae hacia las 6–7)
+    - cron: '7 7 * * *'
+    - cron: '7 8 * * *'
+    - cron: '7 9 * * *'
+    - cron: '7 10 * * *'
+    - cron: '37 10 * * *'   # 5:37 a. m.
+    - cron: '7 11 * * *'
+    - cron: '37 11 * * *'
+    - cron: '7 12 * * *'    # 7:07 a. m.
+    - cron: '7 14 * * *'    # último recurso
   workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
 
 concurrency:
   group: cartera-por-legalizar
@@ -16,11 +37,37 @@ jobs:
     runs-on: ubuntu-latest
     name: 💼 Enviar informe
     steps:
+      - name: 🔒 ¿Ya salió hoy? ¿Es muy temprano?
+        id: candado
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          HOY=$(TZ=America/Bogota date +%Y-%m-%d)
+          echo "hoy=$HOY" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "enviar=si" >> "$GITHUB_OUTPUT"; echo "Manual: se envía."; exit 0
+          fi
+          MIN=$(( 10#$(TZ=America/Bogota date +%H) * 60 + 10#$(TZ=America/Bogota date +%M) ))
+          if [ "$MIN" -lt 330 ]; then
+            echo "enviar=no" >> "$GITHUB_OUTPUT"; echo "Antes de las 5:30 a. m. Colombia: espera al siguiente intento."; exit 0
+          fi
+          # La marca de "ya se envió hoy" es un artefacto enviado-AAAA-MM-DD que deja
+          # la corrida que sí mandó el correo (manual o programada).
+          YA=$(gh api "repos/${{ github.repository }}/actions/artifacts?name=enviado-cartera-$HOY&per_page=1" --jq '.total_count' || echo 0)
+          if [ "$YA" -gt 0 ]; then
+            echo "enviar=no" >> "$GITHUB_OUTPUT"; echo "Ya salió hoy ($HOY): no se repite."
+          else
+            echo "enviar=si" >> "$GITHUB_OUTPUT"; echo "Todavía no ha salido hoy ($HOY): se envía."
+          fi
+
       - uses: actions/checkout@v4
+        if: steps.candado.outputs.enviar == 'si'
       - uses: actions/setup-python@v5
+        if: steps.candado.outputs.enviar == 'si'
         with:
           python-version: '3.11'
       - name: 💼 Armar y enviar
+        if: steps.candado.outputs.enviar == 'si'
         env:
           MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
           MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
@@ -28,3 +75,14 @@ jobs:
           SUPABASE_URL:     ${{ secrets.SUPABASE_URL }}
           REMITENTE:        'info@eygenergygroup.com'
         run: python scripts/cartera_por_legalizar.py
+
+      # La marca para los intentos que vengan después: hoy ya salió.
+      - name: 🔒 Dejar la marca de enviado
+        if: steps.candado.outputs.enviar == 'si'
+        run: echo "enviado ${{ steps.candado.outputs.hoy }} · corrida ${{ github.run_id }}" > enviado.txt
+      - uses: actions/upload-artifact@v4
+        if: steps.candado.outputs.enviar == 'si'
+        with:
+          name: enviado-cartera-${{ steps.candado.outputs.hoy }}
+          path: enviado.txt
+          retention-days: 3
