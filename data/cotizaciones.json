@@ -112510,7 +112510,7 @@
     "cliente": "ARROW EXPLORATION LLANOS SUCURSAL COLOMBIA",
     "contacto": "Tender Llanos",
     "correo": "tenderllanos@arrowexploration.com",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 602717988,
@@ -113143,13 +113143,42 @@
         "precioProveedor": 180741
       }
     ],
-    "fechaGuardado": "2026-09-11T21:22:07.869Z",
+    "fechaGuardado": "2026-09-30T20:25:58.025Z",
     "fechaEnvio": "2026-09-11T21:22:07.869Z",
+    "adjudicadaAt": "2026-09-30",
+    "valorAdjudicado": 9421700,
+    "itemsAdjudicados": [
+      {
+        "uid": "34b55b46-a7cd-4a07-b71f-9931bd020ec8",
+        "qty": 200
+      },
+      {
+        "uid": "84de5d63-12a0-4617-b95a-6fe270f0d268",
+        "qty": 40
+      },
+      {
+        "uid": "1a48fde5-e5f7-4c1e-974f-c2852f45d1ec",
+        "qty": 200
+      },
+      {
+        "uid": "3877ff94-bf9b-463f-b20b-7b7df41ad04e",
+        "qty": 100
+      },
+      {
+        "uid": "95648139-1a50-4f59-8355-41ac957b037b",
+        "qty": 100
+      },
+      {
+        "uid": "d99902b0-14bf-4d6b-a9fe-85f0a773ef53",
+        "qty": 200
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-30T20:25:50.327Z",
     "createdAt": "2026-09-10T15:25:19.298Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-19T13:01:00.788Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-09-19T13:01:00.788Z"
+    "updatedAt": "2026-09-30T20:25:58.025Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2147",
@@ -124788,7 +124817,7 @@
     "cliente": "SAR ENERGY",
     "contacto": "LAURA ROJAS ",
     "correo": "lrojas@sarenergy.com",
-    "estado": "Vencida",
+    "estado": "Adjudicada",
     "factura": "",
     "iva": 19,
     "subtotal": 28583076,
@@ -125135,13 +125164,22 @@
         "precioProveedor": 17260
       }
     ],
-    "fechaGuardado": "2026-09-17T22:26:40.258Z",
+    "fechaGuardado": "2026-09-30T16:30:19.062Z",
     "fechaEnvio": "2026-09-17T22:26:40.258Z",
+    "adjudicadaAt": "2026-09-30",
+    "valorAdjudicado": 11193000,
+    "itemsAdjudicados": [
+      {
+        "uid": "2fccfe4f-48e9-48ab-b1e8-c69df17515e4",
+        "qty": 7
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-09-30T16:30:14.035Z",
     "createdAt": "2026-09-17T19:56:12.093Z",
     "createdBy": "sandra",
-    "updatedAt": "2026-09-26T02:48:57.510Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-09-26T02:48:57.510Z"
+    "updatedAt": "2026-09-30T16:30:19.062Z",
+    "updatedBy": "alexandra"
   },
   {
     "id": "LM2181-1",
@@ -132247,9 +132285,9 @@
     "estado": "Enviada",
     "factura": "",
     "iva": 19,
-    "subtotal": 10336200,
-    "ivaVal": 1963878,
-    "total": 12300078,
+    "subtotal": 8988000,
+    "ivaVal": 1707720,
+    "total": 10695720,
     "formaPago": "CONTADO",
     "sitioEntrega": "TAURAMENA",
     "validez": "8 DÍAS",
@@ -132262,7 +132300,7 @@
     "items": [
       {
         "id": 1,
-        "qty": 23,
+        "qty": 20,
         "udm": "EA",
         "uid": "d2bde6cb-ef39-4d7f-a1f6-8e65305df14f",
         "desc": "TUBERIA DE 4 SCH 40 A-106 BINORMA",
@@ -132275,11 +132313,11 @@
         "precioProveedor": 0
       }
     ],
-    "fechaGuardado": "2026-09-30T20:25:26.534Z",
+    "fechaGuardado": "2026-09-22T13:46:49.028Z",
     "fechaEnvio": "2026-09-22T13:45:26.921Z",
     "createdAt": "2026-09-22T13:45:26.922Z",
     "createdBy": "sheila",
-    "updatedAt": "2026-09-30T20:25:26.534Z",
+    "updatedAt": "2026-09-22T13:46:49.028Z",
     "updatedBy": "sheila"
   },
   {
