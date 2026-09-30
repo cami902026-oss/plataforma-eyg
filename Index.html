@@ -12106,10 +12106,46 @@ function _cotizAdjCancelar(){
   if(sel){ sel.value=_cotizEstadoPrev||'Enviada'; cotizEstadoChange(); }
   showToast('Cambio cancelado: la cotización no quedó adjudicada','info');
 }
+// 1-oct-2026 · OP-2026-0107 (SKID EXPERTS) — ÍTEMS ADJUDICADOS EN $0.
+// La LM2145 solo tenía precio en 61 de sus 228 materiales; la versión completa
+// era la LM2160 (misma lista, 184 con precio) y se quedó en Borrador. Se
+// adjudicaron 42 ítems sobre la LM2145 y 31 estaban en $0: la OP nació valiendo
+// $3,2 M en vez de ~$65 M, sin que nada avisara.
+// Busca, en las OTRAS cotizaciones del mismo cliente, el mismo material CON
+// precio. Solo lee la copia local (es para un aviso, no para decidir).
+function _cotizPrecioEnOtras(cliente, excluirId, descs){
+  const norm=function(t){ return String(t||'').trim().toUpperCase().replace(/\s+/g,' '); };
+  const cli=norm(cliente), quiero={}; (descs||[]).forEach(function(d){ quiero[norm(d)]=1; });
+  const out={};                                   // idCotiz → {estado, n}
+  (getData('bd_cotizaciones',[])||[]).forEach(function(c){
+    if(!c||c.deleted||c.id===excluirId||norm(c.cliente)!==cli) return;
+    let n=0; (c.items||[]).forEach(function(it){ if(quiero[norm(it.desc)] && (+it.precio||0)>0) n++; });
+    if(n) out[c.id]={ estado:c.estado||'', n:n };
+  });
+  return out;
+}
+function _cotizAvisoCeros(ceros, total, cliente, cotizId, accion){
+  const otras=_cotizPrecioEnOtras(cliente, cotizId, ceros.map(function(x){ return x.desc; }));
+  const ids=Object.keys(otras).sort(function(a,b){ return otras[b].n-otras[a].n; });
+  return confirm('⚠️ '+ceros.length+' de '+total+' ítem(s) están en $0 en '+cotizId+':\n\n'
+    + ceros.slice(0,8).map(function(x){ return '· '+String(x.desc||'').replace(/\s+/g,' ').trim().substring(0,70); }).join('\n')
+    + (ceros.length>8?'\n· … y '+(ceros.length-8)+' más':'')
+    + (ids.length
+        ? '\n\n💡 Esos materiales SÍ tienen precio en: '+ids.slice(0,3).map(function(i){ return i+' ('+otras[i].n+' ítems, '+(otras[i].estado||'—')+')'; }).join(' · ')
+          + '\nLo correcto es '+accion+' sobre ESA cotización (o completarla como -1 de esta).'
+        : '\n\nNo encontré esos materiales con precio en otra cotización del cliente.')
+    + '\n\nSi sigues, esos ítems quedan valiendo $0.\n\nAceptar = seguir igual · Cancelar = revisar primero');
+}
 function _cotizAdjConfirmar(){
   const d=_cotizAdjPend; if(!d) return;
   const marcados=d.sel.filter(function(x){ return x.marcado && (+x.qty)>0; });
   if(!marcados.length){ showToast('Marca al menos un ítem, o cancela si no le adjudicaron nada','error'); return; }
+  const _ceros=marcados.filter(function(x){ return !((+(x.ref&&x.ref.precio))>0); });
+  if(_ceros.length){
+    const _cid=(typeof cotizEditId!=='undefined'&&cotizEditId)||'esta cotización';
+    const _cl=((document.getElementById('cotiz-cliente')||{}).value||'').trim();
+    if(!_cotizAvisoCeros(_ceros.map(function(x){ return { desc:(x.ref&&x.ref.desc)||'' }; }), marcados.length, _cl, _cid, 'adjudicar')) return;
+  }
   const valor=marcados.reduce(function(a,x){ return a+_cotizAdjValorItem(x.ref,x.qty); },0);
   window._cotizAdjGuardado={
     items: marcados.map(function(x){ return { uid:x.uid, qty:(+x.qty||0) }; }),
@@ -22746,6 +22782,26 @@ async function remiGuardar(){
       }
     }catch(_){ }
   }
+  // 1-oct-2026 · 26341 → 26341-1 (SAR ENERGY) — RENOMBRAR NO ES UNA ENTREGA NUEVA.
+  // Para mandar lo que faltó, se abrió la 26341, se le cambió el número a -1, se
+  // bajaron las cantidades y se aceptó «renombrar»: la 26341 DEJÓ DE EXISTIR y la
+  // OP perdió lo ya entregado. Si el número nuevo es de la MISMA familia (base
+  // igual), casi siempre lo que se quiere es otra entrega: se ofrece crearla
+  // aparte y dejar la anterior intacta. Renombrar sigue siendo posible.
+  if(!c.nueva && c.remisionOrig && num!==c.remisionOrig
+     && _remiBaseDe(num)===_remiBaseDe(c.remisionOrig)){
+    const nueva = confirm('Cambiaste el número de la '+c.remisionOrig+' a '+num+' (misma familia).\n\n'
+      + 'ACEPTAR = crear la '+num+' como remisión NUEVA (otra entrega) y dejar la '+c.remisionOrig+' EXACTAMENTE como estaba.\n'
+      + 'CANCELAR = renombrar: la '+c.remisionOrig+' deja de existir y queda solo la '+num+'.');
+    if(nueva){
+      c.nueva = true; c.remisionOrig = null; c._idsBase = null;
+      // La entrega que le toca por su número: 26341 = 1, 26341-1 = 2, 26341-2 = 3.
+      c.remisionBase = _remiBaseDe(num); c.entregaN = (+String(num).split('-')[1] || 0) + 1;
+      showToast('Se guarda la '+num+' como entrega nueva; la anterior no se toca','info',{durationMs:7000});
+    } else if(!confirm('¿Seguro? La '+c.remisionOrig+' va a DESAPARECER y la OP va a quedar con lo que diga la '+num+'.\n\nAceptar = renombrar · Cancelar = no guardar')){
+      showToast('No se guardó nada','info'); return;
+    }
+  }
   if(num!==(c.remisionOrig||'')){
     let existe=null;
     try{ existe = await absFetch('remisiones?remision=eq.'+encodeURIComponent(num)+'&select=cliente,item'); }
@@ -25913,6 +25969,16 @@ async function _opCrearDesdeReal(cotizId) {
     return;
   }
 
+  // 1-oct-2026 · OP-2026-0107 — antes de gastar un consecutivo: ¿hay ítems en $0?
+  {
+    const _lin = _opLineasDeCotiz(c);
+    const _ceros = _lin.filter(L => !((+(L.it && L.it.precio)) > 0)).map(L => ({ desc: (L.it && L.it.desc) || '' }));
+    if (_ceros.length && !_cotizAvisoCeros(_ceros, _lin.length, c.cliente || '', cotizId, 'crear la OP')) {
+      showToast('OP no creada: revisa los precios de ' + cotizId + ' primero', 'info', { durationMs: 8000 });
+      return;
+    }
+  }
+
   // La guardia vive AQUÍ y no en quien llama: por este punto pasan las dos
   // entradas (el botón 📑 de la BD de cotizaciones y el buscador del módulo OP).
   const dec = await _opGuardiaCotizConOP(c);
@@ -26529,6 +26595,20 @@ async function opRecibirAbrir() {
     // Antes se miraban 30 filas ordenadas COMO TEXTO: 'PRUEBA01' se cuela de
     // primera y '26135-1' cuenta como 261351. Ahora lo calcula una sola función.
     sug = await _remiNumSiguiente();
+  } catch (_) { }
+  // 1-oct-2026 — IGUAL QUE «ALISTAR Y DESPACHAR»: si la OP ya tuvo entregas, lo
+  // que sale de una NO toma un consecutivo nuevo. Si la última remisión es de
+  // esta misma salida (fecha de hoy o futura), lo comprado se SUMA a ella (así
+  // se armaron la 26341 y la 26342: bodega + compras en un solo papel). Si es de
+  // otro día, toca la siguiente de la familia (-1, -2…). Antes proponía un
+  // número suelto y se terminaba renombrando la remisión anterior a mano.
+  try {
+    const ents = await _opEntregasDe(op_current.numero);
+    if (ents && ents.length) {
+      const ult = ents[ents.length - 1];
+      const _d = new Date(), hoy = _d.getFullYear() + '-' + String(_d.getMonth() + 1).padStart(2, '0') + '-' + String(_d.getDate()).padStart(2, '0');
+      sug = (String(ult.fecha || '') >= hoy) ? ult.remision : (_opNumEntrega(ents, sug).num || sug);
+    }
   } catch (_) { }
 
   op_current._recep = props;
@@ -28681,10 +28761,12 @@ let _opStockIdx = null;      // inventario indexado
 let _opStockAt = 0;
 
 const OP_TIPOS = [
+  // Primero: una «CONDULETA ROSCADA TEE 2"» es eléctrica, no una tee de tubería.
+  [['CONDULETA'], 'CONDULETA'],
   [['SEMICODO'], 'SEMICODO'], [['CODO'], 'CODO'],
   [['TEE', 'TE', 'TES'], 'TEE'],
   [['BRIDA', 'FLANCHE', 'FLANGE'], 'FLANCHE'],        // el hallazgo
-  [['PLATINA'], 'PLATINA'], [['TAPON', 'CAP'], 'TAPON'],
+  [['PLATINA'], 'PLATINA'], [['TAPON', 'CAP', 'PLUG'], 'TAPON'],
   [['NIPLE', 'NIPPLE'], 'NIPLE'],
   [['BUSHING', 'REDUCCION', 'REDUCTOR'], 'BUSHING'],
   [['UNION', 'UNIVERSAL'], 'UNION'],
@@ -28693,7 +28775,7 @@ const OP_TIPOS = [
   [['EMPAQUE', 'ESPIROMETALICO', 'FLEXITALICO'], 'EMPAQUE'],
   [['THREADOLET', 'WELDOLET', 'SOCKOLET', 'ELBOLET', 'ELBOLEHT', 'OLET'], 'OLET'],
   [['TUBO', 'TUBERIA'], 'TUBO'], [['LAMINA'], 'LAMINA'], [['BROCA'], 'BROCA'],
-  [['CABLE'], 'CABLE'], [['COPA'], 'COPA'], [['CONDULETA'], 'CONDULETA'],
+  [['CABLE'], 'CABLE'], [['COPA'], 'COPA'],
   [['CONECTOR'], 'CONECTOR'], [['TUERCA'], 'TUERCA'], [['MANOMETRO'], 'MANOMETRO']
 ];
 
@@ -28705,11 +28787,17 @@ const OP_EJES = {
                 [['SLIPON', 'SO'], 'SLIPON'], [['SOCKET', 'SW', 'SOCKETWELD'], 'SOCKET']],
   cara:        [[['RTJ'], 'RTJ'], [['RF'], 'RF']],
   forma:       [[['REDU', 'REDUCIDA', 'REDUCTORA'], 'REDUCIDA']],
-  union:       [[['ROSCADO', 'ROSCADA', 'NPT', 'THRD'], 'ROSCADO'], [['BW', 'PS'], 'SOLDADO']],
+  // 1-oct-2026 · OP-2026-0107 — SOCKET WELD es una tercera forma de unir: una
+  // «TEE 3/4" CL 6000 SW» entraba contra «TEE AC NPT 3.000L 3/4"». Y «P/S»
+  // (punta soldable) nunca se reconocía porque la barra partía la palabra.
+  union:       [[['ROSCADO', 'ROSCADA', 'NPT', 'THRD', 'THREADED'], 'ROSCADO'],
+                [['BW', 'PS', 'BEVELED', 'BUTTWELD', 'BUTT'], 'SOLDADO'],
+                [['SW', 'SOCKET', 'SOCKETWELD'], 'SOCKET']],
   // El material NO es un detalle: una pieza en inoxidable no reemplaza una en
   // acero al carbono ni al reves, por mucho que coincidan medida y forma.
-  material:    [[['INOX', 'INOXIDABLE', 'SS', 'INOXIDABLES'], 'INOX'],
-                [['AC', 'CARBON', 'CARBONO'], 'CARBON'],
+  material:    [[['INOX', 'INOXIDABLE', 'SS', 'INOXIDABLES', 'SS304', 'SS316', 'TP304', 'TP316',
+                   'TP304L', 'TP316L', 'A182', 'A312', 'A403', '304L', '316L'], 'INOX'],
+                [['AC', 'CARBON', 'CARBONO', 'A105', 'A234', 'WPB', 'A106', 'A53'], 'CARBON'],
                 // 11-sep-2026 — galvanizado (hierro maleable, 150 psi) no es acero
                 // forjado 3000: «UNION UNIVERSAL 1/2" GALVANIZADA» ≠ «UNIVERSAL AC NPT».
                 [['GALV', 'GALVANIZADO', 'GALVANIZADA', 'GALVANIZADOS', 'GALVANIZADAS'], 'GALV']],
@@ -28724,7 +28812,10 @@ const OP_EJES = {
                 [['CHEQUE', 'CHECK', 'RETENCION', 'CHEK'], 'CHEQUE'],
                 [['COMPUERTA', 'GATE'], 'COMPUERTA'], [['GLOBO', 'GLOBE'], 'GLOBO'],
                 [['AGUJA', 'NEEDLE'], 'AGUJA'], [['MARIPOSA', 'BUTTERFLY'], 'MARIPOSA'],
-                [['ALIVIO', 'RELIEF', 'SEGURIDAD'], 'ALIVIO'], [['VENTEO'], 'VENTEO']]
+                [['ALIVIO', 'RELIEF', 'SEGURIDAD'], 'ALIVIO'], [['VENTEO'], 'VENTEO'],
+                // 1-oct-2026 · OP-2026-0107 — un CAP es hembra: «CAP 3/4" CL 6000»
+                // entraba contra «TAPON MACHO AC NPT 6.000L 3/4"».
+                [['CAP', 'HEMBRA', 'FEMALE'], 'HEMBRA'], [['MACHO', 'PLUG', 'MALE'], 'MACHO']]
 };
 const OP_MATERIAL = [105, 234, 106, 193, 194, 304, 316, 321];
 const OP_PRESION = [3000, 6000, 9000];
@@ -28736,6 +28827,7 @@ function _opBase(s) {
   s = s.replace(/["”“’#×]/g, ' ').replace(/-/g, ' ');
   // «A/C» es acero al carbono, no la fracción ni dos letras sueltas.
   s = s.replace(/\bA\s*\/\s*C\b/g, ' AC ');
+  s = s.replace(/\bP\s*\/\s*S\b/g, ' PS ').replace(/\bS\s*\/\s*W\b/g, ' SW ');
   return s.replace(/[^A-Z0-9/. ]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 function _opPal(s) { return new Set(_opBase(s).replace(/\//g, ' ').split(' ').filter(Boolean)); }
@@ -28757,6 +28849,9 @@ function _opVariante(s) {
 // Y lee "900/1500L" como rango de clase, no como la fracción 0,6.
 function _opNums(s) {
   let b = _opBase(s);
+  // 1-oct-2026 — «3.000L» / «6.000L» es la CLASE forjada, no 3 ni 6 pulgadas.
+  // Leída como medida, una «TEE 3" SCH 160» cruzaba con «TEE AC NPT 3.000L 3/4"».
+  b = b.replace(/\b[369][.,][0O]{3}(?:L|LB|LBS)?\b/g, ' ').replace(/\b[369][0O]{3}(?:L|LB|LBS)\b/g, ' ');
   const clases = new Set(), medidas = new Set(), vals = new Set();
   b.replace(/(\d{3,4})\s*\/\s*(\d{3,4})/g, (m, a, c) => {
     [a, c].forEach(v => { if (OP_CLASE.includes(+v)) clases.add(+v); }); return ' ';
@@ -28771,6 +28866,30 @@ function _opNums(s) {
     else medidas.add(v);
   });
   return { medidas, clases };
+}
+// 1-oct-2026 · OP-2026-0107 — SCHEDULE y CLASE FORJADA también son ejes duros.
+// «TEE 2" SCH 160» entraba contra «TEE AC P/S S80 2"», y 3000/6000 se tiraban
+// como «especificación» sin comparar. Si las dos piezas lo dicen, tiene que ser
+// lo mismo; si una no lo dice, no se frena (hay productos sin ese dato).
+function _opSched(s) {
+  const b = _opBase(s), out = new Set();
+  const map = v => ({ STD: '40', XS: '80', XH: '80', XXS: 'XXS', '40S': '40', '80S': '80', '10S': '10' }[v] || v);
+  b.replace(/\bSCH\s*(\d{2,3}S?|STD|XXS|XS)\b/g, (m, v) => { out.add(map(v)); return m; });
+  b.replace(/\bS\s?(10|40|80|160)\b/g, (m, v) => { out.add(v); return m; });
+  if (/\bXXS\b/.test(b)) out.add('XXS'); else if (/\b(XS|XH)\b/.test(b)) out.add('80');
+  if (/\bSTD\b/.test(b)) out.add('40');
+  return out;
+}
+function _opPres(s) {
+  const b = _opBase(s), out = new Set();
+  if (/\b3\s*\/\s*6[.,]?000/.test(b)) { out.add(3000); out.add(6000); }
+  b.replace(/\b([369])[.,]?[0O]{3}(?:L|LB|LBS)?\b/g, (m, v) => { out.add(+v * 1000); return m; });
+  return out;
+}
+function _opChocaSet(a, b) {
+  if (!a.size || !b.size) return false;
+  let comun = false; a.forEach(x => { if (b.has(x)) comun = true; });
+  return !comun;
 }
 function _opSeq(a, b) {                       // parecido de texto, sin librerías
   a = _opBase(a); b = _opBase(b);
@@ -28790,7 +28909,8 @@ async function _opStockIndice(forzar) {
   _opStockIdx = prods.map(p => {
     const n = _opNums(p.descripcion);
     return { p: p, tipo: _opTipo(p.descripcion), va: _opVariante(p.descripcion),
-             med: n.medidas, cls: n.clases, base: _opBase(p.descripcion) };
+             med: n.medidas, cls: n.clases, base: _opBase(p.descripcion),
+             sch: _opSched(p.descripcion), pres: _opPres(p.descripcion) };
   });
   _opStockAt = Date.now();
   return _opStockIdx;
@@ -28803,9 +28923,12 @@ function _opBuscarStock(desc, idx) {
   // proponia una TEE de 1/2". Antes de adivinar, se calla.
   if (!td) return [];
   const nd = _opNums(desc), bd = _opBase(desc);
+  const sd = _opSched(desc), pd = _opPres(desc);
   const out = [];
   for (const e of idx) {
     if (td && e.tipo !== td) continue;                         // otro tipo de pieza
+    if (_opChocaSet(sd, e.sch || _opSched(e.p.descripcion))) continue;   // SCH 160 ≠ S80
+    if (_opChocaSet(pd, e.pres || _opPres(e.p.descripcion))) continue;   // 3000 ≠ 6000
     if (nd.clases.size && e.cls.size) {                        // 150 ≠ 1500
       let hay = false; nd.clases.forEach(c => { if (e.cls.has(c)) hay = true; });
       if (!hay) continue;
@@ -31912,6 +32035,51 @@ async function pcomGuardar(silencioso){
         r.comprado = !!it.comprado;
         r.recibida = (it.recibida===''||it.recibida==null) ? null : parseFloat(it.recibida);
       });
+    }
+    // 1-oct-2026 · CC-OP-2026-0107 — FRENO ANTES DE REEMPLAZAR.
+    // Un guardado desde una pantalla con una copia incompleta dejó el plan con 20
+    // de sus 42 materiales, cada uno repetido, y sin ninguna marca de «comprado»
+    // ($37,3 M → $12,6 M). Se calcula cómo quedaría el plan DESPUÉS de guardar y
+    // se compara con el servidor: si se pierden materiales o marcas de compra, o
+    // aparecen filas repetidas que antes no estaban, se dice qué y se pregunta.
+    if(!c.nueva || _reemplazarTodo){
+      try{
+        const srvF = ((await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc)+'&select=id,descripcion,cantidad,proveedor,comprado&limit=1000'))||[]);
+        if(srvF.length){
+          const nz = t => String(t||'').trim().toUpperCase().replace(/\s+/g,' ');
+          const base = new Set((Array.isArray(c._idsBase)?c._idsBase:[]).map(String));
+          const quedan = srvF.filter(r => !(_reemplazarTodo || base.has(String(r.id))));
+          const despues = quedan.concat(rows);
+          const mat = arr => { const m={}; arr.forEach(r=>{ const k=nz(r.descripcion); m[k]=(m[k]||0)+1; }); return m; };
+          const antesM = mat(srvF), despM = mat(despues);
+          const perdidos = Object.keys(antesM).filter(k => !despM[k]);
+          const compAntes = new Set(srvF.filter(r=>r.comprado).map(r=>nz(r.descripcion)));
+          const compDesp  = new Set(despues.filter(r=>r.comprado).map(r=>nz(r.descripcion)));
+          const sinCompra = [...compAntes].filter(k => !compDesp.has(k) && despM[k]);
+          const firma = r => nz(r.descripcion)+'|'+(+r.cantidad||0)+'|'+nz(r.proveedor);
+          const cuenta = arr => { const m={}; arr.forEach(r=>{ const k=firma(r); m[k]=(m[k]||0)+1; }); return m; };
+          const fA = cuenta(srvF), fD = cuenta(despues);
+          const dobles = Object.keys(fD).filter(k => fD[k] > 1 && fD[k] > (fA[k]||0));
+          if(perdidos.length || sinCompra.length || dobles.length){
+            const corto = k => k.split('|')[0].substring(0,60);
+            const txt = (perdidos.length ? '\n• Se PIERDEN '+perdidos.length+' material(es): '+perdidos.slice(0,5).map(corto).join(' · ')+(perdidos.length>5?' …':'') : '')
+              + (sinCompra.length ? '\n• Pierden la marca de COMPRADO '+sinCompra.length+': '+sinCompra.slice(0,4).map(corto).join(' · ')+(sinCompra.length>4?' …':'') : '')
+              + (dobles.length ? '\n• Quedan REPETIDAS '+dobles.length+' línea(s): '+dobles.slice(0,4).map(corto).join(' · ')+(dobles.length>4?' …':'') : '');
+            if(silencioso){
+              if(!c._avisoFreno){ c._avisoFreno = true;
+                showToast('⚠️ No se guardó el plan '+c.cc+' solo: tu pantalla lo dejaría peor que el del servidor.'+txt.replace(/\n/g,' ')+' — Cierra y vuelve a abrir el plan (Ctrl+F5).','error',{durationMs:25000}); }
+              return;
+            }
+            if(!confirm('⚠️ OJO: si guardas, el plan '+c.cc+' queda PEOR que el que está en el servidor:\n'+txt
+                + '\n\nSuele pasar cuando la pantalla tiene una copia vieja o incompleta.\n\n'
+                + 'CANCELAR (recomendado) = no guardar; cierra, Ctrl+F5 y vuelve a abrir el plan.\n'
+                + 'ACEPTAR = guardar igual, sabiendo lo de arriba.')){
+              showToast('No se guardó. Cierra el plan, Ctrl+F5 y vuelve a abrirlo.','info',{durationMs:10000});
+              return;
+            }
+          }
+        }
+      }catch(_){ }
     }
     let nuevasPC;
     try{
