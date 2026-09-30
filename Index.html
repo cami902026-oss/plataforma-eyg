@@ -32343,6 +32343,66 @@ function _pcomPlanBodyHTML(c){
   </div>
   <div style="margin-top:14px;font-size:9px;color:#555">Retefuente 2,5% aplica si la compra al proveedor ≥ $ ${PCOM_BASE_RETE.toLocaleString('es-CO')} (10 UVT ${new Date().getFullYear()}) y no es autoretenedor. Cotización: ${_remiEsc(_cotIds.join('  +  '))||'n.a.'} · Fecha: ${c.fecha?c.fecha.split('-').reverse().join('/'):''}</div>`;
 }
+// 1-oct-2026 — EL EXCEL DEL PLAN NO ERA LO QUE SE VE EN PANTALLA.
+// Usaba el mismo cuerpo del PDF: otras columnas y otro orden, sin la cotización,
+// sin la nota/desviación (lo que va a la O.C.), sin «comprado» ni «recibida», y
+// con TODAS las celdas forzadas a texto («$ 1.234.567» no se puede sumar).
+// Ahora tiene las columnas de la pantalla, en el mismo orden, más IVA,
+// retención y total a pagar, y los valores salen como NÚMEROS. El PDF no cambia.
+function _pcomExcelBodyHTML(c){
+  const calc = pcomCalcRows(c.items);
+  const _cotIds = pcomCotizIds(c);
+  const T = 'mso-number-format:"\\@"';                 // texto (descripciones, códigos)
+  const N = 'mso-number-format:"#,##0.##";text-align:right';
+  const M = 'mso-number-format:"\\$ #,##0";text-align:right';
+  const num = v => { const x = parseFloat(v); return isFinite(x) ? x : ''; };
+  let n = 0;
+  const filas = c.items.map(it=>{
+    n++;
+    const p = (String(it.proveedor||'').trim().toUpperCase())||'(SIN PROVEEDOR)';
+    const x = calc.provs[p]||{};
+    const sub = (parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0);
+    const iva = sub*PCOM_TASA_IVA;
+    const rete = x.aplicaRete ? sub*PCOM_TASA_RETE : 0;
+    const e = pcomEstadoLinea(it);
+    return `<tr><td style="text-align:center">${n}</td>
+    <td style="${T}">${_remiEsc(it.cotizacion)||''}</td>
+    <td style="${T}">${_remiEsc(it.descripcion)}</td>
+    <td style="${T}">${_remiEsc(it.nota)||''}</td>
+    <td style="${T};text-align:center">${_remiEsc(it.udm)}</td>
+    <td style="${N}">${num(it.cantidad)}</td>
+    <td style="${T}">${_remiEsc(it.proveedor)||''}</td>
+    <td style="${M}">${num(it.costo_unit)}</td>
+    <td style="${M}">${sub?Math.round(sub*100)/100:''}</td>
+    <td style="text-align:center">${it.comprado?'SI':'NO'}</td>
+    <td style="${N}">${num(it.recibida)}</td>
+    <td style="${T};text-align:center">${_remiEsc(e.txt||'')}</td>
+    <td style="${M}">${sub?Math.round(iva*100)/100:''}</td>
+    <td style="${M}">${rete?Math.round(-rete*100)/100:''}</td>
+    <td style="${M}">${sub?Math.round((sub+iva-rete)*100)/100:''}</td>
+    <td style="text-align:center">${x.aplicaRete?'SI':'NO'}</td>
+    <td style="${T};text-align:center">${_remiEsc(it.pago||'')}</td></tr>`;
+  }).join('');
+  const provs = Object.keys(calc.provs).sort();
+  const filasResumen = provs.map(p=>{const x=calc.provs[p];return `<tr><td style="${T}">${_remiEsc(p)}${x.sinOC?' (NO REQUIERE OC)':''}</td><td style="${M}">${Math.round(x.subtotal)}</td><td style="${M}">${Math.round(x.total)}</td><td style="text-align:center;font-weight:700;color:${x.pago==='PAGADO'?'#2EAA4A':'#c00'}">${x.pago}</td></tr>`;}).join('');
+  return `<table style="margin-bottom:8px"><tr>
+    <td colspan="5" style="font-size:15px;font-weight:800">E&amp;G ENERGY GROUP — PLAN DE COMPRAS — ${_remiEsc(c.cliente)||''}</td></tr>
+    <tr><td colspan="2" style="font-weight:700">CENTRO DE COSTOS:</td><td colspan="3" style="${T};font-weight:700">${_remiEsc(c.cc)}</td></tr>
+    <tr><td colspan="2" style="font-weight:700">Cotización:</td><td colspan="3" style="${T}">${_remiEsc(_cotIds.join(' + '))||'n.a.'}</td></tr>
+    <tr><td colspan="2" style="font-weight:700">Fecha:</td><td colspan="3" style="${T}">${c.fecha?c.fecha.split('-').reverse().join('/'):''}</td></tr>
+  </table>
+  <table class="b"><tr style="background:#dce6f1;font-weight:700"><th>SUBTOTAL</th><th>IVA (19%)</th><th>RETENCION</th><th>NETO PAGAR</th></tr>
+    <tr><td style="${M}">${Math.round(calc.tot.subtotal)}</td><td style="${M}">${Math.round(calc.tot.iva)}</td><td style="${M}">${Math.round(calc.tot.rete)}</td><td style="${M};font-weight:700">${Math.round(calc.tot.total)}</td></tr></table>
+  <br>
+  <table class="b"><thead><tr style="background:#d9d9d9;font-weight:700">
+    <th>#</th><th>COTIZACIÓN</th><th>DESCRIPCIÓN</th><th>NOTA / DESVIACIÓN</th><th>UDM</th><th>CANT</th><th>PROVEEDOR</th>
+    <th>COSTO UNIT</th><th>SUBTOTAL</th><th>COMPRADO</th><th>RECIBIDA</th><th>ESTADO</th>
+    <th>IVA (19%)</th><th>RETENCION</th><th>TOTAL PAGAR</th><th>¿RETE?</th><th>PAGO</th>
+  </tr></thead><tbody>${filas}</tbody></table>
+  <br>
+  <table class="b"><tr style="background:#003366;color:#fff;font-weight:700;text-align:center"><td>PROVEEDOR</td><td>VALOR SIN IVA</td><td>TOTAL A PAGAR</td><td>PAGO</td></tr>${filasResumen}</table>
+  <br><div style="font-size:9px;color:#555">Retefuente 2,5% aplica si la compra al proveedor ≥ $ ${PCOM_BASE_RETE.toLocaleString('es-CO')} (10 UVT ${new Date().getFullYear()}) y no es autoretenedor.</div>`;
+}
 function pcomPDF(){
   if(!pcom_current) return; pcomSyncHeader();
   const c = pcom_current;
@@ -32367,10 +32427,9 @@ function pcomExcel(){
   <style>
     body{font-family:Calibri,Arial,sans-serif;font-size:10.5px;color:#000}
     table{border-collapse:collapse} .b td,.b th{border:1px solid #000;padding:4px 5px}
-    td,th{mso-number-format:"\\@"}
     br{mso-data-placement:same-cell}
   </style></head><body>
-  ${_pcomPlanBodyHTML(c)}
+  ${_pcomExcelBodyHTML(c)}
   </body></html>`;
   const nombre = 'Plan_de_Compras_' + (String(c.cc||'').replace(/[^\w\-]+/g,'_').replace(/^_+|_+$/g,'') || 'EYG') + '.xls';
   const blob = new Blob(['﻿'+html], {type:'application/vnd.ms-excel;charset=utf-8'});
