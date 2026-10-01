@@ -21527,8 +21527,8 @@
     "cliente": "ANDES OPERATING",
     "contacto": "YENNY MORENO",
     "correo": "",
-    "estado": "Adjudicada",
-    "factura": "",
+    "estado": "Facturada",
+    "factura": "662",
     "iva": 19,
     "subtotal": 15168098,
     "ivaVal": 2881938.62,
@@ -21725,42 +21725,43 @@
         "precioProveedor": 8000
       }
     ],
-    "fechaGuardado": "2026-09-01T21:49:06.606Z",
+    "fechaGuardado": "2026-10-01T18:52:19.365Z",
     "fechaEnvio": "2026-08-03T17:37:58.810Z",
+    "facturadaAt": "2026-10-01",
     "adjudicadaAt": "2026-08-03",
     "valorAdjudicado": 476931,
     "itemsAdjudicados": [
       {
-        "uid": "cf6cdf44-4579-4a6a-8c62-f8544a51a51f",
-        "qty": 4
+        "qty": 4,
+        "uid": "cf6cdf44-4579-4a6a-8c62-f8544a51a51f"
       },
       {
-        "uid": "936b1ffb-349a-4206-836d-1048126d9f34",
-        "qty": 32
+        "qty": 32,
+        "uid": "936b1ffb-349a-4206-836d-1048126d9f34"
       },
       {
-        "uid": "2c5204ff-27e7-440c-a868-b42276a0fb39",
-        "qty": 4
+        "qty": 4,
+        "uid": "2c5204ff-27e7-440c-a868-b42276a0fb39"
       },
       {
-        "uid": "fbbd47d5-c726-4e53-a679-9b89fd2b4c53",
-        "qty": 4
+        "qty": 4,
+        "uid": "fbbd47d5-c726-4e53-a679-9b89fd2b4c53"
       },
       {
-        "uid": "692fbd54-964c-40e5-840d-c6ba30ea7da0",
-        "qty": 1
+        "qty": 1,
+        "uid": "692fbd54-964c-40e5-840d-c6ba30ea7da0"
       },
       {
-        "uid": "b04c152f-60df-4705-9afa-911ff82ab3eb",
-        "qty": 10
+        "qty": 10,
+        "uid": "b04c152f-60df-4705-9afa-911ff82ab3eb"
       }
     ],
     "adjudicacionPor": "Alexandra",
     "adjudicacionAt": "2026-08-19T22:07:54.711Z",
     "createdAt": "2026-07-06T16:32:33.340Z",
     "createdBy": "lina",
-    "updatedAt": "2026-09-01T21:49:06.607Z",
-    "updatedBy": "alexandra"
+    "updatedAt": "2026-10-01T18:52:19.365Z",
+    "updatedBy": "andrea"
   },
   {
     "id": "LM1770",
@@ -142945,266 +142946,266 @@
     "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
     "adjudicacionAt": "2026-09-30T00:13:15.625727Z",
     "adjudicacionPor": "Andrea",
-    "valorAdjudicado": 43951080.0,
+    "valorAdjudicado": 43951080,
     "itemsAdjudicados": [
       {
-        "qty": 12.0,
+        "qty": 12,
         "uid": "8d7136e6-5f31-423b-9fec-e7aa797ddd4e"
       },
       {
-        "qty": 84.0,
+        "qty": 84,
         "uid": "7af88c9c-859c-4cd7-b2aa-6591b61e90d7"
       },
       {
-        "qty": 54.0,
+        "qty": 54,
         "uid": "e7a11d12-a9a4-4714-b6c4-edaee985d626"
       },
       {
-        "qty": 18.0,
+        "qty": 18,
         "uid": "7c61c34d-bb01-4684-b3ee-d1fedc3e1fab"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "1dad0dda-e1b6-45c5-8754-e585e0551567"
       },
       {
-        "qty": 12.0,
+        "qty": 12,
         "uid": "1040566b-2c4c-44ac-ba76-6b8a1a66719b"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "1894ae4b-d934-48b2-a3b2-e0cca15201c7"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "3071d5a5-eb9c-4fb8-8a90-e0582ca3a8ac"
       },
       {
-        "qty": 38.0,
+        "qty": 38,
         "uid": "09fb50f7-82ba-4096-b935-49c161427f11"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "3dafd609-c763-4fbf-887e-7bd4dfa8af32"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "d65bfff1-51b2-4303-8472-371c48e4ab89"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "64ef86fc-d016-4739-98f9-5754f29f41b0"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "1e02e6f0-5749-45d0-93ab-1f2bbe042136"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "3f117df0-1393-4fe4-8323-bbc488755f33"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "961dee82-aecc-44d3-9579-23efefb67eb4"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "79967303-29c9-495b-bfd8-ee7900300fa6"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "4a6bcf89-1108-4be6-9c83-5f6300172430"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "2bdd0e6f-c313-451c-a545-d76dd795bf13"
       },
       {
-        "qty": 12.0,
+        "qty": 12,
         "uid": "75db9f20-f60a-4d46-9a6a-d0d3508e66d1"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "d4627e4b-3b86-44c8-8eb0-35cc7cf079bc"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "0083165a-42d3-4ccb-a47a-3e449049fe4f"
       },
       {
-        "qty": 10.0,
+        "qty": 10,
         "uid": "585aa06c-2ee6-4e5a-8e77-de103becf019"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "9cc2e64d-0894-465e-8479-d46bc7fe23c3"
       },
       {
-        "qty": 5.0,
+        "qty": 5,
         "uid": "c7b9ee8c-9826-4c2b-8f63-728e453a98e5"
       },
       {
-        "qty": 12.0,
+        "qty": 12,
         "uid": "604a1a08-2821-4335-81bd-c5cf19027ff2"
       },
       {
-        "qty": 19.0,
+        "qty": 19,
         "uid": "be96ecf0-d152-4569-bd21-880b29f55cfc"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "fa4d6907-2a89-45b6-9325-d26dd01ad871"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "49fc788b-4f86-41bd-b5cf-ce8f484661da"
       },
       {
-        "qty": 15.0,
+        "qty": 15,
         "uid": "a1348872-a4f0-4b25-b229-7c5512fb2349"
       },
       {
-        "qty": 100.0,
+        "qty": 100,
         "uid": "b7c02932-31f7-4ae9-9fa8-53fa696a2b21"
       },
       {
-        "qty": 144.0,
+        "qty": 144,
         "uid": "e45907cd-8835-4148-9e13-bbc0a03e8916"
       },
       {
-        "qty": 10.0,
+        "qty": 10,
         "uid": "7ceff29f-382d-499d-96dd-ebd57204eb39"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "29a6a32d-e6c8-443d-9a83-81671791d701"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "81093659-7224-4282-ae69-30244f16ced2"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "a47abd7a-98ee-4a03-a80f-4e383459ba6b"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "fdb68b97-ed70-491c-b219-3a5fc2b9bc68"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "6ce0e4aa-1e2f-40d0-88d5-2f34d044a95f"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "893942e2-c576-4a18-8102-dbc0c6c73a2d"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "532f63f6-ad83-48d5-88d5-2cb84a9e3545"
       },
       {
-        "qty": 7.0,
+        "qty": 7,
         "uid": "e88d82d6-ebd8-4788-ad12-909427cac130"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "7a06f1e8-186e-4493-a6bc-258244060667"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "d1d29c79-40bd-4a30-892f-2d9cc5bfd34e"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "1a683e7f-b773-4cf4-8046-3d0e8ff71f3d"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "a1e2051f-0e7e-4ccc-93d6-6e26bec889c0"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "20a6dbff-cfb8-48e5-b284-b012e60fccac"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "284784ed-a934-4ae6-963a-26ed87c97648"
       },
       {
-        "qty": 15.0,
+        "qty": 15,
         "uid": "daa24ecb-0869-4e33-bdfe-64c8a90b2a3b"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "106575f8-01f6-40fc-a249-120df8b7f465"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "cdf6e3f2-bb40-49c6-a3d8-050260334c14"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "349f8d42-5372-435e-b82e-ef731dc1547d"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "a6433edc-2081-4a45-a380-3ae71376d5bc"
       },
       {
-        "qty": 8.0,
+        "qty": 8,
         "uid": "19dd367f-f7ea-42fb-ba7c-23fc3f0f96a3"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "51b473e2-f270-4ce8-84d4-9fa590171431"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "e6a98b6d-9a8e-440a-8417-d8aee5f4bbd1"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "a62d69f5-6138-49cd-8f90-f85b57aeb963"
       },
       {
-        "qty": 48.0,
+        "qty": 48,
         "uid": "11b08c37-27b0-47bd-ab3a-965d2afc4322"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "d468382a-280c-4ba0-9dfb-45594ecc4fd6"
       },
       {
-        "qty": 17.0,
+        "qty": 17,
         "uid": "d8a480d9-123f-45b3-bacc-dee6985ecea3"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "2a1f93d4-9378-4d34-be79-f1bed2a522ac"
       },
       {
-        "qty": 10.0,
+        "qty": 10,
         "uid": "821d20a0-64fa-4770-980a-2dc0e9365192"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "68f468a9-bf1a-4f2d-bd9c-2ed115db9b03"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "17b9e162-8ed6-4387-be98-0dbcb3b4c5f1"
       },
       {
-        "qty": 5.0,
+        "qty": 5,
         "uid": "7728342d-28cb-4d6a-985a-1d1e8b11f315"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "7996468f-e736-43e7-ab18-9e2ff273ce00"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "3921c68e-9f53-4fd7-a938-6dead924af17"
       }
     ]
@@ -145973,59 +145974,6 @@
     "updatedBy": "sandra"
   },
   {
-    "id": "LM629",
-    "fecha": "2027-02-03",
-    "fechaVenc": "2027-02-11",
-    "cliente": "SAR ENERGY",
-    "contacto": "",
-    "correo": "",
-    "estado": "Enviada",
-    "factura": "",
-    "iva": 19,
-    "subtotal": 903600,
-    "ivaVal": 171684,
-    "total": 1075284,
-    "formaPago": "60 DÍAS",
-    "sitioEntrega": "",
-    "validez": "8 DÍAS",
-    "observaciones": "",
-    "vendedor": "",
-    "realizadaPor": "",
-    "aprobadaPor": "",
-    "solicitudId": "",
-    "motivoRechazo": "",
-    "items": [
-      {
-        "qty": 12,
-        "udm": "EA",
-        "uid": "975e870f-cbb3-42b9-8b66-8993e31b80cb",
-        "desc": "PASTA REVELADORA DE AGUA ( 2,25 Oz POR BARRA ) KOLOR KUT",
-        "marca": "",
-        "precio": 75300,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "",
-        "precioProveedor": null
-      }
-    ],
-    "fechaGuardado": "2026-08-24T13:22:15.496Z",
-    "fechaEnvio": "2026-07-17T02:21:59.287Z",
-    "adjudicadaAt": "2026-07-17",
-    "valorAdjudicado": 903600,
-    "itemsAdjudicados": [
-      {
-        "uid": "975e870f-cbb3-42b9-8b66-8993e31b80cb",
-        "qty": 12
-      }
-    ],
-    "adjudicacionPor": "Alexandra",
-    "adjudicacionAt": "2026-08-24T13:21:28.124Z",
-    "createdAt": "2026-07-17T02:20:50.553Z",
-    "createdBy": "andrea",
-    "updatedAt": "2026-08-24T13:22:15.496Z",
-    "updatedBy": "alexandra"
-  },
-  {
     "id": "LM2260",
     "iva": 19,
     "fecha": "2026-10-01",
@@ -146474,5 +146422,58 @@
     "fechaGuardado": "2026-10-01T03:17:11.321Z",
     "motivoRechazo": "",
     "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
+  },
+  {
+    "id": "LM629",
+    "fecha": "2027-02-03",
+    "fechaVenc": "2027-02-11",
+    "cliente": "SAR ENERGY",
+    "contacto": "",
+    "correo": "",
+    "estado": "Enviada",
+    "factura": "",
+    "iva": 19,
+    "subtotal": 903600,
+    "ivaVal": 171684,
+    "total": 1075284,
+    "formaPago": "60 DÍAS",
+    "sitioEntrega": "",
+    "validez": "8 DÍAS",
+    "observaciones": "",
+    "vendedor": "",
+    "realizadaPor": "",
+    "aprobadaPor": "",
+    "solicitudId": "",
+    "motivoRechazo": "",
+    "items": [
+      {
+        "qty": 12,
+        "udm": "EA",
+        "uid": "975e870f-cbb3-42b9-8b66-8993e31b80cb",
+        "desc": "PASTA REVELADORA DE AGUA ( 2,25 Oz POR BARRA ) KOLOR KUT",
+        "marca": "",
+        "precio": 75300,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "",
+        "precioProveedor": null
+      }
+    ],
+    "fechaGuardado": "2026-08-24T13:22:15.496Z",
+    "fechaEnvio": "2026-07-17T02:21:59.287Z",
+    "adjudicadaAt": "2026-07-17",
+    "valorAdjudicado": 903600,
+    "itemsAdjudicados": [
+      {
+        "uid": "975e870f-cbb3-42b9-8b66-8993e31b80cb",
+        "qty": 12
+      }
+    ],
+    "adjudicacionPor": "Alexandra",
+    "adjudicacionAt": "2026-08-24T13:21:28.124Z",
+    "createdAt": "2026-07-17T02:20:50.553Z",
+    "createdBy": "andrea",
+    "updatedAt": "2026-08-24T13:22:15.496Z",
+    "updatedBy": "alexandra"
   }
 ]
