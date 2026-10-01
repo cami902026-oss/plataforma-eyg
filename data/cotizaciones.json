@@ -19436,7 +19436,7 @@
     ],
     "total": 41.65,
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "ivaVal": 6.65,
     "cliente": "GlobalTech",
     "factura": "",
@@ -19448,8 +19448,8 @@
     "createdBy": "lina",
     "fechaVenc": "2026-07-10",
     "formaPago": "REEMBOLSABLE (10%)",
-    "updatedAt": "2026-07-17T22:12:27.230Z",
-    "updatedBy": "lina",
+    "updatedAt": "2026-10-01T02:13:58.356Z",
+    "updatedBy": "auto",
     "fechaEnvio": "2026-07-17T22:12:27.230Z",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
@@ -19457,7 +19457,8 @@
     "sitioEntrega": "",
     "fechaGuardado": "2026-07-17T22:12:27.230Z",
     "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vencidaAutoAt": "2026-10-01T02:13:58.356Z"
   },
   {
     "id": "LM1751",
@@ -55727,6 +55728,270 @@
     "updatedBy": "andrea"
   },
   {
+    "id": "LM1899",
+    "iva": 19,
+    "fecha": "2026-07-28",
+    "items": [
+      {
+        "id": 1,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "0ff640d7-b06a-4a4d-aca7-3c7414dab041",
+        "desc": "ESTANTERÍA INDUSTRIAL METÁLICA TIPO MODULAR: CONSTRUCCIÓN TOTALMENTE DE ACERO, NIVELES DE CARGA AJUSTABLES\nVER ANEXO 1, ESPECIFICACIONES TECNICAS\n",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 2,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "6a1f95c5-68fb-43dd-8201-00baa41c60c6",
+        "desc": "AIRE ACONDICIONADO DE 18000 MIL BTU - INVERTER AHORRA ENERGIA",
+        "marca": "WHIRLPOOL",
+        "precio": 0,
+        "desvTec": "AIRE ACONDICIONADO18000 BTU INVERTER 220V WHIRLPOOL LWA5160Q",
+        "proveedor": "ELECTRO FERIA DE LA 13",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 2500000
+      },
+      {
+        "id": 3,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "d97cf31d-003c-41e2-91f1-949c2236fb15",
+        "desc": "LÁMPARAS PARA TECHO TIPO INDUSTRIAL LED HERMÉTICA DE 2 TUBOS DE 18 W",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "INTERELECTRICAS",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 4,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "228e2aa2-beb2-40f3-a7a1-38e2df3c311a",
+        "desc": "TOMACORRIENTE 220 VOLTIOS",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 5,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "929ebad2-bdb1-48ae-b489-933e275e0f2c",
+        "desc": "TOMACORRIENTE 110 VOLTIOS.",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 6,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "874ad82b-0a91-4bf9-938d-28daa84ffef6",
+        "desc": "INTERRUPTOR – 110 VOLTIOS",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 7,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "d222cd77-0967-4f3a-9bc0-d600d35b2404",
+        "desc": "CABLE # 12 BLANCO",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 8,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "eb0fb2e5-0f18-485c-a82c-d4a645a16c4a",
+        "desc": "CABLE # 12 NEGRO",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 9,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "71e0cb20-3220-466c-a142-43bd73a301f4",
+        "desc": "CABLE # 12 ROJO",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 10,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "9faa68c5-5bc6-4d42-ab1b-52ef65f5f814",
+        "desc": "CABLE # 12 VERDE",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 11,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "cb3db812-cdcf-46bd-92d0-e9bba6aab9d6",
+        "desc": "CONECTOR PLUG – HEMBRA – MACHO – VER FOTO / ENTRADA ALIMENTACIÓN ELÉCTRICA LA CASETA",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 12,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "8f68ab8f-232e-4ec2-85f0-387f0504932c",
+        "desc": "CAJA DE 12 CIRCUITOS – ELÉCTRICA",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 13,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "4559eac8-f51c-4cc1-9931-ed38f7062059",
+        "desc": "CAJA RAWELT 5800",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 14,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "5735f1f0-3208-485b-b7de-de71f5ecfa86",
+        "desc": "TERMINALES – PARA CONEXIÓN CAJA RAWELT DE ½”",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 15,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "9465daec-a821-4721-b1b4-a65d2b7f956d",
+        "desc": "TUBERÍA EMT DE ½” – 20 METROS LINEALES",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 16,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "c3d516de-ad3d-4a94-8b8d-dd33b6506fd4",
+        "desc": "UNIONES PARA TUBERÍA EMT DE ½”",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 17,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "d51cc46e-eb30-43d3-a2e9-722bfa30cbb5",
+        "desc": "BREAKER MONOPOLAR DE 20 AMP",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      },
+      {
+        "id": 18,
+        "qty": 1,
+        "udm": "EA",
+        "uid": "183130f8-baab-495c-ae3a-47681f692ee0",
+        "desc": "BREAKER BIPOLAR DE 20 AMP",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 0
+      }
+    ],
+    "total": 0,
+    "correo": "tenderllanos@arrowexploration.com",
+    "estado": "Borrador",
+    "ivaVal": 0,
+    "cliente": "ARROW EXPLORATION LLANOS SUCURSAL COLOMBIA",
+    "factura": "",
+    "validez": "8 DÍAS",
+    "contacto": "Tender Llanos",
+    "subtotal": 0,
+    "vendedor": "",
+    "createdAt": "2026-07-28T18:26:52.078Z",
+    "createdBy": "alexandra",
+    "fechaVenc": "2026-08-05",
+    "formaPago": "30 DÍAS",
+    "updatedAt": "2026-07-28T18:26:52.078Z",
+    "updatedBy": "alexandra",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "realizadaPor": "",
+    "sitioEntrega": "",
+    "fechaGuardado": "2026-07-28T18:26:52.077Z",
+    "motivoRechazo": "",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
+  },
+  {
     "id": "LM1900",
     "fecha": "2026-07-28",
     "fechaVenc": "2026-08-05",
@@ -78720,60 +78985,6 @@
     "vencidaAutoAt": "2026-09-02T00:31:31.454Z"
   },
   {
-    "id": "LM2040-1",
-    "iva": 19,
-    "fecha": "2026-09-16",
-    "items": [
-      {
-        "qty": 4,
-        "udm": "EA",
-        "uid": "b1781ee9-4bfc-440e-9674-a24cbf070eb8",
-        "desc": "Racor hembra OD 1/2 a 1/2 NPT",
-        "marca": "SWAGELOK-COMFIT-TY LOK SIMILAR",
-        "precio": 135715,
-        "desvTec": "Conector recto de 1/2 od x 1/2 fnpt modelo ss-810-7-8 marca swagelok",
-        "proveedor": "FERREINSTRUMENTACION",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 95000
-      }
-    ],
-    "total": 646003.4,
-    "correo": "",
-    "estado": "Facturada",
-    "ivaVal": 103143.4,
-    "cliente": "LUIS ALEJANDRO JIMENEZ VERGARA",
-    "factura": "635",
-    "validez": "8 DÍAS",
-    "contacto": "LUIS ALEJANDRO JIMENEZ VERGARA",
-    "subtotal": 542860,
-    "vendedor": "Sheila Baron",
-    "createdAt": "2026-09-04T18:07:03.246Z",
-    "createdBy": "sheila",
-    "fechaVenc": "2026-09-24",
-    "formaPago": "30 DÍAS",
-    "updatedAt": "2026-09-16T22:11:00.940Z",
-    "updatedBy": "andrea",
-    "fechaEnvio": "2026-09-04T18:07:03.246Z",
-    "aprobadaPor": "Alberto",
-    "facturadaAt": "2026-09-16",
-    "solicitudId": "",
-    "adjudicadaAt": "2026-09-07",
-    "realizadaPor": "Sandra",
-    "sitioEntrega": "CABUYARO META",
-    "fechaGuardado": "2026-09-16T22:11:00.940Z",
-    "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "adjudicacionAt": "2026-09-07T13:05:53.339Z",
-    "adjudicacionPor": "Alexandra",
-    "valorAdjudicado": 542860,
-    "itemsAdjudicados": [
-      {
-        "qty": 4,
-        "uid": "b1781ee9-4bfc-440e-9674-a24cbf070eb8"
-      }
-    ]
-  },
-  {
     "id": "LM2041",
     "fecha": "2026-08-24",
     "fechaVenc": "2026-09-01",
@@ -80974,7 +81185,7 @@
     ],
     "total": 2587201.61,
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "ivaVal": 413082.61,
     "cliente": "MONTITEC",
     "factura": "",
@@ -80986,8 +81197,8 @@
     "createdBy": "sandra",
     "fechaVenc": "2026-09-03",
     "formaPago": "CONTADO",
-    "updatedAt": "2026-08-26T14:55:42.051Z",
-    "updatedBy": "sandra",
+    "updatedAt": "2026-10-01T02:13:58.356Z",
+    "updatedBy": "auto",
     "fechaEnvio": "2026-08-26T14:55:42.051Z",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
@@ -80995,7 +81206,8 @@
     "sitioEntrega": "FONTIBON",
     "fechaGuardado": "2026-08-26T14:55:42.051Z",
     "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vencidaAutoAt": "2026-10-01T02:13:58.356Z"
   },
   {
     "id": "LM2053-1",
@@ -118901,7 +119113,7 @@
     ],
     "total": 10683427.3,
     "correo": "",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "ivaVal": 1705757.3,
     "cliente": "GEP",
     "factura": "",
@@ -118913,8 +119125,8 @@
     "createdBy": "sheila",
     "fechaVenc": "2026-09-22",
     "formaPago": "30 DÍAS",
-    "updatedAt": "2026-09-14T15:13:24.013Z",
-    "updatedBy": "sheila",
+    "updatedAt": "2026-10-01T02:13:58.356Z",
+    "updatedBy": "auto",
     "fechaEnvio": "2026-09-14T15:13:24.013Z",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
@@ -118922,7 +119134,8 @@
     "sitioEntrega": "CAJICA",
     "fechaGuardado": "2026-09-14T15:13:24.013Z",
     "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vencidaAutoAt": "2026-10-01T02:13:58.356Z"
   },
   {
     "id": "LM2158",
@@ -119244,7 +119457,7 @@
     ],
     "total": 1926774.22,
     "correo": "carolina.arias@cmuconsulting.com",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "ivaVal": 307636.22,
     "cliente": "CMU",
     "factura": "",
@@ -119256,8 +119469,8 @@
     "createdBy": "sandra",
     "fechaVenc": "2026-09-22",
     "formaPago": "30 DÍAS",
-    "updatedAt": "2026-09-14T21:36:04.887Z",
-    "updatedBy": "sandra",
+    "updatedAt": "2026-10-01T02:13:58.356Z",
+    "updatedBy": "auto",
     "fechaEnvio": "2026-09-14T21:36:04.887Z",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
@@ -119265,7 +119478,8 @@
     "sitioEntrega": "Km 17 Corregimiento Araguaney Vía Yopal – Paz de Ariporo ",
     "fechaGuardado": "2026-09-14T21:36:04.887Z",
     "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vencidaAutoAt": "2026-10-01T02:13:58.356Z"
   },
   {
     "id": "LM2159",
@@ -119347,7 +119561,7 @@
     ],
     "total": 8148914.13,
     "correo": "Compras@rchconstructores.com",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "ivaVal": 1301087.13,
     "cliente": "RCH CONSTRUCTORES",
     "factura": "",
@@ -119359,8 +119573,8 @@
     "createdBy": "sandra",
     "fechaVenc": "2026-09-22",
     "formaPago": "CONTADO",
-    "updatedAt": "2026-09-15T15:12:35.861Z",
-    "updatedBy": "sandra",
+    "updatedAt": "2026-10-01T02:13:58.356Z",
+    "updatedBy": "auto",
     "fechaEnvio": "2026-09-15T15:12:35.860Z",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
@@ -119368,7 +119582,8 @@
     "sitioEntrega": "AEROPUERTO CARTAGENA",
     "fechaGuardado": "2026-09-15T15:12:35.860Z",
     "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vencidaAutoAt": "2026-10-01T02:13:58.356Z"
   },
   {
     "id": "LM —2169",
@@ -119484,7 +119699,7 @@
     ],
     "total": 19284497.4,
     "correo": "leonellinares@disico.com.co",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "ivaVal": 3079037.4,
     "cliente": "DISICO",
     "factura": "",
@@ -119496,8 +119711,8 @@
     "createdBy": "andrea",
     "fechaVenc": "2026-09-23",
     "formaPago": "CRÉDITO 30 DIAS",
-    "updatedAt": "2026-09-15T15:14:39.846Z",
-    "updatedBy": "sandra",
+    "updatedAt": "2026-10-01T02:13:58.356Z",
+    "updatedBy": "auto",
     "fechaEnvio": "2026-09-15T14:35:17.186Z",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
@@ -119505,7 +119720,8 @@
     "sitioEntrega": "Bogotá ",
     "fechaGuardado": "2026-09-15T15:14:39.846Z",
     "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vencidaAutoAt": "2026-10-01T02:13:58.356Z"
   },
   {
     "id": "LM2163",
@@ -122142,6 +122358,52 @@
     "updatedBy": "sandra"
   },
   {
+    "id": "LM2167",
+    "iva": 19,
+    "fecha": "2026-09-15",
+    "items": [
+      {
+        "id": 1,
+        "qty": 12,
+        "udm": "EA",
+        "uid": "dd5d7485-3f21-4c04-8b63-c95ea5f9fae9",
+        "desc": "esparragos de 5/8\" x 5\" CON DOBLE TUERCA",
+        "marca": "JDF",
+        "precio": 5500,
+        "desvTec": "GRADO B, A193, 2H A194",
+        "proveedor": "MUNDIAL",
+        "obsProveedor": "",
+        "tiempoEntrega": "INMEDIATO",
+        "precioProveedor": 2339
+      }
+    ],
+    "total": 78540,
+    "correo": "",
+    "estado": "Vencida",
+    "ivaVal": 12540,
+    "cliente": "UNION TEMPORAL MECANICOS COHEMBÍ",
+    "factura": "",
+    "validez": "8 DÍAS",
+    "contacto": "JOSE ERWIN",
+    "subtotal": 66000,
+    "vendedor": "Alexandra",
+    "createdAt": "2026-09-15T16:49:32.990Z",
+    "createdBy": "alexandra",
+    "fechaVenc": "2026-09-23",
+    "formaPago": "CONTADO",
+    "updatedAt": "2026-10-01T02:13:58.356Z",
+    "updatedBy": "auto",
+    "fechaEnvio": "2026-09-15T16:49:32.990Z",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "realizadaPor": "Alexandra",
+    "sitioEntrega": "PUERTO ASIS",
+    "fechaGuardado": "2026-09-15T16:49:50.388Z",
+    "motivoRechazo": "",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vencidaAutoAt": "2026-10-01T02:13:58.356Z"
+  },
+  {
     "id": "LM2168",
     "fecha": "2026-09-15",
     "fechaVenc": "2026-09-23",
@@ -122475,6 +122737,60 @@
     "createdBy": "sheila",
     "updatedAt": "2026-09-16T21:07:48.830Z",
     "updatedBy": "andrea"
+  },
+  {
+    "id": "LM2040-1",
+    "iva": 19,
+    "fecha": "2026-09-16",
+    "items": [
+      {
+        "qty": 4,
+        "udm": "EA",
+        "uid": "b1781ee9-4bfc-440e-9674-a24cbf070eb8",
+        "desc": "Racor hembra OD 1/2 a 1/2 NPT",
+        "marca": "SWAGELOK-COMFIT-TY LOK SIMILAR",
+        "precio": 135715,
+        "desvTec": "Conector recto de 1/2 od x 1/2 fnpt modelo ss-810-7-8 marca swagelok",
+        "proveedor": "FERREINSTRUMENTACION",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 95000
+      }
+    ],
+    "total": 646003.4,
+    "correo": "",
+    "estado": "Facturada",
+    "ivaVal": 103143.4,
+    "cliente": "LUIS ALEJANDRO JIMENEZ VERGARA",
+    "factura": "635",
+    "validez": "8 DÍAS",
+    "contacto": "LUIS ALEJANDRO JIMENEZ VERGARA",
+    "subtotal": 542860,
+    "vendedor": "Sheila Baron",
+    "createdAt": "2026-09-04T18:07:03.246Z",
+    "createdBy": "sheila",
+    "fechaVenc": "2026-09-24",
+    "formaPago": "30 DÍAS",
+    "updatedAt": "2026-09-16T22:11:00.940Z",
+    "updatedBy": "andrea",
+    "fechaEnvio": "2026-09-04T18:07:03.246Z",
+    "aprobadaPor": "Alberto",
+    "facturadaAt": "2026-09-16",
+    "solicitudId": "",
+    "adjudicadaAt": "2026-09-07",
+    "realizadaPor": "Sandra",
+    "sitioEntrega": "CABUYARO META",
+    "fechaGuardado": "2026-09-16T22:11:00.940Z",
+    "motivoRechazo": "",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "adjudicacionAt": "2026-09-07T13:05:53.339Z",
+    "adjudicacionPor": "Alexandra",
+    "valorAdjudicado": 542860,
+    "itemsAdjudicados": [
+      {
+        "qty": 4,
+        "uid": "b1781ee9-4bfc-440e-9674-a24cbf070eb8"
+      }
+    ]
   },
   {
     "id": "LM2170",
@@ -123709,6 +124025,52 @@
     "updatedAt": "2026-09-26T02:48:57.510Z",
     "updatedBy": "auto",
     "vencidaAutoAt": "2026-09-26T02:48:57.510Z"
+  },
+  {
+    "id": "LM2177",
+    "iva": 19,
+    "fecha": "2026-09-17",
+    "items": [
+      {
+        "id": 1,
+        "qty": 11,
+        "udm": "EA",
+        "uid": "e495b1f7-ed94-4c46-ab15-b852cab7766c",
+        "desc": "TUBO STRUCTURAL  GRADO C RECTANGULAR  250 X 150 EN 6MM",
+        "marca": "IMPORTADO",
+        "precio": 1262200,
+        "desvTec": "",
+        "proveedor": "IMPERIAL",
+        "obsProveedor": "",
+        "tiempoEntrega": "1-2 DIAS",
+        "precioProveedor": 883480
+      }
+    ],
+    "total": 16522198,
+    "correo": "gerencia.proyectos@geociviles.com",
+    "estado": "Vencida",
+    "ivaVal": 2637998,
+    "cliente": "GEOCIVILES SAS",
+    "factura": "",
+    "validez": "8 DÍAS",
+    "contacto": "WILLIAM GOMEZ",
+    "subtotal": 13884200,
+    "vendedor": "Sheila Baron",
+    "createdAt": "2026-09-17T15:54:09.694Z",
+    "createdBy": "sheila",
+    "fechaVenc": "2026-09-25",
+    "formaPago": "CONTADO",
+    "updatedAt": "2026-10-01T02:13:58.356Z",
+    "updatedBy": "auto",
+    "fechaEnvio": "2026-09-17T15:54:29.152Z",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "realizadaPor": "Sheila Baron",
+    "sitioEntrega": "TAURAMENA",
+    "fechaGuardado": "2026-09-17T15:54:29.152Z",
+    "motivoRechazo": "",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vencidaAutoAt": "2026-10-01T02:13:58.356Z"
   },
   {
     "id": "LM2178",
@@ -128721,7 +129083,7 @@
     ],
     "total": 13020431.41,
     "correo": "andres.bernal@andesoperating.com",
-    "estado": "Enviada",
+    "estado": "Vencida",
     "ivaVal": 2078892.41,
     "cliente": "ANDES OPERATING",
     "factura": "",
@@ -128733,8 +129095,8 @@
     "createdBy": "alexandra",
     "fechaVenc": "2026-09-26",
     "formaPago": "30 DÍAS",
-    "updatedAt": "2026-09-18T18:38:12.420Z",
-    "updatedBy": "alexandra",
+    "updatedAt": "2026-10-01T02:13:58.356Z",
+    "updatedBy": "auto",
     "fechaEnvio": "2026-09-18T18:20:33.311Z",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
@@ -128742,7 +129104,8 @@
     "sitioEntrega": "PUERTO LOPEZ - META",
     "fechaGuardado": "2026-09-18T18:38:12.420Z",
     "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
+    "vencidaAutoAt": "2026-10-01T02:13:58.356Z"
   },
   {
     "id": "LM2189",
@@ -142583,266 +142946,266 @@
     "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
     "adjudicacionAt": "2026-09-30T00:13:15.625727Z",
     "adjudicacionPor": "Andrea",
-    "valorAdjudicado": 43951080.0,
+    "valorAdjudicado": 43951080,
     "itemsAdjudicados": [
       {
-        "qty": 12.0,
+        "qty": 12,
         "uid": "8d7136e6-5f31-423b-9fec-e7aa797ddd4e"
       },
       {
-        "qty": 84.0,
+        "qty": 84,
         "uid": "7af88c9c-859c-4cd7-b2aa-6591b61e90d7"
       },
       {
-        "qty": 54.0,
+        "qty": 54,
         "uid": "e7a11d12-a9a4-4714-b6c4-edaee985d626"
       },
       {
-        "qty": 18.0,
+        "qty": 18,
         "uid": "7c61c34d-bb01-4684-b3ee-d1fedc3e1fab"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "1dad0dda-e1b6-45c5-8754-e585e0551567"
       },
       {
-        "qty": 12.0,
+        "qty": 12,
         "uid": "1040566b-2c4c-44ac-ba76-6b8a1a66719b"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "1894ae4b-d934-48b2-a3b2-e0cca15201c7"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "3071d5a5-eb9c-4fb8-8a90-e0582ca3a8ac"
       },
       {
-        "qty": 38.0,
+        "qty": 38,
         "uid": "09fb50f7-82ba-4096-b935-49c161427f11"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "3dafd609-c763-4fbf-887e-7bd4dfa8af32"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "d65bfff1-51b2-4303-8472-371c48e4ab89"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "64ef86fc-d016-4739-98f9-5754f29f41b0"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "1e02e6f0-5749-45d0-93ab-1f2bbe042136"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "3f117df0-1393-4fe4-8323-bbc488755f33"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "961dee82-aecc-44d3-9579-23efefb67eb4"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "79967303-29c9-495b-bfd8-ee7900300fa6"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "4a6bcf89-1108-4be6-9c83-5f6300172430"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "2bdd0e6f-c313-451c-a545-d76dd795bf13"
       },
       {
-        "qty": 12.0,
+        "qty": 12,
         "uid": "75db9f20-f60a-4d46-9a6a-d0d3508e66d1"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "d4627e4b-3b86-44c8-8eb0-35cc7cf079bc"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "0083165a-42d3-4ccb-a47a-3e449049fe4f"
       },
       {
-        "qty": 10.0,
+        "qty": 10,
         "uid": "585aa06c-2ee6-4e5a-8e77-de103becf019"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "9cc2e64d-0894-465e-8479-d46bc7fe23c3"
       },
       {
-        "qty": 5.0,
+        "qty": 5,
         "uid": "c7b9ee8c-9826-4c2b-8f63-728e453a98e5"
       },
       {
-        "qty": 12.0,
+        "qty": 12,
         "uid": "604a1a08-2821-4335-81bd-c5cf19027ff2"
       },
       {
-        "qty": 19.0,
+        "qty": 19,
         "uid": "be96ecf0-d152-4569-bd21-880b29f55cfc"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "fa4d6907-2a89-45b6-9325-d26dd01ad871"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "49fc788b-4f86-41bd-b5cf-ce8f484661da"
       },
       {
-        "qty": 15.0,
+        "qty": 15,
         "uid": "a1348872-a4f0-4b25-b229-7c5512fb2349"
       },
       {
-        "qty": 100.0,
+        "qty": 100,
         "uid": "b7c02932-31f7-4ae9-9fa8-53fa696a2b21"
       },
       {
-        "qty": 144.0,
+        "qty": 144,
         "uid": "e45907cd-8835-4148-9e13-bbc0a03e8916"
       },
       {
-        "qty": 10.0,
+        "qty": 10,
         "uid": "7ceff29f-382d-499d-96dd-ebd57204eb39"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "29a6a32d-e6c8-443d-9a83-81671791d701"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "81093659-7224-4282-ae69-30244f16ced2"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "a47abd7a-98ee-4a03-a80f-4e383459ba6b"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "fdb68b97-ed70-491c-b219-3a5fc2b9bc68"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "6ce0e4aa-1e2f-40d0-88d5-2f34d044a95f"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "893942e2-c576-4a18-8102-dbc0c6c73a2d"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "532f63f6-ad83-48d5-88d5-2cb84a9e3545"
       },
       {
-        "qty": 7.0,
+        "qty": 7,
         "uid": "e88d82d6-ebd8-4788-ad12-909427cac130"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "7a06f1e8-186e-4493-a6bc-258244060667"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "d1d29c79-40bd-4a30-892f-2d9cc5bfd34e"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "1a683e7f-b773-4cf4-8046-3d0e8ff71f3d"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "a1e2051f-0e7e-4ccc-93d6-6e26bec889c0"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "20a6dbff-cfb8-48e5-b284-b012e60fccac"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "284784ed-a934-4ae6-963a-26ed87c97648"
       },
       {
-        "qty": 15.0,
+        "qty": 15,
         "uid": "daa24ecb-0869-4e33-bdfe-64c8a90b2a3b"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "106575f8-01f6-40fc-a249-120df8b7f465"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "cdf6e3f2-bb40-49c6-a3d8-050260334c14"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "349f8d42-5372-435e-b82e-ef731dc1547d"
       },
       {
-        "qty": 3.0,
+        "qty": 3,
         "uid": "a6433edc-2081-4a45-a380-3ae71376d5bc"
       },
       {
-        "qty": 8.0,
+        "qty": 8,
         "uid": "19dd367f-f7ea-42fb-ba7c-23fc3f0f96a3"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "51b473e2-f270-4ce8-84d4-9fa590171431"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "e6a98b6d-9a8e-440a-8417-d8aee5f4bbd1"
       },
       {
-        "qty": 4.0,
+        "qty": 4,
         "uid": "a62d69f5-6138-49cd-8f90-f85b57aeb963"
       },
       {
-        "qty": 48.0,
+        "qty": 48,
         "uid": "11b08c37-27b0-47bd-ab3a-965d2afc4322"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "d468382a-280c-4ba0-9dfb-45594ecc4fd6"
       },
       {
-        "qty": 17.0,
+        "qty": 17,
         "uid": "d8a480d9-123f-45b3-bacc-dee6985ecea3"
       },
       {
-        "qty": 6.0,
+        "qty": 6,
         "uid": "2a1f93d4-9378-4d34-be79-f1bed2a522ac"
       },
       {
-        "qty": 10.0,
+        "qty": 10,
         "uid": "821d20a0-64fa-4770-980a-2dc0e9365192"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "68f468a9-bf1a-4f2d-bd9c-2ed115db9b03"
       },
       {
-        "qty": 2.0,
+        "qty": 2,
         "uid": "17b9e162-8ed6-4387-be98-0dbcb3b4c5f1"
       },
       {
-        "qty": 5.0,
+        "qty": 5,
         "uid": "7728342d-28cb-4d6a-985a-1d1e8b11f315"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "7996468f-e736-43e7-ab18-9e2ff273ce00"
       },
       {
-        "qty": 1.0,
+        "qty": 1,
         "uid": "3921c68e-9f53-4fd7-a938-6dead924af17"
       }
     ]
@@ -145662,359 +146025,5 @@
     "createdBy": "andrea",
     "updatedAt": "2026-08-24T13:22:15.496Z",
     "updatedBy": "alexandra"
-  },
-  {
-    "id": "LM1899",
-    "iva": 19,
-    "fecha": "2026-07-28",
-    "items": [
-      {
-        "id": 1,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "0ff640d7-b06a-4a4d-aca7-3c7414dab041",
-        "desc": "ESTANTERÍA INDUSTRIAL METÁLICA TIPO MODULAR: CONSTRUCCIÓN TOTALMENTE DE ACERO, NIVELES DE CARGA AJUSTABLES\nVER ANEXO 1, ESPECIFICACIONES TECNICAS\n",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 2,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "6a1f95c5-68fb-43dd-8201-00baa41c60c6",
-        "desc": "AIRE ACONDICIONADO DE 18000 MIL BTU - INVERTER AHORRA ENERGIA",
-        "marca": "WHIRLPOOL",
-        "precio": 0,
-        "desvTec": "AIRE ACONDICIONADO18000 BTU INVERTER 220V WHIRLPOOL LWA5160Q",
-        "proveedor": "ELECTRO FERIA DE LA 13",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 2500000
-      },
-      {
-        "id": 3,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "d97cf31d-003c-41e2-91f1-949c2236fb15",
-        "desc": "LÁMPARAS PARA TECHO TIPO INDUSTRIAL LED HERMÉTICA DE 2 TUBOS DE 18 W",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "INTERELECTRICAS",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 4,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "228e2aa2-beb2-40f3-a7a1-38e2df3c311a",
-        "desc": "TOMACORRIENTE 220 VOLTIOS",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 5,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "929ebad2-bdb1-48ae-b489-933e275e0f2c",
-        "desc": "TOMACORRIENTE 110 VOLTIOS.",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 6,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "874ad82b-0a91-4bf9-938d-28daa84ffef6",
-        "desc": "INTERRUPTOR – 110 VOLTIOS",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 7,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "d222cd77-0967-4f3a-9bc0-d600d35b2404",
-        "desc": "CABLE # 12 BLANCO",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 8,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "eb0fb2e5-0f18-485c-a82c-d4a645a16c4a",
-        "desc": "CABLE # 12 NEGRO",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 9,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "71e0cb20-3220-466c-a142-43bd73a301f4",
-        "desc": "CABLE # 12 ROJO",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 10,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "9faa68c5-5bc6-4d42-ab1b-52ef65f5f814",
-        "desc": "CABLE # 12 VERDE",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 11,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "cb3db812-cdcf-46bd-92d0-e9bba6aab9d6",
-        "desc": "CONECTOR PLUG – HEMBRA – MACHO – VER FOTO / ENTRADA ALIMENTACIÓN ELÉCTRICA LA CASETA",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 12,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "8f68ab8f-232e-4ec2-85f0-387f0504932c",
-        "desc": "CAJA DE 12 CIRCUITOS – ELÉCTRICA",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 13,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "4559eac8-f51c-4cc1-9931-ed38f7062059",
-        "desc": "CAJA RAWELT 5800",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 14,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "5735f1f0-3208-485b-b7de-de71f5ecfa86",
-        "desc": "TERMINALES – PARA CONEXIÓN CAJA RAWELT DE ½”",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 15,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "9465daec-a821-4721-b1b4-a65d2b7f956d",
-        "desc": "TUBERÍA EMT DE ½” – 20 METROS LINEALES",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 16,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "c3d516de-ad3d-4a94-8b8d-dd33b6506fd4",
-        "desc": "UNIONES PARA TUBERÍA EMT DE ½”",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 17,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "d51cc46e-eb30-43d3-a2e9-722bfa30cbb5",
-        "desc": "BREAKER MONOPOLAR DE 20 AMP",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      },
-      {
-        "id": 18,
-        "qty": 1,
-        "udm": "EA",
-        "uid": "183130f8-baab-495c-ae3a-47681f692ee0",
-        "desc": "BREAKER BIPOLAR DE 20 AMP",
-        "marca": "",
-        "precio": 0,
-        "desvTec": "",
-        "proveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 0
-      }
-    ],
-    "total": 0,
-    "correo": "tenderllanos@arrowexploration.com",
-    "estado": "Borrador",
-    "ivaVal": 0,
-    "cliente": "ARROW EXPLORATION LLANOS SUCURSAL COLOMBIA",
-    "factura": "",
-    "validez": "8 DÍAS",
-    "contacto": "Tender Llanos",
-    "subtotal": 0,
-    "vendedor": "",
-    "createdAt": "2026-07-28T18:26:52.078Z",
-    "createdBy": "alexandra",
-    "fechaVenc": "2026-08-05",
-    "formaPago": "30 DÍAS",
-    "updatedAt": "2026-07-28T18:26:52.078Z",
-    "updatedBy": "alexandra",
-    "aprobadaPor": "Alberto",
-    "solicitudId": "",
-    "realizadaPor": "",
-    "sitioEntrega": "",
-    "fechaGuardado": "2026-07-28T18:26:52.077Z",
-    "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
-  },
-  {
-    "id": "LM2167",
-    "iva": 19,
-    "fecha": "2026-09-15",
-    "items": [
-      {
-        "id": 1,
-        "qty": 12,
-        "udm": "EA",
-        "uid": "dd5d7485-3f21-4c04-8b63-c95ea5f9fae9",
-        "desc": "esparragos de 5/8\" x 5\" CON DOBLE TUERCA",
-        "marca": "JDF",
-        "precio": 5500,
-        "desvTec": "GRADO B, A193, 2H A194",
-        "proveedor": "MUNDIAL",
-        "obsProveedor": "",
-        "tiempoEntrega": "INMEDIATO",
-        "precioProveedor": 2339
-      }
-    ],
-    "total": 78540,
-    "correo": "",
-    "estado": "Enviada",
-    "ivaVal": 12540,
-    "cliente": "UNION TEMPORAL MECANICOS COHEMBÍ",
-    "factura": "",
-    "validez": "8 DÍAS",
-    "contacto": "JOSE ERWIN",
-    "subtotal": 66000,
-    "vendedor": "Alexandra",
-    "createdAt": "2026-09-15T16:49:32.990Z",
-    "createdBy": "alexandra",
-    "fechaVenc": "2026-09-23",
-    "formaPago": "CONTADO",
-    "updatedAt": "2026-09-15T16:49:50.388Z",
-    "updatedBy": "alexandra",
-    "fechaEnvio": "2026-09-15T16:49:32.990Z",
-    "aprobadaPor": "Alberto",
-    "solicitudId": "",
-    "realizadaPor": "Alexandra",
-    "sitioEntrega": "PUERTO ASIS",
-    "fechaGuardado": "2026-09-15T16:49:50.388Z",
-    "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
-  },
-  {
-    "id": "LM2177",
-    "iva": 19,
-    "fecha": "2026-09-17",
-    "items": [
-      {
-        "id": 1,
-        "qty": 11,
-        "udm": "EA",
-        "uid": "e495b1f7-ed94-4c46-ab15-b852cab7766c",
-        "desc": "TUBO STRUCTURAL  GRADO C RECTANGULAR  250 X 150 EN 6MM",
-        "marca": "IMPORTADO",
-        "precio": 1262200,
-        "desvTec": "",
-        "proveedor": "IMPERIAL",
-        "obsProveedor": "",
-        "tiempoEntrega": "1-2 DIAS",
-        "precioProveedor": 883480
-      }
-    ],
-    "total": 16522198,
-    "correo": "gerencia.proyectos@geociviles.com",
-    "estado": "Enviada",
-    "ivaVal": 2637998,
-    "cliente": "GEOCIVILES SAS",
-    "factura": "",
-    "validez": "8 DÍAS",
-    "contacto": "WILLIAM GOMEZ",
-    "subtotal": 13884200,
-    "vendedor": "Sheila Baron",
-    "createdAt": "2026-09-17T15:54:09.694Z",
-    "createdBy": "sheila",
-    "fechaVenc": "2026-09-25",
-    "formaPago": "CONTADO",
-    "updatedAt": "2026-09-17T15:54:29.152Z",
-    "updatedBy": "sheila",
-    "fechaEnvio": "2026-09-17T15:54:29.152Z",
-    "aprobadaPor": "Alberto",
-    "solicitudId": "",
-    "realizadaPor": "Sheila Baron",
-    "sitioEntrega": "TAURAMENA",
-    "fechaGuardado": "2026-09-17T15:54:29.152Z",
-    "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
   }
 ]
