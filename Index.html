@@ -5903,6 +5903,9 @@ const _ghBackupPend = {};
 function _scheduleBackupGH(key, val) {
   const cfg = GH_BACKUP_MAP[key];
   if (!cfg) return;
+  // 30-sep-2026 — las cotizaciones ya no viajan por GitHub en cada guardado: van
+  // a Supabase (instantáneo) y el JSON se regenera una vez al día. Ver _cotizEspejoGH.
+  if (key === 'bd_cotizaciones' && !_cotizEspejoGH()) return;
   clearTimeout(_ghBackupTimers[key]);
   _ghBackupPend[key] = { cfg: cfg, val: val };     // anotado por si se cierra la pestaña
   _ghBackupTimers[key] = setTimeout(() => {
@@ -5947,6 +5950,7 @@ window.addEventListener('pagehide', _ghBackupFlush);
 window.addEventListener('beforeunload', ev => {
   try {
     const hay = (_getSyncQueue().length > 0) || (Object.keys(_ghBackupPend).length > 0)
+      || (typeof _cotizSbPend === 'function' && _cotizSbPend().length > 0)
       || (typeof _subidasEnCurso === 'number' && _subidasEnCurso > 0)
       || (typeof _sbEscriturasEnCurso === 'number' && _sbEscriturasEnCurso > 0);
     if (!hay) return;
@@ -6587,7 +6591,210 @@ async function _cotizPollToca() {
   if (pasado >= 60000 || (ahora < _cotizPollCaliente && pasado >= 20000)) return true;
   return false;
 }
+// ═══ COTIZACIONES: LA LISTA SE SINCRONIZA DESDE SUPABASE (30-sep-2026) ═══════
+// «Se queda subiendo cambios»: cada guardado subía data/cotizaciones.json ENTERO
+// (4,9 MB) a GitHub por el puente de Google — 88 veces solo el 30-sep — y cada
+// equipo lo bajaba cada 20-60 s para ver las cotizaciones de los demás. Desde el
+// 13-jul la fuente real es Supabase: ahora la lista se pone al día pidiéndole a
+// Supabase SOLO lo que cambió desde la última vez (por `updated_at`, que pone el
+// servidor), y el JSON de GitHub queda como respaldo diario.
+//   · Si Supabase no contesta, se cae al JSON de siempre (nada se rompe).
+//   · Interruptor: `cotizEspejoGH: true` en data/config.json vuelve TODO al modo
+//     anterior para todo el equipo (o, en un equipo, localStorage
+//     energy_cotiz_espejo_gh = '1').
+//   · Lo que no llega a Supabase se reintenta solo (ver _cotizSbPend): esa era la
+//     red de seguridad que hacía el JSON.
+function _cotizEspejoGH() {
+  try { return localStorage.getItem('energy_cotiz_espejo_gh') === '1'; } catch (_) { return true; }
+}
+const _COTIZ_SB_PEND = 'energy_cotiz_sb_pend', _COTIZ_SB_CUR = 'energy_cotiz_sb_cursor';
+function _cotizSbPend() { try { const a = JSON.parse(localStorage.getItem(_COTIZ_SB_PEND) || '[]'); return Array.isArray(a) ? a : []; } catch (_) { return []; } }
+function _cotizSbPendSet(arr) { try { localStorage.setItem(_COTIZ_SB_PEND, JSON.stringify(Array.from(new Set(arr)).slice(-300))); } catch (_) { } }
+function _cotizSbPendAdd(id) { if (id) { const a = _cotizSbPend(); if (a.indexOf(id) < 0) { a.push(id); _cotizSbPendSet(a); } } }
+function _cotizSbPendQuitar(id) { const a = _cotizSbPend(); const i = a.indexOf(id); if (i >= 0) { a.splice(i, 1); _cotizSbPendSet(a); } }
+// Fila de Supabase → registro de la plataforma (misma regla que _opCotizDelServidor:
+// el registro completo vive en `extra`; estado y adjudicación mandan las columnas).
+function _cotizDeFilaSB(f) {
+  if (!f || !f.id || !f.extra || typeof f.extra !== 'object') return null;
+  const c = Object.assign({}, f.extra, { id: f.id });
+  if (f.estado) c.estado = f.estado;
+  if (f.deleted) { c.deleted = true; if (!c.deletedAt) c.deletedAt = f.updated_at || c.updatedAt || ''; }
+  if (f.items_adjudicados) c.itemsAdjudicados = f.items_adjudicados;
+  if (f.valor_adjudicado != null) c.valorAdjudicado = f.valor_adjudicado;
+  // Quién y cuándo: solo si el registro no lo trae (la columna escribe la misma
+  // hora con otro formato, «+00:00» en vez de «Z», y contaba como cambio).
+  if (f.adjudicacion_por && !c.adjudicacionPor) c.adjudicacionPor = f.adjudicacion_por;
+  if (f.adjudicacion_at && !c.adjudicacionAt) c.adjudicacionAt = f.adjudicacion_at;
+  if (f.factura && !c.factura) c.factura = f.factura;
+  return c;
+}
+// Igualdad de contenido sin importar el orden de los campos (si no, una copia
+// idéntica con las claves en otro orden contaba como «cambio» y se repintaba).
+function _cotizEstable(v) {
+  if (Array.isArray(v)) return '[' + v.map(_cotizEstable).join(',') + ']';
+  if (v && typeof v === 'object') return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + _cotizEstable(v[k])).join(',') + '}';
+  return JSON.stringify(v === undefined ? null : v);
+}
+// Une filas de Supabase a la lista local con las mismas reglas del JSON de siempre:
+// gana la más reciente; un borrado local es pegajoso; lo que este equipo aún no
+// ha podido subir (pendientes) no se pisa. Devuelve {bd, cambios}.
+function _cotizAplicarFilas(filas, bd) {
+  const pend = new Set(_cotizSbPend());
+  const pos = {}; bd.forEach((c, i) => { if (c && c.id) pos[c.id] = i; });
+  let cambios = 0;
+  filas.forEach(f => {
+    const rec = _cotizDeFilaSB(f);
+    if (!rec) return;                                   // filas del LIBRO/histórico sin registro web
+    const i = pos[rec.id];
+    if (i == null) {
+      if (rec.deleted) return;
+      bd.push(rec); pos[rec.id] = bd.length - 1; cambios++; return;
+    }
+    const loc = bd[i];
+    if (pend.has(rec.id)) return;
+    if (loc && loc.deleted && !rec.deleted) return;
+    if (!rec.deleted && String(loc.updatedAt || '') > String(rec.updatedAt || '')) return;
+    if (_cotizEstable(loc) === _cotizEstable(rec)) return;
+    bd[i] = rec; cambios++;
+  });
+  return cambios;
+}
+let _cotizSbBusy = null, _cotizSbRevisado = false;
+// Reintenta subir a Supabase lo que quedó pendiente en este equipo.
+async function _cotizReintentarSB() {
+  const pend = _cotizSbPend();
+  if (!pend.length || !navigator.onLine) return 0;
+  const bd = getData('bd_cotizaciones', []);
+  let ok = 0;
+  for (const id of pend.slice(0, 10)) {
+    const rec = bd.find(x => x && x.id === id);
+    if (!rec) { _cotizSbPendQuitar(id); continue; }
+    window._cotizSbSilencio = true;
+    try { if (await _cotizSyncSupabase(rec)) ok++; } catch (_) { }
+    finally { window._cotizSbSilencio = false; }
+  }
+  if (ok) console.log('[cotiz→Supabase] reintentos que entraron:', ok);
+  return ok;
+}
+// Una sola vez por equipo: ¿hay cotizaciones locales (últimos 15 días) más nuevas
+// que lo que tiene Supabase, o que no están? Pasan a la lista de reintentos.
+// Cubre lo que antes solo viajaba en el JSON de GitHub.
+async function _cotizRevisarLocalVsSB() {
+  if (_cotizSbRevisado) return; _cotizSbRevisado = true;
+  try { if (localStorage.getItem('energy_cotiz_sb_revisado') === '2') return; } catch (_) { }
+  // Índice liviano de TODO Supabase (solo fechas y estado; unos KB por página).
+  const idx = {};
+  for (let off = 0; off < 20000; off += 1000) {
+    const r = await absFetch('cotizaciones?extra=not.is.null&select=id,estado,deleted,updated_at,extra->>updatedAt&order=id&limit=1000&offset=' + off);
+    if (!Array.isArray(r)) throw new Error('Supabase no devolvió el índice');
+    r.forEach(x => { idx[x.id] = x; });
+    if (r.length < 1000) break;
+  }
+  const bd = getData('bd_cotizaciones', []);
+  const locPorId = {}; bd.forEach(c => { if (c && c.id) locPorId[c.id] = c; });
+  // (1) Locales de verdad más nuevas (últimos 15 días) → se suben solas. La
+  //     «Vencida» automática NO cuenta: es un cálculo que cada equipo hace igual.
+  const desde = new Date(Date.now() - 15 * 864e5).toISOString();
+  const subir = bd.filter(c => c && c.id && String(c.updatedAt || '') >= desde && c.updatedBy !== 'auto'
+    && (!idx[c.id] ? !c.deleted : String(idx[c.id].updatedAt || '') < String(c.updatedAt || '')));
+  subir.forEach(c => _cotizSbPendAdd(c.id));
+  if (subir.length) console.warn('[cotiz] ' + subir.length + ' cotización(es) de este equipo más nuevas que en Supabase; se suben solas:', subir.map(c => c.id));
+  // (2) Lo que Supabase tiene más nuevo (o que aquí no está) → se trae completo.
+  const traer = Object.keys(idx).filter(id => {
+    const x = idx[id], l = locPorId[id];
+    if (!l) return !x.deleted;
+    if (x.deleted && !l.deleted) return true;
+    return String(x.updatedAt || '') > String(l.updatedAt || '') || (x.estado && x.estado !== l.estado && String(x.updatedAt || '') >= String(l.updatedAt || ''));
+  });
+  let filas = [];
+  for (let i = 0; i < traer.length; i += 40) {
+    const ids = traer.slice(i, i + 40).map(x => '"' + String(x).replace(/"/g, '') + '"').join(',');
+    const r = await absFetch('cotizaciones?id=in.(' + encodeURIComponent(ids) + ')'
+      + '&select=id,estado,deleted,updated_at,items_adjudicados,valor_adjudicado,adjudicacion_por,adjudicacion_at,factura,extra&limit=100');
+    if (Array.isArray(r)) filas = filas.concat(r);
+  }
+  const n = _cotizAplicarFilas(filas, bd);
+  if (n) {
+    localStorage.setItem('max_bd_cotizaciones', JSON.stringify(bd));
+    console.log('[cotiz] puesta al día con Supabase: ' + n + ' cotización(es) que este equipo tenía atrasadas');
+  }
+  try { localStorage.setItem('energy_cotiz_sb_revisado', '2'); } catch (_) { }
+  return n;
+}
+// Trae de Supabase SOLO lo que cambió y lo une a la lista local.
+// Devuelve cuántas cotizaciones cambiaron aquí. Lanza error si Supabase no contesta
+// (quien llama cae al JSON de GitHub).
+async function _cotizSyncDesdeSB() {
+  if (_cotizSbBusy) return _cotizSbBusy;
+  _cotizSbBusy = (async () => {
+    let n0 = 0;
+    try { n0 = (await _cotizRevisarLocalVsSB()) || 0; } catch (e) { _cotizSbRevisado = false; console.warn('[cotiz] puesta al día pendiente:', e && e.message); }
+    try { await _cotizReintentarSB(); } catch (_) { }
+    let cur = null;
+    try { cur = localStorage.getItem(_COTIZ_SB_CUR); } catch (_) { }
+    // Sin cursor (equipo nuevo o primera vez): los últimos 10 días cubren de sobra
+    // el respaldo diario del JSON con el que arrancó la lista.
+    if (!cur) cur = new Date(Date.now() - 10 * 864e5).toISOString();
+    // 2 min de margen: guardados en vuelo y relojes que no cuadran.
+    const desde = new Date(Date.parse(cur) - 120000).toISOString();
+    let filas = [];
+    for (let off = 0; off < 6000; off += 200) {
+      const r = (await absFetch('cotizaciones?updated_at=gte.' + encodeURIComponent(desde)
+        + '&select=id,estado,deleted,updated_at,items_adjudicados,valor_adjudicado,adjudicacion_por,adjudicacion_at,factura,extra'
+        + '&order=updated_at.asc&limit=200&offset=' + off));
+      if (!Array.isArray(r)) throw new Error('Supabase no devolvió la lista');
+      filas = filas.concat(r);
+      if (r.length < 200) break;
+    }
+    let maxU = cur;
+    filas.forEach(f => { if (f.updated_at && f.updated_at > maxU) maxU = f.updated_at; });
+    const bd = getData('bd_cotizaciones', []);
+    const cambios = _cotizAplicarFilas(filas, bd) + n0;
+    if (cambios - n0) {
+      try { localStorage.setItem('max_bd_cotizaciones', JSON.stringify(bd)); }
+      catch (e) { console.warn('[cotiz] no cupo la lista en este equipo:', e && e.message); throw e; }
+    }
+    try { localStorage.setItem(_COTIZ_SB_CUR, maxU); } catch (_) { }
+    // Lo que estaba en la cola vieja de GitHub para este archivo ya no hace falta:
+    // Supabase lo tiene (o está en la lista de reintentos). Así la píldora se limpia.
+    try {
+      const q = _getSyncQueue();
+      const q2 = q.filter(x => !(x && x.file === 'data/cotizaciones.json'));
+      if (q2.length !== q.length) _setSyncQueue(q2);
+    } catch (_) { }
+    return cambios;
+  })();
+  try { return await _cotizSbBusy; } finally { _cotizSbBusy = null; }
+}
+// El canal en vivo (Realtime) avisa en ~1 s que otro guardó: se trae al momento.
+let _cotizSbProgT = null;
+function _cotizSyncProgramar() {
+  if (_cotizEspejoGH()) return;
+  clearTimeout(_cotizSbProgT);
+  _cotizSbProgT = setTimeout(() => {
+    _cotizSyncDesdeSB().then(n => { if (n) { try { bdRender(); } catch (_) { } } }).catch(() => { });
+  }, 1500);
+}
+
 async function _pollOne(target, forzar) {
+  if (target.file === 'data/cotizaciones.json' && !_cotizEspejoGH()) {
+    if (_pollEtags[target.file] && !forzar) {
+      // Ya hay lista: solo lo que cambió, desde Supabase (unos KB, no 4,9 MB).
+      try {
+        const n = await _cotizSyncDesdeSB();
+        if (n) target.renderFn();
+        return n > 0;
+      } catch (e) {
+        console.warn('[cotiz] Supabase no contestó; esta vez se usa el JSON de GitHub:', e && e.message);
+      }
+    } else {
+      // Primera carga o «Actualizar»: el JSON da la lista completa y enseguida se
+      // completa con lo que cambió en Supabase después del respaldo.
+      setTimeout(() => {
+        _cotizSyncDesdeSB().then(n => { if (n) target.renderFn(); }).catch(() => { });
+      }, 2500);
+    }
+  }
   if (target.file === 'data/cotizaciones.json' && _pollEtags[target.file] && !forzar) {
     if (!(await _cotizPollToca())) return false;
   }
@@ -6828,6 +7035,13 @@ async function _loadCompanyConfig() {
     localStorage.removeItem('energy_sb_proxy_url');
     console.log('[ENERGY] Carril rápido retirado por la config compartida');
   }
+  // 30-sep-2026 — Interruptor de las cotizaciones: `cotizEspejoGH: true` en
+  // data/config.json vuelve al modo anterior (subir y leer el JSON de GitHub) en
+  // todo el equipo. Sin el campo, la lista se sincroniza desde Supabase.
+  try {
+    if (cfg.cotizEspejoGH === true) localStorage.setItem('energy_cotiz_espejo_gh', '1');
+    else localStorage.removeItem('energy_cotiz_espejo_gh');
+  } catch (_) { }
   // Aplicar acceso a módulos por usuario (decidido por el admin)
   if (cfg.userModules && typeof cfg.userModules === 'object') {
     localStorage.setItem('energy_user_modules', JSON.stringify(cfg.userModules));
@@ -12106,7 +12320,7 @@ function _cotizAdjCancelar(){
   if(sel){ sel.value=_cotizEstadoPrev||'Enviada'; cotizEstadoChange(); }
   showToast('Cambio cancelado: la cotización no quedó adjudicada','info');
 }
-// 1-oct-2026 · OP-2026-0107 (SKID EXPERTS) — ÍTEMS ADJUDICADOS EN $0.
+// 30-sep-2026 · OP-2026-0107 (SKID EXPERTS) — ÍTEMS ADJUDICADOS EN $0.
 // La LM2145 solo tenía precio en 61 de sus 228 materiales; la versión completa
 // era la LM2160 (misma lista, 184 con precio) y se quedó en Borrador. Se
 // adjudicaron 42 ítems sobre la LM2145 y 31 estaban en $0: la OP nació valiendo
@@ -12922,6 +13136,13 @@ function _cotizAutoVencidas() {
   });
   if (!n) return;
   saveData('bd_cotizaciones', bd);
+  // 30-sep-2026 — antes solo cambiaba aquí y en el JSON de GitHub. Ahora también
+  // en Supabase, y SOLO si allá sigue «Enviada» (nunca pisa una adjudicada).
+  try {
+    const ids = bd.filter(c => c && c.estado === 'Vencida' && c.updatedBy === 'auto' && c.vencidaAutoAt && (Date.now() - Date.parse(c.vencidaAutoAt)) < 60000).map(c => c.id);
+    if (ids.length) absFetch('cotizaciones?estado=eq.Enviada&id=in.(' + encodeURIComponent(ids.map(x => '"' + x + '"').join(',')) + ')',
+      { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: JSON.stringify({ estado: 'Vencida' }) }).catch(() => { });
+  } catch(_) {}
   try { bdRender(); } catch(_) {}
   showToast('⏰ ' + n + ' cotización(es) pasaron a VENCIDA (fecha de vencimiento cumplida). Si el cliente responde, se pueden re-marcar.', 'info');
 }
@@ -13179,6 +13400,7 @@ function cotizImportarDesdeCorreo(lmNum, fecha, dest) {
   }, true);
   bd.push(record);
   saveData('bd_cotizaciones', bd);
+  try { _cotizSyncSupabase(record); } catch(_) {}      // 30-sep-2026: antes solo iba al JSON de GitHub
   showToast(lmNum + ' importada desde correo. Abre para completar datos.','success');
   cotizRenderAgente();
 }
@@ -16181,11 +16403,17 @@ async function _cotizSyncSupabase(record) {
       const idx = _bdHistCache.findIndex(h => String(h.id).toUpperCase() === k);
       if (idx >= 0) _bdHistCache[idx] = mapped; else _bdHistCache.push(mapped);
     }
+    try { _cotizSbPendQuitar(record.id); } catch(_) {}
     return true;
   } catch (e) {
     console.warn('[cotiz→Supabase] no se pudo sincronizar', record.id, e && e.message);
+    // 30-sep-2026: queda anotada y se reintenta sola (antes la red de seguridad era
+    // el JSON de GitHub, que ya no se sube en cada guardado).
+    try { _cotizSbPendAdd(record.id); } catch(_) {}
     // 15-sep-2026: antes esto quedaba solo en la consola y nadie se enteraba.
-    try { showToast('⚠️ ' + record.id + ' se guardó en este equipo pero NO llegó al servidor (internet/proxy). Cuando se estabilice, vuelve a darle GUARDAR.', 'error', { durationMs: 15000 }); } catch(_) {}
+    if (!window._cotizSbSilencio) {
+      try { showToast('⚠️ ' + record.id + ' se guardó en este equipo pero todavía NO llegó al servidor (internet/proxy). Se reintenta sola en cuanto haya conexión; no cierres la plataforma hasta que suba.', 'error', { durationMs: 15000 }); } catch(_) {}
+    }
     return false;
   }
 }
@@ -16613,6 +16841,7 @@ function _rtOnCotiz(payload) {
     }
     clearTimeout(_rtRenderTimer);
     _rtRenderTimer = setTimeout(() => { try { bdRender(); } catch(_) {} }, 900);
+    try { _cotizSyncProgramar(); } catch(_) {}
   } catch(_) {}
 }
 // Ítem guardado por otra persona en la cotización que tengo abierta → pintarlo EN VIVO
@@ -22782,7 +23011,7 @@ async function remiGuardar(){
       }
     }catch(_){ }
   }
-  // 1-oct-2026 · 26341 → 26341-1 (SAR ENERGY) — RENOMBRAR NO ES UNA ENTREGA NUEVA.
+  // 30-sep-2026 · 26341 → 26341-1 (SAR ENERGY) — RENOMBRAR NO ES UNA ENTREGA NUEVA.
   // Para mandar lo que faltó, se abrió la 26341, se le cambió el número a -1, se
   // bajaron las cantidades y se aceptó «renombrar»: la 26341 DEJÓ DE EXISTIR y la
   // OP perdió lo ya entregado. Si el número nuevo es de la MISMA familia (base
@@ -25969,7 +26198,7 @@ async function _opCrearDesdeReal(cotizId) {
     return;
   }
 
-  // 1-oct-2026 · OP-2026-0107 — antes de gastar un consecutivo: ¿hay ítems en $0?
+  // 30-sep-2026 · OP-2026-0107 — antes de gastar un consecutivo: ¿hay ítems en $0?
   {
     const _lin = _opLineasDeCotiz(c);
     const _ceros = _lin.filter(L => !((+(L.it && L.it.precio)) > 0)).map(L => ({ desc: (L.it && L.it.desc) || '' }));
@@ -26596,7 +26825,7 @@ async function opRecibirAbrir() {
     // primera y '26135-1' cuenta como 261351. Ahora lo calcula una sola función.
     sug = await _remiNumSiguiente();
   } catch (_) { }
-  // 1-oct-2026 — IGUAL QUE «ALISTAR Y DESPACHAR»: si la OP ya tuvo entregas, lo
+  // 30-sep-2026 — IGUAL QUE «ALISTAR Y DESPACHAR»: si la OP ya tuvo entregas, lo
   // que sale de una NO toma un consecutivo nuevo. Si la última remisión es de
   // esta misma salida (fecha de hoy o futura), lo comprado se SUMA a ella (así
   // se armaron la 26341 y la 26342: bodega + compras en un solo papel). Si es de
@@ -28787,7 +29016,7 @@ const OP_EJES = {
                 [['SLIPON', 'SO'], 'SLIPON'], [['SOCKET', 'SW', 'SOCKETWELD'], 'SOCKET']],
   cara:        [[['RTJ'], 'RTJ'], [['RF'], 'RF']],
   forma:       [[['REDU', 'REDUCIDA', 'REDUCTORA'], 'REDUCIDA']],
-  // 1-oct-2026 · OP-2026-0107 — SOCKET WELD es una tercera forma de unir: una
+  // 30-sep-2026 · OP-2026-0107 — SOCKET WELD es una tercera forma de unir: una
   // «TEE 3/4" CL 6000 SW» entraba contra «TEE AC NPT 3.000L 3/4"». Y «P/S»
   // (punta soldable) nunca se reconocía porque la barra partía la palabra.
   union:       [[['ROSCADO', 'ROSCADA', 'NPT', 'THRD', 'THREADED'], 'ROSCADO'],
@@ -28813,7 +29042,7 @@ const OP_EJES = {
                 [['COMPUERTA', 'GATE'], 'COMPUERTA'], [['GLOBO', 'GLOBE'], 'GLOBO'],
                 [['AGUJA', 'NEEDLE'], 'AGUJA'], [['MARIPOSA', 'BUTTERFLY'], 'MARIPOSA'],
                 [['ALIVIO', 'RELIEF', 'SEGURIDAD'], 'ALIVIO'], [['VENTEO'], 'VENTEO'],
-                // 1-oct-2026 · OP-2026-0107 — un CAP es hembra: «CAP 3/4" CL 6000»
+                // 30-sep-2026 · OP-2026-0107 — un CAP es hembra: «CAP 3/4" CL 6000»
                 // entraba contra «TAPON MACHO AC NPT 6.000L 3/4"».
                 [['CAP', 'HEMBRA', 'FEMALE'], 'HEMBRA'], [['MACHO', 'PLUG', 'MALE'], 'MACHO']]
 };
@@ -28849,7 +29078,7 @@ function _opVariante(s) {
 // Y lee "900/1500L" como rango de clase, no como la fracción 0,6.
 function _opNums(s) {
   let b = _opBase(s);
-  // 1-oct-2026 — «3.000L» / «6.000L» es la CLASE forjada, no 3 ni 6 pulgadas.
+  // 30-sep-2026 — «3.000L» / «6.000L» es la CLASE forjada, no 3 ni 6 pulgadas.
   // Leída como medida, una «TEE 3" SCH 160» cruzaba con «TEE AC NPT 3.000L 3/4"».
   b = b.replace(/\b[369][.,][0O]{3}(?:L|LB|LBS)?\b/g, ' ').replace(/\b[369][0O]{3}(?:L|LB|LBS)\b/g, ' ');
   const clases = new Set(), medidas = new Set(), vals = new Set();
@@ -28867,7 +29096,7 @@ function _opNums(s) {
   });
   return { medidas, clases };
 }
-// 1-oct-2026 · OP-2026-0107 — SCHEDULE y CLASE FORJADA también son ejes duros.
+// 30-sep-2026 · OP-2026-0107 — SCHEDULE y CLASE FORJADA también son ejes duros.
 // «TEE 2" SCH 160» entraba contra «TEE AC P/S S80 2"», y 3000/6000 se tiraban
 // como «especificación» sin comparar. Si las dos piezas lo dicen, tiene que ser
 // lo mismo; si una no lo dice, no se frena (hay productos sin ese dato).
@@ -32036,7 +32265,7 @@ async function pcomGuardar(silencioso){
         r.recibida = (it.recibida===''||it.recibida==null) ? null : parseFloat(it.recibida);
       });
     }
-    // 1-oct-2026 · CC-OP-2026-0107 — FRENO ANTES DE REEMPLAZAR.
+    // 30-sep-2026 · CC-OP-2026-0107 — FRENO ANTES DE REEMPLAZAR.
     // Un guardado desde una pantalla con una copia incompleta dejó el plan con 20
     // de sus 42 materiales, cada uno repetido, y sin ninguna marca de «comprado»
     // ($37,3 M → $12,6 M). Se calcula cómo quedaría el plan DESPUÉS de guardar y
@@ -32343,7 +32572,7 @@ function _pcomPlanBodyHTML(c){
   </div>
   <div style="margin-top:14px;font-size:9px;color:#555">Retefuente 2,5% aplica si la compra al proveedor ≥ $ ${PCOM_BASE_RETE.toLocaleString('es-CO')} (10 UVT ${new Date().getFullYear()}) y no es autoretenedor. Cotización: ${_remiEsc(_cotIds.join('  +  '))||'n.a.'} · Fecha: ${c.fecha?c.fecha.split('-').reverse().join('/'):''}</div>`;
 }
-// 1-oct-2026 — EL EXCEL DEL PLAN NO ERA LO QUE SE VE EN PANTALLA.
+// 30-sep-2026 — EL EXCEL DEL PLAN NO ERA LO QUE SE VE EN PANTALLA.
 // Usaba el mismo cuerpo del PDF: otras columnas y otro orden, sin la cotización,
 // sin la nota/desviación (lo que va a la O.C.), sin «comprado» ni «recibida», y
 // con TODAS las celdas forzadas a texto («$ 1.234.567» no se puede sumar).

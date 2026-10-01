@@ -29,14 +29,29 @@ jobs:
       - name: 💾 Descargar y guardar respaldo
         run: python scripts/backup_supabase.py
 
+      # 30-sep-2026 — La plataforma ya no sube data/cotizaciones.json en cada
+      # guardado (la lista se sincroniza desde Supabase). Aquí se regenera una vez
+      # al día como respaldo y como punto de arranque de un equipo nuevo.
+      - name: 📄 Espejo diario de cotizaciones (Supabase → data/cotizaciones.json)
+        run: python scripts/espejo_cotizaciones.py
+
+      # 30-sep-2026 — Fallaba el 28 y 29-sep: el repo recibe commits de la
+      # plataforma todo el día y el push sin traer lo nuevo era rechazado.
+      # Ahora: commit, y hasta 5 intentos de pull --rebase + push.
       - name: 📤 Commit del respaldo (solo si hay cambios)
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add backups/
+          git add backups/ data/cotizaciones.json
           if git diff --staged --quiet; then
             echo "Sin cambios en el respaldo — no se hace commit."
-          else
-            git commit -m "💾 Backup Supabase — $(TZ='America/Bogota' date +'%Y-%m-%d %H:%M')"
-            git push
+            exit 0
           fi
+          git commit -m "💾 Backup Supabase — $(TZ='America/Bogota' date +'%Y-%m-%d %H:%M')"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase -X theirs origin main && git push; then
+              echo "Subido en el intento $i"; exit 0
+            fi
+            echo "Intento $i rechazado; reintento en $((i*10)) s"; sleep $((i*10))
+          done
+          echo "No se pudo subir el respaldo después de 5 intentos"; exit 1
