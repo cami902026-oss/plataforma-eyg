@@ -72057,6 +72057,7 @@
     "estado": "Vencida",
     "ivaVal": 0,
     "cliente": "SKF OMIA",
+    "deleted": true,
     "factura": "",
     "validez": "8 DÍAS",
     "contacto": "LEIDY ESPEJO",
@@ -72064,9 +72065,10 @@
     "vendedor": "Sheila Baron",
     "createdAt": "2026-08-13T18:03:44.191Z",
     "createdBy": "sandra",
+    "deletedAt": "2026-09-18T16:00:46.171Z",
     "fechaVenc": "2026-08-21",
     "formaPago": "CRÉDITO 60 DÍAS",
-    "updatedAt": "2026-08-31T16:11:47.792Z",
+    "updatedAt": "2026-09-18T16:00:46.171Z",
     "updatedBy": "sandra",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
@@ -72074,9 +72076,7 @@
     "sitioEntrega": "",
     "fechaGuardado": "2026-08-31T16:11:47.792Z",
     "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "deleted": true,
-    "deletedAt": "2026-09-18T16:00:48.258697+00:00"
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
   },
   {
     "id": "LM1989",
@@ -97908,26 +97908,8 @@
   },
   {
     "id": "LM2100",
-    "fecha": "2026-09-07",
-    "fechaVenc": "2026-09-15",
-    "cliente": "CROIL",
-    "contacto": "DANIELA CHAVARRO",
-    "correo": "",
-    "estado": "Vencida",
-    "factura": "",
     "iva": 19,
-    "subtotal": 11428548,
-    "ivaVal": 2171424.12,
-    "total": 13599972.120000001,
-    "formaPago": "30 DÍAS",
-    "sitioEntrega": "GUAMAL",
-    "validez": "8 DÍAS",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "vendedor": "Mario",
-    "realizadaPor": "Alexandra",
-    "aprobadaPor": "Alberto",
-    "solicitudId": "",
-    "motivoRechazo": "",
+    "fecha": "2026-09-07",
     "items": [
       {
         "id": 1,
@@ -98174,13 +98156,30 @@
         "precioProveedor": 317000
       }
     ],
-    "fechaGuardado": "2026-09-11T15:20:26.988Z",
-    "fechaEnvio": "2026-09-01T20:41:58.044Z",
+    "total": 13599972.120000001,
+    "correo": "",
+    "estado": "Vencida",
+    "ivaVal": 2171424.12,
+    "cliente": "CROIL",
+    "factura": "",
+    "validez": "8 DÍAS",
+    "contacto": "DANIELA CHAVARRO",
+    "subtotal": 11428548,
+    "vendedor": "Mario",
     "createdAt": "2026-09-01T20:41:58.044Z",
     "createdBy": "alexandra",
-    "updatedAt": "2026-09-16T02:25:09.016Z",
-    "updatedBy": "auto",
-    "vencidaAutoAt": "2026-09-16T02:25:09.016Z"
+    "fechaVenc": "2026-09-15",
+    "formaPago": "30 DÍAS",
+    "updatedAt": "2026-10-01T02:16:39.644Z",
+    "updatedBy": "mario",
+    "fechaEnvio": "2026-09-01T20:41:58.044Z",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "realizadaPor": "Alexandra",
+    "sitioEntrega": "GUAMAL",
+    "fechaGuardado": "2026-10-01T02:16:39.644Z",
+    "motivoRechazo": "",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
   },
   {
     "id": "LM2115",
@@ -119594,7 +119593,7 @@
         "id": 1,
         "qty": 1,
         "udm": "EA",
-        "uid": "a8ea042e-0efa-411a-986d-88d2b09f4eb5",
+        "uid": "b07cc1ba-8de5-4d5d-b799-b7761ebb6a98",
         "desc": "tuberia ",
         "marca": "",
         "precio": 0,
@@ -119610,6 +119609,7 @@
     "estado": "Borrador",
     "ivaVal": 0,
     "cliente": "DISTRITUBERIAS RB",
+    "deleted": true,
     "factura": "",
     "validez": "8 DÍAS",
     "contacto": "RUBEN BARRIOS",
@@ -119617,9 +119617,10 @@
     "vendedor": "Mario",
     "createdAt": "2026-09-15T21:15:54.049Z",
     "createdBy": "mario",
+    "deletedAt": "2026-09-16T21:54:18.739Z",
     "fechaVenc": "2026-09-23",
     "formaPago": "30 DÍAS",
-    "updatedAt": "2026-09-15T21:15:54.049Z",
+    "updatedAt": "2026-09-16T21:54:18.739Z",
     "updatedBy": "mario",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
@@ -119627,9 +119628,7 @@
     "sitioEntrega": "",
     "fechaGuardado": "2026-09-15T21:15:54.049Z",
     "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "deleted": true,
-    "deletedAt": "2026-09-16T21:54:20.858941+00:00"
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
   },
   {
     "id": "LM 2169",
@@ -119656,6 +119655,7 @@
     "estado": "Borrador",
     "ivaVal": 0,
     "cliente": "DISTRITUBERIAS RB",
+    "deleted": true,
     "factura": "",
     "validez": "8 DÍAS",
     "contacto": "RUBEN BARRIOS",
@@ -119663,9 +119663,10 @@
     "vendedor": "Mario",
     "createdAt": "2026-09-15T21:16:25.620Z",
     "createdBy": "mario",
+    "deletedAt": "2026-09-16T21:54:21.074Z",
     "fechaVenc": "2026-09-23",
     "formaPago": "30 DÍAS",
-    "updatedAt": "2026-09-15T21:16:25.620Z",
+    "updatedAt": "2026-09-16T21:54:21.074Z",
     "updatedBy": "mario",
     "aprobadaPor": "Alberto",
     "solicitudId": "",
@@ -119673,9 +119674,7 @@
     "sitioEntrega": "",
     "fechaGuardado": "2026-09-15T21:16:25.620Z",
     "motivoRechazo": "",
-    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
-    "deleted": true,
-    "deletedAt": "2026-09-16T21:54:22.985408+00:00"
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
   },
   {
     "id": "LM2162",
@@ -142946,266 +142945,266 @@
     "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE",
     "adjudicacionAt": "2026-09-30T00:13:15.625727Z",
     "adjudicacionPor": "Andrea",
-    "valorAdjudicado": 43951080,
+    "valorAdjudicado": 43951080.0,
     "itemsAdjudicados": [
       {
-        "qty": 12,
+        "qty": 12.0,
         "uid": "8d7136e6-5f31-423b-9fec-e7aa797ddd4e"
       },
       {
-        "qty": 84,
+        "qty": 84.0,
         "uid": "7af88c9c-859c-4cd7-b2aa-6591b61e90d7"
       },
       {
-        "qty": 54,
+        "qty": 54.0,
         "uid": "e7a11d12-a9a4-4714-b6c4-edaee985d626"
       },
       {
-        "qty": 18,
+        "qty": 18.0,
         "uid": "7c61c34d-bb01-4684-b3ee-d1fedc3e1fab"
       },
       {
-        "qty": 6,
+        "qty": 6.0,
         "uid": "1dad0dda-e1b6-45c5-8754-e585e0551567"
       },
       {
-        "qty": 12,
+        "qty": 12.0,
         "uid": "1040566b-2c4c-44ac-ba76-6b8a1a66719b"
       },
       {
-        "qty": 2,
+        "qty": 2.0,
         "uid": "1894ae4b-d934-48b2-a3b2-e0cca15201c7"
       },
       {
-        "qty": 4,
+        "qty": 4.0,
         "uid": "3071d5a5-eb9c-4fb8-8a90-e0582ca3a8ac"
       },
       {
-        "qty": 38,
+        "qty": 38.0,
         "uid": "09fb50f7-82ba-4096-b935-49c161427f11"
       },
       {
-        "qty": 3,
+        "qty": 3.0,
         "uid": "3dafd609-c763-4fbf-887e-7bd4dfa8af32"
       },
       {
-        "qty": 3,
+        "qty": 3.0,
         "uid": "d65bfff1-51b2-4303-8472-371c48e4ab89"
       },
       {
-        "qty": 1,
+        "qty": 1.0,
         "uid": "64ef86fc-d016-4739-98f9-5754f29f41b0"
       },
       {
-        "qty": 1,
+        "qty": 1.0,
         "uid": "1e02e6f0-5749-45d0-93ab-1f2bbe042136"
       },
       {
-        "qty": 2,
+        "qty": 2.0,
         "uid": "3f117df0-1393-4fe4-8323-bbc488755f33"
       },
       {
-        "qty": 3,
+        "qty": 3.0,
         "uid": "961dee82-aecc-44d3-9579-23efefb67eb4"
       },
       {
-        "qty": 6,
+        "qty": 6.0,
         "uid": "79967303-29c9-495b-bfd8-ee7900300fa6"
       },
       {
-        "qty": 2,
+        "qty": 2.0,
         "uid": "4a6bcf89-1108-4be6-9c83-5f6300172430"
       },
       {
-        "qty": 3,
+        "qty": 3.0,
         "uid": "2bdd0e6f-c313-451c-a545-d76dd795bf13"
       },
       {
-        "qty": 12,
+        "qty": 12.0,
         "uid": "75db9f20-f60a-4d46-9a6a-d0d3508e66d1"
       },
       {
-        "qty": 2,
+        "qty": 2.0,
         "uid": "d4627e4b-3b86-44c8-8eb0-35cc7cf079bc"
       },
       {
-        "qty": 2,
+        "qty": 2.0,
         "uid": "0083165a-42d3-4ccb-a47a-3e449049fe4f"
       },
       {
-        "qty": 10,
+        "qty": 10.0,
         "uid": "585aa06c-2ee6-4e5a-8e77-de103becf019"
       },
       {
-        "qty": 2,
+        "qty": 2.0,
         "uid": "9cc2e64d-0894-465e-8479-d46bc7fe23c3"
       },
       {
-        "qty": 5,
+        "qty": 5.0,
         "uid": "c7b9ee8c-9826-4c2b-8f63-728e453a98e5"
       },
       {
-        "qty": 12,
+        "qty": 12.0,
         "uid": "604a1a08-2821-4335-81bd-c5cf19027ff2"
       },
       {
-        "qty": 19,
+        "qty": 19.0,
         "uid": "be96ecf0-d152-4569-bd21-880b29f55cfc"
       },
       {
-        "qty": 3,
+        "qty": 3.0,
         "uid": "fa4d6907-2a89-45b6-9325-d26dd01ad871"
       },
       {
-        "qty": 4,
+        "qty": 4.0,
         "uid": "49fc788b-4f86-41bd-b5cf-ce8f484661da"
       },
       {
-        "qty": 15,
+        "qty": 15.0,
         "uid": "a1348872-a4f0-4b25-b229-7c5512fb2349"
       },
       {
-        "qty": 100,
+        "qty": 100.0,
         "uid": "b7c02932-31f7-4ae9-9fa8-53fa696a2b21"
       },
       {
-        "qty": 144,
+        "qty": 144.0,
         "uid": "e45907cd-8835-4148-9e13-bbc0a03e8916"
       },
       {
-        "qty": 10,
+        "qty": 10.0,
         "uid": "7ceff29f-382d-499d-96dd-ebd57204eb39"
       },
       {
-        "qty": 4,
+        "qty": 4.0,
         "uid": "29a6a32d-e6c8-443d-9a83-81671791d701"
       },
       {
-        "qty": 3,
+        "qty": 3.0,
         "uid": "81093659-7224-4282-ae69-30244f16ced2"
       },
       {
-        "qty": 4,
+        "qty": 4.0,
         "uid": "a47abd7a-98ee-4a03-a80f-4e383459ba6b"
       },
       {
-        "qty": 1,
+        "qty": 1.0,
         "uid": "fdb68b97-ed70-491c-b219-3a5fc2b9bc68"
       },
       {
-        "qty": 1,
+        "qty": 1.0,
         "uid": "6ce0e4aa-1e2f-40d0-88d5-2f34d044a95f"
       },
       {
-        "qty": 3,
+        "qty": 3.0,
         "uid": "893942e2-c576-4a18-8102-dbc0c6c73a2d"
       },
       {
-        "qty": 1,
+        "qty": 1.0,
         "uid": "532f63f6-ad83-48d5-88d5-2cb84a9e3545"
       },
       {
-        "qty": 7,
+        "qty": 7.0,
         "uid": "e88d82d6-ebd8-4788-ad12-909427cac130"
       },
       {
-        "qty": 6,
+        "qty": 6.0,
         "uid": "7a06f1e8-186e-4493-a6bc-258244060667"
       },
       {
-        "qty": 6,
+        "qty": 6.0,
         "uid": "d1d29c79-40bd-4a30-892f-2d9cc5bfd34e"
       },
       {
-        "qty": 6,
+        "qty": 6.0,
         "uid": "1a683e7f-b773-4cf4-8046-3d0e8ff71f3d"
       },
       {
-        "qty": 6,
+        "qty": 6.0,
         "uid": "a1e2051f-0e7e-4ccc-93d6-6e26bec889c0"
       },
       {
-        "qty": 1,
+        "qty": 1.0,
         "uid": "20a6dbff-cfb8-48e5-b284-b012e60fccac"
       },
       {
-        "qty": 3,
+        "qty": 3.0,
         "uid": "284784ed-a934-4ae6-963a-26ed87c97648"
       },
       {
-        "qty": 15,
+        "qty": 15.0,
         "uid": "daa24ecb-0869-4e33-bdfe-64c8a90b2a3b"
       },
       {
-        "qty": 1,
+        "qty": 1.0,
         "uid": "106575f8-01f6-40fc-a249-120df8b7f465"
       },
       {
-        "qty": 2,
+        "qty": 2.0,
         "uid": "cdf6e3f2-bb40-49c6-a3d8-050260334c14"
       },
       {
-        "qty": 4,
+        "qty": 4.0,
         "uid": "349f8d42-5372-435e-b82e-ef731dc1547d"
       },
       {
-        "qty": 3,
+        "qty": 3.0,
         "uid": "a6433edc-2081-4a45-a380-3ae71376d5bc"
       },
       {
-        "qty": 8,
+        "qty": 8.0,
         "uid": "19dd367f-f7ea-42fb-ba7c-23fc3f0f96a3"
       },
       {
-        "qty": 1,
+        "qty": 1.0,
         "uid": "51b473e2-f270-4ce8-84d4-9fa590171431"
       },
       {
-        "qty": 4,
+        "qty": 4.0,
         "uid": "e6a98b6d-9a8e-440a-8417-d8aee5f4bbd1"
       },
       {
-        "qty": 4,
+        "qty": 4.0,
         "uid": "a62d69f5-6138-49cd-8f90-f85b57aeb963"
       },
       {
-        "qty": 48,
+        "qty": 48.0,
         "uid": "11b08c37-27b0-47bd-ab3a-965d2afc4322"
       },
       {
-        "qty": 1,
+        "qty": 1.0,
         "uid": "d468382a-280c-4ba0-9dfb-45594ecc4fd6"
       },
       {
-        "qty": 17,
+        "qty": 17.0,
         "uid": "d8a480d9-123f-45b3-bacc-dee6985ecea3"
       },
       {
-        "qty": 6,
+        "qty": 6.0,
         "uid": "2a1f93d4-9378-4d34-be79-f1bed2a522ac"
       },
       {
-        "qty": 10,
+        "qty": 10.0,
         "uid": "821d20a0-64fa-4770-980a-2dc0e9365192"
       },
       {
-        "qty": 1,
+        "qty": 1.0,
         "uid": "68f468a9-bf1a-4f2d-bd9c-2ed115db9b03"
       },
       {
-        "qty": 2,
+        "qty": 2.0,
         "uid": "17b9e162-8ed6-4387-be98-0dbcb3b4c5f1"
       },
       {
-        "qty": 5,
+        "qty": 5.0,
         "uid": "7728342d-28cb-4d6a-985a-1d1e8b11f315"
       },
       {
-        "qty": 1,
+        "qty": 1.0,
         "uid": "7996468f-e736-43e7-ab18-9e2ff273ce00"
       },
       {
-        "qty": 1,
+        "qty": 1.0,
         "uid": "3921c68e-9f53-4fd7-a938-6dead924af17"
       }
     ]
@@ -146025,5 +146024,455 @@
     "createdBy": "andrea",
     "updatedAt": "2026-08-24T13:22:15.496Z",
     "updatedBy": "alexandra"
+  },
+  {
+    "id": "LM2260",
+    "iva": 19,
+    "fecha": "2026-10-01",
+    "items": [
+      {
+        "id": 1,
+        "qty": 6,
+        "udm": "MT",
+        "uid": "53006057-0ff7-4488-aee6-4c15302350dd",
+        "desc": "TUBERIA AC 24\" SCH XS SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 655
+      },
+      {
+        "id": 2,
+        "qty": 12,
+        "udm": "MT",
+        "uid": "a98134c5-f8d0-44ad-97f8-1b5c37dfa1df",
+        "desc": "TUBERIA AC 20\" SCH XS SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 522.26
+      },
+      {
+        "id": 3,
+        "qty": 12,
+        "udm": "MT",
+        "uid": "d88528cf-e653-4a55-a57a-5ba8bf3146d2",
+        "desc": "TUBERIA AC 20\" SCH STD SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 394.25
+      },
+      {
+        "id": 4,
+        "qty": 12,
+        "udm": "MT",
+        "uid": "b33fff47-c881-4d12-90d1-c9dec04e7c61",
+        "desc": "TUBERIA AC 16\" SCH XS SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 430.21
+      },
+      {
+        "id": 5,
+        "qty": 12,
+        "udm": "MT",
+        "uid": "fd08ec1f-fe5b-4cea-abee-587602fbfe02",
+        "desc": "TUBERIA AC 16\" SCH STD SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 411
+      },
+      {
+        "id": 6,
+        "qty": 12,
+        "udm": "MT",
+        "uid": "658e0586-2717-4088-9bdd-f9c18f1e348e",
+        "desc": "TUBERIA AC 12\" SCH XS SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 384.68
+      },
+      {
+        "id": 7,
+        "qty": 12,
+        "udm": "MT",
+        "uid": "f74357c6-e36a-43a3-ac04-648bf0c2e424",
+        "desc": "TUBERIA AC 12\" SCH STD SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 291.65
+      },
+      {
+        "id": 8,
+        "qty": 12,
+        "udm": "MT",
+        "uid": "6229952f-373c-45f2-a42e-7982ad1c1387",
+        "desc": "TUBERIA AC 6\" SCH 80 SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 175.52
+      },
+      {
+        "id": 9,
+        "qty": 12,
+        "udm": "MT",
+        "uid": "d518dea5-ca16-4d98-8b80-cb33becca184",
+        "desc": "TUBERIA AC 6\" SCH STD SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 116.79
+      },
+      {
+        "id": 10,
+        "qty": 12,
+        "udm": "MT",
+        "uid": "80aacf3d-3ac4-45f0-ba22-481ae9313dee",
+        "desc": "TUBERIA AC 6\" SCH 80 SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 175.52
+      },
+      {
+        "id": 11,
+        "qty": 12,
+        "udm": "MT",
+        "uid": "024ad8c4-2f9d-4d27-b1e9-ded8059f7725",
+        "desc": "TUBERIA AC 6\" SCH STD SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 116.79
+      },
+      {
+        "id": 12,
+        "qty": 12,
+        "udm": "MT",
+        "uid": "79c6af4b-718e-45b9-a014-51afc69ef8a0",
+        "desc": "TUBERIA AC 2\" SCH 80 SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 31.84
+      },
+      {
+        "id": 13,
+        "qty": 12,
+        "udm": "MT",
+        "uid": "55619fec-a347-4f9a-b705-1f5b837b3cf6",
+        "desc": "TUBERIA AC 2\" SCH STD SMLS A106, API 5LX 65 PSL 2, ASME B36.10 SRL",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 23.16
+      },
+      {
+        "id": 14,
+        "qty": 4,
+        "udm": "EA",
+        "uid": "de971782-0b01-44b6-be4e-06685d113559",
+        "desc": "FLANGE WN 16\" AC ASTM A694 F65, ASME B16.5, SCH XS RF RATING 600# ",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 1030.6
+      },
+      {
+        "id": 15,
+        "qty": 4,
+        "udm": "EA",
+        "uid": "1bac7912-9f03-46aa-9030-158aaabd4f69",
+        "desc": "FLANGE WN 20\" AC ASTM A694 F65, ASME B16.5, SCH XS RF RATING 600# ",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 1542.45
+      },
+      {
+        "id": 16,
+        "qty": 2,
+        "udm": "EA",
+        "uid": "afc51611-7c87-4557-885c-4b8631b193f4",
+        "desc": "RED ECC 24\" X 20\"  AC ASTM A A694 WPHY65, ASME B16.9, SCH XS / XS",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 1210.64
+      },
+      {
+        "id": 17,
+        "qty": 2,
+        "udm": "EA",
+        "uid": "97d17b36-d988-4093-ba20-5a973a20a07c",
+        "desc": "RED ECC 20\" X 16\"  AC ASTM A A694 WPHY65, ASME B16.9, SCH XS / XS",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 1448.66
+      },
+      {
+        "id": 18,
+        "qty": 2,
+        "udm": "EA",
+        "uid": "b4739a51-62e3-4712-8886-b735acdbf57a",
+        "desc": "RED ECC 12\" X 10\"  AC ASTM A A694 WPHY65, ASME B16.9, SCH XS / XS",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 251.44
+      },
+      {
+        "id": 19,
+        "qty": 2,
+        "udm": "EA",
+        "uid": "01d1d9ef-5f35-48ca-9106-eeaff636ed57",
+        "desc": "RED ECC 18\" X 16\"  AC ASTM A A694 WPHY65, ASME B16.9, SCH XS / XS",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 698.45
+      },
+      {
+        "id": 20,
+        "qty": 12,
+        "udm": "EA",
+        "uid": "95feeadb-c4bf-4302-bb44-d077f25145b1",
+        "desc": "THREADOLET 1\" AC ASTM A-694 F 65 MSS SP-97, RANGO 3″-24″ RATING 9000#",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 22.07
+      },
+      {
+        "id": 21,
+        "qty": 12,
+        "udm": "EA",
+        "uid": "80ad7814-7e62-4e63-93c1-fcd57505107d",
+        "desc": "THREADOLET 1\" AC ASTM A-694 F 65 MSS SP-97, RANGO 3″-24″ RATING: 9000#",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 22.07
+      },
+      {
+        "id": 22,
+        "qty": 12,
+        "udm": "EA",
+        "uid": "552c2dd8-1d68-4518-9752-9eef4180b619",
+        "desc": "THREADOLET 1\" AC ASTM A-694 F 65 MSS SP-97, RANGO 3″-24″ RATING: 6000#",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 19.32
+      },
+      {
+        "id": 23,
+        "qty": 12,
+        "udm": "EA",
+        "uid": "66b2e9bf-0c10-4027-9868-3a2e1e1e5665",
+        "desc": "THREADOLET 1\" AC ASTM A-694 F 65 MSS SP-97, RANGO 3″-24″ RATING 6000#",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 19.32
+      },
+      {
+        "id": 24,
+        "qty": 12,
+        "udm": "EA",
+        "uid": "3d535da8-2e67-400b-8659-731e76679ded",
+        "desc": "WELDOLET 2\" AC ASTM A694 F65, BW, MSS-SP97, SCH 160, ASME B16.11, ASME B16.25. RANGO 18\"-24\"",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 38.63
+      },
+      {
+        "id": 25,
+        "qty": 24,
+        "udm": "EA",
+        "uid": "52024cb5-cab8-4bf9-b32b-0232d1b097f1",
+        "desc": "WELDOLET 2\" AC ASTM A694 F65, BW, MSS-SP97, SCH 80, ASME B16.11, ASME B16.25. RANGO 18\"-24\"",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 33.11
+      },
+      {
+        "id": 26,
+        "qty": 12,
+        "udm": "EA",
+        "uid": "4ff55ab4-a30b-4b31-82a9-ec39149aab7d",
+        "desc": "WELDOLET 2\" AC ASTM A694 F65, BW, MSS-SP97, SCH 80, ASME B16.11, ASME B16.25. RANGO 18\"-24\"",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 19.32
+      },
+      {
+        "id": 27,
+        "qty": 12,
+        "udm": "EA",
+        "uid": "45a93060-a326-40e7-ba78-69ca66cc8517",
+        "desc": "SOCKOLET 3/4\" AC ASTM A694 F65, BW, MSS-SP97, RATING: 6000#, ASME B16.11, ASME B16.25. RANGO 4\"-16\"",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 13.8
+      },
+      {
+        "id": 28,
+        "qty": 4,
+        "udm": "EA",
+        "uid": "debb50a8-d99c-44c9-93f1-4909d6680ecd",
+        "desc": "FLANGE WN 6\" AC ASTM A694 F65, ASME B16.5, SCH 80 RF RATING 900# ",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 290.42
+      },
+      {
+        "id": 29,
+        "qty": 4,
+        "udm": "EA",
+        "uid": "eb9adcd1-99f3-4b76-b9e7-72db139395c8",
+        "desc": "FLANGE WN 10\" AC ASTM A694 F65, ASME B16.5, SCH XS RF RATING 900# ",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 817.44
+      },
+      {
+        "id": 30,
+        "qty": 4,
+        "udm": "EA",
+        "uid": "96dcfcd5-5990-42ef-a533-5ceaf7f83d76",
+        "desc": "FLANGE WN 12\" AC ASTM A694 F65, ASME B16.5, SCH XS RF RATING 900# ",
+        "marca": "",
+        "precio": 0,
+        "desvTec": "",
+        "proveedor": "POSSIN",
+        "obsProveedor": "",
+        "tiempoEntrega": "7-8 SEMANAS",
+        "precioProveedor": 992.31
+      }
+    ],
+    "total": 0,
+    "correo": "LMORALES@CROIL.COM.CO",
+    "estado": "Borrador",
+    "ivaVal": 0,
+    "cliente": "CROIL",
+    "factura": "",
+    "validez": "8 DÍAS",
+    "contacto": "lorena morales",
+    "subtotal": 0,
+    "vendedor": "Mario",
+    "createdAt": "2026-10-01T02:21:45.796Z",
+    "createdBy": "mario",
+    "fechaVenc": "2026-10-09",
+    "formaPago": "30 DÍAS",
+    "updatedAt": "2026-10-01T03:17:11.321Z",
+    "updatedBy": "mario",
+    "aprobadaPor": "Alberto",
+    "solicitudId": "",
+    "realizadaPor": "Mario",
+    "sitioEntrega": "",
+    "fechaGuardado": "2026-10-01T03:17:11.321Z",
+    "motivoRechazo": "",
+    "observaciones": "-ES IMPORTANTE QUE SE ESTUDIE DETALLADAMENTE LAS CONDICIONES COMERCIALES Y OBSERVACIONES DADAS EN ESTA OFERTA ECONÓMICA; UNA ORDEN DE COMPRA RECIBIDA SERÁ ENTENDIDA COMO ACEPTACIÓN FORMAL DE ESTA COTIZACIÓN\n-LA DOCUMENTACIÓN TÉCNICA ENTREGADA POR E&G ENERGY GROUP S.A.S. CONSTITUYE ÚNICAMENTE NUESTRA INTERPRETACIÓN DE LA INFORMACIÓN SUMINISTRADA POR EL CLIENTE; SIN EMBARGO CORRESPONDE AL CLIENTE CONFIRMAR QUE DICHA DOCUMENTACIÓN CUMPLA CON LAS EXIGENCIAS DEL PROYECTO.\n-PARA PEDIDOS CON UN VALOR INFERIOR A $500.000 COP EL COSTO DE ENVÍO NO ESTÁ INCLUIDO EN EL VALOR DE LA FACTURA Y DEBERÁ SER ASUMIDO POR EL CLIENTE"
   }
 ]
