@@ -500,26 +500,6 @@
   "updated_at": "2026-09-27T01:04:27.131+00:00"
  },
  {
-  "id": 18,
-  "codigo": "1700002",
-  "descripcion": "TUBERIA 4\" SCH 40 RANGO SENCILLO AC BINORMA",
-  "marca": "BAOLAI",
-  "familia_id": 13,
-  "colada": "",
-  "lote": "HJY20250925 -EG",
-  "fecha_ingreso": "2026-03-12",
-  "entradas": 257.0,
-  "salidas": 86.0,
-  "stock_actual": 171.0,
-  "costo_compra": 0,
-  "precio_venta": 62000,
-  "proveedor": "IMP",
-  "ubicacion": "BODEGA SAMARIA",
-  "activo": true,
-  "created_at": "2026-05-29T17:45:51.280742+00:00",
-  "updated_at": "2026-09-29T19:22:42.73371+00:00"
- },
- {
   "id": 22,
   "codigo": "3000002",
   "descripcion": "CONDULETA ROSCADA LB 2\"",
@@ -1058,6 +1038,26 @@
   "activo": true,
   "created_at": "2026-05-29T17:45:51.280742+00:00",
   "updated_at": "2026-09-02T14:35:31.809+00:00"
+ },
+ {
+  "id": 18,
+  "codigo": "1700002",
+  "descripcion": "TUBERIA 4\" SCH 40 RANGO SENCILLO AC BINORMA",
+  "marca": "BAOLAI",
+  "familia_id": 13,
+  "colada": "",
+  "lote": "HJY20250925 -EG",
+  "fecha_ingreso": "2026-03-12",
+  "entradas": 257.0,
+  "salidas": 109,
+  "stock_actual": 148,
+  "costo_compra": 0,
+  "precio_venta": 62000,
+  "proveedor": "IMP",
+  "ubicacion": "BODEGA SAMARIA",
+  "activo": true,
+  "created_at": "2026-05-29T17:45:51.280742+00:00",
+  "updated_at": "2026-10-02T22:51:20.868+00:00"
  },
  {
   "id": 58,
@@ -11778,5 +11778,25 @@
   "activo": true,
   "created_at": "2026-09-30T14:40:06.009839+00:00",
   "updated_at": "2026-09-30T14:40:13.666+00:00"
+ },
+ {
+  "id": 631,
+  "codigo": "OP-81255317-1",
+  "descripcion": "ACEITE HIDROSOLUBLE X 5 GALONES",
+  "marca": "",
+  "familia_id": null,
+  "colada": null,
+  "lote": "",
+  "fecha_ingreso": "2026-10-02",
+  "entradas": 4,
+  "salidas": 4,
+  "stock_actual": 0,
+  "costo_compra": 380000,
+  "precio_venta": 0,
+  "proveedor": "IMG OIL",
+  "ubicacion": "",
+  "activo": true,
+  "created_at": "2026-10-02T22:47:35.259766+00:00",
+  "updated_at": "2026-10-02T22:47:39.692+00:00"
  }
 ]
