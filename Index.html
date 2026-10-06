@@ -6920,6 +6920,15 @@ async function _runPollCycle() {
   // OP pendientes de aprobación (2026-08-23): van en el mismo ciclo, sin bloquearlo.
   // Es lo que hace que al jefe le aparezca la campana sin tener que recargar.
   try { _opRefrescarAlertas(); } catch(_) {}
+  // 5-oct-2026: si la pestaña Base de Datos de cotizaciones está a la vista, refrescar
+  // la lista de Supabase cada minuto (las cotizaciones ya no viajan por el JSON).
+  try {
+    const _bdTab = document.getElementById('cotiz-tab-bd');
+    if (_bdTab && _bdTab.classList.contains('active') && _bdTab.offsetParent !== null
+        && typeof bdLoadHistorico === 'function' && Date.now() - _bdHistAt > 60000) {
+      bdLoadHistorico(true).then(() => { try { bdRender(); } catch(_) {} });
+    }
+  } catch(_) {}
   _lastPollOk = Date.now(); try { _lastSyncAgoPaint(); } catch(_) {}
   if (resultados.some(Boolean)) showToast('Datos actualizados desde el servidor','info');
   // Reintento AUTOMÁTICO de la cola pendiente (máx. 1 vez por minuto): antes,
@@ -13177,7 +13186,10 @@ function cotizShowTab(tab) {
   document.querySelectorAll('.cotiz-tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById('ctab-' + tab).classList.add('active');
   document.getElementById('cotiz-tab-' + tab).classList.add('active');
-  if (tab === 'bd') { bdRender(); if (!_bdHistCache) bdLoadHistorico().then(() => bdRender()); if (!_bdRemByCotiz) bdLoadRemisiones().then(() => bdRender()); }
+  // 5-oct-2026: la lista de Supabase se bajaba UNA sola vez por sesión. Lo que otra
+  // persona creaba después (caso LM2275-1 de Sheila) no aparecía hasta recargar la
+  // página. Ahora, al entrar a la pestaña, se vuelve a bajar si tiene más de 1 minuto.
+  if (tab === 'bd') { bdRender(); if (!_bdHistCache || Date.now() - _bdHistAt > 60000) bdLoadHistorico(true).then(() => bdRender()); if (!_bdRemByCotiz) bdLoadRemisiones().then(() => bdRender()); }
   if (tab === 'agente') cotizRenderAgente();
   if (tab === 'proveedores') provRender();
   if (tab === 'clientes') cliRender();
@@ -15991,6 +16003,7 @@ async function exportCotizBDCompleta(){
 // de la plataforma (locales) como las del LIBRO ya cargadas en Supabase.
 // Si Supabase no responde, el histórico simplemente no aparece y lo local sigue igual.
 let _bdHistCache = null;      // array mapeado al shape de bdRender, o null si aún no cargó
+let _bdHistAt = 0;            // 5-oct-2026: cuándo se bajó la lista por última vez (para refrescarla sola)
 let _bdHistLoading = false;
 
 // Trazabilidad: mapa cotización -> remisión ligada (desde Supabase, solo las que tienen enlace)
@@ -16073,11 +16086,16 @@ async function bdLoadHistorico(force) {
     // deleted=not.is.true excluye las lápidas (borradas). Si la columna aún no
     // existe (SQL de migración sin correr), reintenta sin el filtro.
     let rows;
+    // 5-oct-2026: PAGINADO. `limit=5000` era un deseo: PostgREST corta en 1.000 y la
+    // base ya tiene 1.310 cotizaciones → las 310 más viejas no salían en la lista.
+    const _sel = 'cotizaciones?select=id,fecha,cliente,contacto,total,fecha_venc,estado,vendedor,realizada_por,fuente';
+    const _pag = (typeof _pvdPaginar === 'function') ? _pvdPaginar : (p => absFetch(p + '&limit=5000'));
     try {
-      rows = await absFetch('cotizaciones?select=id,fecha,cliente,contacto,total,fecha_venc,estado,vendedor,realizada_por,fuente&deleted=not.is.true&order=fecha.desc.nullslast&limit=5000');
+      rows = await _pag(_sel + '&deleted=not.is.true&order=fecha.desc.nullslast,id.desc');
     } catch (_) {
-      rows = await absFetch('cotizaciones?select=id,fecha,cliente,contacto,total,fecha_venc,estado,vendedor,realizada_por,fuente&order=fecha.desc.nullslast&limit=5000');
+      rows = await _pag(_sel + '&order=fecha.desc.nullslast,id.desc');
     }
+    _bdHistAt = Date.now();
     _bdHistCache = (rows || []).map(r => ({
       id: r.id, fecha: r.fecha || '', cliente: r.cliente || '', contacto: r.contacto || '',
       total: +r.total || 0, fechaVenc: r.fecha_venc || '', estado: r.estado || 'Histórico',
