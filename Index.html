@@ -2497,6 +2497,12 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
               <div class="form-group"><label>TELÉFONO / WHATSAPP</label><input type="text" id="prov-tel" placeholder="+57 300 000 0000"></div>
               <div class="form-group"><label>CORREO</label><input type="email" id="prov-correo" placeholder="correo@proveedor.com"></div>
             </div>
+            <!-- 5-oct-2026: datos que imprime la Orden de Compra (E6-FC-01). Antes solo se podían digitar en el modal de la OC. -->
+            <div class="form-row">
+              <div class="form-group"><label>NIT</label><input type="text" id="prov-nit" placeholder="900.000.000-1"></div>
+              <div class="form-group"><label>DIRECCIÓN</label><input type="text" id="prov-direccion" placeholder="Carrera 26 # 12-21"></div>
+              <div class="form-group"><label>CIUDAD</label><input type="text" id="prov-ciudad" placeholder="BOGOTÁ"></div>
+            </div>
             <div class="form-group"><label>NOTAS</label><textarea id="prov-notas" rows="2" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:8px;color:#fff;font-size:12px;resize:vertical;" placeholder="Productos que maneja, condiciones de pago, tiempos de entrega..."></textarea></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
               <button class="btn btn-primary" onclick="provGuardar()" style="width:auto;font-size:13px;">💾 Guardar proveedor</button>
@@ -17347,8 +17353,13 @@ function provGuardar() {
     correo: document.getElementById('prov-correo').value.trim(),
     notas: document.getElementById('prov-notas').value.trim()
   };
+  // 5-oct-2026: NIT / dirección / ciudad también desde la libreta (los imprime la OC).
+  const _g = id => { const e = document.getElementById(id); return e ? e.value.trim() : ''; };
+  record.nit = _g('prov-nit'); record.direccion = _g('prov-direccion'); record.ciudad = _g('prov-ciudad');
   const idx = bd.findIndex(p => p.id === record.id);
-  if (idx >= 0) { record.createdAt = bd[idx].createdAt; record.createdBy = bd[idx].createdBy; bd[idx] = _audit(record, false); showToast('Proveedor actualizado','success'); }
+  // Al editar se FUSIONA sobre el registro existente: antes se reemplazaba entero y se
+  // perdían los campos que no están en este formulario (p.ej. el NIT que guardó la OC).
+  if (idx >= 0) { record.createdAt = bd[idx].createdAt; record.createdBy = bd[idx].createdBy; bd[idx] = _audit(Object.assign({}, bd[idx], record), false); showToast('Proveedor actualizado','success'); }
   else { bd.push(_audit(record, true)); showToast('Proveedor guardado','success'); }
   saveData('bd_proveedores', bd);
   provNuevo();
@@ -17366,6 +17377,7 @@ function provCargar(id) {
   document.getElementById('prov-tel').value = p.telefono || '';
   document.getElementById('prov-correo').value = p.correo || '';
   document.getElementById('prov-notas').value = p.notas || '';
+  ['nit','direccion','ciudad'].forEach(k => { const e = document.getElementById('prov-' + k); if (e) e.value = p[k] || ''; });
   document.getElementById('prov-form-title').textContent = '✏️ Editando: ' + p.nombre;
   document.getElementById('prov-form-card').scrollIntoView({ behavior:'smooth', block:'start' });
 }
@@ -17378,6 +17390,7 @@ function provNuevo() {
   document.getElementById('prov-tel').value = '';
   document.getElementById('prov-correo').value = '';
   document.getElementById('prov-notas').value = '';
+  ['nit','direccion','ciudad'].forEach(k => { const e = document.getElementById('prov-' + k); if (e) e.value = ''; });
   document.getElementById('prov-form-title').textContent = '➕ Nuevo proveedor';
 }
 
@@ -30937,7 +30950,14 @@ async function pcomCargar(){
       catch(_){ pcom_hasCheck=false; console.warn('[pcom] faltan columnas comprado/recibida en plan_compras'); }
     }
     const dl = document.getElementById('pcom-prov-datalist');
-    if(dl) dl.innerHTML = pcom_prov.map(p=>`<option value="${_remiEsc(p.nombre)}">`).join('');
+    if(dl){
+      // 5-oct-2026: sugerir también los de la libreta 🏭 Proveedores (un proveedor nuevo
+      // solo llega a la tabla de Supabase cuando se le marca autoretenedor).
+      const vistos = new Set(pcom_prov.map(p=>String(p.nombre||'').trim().toUpperCase()));
+      let extra = [];
+      try { extra = (getData('bd_proveedores', []) || []).filter(p=>p.nombre && !vistos.has(String(p.nombre).trim().toUpperCase())); } catch(_){ }
+      dl.innerHTML = pcom_prov.concat(extra).map(p=>`<option value="${_remiEsc(p.nombre)}">`).join('');
+    }
     pcomRenderLista();
     showToast('Planes cargados ✓','ok');
   }catch(e){ showToast('Error: '+e.message,'error'); }
