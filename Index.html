@@ -30950,7 +30950,25 @@ function pcomGrupos(){
 }
 function pcomProvInfo(nombre){
   const n = String(nombre||'').trim().toUpperCase();
-  return pcom_prov.find(p=>String(p.nombre||'').trim().toUpperCase()===n) || null;
+  const sb = pcom_prov.find(p=>String(p.nombre||'').trim().toUpperCase()===n) || null;
+  // 5-oct-2026 — La OC pedía NIT/dirección/ciudad/teléfono/contacto SOLO a la tabla
+  // `proveedores` de Supabase, donde 1 de 40 los tiene. Esos datos viven en la libreta
+  // 🏭 Proveedores (bd_proveedores → data/proveedores.json), que es donde el modal de
+  // la OC los guarda (_pcomGuardarDatosProv). Al recargar la página, pcom_prov vuelve
+  // a venir de Supabase y el modal salía vacío: tocaba digitarlos en cada OC. Ahora se
+  // completa con la libreta lo que Supabase no tenga; autoretenedor e id siguen siendo
+  // los de Supabase (no se pisan).
+  let lib = null;
+  try { lib = (getData('bd_proveedores', []) || []).find(p=>String(p.nombre||'').trim().toUpperCase()===n) || null; } catch(_){ }
+  if(!sb && !lib) return null;
+  const out = Object.assign({}, sb||{});
+  if(lib){
+    if(!out.nombre) out.nombre = lib.nombre;
+    ['nit','direccion','ciudad','telefono','contacto','correo'].forEach(k=>{
+      if(!String(out[k]||'').trim() && String(lib[k]||'').trim()) out[k] = lib[k];
+    });
+  }
+  return out;
 }
 function pcomEsAutoRet(nombre){
   const p = pcomProvInfo(nombre);
