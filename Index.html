@@ -29023,18 +29023,21 @@ let _opStockAt = 0;
 const OP_TIPOS = [
   // Primero: una «CONDULETA ROSCADA TEE 2"» es eléctrica, no una tee de tubería.
   [['CONDULETA'], 'CONDULETA'],
-  [['SEMICODO'], 'SEMICODO'], [['CODO'], 'CODO'],
+  // 6-oct-2026 · OP-2026-0143 (CIAM) — las cotizaciones en inglés no cruzaban con
+  // NADA: «PIPE», «ELBOW», «BALL VALVE», «GASKET» no tenían nombre en castellano y
+  // sin tipo el cruce se calla. De 15 líneas solo la TEE encontró bodega.
+  [['SEMICODO'], 'SEMICODO'], [['CODO', 'ELBOW'], 'CODO'],
   [['TEE', 'TE', 'TES'], 'TEE'],
   [['BRIDA', 'FLANCHE', 'FLANGE'], 'FLANCHE'],        // el hallazgo
   [['PLATINA'], 'PLATINA'], [['TAPON', 'CAP', 'PLUG'], 'TAPON'],
   [['NIPLE', 'NIPPLE'], 'NIPLE'],
   [['BUSHING', 'REDUCCION', 'REDUCTOR'], 'BUSHING'],
   [['UNION', 'UNIVERSAL'], 'UNION'],
-  [['VALVULA', 'VALV', 'VAL'], 'VALVULA'],
+  [['VALVULA', 'VALV', 'VAL', 'VALVE'], 'VALVULA'],
   [['ESPARRAGO', 'STUD'], 'ESPARRAGO'],
-  [['EMPAQUE', 'ESPIROMETALICO', 'FLEXITALICO'], 'EMPAQUE'],
+  [['EMPAQUE', 'ESPIROMETALICO', 'FLEXITALICO', 'GASKET'], 'EMPAQUE'],
   [['THREADOLET', 'WELDOLET', 'SOCKOLET', 'ELBOLET', 'ELBOLEHT', 'OLET'], 'OLET'],
-  [['TUBO', 'TUBERIA'], 'TUBO'], [['LAMINA'], 'LAMINA'], [['BROCA'], 'BROCA'],
+  [['TUBO', 'TUBERIA', 'PIPE'], 'TUBO'], [['LAMINA'], 'LAMINA'], [['BROCA'], 'BROCA'],
   [['CABLE'], 'CABLE'], [['COPA'], 'COPA'],
   [['CONECTOR'], 'CONECTOR'], [['TUERCA'], 'TUERCA'], [['MANOMETRO'], 'MANOMETRO']
 ];
@@ -29043,7 +29046,9 @@ const OP_TIPOS = [
 // eje. Un flanche CIEGO y uno de CUELLO chocan (terminación) aunque ambos sean
 // RTJ. Comparar todos los atributos juntos dejaba pasar la pieza equivocada.
 const OP_EJES = {
-  terminacion: [[['CIEGO', 'CIEGA', 'BLIND'], 'CIEGO'], [['CUELLO', 'WN'], 'CUELLO'],
+  // 6-oct-2026 — «WELD NECK» / «WELDING NECK» es cuello: sin eso una brida WN cruzaba
+  // con una SW y una CIEGA con una de cuello (OP-2026-0143).
+  terminacion: [[['CIEGO', 'CIEGA', 'BLIND'], 'CIEGO'], [['CUELLO', 'WN', 'NECK', 'WELDNECK'], 'CUELLO'],
                 [['SLIPON', 'SO'], 'SLIPON'], [['SOCKET', 'SW', 'SOCKETWELD'], 'SOCKET']],
   cara:        [[['RTJ'], 'RTJ'], [['RF'], 'RF']],
   forma:       [[['REDU', 'REDUCIDA', 'REDUCTORA'], 'REDUCIDA']],
@@ -29052,7 +29057,9 @@ const OP_EJES = {
   // (punta soldable) nunca se reconocía porque la barra partía la palabra.
   union:       [[['ROSCADO', 'ROSCADA', 'NPT', 'THRD', 'THREADED'], 'ROSCADO'],
                 [['BW', 'PS', 'BEVELED', 'BUTTWELD', 'BUTT'], 'SOLDADO'],
-                [['SW', 'SOCKET', 'SOCKETWELD'], 'SOCKET']],
+                [['SW', 'SOCKET', 'SOCKETWELD'], 'SOCKET'],
+                // 6-oct-2026 — bridada (válvulas): «BALL VALVE FLG 150» ≠ «VALVULA DE BOLA SW».
+                [['FLG', 'FLANGED', 'BRIDADA', 'BRIDADO', 'BRIDADAS'], 'BRIDADO']],
   // El material NO es un detalle: una pieza en inoxidable no reemplaza una en
   // acero al carbono ni al reves, por mucho que coincidan medida y forma.
   material:    [[['INOX', 'INOXIDABLE', 'SS', 'INOXIDABLES', 'SS304', 'SS316', 'TP304', 'TP316',
@@ -29094,7 +29101,12 @@ function _opPal(s) { return new Set(_opBase(s).replace(/\//g, ' ').split(' ').fi
 
 function _opTipo(s) {
   const p = _opPal(s);
-  for (const [formas, canon] of OP_TIPOS) if (formas.some(f => p.has(f))) return canon;
+  for (const [formas, canon] of OP_TIPOS) if (formas.some(f => p.has(f))) {
+    // 6-oct-2026 — en bodega el codo de 45° se llama SEMICODO: «ELBOW 45 DEG» o
+    // «CODO 45» tienen que buscar ahí y no entre los de 90°.
+    if (canon === 'CODO' && /\b45\b/.test(_opBase(s))) return 'SEMICODO';
+    return canon;
+  }
   return null;
 }
 function _opVariante(s) {
@@ -29112,6 +29124,18 @@ function _opNums(s) {
   // 30-sep-2026 — «3.000L» / «6.000L» es la CLASE forjada, no 3 ni 6 pulgadas.
   // Leída como medida, una «TEE 3" SCH 160» cruzaba con «TEE AC NPT 3.000L 3/4"».
   b = b.replace(/\b[369][.,][0O]{3}(?:L|LB|LBS)?\b/g, ' ').replace(/\b[369][0O]{3}(?:L|LB|LBS)\b/g, ' ');
+  // 6-oct-2026 · OP-2026-0143 — las NORMAS y los GRADOS no son medidas. «ASME B16.5»
+  // daba 16,5"; «A36 1/4"» daba 36,25"; «B7 5/8"» daba 7,625"; «ELBOW 45 DEG» daba
+  // 45"; «2MX1M» daba 2" y 1". Con esa basura la cobertura de medidas caía y la
+  // pieza correcta (22000133, 72 en bodega) quedaba por debajo del umbral.
+  // (con \b después de la sigla: sin él, «FLANGED END 2"» perdía el 2 por culpa de «EN»)
+  b = b.replace(/\b(?:ASME|ASTM|ANSI|API|MSS|AWWA|DIN|ISO|EN|BS|NACE|SAE)\b\s*[A-Z]?\s*\d+(?:[.,]\d+)*[A-Z]?\b/g, ' ');
+  b = b.replace(/\bB\s?(?:1[.,]1|16[.,]\d{1,2}|18[.,]2(?:[.,]\d)?|36[.,]10M?|36[.,]19M?|31[.,]\d)\b/g, ' ');
+  b = b.replace(/\bA\s?(?:36|53|105|106|182|193|194|216|234|312|350|403)\b/g, ' ');
+  b = b.replace(/\bSP\s?\d{2,3}\b/g, ' ').replace(/\bGR\.?\s?[A-Z]?\d*[A-Z]*\b/g, ' ');
+  b = b.replace(/\b(?:B7|B7M|B8|B8M|L7|2H|2HM|8M|WPB|WCB|CF8M|CF8|F316|F304|F11|F22|F51)\b/g, ' ');
+  b = b.replace(/\b(?:45|90|180)\s*(?:DEG|DEGREES|GRADOS|GRADES)\b/g, ' ').replace(/\bX\s?45\b/g, ' ');
+  b = b.replace(/\b\d+(?:[.,]\d+)?\s*M\s*X\s*\d+(?:[.,]\d+)?\s*M\b/g, ' ');
   const clases = new Set(), medidas = new Set(), vals = new Set();
   b.replace(/(\d{3,4})\s*\/\s*(\d{3,4})/g, (m, a, c) => {
     [a, c].forEach(v => { if (OP_CLASE.includes(+v)) clases.add(+v); }); return ' ';
@@ -29125,6 +29149,9 @@ function _opNums(s) {
     else if (OP_MATERIAL.includes(v) || OP_PRESION.includes(v) || v > 60) { /* especificación */ }
     else medidas.add(v);
   });
+  // 6-oct-2026 — en un empaque, «1/8"» es el ESPESOR, no el diámetro: «Flexitálico 2"
+  // Cl150 1/8"» no cruzaba con «ESPIROMETALICO 2-150» por esa medida de más.
+  if (medidas.has(0.125) && medidas.size > 1 && /\b(?:EMPAQUE|ESPIROMETALICO|FLEXITALICO|GASKET|THICKNESS|ESPESOR)\b/.test(b)) medidas.delete(0.125);
   return { medidas, clases };
 }
 // 30-sep-2026 · OP-2026-0107 — SCHEDULE y CLASE FORJADA también son ejes duros.
@@ -29200,8 +29227,15 @@ function _opBuscarStock(desc, idx) {
         if (a.has('REDUCIDA') !== b.has('REDUCIDA')) { choca = true; break; }
       } else if (eje === 'subtipo') {
         // Estricto: «VALVULA 1/2"» sin apellido tampoco reemplaza a una cheque.
-        if (a.size || b.size) {
-          let comun = false; a.forEach(x => { if (b.has(x)) comun = true; });
+        // 6-oct-2026 — HEMBRA/MACHO solo es apellido en un TAPÓN: «ELBOW FEMALE END
+        // 3/4" SW» no deja de ser un codo por decir «female».
+        let a2 = a, b2 = b;
+        if (td !== 'TAPON') {
+          a2 = new Set([...a].filter(x => x !== 'HEMBRA' && x !== 'MACHO'));
+          b2 = new Set([...b].filter(x => x !== 'HEMBRA' && x !== 'MACHO'));
+        }
+        if (a2.size || b2.size) {
+          let comun = false; a2.forEach(x => { if (b2.has(x)) comun = true; });
           if (!comun) { choca = true; break; }
         }
       } else if (a.size && b.size) {
