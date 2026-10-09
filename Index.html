@@ -1824,6 +1824,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <button class="btn btn-secondary" id="cnu-tab-btn-pagos" onclick="cnuTab('pagos')" style="width:auto;font-size:13px;padding:9px 16px;">✅ Pagos</button>
             <button class="btn btn-secondary" id="cnu-tab-btn-meses" onclick="cnuTab('meses')" style="width:auto;font-size:13px;padding:9px 16px;">📅 Meses</button>
             <button class="btn btn-secondary" id="cnu-tab-btn-clientes" onclick="cnuTab('clientes')" style="width:auto;font-size:13px;padding:9px 16px;">👥 Clientes</button>
+            <button class="btn btn-secondary" id="cnu-tab-btn-legalizar" onclick="cnuTab('legalizar')" style="width:auto;font-size:13px;padding:9px 16px;">📌 Por legalizar</button>
             <span style="flex:1;"></span>
             <button class="btn btn-primary" id="cnu-btn-nuevafact" onclick="cnuNuevaFactura()" style="width:auto;font-size:13px;padding:9px 16px;">➕ Nueva factura</button>
             <button class="btn btn-secondary" onclick="cnuCargar(true)" style="width:auto;font-size:13px;padding:9px 14px;" title="Vuelve a leer los datos de la nube">🔄 Actualizar</button>
@@ -1892,6 +1893,28 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             </div>
           </div>
 
+          <!-- ═══ 📌 POR LEGALIZAR (9-oct-2026) — lo que el cliente ya nos compró y no se ha
+               facturado. Mismo cálculo del correo de las 7 AM (scripts/cartera_por_legalizar.py),
+               en vivo. SOLO LECTURA: no escribe en Cartera ni en las OP. Antes de IVA. -->
+          <div id="cnu-tab-legalizar" style="display:none;">
+            <div id="cpl-cajas" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px;"></div>
+            <div class="card" style="padding:18px;">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+                <div class="config-title" style="margin:0;">📌 Cartera por legalizar</div>
+                <span style="flex:1;"></span>
+                <input type="text" id="cpl-buscar" oninput="cplRender()" placeholder="🔍 OP, cliente, cotización, O.C.…" style="width:230px;padding:8px 12px;">
+                <select id="cpl-cliente" onchange="cplRender()" style="padding:8px 12px;"><option value="">Todos los clientes</option></select>
+                <button class="btn btn-secondary" onclick="cplCargar(true)" style="width:auto;font-size:12px;padding:8px 14px;" title="Vuelve a calcular con los datos de la nube">🔄 Recalcular</button>
+                <button class="btn btn-secondary" onclick="cplExcel()" style="width:auto;font-size:12px;padding:8px 14px;">📊 Excel</button>
+              </div>
+              <div id="cpl-status" class="abs-count"></div>
+              <div id="cpl-cuerpo"></div>
+              <div class="abs-count" style="margin-top:12px">
+                Valores <b>antes de IVA</b>, al precio de la cotización. Es el mismo cálculo del correo «Cartera por legalizar» de las 7 AM.
+                Días = desde la primera remisión (🟢 ≤15 · 🟡 ≤30 · 🔴 >30). Clic en una OP la abre en Órdenes de Pedido. Esta pestaña no modifica nada.
+              </div>
+            </div>
+          </div>
           <div id="cnu-tab-clientes" style="display:none;">
             <div class="card" style="padding:18px;">
               <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
@@ -9204,6 +9227,202 @@ const _CNU_CAT = {
 function _cnuFmt(v) { return '$' + Math.round(v || 0).toLocaleString('es-CO'); }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// 📌 CARTERA POR LEGALIZAR — pestaña de Cartera (9-oct-2026)
+// ───────────────────────────────────────────────────────────────────────────
+// Puerto 1:1 de scripts/cartera_por_legalizar.py (el correo de las 7 AM a
+// gerencia), para verlo en vivo. Decisiones del usuario (9-oct): antes de IVA,
+// sin la sección «adjudicadas sin OP», solo mostrar (no envía nada).
+// SOLO LECTURA: no escribe en Cartera, ni en las OP, ni en ninguna tabla.
+//   1. ENTREGADO SIN FACTURAR — OP sin cerrar, con entregas y sin factura en
+//      Cartera. Valor = lo ENTREGADO al precio de la cotización (item_cot →
+//      cotizacion_items, cantidad topada a lo cotizado) o lo despachado en
+//      op_items; el mayor de los dos, topado al valor de la OP.
+//   2. FACTURADO EN CARTERA, OP SIN CERRAR — trámite: cerrar la OP.
+//   3. OP EN CURSO SIN ENTREGAS — informativo.
+// Si cambia el criterio aquí, cambiarlo también en el script: deben decir lo mismo.
+// ═══════════════════════════════════════════════════════════════════════════
+var _cplDatos = null, _cplCargando = false;
+const _cplClave = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const _cplNum = x => { const n = parseFloat(x); return isNaN(n) ? 0 : n; };
+const _cplFecha = s => { const m = String(s || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])) : null; };
+const _cplDias = (a, b) => Math.round((a - b) / 86400000);
+const _cplEsc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+async function _cplTodo(path) {
+  // Lee TODO paginando de a 1000 (como remiCargar): PostgREST corta en 1000.
+  const out = []; const sep = path.includes('?') ? '&' : '?';
+  for (let off = 0; off < 50000; off += 1000) {
+    const b = (await absFetch(path + sep + 'limit=1000&offset=' + off)) || [];
+    out.push(...b); if (b.length < 1000) break;
+  }
+  return out;
+}
+function _cplCotIds(o) { try { return opCotizIds(o); } catch (_) { return [o && o.cotizacion_id].filter(Boolean); } }
+
+// ¿La factura (misma cotización) es de ESTE pedido? Igual que _factura_de_esta_op
+// del script: no lo es si las O.C. se conocen de ambos lados y no coinciden, o si
+// la factura es de más de 15 días antes de que existiera la OP / su entrega.
+function _cplFacturaDeEstaOP(f, o, rs, ids, f0) {
+  const cot = new Set(ids.map(_cplClave));
+  const ocOp = new Set([_cplClave(o.oc_cliente)].concat(rs.map(r => _cplClave(r.oc))).filter(k => k.length >= 4 && !cot.has(k)));
+  const ocF = new Set([_cplClave(f.oc), _cplClave(f.oc_num)].filter(k => k.length >= 4 && !cot.has(k)));
+  if (ocOp.size && ocF.size && ![...ocOp].some(k => ocF.has(k))) return false;
+  const ref = [f0, _cplFecha(o.created_at)].filter(Boolean);
+  const ff = _cplFecha(f.fecha_facturacion);
+  if (ff && ref.length && ff < new Date(Math.min(...ref.map(d => d.getTime())) - 15 * 86400000)) return false;
+  return true;
+}
+
+async function cplCalcular() {
+  const hoyS = new Date(); const hoy = new Date(Date.UTC(hoyS.getFullYear(), hoyS.getMonth(), hoyS.getDate()));
+  const ops = (await _cplTodo('ops?select=id,numero,cotizacion_id,cliente,estado,oc_cliente,factura,deleted,valor_venta,extra,requiere_certificados,created_at&order=id'))
+    .filter(o => !o.deleted && o.estado !== 'anulada');
+  const abiertas = ops.filter(o => o.estado !== 'cerrada' && !o.factura);
+  const idsOp = new Set(abiertas.map(o => o.id));
+  const opItems = {};
+  (await _cplTodo('op_items?select=op_id,cantidad,v_unit,v_total,estado,despachada&order=id')).forEach(x => { if (idsOp.has(x.op_id)) (opItems[x.op_id] = opItems[x.op_id] || []).push(x); });
+  const nums = new Set(abiertas.map(o => o.numero));
+  const rems = {};
+  (await _cplTodo('remisiones?op_numero=not.is.null&select=remision,fecha,op_numero,item_cot,cantidad,cotizacion_id,oc&order=id')).forEach(r => { if (nums.has(r.op_numero)) (rems[r.op_numero] = rems[r.op_numero] || []).push(r); });
+  // precios de cotización: {cot: {item: [v_unit, qty]}} sin alternativas
+  const cotIds = [...new Set(abiertas.flatMap(_cplCotIds).filter(Boolean))].sort();
+  const precios = {};
+  for (let k = 0; k < cotIds.length; k += 40) {
+    const lote = cotIds.slice(k, k + 40).map(i => '"' + i.replace(/"/g, '') + '"').join(',');
+    (await _cplTodo('cotizacion_items?cotizacion_id=in.(' + encodeURIComponent(lote) + ')&select=cotizacion_id,item,v_unit,qty,alt_de&order=id'))
+      .forEach(x => { if (!x.alt_de) (precios[x.cotizacion_id] = precios[x.cotizacion_id] || {})[String(x.item)] = [_cplNum(x.v_unit), _cplNum(x.qty)]; });
+  }
+  // Cartera: solo lectura
+  const cartera = ((await sbCartera('GET', 'cartera_facturas?select=numero,cliente_nombre,cotizacion_id,oc,oc_num,monto_antes_iva,fecha_facturacion,estado&limit=10000')) || [])
+    .filter(f => String(f.estado || '').toUpperCase() !== 'ANULADA');
+  const facPorCot = {};
+  cartera.forEach(f => { String(f.cotizacion_id || '').split(/[,;\/ ]+/).forEach(c => { const k = _cplClave(c); if (k) (facPorCot[k] = facPorCot[k] || []).push(f); }); });
+
+  const entregado = [], facturado = [], enCurso = [];
+  abiertas.forEach(o => {
+    const its = opItems[o.id] || [];
+    const valorOp = its.reduce((s, x) => s + (_cplNum(x.v_total) || _cplNum(x.cantidad) * _cplNum(x.v_unit)), 0) || _cplNum(o.valor_venta);
+    let entOp = 0;
+    its.forEach(x => { const q = _cplNum(x.cantidad); const d = (x.estado === 'despachado' && !x.despachada) ? q : Math.min(_cplNum(x.despachada), q); entOp += d * _cplNum(x.v_unit); });
+    const rs = rems[o.numero] || [], ids = _cplCotIds(o);
+    const qItem = {};
+    rs.forEach(r => {
+      const cid = ids.includes(r.cotizacion_id) ? r.cotizacion_id : (ids[0] || null);
+      if (r.item_cot != null && precios[cid] && precios[cid][String(r.item_cot)]) { const k = cid + '|' + r.item_cot; qItem[k] = (qItem[k] || 0) + _cplNum(r.cantidad); }
+    });
+    let entRem = 0;
+    Object.keys(qItem).forEach(k => { const [cid, i] = k.split('|'); const [vu, qc] = precios[cid][i]; entRem += Math.min(qItem[k], qc || qItem[k]) * vu; });
+    const ent = valorOp ? Math.min(Math.max(entOp, entRem), valorOp) : Math.max(entOp, entRem);
+    const fechas = rs.map(r => _cplFecha(r.fecha)).filter(Boolean);
+    const f0 = fechas.length ? new Date(Math.min(...fechas.map(d => d.getTime()))) : null;
+    const fila = { id: o.id, op: o.numero, cot: ids.join(' + ') || '—', cliente: o.cliente || '—',
+      oc: o.oc_cliente || [...new Set(rs.map(r => r.oc).filter(Boolean))].join(', ') || '—', estado: o.estado,
+      rem: [...new Set(rs.map(r => String(r.remision)))].sort().join(', ') || '—',
+      valor_op: valorOp, entregado: ent, parcial: ent < valorOp * 0.995, dias: f0 ? _cplDias(hoy, f0) : null, f0 };
+    const vistos = {}; ids.forEach(c => (facPorCot[_cplClave(c)] || []).forEach(f => { vistos[f.numero] = f; }));
+    const facs = Object.values(vistos).filter(f => _cplFacturaDeEstaOP(f, o, rs, ids, f0));
+    if (facs.length) {
+      fila.facturas = [...new Set(facs.map(f => String(f.numero)))].sort().join(', ');
+      fila.monto_fac = facs.reduce((s, f) => s + _cplNum(f.monto_antes_iva), 0);
+      fila.req_cert = o.requiere_certificados !== false; fila.n_cert = 0;
+      facturado.push(fila);
+    } else if (ent > 0) entregado.push(fila);
+    else enCurso.push(fila);
+  });
+  // Certificados de las facturadas (la base no deja cerrar sin MTR)
+  const conCert = facturado.filter(f => f.req_cert);
+  if (conCert.length) {
+    const cnt = {};
+    (await _cplTodo('op_certificados?op_id=in.(' + conCert.map(f => f.id).join(',') + ')&select=op_id')).forEach(c => { cnt[c.op_id] = (cnt[c.op_id] || 0) + 1; });
+    conCert.forEach(f => { f.n_cert = cnt[f.id] || 0; });
+  }
+  return { entregado, facturado, enCurso, calculado: new Date() };
+}
+
+async function cplCargar(force) {
+  if (_cplCargando) return;
+  if (_cplDatos && !force) { cplRender(); return; }
+  _cplCargando = true;
+  const st = document.getElementById('cpl-status'); if (st) st.textContent = 'Calculando con los datos de la nube…';
+  try { _cplDatos = await cplCalcular(); }
+  catch (e) { if (st) st.innerHTML = '<span style="color:var(--red)">No se pudo calcular: ' + _cplEsc(e.message) + '</span>'; _cplCargando = false; return; }
+  _cplCargando = false;
+  // selector de clientes
+  const sel = document.getElementById('cpl-cliente');
+  if (sel) {
+    const cur = sel.value;
+    const cls = [...new Set([..._cplDatos.entregado, ..._cplDatos.facturado, ..._cplDatos.enCurso].map(f => f.cliente))].sort();
+    sel.innerHTML = '<option value="">Todos los clientes</option>' + cls.map(c => '<option' + (c === cur ? ' selected' : '') + '>' + _cplEsc(c) + '</option>').join('');
+  }
+  cplRender();
+}
+const _cplMoney = v => '$' + Math.round(v || 0).toLocaleString('es-CO');
+function _cplSem(d) { if (d == null) return '⚪'; return d <= 15 ? '🟢' : d <= 30 ? '🟡' : '🔴'; }
+function _cplFiltra(lista) {
+  const q = ((document.getElementById('cpl-buscar') || {}).value || '').toLowerCase().trim();
+  const c = (document.getElementById('cpl-cliente') || {}).value || '';
+  return lista.filter(f => (!c || f.cliente === c) && (!q || (f.op + ' ' + f.cot + ' ' + f.cliente + ' ' + f.oc + ' ' + f.rem + ' ' + (f.facturas || '')).toLowerCase().includes(q)));
+}
+function cplRender() {
+  const d = _cplDatos; const body = document.getElementById('cpl-cuerpo'); if (!d || !body) return;
+  const ent = _cplFiltra(d.entregado).sort((a, b) => (b.dias || 0) - (a.dias || 0));
+  const fac = _cplFiltra(d.facturado).sort((a, b) => a.op.localeCompare(b.op));
+  const cur = _cplFiltra(d.enCurso).sort((a, b) => a.op.localeCompare(b.op));
+  const tEnt = ent.reduce((s, f) => s + f.entregado, 0), tFac = fac.reduce((s, f) => s + f.entregado, 0);
+  const tCur = cur.reduce((s, f) => s + f.valor_op, 0) + ent.reduce((s, f) => s + (f.valor_op - f.entregado), 0);
+  const caja = (t, v, n, fuerte) => '<div class="stat-card ' + (fuerte ? 'red' : 'blue') + '" style="padding:14px 16px"><div class="stat-label" style="margin:0 0 4px">' + t + '</div>'
+    + '<div class="stat-num" style="font-size:22px;color:' + (fuerte ? 'var(--red)' : '#fff') + '">' + _cplMoney(v) + '</div><div class="stat-label">' + n + '</div></div>';
+  const cj = document.getElementById('cpl-cajas');
+  if (cj) cj.innerHTML = caja('Entregado sin facturar', tEnt, ent.length + ' OP', true)
+    + caja('Facturado · OP sin cerrar', tFac, fac.length + ' OP')
+    + caja('Pedido pendiente de entregar', tCur, (cur.length + ent.filter(f => f.parcial).length) + ' OP');
+  const st = document.getElementById('cpl-status');
+  if (st) st.textContent = 'Calculado ' + d.calculado.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) + ' · ' + (ent.length + fac.length + cur.length) + ' OP abiertas';
+  const th = c => '<th' + (c.startsWith('>') ? ' style="text-align:right"' : '') + '>' + c.replace(/^>/, '') + '</th>';
+  const tabla = (cab, filas) => '<div class="abs-table-wrap"><table class="abs-table"><thead><tr>' + cab.map(th).join('') + '</tr></thead><tbody>'
+    + (filas.length ? filas.join('') : '<tr><td colspan="' + cab.length + '" style="text-align:center;color:var(--text-muted);padding:16px">Nada por aquí</td></tr>') + '</tbody></table></div>';
+  const tr = (f, celdas) => '<tr style="cursor:pointer" onclick="cplAbrirOP(' + f.id + ')" title="Abrir ' + _cplEsc(f.op) + ' en Órdenes de Pedido">' + celdas.join('') + '</tr>';
+  const td = (v, r) => '<td' + (r ? ' style="text-align:right;white-space:nowrap"' : '') + '>' + v + '</td>';
+  // 1) Entregado sin facturar + total por cliente
+  const porCli = {}; ent.forEach(f => { porCli[f.cliente] = (porCli[f.cliente] || 0) + f.entregado; });
+  const cliTop = Object.entries(porCli).sort((a, b) => b[1] - a[1]);
+  let h = '<div class="config-title" style="margin:6px 0 8px;color:var(--red)">1 · Entregado sin facturar — ' + _cplMoney(tEnt) + ' en ' + ent.length + ' OP</div>';
+  if (cliTop.length) h += '<div class="abs-count" style="margin-bottom:8px">Por cliente: ' + cliTop.map(([c, v]) => '<b>' + _cplEsc(c) + '</b> ' + _cplMoney(v)).join(' · ') + '</div>';
+  h += tabla(['OP', 'Cotización', 'Cliente', 'O.C. cliente', 'Remisiones', '>Días', '>Entregado'], ent.map(f => tr(f, [
+    td('<b style="color:var(--gold)">' + _cplEsc(f.op) + '</b>'), td(_cplEsc(f.cot)), td(_cplEsc(f.cliente)), td(_cplEsc(f.oc)), td(_cplEsc(f.rem)),
+    td(_cplSem(f.dias) + ' ' + (f.dias == null ? '—' : f.dias), true),
+    td('<b>' + _cplMoney(f.entregado) + '</b>' + (f.parcial ? '<br><span style="font-size:10.5px;color:var(--gold)">parcial de ' + _cplMoney(f.valor_op) + '</span>' : ''), true)])));
+  // 2) Facturado, OP sin cerrar
+  h += '<div class="config-title" style="margin:18px 0 8px">2 · Facturado en Cartera, OP sin cerrar — ' + _cplMoney(tFac) + ' en ' + fac.length + ' OP</div>';
+  h += tabla(['OP', 'Cotización', 'Cliente', 'Factura', '>Entregado', '>Facturado', 'Para cerrar'], fac.map(f => {
+    const dif = f.monto_fac - f.entregado; const avisos = [];
+    if (Math.abs(dif) > Math.max(1000, f.entregado * 0.01)) avisos.push('<span style="color:var(--gold)">factura ' + (dif > 0 ? 'mayor' : 'menor') + ' por ' + _cplMoney(Math.abs(dif)) + '</span>');
+    if (f.req_cert && !f.n_cert) avisos.push('<span style="color:var(--red)">faltan certificados (MTR)</span>');
+    if (!avisos.length) avisos.push('<span style="color:var(--green)">lista: cerrar con la factura</span>');
+    return tr(f, [td('<b style="color:var(--gold)">' + _cplEsc(f.op) + '</b>'), td(_cplEsc(f.cot)), td(_cplEsc(f.cliente)), td('<b>' + _cplEsc(f.facturas) + '</b>'),
+      td(_cplMoney(f.entregado), true), td(_cplMoney(f.monto_fac), true), td(avisos.join(' · '))]);
+  }));
+  // 3) En curso
+  h += '<div class="config-title" style="margin:18px 0 8px">3 · OP en curso sin entregas — ' + _cplMoney(cur.reduce((s, f) => s + f.valor_op, 0)) + ' en ' + cur.length + ' OP</div>';
+  h += tabla(['OP', 'Cotización', 'Cliente', 'Estado', '>Valor OP'], cur.map(f => tr(f, [td('<b style="color:var(--gold)">' + _cplEsc(f.op) + '</b>'), td(_cplEsc(f.cot)), td(_cplEsc(f.cliente)), td(_cplEsc(f.estado)), td(_cplMoney(f.valor_op), true)])));
+  body.innerHTML = h;
+}
+async function cplAbrirOP(id) {
+  if (!userCanSeeModule('op')) { showToast('No tienes acceso a Órdenes de Pedido', 'error'); return; }
+  navigate('op');
+  try { await opAbrir(id); } catch (_) { try { await opCargar(false); } catch (__) { } }
+}
+function cplExcel() {
+  const d = _cplDatos; if (!d) { showToast('Primero espera a que calcule.', 'error'); return; }
+  const base = f => ({ 'OP': f.op, 'COTIZACION': f.cot, 'CLIENTE': f.cliente, 'OC CLIENTE': f.oc, 'REMISIONES': f.rem, 'DIAS': f.dias == null ? '' : f.dias });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(_cplFiltra(d.entregado).map(f => Object.assign(base(f), { 'ENTREGADO (ANTES IVA)': Math.round(f.entregado), 'VALOR OP': Math.round(f.valor_op), 'PARCIAL': f.parcial ? 'SI' : '' }))), 'Entregado sin facturar');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(_cplFiltra(d.facturado).map(f => Object.assign(base(f), { 'FACTURA': f.facturas, 'ENTREGADO': Math.round(f.entregado), 'FACTURADO': Math.round(f.monto_fac), 'CERTIFICADOS': f.req_cert ? (f.n_cert ? 'OK' : 'FALTAN') : 'No requiere' }))), 'Facturado sin cerrar');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(_cplFiltra(d.enCurso).map(f => Object.assign(base(f), { 'ESTADO': f.estado, 'VALOR OP': Math.round(f.valor_op) }))), 'En curso');
+  XLSX.writeFile(wb, 'Cartera_por_legalizar_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
 // 📜 CONTRATOS MARCO (9-oct-2026) — réplica del Excel "Control_Contratos_Marco_EYG"
 // ───────────────────────────────────────────────────────────────────────────
 // Hoja CONTRATOS → tabla contratos_marco · hoja CONSUMOS → contratos_consumos ·
@@ -9706,13 +9925,14 @@ function cnuExportCorte() {
   showToast('📸 Excel del corte a ' + corte + ' descargado (' + pagadas.length + ' pagadas · ' + pendientes.length + ' pendientes).', 'success');
 }
 function cnuTab(t) {
-  ['cartera','comisiones','pagos','meses','clientes'].forEach(x => {
+  ['cartera','comisiones','pagos','meses','clientes','legalizar'].forEach(x => {
     const d = document.getElementById('cnu-tab-' + x);
     if (d) d.style.display = (x === t) ? '' : 'none';
     const b = document.getElementById('cnu-tab-btn-' + x);
     if (b) { b.classList.toggle('btn-primary', x === t); b.classList.toggle('btn-secondary', x !== t); }
   });
   if (t === 'clientes') { try { cnuRenderClientes(); } catch(_) {} }
+  if (t === 'legalizar') { try { cplCargar(false); } catch(e) { console.error('[cpl]', e); } }
 }
 // Mora y categoría — misma lógica del agente local: media ≤15, alta ≤30, crítica >30
 function _cnuMora(f, hoy) {
