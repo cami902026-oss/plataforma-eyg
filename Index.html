@@ -9373,10 +9373,9 @@ function cplRender() {
     + '<div class="stat-num" style="font-size:22px;color:' + (fuerte ? 'var(--red)' : '#fff') + '">' + _cplMoney(v) + '</div><div class="stat-label">' + n + '</div></div>';
   const cj = document.getElementById('cpl-cajas');
   if (cj) cj.innerHTML = caja('Entregado sin facturar', tEnt, ent.length + ' OP', true)
-    + caja('Facturado · OP sin cerrar', tFac, fac.length + ' OP')
     + caja('Pedido pendiente de entregar', tCur, (cur.length + ent.filter(f => f.parcial).length) + ' OP');
   const st = document.getElementById('cpl-status');
-  if (st) st.textContent = 'Calculado ' + d.calculado.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) + ' · ' + (ent.length + fac.length + cur.length) + ' OP abiertas';
+  if (st) st.textContent = 'Calculado ' + d.calculado.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) + ' · ' + (ent.length + cur.length) + ' OP';
   const th = c => '<th' + (c.startsWith('>') ? ' style="text-align:right"' : '') + '>' + c.replace(/^>/, '') + '</th>';
   const tabla = (cab, filas) => '<div class="abs-table-wrap"><table class="abs-table"><thead><tr>' + cab.map(th).join('') + '</tr></thead><tbody>'
     + (filas.length ? filas.join('') : '<tr><td colspan="' + cab.length + '" style="text-align:center;color:var(--text-muted);padding:16px">Nada por aquí</td></tr>') + '</tbody></table></div>';
@@ -9391,18 +9390,10 @@ function cplRender() {
     td('<b style="color:var(--gold)">' + _cplEsc(f.op) + '</b>'), td(_cplEsc(f.cot)), td(_cplEsc(f.cliente)), td(_cplEsc(f.oc)), td(_cplEsc(f.rem)),
     td(_cplSem(f.dias) + ' ' + (f.dias == null ? '—' : f.dias), true),
     td('<b>' + _cplMoney(f.entregado) + '</b>' + (f.parcial ? '<br><span style="font-size:10.5px;color:var(--gold)">parcial de ' + _cplMoney(f.valor_op) + '</span>' : ''), true)])));
-  // 2) Facturado, OP sin cerrar
-  h += '<div class="config-title" style="margin:18px 0 8px">2 · Facturado en Cartera, OP sin cerrar — ' + _cplMoney(tFac) + ' en ' + fac.length + ' OP</div>';
-  h += tabla(['OP', 'Cotización', 'Cliente', 'Factura', '>Entregado', '>Facturado', 'Para cerrar'], fac.map(f => {
-    const dif = f.monto_fac - f.entregado; const avisos = [];
-    if (Math.abs(dif) > Math.max(1000, f.entregado * 0.01)) avisos.push('<span style="color:var(--gold)">factura ' + (dif > 0 ? 'mayor' : 'menor') + ' por ' + _cplMoney(Math.abs(dif)) + '</span>');
-    if (f.req_cert && !f.n_cert) avisos.push('<span style="color:var(--red)">faltan certificados (MTR)</span>');
-    if (!avisos.length) avisos.push('<span style="color:var(--green)">lista: cerrar con la factura</span>');
-    return tr(f, [td('<b style="color:var(--gold)">' + _cplEsc(f.op) + '</b>'), td(_cplEsc(f.cot)), td(_cplEsc(f.cliente)), td('<b>' + _cplEsc(f.facturas) + '</b>'),
-      td(_cplMoney(f.entregado), true), td(_cplMoney(f.monto_fac), true), td(avisos.join(' · '))]);
-  }));
+  // (9-oct-2026, pedido del usuario: la sección «Facturado en Cartera, OP sin cerrar» NO se muestra;
+  //  el cálculo sigue vivo porque sirve para excluir esas OP de la sección 1.)
   // 3) En curso
-  h += '<div class="config-title" style="margin:18px 0 8px">3 · OP en curso sin entregas — ' + _cplMoney(cur.reduce((s, f) => s + f.valor_op, 0)) + ' en ' + cur.length + ' OP</div>';
+  h += '<div class="config-title" style="margin:18px 0 8px">2 · OP en curso sin entregas — ' + _cplMoney(cur.reduce((s, f) => s + f.valor_op, 0)) + ' en ' + cur.length + ' OP</div>';
   h += tabla(['OP', 'Cotización', 'Cliente', 'Estado', '>Valor OP'], cur.map(f => tr(f, [td('<b style="color:var(--gold)">' + _cplEsc(f.op) + '</b>'), td(_cplEsc(f.cot)), td(_cplEsc(f.cliente)), td(_cplEsc(f.estado)), td(_cplMoney(f.valor_op), true)])));
   body.innerHTML = h;
 }
@@ -9416,7 +9407,6 @@ function cplExcel() {
   const base = f => ({ 'OP': f.op, 'COTIZACION': f.cot, 'CLIENTE': f.cliente, 'OC CLIENTE': f.oc, 'REMISIONES': f.rem, 'DIAS': f.dias == null ? '' : f.dias });
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(_cplFiltra(d.entregado).map(f => Object.assign(base(f), { 'ENTREGADO (ANTES IVA)': Math.round(f.entregado), 'VALOR OP': Math.round(f.valor_op), 'PARCIAL': f.parcial ? 'SI' : '' }))), 'Entregado sin facturar');
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(_cplFiltra(d.facturado).map(f => Object.assign(base(f), { 'FACTURA': f.facturas, 'ENTREGADO': Math.round(f.entregado), 'FACTURADO': Math.round(f.monto_fac), 'CERTIFICADOS': f.req_cert ? (f.n_cert ? 'OK' : 'FALTAN') : 'No requiere' }))), 'Facturado sin cerrar');
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(_cplFiltra(d.enCurso).map(f => Object.assign(base(f), { 'ESTADO': f.estado, 'VALOR OP': Math.round(f.valor_op) }))), 'En curso');
   XLSX.writeFile(wb, 'Cartera_por_legalizar_' + new Date().toISOString().slice(0, 10) + '.xlsx');
 }
