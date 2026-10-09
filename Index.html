@@ -9341,8 +9341,16 @@ async function cplCalcular() {
   return { entregado, facturado, enCurso, calculado: new Date() };
 }
 
+var _cplTimer = null;
+function _cplVisible() {
+  const d = document.getElementById('cnu-tab-legalizar'), pg = document.getElementById('page-cartera');
+  return !!(d && d.style.display !== 'none' && pg && pg.classList.contains('active') && !document.hidden);
+}
 async function cplCargar(force) {
   if (_cplCargando) return;
+  // Refresco solo (9-oct-2026, pedido del usuario): cada 3 min mientras la pestaña esté a la vista,
+  // para que una factura recién registrada saque la OP sin tener que dar Recalcular.
+  if (!_cplTimer) _cplTimer = setInterval(() => { if (_cplVisible() && !_cplCargando) cplCargar(true); }, 180000);
   if (_cplDatos && !force) { cplRender(); return; }
   _cplCargando = true;
   const st = document.getElementById('cpl-status'); if (st) st.textContent = 'Calculando con los datos de la nube…';
@@ -9926,7 +9934,7 @@ function cnuTab(t) {
     if (b) { b.classList.toggle('btn-primary', x === t); b.classList.toggle('btn-secondary', x !== t); }
   });
   if (t === 'clientes') { try { cnuRenderClientes(); } catch(_) {} }
-  if (t === 'legalizar') { try { cplCargar(false); } catch(e) { console.error('[cpl]', e); } }
+  if (t === 'legalizar') { try { cplCargar(!_cplDatos || (Date.now() - _cplDatos.calculado.getTime()) > 60000); } catch(e) { console.error('[cpl]', e); } }
 }
 // Mora y categoría — misma lógica del agente local: media ≤15, alta ≤30, crítica >30
 function _cnuMora(f, hoy) {
@@ -10363,6 +10371,7 @@ async function cnuFactGuardar() {
       closeModal('modal-cnu-factura');
       showToast('🧾 Factura #' + numero + ' de ' + c.nombre + ' guardada en la nube (' + _cnuFmt(total) + ')', 'success');
     }
+    try { _cplDatos = null; } catch (_) { }   // Por legalizar se recalcula con la factura nueva (9-oct-2026)
     cnuCargar(true);
   } catch(e) {
     // La columna `retefuente` es nueva: si aún no existe en Supabase, decirlo claro
