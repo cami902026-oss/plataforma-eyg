@@ -9265,7 +9265,9 @@ function _cplFacturaDeEstaOP(f, o, rs, ids, f0) {
   const cot = new Set(ids.map(_cplClave));
   const ocOp = new Set([_cplClave(o.oc_cliente)].concat(rs.map(r => _cplClave(r.oc))).filter(k => k.length >= 4 && !cot.has(k)));
   const ocF = new Set([_cplClave(f.oc), _cplClave(f.oc_num)].filter(k => k.length >= 4 && !cot.has(k)));
-  if (ocOp.size && ocF.size && ![...ocOp].some(k => ocF.has(k))) return false;
+  // 9-oct-2026: «10237» en la OP y «02CMP10237» en Cartera son la misma O.C.: basta con que una contenga a la otra.
+  const _mismaOC = (a, b) => a === b || a.includes(b) || b.includes(a);
+  if (ocOp.size && ocF.size && ![...ocOp].some(a => [...ocF].some(b => _mismaOC(a, b)))) return false;
   const ref = [f0, _cplFecha(o.created_at)].filter(Boolean);
   const ff = _cplFecha(f.fecha_facturacion);
   if (ff && ref.length && ff < new Date(Math.min(...ref.map(d => d.getTime())) - 15 * 86400000)) return false;

@@ -161,7 +161,8 @@ def _factura_de_esta_op(f, o, rs, ids, f0):
     oc_op = set(k for k in [clave(o.get('oc_cliente'))] + [clave(r.get('oc')) for r in rs]
                 if len(k) >= 4 and k not in cot)          # «LM2202» como O.C. no dice nada
     oc_f = set(k for k in (clave(f.get('oc')), clave(f.get('oc_num'))) if len(k) >= 4 and k not in cot)
-    if oc_op and oc_f and not (oc_op & oc_f):
+    # 9-oct-2026: «10237» en la OP y «02CMP10237» en Cartera son la misma O.C.
+    if oc_op and oc_f and not any(a == b or a in b or b in a for a in oc_op for b in oc_f):
         return False
     ref = [d for d in (f0, fecha(o.get('created_at'))) if d]
     ff = fecha(f.get('fecha_facturacion'))
