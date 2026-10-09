@@ -174,7 +174,9 @@ def datos():
     hoy = datetime.date.today()
     ops = [o for o in todo('ops?select=id,numero,cotizacion_id,cliente,estado,oc_cliente,factura,deleted,valor_venta,extra,requiere_certificados,created_at')
            if not o.get('deleted') and o.get('estado') != 'anulada']   # borrador vivo = OP en curso
-    abiertas = [o for o in ops if o.get('estado') != 'cerrada' and not o.get('factura')]
+    # 9-oct-2026: una OP con factura ANOTADA pero sin cerrar (le faltan los certificados)
+    # ya no se excluye: va a la sección «facturado» con esa factura.
+    abiertas = [o for o in ops if o.get('estado') != 'cerrada']
     ids_op = set(o['id'] for o in abiertas)
     op_items = collections.defaultdict(list)
     for x in todo('op_items?select=op_id,cantidad,v_unit,v_total,estado,despachada'):
@@ -189,6 +191,7 @@ def datos():
 
     cartera = todo('cartera_facturas?select=numero,cliente_nombre,cotizacion_id,oc,oc_num,monto_antes_iva,fecha_facturacion,estado')
     cartera = [f for f in cartera if str(f.get('estado') or '').upper() != 'ANULADA']
+    fac_por_num = {str(f.get('numero') or '').strip(): f for f in cartera}
     fac_por_cot = collections.defaultdict(list)
     fac_por_oc = collections.defaultdict(list)
     for f in cartera:
@@ -234,6 +237,9 @@ def datos():
             'dias': (hoy - f0).days if f0 else None}
         facs = list({f['numero']: f for c in ids for f in fac_por_cot.get(clave(c), [])}.values())
         facs = [f for f in facs if _factura_de_esta_op(f, o, rs, ids, f0)]
+        if o.get('factura'):   # la OP ya trae el número: manda sobre el cruce
+            fo = fac_por_num.get(str(o['factura']).strip())
+            facs = [fo] if fo else [{'numero': o['factura'], 'monto_antes_iva': ent}]
         if facs:
             fila['facturas'] = ', '.join(sorted(set(str(f['numero']) for f in facs)))
             fila['monto_fac'] = sum(num(f.get('monto_antes_iva')) for f in facs)

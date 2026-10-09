@@ -9276,7 +9276,8 @@ async function cplCalcular() {
   const hoyS = new Date(); const hoy = new Date(Date.UTC(hoyS.getFullYear(), hoyS.getMonth(), hoyS.getDate()));
   const ops = (await _cplTodo('ops?select=id,numero,cotizacion_id,cliente,estado,oc_cliente,factura,deleted,valor_venta,extra,requiere_certificados,created_at&order=id'))
     .filter(o => !o.deleted && o.estado !== 'anulada');
-  const abiertas = ops.filter(o => o.estado !== 'cerrada' && !o.factura);
+  // 9-oct-2026: una OP con factura ANOTADA pero sin cerrar (faltan certificados) va a la sección 2 con esa factura.
+  const abiertas = ops.filter(o => o.estado !== 'cerrada');
   const idsOp = new Set(abiertas.map(o => o.id));
   const opItems = {};
   (await _cplTodo('op_items?select=op_id,cantidad,v_unit,v_total,estado,despachada&order=id')).forEach(x => { if (idsOp.has(x.op_id)) (opItems[x.op_id] = opItems[x.op_id] || []).push(x); });
@@ -9294,6 +9295,7 @@ async function cplCalcular() {
   // Cartera: solo lectura
   const cartera = ((await sbCartera('GET', 'cartera_facturas?select=numero,cliente_nombre,cotizacion_id,oc,oc_num,monto_antes_iva,fecha_facturacion,estado&limit=10000')) || [])
     .filter(f => String(f.estado || '').toUpperCase() !== 'ANULADA');
+  const facPorNum = {}; cartera.forEach(f => { facPorNum[String(f.numero || '').trim()] = f; });
   const facPorCot = {};
   cartera.forEach(f => { String(f.cotizacion_id || '').split(/[,;\/ ]+/).forEach(c => { const k = _cplClave(c); if (k) (facPorCot[k] = facPorCot[k] || []).push(f); }); });
 
@@ -9319,7 +9321,8 @@ async function cplCalcular() {
       rem: [...new Set(rs.map(r => String(r.remision)))].sort().join(', ') || '—',
       valor_op: valorOp, entregado: ent, parcial: ent < valorOp * 0.995, dias: f0 ? _cplDias(hoy, f0) : null, f0 };
     const vistos = {}; ids.forEach(c => (facPorCot[_cplClave(c)] || []).forEach(f => { vistos[f.numero] = f; }));
-    const facs = Object.values(vistos).filter(f => _cplFacturaDeEstaOP(f, o, rs, ids, f0));
+    let facs = Object.values(vistos).filter(f => _cplFacturaDeEstaOP(f, o, rs, ids, f0));
+    if (o.factura) { const fo = facPorNum[String(o.factura).trim()]; facs = fo ? [fo] : [{ numero: o.factura, monto_antes_iva: ent }]; }
     if (facs.length) {
       fila.facturas = [...new Set(facs.map(f => String(f.numero)))].sort().join(', ');
       fila.monto_fac = facs.reduce((s, f) => s + _cplNum(f.monto_antes_iva), 0);
