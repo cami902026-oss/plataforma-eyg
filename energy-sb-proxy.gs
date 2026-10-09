@@ -55,7 +55,8 @@ const SB_TABLAS = ['productos','kardex','familias','conteos','conteo_items',
                    'verificacion_despacho',
                    'ops','op_items','op_reservas','op_certificados','op_eventos',
                    'op_consecutivos','proveedor_sedes','proveedor_sede_memoria','zonas_ruta',
-                   'plan_gastos','op_recepciones'];
+                   'plan_gastos','op_recepciones',
+                   'contratos_marco','contratos_consumos'];   // contratos marco (9-oct-2026)
 
 // Funciones del servidor invocables (rpc/<nombre>). Una por una a propósito:
 // un comodín aquí deja expuesta cualquier función de la base.
