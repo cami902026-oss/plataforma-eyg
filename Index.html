@@ -13812,7 +13812,7 @@ function cotizShowTab(tab) {
   // 5-oct-2026: la lista de Supabase se bajaba UNA sola vez por sesión. Lo que otra
   // persona creaba después (caso LM2275-1 de Sheila) no aparecía hasta recargar la
   // página. Ahora, al entrar a la pestaña, se vuelve a bajar si tiene más de 1 minuto.
-  if (tab === 'bd') { bdRender(); if (!_bdHistCache || Date.now() - _bdHistAt > 60000) bdLoadHistorico(true).then(() => bdRender()); if (!_bdRemByCotiz) bdLoadRemisiones().then(() => bdRender()); }
+  if (tab === 'bd') { bdRender(); if (!_bdHistCache || Date.now() - _bdHistAt > 60000) bdLoadHistorico(true).then(() => bdRender()); if (!_bdRemByCotiz || Date.now() - _bdRemAt > 60000) bdLoadRemisiones(true).then(() => bdRender()); }
   if (tab === 'agente') cotizRenderAgente();
   if (tab === 'proveedores') provRender();
   if (tab === 'clientes') cliRender();
@@ -16632,13 +16632,31 @@ let _bdHistLoading = false;
 // Trazabilidad: mapa cotización -> remisión ligada (desde Supabase, solo las que tienen enlace)
 let _bdRemByCotiz = null;
 let _bdRemsByCotiz = null;   // v152: TODAS las remisiones de cada cotización (puede haber varias)
+let _bdRemAt = 0;            // 11-oct-2026: cuándo se bajó el mapa, para refrescarlo solo (como _bdHistAt)
 async function bdLoadRemisiones(force) {
   if (_bdRemByCotiz && !force) return _bdRemByCotiz;
   try {
-    const rows = await absFetch('remisiones?select=remision,cotizacion_id&cotizacion_id=not.is.null&order=remision.asc&limit=5000');
+    // 11-oct-2026 (v318) — PostgREST corta en 1.000 filas aunque se pida limit=5000.
+    // Con 1.313 filas ligadas, todo lo de sep–oct (remisiones 26328→26370) quedaba
+    // invisible y 20 cotizaciones FACTURADAS salían «⚠️ sin remisión» teniéndola
+    // bien ligada. Se pagina de a 1.000 (igual que v307 con la lista de cotizaciones).
+    const rows = await _cplTodo('remisiones?select=remision,cotizacion_id&cotizacion_id=not.is.null&order=remision.asc');
     const m = {}, ms = {};
-    (rows || []).forEach(r => { if (r.cotizacion_id) { const k = String(r.cotizacion_id); m[k] = r.remision; (ms[k] = ms[k] || []).push(r.remision); } });
-    _bdRemByCotiz = m; _bdRemsByCotiz = ms;
+    // Una remisión tiene varias líneas: se cuenta UNA vez por cotización.
+    const add = (k, r) => { k = String(k); r = String(r); if (!m[k]) m[k] = r; ms[k] = ms[k] || []; if (ms[k].indexOf(r) < 0) ms[k].push(r); };
+    (rows || []).forEach(r => { if (r.cotizacion_id && r.remision != null) add(r.cotizacion_id, r.remision); });
+    // Red de seguridad: remisiones que solo saben de su OP (`op_numero`) y no de la
+    // cotización (p. ej. hechas a mano y ligadas después) se cuelgan de la(s)
+    // cotización(es) de esa OP. Solo lectura; si falla, el mapa directo sigue igual.
+    try {
+      const porOp = await _cplTodo('remisiones?select=remision,op_numero&op_numero=not.is.null&cotizacion_id=is.null&order=remision.asc');
+      if (porOp.length) {
+        const ops = await _cplTodo('ops?select=numero,cotizacion_id,extra&deleted=is.false');
+        const cotDeOp = {}; (ops || []).forEach(o => { cotDeOp[o.numero] = opCotizIds(o); });
+        porOp.forEach(r => (cotDeOp[r.op_numero] || []).forEach(cid => add(cid, r.remision)));
+      }
+    } catch (_) { }
+    _bdRemByCotiz = m; _bdRemsByCotiz = ms; _bdRemAt = Date.now();
   } catch (_) { _bdRemByCotiz = _bdRemByCotiz || {}; _bdRemsByCotiz = _bdRemsByCotiz || {}; }
   return _bdRemByCotiz;
 }
@@ -28688,6 +28706,18 @@ async function opLigarConfirmar() {
         body: JSON.stringify({ op_numero: op_current.numero })
       });
     }
+    // 11-oct-2026 (v318) — la BD de cotizaciones encuentra la remisión por
+    // `cotizacion_id`, y ligar solo escribía `op_numero`: una remisión hecha a mano
+    // quedaba amarrada a la OP pero invisible para su cotización. Se rellena con la
+    // cotización principal de la OP SOLO en las líneas que la tienen vacía; lo que ya
+    // estaba escrito no se toca. Si falla, el amarre con la OP ya quedó.
+    try {
+      const _cotPrincipal = (opCotizIds(op_current)[0]) || null;
+      if (_cotPrincipal) await absFetch('remisiones?remision=eq.' + encodeURIComponent(num) + '&cotizacion_id=is.null', {
+        method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ cotizacion_id: _cotPrincipal })
+      });
+    } catch (_) { }
 
     // 2) Cada ítem emparejado suma lo que ESTA remisión entregó.
     // 🔑 7-sep-2026 — ANTES SE MARCABA 'despachado' SIEMPRE, con la cantidad que
