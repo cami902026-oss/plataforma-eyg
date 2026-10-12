@@ -9261,13 +9261,24 @@ function _cplCotIds(o) { try { return opCotizIds(o); } catch (_) { return [o && 
 // ¿La factura (misma cotización) es de ESTE pedido? Igual que _factura_de_esta_op
 // del script: no lo es si las O.C. se conocen de ambos lados y no coinciden, o si
 // la factura es de más de 15 días antes de que existiera la OP / su entrega.
-function _cplFacturaDeEstaOP(f, o, rs, ids, f0) {
+function _cplFacturaDeEstaOP(f, o, rs, ids, f0, valores, factCot) {
   const cot = new Set(ids.map(_cplClave));
   const ocOp = new Set([_cplClave(o.oc_cliente)].concat(rs.map(r => _cplClave(r.oc))).filter(k => k.length >= 4 && !cot.has(k)));
   const ocF = new Set([_cplClave(f.oc), _cplClave(f.oc_num)].filter(k => k.length >= 4 && !cot.has(k)));
   // 9-oct-2026: «10237» en la OP y «02CMP10237» en Cartera son la misma O.C.: basta con que una contenga a la otra.
   const _mismaOC = (a, b) => a === b || a.includes(b) || b.includes(a);
-  if (ocOp.size && ocF.size && ![...ocOp].some(a => [...ocF].some(b => _mismaOC(a, b)))) return false;
+  // 11-oct-2026 (v319): la O.C. deja de mandar cuando hay una señal más fuerte de que
+  // la factura es de este pedido: (a) la cotización tiene ANOTADO ese número de
+  // factura, o (b) el monto antes de IVA es el de la OP / lo entregado (±2 %).
+  // LM2244: la OP decía «1559», la remisión «280926O1559» y Cartera «OC 280926O155119»
+  // (un dígito de más) → la 677 se descartaba y la OP-0115 seguía «sin facturar».
+  // La regla de los 15 días sigue viva: una factura vieja de otra compra no cuenta.
+  const _numF = String(f.numero || '').trim();
+  const _anotada = !!_numF && ids.some(c => String((factCot || {})[c] || '').split(/[^0-9A-Za-z]+/).includes(_numF));
+  const _monto = _cplNum(f.monto_antes_iva);
+  const _mismoMonto = (valores || []).some(v => v > 0 && Math.abs(_monto - v) <= v * 0.02);
+  const _ocManda = !(_anotada || _mismoMonto);
+  if (_ocManda && ocOp.size && ocF.size && ![...ocOp].some(a => [...ocF].some(b => _mismaOC(a, b)))) return false;
   const ref = [f0, _cplFecha(o.created_at)].filter(Boolean);
   const ff = _cplFecha(f.fecha_facturacion);
   if (ff && ref.length && ff < new Date(Math.min(...ref.map(d => d.getTime())) - 15 * 86400000)) return false;
@@ -9294,6 +9305,9 @@ async function cplCalcular() {
     (await _cplTodo('cotizacion_items?cotizacion_id=in.(' + encodeURIComponent(lote) + ')&select=cotizacion_id,item,v_unit,qty,alt_de&order=id'))
       .forEach(x => { if (!x.alt_de) (precios[x.cotizacion_id] = precios[x.cotizacion_id] || {})[String(x.item)] = [_cplNum(x.v_unit), _cplNum(x.qty)]; });
   }
+  // 11-oct-2026 (v319): N° de factura anotado en cada cotización (p. ej. «677» o «525---526--527»).
+  const factCot = {};
+  try { (await _cplTodo('cotizaciones?select=id,factura&factura=not.is.null')).forEach(c => { factCot[c.id] = c.factura; }); } catch (_) { }
   // Cartera: solo lectura
   const cartera = ((await sbCartera('GET', 'cartera_facturas?select=numero,cliente_nombre,cotizacion_id,oc,oc_num,monto_antes_iva,fecha_facturacion,estado&limit=10000')) || [])
     .filter(f => String(f.estado || '').toUpperCase() !== 'ANULADA');
@@ -9323,7 +9337,7 @@ async function cplCalcular() {
       rem: [...new Set(rs.map(r => String(r.remision)))].sort().join(', ') || '—',
       valor_op: valorOp, entregado: ent, parcial: ent < valorOp * 0.995, dias: f0 ? _cplDias(hoy, f0) : null, f0 };
     const vistos = {}; ids.forEach(c => (facPorCot[_cplClave(c)] || []).forEach(f => { vistos[f.numero] = f; }));
-    let facs = Object.values(vistos).filter(f => _cplFacturaDeEstaOP(f, o, rs, ids, f0));
+    let facs = Object.values(vistos).filter(f => _cplFacturaDeEstaOP(f, o, rs, ids, f0, [ent, valorOp], factCot));
     if (o.factura) { const fo = facPorNum[String(o.factura).trim()]; facs = fo ? [fo] : [{ numero: o.factura, monto_antes_iva: ent }]; }
     if (facs.length) {
       fila.facturas = [...new Set(facs.map(f => String(f.numero)))].sort().join(', ');

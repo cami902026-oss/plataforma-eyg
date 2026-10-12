@@ -150,7 +150,7 @@ def _cot_items(ids):
     return out
 
 
-def _factura_de_esta_op(f, o, rs, ids, f0):
+def _factura_de_esta_op(f, o, rs, ids, f0, valores=(), fact_cot=None):
     """¿La factura (que trae el mismo N° de cotización) es de ESTE pedido?
     29-sep-2026 · SKF OMIA: la LM1396 se pidió dos veces. O.C. 17824 (junio,
     factura 552, pagada) y O.C. 18614 (septiembre, OP-2026-0113, sin facturar).
@@ -161,8 +161,19 @@ def _factura_de_esta_op(f, o, rs, ids, f0):
     oc_op = set(k for k in [clave(o.get('oc_cliente'))] + [clave(r.get('oc')) for r in rs]
                 if len(k) >= 4 and k not in cot)          # «LM2202» como O.C. no dice nada
     oc_f = set(k for k in (clave(f.get('oc')), clave(f.get('oc_num'))) if len(k) >= 4 and k not in cot)
+    # 11-oct-2026: la O.C. deja de mandar cuando hay una señal más fuerte de que la
+    # factura es de este pedido: (a) la cotización tiene ANOTADO ese número de
+    # factura, o (b) el monto antes de IVA es el de la OP / lo entregado (±2 %).
+    # LM2244: OP «1559», remisión «280926O1559», Cartera «OC 280926O155119» (un
+    # dígito de más) → la 677 se descartaba y la OP-0115 seguía «sin facturar».
+    num_f = str(f.get('numero') or '').strip()
+    anotada = bool(num_f) and any(num_f in re.split(r'[^0-9A-Za-z]+', str((fact_cot or {}).get(c) or ''))
+                                  for c in ids)
+    monto = num(f.get('monto_antes_iva'))
+    mismo_monto = any(v > 0 and abs(monto - v) <= v * 0.02 for v in (valores or ()))
+    oc_manda = not (anotada or mismo_monto)
     # 9-oct-2026: «10237» en la OP y «02CMP10237» en Cartera son la misma O.C.
-    if oc_op and oc_f and not any(a == b or a in b or b in a for a in oc_op for b in oc_f):
+    if oc_manda and oc_op and oc_f and not any(a == b or a in b or b in a for a in oc_op for b in oc_f):
         return False
     ref = [d for d in (f0, fecha(o.get('created_at'))) if d]
     ff = fecha(f.get('fecha_facturacion'))
@@ -189,6 +200,8 @@ def datos():
         if r.get('op_numero') in nums:
             rems[r['op_numero']].append(r)
     precios = _cot_items([c for o in abiertas for c in cot_ids(o)])
+    # 11-oct-2026: N° de factura anotado en cada cotización (p. ej. «677» o «525---526--527»)
+    fact_cot = {c['id']: c.get('factura') for c in todo('cotizaciones?select=id,factura&factura=not.is.null')}
 
     cartera = todo('cartera_facturas?select=numero,cliente_nombre,cotizacion_id,oc,oc_num,monto_antes_iva,fecha_facturacion,estado')
     cartera = [f for f in cartera if str(f.get('estado') or '').upper() != 'ANULADA']
@@ -237,7 +250,7 @@ def datos():
             'valor_op': valor_op, 'entregado': ent, 'parcial': ent < valor_op * 0.995,
             'dias': (hoy - f0).days if f0 else None}
         facs = list({f['numero']: f for c in ids for f in fac_por_cot.get(clave(c), [])}.values())
-        facs = [f for f in facs if _factura_de_esta_op(f, o, rs, ids, f0)]
+        facs = [f for f in facs if _factura_de_esta_op(f, o, rs, ids, f0, (ent, valor_op), fact_cot)]
         if o.get('factura'):   # la OP ya trae el número: manda sobre el cruce
             fo = fac_por_num.get(str(o['factura']).strip())
             facs = [fo] if fo else [{'numero': o['factura'], 'monto_antes_iva': ent}]
