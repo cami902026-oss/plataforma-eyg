@@ -1505,6 +1505,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
       <div class="nav-item" onclick="navigate('cotizaciones')"><span class="icon">📋</span>Cotizaciones IA</div>
       <div class="nav-item" onclick="navigate('cartera')"><span class="icon">💰</span>Cartera</div>
       <div class="nav-item" onclick="navigate('contratos')"><span class="icon">📜</span>Contratos Marco</div>
+      <div class="nav-item" onclick="navigate('saldos')"><span class="icon">💳</span>Saldos a Favor</div>
       <!-- 23-ago-2026: "Procesos O.C." sale del MENÚ, reemplazado por Órdenes de Pedido.
            La página, los datos (ordenes.json, 164 órdenes), el robot de Gmail que las
            crea y el informe diario SIGUEN funcionando igual. Las alertas de O.C. vencida
@@ -3978,6 +3979,42 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
           Alerta valor: 🟡 queda ≤20 % · 🔴 queda ≤10 % o sin cupo. Alerta fecha: 🟡 vence en ≤30 días · 🔴 vencido. Valores CON IVA.
         </div>
       </div>
+      <div class="page" id="page-saldos">
+        <div class="abs-toolbar">
+          <input type="text" id="spv-search" placeholder="Buscar proveedor o NIT..." oninput="spvRender()" style="flex:1;min-width:220px;">
+          <select id="spv-filtro" onchange="spvRender()" title="Qué proveedores mostrar">
+            <option value="">Todos</option>
+            <option value="con" selected>Con saldo a favor</option>
+            <option value="sin">Sin saldo (en $0)</option>
+          </select>
+          <button class="btn btn-primary" id="spv-btn-nuevo" onclick="spvNuevoProveedor()" style="width:auto;padding:8px 14px;font-size:12px;">➕ Proveedor con saldo</button>
+          <button class="btn btn-ghost" onclick="spvCargar(true)" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
+          <button class="btn btn-ghost" onclick="spvExcel()" style="padding:8px 14px;font-size:12px;">📊 Excel</button>
+        </div>
+        <div class="stat-grid" id="spv-stats"></div>
+        <div id="spv-count" class="abs-count"></div>
+        <div class="abs-table-wrap">
+          <table class="abs-table">
+            <thead><tr>
+              <th>Proveedor</th><th style="width:110px">NIT</th>
+              <th style="width:120px" title="Saldo inicial a favor (antes de IVA)">Saldo inicial</th>
+              <th style="width:120px" title="Nuevos saldos a favor: devoluciones, notas crédito, anticipos, pagos dobles">Abonos</th>
+              <th style="width:120px" title="Pedidos que se pagaron con el saldo">Consumido</th>
+              <th style="width:130px">Saldo disponible</th>
+              <th style="width:100px">Último mov.</th>
+              <th style="width:60px">Movs.</th>
+              <th style="width:130px"></th>
+            </tr></thead>
+            <tbody id="spv-tbody"><tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:32px">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+        <div id="spv-detalle" style="display:none;margin-top:18px"></div>
+        <div class="abs-count" style="margin-top:14px">
+          Igual que el Excel: cada pedido que se paga con el saldo se registra como <b>consumo</b> y el saldo baja solo.
+          Un <b>abono</b> (devolución, nota crédito, anticipo sin consumir, pago doble) lo sube. Valores <b>ANTES de IVA</b>.
+          Consumos: Alexandra, Andrea y gerencia · Saldos, abonos y correcciones: Andrea y gerencia · Nelsy consulta.
+        </div>
+      </div>
       <div class="page" id="page-costos">
         <div class="abs-toolbar">
           <input type="text" id="cc-search" placeholder="Buscar centro de costos, cliente o cotización..." oninput="ccRender()" style="flex:1;min-width:220px;">
@@ -4576,6 +4613,7 @@ const ALL_MODULES = [
   { id:'cotizaciones',  label:'📋 Cotizaciones IA' },
   { id:'cartera',       label:'💰 Cartera' },
   { id:'contratos',     label:'📜 Contratos Marco' },
+  { id:'saldos',        label:'💳 Saldos a Favor' },
   { id:'procesos',      label:'🚛 Procesos O.C.' },
   { id:'op',            label:'📑 Órdenes de Pedido' },
   { id:'visitas',       label:'🤝 Visitas Comerciales' },
@@ -4621,6 +4659,8 @@ function userCanSeeModule(mod) {
   if (mod === 'cartera') return email === 'andrea' || email === 'alberto' || email === 'nelsy';
   // Contratos marco: SOLO Andrea y Alberto (pedido del usuario, 9-oct-2026).
   if (mod === 'contratos') return email === 'andrea' || email === 'alberto';
+  // Saldos a favor de proveedores: Nelsy, Alexandra, Andrea y Alberto (pedido del usuario, 13-oct-2026).
+  if (mod === 'saldos') return email === 'andrea' || email === 'alberto' || email === 'nelsy' || email === 'alexandra';
   // Programación Equipo: TODO el equipo la VE (para saber quién está presencial);
   // editar está restringido adentro a dirección (peIsManager: gerencia, Andrea, Mario)
   if (mod === 'programacion') return true;
@@ -7652,7 +7692,7 @@ function navigate(page) {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
   currentPage = page;
-  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',contratos:'Contratos Marco',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',proveedores:'Proveedores',costos:'Centro de Costos',pdfstudio:'PDF Studio',ayuda:'Ayuda'};
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',contratos:'Contratos Marco',saldos:'Saldos a Favor',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',proveedores:'Proveedores',costos:'Centro de Costos',pdfstudio:'PDF Studio',ayuda:'Ayuda'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
   if(page==='remisiones') remiInit();
@@ -7665,6 +7705,7 @@ function navigate(page) {
   if(page==='ayuda') ayudaRender();
   if(page==='cartera') { setTimeout(()=>{ try { cnuCargar(false); } catch(_){} }, 100); setTimeout(loadCarteraUrlUI, 400); }
   if(page==='contratos') { try{ cmkInit(); }catch(e){ console.error('[cmk]',e); } }
+  if(page==='saldos') { try{ spvInit(); }catch(e){ console.error('[spv]',e); } }
   if(page==='pdfstudio') { const _f=document.getElementById('pdfstudio-frame'); if(_f && !_f.src) _f.src='pdf-studio.html'; }   // v155: carga perezosa (las librerías PDF solo se bajan al entrar)
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadSbProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
   if(page==='historico') { setTimeout(historicoListMonths, 100); }
@@ -9787,6 +9828,369 @@ function cmkExcel() {
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(contratos), 'CONTRATOS');
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(consumos), 'CONSUMOS');
   XLSX.writeFile(wb, 'Control_Contratos_Marco_EYG_' + _cmkHoy() + '.xlsx');
+}
+
+// ═══ 💳 SALDOS A FAVOR DE PROVEEDORES (13-oct-2026, SW v320) ═══════════════
+// Réplica del Excel "Saldo_Favor_Proveedor.xlsx" (una hoja por proveedor: saldo
+// inicial, pedidos que lo consumen, saldo restante) más lo que el Excel no tenía:
+// ABONOS (devolución, nota crédito, anticipo sin consumir, pago doble) y
+// sugerencias desde el Plan de Compras. Valores ANTES de IVA (decisión 13-oct).
+// Lo ven Nelsy, Alexandra, Andrea y gerencia (userCanSeeModule('saldos')).
+// Alexandra registra consumos; saldo inicial, abonos, edición y borrado solo
+// Andrea y Alberto. Nelsy consulta.
+var spv_prov = [], spv_mov = [], spv_sel = null, _spvCargado = false, _spvPlan = null, _spvAvisados = {};
+const SPV_MOTIVOS = ['Devolución de mercancía', 'Nota crédito del proveedor', 'Anticipo no consumido', 'Pago doble / de más', 'Otro'];
+const _spvNorm = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+function spvEsAdmin() { return !!(currentUser && (currentUser.email === 'andrea' || currentUser.email === 'alberto')); }
+function spvPuedeConsumir() { return spvEsAdmin() || !!(currentUser && currentUser.email === 'alexandra'); }
+// ¿Es el mismo proveedor? «CODIFER» y «CODIFERL» (error de tecleo en el plan) cuentan igual.
+function _spvMismo(a, b) { a = _spvNorm(a); b = _spvNorm(b); return !!a && !!b && (a === b || (a.length >= 5 && b.length >= 5 && (a.startsWith(b) || b.startsWith(a)))); }
+function spvCalc(p) {
+  const ms = spv_mov.filter(m => m.saldo_id === p.id);
+  const ini = ms.filter(m => m.tipo === 'Saldo inicial').reduce((s, m) => s + (+m.valor || 0), 0);
+  const abo = ms.filter(m => m.tipo === 'Abono').reduce((s, m) => s + (+m.valor || 0), 0);
+  const con = ms.filter(m => m.tipo === 'Consumo').reduce((s, m) => s + Math.abs(+m.valor || 0), 0);
+  const ult = ms.reduce((a, m) => (!a || String(m.fecha) > a) ? String(m.fecha) : a, null);
+  return { ini, abo, con, saldo: ini + abo - con, ult, n: ms.length };
+}
+function _spvDe(nombre) { return spv_prov.find(p => _spvMismo(p.proveedor, nombre)) || null; }
+
+async function spvInit() {
+  const b = document.getElementById('spv-btn-nuevo'); if (b) b.style.display = spvEsAdmin() ? '' : 'none';
+  if (!_spvCargado) await spvCargar(false); else spvRender();
+}
+async function spvCargar(force) {
+  if (_spvCargado && !force) { spvRender(); return; }
+  try {
+    // Paginado: PostgREST corta en 1.000 (lección de la BD de cotizaciones, v318).
+    spv_prov = (await _cplTodo('saldos_proveedor?order=proveedor.asc')) || [];
+    spv_mov  = (await _cplTodo('saldos_movimientos?order=fecha.desc,id.desc')) || [];
+    _spvCargado = true;
+    if (force) { _spvPlan = null; showToast('Saldos cargados ✓', 'success'); }
+  } catch (e) {
+    const tb = document.getElementById('spv-tbody');
+    const falta = /404|relation|does not exist/i.test(String(e && e.message));
+    if (tb) tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--red)">'
+      + (falta ? 'Las tablas de saldos todavía no existen en Supabase: hay que correr <code>scripts/migracion_saldos_proveedor_2026-10-13.sql</code> en el SQL Editor.'
+               : 'No se pudieron cargar los saldos: ' + _cmkEsc(e.message)) + '</td></tr>';
+    return;
+  }
+  spvRender();
+  if (spv_sel) spvAbrir(spv_sel, true);
+}
+function spvRender() {
+  const tb = document.getElementById('spv-tbody'); if (!tb) return;
+  const ql = ((document.getElementById('spv-search') || {}).value || '').toLowerCase();
+  const fil = (document.getElementById('spv-filtro') || {}).value || '';
+  const calc = {}; spv_prov.forEach(p => { calc[p.id] = spvCalc(p); });
+  const conSaldo = spv_prov.filter(p => calc[p.id].saldo > 0);
+  const tot = conSaldo.reduce((s, p) => s + calc[p.id].saldo, 0);
+  const con = spv_prov.reduce((s, p) => s + calc[p.id].con, 0);
+  const abo = spv_prov.reduce((s, p) => s + calc[p.id].abo, 0);
+  const st = document.getElementById('spv-stats');
+  if (st) st.innerHTML =
+    '<div class="stat-card blue"><div class="stat-icon">🏭</div><div class="stat-num">' + conSaldo.length + '</div><div class="stat-label">Proveedores con saldo a favor</div></div>'
+    + '<div class="stat-card green"><div class="stat-icon">💳</div><div class="stat-num" style="font-size:22px">' + _cmkFmt(tot) + '</div><div class="stat-label">Total a favor disponible</div></div>'
+    + '<div class="stat-card gold"><div class="stat-icon">📤</div><div class="stat-num" style="font-size:22px">' + _cmkFmt(con) + '</div><div class="stat-label">Consumido en pedidos</div></div>'
+    + '<div class="stat-card red"><div class="stat-icon">↩️</div><div class="stat-num" style="font-size:22px">' + _cmkFmt(abo) + '</div><div class="stat-label">Abonos registrados</div></div>';
+  const lista = spv_prov.filter(p => {
+    const k = calc[p.id];
+    if (fil === 'con' && !(k.saldo > 0)) return false;
+    if (fil === 'sin' && k.saldo > 0) return false;
+    if (ql && !((p.proveedor || '') + ' ' + (p.nit || '') + ' ' + (p.notas || '')).toLowerCase().includes(ql)) return false;
+    return true;
+  });
+  const cnt = document.getElementById('spv-count'); if (cnt) cnt.textContent = lista.length + ' proveedor(es)';
+  if (!lista.length) { tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:28px">Sin proveedores' + (spv_prov.length ? ' con ese filtro' : ': crea el primero con ➕ Proveedor con saldo') + '</td></tr>'; return; }
+  tb.innerHTML = lista.map(p => {
+    const k = calc[p.id], sel = spv_sel === p.id;
+    return '<tr style="cursor:pointer' + (sel ? ';background:rgba(232,160,32,.08)' : '') + '" onclick="spvAbrir(' + p.id + ')">'
+      + '<td><strong style="color:var(--gold)">' + _cmkEsc(p.proveedor) + '</strong>' + (p.notas ? '<div class="abs-count" style="margin:2px 0 0;font-size:10.5px">' + _cmkEsc(p.notas) + '</div>' : '') + '</td>'
+      + '<td style="font-size:12px">' + _cmkEsc(p.nit) + '</td>'
+      + '<td style="text-align:right">' + _cmkFmt(k.ini) + '</td>'
+      + '<td style="text-align:right;color:var(--green)">' + (k.abo ? '+' + _cmkFmt(k.abo) : '—') + '</td>'
+      + '<td style="text-align:right">' + (k.con ? '−' + _cmkFmt(k.con) : '—') + '</td>'
+      + '<td style="text-align:right;font-weight:700;color:' + (k.saldo < 0 ? 'var(--red)' : k.saldo > 0 ? 'var(--green)' : 'var(--text-muted)') + '">' + _cmkFmt(k.saldo) + '</td>'
+      + '<td style="font-size:12px">' + _cmkFecha(k.ult) + '</td>'
+      + '<td style="text-align:center">' + k.n + '</td>'
+      + '<td style="white-space:nowrap" onclick="event.stopPropagation()">'
+      + '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" onclick="spvAbrir(' + p.id + ')">📋 Movimientos</button> '
+      + (spvEsAdmin() ? '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" onclick="spvEditarProveedor(' + p.id + ')">✏️</button>' : '')
+      + '</td></tr>';
+  }).join('');
+}
+
+// ── Detalle: movimientos del proveedor (como la hoja del Excel) + sugerencias ──
+async function spvAbrir(id, silencioso) {
+  spv_sel = id; spvRender();
+  const p = spv_prov.find(x => x.id === id); const box = document.getElementById('spv-detalle');
+  if (!p || !box) return;
+  const k = spvCalc(p);
+  const ms = spv_mov.filter(x => x.saldo_id === id).slice().sort((a, b) => (a.fecha || '').localeCompare(b.fecha || '') || a.id - b.id);
+  let acum = 0;
+  const filas = ms.map(x => {
+    acum += (+x.valor || 0);
+    const esCon = x.tipo === 'Consumo';
+    return '<tr><td style="font-size:12px">' + _cmkFecha(x.fecha) + '</td>'
+      + '<td><span style="font-size:10.5px;font-weight:700;color:' + (esCon ? 'var(--gold)' : 'var(--green)') + '">' + (esCon ? '📤' : x.tipo === 'Abono' ? '↩️' : '🏁') + ' ' + _cmkEsc(x.tipo) + '</span></td>'
+      + '<td><strong>' + _cmkEsc(x.documento || '—') + '</strong>' + (x.origen === 'plan' ? ' <span title="Tomado del Plan de Compras ' + _cmkEsc(x.plan_cc) + '" style="font-size:10px;color:var(--green)">● Plan</span>' : '') + '</td>'
+      + '<td style="font-size:12px">' + _cmkEsc(x.descripcion) + (x.motivo ? ' <span class="abs-count" style="margin:0">· ' + _cmkEsc(x.motivo) + '</span>' : '') + '</td>'
+      + '<td style="text-align:right;color:' + (esCon ? '#fff' : 'var(--green)') + '">' + (esCon ? '−' : '+') + _cmkFmt(Math.abs(+x.valor || 0)) + '</td>'
+      + '<td style="font-size:12px">' + _cmkEsc(x.registrado_por) + '</td>'
+      + '<td style="text-align:right;font-size:12px;font-weight:700;color:' + (acum < 0 ? 'var(--red)' : 'var(--text-muted)') + '">' + _cmkFmt(acum) + '</td>'
+      + '<td>' + (spvEsAdmin() ? '<button class="btn btn-ghost" style="padding:3px 8px;font-size:11px" title="Quitar este movimiento" onclick="spvBorrarMov(' + x.id + ')">🗑</button>' : '') + '</td></tr>';
+  }).reverse().join('');
+  box.style.display = '';
+  box.innerHTML = '<div style="border:1px solid var(--border);border-radius:14px;padding:16px 18px;background:var(--card-bg)">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px">'
+    + '<div><div style="font-family:Montserrat,sans-serif;font-weight:800;font-size:16px;color:#fff">💳 ' + _cmkEsc(p.proveedor) + (p.nit ? ' · NIT ' + _cmkEsc(p.nit) : '') + '</div>'
+    + '<div class="abs-count" style="margin:4px 0 0">' + _cmkEsc(p.notas || 'Control de saldo a favor · valores antes de IVA') + '</div></div>'
+    + '<button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" onclick="spvCerrarDetalle()">✕ Cerrar</button></div>'
+    + '<div style="display:flex;gap:18px;flex-wrap:wrap;font-size:13px;margin-bottom:12px">'
+    + '<span>Saldo inicial <b>' + _cmkFmt(k.ini) + '</b></span>'
+    + '<span>Abonos <b style="color:var(--green)">+' + _cmkFmt(k.abo) + '</b></span>'
+    + '<span>Consumido <b>−' + _cmkFmt(k.con) + '</b></span>'
+    + '<span>Saldo disponible <b style="color:' + (k.saldo < 0 ? 'var(--red)' : 'var(--green)') + ';font-size:15px">' + _cmkFmt(k.saldo) + '</b></span></div>'
+    + (spvPuedeConsumir() ? _spvFormMov(p) : '')
+    + '<div id="spv-sug" class="abs-count" style="margin-top:10px">💡 Buscando en el Plan de Compras compras a ' + _cmkEsc(p.proveedor) + '…</div>'
+    + '<div class="abs-table-wrap" style="margin-top:10px"><table class="abs-table"><thead><tr>'
+    + '<th style="width:90px">Fecha</th><th style="width:120px">Tipo</th><th style="width:120px">No. Factura</th><th>Descripción del pedido</th>'
+    + '<th style="width:130px">Valor (antes IVA)</th><th style="width:110px">Registrado por</th><th style="width:130px">Saldo restante</th><th style="width:40px"></th>'
+    + '</tr></thead><tbody>' + (filas || '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:18px">Sin movimientos</td></tr>') + '</tbody></table></div></div>';
+  if (!silencioso) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  spvSugerencias(p);
+}
+function spvCerrarDetalle() { spv_sel = null; const b = document.getElementById('spv-detalle'); if (b) { b.style.display = 'none'; b.innerHTML = ''; } spvRender(); }
+function _spvFormMov(p) {
+  const inp = 'style="background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:#fff"';
+  return '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;padding:10px 12px;border:1px dashed var(--border);border-radius:10px">'
+    + '<div><label class="abs-count" style="display:block;margin:0 0 3px">Tipo</label><select id="spv-m-tipo" onchange="_spvTipoCambio()" ' + inp + '><option value="Consumo">📤 Consumo (pedido pagado con el saldo)</option>'
+    + (spvEsAdmin() ? '<option value="Abono">↩️ Abono (nuevo saldo a favor)</option>' : '') + '</select></div>'
+    + '<div><label class="abs-count" style="display:block;margin:0 0 3px">Fecha</label><input type="date" id="spv-m-fecha" value="' + _cmkHoy() + '" ' + inp + '></div>'
+    + '<div><label class="abs-count" style="display:block;margin:0 0 3px">No. Factura / documento</label><input type="text" id="spv-m-doc" placeholder="Factura del proveedor" style="width:150px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:#fff"></div>'
+    + '<div id="spv-m-motivo-box" style="display:none"><label class="abs-count" style="display:block;margin:0 0 3px">Motivo del abono</label><select id="spv-m-motivo" ' + inp + '>' + SPV_MOTIVOS.map(t => '<option>' + t + '</option>').join('') + '</select></div>'
+    + '<div style="flex:1;min-width:220px"><label class="abs-count" style="display:block;margin:0 0 3px">Descripción del pedido</label><input type="text" id="spv-m-desc" placeholder="Qué se pidió / por qué queda a favor" style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:#fff"></div>'
+    + '<div><label class="abs-count" style="display:block;margin:0 0 3px">Valor ANTES de IVA</label><input type="number" id="spv-m-valor" min="0" step="1" placeholder="0" style="width:140px;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:#fff"></div>'
+    + '<button class="btn btn-primary" style="width:auto;padding:8px 14px;font-size:12px" onclick="spvAgregarMov(' + p.id + ')">➕ Registrar</button></div>';
+}
+function _spvTipoCambio() { const t = (document.getElementById('spv-m-tipo') || {}).value; const b = document.getElementById('spv-m-motivo-box'); if (b) b.style.display = t === 'Abono' ? '' : 'none'; }
+async function spvAgregarMov(pid, pre) {
+  const g = id => (document.getElementById(id) || {}).value || '';
+  const f = pre || { tipo: g('spv-m-tipo') || 'Consumo', fecha: g('spv-m-fecha'), documento: g('spv-m-doc').trim(), descripcion: g('spv-m-desc').trim(), motivo: g('spv-m-motivo'), valor: parseFloat(g('spv-m-valor')) };
+  if (f.tipo === 'Consumo' && !spvPuedeConsumir()) { showToast('Solo Alexandra, Andrea y gerencia registran consumos', 'error'); return; }
+  if (f.tipo !== 'Consumo' && !spvEsAdmin()) { showToast('Los abonos y saldos iniciales los registran Andrea y gerencia', 'error'); return; }
+  if (!f.fecha) { showToast('Falta la fecha', 'error'); return; }
+  if (!(f.valor > 0)) { showToast('El valor debe ser mayor que cero', 'error'); return; }
+  if (f.tipo === 'Consumo' && !f.documento && !f.descripcion) { showToast('Pon el número de factura o la descripción del pedido', 'error'); return; }
+  const p = spv_prov.find(x => x.id === pid); if (!p) return;
+  const k = spvCalc(p);
+  if (f.tipo === 'Consumo' && f.valor > k.saldo + 0.5 && !confirm('Este pedido (' + _cmkFmt(f.valor) + ') es MAYOR que el saldo disponible (' + _cmkFmt(k.saldo) + ').\nEl saldo quedaría en negativo: la diferencia se le debe al proveedor.\n\n¿Registrarlo de todas formas?')) return;
+  if (f.documento && spv_mov.some(x => x.saldo_id === pid && x.tipo === f.tipo && String(x.documento || '').trim().toUpperCase() === String(f.documento).trim().toUpperCase())) {
+    showToast('Esa factura ya está registrada para este proveedor', 'error'); return;
+  }
+  const valor = f.tipo === 'Consumo' ? -Math.abs(f.valor) : Math.abs(f.valor);
+  try {
+    const fila = { saldo_id: pid, fecha: f.fecha, tipo: f.tipo, documento: f.documento || null, descripcion: f.descripcion || null,
+                   motivo: f.tipo === 'Abono' ? (f.motivo || null) : null, valor, origen: f.origen || 'manual', plan_cc: f.plan_cc || null, registrado_por: _cmkYo() };
+    const r = await absFetch('saldos_movimientos', { method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(fila) });
+    spv_mov.unshift((Array.isArray(r) && r[0]) || Object.assign({ id: Date.now() }, fila));
+    showToast((f.tipo === 'Consumo' ? 'Consumo' : 'Abono') + ' registrado ✓ · saldo ' + _cmkFmt(spvCalc(p).saldo), 'success');
+    spvAbrir(pid, true);
+  } catch (e) { showToast('No se pudo registrar: ' + e.message, 'error'); }
+}
+async function spvBorrarMov(id) {
+  if (!spvEsAdmin()) return;
+  const x = spv_mov.find(m => m.id === id); if (!x) return;
+  if (!confirm('¿Quitar el movimiento ' + x.tipo + ' ' + (x.documento || '') + ' por ' + _cmkFmt(Math.abs(+x.valor || 0)) + '?\nEl saldo se recalcula solo.')) return;
+  try {
+    await absFetch('saldos_movimientos?id=eq.' + id, { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+    spv_mov = spv_mov.filter(m => m.id !== id);
+    showToast('Movimiento quitado', 'success'); spvAbrir(x.saldo_id, true);
+  } catch (e) { showToast('No se pudo quitar: ' + e.message, 'error'); }
+}
+
+// ── Sugerencias desde el Plan de Compras (solo lectura) ──────────────────────
+// Un plan (CC) con líneas marcadas ✔Compró a este proveedor, posterior al saldo
+// inicial y que aún no esté registrado, se propone como consumo. Nada entra solo:
+// la persona confirma con un clic y pone el número de factura del proveedor.
+async function _spvPlanCargar() {
+  if (_spvPlan) return _spvPlan;
+  _spvPlan = (await _cplTodo('plan_compras?select=id,cc,op_numero,cotizacion,cliente,fecha,proveedor,descripcion,cantidad,costo_unit,comprado&comprado=is.true&order=id.desc')) || [];
+  return _spvPlan;
+}
+async function spvSugerencias(p) {
+  const box = document.getElementById('spv-sug'); if (!box) return;
+  const k = spvCalc(p);
+  if (!(k.saldo > 0)) { box.innerHTML = '💡 Este proveedor no tiene saldo disponible: no se sugieren compras.'; return; }
+  let plan;
+  try { plan = await _spvPlanCargar(); } catch (e) { box.innerHTML = '💡 No se pudo leer el Plan de Compras: ' + _cmkEsc(e.message); return; }
+  const desde = spv_mov.filter(m => m.saldo_id === p.id).map(m => String(m.fecha || '')).filter(Boolean).sort()[0] || String(p.created_at || '').slice(0, 10);
+  const ya = new Set(spv_mov.filter(m => m.saldo_id === p.id && m.plan_cc).map(m => String(m.plan_cc)));
+  const grupos = {};
+  plan.forEach(l => {
+    if (!_spvMismo(l.proveedor, p.proveedor)) return;
+    if (desde && String(l.fecha || '') < desde) return;
+    const cc = String(l.cc || ''); if (!cc || ya.has(cc)) return;
+    const g = grupos[cc] = grupos[cc] || { cc, op: l.op_numero, cot: l.cotizacion, cliente: l.cliente, fecha: l.fecha, n: 0, valor: 0, items: [] };
+    g.n++; g.valor += (parseFloat(l.cantidad) || 0) * (parseFloat(l.costo_unit) || 0);
+    if (String(l.fecha || '') > String(g.fecha || '')) g.fecha = l.fecha;
+    if (g.items.length < 3) g.items.push(String(l.descripcion || '').slice(0, 50));
+  });
+  const sug = Object.values(grupos).filter(g => g.valor > 0).sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));
+  if (!sug.length) { box.innerHTML = '💡 En el Plan de Compras no hay compras nuevas a ' + _cmkEsc(p.proveedor) + ' desde el ' + _cmkFecha(desde) + '. Las que no estén en el plan se registran a mano arriba.'; return; }
+  box.innerHTML = '<div style="border:1px solid rgba(63,191,99,.35);border-radius:10px;padding:10px 12px;background:rgba(63,191,99,.06)">'
+    + '<b>💡 En el Plan de Compras hay ' + sug.length + ' compra(s) a ' + _cmkEsc(p.proveedor) + ' que aún no descuentan del saldo:</b>'
+    + '<div style="display:grid;gap:6px;margin-top:8px">' + sug.map(g => {
+      const mayor = g.valor > k.saldo + 0.5;
+      return '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px">'
+        + '<span style="min-width:170px"><b>' + _cmkEsc(g.cc) + '</b> · ' + _cmkFecha(g.fecha) + '</span>'
+        + '<span style="flex:1;min-width:220px" title="' + _cmkEsc(g.items.join(' · ')) + '">' + _cmkEsc(g.cliente || '') + (g.cot ? ' · ' + _cmkEsc(g.cot) : '') + ' · ' + g.n + ' ítem(s)</span>'
+        + '<span style="min-width:120px;text-align:right"><b>' + _cmkFmt(g.valor) + '</b> <span class="abs-count" style="margin:0">antes IVA</span></span>'
+        + (mayor ? '<span class="abs-count" style="margin:0">⚠️ mayor que el saldo</span>' : '')
+        + (spvPuedeConsumir() ? '<button class="btn btn-primary" style="width:auto;padding:4px 10px;font-size:11px" onclick="spvTomarPlan(' + p.id + ',\'' + _cmkEsc(g.cc).replace(/'/g, '') + '\')">✔ Descontar del saldo</button>' : '')
+        + '</div>';
+    }).join('') + '</div></div>';
+}
+async function spvTomarPlan(pid, cc) {
+  const p = spv_prov.find(x => x.id === pid); if (!p) return;
+  const lineas = (_spvPlan || []).filter(l => String(l.cc) === cc && _spvMismo(l.proveedor, p.proveedor));
+  if (!lineas.length) return;
+  const valor = lineas.reduce((s, l) => s + (parseFloat(l.cantidad) || 0) * (parseFloat(l.costo_unit) || 0), 0);
+  const l0 = lineas[0];
+  const doc = prompt('Número de factura del proveedor para ' + cc + ' (' + _cmkFmt(valor) + ' antes de IVA).\nDéjalo vacío si aún no llega la factura.', '');
+  if (doc === null) return;
+  const fecha = String(lineas.map(l => l.fecha).filter(Boolean).sort().pop() || _cmkHoy()).slice(0, 10);
+  await spvAgregarMov(pid, { tipo: 'Consumo', fecha, documento: String(doc || '').trim() || null,
+    descripcion: cc + ' · ' + (l0.cliente || '') + (l0.cotizacion ? ' · ' + l0.cotizacion : '') + ' · ' + lineas.length + ' ítem(s): ' + lineas.slice(0, 3).map(l => String(l.descripcion || '').slice(0, 40)).join(' / '),
+    valor, origen: 'plan', plan_cc: cc });
+}
+
+// ── Aviso en el Plan de Compras: al asignar un proveedor con saldo a favor ───
+// Lo llama pcomUpd cuando cambia el campo proveedor. Avisa UNA vez por proveedor
+// y por plan abierto, para no fastidiar. Si las tablas no existen, calla.
+async function spvAvisoProveedor(nombre, ccPlan) {
+  try {
+    if (!String(nombre || '').trim() || /^BODEGA/i.test(String(nombre).trim())) return;
+    if (!_spvCargado) {
+      spv_prov = (await _cplTodo('saldos_proveedor?order=proveedor.asc')) || [];
+      spv_mov  = (await _cplTodo('saldos_movimientos?order=fecha.desc,id.desc')) || [];
+      _spvCargado = true;
+    }
+    const p = _spvDe(nombre); if (!p) return;
+    const k = spvCalc(p); if (!(k.saldo > 0)) return;
+    const key = p.id + '|' + (ccPlan || '');
+    if (_spvAvisados[key]) return; _spvAvisados[key] = true;
+    showToast('💳 ' + p.proveedor + ' tiene ' + _cmkFmt(k.saldo) + ' A FAVOR (antes de IVA). Úsalo en esta compra y regístralo en Saldos a Favor.', 'info', { durationMs: 10000 });
+  } catch (_) { }
+}
+
+// ── Alta / edición del proveedor con saldo ───────────────────────────────────
+function spvNuevoProveedor() { spvEditarProveedor(null); }
+async function spvEditarProveedor(id) {
+  if (!spvEsAdmin()) { showToast('Solo Andrea y gerencia crean o editan proveedores con saldo', 'error'); return; }
+  const p = id ? spv_prov.find(x => x.id === id) : null;
+  const v = k => _cmkEsc(p ? (p[k] == null ? '' : p[k]) : '');
+  const prev = document.getElementById('spv-modal'); if (prev) prev.remove();
+  const inp = 'style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px"';
+  // Nombres de la libreta de proveedores (Supabase + libreta local) para no inventar otro nombre.
+  let nombres = [];
+  try { nombres = ((await absFetch('proveedores?select=nombre,nit&order=nombre.asc&limit=500')) || []).map(x => ({ nombre: x.nombre, nit: x.nit })); } catch (_) { }
+  try { (getData('bd_proveedores', []) || []).forEach(x => { if (x && x.nombre && !nombres.some(n => _spvMismo(n.nombre, x.nombre))) nombres.push({ nombre: x.nombre, nit: x.nit }); }); } catch (_) { }
+  const ov = document.createElement('div'); ov.id = 'spv-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(3,8,18,.82);z-index:100004;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML = '<div class="modal" style="width:560px">'
+    + '<div class="modal-header"><h3 style="margin:0;color:#fff;font-size:16px">💳 ' + (p ? 'Editar ' + _cmkEsc(p.proveedor) : 'Nuevo proveedor con saldo a favor') + '</h3>'
+    + '<button onclick="_spvCerrarModal()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer">×</button></div>'
+    + '<div style="padding:18px 22px;display:grid;gap:11px;grid-template-columns:1fr 1fr">'
+    + '<div style="grid-column:1/3"><label class="abs-count" style="display:block;margin:0 0 3px">Proveedor * <span style="font-weight:400">(como está en la libreta / plan de compras)</span></label>'
+    + '<input id="spv-f-prov" list="spv-f-prov-dl" ' + inp + ' value="' + v('proveedor') + '" placeholder="CODIFER" onchange="_spvAutoNit()"><datalist id="spv-f-prov-dl">' + nombres.map(n => '<option value="' + _cmkEsc(n.nombre) + '">').join('') + '</datalist></div>'
+    + '<div><label class="abs-count" style="display:block;margin:0 0 3px">NIT</label><input id="spv-f-nit" ' + inp + ' value="' + v('nit') + '"></div>'
+    + (p ? '<div></div>' : '<div><label class="abs-count" style="display:block;margin:0 0 3px">Saldo inicial a favor (antes de IVA)</label><input id="spv-f-saldo" type="number" min="0" step="1" ' + inp + ' placeholder="0"></div>'
+         + '<div><label class="abs-count" style="display:block;margin:0 0 3px">Fecha del saldo (corte)</label><input id="spv-f-fecha" type="date" ' + inp + ' value="' + _cmkHoy() + '"></div>'
+         + '<div><label class="abs-count" style="display:block;margin:0 0 3px">De dónde sale el saldo</label><input id="spv-f-origen" ' + inp + ' placeholder="Ej: devolución factura 1234 / anticipo OC 55"></div>')
+    + '<div style="grid-column:1/3"><label class="abs-count" style="display:block;margin:0 0 3px">Notas</label><textarea id="spv-f-notas" rows="2" ' + inp + '>' + v('notas') + '</textarea></div>'
+    + '<div id="spv-f-aviso" style="grid-column:1/3"></div>'
+    + '</div><div style="display:flex;gap:10px;justify-content:flex-end;padding:0 22px 18px">'
+    + (p ? '<button class="btn btn-ghost" onclick="spvBorrarProveedor(' + p.id + ')" style="padding:8px 16px;font-size:12px;color:var(--red);margin-right:auto">🗑 Eliminar</button>' : '')
+    + '<button class="btn btn-ghost" onclick="_spvCerrarModal()" style="padding:8px 16px;font-size:12px">Cancelar</button>'
+    + '<button class="btn btn-primary" id="spv-f-ok" onclick="spvGuardarProveedor(' + (p ? p.id : 'null') + ')" style="width:auto;padding:8px 18px;font-size:13px">💾 Guardar</button></div></div>';
+  ov._nombres = nombres;
+  document.body.appendChild(ov);
+  setTimeout(() => { const e = document.getElementById('spv-f-prov'); if (e) e.focus(); }, 50);
+}
+function _spvAutoNit() {
+  const ov = document.getElementById('spv-modal'); const e = document.getElementById('spv-f-prov'); const n = document.getElementById('spv-f-nit');
+  if (!ov || !e || !n || n.value) return;
+  const m = (ov._nombres || []).find(x => _spvMismo(x.nombre, e.value)); if (m && m.nit) n.value = m.nit;
+}
+function _spvCerrarModal() { const m = document.getElementById('spv-modal'); if (m) m.remove(); }
+async function spvGuardarProveedor(id) {
+  const g = k => (document.getElementById('spv-f-' + k) || {}).value || '';
+  const av = document.getElementById('spv-f-aviso');
+  const err = m => { if (av) av.innerHTML = '<div style="color:var(--red);font-size:12.5px">' + _cmkEsc(m) + '</div>'; };
+  const proveedor = g('prov').trim().toUpperCase();
+  if (!proveedor) return err('Falta el nombre del proveedor.');
+  if (spv_prov.some(p => p.id !== id && _spvMismo(p.proveedor, proveedor))) return err('Ese proveedor ya tiene su registro de saldo: ábrelo y agrégale un abono.');
+  const saldo = id ? 0 : parseFloat(g('saldo')) || 0;
+  const cuerpo = { proveedor, nit: g('nit').trim() || null, notas: g('notas').trim() || null, updated_by: _cmkYo(), updated_at: new Date().toISOString() };
+  const btn = document.getElementById('spv-f-ok'); if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
+  try {
+    if (id) {
+      const r = await absFetch('saldos_proveedor?id=eq.' + id, { method: 'PATCH', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(cuerpo) });
+      const n = (Array.isArray(r) && r[0]) || Object.assign({}, spv_prov.find(p => p.id === id), cuerpo);
+      spv_prov = spv_prov.map(p => p.id === id ? n : p);
+    } else {
+      cuerpo.created_by = _cmkYo();
+      const r = await absFetch('saldos_proveedor', { method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(cuerpo) });
+      const n = (Array.isArray(r) && r[0]) || null;
+      if (!n || !n.id) throw new Error('Supabase no devolvió el registro creado');
+      spv_prov.push(n); spv_prov.sort((a, b) => String(a.proveedor).localeCompare(String(b.proveedor)));
+      if (saldo > 0) {
+        const fila = { saldo_id: n.id, fecha: g('fecha') || _cmkHoy(), tipo: 'Saldo inicial', documento: null,
+                       descripcion: g('origen').trim() || 'Saldo inicial a favor', valor: saldo, origen: 'manual', registrado_por: _cmkYo() };
+        const m = await absFetch('saldos_movimientos', { method: 'POST', headers: { 'Prefer': 'return=representation' }, body: JSON.stringify(fila) });
+        spv_mov.unshift((Array.isArray(m) && m[0]) || Object.assign({ id: Date.now() }, fila));
+      }
+      spv_sel = n.id;
+    }
+    _spvCerrarModal(); showToast('Proveedor guardado ✓', 'success'); spvRender();
+    if (spv_sel) spvAbrir(spv_sel, true);
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = '💾 Guardar'; }
+    err('No se pudo guardar: ' + (e && e.message || e));
+  }
+}
+async function spvBorrarProveedor(id) {
+  if (!spvEsAdmin()) return;
+  const p = spv_prov.find(x => x.id === id); if (!p) return;
+  const k = spvCalc(p);
+  if (!confirm('¿Eliminar el registro de saldo de ' + p.proveedor + ' con sus ' + k.n + ' movimiento(s)?\nSaldo actual: ' + _cmkFmt(k.saldo) + '. Esto NO se puede deshacer.')) return;
+  try {
+    await absFetch('saldos_proveedor?id=eq.' + id, { method: 'DELETE', headers: { 'Prefer': 'return=minimal' } });
+    spv_prov = spv_prov.filter(x => x.id !== id); spv_mov = spv_mov.filter(m => m.saldo_id !== id);
+    if (spv_sel === id) spv_sel = null;
+    _spvCerrarModal(); showToast('Registro eliminado', 'success'); spvRender(); spvCerrarDetalle();
+  } catch (e) { showToast('No se pudo eliminar: ' + e.message, 'error'); }
+}
+
+// ── Excel: RESUMEN + MOVIMIENTOS (una fila por pedido, como las hojas del original)
+function spvExcel() {
+  if (!spv_prov.length) { showToast('No hay saldos para exportar', 'error'); return; }
+  const calc = {}; spv_prov.forEach(p => { calc[p.id] = spvCalc(p); });
+  const resumen = spv_prov.map(p => { const k = calc[p.id]; return {
+    'Proveedor': p.proveedor, 'NIT': p.nit || '', 'Saldo inicial (antes IVA)': k.ini, 'Abonos': k.abo, 'Consumido': k.con,
+    'Saldo disponible': k.saldo, 'Último movimiento': k.ult || '', 'Movimientos': k.n, 'Notas': p.notas || '' }; });
+  const porId = {}; spv_prov.forEach(p => { porId[p.id] = p; });
+  const acum = {};
+  const movs = spv_mov.slice().sort((a, b) => a.saldo_id - b.saldo_id || (a.fecha || '').localeCompare(b.fecha || '') || a.id - b.id).map(m => {
+    acum[m.saldo_id] = (acum[m.saldo_id] || 0) + (+m.valor || 0);
+    return { 'Proveedor': (porId[m.saldo_id] || {}).proveedor || '', 'Fecha': m.fecha || '', 'Tipo': m.tipo, 'No. Factura': m.documento || '',
+      'Descripción del pedido': m.descripcion || '', 'Motivo': m.motivo || '', 'Valor (antes IVA)': +m.valor || 0, 'Saldo restante': acum[m.saldo_id],
+      'Origen': m.origen || 'manual', 'Plan de compras': m.plan_cc || '', 'Registrado por': m.registrado_por || '' }; });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumen), 'RESUMEN');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(movs), 'MOVIMIENTOS');
+  XLSX.writeFile(wb, 'Saldo_Favor_Proveedores_EYG_' + _cmkHoy() + '.xlsx');
 }
 
 async function cnuCargar(force) {
@@ -32727,6 +33131,8 @@ function pcomUpd(i, campo, valor){
   const it = pcom_current.items[i];
   const _antes = it[campo];
   it[campo] = valor;
+  // 13-oct-2026 (v320): si el proveedor tiene saldo a favor, avisar para que se use.
+  if(campo==='proveedor' && valor && valor!==_antes && typeof spvAvisoProveedor==='function'){ try{ spvAvisoProveedor(valor, pcom_current.cc); }catch(_){ } }
   // v186: si ya llegó algo del proveedor, esa línea estaba comprada por definición
   if(campo==='recibida' && _pcomNum(valor)>0 && !it.comprado){
     it.comprado = true;

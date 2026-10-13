@@ -52,6 +52,7 @@ const SB_URL = 'https://juprjevxkcitqpsnemto.supabase.co/rest/v1';
 const SB_TABLAS = ['productos','kardex','familias','conteos','conteo_items',
                    'remisiones','cotizaciones','cotizacion_items',
                    'plan_compras','oc_compras','proveedores',
+                   'saldos_proveedor','saldos_movimientos',   // 💳 Saldos a favor (13-oct-2026)
                    'verificacion_despacho',
                    'ops','op_items','op_reservas','op_certificados','op_eventos',
                    'op_consecutivos','proveedor_sedes','proveedor_sede_memoria','zonas_ruta',
