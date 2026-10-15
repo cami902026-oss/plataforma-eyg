@@ -9841,7 +9841,8 @@ function cmkExcel() {
 var spv_prov = [], spv_mov = [], spv_sel = null, _spvCargado = false, _spvPlan = null, _spvAvisados = {};
 const SPV_MOTIVOS = ['Devolución de mercancía', 'Nota crédito del proveedor', 'Anticipo no consumido', 'Pago doble / de más', 'Otro'];
 const _spvNorm = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-function spvEsAdmin() { return !!(currentUser && (currentUser.email === 'andrea' || currentUser.email === 'alberto')); }
+// 15-oct-2026 (v321): Alexandra pasa a permisos completos en Saldos a Favor (pedido del usuario).
+function spvEsAdmin() { return !!(currentUser && (currentUser.email === 'andrea' || currentUser.email === 'alberto' || currentUser.email === 'alexandra')); }
 function spvPuedeConsumir() { return spvEsAdmin() || !!(currentUser && currentUser.email === 'alexandra'); }
 // ¿Es el mismo proveedor? «CODIFER» y «CODIFERL» (error de tecleo en el plan) cuentan igual.
 function _spvMismo(a, b) { a = _spvNorm(a); b = _spvNorm(b); return !!a && !!b && (a === b || (a.length >= 5 && b.length >= 5 && (a.startsWith(b) || b.startsWith(a)))); }
@@ -9978,7 +9979,7 @@ async function spvAgregarMov(pid, pre) {
   const g = id => (document.getElementById(id) || {}).value || '';
   const f = pre || { tipo: g('spv-m-tipo') || 'Consumo', fecha: g('spv-m-fecha'), documento: g('spv-m-doc').trim(), descripcion: g('spv-m-desc').trim(), motivo: g('spv-m-motivo'), valor: parseFloat(g('spv-m-valor')) };
   if (f.tipo === 'Consumo' && !spvPuedeConsumir()) { showToast('Solo Alexandra, Andrea y gerencia registran consumos', 'error'); return; }
-  if (f.tipo !== 'Consumo' && !spvEsAdmin()) { showToast('Los abonos y saldos iniciales los registran Andrea y gerencia', 'error'); return; }
+  if (f.tipo !== 'Consumo' && !spvEsAdmin()) { showToast('Los abonos y saldos iniciales los registran Alexandra, Andrea y gerencia', 'error'); return; }
   if (!f.fecha) { showToast('Falta la fecha', 'error'); return; }
   if (!(f.valor > 0)) { showToast('El valor debe ser mayor que cero', 'error'); return; }
   if (f.tipo === 'Consumo' && !f.documento && !f.descripcion) { showToast('Pon el número de factura o la descripción del pedido', 'error'); return; }
@@ -10087,7 +10088,7 @@ async function spvAvisoProveedor(nombre, ccPlan) {
 // ── Alta / edición del proveedor con saldo ───────────────────────────────────
 function spvNuevoProveedor() { spvEditarProveedor(null); }
 async function spvEditarProveedor(id) {
-  if (!spvEsAdmin()) { showToast('Solo Andrea y gerencia crean o editan proveedores con saldo', 'error'); return; }
+  if (!spvEsAdmin()) { showToast('Solo Alexandra, Andrea y gerencia crean o editan proveedores con saldo', 'error'); return; }
   const p = id ? spv_prov.find(x => x.id === id) : null;
   const v = k => _cmkEsc(p ? (p[k] == null ? '' : p[k]) : '');
   const prev = document.getElementById('spv-modal'); if (prev) prev.remove();
