@@ -2262,6 +2262,44 @@
   "created_at": "2026-09-16T14:14:29.634455+00:00"
  },
  {
+  "id": 103,
+  "oc": 26108,
+  "cc": "CC-OP-2026-0159",
+  "cotizacion": "LM2347",
+  "proveedor": "DISEFER",
+  "fecha": "2026-10-16",
+  "condiciones": {
+   "lugar": "BOGOTÁ",
+   "plazo": "Contado",
+   "entrega": "19 DE OCTUBRE DE 2026",
+   "observaciones": ""
+  },
+  "items": [
+   {
+    "udm": "EA",
+    "nota": "",
+    "cantidad": 20,
+    "subtotal": 57140,
+    "costo_unit": 2857,
+    "descripcion": "NIPLE 1\" X 3\" SCH 80 ASTM A 106 GR B"
+   },
+   {
+    "udm": "EA",
+    "nota": "",
+    "cantidad": 2,
+    "subtotal": 5714,
+    "costo_unit": 2857,
+    "descripcion": "NIPLE 1/2\" X 5\" SCH 80 ASTM A 106 GR B"
+   }
+  ],
+  "subtotal": 62854,
+  "iva": 11942.26,
+  "retencion": 0,
+  "total": 74796.26,
+  "created_by": "Alexandra",
+  "created_at": "2026-10-16T16:22:35.57693+00:00"
+ },
+ {
   "id": 69,
   "oc": 26079,
   "cc": "CC-OP-2026-0039",
@@ -3008,6 +3046,36 @@
   "created_at": "2026-09-29T18:21:02.949665+00:00"
  },
  {
+  "id": 102,
+  "oc": 26107,
+  "cc": "CC-OP-2026-0159",
+  "cotizacion": "LM2347",
+  "proveedor": "TALECTRO",
+  "fecha": "2026-10-16",
+  "condiciones": {
+   "lugar": "OFICINA PRINCIPAL DE TCC EN BOGOTÁ",
+   "plazo": "Contado",
+   "entrega": "19 DE OCTUBRE DE 2026",
+   "observaciones": ""
+  },
+  "items": [
+   {
+    "udm": "EA",
+    "nota": "MODELO LS200N",
+    "cantidad": 10,
+    "subtotal": 10500000,
+    "costo_unit": 1050000,
+    "descripcion": "SWITCHES DE NIVEL CONEXION DE 2\" NEUMAT"
+   }
+  ],
+  "subtotal": 10500000,
+  "iva": 1995000,
+  "retencion": 262500,
+  "total": 12232500,
+  "created_by": "Alexandra",
+  "created_at": "2026-10-16T14:56:06.519897+00:00"
+ },
+ {
   "id": 91,
   "oc": 26096,
   "cc": "CC-OP-2026-0125",
@@ -3324,5 +3392,73 @@
   "total": 33998.3,
   "created_by": "Alexandra",
   "created_at": "2026-10-08T17:11:53.151951+00:00"
+ },
+ {
+  "id": 100,
+  "oc": 26105,
+  "cc": "CC-OP-2026-0157",
+  "cotizacion": "LM2264",
+  "proveedor": "DISTRIBUCIONES PEÑA",
+  "fecha": "2026-10-16",
+  "condiciones": {
+   "lugar": "BOGOTÁ",
+   "plazo": "Contado",
+   "entrega": "16/10/2026",
+   "observaciones": ""
+  },
+  "items": [
+   {
+    "udm": "EA",
+    "nota": "TUBO X 3 MTS",
+    "cantidad": 39,
+    "subtotal": 6825000,
+    "costo_unit": 175000,
+    "descripcion": "TUBERIA RMC 2\" x 3 mts"
+   },
+   {
+    "udm": "EA",
+    "nota": "TUBO X 3 MTS",
+    "cantidad": 3,
+    "subtotal": 405000,
+    "costo_unit": 135000,
+    "descripcion": "TUBERIA RMC 1-1/2\" x 3 mts"
+   }
+  ],
+  "subtotal": 7230000,
+  "iva": 1373700,
+  "retencion": 180750,
+  "total": 8422950,
+  "created_by": "Alexandra",
+  "created_at": "2026-10-16T13:17:46.107955+00:00"
+ },
+ {
+  "id": 101,
+  "oc": 26106,
+  "cc": "CC-OP-2026-0159",
+  "cotizacion": "LM2347",
+  "proveedor": "TALECTRO",
+  "fecha": "2026-10-16",
+  "condiciones": {
+   "lugar": "OFICINA PRINCIPAL TCC",
+   "plazo": "Contado",
+   "entrega": "19 DE OCTUBRE DE 2026",
+   "observaciones": ""
+  },
+  "items": [
+   {
+    "udm": "EA",
+    "nota": "MODELO LS200N",
+    "cantidad": 9,
+    "subtotal": 9585000,
+    "costo_unit": 1065000,
+    "descripcion": "SWITCHES DE NIVEL CONEXION DE 2\" NEUMAT"
+   }
+  ],
+  "subtotal": 9585000,
+  "iva": 1821150,
+  "retencion": 239625,
+  "total": 11166525,
+  "created_by": "Alexandra",
+  "created_at": "2026-10-16T14:26:34.601419+00:00"
  }
 ]
