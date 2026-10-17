@@ -835,6 +835,12 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   font-family:var(--op-mono);font-size:10.5px;font-weight:700;letter-spacing:.04em;
   background:rgba(232,160,32,.16);border:1px solid rgba(232,160,32,.5);color:#fbbf24;
 }
+/* 17-oct-2026 — El número de cotización es un ENLACE: abre el editor de Cotizaciones
+   IA para actualizar su estado. Subrayado punteado para que se note sin gritar. */
+#page-op .op-cot-link{
+  color:#c4b5fd;text-decoration:underline dotted;text-underline-offset:2px;cursor:pointer;
+}
+#page-op .op-cot-link:hover,#page-op .op-cot-link:focus{ color:#fff;text-decoration-style:solid;outline:none; }
 /* ⏰ Atrasada: rojo, no ámbar. El ámbar ya lo usan «por enviar» y la desviación;
    si el atraso comparte color se lee como un aviso más y deja de resaltar. */
 #page-op .op-chip-atraso{
@@ -2159,6 +2165,12 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 
         <!-- ═══ TAB NUEVA COTIZACIÓN ═══ -->
         <div class="cotiz-tab-content active" id="cotiz-tab-nueva">
+          <!-- 17-oct-2026: cuando la cotización se abrió desde una Orden de Pedido, un
+               camino de vuelta. Solo se ve mientras esa cotización esté cargada. -->
+          <div id="cotiz-op-volver" style="display:none;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:8px 12px;border:1px solid rgba(196,181,253,.35);border-radius:8px;background:rgba(196,181,253,.08);">
+            <button class="btn btn-ghost" onclick="opVolverDesdeCotiz()" style="padding:6px 12px;font-size:12px;">← Volver a la OP <b id="cotiz-op-volver-num"></b></button>
+            <span style="font-size:12px;color:var(--text-muted);">Abierta desde la orden de pedido: cambia el estado y <b style="color:#fff;">Guarda</b> antes de volver.</span>
+          </div>
           <!-- Encabezado -->
           <div class="cotiz-card">
             <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;">
@@ -15428,6 +15440,7 @@ function _cotizGuardarYNueva() {
 function cotizNueva(silent) {
   cotizEditId = null;
   cotizItems = [];
+  try { _opVolverRefresh(); } catch (_) {}   // 17-oct-2026: ya no es la de la OP
   // Ya no estoy "en" ninguna cotización: soltar presencia y foto de colaboración
   try { _presTrack(null); } catch(_) {}
   try { _cotizSnapshotSet(null, null); } catch(_) {}
@@ -17783,6 +17796,7 @@ function _bdLoadIntoEditor(c, msg, adopted) {
   try { window._cotizAbierta = (c && c.id && c.createdAt) ? JSON.parse(JSON.stringify(c)) : null; } catch(_) { window._cotizAbierta = null; }
   cotizEditId = c.id;
   cotizItems = JSON.parse(JSON.stringify(c.items || []));
+  try { _opVolverRefresh(); } catch (_) {}   // 17-oct-2026: barra «← Volver a la OP»
   // 14-sep-2026: aviso al ABRIR si la cotización ya viene con muchos ítems repetidos
   try {
     const _d = _cotizPareceDuplicada(cotizItems);
@@ -26147,8 +26161,7 @@ function opRenderLista() {
       + '<div class="op-fila-id">' + opEsc(o.numero)
       + '<small>' + opEsc((o.created_at || '').substring(0, 10)) + '</small></div>'
       + '<div class="op-fila-cli">' + opEsc(o.cliente || 'Sin cliente')
-      + '<small>cot ' + opEsc(o.cotizacion_id || '—')
-      + (opCotizIds(o).length > 1 ? ' <span style="color:#c4b5fd">+' + (opCotizIds(o).length - 1) + '</span>' : '')
+      + '<small>cot ' + opCotizLinks(o, 'lista')
       + (o.oc_cliente ? ' · o.c. ' + opEsc(o.oc_cliente) : '') + '</small></div>'
       + '<div>' + opChip(o.estado)
       + (o.estado === 'devuelta' && o.nota_devolucion ? '<span class="op-nota">' + opEsc(o.nota_devolucion) + '</span>' : '')
@@ -26194,10 +26207,9 @@ function opRenderEditor() {
   const sub = [];
   // Una OP puede llevar varias cotizaciones (una sola OC del cliente cubriendo
   // dos ofertas). Se nombran TODAS: es lo primero que se mira al abrir la hoja.
+  // 17-oct-2026: cada una es un enlace que abre el editor para actualizar su estado.
   const _cots = opCotizIds(o);
-  sub.push(_cots.length > 1
-    ? 'cotizaciones <b>' + _cots.map(opEsc).join('</b> + <b>') + '</b>'
-    : 'cotización <b>' + opEsc(o.cotizacion_id || '—') + '</b>');
+  sub.push((_cots.length > 1 ? 'cotizaciones ' : 'cotización ') + opCotizLinks(o, 'hoja'));
   sub.push('creada por <b>' + opEsc(o.created_by || '—') + '</b> el <b>' + opEsc((o.created_at || '').substring(0, 10)) + '</b>');
   if (o.aprobada_por) sub.push('aprobó <b>' + opEsc(o.aprobada_por) + '</b>');
   document.getElementById('op-hoja-sub').innerHTML = sub.join('<br>');
@@ -27027,6 +27039,70 @@ function opCotizIds(o) {
     (ex.cotiz_extra || []).forEach(x => push(x && x.id));
   }
   return out;
+}
+
+// ── 17-oct-2026 — ABRIR LA COTIZACIÓN DESDE LA OP ────────────────────────────
+// Pedido del usuario: desde la OP, un clic en el número de cotización abre el
+// editor de Cotizaciones IA (el mismo «✏️ Editar» de la BD) para actualizar su
+// estado — Adjudicada, Facturada, etc. — con toda la lógica que ya existe ahí.
+// Quien no ve Cotizaciones IA sigue viendo el número como texto, sin enlace.
+function opCotizLinks(o, modo) {
+  const ids = opCotizIds(o);
+  if (!ids.length) return modo === 'hoja' ? '<b>—</b>' : '—';
+  let puede = false;
+  try { puede = typeof userCanSeeModule === 'function' && userCanSeeModule('cotizaciones'); } catch (_) { puede = false; }
+  const uno = id => {
+    const t = opEsc(id);
+    if (!puede) return modo === 'hoja' ? '<b>' + t + '</b>' : t;
+    return '<a href="#" class="op-cot-link" title="Abrir la cotización ' + t + ' para actualizar su estado"'
+      + ' onclick="opVerCotiz(\'' + t.replace(/'/g, '') + '\',' + (+o.id || 0) + ',event)"'
+      + ' onkeydown="event.stopPropagation()">' + (modo === 'hoja' ? '<b>' + t + '</b>' : t) + '</a>';
+  };
+  if (modo === 'hoja') return ids.map(uno).join(' + ');
+  // En la lista: la principal y, si hay sumadas, cada una también, en el mismo
+  // violeta que antes señalaba el «+N».
+  return uno(ids[0]) + ids.slice(1).map(id => ' <span style="color:#c4b5fd">+ ' + uno(id) + '</span>').join('');
+}
+
+function opVerCotiz(cotizId, opId, ev) {
+  try { if (ev) { ev.preventDefault(); ev.stopPropagation(); } } catch (_) {}
+  if (!cotizId) return;
+  if (typeof userCanSeeModule === 'function' && !userCanSeeModule('cotizaciones')) {
+    showToast('No tienes acceso a Cotizaciones IA', 'error'); return;
+  }
+  // De dónde se vino, para el botón «← Volver a la OP».
+  const o = (op_current && op_current.id === opId) ? op_current : (op_lista || []).find(x => x && x.id === opId);
+  window._opVolver = opId ? { opId: opId, numero: (o && o.numero) || '', cotiz: String(cotizId) } : null;
+  navigate('cotizaciones');
+  try { cotizShowTab('nueva'); } catch (_) {}
+  // Si este equipo la tiene en su BD local, el flujo normal (Supabase manda y la
+  // local es respaldo). Si no (p. ej. una del LIBRO), el camino del histórico, que
+  // ya sabe cuándo delegar en bdCargar.
+  const loc = (getData('bd_cotizaciones', []) || []).find(x => x && x.id === cotizId && !x.deleted);
+  const abrir = loc ? bdCargar(cotizId) : bdEditarHistorico(cotizId);
+  Promise.resolve(abrir).catch(e => showToast('No se pudo abrir ' + cotizId + ': ' + (e && e.message || e), 'error'))
+    .then(() => { try { _opVolverRefresh(); } catch (_) {} });
+}
+
+// La barra de regreso solo se ve mientras la cotización abierta sea la que se
+// pidió desde la OP: si se abre otra o se crea una nueva, se esconde.
+function _opVolverRefresh() {
+  const bar = document.getElementById('cotiz-op-volver');
+  if (!bar) return;
+  const v = window._opVolver;
+  const ver = !!(v && v.opId && cotizEditId && String(cotizEditId) === v.cotiz);
+  bar.style.display = ver ? 'flex' : 'none';
+  const n = document.getElementById('cotiz-op-volver-num');
+  if (n) n.textContent = ver ? (v.numero || '') : '';
+}
+
+async function opVolverDesdeCotiz() {
+  const v = window._opVolver;
+  window._opVolver = null;
+  try { _opVolverRefresh(); } catch (_) {}
+  if (!v || !v.opId) { navigate('op'); return; }
+  navigate('op');
+  try { await opAbrir(v.opId); } catch (_) { try { await opCargar(false); } catch (_2) {} }
 }
 
 // Solo las sumadas después (con su detalle). La principal no está aquí.
