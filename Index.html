@@ -698,6 +698,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
   --op-compra:#E8A020;      /* hay que salir a comprarlo en Bogotá */
   --op-sin:#e05a4a;         /* nadie ha decidido de dónde sale */
   --op-cerrada:#9b8cd8;     /* archivada: ya no pide nada */
+  --op-custodia:#2cb8c4;    /* 19-oct-2026: cobrada, pero el material sigue en la casa */
   --op-mono:ui-monospace,'SFMono-Regular',Consolas,'Liberation Mono',monospace;
   --op-papel:#0b1d38;
   --op-linea:#1e3a6e;
@@ -759,6 +760,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #page-op .op-sello.op-sello-neg{ border-color:var(--op-sin);color:var(--op-sin);background:rgba(224,90,74,.07); }
 #page-op .op-sello.op-sello-ok{  border-color:var(--op-bodega);color:var(--op-bodega);background:rgba(63,191,99,.07); }
 #page-op .op-sello.op-sello-cerrada{ border-color:var(--op-cerrada);color:var(--op-cerrada);background:rgba(155,140,216,.07); }
+#page-op .op-sello.op-sello-custodia{ border-color:var(--op-custodia);color:var(--op-custodia);background:rgba(44,184,196,.07); }
 
 /* ── Balanza de origen ────────────────────────────────────────────────────
    Una sola barra: qué parte del valor sale de la estantería y qué parte hay
@@ -901,6 +903,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #page-op .op-e-alto    { background:rgba(224,90,74,.12);color:var(--op-sin);border-color:rgba(224,90,74,.45); }
 #page-op .op-e-curso   { background:rgba(26,58,143,.35);color:#8fb4ff;border-color:rgba(122,163,238,.4); }
 #page-op .op-e-cerrada { background:rgba(155,140,216,.14);color:var(--op-cerrada);border-color:rgba(155,140,216,.45); }
+#page-op .op-e-custodia{ background:rgba(44,184,196,.14);color:var(--op-custodia);border-color:rgba(44,184,196,.5); }
 
 /* ── Aviso de estado: es una barrera, no una tarjeta ──────────────────── */
 #page-op .op-barrera{
@@ -1227,6 +1230,8 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 #page-op .op-carril[data-c="esperar"]   .op-carril-top{ background:#9b8cd8; }
 #page-op .op-carril[data-c="despachar"] .op-carril-top{ background:var(--op-compra); }
 #page-op .op-carril[data-c="facturar"]  .op-carril-top{ background:var(--op-sin); }
+#page-op .op-carril[data-c="custodia"]  .op-carril-top{ background:var(--op-custodia); }
+#page-op .op-carril[data-c="custodia"]  .op-carril-v{ color:var(--op-custodia); }
 #page-op .op-carril[data-c="papeles"]   .op-carril-top{ background:var(--gold); }
 #page-op .op-carril[data-c="cerrar"]    .op-carril-top{ background:var(--op-bodega); }
 #page-op .op-carril[data-c="cerrar"] .op-carril-v{ color:var(--op-bodega); }
@@ -3827,6 +3832,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
             <button class="bd-filter-btn" onclick="opFiltrar('por_enviar',this)" title="Alistadas, con remisión y descontadas del inventario, pero el material sigue en la bodega">📦 Por enviar</button>
             <button class="bd-filter-btn" onclick="opFiltrar('en_camino',this)" title="Ya salieron con la transportadora">🚚 En camino</button>
             <button class="bd-filter-btn" onclick="opFiltrar('por_facturar',this)" title="Despachadas y todavía sin factura">💳 Por facturar</button>
+            <button class="bd-filter-btn" onclick="opFiltrar('facturada_sin_despachar',this)" title="Ya se facturaron, pero el material sigue en la bodega en custodia de E&amp;G. Falta que salga.">🏷️ Facturadas sin despachar</button>
             <button class="bd-filter-btn" onclick="opFiltrar('devuelta',this)">↩️ Devueltas</button>
             <button class="bd-filter-btn" onclick="opFiltrar('en_ejecucion',this)">🛒 En ejecución</button>
           </div>
@@ -25870,6 +25876,12 @@ const OP_ESTADOS = {
   devuelta:             { lbl: 'Devuelta',        cls: 'cotiz-estado-rechazada', icon: '↩️' },
   en_ejecucion:         { lbl: 'En ejecución',    cls: 'cotiz-estado-enviada',   icon: '🛒' },
   despachada:           { lbl: 'Despachada',      cls: 'cotiz-estado-adjudicada',icon: '🚚' },
+  // 19-oct-2026 — EL CLIENTE PAGA ANTES DE QUE SALGA EL MATERIAL (caso SKID).
+  // La OP estaba facturada y figuraba «despachada» o «cerrada», pero la carga
+  // seguía en la bodega en custodia de E&G: nadie veía que faltaba sacarla. Este
+  // estado dice las dos cosas a la vez. Sale de él cuando el material SALE de
+  // verdad (🚚), y de ahí sigue el camino normal: despachada → cerrada.
+  facturada_sin_despachar: { lbl: 'Facturada · sin despachar', cls: 'cotiz-estado-facturada', icon: '🏷️' },
   cerrada:              { lbl: 'Cerrada',         cls: 'cotiz-estado-facturada', icon: '🔒' },
   anulada:              { lbl: 'Anulada',         cls: 'cotiz-estado-rechazada', icon: '⛔' }
 };
@@ -25880,6 +25892,14 @@ const OP_ESTADOS = {
 // las CERRADAS y ANULADAS salen de la lista y viven en 🗄️ Historial: no se
 // borran ni se esconden, dejan de estorbar.
 const OP_ARCHIVADAS = ['cerrada', 'anulada'];
+const OP_CUSTODIA = 'facturada_sin_despachar';
+// Mientras la OP está en custodia, los movimientos de material (recibir, alistar,
+// ligar) NO la sacan del estado: solo la salida física (🚚) lo hace. Sin esto,
+// cualquier recepción la devolvía a «en ejecución» y se perdía la marca.
+function _opEstadoTrasMovimiento(o, quedan) {
+  if (o && o.estado === OP_CUSTODIA) return OP_CUSTODIA;
+  return quedan ? 'en_ejecucion' : 'despachada';
+}
 let op_modo = 'activas';                      // 'activas' | 'historial'
 
 // Días sin moverse antes de pintarse ⏰ Atrasada, por estado. Se cuentan desde el
@@ -26035,7 +26055,8 @@ const opMoney = n => '$' + Math.round(+n || 0).toLocaleString('es-CO');
 const OP_CLS = {
   borrador: 'op-e-borrador', en_compras: 'op-e-curso', pendiente_aprobacion: 'op-e-espera',
   aprobada: 'op-e-ok', devuelta: 'op-e-alto', en_ejecucion: 'op-e-curso',
-  despachada: 'op-e-curso', cerrada: 'op-e-cerrada', anulada: 'op-e-alto'
+  despachada: 'op-e-curso', cerrada: 'op-e-cerrada', anulada: 'op-e-alto',
+  facturada_sin_despachar: 'op-e-custodia'
 };
 
 function opChip(estado) {
@@ -26129,6 +26150,7 @@ function opRenderLista() {
     const esp = act.filter(o => o.estado === 'pendiente_aprobacion').length;
     const env = act.filter(o => o._porEnviar).length;
     const fac = act.filter(o => o.estado === 'despachada' && !_opFactura(o)).length;
+    const cus = act.filter(o => o.estado === OP_CUSTODIA).length;
     const atr = act.filter(o => !!opAtrasada(o)).length;
     const arch = op_lista.length - act.length;
     cnt.innerHTML = l.length + ' orden' + (l.length === 1 ? '' : 'es') + ' de pedido'
@@ -26136,6 +26158,7 @@ function opRenderLista() {
         : (esp ? ' · <b style="color:#E8A020">' + esp + ' esperando aprobación</b>' : '')
           + (env ? ' · <b style="color:#E8A020">' + env + ' por enviar</b>' : '')
           + (fac ? ' · <b style="color:#E8A020">' + fac + ' por facturar</b>' : '')
+          + (cus ? ' · <b style="color:#2cb8c4">' + cus + ' facturada' + (cus === 1 ? '' : 's') + ' sin despachar</b>' : '')
           + (atr ? ' · <b style="color:#e05a4a">' + atr + ' atrasada' + (atr === 1 ? '' : 's') + '</b>' : '')
           + (arch ? ' <span style="color:var(--text-muted)">· ' + arch
               + ' en 🗄️ Historial</span>' : ''));
@@ -26262,6 +26285,7 @@ function opRenderEditor() {
     devuelta: [' op-sello-neg', 'Devuelta', 'corregir y reenviar'],
     aprobada: [' op-sello-ok', 'Aprobada', 'se puede ejecutar'],
     cerrada: [' op-sello-cerrada', 'Cerrada', 'con certificados'],
+    facturada_sin_despachar: [' op-sello-custodia', 'Facturada', 'material sin despachar'],
     anulada: [' op-sello-neg', 'Anulada', '']
   };
   const sl = SELLOS[o.estado];
@@ -26354,26 +26378,38 @@ function opRenderEditor() {
     + ' style="padding:8px 14px;font-size:12px;">📄 Remisión ' + opEsc(r) + '</button>'));
   // Ligar una remisión hecha aparte (el caso MONTITEC): con la OP viva y si
   // todavía hay ítems sin despachar. No toca inventario.
-  if (['aprobada', 'en_ejecucion', 'despachada'].includes(o.estado) && opPuedeDespachar()
+  if (['aprobada', 'en_ejecucion', 'despachada', OP_CUSTODIA].includes(o.estado) && opPuedeDespachar()
       && (op_currentItems || []).some(i => i.estado !== 'despachado')) {
     b.push('<button class="btn btn-ghost" onclick="opLigarAbrir()"'
       + ' title="La remisión ya se hizo por el módulo de Remisiones y esta OP no se enteró. Esto las amarra sin volver a descontar inventario."'
       + ' style="padding:8px 14px;font-size:12px;">🔗 Ligar remisión ya hecha</button>');
   }
   // Recibir: con la OP aprobada y si queda algo comprado por llegar.
-  if (['aprobada', 'en_ejecucion'].includes(o.estado) && opPuedeRecibir()
+  if (['aprobada', 'en_ejecucion', OP_CUSTODIA].includes(o.estado) && opPuedeRecibir()
       && (op_currentItems || []).some(i => i.origen === 'COMPRA' && (+i.recibida || 0) < (+i.cantidad || 0))) {
     b.push('<button class="btn" onclick="opRecibirAbrir()" title="Entra al inventario con su origen: plaza, importación, devolución" style="background:rgba(232,160,32,.18);border:1px solid #E8A020;color:#fbbf24;padding:8px 16px;font-size:13px;font-weight:700;">📥 Recibir en bodega</button>');
   }
   // Alistar y despachar: solo con la OP ya aprobada y si queda algo de bodega.
-  if (['aprobada', 'en_ejecucion'].includes(o.estado) && opPuedeDespachar()
+  if (['aprobada', 'en_ejecucion', OP_CUSTODIA].includes(o.estado) && opPuedeDespachar()
       && (op_currentItems || []).some(i => i.origen === 'BODEGA' && i.estado !== 'despachado')) {
     b.push('<button class="btn" onclick="opDespacharAbrir()" title="Crea la remisión y descuenta el inventario en un solo acto" style="background:rgba(63,191,99,.18);border:1px solid #3FBF63;color:#8ce8a6;padding:8px 16px;font-size:13px;font-weight:700;">📦 Alistar y despachar</button>');
   }
   // Registrar que el material SALIÓ, y por dónde. Va destacado cuando además
   // está alistada y esperando (el caso de la 0020), y discreto el resto del
   // tiempo — pero siempre disponible: quien despacha sabe si el camión salió.
-  if (_opPuedeMarcarEnviada(o) && opPuedeDespachar()) {
+  // En custodia la salida física es LA acción: destacada, y es la que saca a la
+  // OP de este estado (ver opEnvioConfirmar). Marcarla y quitarla es de Andrea
+  // o gerencia, como el cierre: es un compromiso con el cliente, no logística.
+  if (o.estado === OP_CUSTODIA && opPuedeDespachar()) {
+    b.push('<button class="btn" onclick="opEnvioAbrir()" title="El material que estaba en custodia salió para el cliente. Registra por dónde y la OP pasa a Despachada." style="background:rgba(44,184,196,.18);border:1px solid #2cb8c4;color:#9ae9f0;padding:8px 16px;font-size:13px;font-weight:700;">🚚 Salió el material</button>');
+  }
+  if (o.estado === OP_CUSTODIA && opEsAdmin()) {
+    b.push('<button class="btn btn-ghost" onclick="opCustodiaQuitar()" title="Se marcó por error: vuelve al estado en que estaba" style="padding:8px 14px;font-size:12px;">↩️ Quitar custodia</button>');
+  }
+  if (['aprobada', 'en_ejecucion', 'despachada'].includes(o.estado) && opEsAdmin()) {
+    b.push('<button class="btn btn-ghost" onclick="opCustodiaMarcar()" title="El cliente ya pagó (o autorizó facturar) y el material se queda guardado en E&G hasta que lo pida. La OP deja de figurar como despachada y no se cierra hasta que salga de verdad." style="padding:8px 14px;font-size:12px;color:#9ae9f0;border-color:rgba(44,184,196,.5);">🏷️ Facturada · sin despachar</button>');
+  }
+  if (o.estado !== OP_CUSTODIA && _opPuedeMarcarEnviada(o) && opPuedeDespachar()) {
     b.push(_opPorEnviar(o)
       ? '<button class="btn" onclick="opEnvioAbrir()" title="El material ya está alistado y con remisión. Esto registra que SALIÓ de la bodega, y por dónde." style="background:rgba(232,160,32,.18);border:1px solid #E8A020;color:#fbbf24;padding:8px 16px;font-size:13px;font-weight:700;">🚚 Confirmar envío</button>'
       : '<button class="btn btn-ghost" onclick="opEnvioAbrir()" title="Registrar que esta orden ya salió para el cliente y por dónde se mandó" style="padding:8px 14px;font-size:12px;">🚚 Marcar como enviada</button>');
@@ -26627,6 +26663,9 @@ const OP_CARRILES = [
     f: o => ['aprobada', 'en_ejecucion'].includes(o.estado) },
   { c: 'facturar',  t: '💳 Por facturar',       d: 'Ya salió el material y todavía no se ha facturado.',
     f: o => o.estado === 'despachada' && !_opFactura(o) },
+  // 19-oct-2026: lo cobrado que sigue en la casa. Si no se ve, no sale nunca.
+  { c: 'custodia',  t: '🏷️ Facturadas sin despachar', d: 'Ya se facturaron y el material sigue en la bodega, en custodia. Falta que salga.',
+    f: o => o.estado === OP_CUSTODIA },
   // Los certificados NO son una etapa: son un requisito que corre en paralelo. Por
   // eso este carril es una LISTA PARA PERSEGUIR, no un paso del proceso: junta todo
   // lo que ya salió de bodega y sigue debiendo su MTR, esté facturado o no. Una OP
@@ -26709,7 +26748,8 @@ function _opTabTarjeta(o, verPlata) {
     chips.push('<span class="op-tchip">' + dias + ' día' + (dias === 1 ? '' : 's') + '</span>');
   } else chips.push('<span class="op-tchip">hoy</span>');
 
-  if (o._porEnviar) chips.push('<span class="op-tchip t-ojo">📦 por enviar</span>');
+  if (o.estado === OP_CUSTODIA) chips.push('<span class="op-tchip t-ojo">🏷️ en custodia</span>');
+  else if (o._porEnviar) chips.push('<span class="op-tchip t-ojo">📦 por enviar</span>');
   if (o.enviada_at) chips.push('<span class="op-tchip">🚚 en camino</span>');
 
   // Ya facturada: se sabe por la cotización, que es donde de verdad se registra.
@@ -28457,8 +28497,8 @@ async function opRecibirConfirmar() {
       // Si ya no queda nada pendiente, el pedido salió completo.
       const quedan = (op_currentItems || []).filter(i => i.estado !== 'despachado').length;
       try {
-        await opCambiarEstado(quedan ? 'en_ejecucion' : 'despachada', {});
-        if (!quedan) { try { _opDispararAvisos(); } catch (_) { } }
+        await opCambiarEstado(_opEstadoTrasMovimiento(op_current, quedan), {});
+        if (!quedan && op_current.estado === 'despachada') { try { _opDispararAvisos(); } catch (_) { } }
       } catch (_) { }
     }
 
@@ -28496,11 +28536,22 @@ async function opCerrarRevisar() {
     return;
   }
   // Antes de aprobar no tiene sentido hablar de cierre.
-  if (!['aprobada', 'en_ejecucion', 'despachada'].includes(o.estado)) { cont.innerHTML = ''; return; }
+  if (!['aprobada', 'en_ejecucion', 'despachada', OP_CUSTODIA].includes(o.estado)) { cont.innerHTML = ''; return; }
 
   const its = op_currentItems || [];
   const desp = its.filter(i => i.estado === 'despachado').length;
-  const todoDesp = its.length > 0 && desp >= its.length;
+  // En custodia las líneas pueden decir «despachado» (hay remisión), pero el
+  // material no ha salido: la casilla se queda abierta hasta el 🚚.
+  const enCustodia = o.estado === OP_CUSTODIA;
+  const todoDesp = its.length > 0 && desp >= its.length && !enCustodia;
+  const cus = (o.extra && o.extra.custodia) || {};
+  const cajaCustodia = !enCustodia ? '' :
+    '<div class="op-cierre-caja" style="border-color:rgba(44,184,196,.5)"><div class="op-plan-t" style="color:#2cb8c4">🏷️ Facturada · sin despachar</div>'
+    + '<div class="op-plan-d">El material está en custodia de E&amp;G'
+    + (cus.at ? ' desde el ' + opEsc(String(cus.at).substring(0, 10).split('-').reverse().join('/')) : '')
+    + (cus.por ? ' · marcó ' + opEsc(cus.por) : '')
+    + (cus.nota ? '<br>' + opEsc(cus.nota) : '')
+    + '<br>Cuando salga de verdad, regístralo con <b>🚚 Salió el material</b>: ahí pasa a Despachada y se puede cerrar.</div></div>';
   const certs = ((o._certs) || []).length;
   const noAplica = o.requiere_certificados === false;
   // 3-sep-2026 — LA COMPUERTA EXIGE TODOS, NO UNO.
@@ -28551,9 +28602,11 @@ async function opCerrarRevisar() {
     + (det ? '<div class="op-cierre-s">' + det + '</div>' : '') + '</div></div>';
 
   const listo = todoDesp && okCerts && okFact;
-  cont.innerHTML = '<div class="op-cierre-caja' + (listo ? ' op-c-ok' : '') + '">'
+  cont.innerHTML = cajaCustodia + '<div class="op-cierre-caja' + (listo ? ' op-c-ok' : '') + '">'
     + '<div class="op-plan-t">Para dar el pedido por cerrado</div>'
-    + fila(todoDesp, 'Despachado', its.length ? desp + ' de ' + its.length + ' ítems entregados' : 'todavía no hay ítems')
+    + fila(todoDesp, 'Despachado', enCustodia
+        ? (its.length ? desp + ' de ' + its.length + ' con remisión · <b>el material sigue en custodia, no ha salido</b>' : 'todavía no hay ítems')
+        : (its.length ? desp + ' de ' + its.length + ' ítems entregados' : 'todavía no hay ítems'))
     + fila(okCerts, 'Certificados',
         noAplica ? 'esta OP no los requiere'
         : !ctaCert ? certs + ' cargado(s)'
@@ -28618,6 +28671,84 @@ async function opCerrar() {
   } catch (e) {
     // El trigger de la base es el que manda: si faltan certificados, no deja.
     showToast('No se pudo cerrar: ' + (e && e.message || e), 'error', { durationMs: 12000 });
+  }
+}
+
+// ═══════════ FACTURADA · SIN DESPACHAR (custodia) ═══════════════════════════
+// 19-oct-2026 · el caso SKID EXPERTS.
+//
+// OP-2026-0064 y OP-2026-0107: el cliente facturó (o autorizó facturar) y pidió
+// que el material se quedara guardado en E&G. Se habían marcado «despachada» y
+// hasta «cerrada» con remisiones que eran solo papel, y nadie veía que faltaba
+// sacar la carga. Este estado deja constancia de las dos cosas.
+//
+// NO toca inventario ni remisiones: solo el estado y una nota en `extra.custodia`
+// (desde cuándo, quién, de qué estado venía, con qué factura). La salida real se
+// registra con 🚚 (opEnvioConfirmar), que la lleva a despachada.
+async function opCustodiaMarcar() {
+  const o = op_current;
+  if (!o || !opEsAdmin()) { showToast('Esto lo marcan Andrea o gerencia', 'error'); return; }
+  if (!['aprobada', 'en_ejecucion', 'despachada'].includes(o.estado)) { showToast('Solo con la OP aprobada, en ejecución o despachada', 'error'); return; }
+  // La factura se mira en el SERVIDOR, igual que al cerrar. Si no está, se avisa
+  // pero no se impide: el número a veces se anota en la cotización días después.
+  const ids = opCotizIds(o);
+  const facts = [], sinFact = [];
+  for (const cid of ids) {
+    let fac = '';
+    try {
+      const r = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(cid) + '&select=id,estado,extra&limit=1')) || [];
+      if (r.length) fac = String(((r[0].extra || {}).factura) || '').trim();
+    } catch (_) { }
+    if (fac) facts.push(cid + ': ' + fac); else sinFact.push(cid);
+  }
+  const msg = '¿Marcar ' + o.numero + ' como FACTURADA · SIN DESPACHAR?\n\n'
+    + 'El material queda en custodia de E&G. La OP deja de figurar como despachada '
+    + 'y no se cierra hasta que salga de verdad (🚚 Salió el material).\n\n'
+    + (facts.length ? 'Factura: ' + facts.join(' · ') + '\n' : '')
+    + (sinFact.length ? '⚠️ Sin factura registrada en la cotización: ' + sinFact.join(', ')
+        + '. Anótala en la cotización cuando salga; el cierre la va a pedir.\n' : '');
+  if (!confirm(msg)) return;
+  const nota = prompt('¿Dónde queda y por qué se guarda? (opcional)', '') || '';
+  try {
+    const yo = (currentUser && (currentUser.email || currentUser.name)) || 'system';
+    const extra = Object.assign({}, o.extra || {}, {
+      custodia: { at: new Date().toISOString(), por: yo, estado_antes: o.estado,
+                  factura: facts.join(' · '), nota: nota.trim() }
+    });
+    await opCambiarEstado(OP_CUSTODIA, { extra: extra });
+    await opEvento(o.id, 'custodia', 'Facturada · sin despachar. Material en custodia de E&G'
+      + (facts.length ? ' · factura ' + facts.join(' · ') : ' · sin factura registrada en ' + sinFact.join(', '))
+      + (nota.trim() ? ' · ' + nota.trim() : '') + ' · venía de «' + ((OP_ESTADOS[extra.custodia.estado_antes] || {}).lbl || extra.custodia.estado_antes) + '»');
+    showToast('🏷️ ' + o.numero + ' queda facturada · sin despachar', 'success');
+    opRenderEditor();
+    opRenderEventos(o.id);
+  } catch (e) {
+    showToast('No se pudo marcar: ' + (e && e.message || e), 'error', { durationMs: 12000 });
+  }
+}
+
+// Deshacer la marca: vuelve al estado del que venía. Si venía de «cerrada» se
+// deja en despachada, que es lo que era antes de cerrarla; cerrar es otro acto.
+async function opCustodiaQuitar() {
+  const o = op_current;
+  if (!o || !opEsAdmin()) { showToast('Esto lo deshacen Andrea o gerencia', 'error'); return; }
+  if (o.estado !== OP_CUSTODIA) return;
+  const cus = (o.extra && o.extra.custodia) || {};
+  let volver = cus.estado_antes || 'despachada';
+  if (volver === 'cerrada' || !OP_ESTADOS[volver]) volver = 'despachada';
+  if (!confirm('¿Quitar la marca de custodia a ' + o.numero + '?\n\nVuelve a «'
+      + ((OP_ESTADOS[volver] || {}).lbl || volver) + '». No toca inventario ni remisiones.')) return;
+  try {
+    const extra = Object.assign({}, o.extra || {});
+    delete extra.custodia;
+    await opCambiarEstado(volver, { extra: extra });
+    await opEvento(o.id, 'custodia_quitada', 'Se quitó la marca «Facturada · sin despachar» · vuelve a «'
+      + ((OP_ESTADOS[volver] || {}).lbl || volver) + '»');
+    showToast('↩️ ' + o.numero + ' vuelve a ' + ((OP_ESTADOS[volver] || {}).lbl || volver), 'success');
+    opRenderEditor();
+    opRenderEventos(o.id);
+  } catch (e) {
+    showToast('No se pudo quitar: ' + (e && e.message || e), 'error', { durationMs: 12000 });
   }
 }
 
@@ -28791,7 +28922,7 @@ async function _remiSincronizarOP(opNumero, num, viejas, nuevas, numAntes) {
   if (!o) return null;
   // Una OP cerrada o anulada no se mueve por debajo: cerrarla exigió revisar
   // justamente esto. Y una que no ha arrancado no debería tener remisión.
-  if (!['aprobada', 'en_ejecucion', 'despachada'].includes(o.estado)) return { op: o, fuera: true, cambios: [] };
+  if (!['aprobada', 'en_ejecucion', 'despachada', OP_CUSTODIA].includes(o.estado)) return { op: o, fuera: true, cambios: [] };
   const its = (await absFetch('op_items?op_id=eq.' + o.id + '&order=item.asc&limit=2000')) || [];
   // Un cero es un cero, y una línea vacía no entregó nada: igual que al ligar.
   const q = f => { const v = parseFloat(f && f.cantidad); return isNaN(v) ? 0 : Math.abs(v); };
@@ -28831,7 +28962,7 @@ async function _remiSincronizarOP(opNumero, num, viejas, nuevas, numAntes) {
   let estadoNuevo = o.estado;
   if (cambios.some(c => c.a !== c.b)) {
     const quedan = its.filter(i => i.estado !== 'despachado').length;
-    estadoNuevo = quedan ? 'en_ejecucion' : 'despachada';
+    estadoNuevo = _opEstadoTrasMovimiento(o, quedan);
     if (estadoNuevo !== o.estado) {
       await absFetch('ops?id=eq.' + o.id, {
         method: 'PATCH', headers: { 'Prefer': 'return=minimal' },
@@ -29393,8 +29524,8 @@ async function opLigarConfirmar() {
 
     if (!fallos.length) {
       const quedan = (op_currentItems || []).filter(i => i.estado !== 'despachado').length;
-      await opCambiarEstado(quedan ? 'en_ejecucion' : 'despachada', {});
-      if (!quedan) { try { _opDispararAvisos(); } catch (_) { } }
+      await opCambiarEstado(_opEstadoTrasMovimiento(op_current, quedan), {});
+      if (!quedan && op_current.estado === 'despachada') { try { _opDispararAvisos(); } catch (_) { } }
     }
 
     _opLigarCerrar();
@@ -29921,7 +30052,9 @@ async function opDespacharConfirmar() {
     // recibir ni despachar, porque su recepción había fallado a mitad.
     if (!fallos.length) {
       const quedan = (op_currentItems || []).filter(i => i.estado !== 'despachado').length;
-      if (!quedan) {
+      if (op_current.estado === OP_CUSTODIA) {
+        // En custodia: el material se alistó, pero sigue en la casa. No cambia.
+      } else if (!quedan) {
         await opCambiarEstado('despachada', {});
         try { _opDispararAvisos(); } catch (_) { }
       } else {
@@ -31336,7 +31469,7 @@ function _opVia() {
   if (!cont || !o) return;
 
   const ORDEN = ['borrador', 'en_compras', 'pendiente_aprobacion', 'aprobada', 'en_ejecucion', 'despachada', 'cerrada'];
-  const pos = e => { const i = ORDEN.indexOf(e); return i < 0 ? 0 : i; };
+  const pos = e => { const i = ORDEN.indexOf(e === OP_CUSTODIA ? 'en_ejecucion' : e); return i < 0 ? 0 : i; };
   const aqui = pos(o.estado);
   const anulada = ['anulada'].includes(o.estado);
   const devuelta = o.estado === 'devuelta';
@@ -31459,7 +31592,7 @@ function _opPorEnviar(o, items) {
 // el camión salió aunque los ítems todavía digan «comprado».
 function _opPuedeMarcarEnviada(o, items) {
   if (!o || o.enviada_at) return false;
-  if (['aprobada', 'en_ejecucion', 'despachada', 'cerrada'].includes(o.estado)) return true;
+  if (['aprobada', 'en_ejecucion', 'despachada', 'cerrada', OP_CUSTODIA].includes(o.estado)) return true;
   return (items || op_currentItems || []).some(i => i.remision);
 }
 
@@ -31537,6 +31670,18 @@ async function opEnvioConfirmar() {
     });
     Object.assign(op_current, cuerpo);
     try { await opEvento(op_current.id, 'enviada', OP_ENVIO_MEDIO[medio][1] + (det ? ' · ' + det : '')); } catch (_) { }
+    // 19-oct-2026: si estaba en custodia, ESTA es la salida real. La OP sigue el
+    // camino normal desde aquí. Si todavía hay líneas sin remisión, queda en
+    // ejecución para que bodega termine de sacarlas.
+    if (op_current.estado === OP_CUSTODIA) {
+      try {
+        const quedan = (op_currentItems || []).filter(i => i.estado !== 'despachado').length;
+        await opCambiarEstado(quedan ? 'en_ejecucion' : 'despachada', {});
+        await opEvento(op_current.id, 'despachado', 'Salió el material que estaba en custodia'
+          + (quedan ? ' · quedan ' + quedan + ' línea(s) sin remisión' : ''));
+        if (!quedan) { try { _opDispararAvisos(); } catch (_) { } }
+      } catch (_) { }
+    }
     _opEnvioCerrar();
     showToast('🚚 ' + op_current.numero + ' salió por ' + OP_ENVIO_MEDIO[medio][1], 'success');
     opAbrir(op_current.id);
