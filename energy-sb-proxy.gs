@@ -57,11 +57,13 @@ const SB_TABLAS = ['productos','kardex','familias','conteos','conteo_items',
                    'ops','op_items','op_reservas','op_certificados','op_eventos',
                    'op_consecutivos','proveedor_sedes','proveedor_sede_memoria','zonas_ruta',
                    'plan_gastos','op_recepciones',
-                   'contratos_marco','contratos_consumos'];   // contratos marco (9-oct-2026)
+                   'contratos_marco','contratos_consumos',
+                   'fe_productos','fe_kardex','fe_clientes','fe_pedidos','fe_pedido_items',
+                   'fe_remisiones','fe_remision_items'];   // 🔧 Ferrenergy (20-oct-2026)   // contratos marco (9-oct-2026)
 
 // Funciones del servidor invocables (rpc/<nombre>). Una por una a propósito:
 // un comodín aquí deja expuesta cualquier función de la base.
-const SB_RPC = ['op_nuevo_numero'];
+const SB_RPC = ['op_nuevo_numero', 'fe_nuevo_numero'];   // fe_: consecutivos FE-/PE- de Ferrenergy (20-oct-2026)
 
 const RATE_LIMIT_DEFAULT = 600;
 

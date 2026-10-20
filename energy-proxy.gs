@@ -134,12 +134,14 @@ const SB_TABLAS = ['productos','kardex','familias','conteos','conteo_items',
                    'op_consecutivos','proveedor_sedes','proveedor_sede_memoria','zonas_ruta',
                    'plan_gastos',      // centro de costos del plan (24-ago-2026)
                    'op_recepciones',
-                   'contratos_marco','contratos_consumos'];   // contratos marco (9-oct-2026)
+                   'contratos_marco','contratos_consumos',
+                   'fe_productos','fe_kardex','fe_clientes','fe_pedidos','fe_pedido_items',
+                   'fe_remisiones','fe_remision_items'];   // 🔧 Ferrenergy (20-oct-2026)   // contratos marco (9-oct-2026)
 
 // Funciones del servidor que la plataforma puede invocar (rpc/<nombre>).
 // Se listan una por una a propósito: `rpc` no puede ser un comodín, o cualquier
 // función de la base quedaría expuesta.
-const SB_RPC = ['op_nuevo_numero'];
+const SB_RPC = ['op_nuevo_numero', 'fe_nuevo_numero'];   // fe_: consecutivos FE-/PE- de Ferrenergy (20-oct-2026)
 
 // ─── DISPARAR UN WORKFLOW DE GITHUB (23-ago-2026) ───────────────────────────
 // La plataforma no puede llamar a la API de GitHub: haria falta un token en el
