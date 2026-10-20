@@ -24623,7 +24623,11 @@ const MEMBRETES={
 async function _remiCierreDatos(c){
   const base = c.remisionBase || _remiBaseDe(c.remision);
   if(!base) return null;
-  const norm = t => String(t||'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
+  // 20-oct-2026 — SIN TILDES ANTES DE COMPARAR. La 26376 (OP-0127) salía «ENTREGA 1 ·
+  // PARCIAL» estando completa: la remisión decía «código» y la OP «codigo»; al borrar
+  // la Ó quedaba «C DIGO» ≠ «CODIGO» y la línea no cruzaba (saldo 200 inventado).
+  // Ahora la tilde se convierte en la letra base. Sin tildes el resultado es el mismo.
+  const norm = t => String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
   let fam=[], pedido=[];
   // 🔑 7-sep-2026 — LA FAMILIA NO SE PUEDE BUSCAR SOLO POR EL NÚMERO.
   // Antes esto era «26290 o 26290-*». Pero la mitad de las segundas entregas no
