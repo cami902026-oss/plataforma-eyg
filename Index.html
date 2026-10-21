@@ -3477,6 +3477,7 @@ body.fe-mode .topbar-right button[onclick="_gsearchOpen()"], body.fe-mode #btn-a
     <button class="abs-tab" onclick="absTab('movimiento')">➕➖ Movimientos</button>
     <button class="abs-tab" onclick="absTab('kardex')">📋 Kardex</button>
     <button class="abs-tab" onclick="absTab('rotacion')">🔄 Rotación</button>
+    <button class="abs-tab" onclick="absTab('importar')" title="Qué piezas se piden más (cotizado, pedido, despachado) y cuáles se compran en plaza por no tenerlas">📈 Qué importar</button>
     <button class="abs-tab" onclick="absTab('dashboard')">📊 Dashboard</button>
     <button class="abs-tab" onclick="absTab('conteo')">🔢 Conteo Físico</button>
   </div>
@@ -3625,6 +3626,44 @@ body.fe-mode .topbar-right button[onclick="_gsearchOpen()"], body.fe-mode #btn-a
           <th>Total Despachado</th><th>Última Salida</th><th>Días Quieto</th><th>Diagnóstico</th>
         </tr></thead>
         <tbody id="abs-rot-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- QUÉ IMPORTAR (v328, 21-oct-2026): cruce cotizaciones + pedidos + kardex por pieza, solo lectura -->
+  <div id="abs-tab-importar" class="abs-panel" style="display:none">
+    <div class="abs-toolbar" style="flex-wrap:wrap;gap:8px;align-items:center">
+      <label style="font-size:12px;color:var(--text-muted)">Desde <input type="date" id="imp-desde" style="padding:6px 8px;border-radius:8px;border:1px solid var(--border);font-size:12px"></label>
+      <label style="font-size:12px;color:var(--text-muted)">Hasta <input type="date" id="imp-hasta" style="padding:6px 8px;border-radius:8px;border:1px solid var(--border);font-size:12px"></label>
+      <button class="btn btn-ghost" onclick="absImportarCalcular()" style="padding:8px 14px;font-size:12px;">🔄 Calcular</button>
+      <select id="imp-orden" onchange="absImportarRender()">
+        <option value="frec">Orden: frecuencia (pedidos + cotizaciones)</option>
+        <option value="und">Orden: unidades pedidas</option>
+        <option value="plaza">Orden: $ comprado en plaza</option>
+        <option value="cot">Orden: veces cotizado</option>
+      </select>
+      <select id="imp-tipo" onchange="absImportarRender()"><option value="">Todas las piezas</option></select>
+      <input id="imp-buscar" placeholder="Buscar pieza o código…" oninput="absImportarRender()" style="padding:7px 10px;border-radius:8px;border:1px solid var(--border);font-size:12px;min-width:180px">
+      <select id="imp-top" onchange="absImportarRender()">
+        <option value="50">Top 50</option><option value="100" selected>Top 100</option><option value="300">Top 300</option><option value="0">Todo</option>
+      </select>
+      <button class="btn btn-secondary" onclick="absImportarExcel()" style="padding:8px 14px;font-size:12px;background:#1e7e34;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ Excel</button>
+    </div>
+    <div id="imp-stats" class="abs-rot-stats-bar" style="font-size:12px"></div>
+    <div class="abs-table-wrap">
+      <table class="abs-table">
+        <thead><tr>
+          <th>#</th><th>Pieza · códigos en bodega</th>
+          <th title="Veces pedido (OP) + veces cotizado">Frecuencia</th>
+          <th title="Cotizaciones distintas que la piden · unidades">Cotizado</th>
+          <th title="Pedidos (OP) distintos · unidades vendidas">Pedidos</th>
+          <th title="Unidades que salieron de bodega en pedidos · despachos reales del kardex">De bodega</th>
+          <th title="Unidades compradas en plaza para el pedido por no tenerlas: candidato a importar">Comprado en plaza</th>
+          <th class="imp-money" title="Costo de lo comprado en plaza">$ plaza</th>
+          <th class="imp-money">Venta</th><th class="imp-money" title="Venta − costo (pedidos)">Margen</th>
+          <th>Stock hoy</th>
+        </tr></thead>
+        <tbody id="imp-tbody"></tbody>
       </table>
     </div>
   </div>
@@ -22865,6 +22904,7 @@ function absTab(tab) {
   const el=document.getElementById('abs-tab-'+tab); if(el) el.style.display='';
   document.querySelectorAll('.abs-tab').forEach(b=>{ if((b.getAttribute('onclick')||'').includes("'"+tab+"'")) b.classList.add('active'); });
   if(tab==='rotacion'&&abs_loaded) absCalcularRotacion();
+  if(tab==='importar'&&abs_loaded) absImportarInit();
   if(tab==='dashboard'&&abs_loaded) absRenderDashboard();
   if(tab==='kardex'&&abs_loaded) absRenderKardex();
   if(tab==='movimiento'){ absRenderMovHoy(); absCartInit(); }
@@ -35072,6 +35112,201 @@ function absNuevoClose(){ const m=document.getElementById('abs-nuevo-modal'); if
 // SCH 80/S80, 150L/150#, BRIDA/FLANCHE, 6 X 4/6X4, acentos, etc.).
 // Criterio: las MEDIDAS deben coincidir exactamente (si no, es otro ítem) y las
 // palabras deben parecerse mucho. Devuelve los candidatos, ordenados.
+// ─── 📈 QUÉ IMPORTAR (v328, 21-oct-2026) ───────────────────────────────────────
+// Cruza tres fuentes en un período elegido y agrupa por PIEZA (no por código):
+//   · Cotizaciones (cotizacion_items): lo que piden los clientes, ganado o no.
+//   · Pedidos (op_items): lo vendido; separa lo que salió de BODEGA de lo que se
+//     COMPRÓ EN PLAZA por no tenerlo (candidato natural a importar).
+//   · Bodega (kardex SALIDA): despachos reales por código.
+// La pieza se reconoce con los mismos lectores del cruce OP↔bodega (_opTipo,
+// _opVariante, _opNums, _opSched, _opPres), así «WELD NECK FLANGE 2" SCH 40 150»,
+// «BRIDA WN 2" S40 150L» y el código 22000133 caen en el mismo renglón.
+// Decisiones del usuario (21-oct-2026): período seleccionable; se muestran
+// frecuencia, unidades y $ comprado en plaza y se ordena por frecuencia; incluye
+// lo cotizado. Solo lectura: no escribe nada.
+let _imp_datos = null, _imp_rango = '';
+
+function _impFrac(v) {
+  const w = Math.floor(v), f = Math.round((v - w) * 1000) / 1000;
+  const map = { 0.125: '1/8', 0.25: '1/4', 0.375: '3/8', 0.5: '1/2', 0.625: '5/8', 0.75: '3/4', 0.875: '7/8' };
+  if (!f) return String(w);
+  return map[f] ? (w ? w + '-' + map[f] : map[f]) : String(v);
+}
+// Llave de agrupación: tipo | terminación | apellido | INOX | medidas | SCH | presión forjada | clase.
+const _IMP_TIPOS_EXTRA = [[/\bFILTRO|\bSTRAINER\b/, 'FILTRO'], [/\bPERNO|\bTORNILLO|\bBOLTS?\b/, 'PERNO'], [/\bARANDELA|\bWASHER/, 'ARANDELA'],
+  [/\bACOPLE/, 'ACOPLE'], [/\bTEFLON\b/, 'TEFLON'], [/\bMANGUERA|\bHOSE\b/, 'MANGUERA'], [/\bCINTA\b/, 'CINTA'], [/\bSWITCH|\bPRESOSTATO/, 'SWITCH']];
+function _impKey(desc) {
+  let tipo = _opTipo(desc);
+  if (!tipo) { const b = _opBase(desc); for (const [re, t] of _IMP_TIPOS_EXTRA) if (re.test(b)) { tipo = t; break; } }
+  // Lo que no es una pieza reconocible se agrupa por su texto normalizado (no se pierde, pero no se mezcla)
+  if (!tipo) { const t = _absNorm(desc); return t ? 'OTROS|||||||' + t.slice(0, 60) : null; }
+  const va = _opVariante(desc), n = _opNums(desc);
+  const schSet = _opSched(desc), schNums = new Set([...schSet].map(Number));
+  const term = [...va.terminacion].sort().join('/');
+  let sub = [...va.subtipo];
+  if (tipo !== 'TAPON') sub = sub.filter(x => x !== 'HEMBRA' && x !== 'MACHO');
+  const inox = va.material.has('INOX') ? 'INOX' : '';
+  // «SCH 40» no es una medida: si el texto trae cédula, ese número sale de las medidas
+  const med = [...n.medidas].filter(v => !schNums.has(v)).sort((a, b) => a - b), cls = [...n.clases].sort((a, b) => a - b);
+  const sch = [...schSet].sort(), pres = [..._opPres(desc)].sort();
+  return [tipo, term, sub.sort().join('/'), inox, med.join('X'), sch.join('/'), pres.join('/'), cls.join('/')].join('|');
+}
+function _impLabelDeKey(k) {
+  const [tipo, term, sub, inox, med, sch, pres, cls, otros] = k.split('|');
+  if (tipo === 'OTROS') return k.split('|').pop() || '';
+  const m = med ? med.split('X').map(x => _impFrac(+x)).join(' X ') + '"' : '';
+  return [tipo, term, sub, m, sch ? 'S' + sch : '', pres ? pres + 'L' : '', cls ? cls + 'L' : '', inox].filter(Boolean).join(' ');
+}
+async function _impTodo(path) {           // PostgREST corta en 1.000: paginar siempre
+  const out = []; let off = 0;
+  for (;;) {
+    const r = (await absFetch(path + '&limit=1000&offset=' + off)) || [];
+    out.push(...r); if (r.length < 1000) return out; off += 1000;
+  }
+}
+function absImportarInit() {
+  const d = document.getElementById('imp-desde'), h = document.getElementById('imp-hasta');
+  if (d && !d.value) { const x = new Date(); x.setFullYear(x.getFullYear() - 1); d.value = x.toISOString().slice(0, 10); }
+  if (h && !h.value) h.value = new Date().toISOString().slice(0, 10);
+  if (!_imp_datos) absImportarCalcular();
+}
+async function absImportarCalcular() {
+  const desde = document.getElementById('imp-desde').value, hasta = document.getElementById('imp-hasta').value;
+  const st = document.getElementById('imp-stats'); if (!desde || !hasta) return;
+  const rango = desde + '|' + hasta;
+  if (_imp_datos && _imp_rango === rango) return absImportarRender();
+  if (st) st.innerHTML = '<span style="color:var(--text-muted)">⏳ Leyendo cotizaciones, pedidos y kardex del período…</span>';
+  try {
+    const G = {};
+    const grupo = (k) => G[k] || (G[k] = { key: k, label: '', ej: '', cot: new Set(), cotUnd: 0, cotGan: new Set(), op: new Set(), opUnd: 0,
+      bodUnd: 0, plazaUnd: 0, plazaCosto: 0, venta: 0, costo: 0, kx: new Set(), kxUnd: 0, stock: 0, codigos: [], costoBod: 0 });
+    // Catálogo: todos los códigos (activos y archivados) → llave; etiqueta = la descripción de bodega
+    const univ = abs_productos.concat(abs_prod_archivados || []);
+    univ.forEach(p => {
+      if (/^OP-/i.test(String(p.codigo || ''))) return;
+      if (p.__ikey === undefined) p.__ikey = _impKey(p.descripcion);
+      if (!p.__ikey) return;
+      const g = grupo(p.__ikey);
+      if (p.activo !== false) { g.stock += (+p.stock_actual || 0); g.codigos.push(p.codigo + (p.stock_actual > 0 ? ' (' + p.stock_actual + ')' : '')); }
+      if (!g.label || ((+p.stock_actual || 0) > 0 && !g.__labStock)) { g.label = p.descripcion; g.__labStock = (+p.stock_actual || 0) > 0; g.costoBod = +p.costo_compra || 0; }
+    });
+    const porCodigo = {}; univ.forEach(p => { porCodigo[p.codigo] = p; });
+    // 1) Cotizaciones del período (sin anuladas ni borradores; las alternativas no cuentan)
+    const cots = await _impTodo('cotizaciones?select=id,fecha,estado&fecha=gte.' + desde + '&fecha=lte.' + hasta + '&deleted=not.is.true&order=id');
+    const cotOk = {}; cots.forEach(c => { if (!/^(anulada|borrador)$/i.test(c.estado || '')) cotOk[c.id] = c; });
+    const ids = Object.keys(cotOk); let nItemsCot = 0;
+    for (let i = 0; i < ids.length; i += 120) {
+      const lote = ids.slice(i, i + 120).map(x => '"' + x + '"').join(',');
+      const its = await _impTodo('cotizacion_items?select=cotizacion_id,descripcion,qty,alt_de&cotizacion_id=in.(' + lote + ')&order=id');
+      its.forEach(it => {
+        if (it.alt_de) return;
+        const k = _impKey(it.descripcion); if (!k) return;
+        const g = grupo(k); nItemsCot++;
+        g.cot.add(it.cotizacion_id); g.cotUnd += (+it.qty || 0);
+        if (/^(facturada|adjudicada)$/i.test(cotOk[it.cotizacion_id].estado || '')) g.cotGan.add(it.cotizacion_id);
+        if (!g.ej) g.ej = it.descripcion;
+      });
+      if (st) st.innerHTML = '<span style="color:var(--text-muted)">⏳ Cotizaciones ' + Math.min(i + 120, ids.length) + ' / ' + ids.length + '…</span>';
+    }
+    // 2) Pedidos (OP) del período
+    const ops = await _impTodo('ops?select=id,numero,estado,created_at&created_at=gte.' + desde + '&created_at=lte.' + hasta + 'T23:59:59&deleted=not.is.true&order=id');
+    const opOk = {}; ops.forEach(o => { if (!/^(anulada|borrador)$/i.test(o.estado || '')) opOk[o.id] = o; });
+    const opIds = Object.keys(opOk); let nItemsOp = 0;
+    for (let i = 0; i < opIds.length; i += 150) {
+      const its = await _impTodo('op_items?select=op_id,descripcion,cantidad,v_unit,v_total,origen,costo_unit,producto_codigo&op_id=in.(' + opIds.slice(i, i + 150).join(',') + ')&order=id');
+      its.forEach(it => {
+        // Si el renglón ya está ligado a un código de bodega, la llave es la del código (más limpia)
+        const p = it.producto_codigo && porCodigo[it.producto_codigo];
+        const k = (p && !/^OP-/i.test(p.codigo) && (p.__ikey !== undefined ? p.__ikey : (p.__ikey = _impKey(p.descripcion)))) || _impKey(it.descripcion);
+        if (!k) return;
+        const g = grupo(k), q = +it.cantidad || 0; nItemsOp++;
+        g.op.add(opOk[it.op_id].numero); g.opUnd += q;
+        g.venta += (+it.v_total || (q * (+it.v_unit || 0)));
+        g.costo += q * (+it.costo_unit || 0);
+        if (it.origen === 'COMPRA') { g.plazaUnd += q; g.plazaCosto += q * (+it.costo_unit || 0); }
+        else if (it.origen === 'BODEGA') g.bodUnd += q;
+        if (!g.ej) g.ej = it.descripcion;
+      });
+    }
+    // 3) Kardex: salidas reales del período (sin ajustes ni correcciones)
+    const kx = await _impTodo('kardex?select=codigo_producto,cantidad,remision,op_numero&tipo=eq.SALIDA&fecha=gte.' + desde + '&fecha=lte.' + hasta + '&order=id');
+    kx.forEach(m => {
+      const r = String(m.remision || '');
+      if (/^(AJUSTE|CORR|FUSION|TRASLADO|ERROR|DEV)/i.test(r) || /^OP-/i.test(String(m.codigo_producto || ''))) return;
+      const p = porCodigo[m.codigo_producto]; if (!p) return;
+      if (p.__ikey === undefined) p.__ikey = _impKey(p.descripcion);
+      if (!p.__ikey) return;
+      const g = grupo(p.__ikey); g.kx.add(r || ('s/n' + m.op_numero)); g.kxUnd += (+m.cantidad || 0);
+    });
+    const filas = Object.values(G).map(g => {
+      g.frec = g.op.size + g.cot.size;
+      g.label = g.label || _impLabelDeKey(g.key);
+      g.tipo = g.key.split('|')[0];
+      return g;
+    }).filter(g => g.frec > 0 || g.kx.size > 0);
+    _imp_datos = { filas, nCot: ids.length, nItemsCot, nOp: opIds.length, nItemsOp, nKx: kx.length };
+    _imp_rango = rango;
+    const sel = document.getElementById('imp-tipo');
+    if (sel) { const tipos = [...new Set(filas.map(f => f.tipo))].sort(); sel.innerHTML = '<option value="">Todas las piezas</option>' + tipos.map(t => '<option value="' + t + '">' + t + '</option>').join(''); }
+    absImportarRender();
+  } catch (e) {
+    if (st) st.innerHTML = '<span style="color:var(--red)">No se pudo calcular: ' + (e.message || e) + '</span>';
+  }
+}
+function _impMoney(v) { return '$' + Math.round(v || 0).toLocaleString('es-CO'); }
+function absImportarRender() {
+  if (!_imp_datos) return;
+  const orden = document.getElementById('imp-orden')?.value || 'frec';
+  const tipo = document.getElementById('imp-tipo')?.value || '';
+  const q = (document.getElementById('imp-buscar')?.value || '').trim();
+  const qt = q ? _absQTokens(q) : [];
+  const top = +(document.getElementById('imp-top')?.value || 100);
+  const showC = abs_showCosto();
+  let rows = _imp_datos.filas.filter(f => !tipo || f.tipo === tipo);
+  if (qt.length) rows = rows.filter(f => _absScore({ codigo: f.codigos.join(' '), descripcion: f.label + ' ' + f.ej }, qt, q.toLowerCase()) > 0);
+  const ord = { frec: (a, b) => b.frec - a.frec || b.opUnd - a.opUnd, und: (a, b) => b.opUnd - a.opUnd || b.frec - a.frec,
+                plaza: (a, b) => b.plazaCosto - a.plazaCosto || b.plazaUnd - a.plazaUnd, cot: (a, b) => b.cot.size - a.cot.size || b.cotUnd - a.cotUnd };
+  rows.sort(ord[orden] || ord.frec);
+  const tot = rows.length; if (top > 0) rows = rows.slice(0, top);
+  const d = _imp_datos, st = document.getElementById('imp-stats');
+  if (st) st.innerHTML = '<b>' + tot + '</b> piezas distintas · ' + d.nCot + ' cotizaciones (' + d.nItemsCot + ' renglones) · ' + d.nOp + ' pedidos (' + d.nItemsOp + ' renglones) · ' + d.nKx + ' salidas de bodega'
+    + ' · <span style="color:var(--text-muted)">Frecuencia = veces pedido + veces cotizado. «Plaza» = comprado para el pedido por no haber en bodega.</span>';
+  const tb = document.getElementById('imp-tbody'); if (!tb) return;
+  document.querySelectorAll('.imp-money').forEach(el => { el.style.display = showC ? '' : 'none'; });
+  tb.innerHTML = rows.map((g, i) => {
+    const marg = g.venta - g.costo;
+    return '<tr>' +
+      '<td style="color:var(--text-muted);font-size:11px">' + (i + 1) + '</td>' +
+      '<td style="font-weight:600;font-size:12px" title="' + String(g.ej || '').replace(/"/g, '&quot;') + '">' + g.label + '<div style="font-size:10px;color:var(--text-muted);font-weight:400">' + (g.codigos.join(' · ') || 'sin código en bodega') + '</div></td>' +
+      '<td style="text-align:center;font-weight:700">' + g.frec + '</td>' +
+      '<td style="text-align:center">' + g.cot.size + '<span style="color:var(--text-muted);font-size:11px"> · ' + g.cotUnd.toLocaleString('es-CO') + ' und</span>' + (g.cotGan.size ? '<div style="font-size:10px;color:var(--green)">' + g.cotGan.size + ' ganadas</div>' : '') + '</td>' +
+      '<td style="text-align:center">' + g.op.size + '<span style="color:var(--text-muted);font-size:11px"> · ' + g.opUnd.toLocaleString('es-CO') + ' und</span></td>' +
+      '<td style="text-align:center">' + (g.bodUnd || '—') + '<div style="font-size:10px;color:var(--text-muted)">' + g.kx.size + ' desp · ' + g.kxUnd + ' und</div></td>' +
+      '<td style="text-align:center;' + (g.plazaUnd ? 'color:var(--yellow);font-weight:700' : '') + '">' + (g.plazaUnd || '—') + '</td>' +
+      '<td class="imp-money" style="text-align:right;' + (showC ? '' : 'display:none') + '">' + (g.plazaCosto ? _impMoney(g.plazaCosto) : '—') + '</td>' +
+      '<td class="imp-money" style="text-align:right;' + (showC ? '' : 'display:none') + '">' + (g.venta ? _impMoney(g.venta) : '—') + '</td>' +
+      '<td class="imp-money" style="text-align:right;' + (showC ? '' : 'display:none') + (marg < 0 ? 'color:var(--red)' : '') + '">' + (g.venta ? _impMoney(marg) + '<div style="font-size:10px;color:var(--text-muted)">' + (g.venta ? Math.round(marg / g.venta * 100) : 0) + '%</div>' : '—') + '</td>' +
+      '<td style="text-align:center;' + (g.stock <= 0 ? 'color:var(--red)' : 'color:var(--green)') + ';font-weight:700">' + g.stock + '</td>' +
+      '</tr>';
+  }).join('') || '<tr><td colspan="11" style="text-align:center;color:var(--text-muted);padding:20px">Sin datos para ese filtro</td></tr>';
+}
+function absImportarExcel() {
+  if (!_imp_datos || typeof XLSX === 'undefined') return showToast('Primero calcula el análisis', 'error');
+  const showC = abs_showCosto();
+  const orden = document.getElementById('imp-orden')?.value || 'frec';
+  const rows = _imp_datos.filas.slice().sort({ frec: (a, b) => b.frec - a.frec, und: (a, b) => b.opUnd - a.opUnd, plaza: (a, b) => b.plazaCosto - a.plazaCosto, cot: (a, b) => b.cot.size - a.cot.size }[orden]);
+  const data = rows.map((g, i) => {
+    const o = { '#': i + 1, 'Pieza': g.label, 'Tipo': g.tipo, 'Códigos bodega': g.codigos.join(' · '), 'Frecuencia': g.frec,
+      'Cotizaciones': g.cot.size, 'Und cotizadas': g.cotUnd, 'Cotiz. ganadas': g.cotGan.size, 'Pedidos': g.op.size, 'Und pedidas': g.opUnd,
+      'Und de bodega': g.bodUnd, 'Despachos kardex': g.kx.size, 'Und kardex': g.kxUnd, 'Und compradas en plaza': g.plazaUnd, 'Stock actual': g.stock, 'Ejemplo descripción': g.ej };
+    if (showC) { o['$ comprado en plaza'] = Math.round(g.plazaCosto); o['Venta $'] = Math.round(g.venta); o['Costo $'] = Math.round(g.costo); o['Margen $'] = Math.round(g.venta - g.costo); }
+    return o;
+  });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), 'Que importar');
+  XLSX.writeFile(wb, 'Que_importar_' + _imp_rango.replace('|', '_a_') + '.xlsx');
+}
+
 function _absSimilares(desc){
   const prep = s => String(s||'').replace(/A\s*\/\s*C/gi,'AC');   // A/C y AC son lo mismo
   const toks = s => (typeof _absQTokens==='function' ? _absQTokens(prep(s)) : prep(s).toUpperCase().split(' ')).filter(Boolean);
