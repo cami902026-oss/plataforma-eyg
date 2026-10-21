@@ -3491,6 +3491,7 @@ body.fe-mode .topbar-right button[onclick="_gsearchOpen()"], body.fe-mode #btn-a
         <option value="ok">Con stock</option>
         <option value="out">Agotados</option>
       </select>
+      <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);cursor:pointer;" title="Los códigos OP- son el producto propio de cada compra de pedido; por defecto no se listan"><input type="checkbox" id="abs-ver-op" onchange="absRenderStock()"> Mostrar ítems de OP</label>
       <button class="btn btn-ghost" onclick="absCargar()" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
       <button class="btn btn-secondary" onclick="absDescargarExcel()" style="padding:8px 14px;font-size:12px;background:#1e7e34;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ Descargar Excel</button>
       <button class="btn btn-secondary" onclick="absDescargarConteo()" style="padding:8px 14px;font-size:12px;background:#0F2B5B;color:#E8A020;border:1px solid #E8A020;border-radius:8px;cursor:pointer;font-weight:700;">📋 Descarga para conteo</button>
@@ -22971,6 +22972,9 @@ function absRenderStock() {
     if(fam&&String(p.familia_id)!==fam) return false;
     if(sf==='ok'&&p.stock_actual<=0) return false;
     if(sf==='out'&&p.stock_actual>0) return false;
+    // v327 (21-oct-2026): los códigos OP- (producto propio de cada compra de pedido) no se listan en Stock
+    // salvo que se marque «Mostrar ítems de OP». Decisión del usuario: ver solo lo disponible de bodega.
+    if(!document.getElementById('abs-ver-op')?.checked && /^OP-/i.test(String(p.codigo||''))) return false;
     return true;
   });
   const cnt=document.getElementById('abs-stock-count'); if(cnt) cnt.textContent=rows.length+' productos';
