@@ -11,6 +11,7 @@ const ASSETS = [
   // imagen, y un <img> no ejecuta JavaScript: nunca pasa ese reto. Ahora sale del
   // propio repo, así que además funciona sin internet.
   './libs/logo-eyg.png',
+  './libs/logo-ferre.png',   // 🔧 Ferreindustrial (21-oct-2026)
 ];
 
 self.addEventListener('install', (event) => {
