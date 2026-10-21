@@ -720,6 +720,17 @@ body.fe-mode .topbar img[alt="E&G"] { width:auto !important; height:36px !import
 .fe-falt-box { margin:10px 0 0; padding:9px 12px; border-radius:8px; border:1px solid rgba(220,38,38,.35); background:rgba(220,38,38,.08); font-size:12px; }
 .fe-tag.blue { background:rgba(26,58,143,.15); color:#93c5fd; }
 body.fe-mode .fe-tag.blue { background:#dbeafe; color:#1e3a8a; }
+/* Catálogo para mostrar (21-oct-2026) */
+.fe-cat-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:10px; }
+.fe-cat-card { background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:4px; min-height:118px; }
+.fe-cat-card .cod { font-size:10.5px; color:var(--text-muted); font-weight:700; letter-spacing:.3px; }
+.fe-cat-card .desc { font-size:13px; font-weight:600; line-height:1.3; flex:1; }
+.fe-cat-card .sub { font-size:11px; color:var(--text-muted); }
+.fe-cat-card .precio { font-size:18px; font-weight:900; color:var(--gold); margin-top:4px; }
+.fe-cat-card .precio small { font-size:10.5px; font-weight:600; color:var(--text-muted); }
+.fe-cat-card .disp { font-size:10.5px; font-weight:700; }
+.fe-cat-card .disp.si { color:var(--green); } .fe-cat-card .disp.no { color:var(--text-muted); }
+.fe-cat-mas { grid-column:1/-1; text-align:center; }
 /* Selector de empresa (solo quien tiene las dos) */
 .fe-sel { display:none; align-items:center; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:999px; padding:3px; gap:2px; }
 .fe-sel button { border:none; background:transparent; color:var(--text-muted); font:600 12px 'Open Sans',sans-serif; padding:6px 12px; border-radius:999px; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:6px; }
@@ -1645,6 +1656,7 @@ body.fe-mode .fe-tag.blue { background:#dbeafe; color:#1e3a8a; }
       <div class="nav-section" id="fe-nav-section" style="display:none">Ferreindustrial</div>
       <div class="nav-item" onclick="navigate('fe_inicio')"><span class="icon">🏠</span>Inicio</div>
       <div class="nav-item" onclick="navigate('fe_productos')"><span class="icon">🏷️</span>Lista de precios</div>
+      <div class="nav-item" onclick="navigate('fe_catalogo')"><span class="icon">📖</span>Catálogo</div>
       <div class="nav-item" onclick="navigate('fe_inventario')"><span class="icon">📦</span>Inventario</div>
       <div class="nav-item" onclick="navigate('fe_clientes')"><span class="icon">🏪</span>Ferreterías</div>
       <div class="nav-item" onclick="navigate('fe_pedidos')"><span class="icon">📝</span>Pedidos</div>
@@ -4237,6 +4249,21 @@ body.fe-mode .fe-tag.blue { background:#dbeafe; color:#1e3a8a; }
             <tbody id="fe-prod-tbody"><tr><td colspan="10" style="text-align:center;color:var(--text-muted);padding:32px">Cargando…</td></tr></tbody>
           </table>
         </div>
+      </div>
+      <div class="page" id="page-fe_catalogo">
+        <div class="abs-toolbar">
+          <input type="text" id="fe-cat-search" placeholder="Buscar producto…" oninput="feCatRender()" style="flex:1;min-width:200px;">
+          <select id="fe-cat-cat" onchange="feCatRender()"><option value="">Todas las categorías</option></select>
+          <select id="fe-cat-lista" onchange="feCatRender()" title="Qué lista de precios mostrar">
+            <option value="ferreteria" selected>Precio ferretería</option><option value="publico">Precio público</option><option value="mayorista">Precio mayorista</option>
+          </select>
+          <label style="font-size:12px;color:var(--text-muted);display:flex;gap:6px;align-items:center"><input type="checkbox" id="fe-cat-iva" onchange="feCatRender()"> con IVA</label>
+          <label style="font-size:12px;color:var(--text-muted);display:flex;gap:6px;align-items:center"><input type="checkbox" id="fe-cat-disp" onchange="feCatRender()"> solo con existencias</label>
+          <button class="btn btn-primary" onclick="feCatPDF()" style="width:auto;padding:8px 14px;font-size:12px;" title="PDF del catálogo con lo que está filtrado, para enviar al cliente">📄 PDF del catálogo</button>
+        </div>
+        <div id="fe-cat-count" class="abs-count"></div>
+        <div id="fe-cat-grid" class="fe-cat-grid"></div>
+        <div class="abs-count" style="margin-top:14px">Para mostrar al cliente: sin costos ni márgenes. El PDF sale con lo que esté filtrado (búsqueda, categoría, lista) y se puede guardar y enviar por WhatsApp.</div>
       </div>
       <div class="page" id="page-fe_inventario">
         <div class="abs-toolbar">
@@ -8018,7 +8045,7 @@ function navigate(page) {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
   currentPage = page;
-  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',contratos:'Contratos Marco',saldos:'Saldos a Favor',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',proveedores:'Proveedores',costos:'Centro de Costos',pdfstudio:'PDF Studio',ayuda:'Ayuda',fe_inicio:'Ferreindustrial',fe_productos:'Lista de precios',fe_inventario:'Inventario Ferreindustrial',fe_clientes:'Ferreterías',fe_pedidos:'Pedidos',fe_remisiones:'Remisiones Ferreindustrial'};
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',contratos:'Contratos Marco',saldos:'Saldos a Favor',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',proveedores:'Proveedores',costos:'Centro de Costos',pdfstudio:'PDF Studio',ayuda:'Ayuda',fe_inicio:'Ferreindustrial',fe_productos:'Lista de precios',fe_catalogo:'Catálogo',fe_inventario:'Inventario Ferreindustrial',fe_clientes:'Ferreterías',fe_pedidos:'Pedidos',fe_remisiones:'Remisiones Ferreindustrial'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
   if(page==='remisiones') remiInit();
@@ -8044,7 +8071,7 @@ function navigate(page) {
   try { _pollAlNavegar(); } catch(_) {}
 }
 function getNavLabel(page) {
-  const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'cronograma',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',cotizaciones:'cotizaciones',ordenes:'procesos',op:'órdenes de pedido',fotoinv:'fotoinv',visitas:'visitas',mensajeria:'mensajeria',configuracion:'configuraci',pdfstudio:'pdf studio',contratos:'contratos marco',fe_inicio:'inicio',fe_productos:'lista de precios',fe_inventario:'inventario',fe_clientes:'ferreterías',fe_pedidos:'pedidos',fe_remisiones:'remisiones fe'};
+  const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'cronograma',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',cotizaciones:'cotizaciones',ordenes:'procesos',op:'órdenes de pedido',fotoinv:'fotoinv',visitas:'visitas',mensajeria:'mensajeria',configuracion:'configuraci',pdfstudio:'pdf studio',contratos:'contratos marco',fe_inicio:'inicio',fe_productos:'lista de precios',fe_catalogo:'catálogo',fe_inventario:'inventario',fe_clientes:'ferreterías',fe_pedidos:'pedidos',fe_remisiones:'remisiones fe'};
   return map[page]||page;
 }
 
@@ -36750,7 +36777,7 @@ async function feRecargarTodo() {
 
 // navigate() llama aquí para las páginas fe_*
 async function feNav(page) {
-  const fn = { fe_inicio: feInicioInit, fe_productos: feProdInit, fe_inventario: feInvInit,
+  const fn = { fe_inicio: feInicioInit, fe_productos: feProdInit, fe_catalogo: feCatInit, fe_inventario: feInvInit,
                fe_clientes: feCliInit, fe_pedidos: fePedInit, fe_remisiones: feRemInit }[page];
   if (fn) await fn();
 }
@@ -37533,6 +37560,64 @@ function fePedExcel() {
   const rows = fe_ped.map(p => ({ NUMERO: p.numero, FECHA: p.fecha, CLIENTE: p.cliente, COMERCIAL: p.comercial || '', ESTADO: p.estado, TOTAL: +p.total || 0, REMISION: p.remision || '', OBSERVACIONES: p.observaciones || '' }));
   const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'PEDIDOS');
   XLSX.writeFile(wb, 'Ferreindustrial_pedidos_' + _feHoy() + '.xlsx');
+}
+
+// ═══ 5b) CATÁLOGO para mostrar al cliente (21-oct-2026) ═══════════════════════
+// Fichas grandes (para el celular del comercial) y PDF para enviar. Nunca muestra
+// costos ni márgenes: solo el precio de la lista elegida, con o sin IVA.
+var _feCatMax = 120;
+async function feCatInit(force) {
+  try { await feCargarProductos(force); } catch (e) { const g = document.getElementById('fe-cat-grid'); if (g) g.innerHTML = '<div class="abs-count">No se pudo cargar: ' + _feEsc(e.message) + '</div>'; return; }
+  const cats = [...new Set(fe_prod.map(p => p.categoria).filter(Boolean))].sort();
+  const sel = document.getElementById('fe-cat-cat');
+  if (sel) { const v = sel.value; sel.innerHTML = '<option value="">Todas las categorías</option>' + cats.map(c => '<option value="' + _feEsc(c) + '">' + _feEsc(c) + '</option>').join(''); sel.value = v; }
+  _feCatMax = 120; feCatRender();
+}
+function _feCatFiltro() {
+  const cat = _feVal('fe-cat-cat'), disp = !!(document.getElementById('fe-cat-disp') || {}).checked;
+  let lista = _feBuscarProd(_feVal('fe-cat-search'), true);
+  if (cat) lista = lista.filter(p => p.categoria === cat);
+  if (disp) lista = lista.filter(p => _feStockDe(p.id) > 0);
+  return lista;
+}
+function _feCatPrecio(p) {
+  const l = _feVal('fe-cat-lista') || 'ferreteria', iva = !!(document.getElementById('fe-cat-iva') || {}).checked;
+  return _fePrecio(p, l) * (iva ? 1 + FE_IVA : 1);
+}
+function feCatRender(mas) {
+  const g = document.getElementById('fe-cat-grid'); if (!g) return;
+  if (mas) _feCatMax += 120; else _feCatMax = 120;
+  const lista = _feCatFiltro(), iva = !!(document.getElementById('fe-cat-iva') || {}).checked;
+  const cnt = document.getElementById('fe-cat-count');
+  if (cnt) cnt.textContent = lista.length + ' producto(s) · ' + (FE_LISTAS[_feVal('fe-cat-lista')] || 'Ferretería') + ' · precios ' + (iva ? 'CON IVA' : 'sin IVA');
+  if (!lista.length) { g.innerHTML = '<div class="abs-count fe-cat-mas">Nada con ese filtro</div>'; return; }
+  g.innerHTML = lista.slice(0, _feCatMax).map(p => {
+    const st = _feStockDe(p.id);
+    return '<div class="fe-cat-card"><div class="cod">' + _feEsc(p.codigo) + '</div><div class="desc">' + _feEsc(p.descripcion) + '</div>'
+      + '<div class="sub">' + _feEsc([p.marca, p.categoria].filter(Boolean).join(' · ')) + '</div>'
+      + '<div class="precio">' + _feFmt(_feCatPrecio(p)) + ' <small>/ ' + _feEsc(p.unidad) + (iva ? ' c/IVA' : '') + '</small></div>'
+      + '<div class="disp ' + (st > 0 ? 'si' : 'no') + '">' + (st > 0 ? '● Disponible' : '○ Bajo pedido') + '</div></div>';
+  }).join('') + (lista.length > _feCatMax ? '<div class="fe-cat-mas"><button class="btn btn-ghost" onclick="feCatRender(true)">Ver más (' + (lista.length - _feCatMax) + ' restantes)</button></div>' : '');
+}
+function feCatPDF() {
+  const lista = _feCatFiltro(); if (!lista.length) { showToast('No hay productos con ese filtro', 'info'); return; }
+  if (lista.length > 1500 && !confirm('Son ' + lista.length + ' productos (más de 30 páginas). ¿Generar igual? Puedes filtrar por categoría para un catálogo más corto.')) return;
+  const iva = !!(document.getElementById('fe-cat-iva') || {}).checked, nomLista = FE_LISTAS[_feVal('fe-cat-lista')] || 'Ferretería';
+  const e = _feEsc, AZ = '#1A3A8F', VE = '#1a8f3c';
+  const grupos = {}; lista.forEach(p => { (grupos[p.categoria || 'Ferretería general'] = grupos[p.categoria || 'Ferretería general'] || []).push(p); });
+  const cuerpo = Object.keys(grupos).sort().map(cat => '<h2>' + e(cat) + ' <small>(' + grupos[cat].length + ')</small></h2><table><thead><tr><th style="width:80px">Código</th><th>Descripción</th><th style="width:60px">Marca</th><th style="width:36px">Und</th><th style="width:90px;text-align:right">Precio</th></tr></thead><tbody>'
+    + grupos[cat].sort((a, b) => a.descripcion.localeCompare(b.descripcion)).map(p => '<tr><td>' + e(p.codigo) + '</td><td>' + e(p.descripcion) + '</td><td>' + e(p.marca || '') + '</td><td>' + e(p.unidad) + '</td><td style="text-align:right;font-weight:700">' + _feFmt(_feCatPrecio(p)) + '</td></tr>').join('') + '</tbody></table>').join('');
+  const html = '<!doctype html><html><head><meta charset="utf-8"><title>Catálogo Ferreindustrial</title><style>'
+    + '@page{size:letter portrait;margin:12mm}body{font-family:Segoe UI,Arial,sans-serif;color:#111;font-size:11px;margin:0}'
+    + '.cab{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid ' + VE + ';padding-bottom:8px;margin-bottom:10px}.cab .t{text-align:right}.cab .t b{font-size:18px;color:' + AZ + '}.cab .t div{font-size:10px;color:#444}'
+    + 'h2{font-size:13px;color:' + AZ + ';margin:14px 0 4px;border-left:4px solid ' + VE + ';padding-left:8px;page-break-after:avoid}h2 small{color:#777;font-weight:400}'
+    + 'table{width:100%;border-collapse:collapse;page-break-inside:auto}tr{page-break-inside:avoid}th{background:' + AZ + ';color:#fff;font-size:9.5px;text-transform:uppercase;padding:4px 6px;text-align:left}td{padding:4px 6px;border-bottom:1px solid #e4e4e7}'
+    + '.pie{margin-top:14px;font-size:9.5px;color:#666;border-top:1px solid #e4e4e7;padding-top:5px}</style></head><body>'
+    + '<div class="cab"><img src="' + FE_LOGO + '" alt="E&G Ferreindustrial" style="height:58px"><div class="t"><b>CATÁLOGO DE PRODUCTOS</b><div>Lista ' + e(nomLista) + ' · precios ' + (iva ? 'con IVA (19 %)' : 'sin IVA') + ' · ' + _feFecha(_feHoy()) + '</div><div>' + lista.length + ' productos' + (_feVal('fe-cat-cat') ? ' · ' + e(_feVal('fe-cat-cat')) : '') + '</div></div></div>'
+    + cuerpo
+    + '<div class="pie">E&amp;G Energy Group SAS · Ferreindustrial. Precios en pesos colombianos, sujetos a cambio sin previo aviso y a disponibilidad. Atiende: ' + e(_feYo()) + '.</div>'
+    + '</body></html>';
+  _pdfOverlay(html, 'Catálogo Ferreindustrial · ' + nomLista);
 }
 
 // ═══ 6) REMISIONES FE-0001 (descuentan el kardex) ═════════════════════════════
