@@ -24751,7 +24751,7 @@ async function _remiCierreDatos(c){
       + ',remision_base.eq.' + encodeURIComponent(base) + ')';
   try{
     fam = (await absFetch('remisiones?' + _q
-      + '&select=remision,fecha,item,descripcion,cantidad,cantidad_pedida,entrega_n,remision_base&order=id&limit=3000')) || [];
+      + '&select=remision,fecha,item,descripcion,cantidad,cantidad_pedida,entrega_n,remision_base,oc&order=id&limit=3000')) || [];
   }catch(_){
     // Sin las columnas nuevas no hay cuadro de cierre, pero el PDF normal sí.
     try{
@@ -24759,6 +24759,27 @@ async function _remiCierreDatos(c){
         + ',remision.like.'+encodeURIComponent(base)+'-*)'
         + '&select=remision,fecha,item,descripcion,cantidad&order=id&limit=3000')) || [];
     }catch(_e){ return null; }
+  }
+  // 🔑 21-oct-2026 — UNA OP REPARTIDA POR ÓRDENES DE COMPRA DEL CLIENTE NO ES UNA
+  // FAMILIA. La OP-0159 (SAR ENERGY) salió en 5 remisiones, una por ODC del cliente,
+  // y cada papel salía «ENTREGA 5 · PARCIAL» con los renglones de las otras órdenes
+  // como pendientes. Si las remisiones de la OP llevan más de una O.C. distinta,
+  // cada una es su propia orden: la familia se arma solo por el número (base, -1,
+  // remision_base), como una remisión sin OP, y el pedido NO se toma de la OP.
+  // Con una sola O.C. (lo de siempre) el resultado es idéntico.
+  let _opPartida=false;
+  if(c.opNumero && fam.length){
+    const _ocN=t=>String(t||'').toUpperCase().replace(/[^A-Z0-9]+/g,'');
+    const _ocs=new Set(fam.map(f=>_ocN(f.oc)).filter(Boolean));
+    if(_ocs.size>1){
+      _opPartida=true;
+      try{
+        fam=(await absFetch('remisiones?or=(remision.eq.'+encodeURIComponent(base)
+          +',remision.like.'+encodeURIComponent(base)+'-*'
+          +',remision_base.eq.'+encodeURIComponent(base)+')'
+          +'&select=remision,fecha,item,descripcion,cantidad,cantidad_pedida,entrega_n,remision_base&order=id&limit=3000'))||[];
+      }catch(_){ fam=[]; }
+    }
   }
   // La remisión abierta puede no estar todavía en el servidor (se está creando) o
   // tener cambios sin guardar. Lo que se ve en pantalla manda sobre lo guardado.
@@ -24774,7 +24795,7 @@ async function _remiCierreDatos(c){
   }
   if(!fam.length) return null;
 
-  if(c.opNumero){
+  if(c.opNumero && !_opPartida){
     try{
       const o=(await absFetch('ops?numero=eq.'+encodeURIComponent(c.opNumero)+'&select=id&limit=1'))||[];
       if(o.length) pedido=(await absFetch('op_items?op_id=eq.'+o[0].id
