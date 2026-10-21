@@ -36764,7 +36764,7 @@ function _feBuscarProd(q, soloActivos) {
   return fe_prod.filter(p => {
     if (soloActivos && p.activo === false) return false;
     if (!toks.length) return true;
-    const t = _feTexto([p.codigo, p.descripcion, p.marca, p.categoria, p.proveedor].join(' '));
+    const t = _feTexto([p.codigo, p.descripcion, p.marca, p.categoria, p.proveedor, p.notas].join(' '));
     return toks.every(k => t.includes(k));
   });
 }
@@ -36871,8 +36871,8 @@ async function feProdGuardar(id) {
 // Plantilla Excel para la carga inicial (y para actualizar precios en bloque).
 function feProdPlantilla() {
   const filas = [
-    { CODIGO: 'FE-0001', DESCRIPCION: 'TUBO PVC PRESION 1/2" x 6 m RDE 21', CATEGORIA: 'Tubería', MARCA: 'PAVCO', UNIDAD: 'UND', COSTO: 18500, PRECIO_PUBLICO: 27900, PRECIO_FERRETERIA: 23500, PRECIO_MAYORISTA: 21300, STOCK_MINIMO: 20, STOCK_INICIAL: 50, PROVEEDOR: 'PROVEEDOR A', UBICACION: 'Pasillo 1' },
-    { CODIGO: 'FE-0002', DESCRIPCION: 'CABLE THHN 12 AWG (metro)', CATEGORIA: 'Eléctricos', MARCA: 'CENTELSA', UNIDAD: 'MT', COSTO: 2100, PRECIO_PUBLICO: 3400, PRECIO_FERRETERIA: 2800, PRECIO_MAYORISTA: 2500, STOCK_MINIMO: 100, STOCK_INICIAL: 300, PROVEEDOR: 'PROVEEDOR B', UBICACION: 'Estante 4' }
+    { CODIGO: 'FE-0001', DESCRIPCION: 'TUBO PVC PRESION 1/2" x 6 m RDE 21', CATEGORIA: 'Tubería', MARCA: 'PAVCO', UNIDAD: 'UND', COSTO: 18500, PRECIO_PUBLICO: 27900, PRECIO_FERRETERIA: 23500, PRECIO_MAYORISTA: 21300, STOCK_MINIMO: 20, STOCK_INICIAL: 50, PROVEEDOR: 'PROVEEDOR A', UBICACION: 'Pasillo 1', NOTAS: 'Tubería presión' },
+    { CODIGO: 'FE-0002', DESCRIPCION: 'CABLE THHN 12 AWG (metro)', CATEGORIA: 'Eléctricos', MARCA: 'CENTELSA', UNIDAD: 'MT', COSTO: 2100, PRECIO_PUBLICO: 3400, PRECIO_FERRETERIA: 2800, PRECIO_MAYORISTA: 2500, STOCK_MINIMO: 100, STOCK_INICIAL: 300, PROVEEDOR: 'PROVEEDOR B', UBICACION: 'Estante 4', NOTAS: 'Cable' }
   ];
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.json_to_sheet(filas);
@@ -36887,6 +36887,7 @@ function feProdPlantilla() {
     ['PRECIO_PUBLICO / PRECIO_FERRETERIA / PRECIO_MAYORISTA', 'ANTES de IVA. Cada cliente tiene una lista asignada.'],
     ['STOCK_MINIMO', 'Cuando el stock baja de aquí, sale en rojo en Inicio e Inventario.'],
     ['STOCK_INICIAL', 'Solo se usa la PRIMERA vez que entra el producto: crea la entrada inicial en el kardex. En re-importaciones se ignora.'],
+    ['NOTAS', 'Texto libre (subgrupo del catálogo, equivalencias…). El buscador también busca aquí.'],
     ['', 'Borra las 2 filas de ejemplo antes de importar.']
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(guia), 'GUIA');
@@ -36906,7 +36907,7 @@ async function feProdImportar(input) {
     const col = n => head.findIndex(h => h === n || h.startsWith(n));
     const C = { codigo: col('CODIGO'), desc: col('DESCRIPCION'), cat: col('CATEGORIA'), marca: col('MARCA'), uni: col('UNIDAD'), costo: col('COSTO'),
       pub: col('PRECIO_PUBLICO') >= 0 ? col('PRECIO_PUBLICO') : col('PUBLICO'), fer: col('PRECIO_FERRETERIA') >= 0 ? col('PRECIO_FERRETERIA') : col('FERRETERIA'),
-      may: col('PRECIO_MAYORISTA') >= 0 ? col('PRECIO_MAYORISTA') : col('MAYORISTA'), min: col('STOCK_MIN'), ini: col('STOCK_INI'), prov: col('PROVEEDOR'), ubi: col('UBICACION') };
+      may: col('PRECIO_MAYORISTA') >= 0 ? col('PRECIO_MAYORISTA') : col('MAYORISTA'), min: col('STOCK_MIN'), ini: col('STOCK_INI'), prov: col('PROVEEDOR'), ubi: col('UBICACION'), notas: col('NOTAS') };
     if (C.codigo < 0 || C.desc < 0) { showToast('Faltan las columnas CODIGO y DESCRIPCION (usa la plantilla)', 'error'); return; }
     const num = v => { const n = parseFloat(String(v).replace(/[$\s]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.')); return isNaN(n) ? 0 : n; };
     const txt = (r, i) => i >= 0 ? String(r[i] == null ? '' : r[i]).trim() : '';
@@ -36917,7 +36918,7 @@ async function feProdImportar(input) {
       vistos[codigo] = 1;
       filas.push({ codigo, descripcion: desc, categoria: txt(r, C.cat) || null, marca: txt(r, C.marca) || null, unidad: (txt(r, C.uni) || 'UND').toUpperCase(),
         costo: num(r[C.costo]), precio_publico: num(r[C.pub]), precio_ferreteria: num(r[C.fer]), precio_mayorista: num(r[C.may]),
-        stock_min: num(r[C.min]), proveedor: txt(r, C.prov) || null, ubicacion: txt(r, C.ubi) || null, activo: true, updated_by: _feYo(), updated_at: _feAhora() });
+        stock_min: num(r[C.min]), proveedor: txt(r, C.prov) || null, ubicacion: txt(r, C.ubi) || null, notas: txt(r, C.notas) || null, activo: true, updated_by: _feYo(), updated_at: _feAhora() });
       if (C.ini >= 0) stock0[codigo] = num(r[C.ini]);
     }
     if (!filas.length) { showToast('No encontré filas con código y descripción', 'error'); return; }
@@ -36950,7 +36951,7 @@ function feProdExcel() {
     const o = { CODIGO: p.codigo, DESCRIPCION: p.descripcion, CATEGORIA: p.categoria || '', MARCA: p.marca || '', UNIDAD: p.unidad, STOCK: _feStockDe(p.id) };
     if (admin) o.COSTO = +p.costo || 0;
     o.PRECIO_PUBLICO = +p.precio_publico || 0; o.PRECIO_FERRETERIA = +p.precio_ferreteria || 0; o.PRECIO_MAYORISTA = +p.precio_mayorista || 0;
-    o.STOCK_MINIMO = +p.stock_min || 0; o.PROVEEDOR = p.proveedor || ''; o.UBICACION = p.ubicacion || ''; o.ACTIVO = p.activo === false ? 'NO' : 'SI';
+    o.STOCK_MINIMO = +p.stock_min || 0; o.PROVEEDOR = p.proveedor || ''; o.UBICACION = p.ubicacion || ''; o.NOTAS = p.notas || ''; o.ACTIVO = p.activo === false ? 'NO' : 'SI';
     return o;
   });
   const wb = XLSX.utils.book_new();
