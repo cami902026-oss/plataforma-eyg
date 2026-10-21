@@ -5001,7 +5001,8 @@ function userCanSeeModule(mod) {
   // Cartera: Andrea, Alberto y Nelsy (no se puede destrabar por config)
   if (mod === 'cartera') return email === 'andrea' || email === 'alberto' || email === 'nelsy';
   // Contratos marco: SOLO Andrea y Alberto (pedido del usuario, 9-oct-2026).
-  if (mod === 'contratos') return email === 'andrea' || email === 'alberto';
+  // 22-oct-2026: Alexandra también lo ve (pedido del usuario); registrar consumos sigue siendo de Andrea y Alberto (cmkPuedeEscribir).
+  if (mod === 'contratos') return email === 'andrea' || email === 'alberto' || email === 'alexandra';
   // Saldos a favor de proveedores: Nelsy, Alexandra, Andrea y Alberto (pedido del usuario, 13-oct-2026).
   if (mod === 'saldos') return email === 'andrea' || email === 'alberto' || email === 'nelsy' || email === 'alexandra';
   // Programación Equipo: TODO el equipo la VE (para saber quién está presencial);
