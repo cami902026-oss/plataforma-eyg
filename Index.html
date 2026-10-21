@@ -695,6 +695,31 @@ body.fe-mode .topbar-right button[onclick="_gsearchOpen()"], body.fe-mode #btn-a
 body.fe-mode .sidebar-logo img { width:auto !important; height:54px !important; max-width:100%; }
 body.fe-mode .sidebar-logo-text { display:none; }
 body.fe-mode .topbar img[alt="E&G"] { width:auto !important; height:36px !important; }
+/* Tablero de pedidos tipo OP (21-oct-2026) */
+.fe-carriles { display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:12px; align-items:start; }
+.fe-carril { background:var(--card-bg); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.fe-carril-top { height:4px; background:var(--border); }
+.fe-carril[data-c="pendiente"] .fe-carril-top { background:#d97706; } .fe-carril[data-c="alistando"] .fe-carril-top { background:#1A3A8F; } .fe-carril[data-c="remisionado"] .fe-carril-top { background:var(--green); }
+.fe-carril-cab { padding:11px 12px 9px; border-bottom:1px solid var(--border); }
+.fe-carril-t { font-size:13px; font-weight:800; display:flex; align-items:center; gap:7px; }
+.fe-carril-n { margin-left:auto; font-size:10.5px; font-weight:700; color:var(--text-muted); background:rgba(127,127,127,.12); border:1px solid var(--border); border-radius:20px; padding:1px 8px; }
+.fe-carril-v { font-size:12px; font-weight:700; margin-top:4px; color:var(--gold); }
+.fe-carril-d { font-size:11px; color:var(--text-muted); margin-top:2px; line-height:1.4; }
+.fe-carril-cuerpo { padding:9px; display:flex; flex-direction:column; gap:8px; min-height:64px; }
+.fe-carril-vacio { font-size:12px; color:var(--text-muted); text-align:center; padding:14px 0; }
+.fe-tarjeta { border:1px solid var(--border); border-left:3px solid var(--border); border-radius:8px; padding:9px 10px 8px; background:rgba(127,127,127,.04); cursor:pointer; transition:transform .12s, box-shadow .12s; }
+.fe-tarjeta:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.10); }
+.fe-tarjeta[data-c="pendiente"] { border-left-color:#d97706; } .fe-tarjeta[data-c="alistando"] { border-left-color:#1A3A8F; } .fe-tarjeta[data-c="remisionado"] { border-left-color:var(--green); }
+.fe-tarjeta-cab { display:flex; justify-content:space-between; gap:8px; font-size:12px; } .fe-tarjeta-cab b { color:var(--gold); } .fe-tarjeta-cab span { color:var(--text-muted); font-size:11px; }
+.fe-tarjeta-cli { font-weight:700; font-size:13px; margin-top:3px; }
+.fe-tarjeta-sub { font-size:11.5px; color:var(--text-muted); margin-top:2px; }
+.fe-tarjeta-obs { font-size:11px; color:var(--text-muted); margin-top:4px; font-style:italic; }
+.fe-tarjeta-falt { font-size:11px; color:var(--red); font-weight:700; margin-top:4px; }
+.fe-tarjeta-acc { display:flex; flex-wrap:wrap; gap:4px; margin-top:7px; }
+.fe-gaveta { padding:12px; cursor:pointer; text-align:center; } .fe-gaveta-n { font-size:24px; font-weight:900; color:var(--text-muted); margin:4px 0; }
+.fe-falt-box { margin:10px 0 0; padding:9px 12px; border-radius:8px; border:1px solid rgba(220,38,38,.35); background:rgba(220,38,38,.08); font-size:12px; }
+.fe-tag.blue { background:rgba(26,58,143,.15); color:#93c5fd; }
+body.fe-mode .fe-tag.blue { background:#dbeafe; color:#1e3a8a; }
 /* Selector de empresa (solo quien tiene las dos) */
 .fe-sel { display:none; align-items:center; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:999px; padding:3px; gap:2px; }
 .fe-sel button { border:none; background:transparent; color:var(--text-muted); font:600 12px 'Open Sans',sans-serif; padding:6px 12px; border-radius:999px; cursor:pointer; white-space:nowrap; display:inline-flex; align-items:center; gap:6px; }
@@ -4263,19 +4288,26 @@ body.fe-mode .topbar img[alt="E&G"] { width:auto !important; height:36px !import
       <div class="page" id="page-fe_pedidos">
         <div class="abs-toolbar">
           <input type="text" id="fe-ped-search" placeholder="Buscar pedido, ferretería, comercial…" oninput="fePedRender()" style="flex:1;min-width:220px;">
-          <select id="fe-ped-estado" onchange="fePedRender()"><option value="">Todos</option><option value="pendiente" selected>Pendientes</option><option value="remisionado">Remisionados</option><option value="anulado">Anulados</option></select>
+          <div class="fe-sel" id="fe-ped-vistas" style="display:inline-flex" title="Cómo ver los pedidos">
+            <button type="button" data-v="tablero" aria-pressed="true" onclick="fePedVista('tablero')">🗂 Tablero</button>
+            <button type="button" data-v="lista" aria-pressed="false" onclick="fePedVista('lista')">☰ Lista</button>
+          </div>
+          <select id="fe-ped-estado" onchange="fePedRender()" style="display:none"><option value="">Todos</option><option value="pendiente">Pendientes</option><option value="alistando">Alistando</option><option value="remisionado">Remisionados</option><option value="anulado">Anulados</option></select>
           <button class="btn btn-primary" id="fe-ped-btn-nuevo" onclick="fePedNuevo(0)" style="width:auto;padding:8px 14px;font-size:12px;">➕ Nuevo pedido</button>
           <button class="btn btn-ghost" onclick="fePedExcel()" style="padding:8px 14px;font-size:12px;">📊 Excel</button>
           <button class="btn btn-ghost" onclick="fePedInit(true)" style="padding:8px 14px;font-size:12px;">🔄</button>
         </div>
         <div id="fe-ped-count" class="abs-count"></div>
+        <div id="fe-ped-tablero"></div>
+        <div id="fe-ped-lista" style="display:none">
         <div class="abs-table-wrap">
           <table class="abs-table">
             <thead><tr><th style="width:90px">Pedido</th><th style="width:90px">Fecha</th><th>Ferretería</th><th style="width:100px">Comercial</th><th style="width:110px;text-align:right">Total</th><th style="width:120px">Estado</th><th>Observaciones</th><th style="width:190px"></th></tr></thead>
             <tbody id="fe-ped-tbody"><tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px">Cargando…</td></tr></tbody>
           </table>
         </div>
-        <div class="abs-count" style="margin-top:14px">El comercial toma el pedido en la visita con los precios de la lista de esa ferretería. Andrea o gerencia lo <b>remisionan</b> cuando sale del local; ahí se descuenta el inventario.</div>
+        </div>
+        <div class="abs-count" style="margin-top:14px">El comercial toma el pedido en la visita con los precios de la lista de esa ferretería → <b>▶ Alistar</b> lo toma quien recoge la mercancía (con su hoja de alistamiento) → <b>🧾 Remisionar</b> cuando sale del local: ahí se descuenta el inventario y, si salió menos de lo pedido, quedan los <b>faltantes</b> anotados.</div>
       </div>
       <div class="page" id="page-fe_remisiones">
         <div class="abs-toolbar">
@@ -8034,6 +8066,8 @@ async function _opRefrescarAlertas() {
 function buildAlerts() {
   const alerts = [];
   const today = new Date(); today.setHours(0,0,0,0);
+  // 🔧 Ferreindustrial (21-oct-2026): pedidos de ferretería por alistar. Solo quien tiene esa empresa.
+  try { if (typeof _feAlertasBuild === 'function') _feAlertasBuild().forEach(a => alerts.push(a)); } catch (_) {}
 
   // ── OP esperando aprobación de gerencia (2026-08-23) ──
   // A gerencia le sale en rojo porque la bola está en su cancha; al resto del
@@ -36611,6 +36645,7 @@ function feAplicarEmpresa(navegar) {
     sel.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.emp === feEmpresaActiva() ? 'true' : 'false'));
   }
   document.title = fe ? 'Ferreindustrial · Plataforma' : _feTituloEG;
+  try { _feAlertasIniciar(); } catch (_) {}   // 21-oct-2026: pedidos nuevos en la campana
   if (navegar) navigate(fe ? 'fe_inicio' : 'dashboard');
 }
 
@@ -36732,7 +36767,7 @@ async function feInicioInit(force) {
   const mes = _feHoy().slice(0, 7);
   const remMes = fe_rem.filter(r => r.estado !== 'anulada' && String(r.fecha || '').startsWith(mes));
   const ventasMes = remMes.reduce((s, r) => s + (+r.subtotal || 0), 0);
-  const pedPend = fe_ped.filter(p => p.estado === 'pendiente');
+  const pedPend = fe_ped.filter(p => p.estado === 'pendiente' || p.estado === 'alistando');
   box.innerHTML =
     '<div class="stat-card gold" style="cursor:pointer" onclick="navigate(\'fe_productos\')"><div class="stat-icon">🏷️</div><div class="stat-num">' + activos.length + '</div><div class="stat-label">Productos en lista</div></div>'
     + '<div class="stat-card ' + (bajo.length ? 'red' : 'green') + '" style="cursor:pointer" onclick="navigate(\'fe_inventario\')"><div class="stat-icon">📦</div><div class="stat-num">' + bajo.length + '</div><div class="stat-label">Bajo el mínimo</div></div>'
@@ -36748,7 +36783,7 @@ async function feInicioInit(force) {
     : '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:18px">Nada bajo el mínimo' + (activos.length ? '' : ' · la lista está vacía: carga el Excel en Lista de precios') + '</td></tr>';
   const tp = document.getElementById('fe-inicio-ped');
   if (tp) tp.innerHTML = pedPend.length ? pedPend.slice(0, 8).map(p =>
-      '<tr style="cursor:pointer" onclick="fePedAbrir(' + p.id + ')"><td><strong>' + _feEsc(p.numero) + '</strong></td><td>' + _feFecha(p.fecha) + '</td><td>' + _feEsc(p.cliente) + '</td><td>' + _feEsc(p.comercial) + '</td><td style="text-align:right">' + _feFmt(p.total) + '</td></tr>').join('')
+      '<tr style="cursor:pointer" onclick="fePedAbrir(' + p.id + ')"><td><strong>' + _feEsc(p.numero) + '</strong>' + (p.estado === 'alistando' ? ' <span class="fe-tag blue">alistando</span>' : '') + '</td><td>' + _feFecha(p.fecha) + '</td><td>' + _feEsc(p.cliente) + '</td><td>' + _feEsc(p.comercial) + '</td><td style="text-align:right">' + _feFmt(p.total) + '</td></tr>').join('')
     : '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:18px">Sin pedidos pendientes</td></tr>';
   const tr = document.getElementById('fe-inicio-rem');
   if (tr) tr.innerHTML = fe_rem.length ? fe_rem.slice(0, 8).map(r =>
@@ -37259,35 +37294,174 @@ function _feEdHTML(opts) {
     + '<div id="fe-ed-totales" style="text-align:right;margin:10px 0;font-size:13px"></div>';
 }
 
-// ═══ 5) PEDIDOS (lo que toman los comerciales) ═══════════════════════════════
+// ═══ 5) PEDIDOS — tablero tipo OP + alistamiento (21-oct-2026) ═══════════════
+// Flujo: el comercial toma el pedido (pendiente) → Andrea lo toma para alistar
+// (alistando, con hoja de alistamiento imprimible) → lo remisiona (remisionado;
+// si salió menos de lo pedido, quedan los FALTANTES anotados en el pedido).
+var FE_PED_CARRILES = [
+  { c: 'pendiente',   t: '📥 Nuevos',      d: 'Tomados por el comercial. Esperan que alguien los aliste.', f: p => p.estado === 'pendiente' },
+  { c: 'alistando',   t: '📋 Alistando',   d: 'Alguien ya los tomó y está recogiendo la mercancía.',       f: p => p.estado === 'alistando' },
+  { c: 'remisionado', t: '🧾 Remisionados', d: 'Ya salieron del local (últimos 15 días).',                  f: p => p.estado === 'remisionado' && _feDiasDesde(p.updated_at || p.fecha) <= 15 }
+];
+function _feDiasDesde(f) { if (!f) return 999; const d = new Date(String(f).slice(0, 10) + 'T00:00:00'); return Math.round((Date.now() - d.getTime()) / 86400000); }
 function fePedPuedeCrear() { return feEsAdmin() || feEsComercial(); }
-async function fePedInit(force) {
-  const b = document.getElementById('fe-ped-btn-nuevo'); if (b) b.style.display = fePedPuedeCrear() ? '' : 'none';
-  try { await Promise.all([feCargarPedidos(force), feCargarClientes(force), feCargarProductos(force)]); } catch (e) { _feErrorTablas(e, 'fe-ped-tbody', 8); return; }
-  fePedRender();
-}
-function fePedRender() {
-  const tb = document.getElementById('fe-ped-tbody'); if (!tb) return;
-  const toks = _feTokens(_feVal('fe-ped-search')), est = _feVal('fe-ped-estado');
-  const lista = fe_ped.filter(p => {
-    if (est && p.estado !== est) return false;
+var _fePedVista = (function () { try { return localStorage.getItem('fe_ped_vista') || 'tablero'; } catch (_) { return 'tablero'; } })();
+function fePedVista(v) { _fePedVista = v; try { localStorage.setItem('fe_ped_vista', v); } catch (_) {} fePedRender(); }
+function _fePedFaltantes(p) { const f = p && p.faltantes; return Array.isArray(f) ? f : []; }
+function _fePedFiltra() {
+  const toks = _feTokens(_feVal('fe-ped-search'));
+  return fe_ped.filter(p => {
     if (!toks.length) return true;
     const t = _feTexto([p.numero, p.cliente, p.comercial, p.observaciones, p.remision].join(' '));
     return toks.every(k => t.includes(k));
   });
+}
+function fePedRender() {
+  const tab = document.getElementById('fe-ped-tablero'), lis = document.getElementById('fe-ped-lista');
+  if (!tab || !lis) return;
+  const esTab = _fePedVista !== 'lista';
+  tab.style.display = esTab ? '' : 'none'; lis.style.display = esTab ? 'none' : '';
+  const est = document.getElementById('fe-ped-estado'); if (est) est.style.display = esTab ? 'none' : '';
+  document.querySelectorAll('#fe-ped-vistas button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === (esTab ? 'tablero' : 'lista') ? 'true' : 'false'));
+  if (esTab) fePedRenderTablero(); else fePedRenderLista();
+}
+function _fePedBotones(p, chico) {
+  const s = chico ? 'padding:3px 8px;font-size:11px' : 'padding:4px 9px;font-size:11px';
+  const abierto = p.estado === 'pendiente' || p.estado === 'alistando';
+  let h = '<button class="btn btn-ghost" style="' + s + '" title="Hoja de alistamiento para recoger la mercancía" onclick="event.stopPropagation();fePedHoja(' + p.id + ')">📋 Hoja</button> ';
+  if (p.estado === 'pendiente' && feEsAdmin()) h += '<button class="btn btn-ghost" style="' + s + ';color:var(--gold)" title="Tomarlo para alistar" onclick="event.stopPropagation();fePedAlistar(' + p.id + ')">▶ Alistar</button> ';
+  if (abierto && feEsAdmin()) h += '<button class="btn btn-ghost" style="' + s + ';color:var(--green)" title="Crear la remisión FE con estos renglones" onclick="event.stopPropagation();feRemDesdePedido(' + p.id + ')">🧾 Remisionar</button> ';
+  if (abierto && fePedPuedeCrear()) h += '<button class="btn btn-ghost" style="' + s + '" onclick="event.stopPropagation();fePedAnular(' + p.id + ')">✖</button>';
+  return h;
+}
+function fePedRenderTablero() {
+  const tab = document.getElementById('fe-ped-tablero'); if (!tab) return;
+  const lista = _fePedFiltra();
+  const cnt = document.getElementById('fe-ped-count'); if (cnt) cnt.textContent = lista.filter(p => p.estado === 'pendiente' || p.estado === 'alistando').length + ' pedido(s) por despachar';
+  const carriles = FE_PED_CARRILES.map(C => {
+    const l = lista.filter(C.f).sort((a, b) => C.c === 'remisionado' ? (b.updated_at || '').localeCompare(a.updated_at || '') : (a.fecha || '').localeCompare(b.fecha || '') || a.id - b.id);
+    const val = l.reduce((s, p) => s + (+p.total || 0), 0);
+    return '<div class="fe-carril" data-c="' + C.c + '"><div class="fe-carril-top"></div>'
+      + '<div class="fe-carril-cab"><div class="fe-carril-t">' + C.t + '<span class="fe-carril-n">' + l.length + '</span></div>'
+      + '<div class="fe-carril-v">' + (l.length ? _feFmt(val) : '—') + '</div><div class="fe-carril-d">' + C.d + '</div></div>'
+      + '<div class="fe-carril-cuerpo">' + (l.length ? l.map(p => {
+        const falt = _fePedFaltantes(p), dias = _feDiasDesde(p.fecha);
+        return '<div class="fe-tarjeta" data-c="' + C.c + '" onclick="fePedAbrir(' + p.id + ')">'
+          + '<div class="fe-tarjeta-cab"><b>' + _feEsc(p.numero) + '</b><span>' + _feFecha(p.fecha) + (C.c !== 'remisionado' && dias >= 2 ? ' · <i style="color:var(--red);font-style:normal">' + dias + ' d</i>' : '') + '</span></div>'
+          + '<div class="fe-tarjeta-cli">' + _feEsc(p.cliente) + '</div>'
+          + '<div class="fe-tarjeta-sub">' + _feEsc(p.comercial || p.created_by || '') + ' · <b>' + _feFmt(p.total) + '</b>' + (p.remision ? ' · ' + _feEsc(p.remision) : '') + (p.estado === 'alistando' && p.alistado_por ? ' · alista ' + _feEsc(p.alistado_por) : '') + '</div>'
+          + (p.observaciones ? '<div class="fe-tarjeta-obs">' + _feEsc(p.observaciones) + '</div>' : '')
+          + (falt.length ? '<div class="fe-tarjeta-falt" title="' + _feEsc(falt.map(x => x.codigo + ' pidió ' + x.pedida + ', salió ' + x.enviada).join('\n')) + '">⚠️ Faltó ' + falt.length + ' renglón(es)</div>' : '')
+          + '<div class="fe-tarjeta-acc">' + _fePedBotones(p, true) + '</div></div>';
+      }).join('') : '<div class="fe-carril-vacio">Vacío.</div>') + '</div></div>';
+  }).join('');
+  const viejos = lista.filter(p => p.estado === 'anulado' || (p.estado === 'remisionado' && _feDiasDesde(p.updated_at || p.fecha) > 15)).length;
+  tab.innerHTML = '<div class="fe-carriles">' + carriles
+    + '<div class="fe-carril fe-gaveta" onclick="fePedVista(\'lista\')" title="Ver todos en lista"><div class="fe-carril-t">🗄️ Historial</div><div class="fe-gaveta-n">' + viejos + '</div><div class="fe-carril-d">Anulados y remisionados viejos. Se ven en la lista.</div></div></div>';
+}
+function fePedRenderLista() {
+  const tb = document.getElementById('fe-ped-tbody'); if (!tb) return;
+  const est = _feVal('fe-ped-estado');
+  const lista = _fePedFiltra().filter(p => !est || p.estado === est);
   const cnt = document.getElementById('fe-ped-count'); if (cnt) cnt.textContent = lista.length + ' pedido(s)';
-  const TAG = { pendiente: 'gold', remisionado: 'green', anulado: 'red' };
-  tb.innerHTML = lista.length ? lista.map(p =>
-    '<tr style="cursor:pointer" onclick="fePedAbrir(' + p.id + ')"><td><strong style="color:var(--gold)">' + _feEsc(p.numero) + '</strong></td><td>' + _feFecha(p.fecha) + '</td>'
+  const TAG = { pendiente: 'gold', alistando: 'blue', remisionado: 'green', anulado: 'red' };
+  tb.innerHTML = lista.length ? lista.map(p => {
+    const falt = _fePedFaltantes(p);
+    return '<tr style="cursor:pointer" onclick="fePedAbrir(' + p.id + ')"><td><strong style="color:var(--gold)">' + _feEsc(p.numero) + '</strong></td><td>' + _feFecha(p.fecha) + '</td>'
     + '<td>' + _feEsc(p.cliente) + '</td><td style="font-size:12px">' + _feEsc(p.comercial || '') + '</td>'
     + '<td style="text-align:right;font-weight:700">' + _feFmt(p.total) + '</td>'
-    + '<td><span class="fe-tag ' + (TAG[p.estado] || '') + '">' + _feEsc(p.estado) + '</span>' + (p.remision ? ' <small>' + _feEsc(p.remision) + '</small>' : '') + '</td>'
+    + '<td><span class="fe-tag ' + (TAG[p.estado] || '') + '">' + _feEsc(p.estado) + '</span>' + (p.remision ? ' <small>' + _feEsc(p.remision) + '</small>' : '') + (falt.length ? ' <small style="color:var(--red)">⚠️ ' + falt.length + ' faltante(s)</small>' : '') + '</td>'
     + '<td style="font-size:12px">' + _feEsc(p.observaciones || '') + '</td>'
-    + '<td style="white-space:nowrap" onclick="event.stopPropagation()">'
-    + (p.estado === 'pendiente' && feEsAdmin() ? '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px;color:var(--green)" title="Crear la remisión FE con estos renglones" onclick="feRemDesdePedido(' + p.id + ')">🧾 Remisionar</button> ' : '')
-    + (p.estado === 'pendiente' && fePedPuedeCrear() ? '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" onclick="fePedAbrir(' + p.id + ')">✏️</button> <button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" onclick="fePedAnular(' + p.id + ')">✖</button>' : '')
-    + '</td></tr>').join('')
-    : '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:28px">' + (fe_ped.length ? 'Sin pedidos con ese filtro' : 'Todavía no hay pedidos') + '</td></tr>';
+    + '<td style="white-space:nowrap" onclick="event.stopPropagation()">' + _fePedBotones(p, false) + '</td></tr>';
+  }).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:28px">' + (fe_ped.length ? 'Sin pedidos con ese filtro' : 'Todavía no hay pedidos') + '</td></tr>';
+}
+// PATCH al pedido que tolera que las columnas nuevas (faltantes, alistado_por…) no existan
+// todavía en Supabase: si Supabase se queja de una columna, reintenta sin ellas y avisa.
+var _fePedColsNuevas = true;
+async function _fePedPatch(id, filtro, cuerpo) {
+  const extra = ['faltantes', 'alistado_por', 'alistado_at'];
+  if (_fePedColsNuevas) {
+    try { return await _feWrite('fe_pedidos?id=eq.' + id + (filtro || ''), 'PATCH', cuerpo, 'return=minimal'); }
+    catch (e) {
+      if (!/column|PGRST204/i.test(String(e && e.message))) throw e;
+      _fePedColsNuevas = false;
+      showToast('Falta correr scripts/migracion_ferre_alistamiento_2026-10-21.sql en Supabase: por ahora no se guardan faltantes ni quién alista.', 'error', { durationMs: 9000 });
+    }
+  }
+  const c = {}; Object.keys(cuerpo).forEach(k => { if (!extra.includes(k)) c[k] = cuerpo[k]; });
+  return await _feWrite('fe_pedidos?id=eq.' + id + (filtro || ''), 'PATCH', c, 'return=minimal');
+}
+async function fePedAlistar(id) {
+  const p = fe_ped.find(x => x.id === id); if (!p || !feEsAdmin() || p.estado !== 'pendiente') return;
+  try {
+    await _fePedPatch(id, '&estado=eq.pendiente', { estado: 'alistando', alistado_por: _feYo(), alistado_at: _feAhora(), updated_by: _feYo(), updated_at: _feAhora() });
+    await feCargarPedidos(true); fePedRender(); _feRefrescarAlertas();
+    showToast(p.numero + ' en alistamiento ✓', 'success');
+    fePedHoja(id);
+  } catch (e) { showToast('No se pudo: ' + (e && e.message || e), 'error'); }
+}
+// Hoja de alistamiento: lo que hay que recoger, ordenado por ubicación en el local.
+async function fePedHoja(id) {
+  const p = fe_ped.find(x => x.id === id); if (!p) return;
+  let items = [];
+  try { await feCargarProductos(); items = (await _cplTodo('fe_pedido_items?pedido_id=eq.' + id + '&order=id.asc')) || []; }
+  catch (e) { showToast('No se pudo leer el pedido: ' + e.message, 'error'); return; }
+  const c = _feCli(p.cliente_id) || {};
+  const filas = items.map(it => { const pr = _feProd(it.producto_id) || {}; return Object.assign({}, it, { ubicacion: pr.ubicacion || '', stock: _feStockDe(it.producto_id) }); })
+    .sort((a, b) => (a.ubicacion || 'zzz').localeCompare(b.ubicacion || 'zzz') || String(a.codigo).localeCompare(String(b.codigo)));
+  const e = _feEsc, AZ = '#1A3A8F';
+  const html = '<!doctype html><html><head><meta charset="utf-8"><title>Alistamiento ' + e(p.numero) + '</title><style>'
+    + '@page{size:letter portrait;margin:12mm}body{font-family:Segoe UI,Arial,sans-serif;color:#111;font-size:12px;margin:0}'
+    + '.cab{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid ' + AZ + ';padding-bottom:8px;margin-bottom:10px}'
+    + '.num{text-align:right}.num b{font-size:20px;color:' + AZ + '}.num div{font-size:11px;color:#444}'
+    + '.datos{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px 14px;background:#f4f4f5;padding:8px 12px;border-radius:6px;margin-bottom:10px}.datos span{color:#666;font-size:10px;text-transform:uppercase}.datos div{font-size:12px}'
+    + 'table{width:100%;border-collapse:collapse}th{background:' + AZ + ';color:#fff;font-size:10px;text-transform:uppercase;padding:5px 6px;text-align:left}td{padding:6px;border-bottom:1px solid #e4e4e7;vertical-align:middle}'
+    + '.box{display:inline-block;width:14px;height:14px;border:1.5px solid #333;border-radius:3px}.ubi{font-weight:700;color:' + AZ + '}.ok{color:#15803d;font-weight:700}.no{color:#b91c1c;font-weight:700}'
+    + '.firmas{display:flex;gap:30px;margin-top:34px}.firmas div{flex:1;border-top:1px solid #333;padding-top:5px;font-size:10px;color:#444;text-align:center}'
+    + '.pie{margin-top:12px;font-size:10px;color:#666}</style></head><body>'
+    + '<div class="cab"><div><img src="' + FE_LOGO + '" alt="E&G Ferreindustrial" style="height:60px;display:block"><small style="display:block;font-size:10px;color:#555;letter-spacing:2px;font-weight:700;margin-top:3px">HOJA DE ALISTAMIENTO</small></div>'
+    + '<div class="num"><b>PEDIDO ' + e(p.numero) + '</b><div>Fecha del pedido: ' + _feFecha(p.fecha) + '</div><div>Impreso: ' + _feFecha(_feHoy()) + ' · ' + e(_feYo()) + '</div></div></div>'
+    + '<div class="datos"><div><span>Ferretería</span><div><b>' + e(p.cliente) + '</b></div></div><div><span>Comercial</span><div>' + e(p.comercial || p.created_by || '—') + '</div></div><div><span>Entregar en</span><div>' + e([c.direccion, c.ciudad].filter(Boolean).join(', ') || '—') + (c.telefono ? ' · ' + e(c.telefono) : '') + '</div></div></div>'
+    + (p.observaciones ? '<div style="margin-bottom:8px;font-size:11px"><b>Observaciones:</b> ' + e(p.observaciones) + '</div>' : '')
+    + '<table><thead><tr><th style="width:22px"></th><th style="width:90px">Ubicación</th><th style="width:80px">Código</th><th>Descripción</th><th style="width:36px">Und</th><th style="width:60px;text-align:right">Pedido</th><th style="width:60px;text-align:right">Stock</th><th style="width:70px;text-align:right">Alistado</th><th style="width:110px">Novedad</th></tr></thead><tbody>'
+    + filas.map(it => '<tr><td><span class="box"></span></td><td class="ubi">' + e(it.ubicacion || '—') + '</td><td>' + e(it.codigo) + '</td><td>' + e(it.descripcion) + '</td><td>' + e(it.unidad) + '</td>'
+      + '<td style="text-align:right;font-weight:700">' + _feNum(it.cantidad) + '</td><td style="text-align:right" class="' + (+it.stock >= +it.cantidad ? 'ok' : 'no') + '">' + _feNum(it.stock) + '</td><td></td><td></td></tr>').join('')
+    + '</tbody></table>'
+    + '<div class="pie">' + filas.length + ' renglón(es). Stock = existencias en el sistema al imprimir; en rojo lo que no alcanza. Marca la casilla al recoger cada renglón y anota en «Alistado» lo que realmente va.</div>'
+    + '<div class="firmas"><div>Alistó</div><div>Revisó</div></div></body></html>';
+  _pdfOverlay(html, 'Alistamiento ' + p.numero + ' · ' + p.cliente);
+}
+// ── Campana: pedidos nuevos y en alistamiento (para quien tiene Ferreindustrial) ──
+var _feAlertas = [], _feAlertasT = null;
+async function _feRefrescarAlertas() {
+  if (!currentUser || !feTiene('fe') || document.hidden) return;
+  try {
+    const r = await absFetch('fe_pedidos?estado=in.(pendiente,alistando)&select=id,numero,cliente,comercial,fecha,estado,total,alistado_por&order=fecha.asc&limit=50');
+    const antes = _feAlertas.length;
+    _feAlertas = r || [];
+    if (_feAlertas.length !== antes) { try { updateNotifBadge(); renderNotifPanel(); } catch (_) {} }
+  } catch (_) {}
+}
+function _feAlertasBuild() {
+  if (!currentUser || !feTiene('fe')) return [];
+  const admin = feEsAdmin(), yo = _feUsuario();
+  return _feAlertas.filter(p => admin || p.comercial === yo).map(p => ({
+    type: p.estado === 'pendiente' ? (admin ? 'red' : 'blue') : 'blue', icon: '📝',
+    title: p.estado === 'pendiente' ? ('Pedido ' + p.numero + (admin ? ' ESPERA ALISTAMIENTO' : ' enviado')) : ('Pedido ' + p.numero + ' en alistamiento'),
+    detail: p.cliente + ' · ' + _feFmt(p.total) + ' · ' + (p.estado === 'alistando' ? 'alista ' + (p.alistado_por || '') : 'tomado por ' + (p.comercial || '')) + ' · ' + _feFecha(p.fecha),
+    badge: { cls: p.estado === 'pendiente' ? 'red' : 'blue', txt: p.estado === 'pendiente' ? 'ALISTAR' : 'ALISTANDO' },
+    action: "feSetEmpresa('fe');navigate('fe_pedidos')"
+  }));
+}
+function _feAlertasIniciar() {
+  if (_feAlertasT || !currentUser || !feTiene('fe')) return;
+  _feRefrescarAlertas();
+  _feAlertasT = setInterval(_feRefrescarAlertas, 60000);
+}
+async function fePedInit(force) {
+  const b = document.getElementById('fe-ped-btn-nuevo'); if (b) b.style.display = fePedPuedeCrear() ? '' : 'none';
+  try { await Promise.all([feCargarPedidos(force), feCargarClientes(force), feCargarProductos(force)]); } catch (e) { _feErrorTablas(e, 'fe-ped-tbody', 8); return; }
+  fePedRender();
 }
 async function fePedNuevo(clienteId) {
   if (!fePedPuedeCrear()) return;
@@ -37306,13 +37480,17 @@ async function fePedAbrir(id) {
   let items = [];
   try { await Promise.all([feCargarClientes(), feCargarProductos()]); items = (await _cplTodo('fe_pedido_items?pedido_id=eq.' + id + '&order=id.asc')) || []; }
   catch (e) { showToast('No se pudo abrir: ' + e.message, 'error'); return; }
-  const editable = p.estado === 'pendiente' && fePedPuedeCrear();
+  const editable = (p.estado === 'pendiente' && fePedPuedeCrear()) || (p.estado === 'alistando' && feEsAdmin());
+  const falt = _fePedFaltantes(p);
   _feEd = { items: items.map(it => ({ producto_id: it.producto_id, codigo: it.codigo, descripcion: it.descripcion, unidad: it.unidad, cantidad: +it.cantidad, precio: +it.precio })), descuenta: false };
   const html = _feEdHTML({ cliente_id: p.cliente_id || '', fecha: p.fecha, obs: p.observaciones || '' })
-    + '<div class="fe-modal-pie"><span class="abs-count" style="margin:0 auto 0 0">' + _feEsc(p.numero) + ' · ' + _feEsc(p.estado) + ' · tomado por ' + _feEsc(p.comercial || p.created_by || '') + (p.remision ? ' · remisión ' + _feEsc(p.remision) : '') + '</span>'
+    + (falt.length ? '<div class="fe-falt-box">⚠️ <b>Faltantes en la remisión ' + _feEsc(p.remision || '') + ':</b> ' + falt.map(x => _feEsc(x.codigo) + ' ' + _feEsc(x.descripcion) + ' (pidió ' + _feNum(x.pedida) + ', salió ' + _feNum(x.enviada) + ')').join(' · ') + '</div>' : '')
+    + '<div class="fe-modal-pie"><span class="abs-count" style="margin:0 auto 0 0">' + _feEsc(p.numero) + ' · ' + _feEsc(p.estado) + ' · tomado por ' + _feEsc(p.comercial || p.created_by || '') + (p.alistado_por ? ' · alista ' + _feEsc(p.alistado_por) : '') + (p.remision ? ' · remisión ' + _feEsc(p.remision) : '') + '</span>'
     + '<button class="btn btn-ghost" onclick="_feCerrar(\'fe-ped-modal\')">Cerrar</button>'
+    + '<button class="btn btn-ghost" onclick="fePedHoja(' + p.id + ')">📋 Hoja de alistamiento</button>'
     + (editable ? '<button class="btn btn-primary" style="width:auto" onclick="fePedGuardar(' + p.id + ')">💾 Guardar cambios</button>' : '')
-    + (p.estado === 'pendiente' && feEsAdmin() ? '<button class="btn btn-primary" style="width:auto;background:var(--gold);color:#111" onclick="_feCerrar(\'fe-ped-modal\');feRemDesdePedido(' + p.id + ')">🧾 Remisionar</button>' : '')
+    + (p.estado === 'pendiente' && feEsAdmin() ? '<button class="btn btn-primary" style="width:auto" onclick="_feCerrar(\'fe-ped-modal\');fePedAlistar(' + p.id + ')">▶ Alistar</button>' : '')
+    + ((p.estado === 'pendiente' || p.estado === 'alistando') && feEsAdmin() ? '<button class="btn btn-primary" style="width:auto;background:var(--gold);color:#fff" onclick="_feCerrar(\'fe-ped-modal\');feRemDesdePedido(' + p.id + ')">🧾 Remisionar</button>' : '')
     + '</div>';
   _feModal('fe-ped-modal', 'Pedido ' + p.numero, html, 960);
   _feEdRender();
@@ -37332,19 +37510,23 @@ async function fePedGuardar(id) {
       const r = await _feWrite('fe_pedidos', 'POST', cab); pid = r && r[0] && r[0].id;
       if (!pid) throw new Error('Supabase no devolvió el id del pedido');
     } else {
-      await _feWrite('fe_pedidos?id=eq.' + id + '&estado=eq.pendiente', 'PATCH', cab, 'return=minimal');
+      await _feWrite('fe_pedidos?id=eq.' + id + '&estado=in.(pendiente,alistando)', 'PATCH', cab, 'return=minimal');
       await absFetch('fe_pedido_items?pedido_id=eq.' + id, { method: 'DELETE' });
     }
     await _feWrite('fe_pedido_items', 'POST', items.map(it => ({ pedido_id: pid, producto_id: it.producto_id, codigo: it.codigo, descripcion: it.descripcion, unidad: it.unidad, cantidad: +it.cantidad, precio: +it.precio || 0, total: (+it.cantidad) * (+it.precio || 0) })), 'return=minimal');
     _feCerrar('fe-ped-modal'); _feEd = null;
     showToast('Pedido ' + (cab.numero || '') + ' guardado ✓', 'success');
+    if (!id) {   // 21-oct-2026: aviso a Teams y a la campana de quien alista
+      try { notifyTeamsApp('📝 Pedido ' + cab.numero + ' · Ferreindustrial', '**' + c.nombre + '** · ' + _feFmt(total) + ' · tomado por ' + _feYo(), '1A8F3C'); } catch (_) {}
+      try { _feRefrescarAlertas(); } catch (_) {}
+    }
     await feCargarPedidos(true); fePedRender(); if (currentPage === 'fe_clientes') feCliInit();
   } catch (e) { showToast('No se pudo guardar el pedido: ' + (e && e.message || e), 'error'); }
 }
 async function fePedAnular(id) {
   const p = fe_ped.find(x => x.id === id); if (!p || !fePedPuedeCrear()) return;
   if (!confirm('¿Anular el pedido ' + p.numero + ' de ' + p.cliente + '?')) return;
-  try { await _feWrite('fe_pedidos?id=eq.' + id + '&estado=eq.pendiente', 'PATCH', { estado: 'anulado', updated_by: _feYo(), updated_at: _feAhora() }, 'return=minimal'); await feCargarPedidos(true); fePedRender(); showToast('Pedido anulado', 'info'); }
+  try { await _feWrite('fe_pedidos?id=eq.' + id + '&estado=in.(pendiente,alistando)', 'PATCH', { estado: 'anulado', updated_by: _feYo(), updated_at: _feAhora() }, 'return=minimal'); await feCargarPedidos(true); fePedRender(); try { _feRefrescarAlertas(); } catch (_) {} showToast('Pedido anulado', 'info'); }
   catch (e) { showToast('No se pudo anular: ' + e.message, 'error'); }
 }
 function fePedExcel() {
@@ -37390,7 +37572,8 @@ async function feRemNueva(pedido) {
   if (pedido) {
     try { items = (await _cplTodo('fe_pedido_items?pedido_id=eq.' + pedido.id + '&order=id.asc')) || []; } catch (e) { showToast('No se pudo leer el pedido: ' + e.message, 'error'); return; }
   }
-  _feEd = { items: items.map(it => ({ producto_id: it.producto_id, codigo: it.codigo, descripcion: it.descripcion, unidad: it.unidad, cantidad: +it.cantidad, precio: +it.precio })), descuenta: true, pedido_id: pedido ? pedido.id : null };
+  _feEd = { items: items.map(it => ({ producto_id: it.producto_id, codigo: it.codigo, descripcion: it.descripcion, unidad: it.unidad, cantidad: +it.cantidad, precio: +it.precio })), descuenta: true, pedido_id: pedido ? pedido.id : null,
+    pedidoItems: items.map(it => ({ producto_id: it.producto_id, codigo: it.codigo, descripcion: it.descripcion, cantidad: +it.cantidad })) };   // lo pedido, para calcular faltantes
   const html = (pedido ? '<div class="abs-count" style="margin:0 0 10px">Desde el pedido <b>' + _feEsc(pedido.numero) + '</b> tomado por ' + _feEsc(pedido.comercial || '') + '. Ajusta cantidades si no sale todo.</div>' : '')
     + _feEdHTML({ cliente_id: pedido ? pedido.cliente_id : '', obs: pedido ? pedido.observaciones || '' : '', extraCampos: _feRemExtra(null) })
     + '<div class="abs-count" style="margin:0 0 10px">Al guardar: se asigna el consecutivo FE, se descuenta el inventario de Ferreindustrial y queda el PDF. Precios ANTES de IVA; la remisión muestra IVA 19 %.</div>'
@@ -37401,7 +37584,7 @@ async function feRemNueva(pedido) {
 }
 async function feRemDesdePedido(id) {
   await feCargarPedidos(); const p = fe_ped.find(x => x.id === id);
-  if (!p) return; if (p.estado !== 'pendiente') { showToast('Ese pedido ya no está pendiente', 'info'); return; }
+  if (!p) return; if (p.estado !== 'pendiente' && p.estado !== 'alistando') { showToast('Ese pedido ya no está abierto', 'info'); return; }
   feRemNueva(p);
 }
 var _feRemGuardando = false;
@@ -37426,9 +37609,18 @@ async function feRemGuardar() {
     await _feWrite('fe_remision_items', 'POST', items.map(it => ({ remision_id: rid, producto_id: it.producto_id, codigo: it.codigo, descripcion: it.descripcion, unidad: it.unidad, cantidad: +it.cantidad, precio: +it.precio || 0, total: (+it.cantidad) * (+it.precio || 0) })), 'return=minimal');
     // Salida del kardex, un movimiento por renglón, con el costo promedio del momento.
     await _feWrite('fe_kardex', 'POST', items.filter(it => it.producto_id).map(it => { const p = _feProd(it.producto_id); return { producto_id: it.producto_id, fecha: cab.fecha, tipo: 'salida', cantidad: -(+it.cantidad), costo_unit: p ? _feCostoDe(p) : null, referencia: numero, motivo: 'Remisión a ' + c.nombre, usuario: _feYo() }; }), 'return=minimal');
-    if (cab.pedido_id) await _feWrite('fe_pedidos?id=eq.' + cab.pedido_id, 'PATCH', { estado: 'remisionado', remision: numero, updated_by: _feYo(), updated_at: _feAhora() }, 'return=minimal');
+    let faltantes = [];
+    if (cab.pedido_id) {
+      // Faltantes = lo que pidió el comercial menos lo que salió en esta remisión (por producto).
+      const enviado = {}; items.forEach(it => { enviado[it.producto_id] = (enviado[it.producto_id] || 0) + (+it.cantidad); });
+      faltantes = (_feEd.pedidoItems || []).filter(it => (+it.cantidad) > (enviado[it.producto_id] || 0))
+        .map(it => ({ codigo: it.codigo, descripcion: it.descripcion, pedida: +it.cantidad, enviada: enviado[it.producto_id] || 0 }));
+      await _fePedPatch(cab.pedido_id, '', { estado: 'remisionado', remision: numero, faltantes: faltantes.length ? faltantes : null, updated_by: _feYo(), updated_at: _feAhora() });
+    }
     _feCerrar('fe-rem-modal'); _feEd = null; _feCargado.kardex = false; _feCargado.ped = false;
     showToast('Remisión ' + numero + ' emitida ✓', 'success');
+    if (faltantes.length) showToast('⚠️ ' + faltantes.length + ' renglón(es) salieron incompletos; quedaron como faltantes en el pedido', 'info', { durationMs: 8000 });
+    try { _feRefrescarAlertas(); } catch (_) {}
     await Promise.all([feCargarRemisiones(true), feCargarProductos(true)]);
     if (currentPage !== 'fe_remisiones') navigate('fe_remisiones'); else feRemRender();
     feRemPDF(rid);
@@ -37444,7 +37636,7 @@ async function feRemAnular(id) {
     await _feWrite('fe_remisiones?id=eq.' + id + '&estado=eq.emitida', 'PATCH', { estado: 'anulada', observaciones: ((r.observaciones || '') + ' · ANULADA: ' + motivo).trim(), updated_by: _feYo(), updated_at: _feAhora() }, 'return=minimal');
     const dev = items.filter(it => it.producto_id).map(it => ({ producto_id: it.producto_id, fecha: _feHoy(), tipo: 'anulacion', cantidad: +it.cantidad, costo_unit: null, referencia: 'ANULA ' + r.numero, motivo, usuario: _feYo() }));
     if (dev.length) await _feWrite('fe_kardex', 'POST', dev, 'return=minimal');
-    if (r.pedido_id) await _feWrite('fe_pedidos?id=eq.' + r.pedido_id, 'PATCH', { estado: 'pendiente', remision: null, updated_by: _feYo(), updated_at: _feAhora() }, 'return=minimal');
+    if (r.pedido_id) await _fePedPatch(r.pedido_id, '', { estado: 'pendiente', remision: null, faltantes: null, updated_by: _feYo(), updated_at: _feAhora() });
     _feCargado.kardex = false; _feCargado.ped = false;
     await Promise.all([feCargarRemisiones(true), feCargarProductos(true)]); feRemRender();
     showToast('Remisión ' + r.numero + ' anulada; inventario devuelto', 'info');
