@@ -250,6 +250,22 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .gantt-edit-btn { position:absolute; right:6px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); color:#fff; border-radius:6px; padding:3px 8px; font-size:11px; cursor:pointer; opacity:0; transition:opacity .2s; z-index:6; }
 .gantt-row-g:hover .gantt-edit-btn { opacity:1; }
 .gantt-empty { padding:40px 20px; text-align:center; color:var(--text-muted); font-size:14px; }
+/* 📨 Ofertas de plataformas (22-oct-2026) */
+.ofp-badge { display:inline-block; min-width:18px; padding:1px 6px; border-radius:999px; background:#9333ea; color:#fff; font-size:11px; font-weight:700; margin-left:4px; }
+.ofp-sub { font-size:12px; color:var(--text-muted); margin-top:2px; }
+.ofp-venc { font-size:11px; font-weight:700; color:#E53E3E; margin-top:2px; }
+.ofp-hoy { font-size:11px; font-weight:700; color:#E8A020; margin-top:2px; }
+.ofp-dias { font-size:11px; color:var(--text-muted); margin-top:2px; }
+.ofp-fila-venc td { background:rgba(229,62,62,0.06); }
+.ofp-docs { font-size:12px; font-weight:600; min-width:70px; }
+.ofp-docs-bar { height:5px; border-radius:3px; background:rgba(255,255,255,0.12); margin-top:4px; overflow:hidden; }
+.ofp-docs-bar > div { height:100%; background:#2EAA4A; }
+.ofp-docs-lista { display:flex; flex-direction:column; gap:4px; max-height:220px; overflow:auto; }
+.ofp-doc { display:flex; align-items:center; gap:8px; padding:5px 8px; border:1px solid var(--border); border-radius:8px; font-size:13px; }
+.ofp-doc.ok { opacity:.75; text-decoration:line-through; }
+.ofp-doc input[type=checkbox] { width:auto; margin:0; }
+.ofp-doc .x { margin-left:auto; cursor:pointer; color:var(--text-muted); }
+.ofp-doc .x:hover { color:#fca5a5; }
 .gantt-dates { font-size:11px; color:var(--text-muted); position:absolute; bottom:4px; left:16px; }
 
 /* ===== COMUNICACIONES ===== */
@@ -1621,7 +1637,7 @@ body.fe-mode .fe-tag.blue { background:#dbeafe; color:#1e3a8a; }
       <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">🏠</span>Dashboard</div>
       <div class="nav-item" onclick="navigate('reuniones')"><span class="icon">📅</span>Reuniones</div>
       <div class="nav-item" onclick="navigate('tareas')"><span class="icon">✅</span>Tareas</div>
-      <div class="nav-item" onclick="navigate('cronograma')"><span class="icon">📊</span>Cronograma</div>
+      <div class="nav-item" onclick="navigate('cronograma')"><span class="icon">📊</span>Proyectos y Plataformas</div>
       <div class="nav-section">Comunicación</div>
       <div class="nav-item" onclick="navigate('comunicaciones')"><span class="icon">💬</span>Comunicaciones</div>
       <div class="nav-item" onclick="navigate('minutas')"><span class="icon">📋</span>Minutas</div>
@@ -1781,18 +1797,35 @@ body.fe-mode .fe-tag.blue { background:#dbeafe; color:#1e3a8a; }
         <div class="kanban-board" id="kanban-board"></div>
       </div>
 
-      <!-- CRONOGRAMA -->
+      <!-- CRONOGRAMA → PROYECTOS Y PLATAFORMAS (22-oct-2026): mismo Gantt de proyectos +
+           pestaña «Ofertas de plataformas» (ofertas por portales de clientes). -->
       <div class="page" id="page-cronograma">
-        <div class="section-header" style="margin-bottom:20px;">
-          <span class="section-title">📊 Proyectos y Cronograma</span>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="section-header" style="margin-bottom:14px;">
+          <span class="section-title">📊 Proyectos y Plataformas</span>
+          <div id="cron-acciones-proy" style="display:flex;gap:8px;flex-wrap:wrap;">
             <button id="btn-nuevo-proyecto" class="btn btn-primary" onclick="openModal('modal-proyecto')" style="width:auto;">+ Nuevo Proyecto</button>
             <button class="btn" style="background:#475569;color:#fff;border:none;width:auto;" onclick="projectsOpenTrash()" title="Proyectos eliminados (30 días para restaurar)">🗑️ Papelera</button>
             <button class="btn" style="background:#8b1a1a;color:#fff;border:none;width:auto;" onclick="projectsClearAll()" title="Mover TODOS los proyectos activos a la papelera">🧹 Vaciar Cronograma</button>
           </div>
+          <div id="cron-acciones-ofp" style="display:none;gap:8px;flex-wrap:wrap;align-items:center;">
+            <input type="text" id="ofp-buscar" placeholder="Buscar cliente, plataforma, área…" oninput="ofpRender()" style="width:230px;">
+            <button class="btn btn-ghost" id="ofp-btn-todas" onclick="_ofpVerTodas=!_ofpVerTodas;ofpRender()" style="width:auto;">👁️ Ver todas</button>
+            <button class="btn btn-primary" onclick="ofpNueva()" style="width:auto;">+ Nueva oferta</button>
+          </div>
         </div>
-        <div class="card">
-          <div id="gantt-container"></div>
+        <div class="tabs" style="margin-bottom:16px;">
+          <button class="tab-btn active" id="cron-btn-proy" onclick="cronTab('proy')">📊 Proyectos</button>
+          <button class="tab-btn" id="cron-btn-ofp" onclick="cronTab('ofp')">📨 Ofertas de plataformas <span id="ofp-badge" class="ofp-badge" style="display:none"></span></button>
+        </div>
+        <div id="cron-tab-proy">
+          <div class="card">
+            <div id="gantt-container"></div>
+          </div>
+        </div>
+        <div id="cron-tab-ofp" style="display:none">
+          <div class="card">
+            <div id="ofp-tabla"></div>
+          </div>
         </div>
       </div>
 
@@ -4592,6 +4625,43 @@ body.fe-mode .fe-tag.blue { background:#dbeafe; color:#1e3a8a; }
   </div>
 </div>
 
+<!-- Modal Oferta de plataforma (22-oct-2026) -->
+<div class="modal-overlay" id="modal-ofp">
+  <div class="modal" style="width:640px;">
+    <div class="modal-header">
+      <div class="modal-title" id="ofp-modal-titulo">📨 Nueva oferta de plataforma</div>
+      <button class="close-btn" onclick="closeModal('modal-ofp')">✕</button>
+    </div>
+    <div class="modal-body">
+    <div class="form-row">
+      <div class="form-group"><label>Cliente</label><input type="text" id="ofp-cliente" list="ofp-dl-cliente" placeholder="Empresa que abre el proceso"><datalist id="ofp-dl-cliente"></datalist></div>
+      <div class="form-group"><label>Plataforma</label><input type="text" id="ofp-plataforma" list="ofp-dl-plataforma" placeholder="Ariba, SECOP, portal del cliente…"><datalist id="ofp-dl-plataforma"></datalist></div>
+    </div>
+    <div class="form-group"><label>Objeto de la oferta</label><input type="text" id="ofp-objeto" placeholder="Ej: Suministro de válvulas y accesorios campo X"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Área</label><input type="text" id="ofp-area" list="ofp-dl-area" placeholder="Mecánica, Eléctrica, Instrumentación…"><datalist id="ofp-dl-area"></datalist></div>
+      <div class="form-group"><label>Fecha de presentación</label><input type="date" id="ofp-fecha"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Responsable</label><select id="ofp-responsable"></select></div>
+      <div class="form-group"><label>Estado</label><select id="ofp-estado"></select></div>
+    </div>
+    <div class="form-group">
+      <label>Documentos (lista de chequeo)</label>
+      <div id="ofp-docs-lista" class="ofp-docs-lista"></div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <input type="text" id="ofp-doc-nuevo" placeholder="Agregar documento y Enter" onkeydown="if(event.key==='Enter'){event.preventDefault();ofpDocAgregar();}" style="flex:1;">
+        <button class="btn btn-ghost" onclick="ofpDocAgregar()" style="width:auto;">➕</button>
+        <button class="btn btn-ghost" onclick="ofpDocsBase()" style="width:auto;" title="Agregar los documentos habituales (RUT, Cámara, pólizas…)">📋 Habituales</button>
+      </div>
+    </div>
+    <div class="form-group"><label>Observaciones</label><textarea id="ofp-obs" rows="2" placeholder="Número del proceso, enlace, notas…"></textarea></div>
+    <input type="hidden" id="ofp-editid" value="">
+    <button class="btn btn-primary" onclick="ofpGuardar()" style="margin-top:8px;">Guardar oferta</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Minuta -->
 <div class="modal-overlay" id="modal-minuta">
   <div class="modal" style="width:640px;">
@@ -4942,7 +5012,7 @@ const ALL_MODULES = [
   { id:'dashboard',     label:'🏠 Dashboard' },
   { id:'reuniones',     label:'📅 Reuniones' },
   { id:'tareas',        label:'✅ Tareas' },
-  { id:'cronograma',    label:'📊 Cronograma' },
+  { id:'cronograma',    label:'📊 Proyectos y Plataformas' },
   { id:'comunicaciones',label:'💬 Comunicaciones' },
   { id:'minutas',       label:'📋 Minutas' },
   { id:'equipo',        label:'👥 Equipo' },
@@ -5894,6 +5964,7 @@ const GH_BACKUP_MAP = {
   minutas:         { file: 'data/minutas.json',         label: '📋 Minutas' },
   team:            { file: 'data/team.json',            label: '👥 Equipo' },
   projects:        { file: 'data/projects.json',        label: '📊 Proyectos' },
+  ofertas_plat:    { file: 'data/ofertas_plataformas.json', label: '📨 Ofertas de plataformas' },   // 22-oct-2026
   bd_cotizaciones:    { file: 'data/cotizaciones.json',      label: '📄 Cotizaciones' },
   bd_proveedores:     { file: 'data/proveedores.json',       label: '🏭 Proveedores' },
   solicitudes_cotiz:  { file: 'data/solicitudes_cotiz.json', label: '📩 Solicitudes' },
@@ -7006,6 +7077,7 @@ const POLL_TARGETS = [
   { file:'data/tasks.json',        storageKey:'max_tasks',           renderFn: () => { try{ renderKanban('all'); }catch(_){} try{ renderDashboard(); }catch(_){} }, mergeBy:'id' },
   { file:'data/minutas.json',      storageKey:'max_minutas',         renderFn: () => { try{ renderMinutas(); }catch(_){} }, mergeBy:'id' },
   { file:'data/projects.json',     storageKey:'max_projects',        renderFn: () => { try{ renderGantt(); }catch(_){} try{ renderDashboard(); }catch(_){} }, mergeBy:'id' },
+  { file:'data/ofertas_plataformas.json', storageKey:'max_ofertas_plat', renderFn: () => { try{ renderGantt(); }catch(_){} }, mergeBy:'id' },   // 22-oct-2026
   { file:'data/team.json',         storageKey:'max_team',            renderFn: () => { try{ renderTeam(); renderTeamMgmt(); populateSelects(); }catch(_){} }, mergeBy:'id' },
   { file:'data/cotizaciones.json',      storageKey:'max_bd_cotizaciones',   renderFn: () => { try{ bdRender(); }catch(_){} try{ _cotizNumVigilar(); }catch(_){} try{ _cotizAutoVencidas(); }catch(_){} }, mergeBy:'id' },
   { file:'data/solicitudes_cotiz.json', storageKey:'max_solicitudes_cotiz', renderFn: () => { try{ solRender(); solUpdateBadge(); }catch(_){} }, mergeBy:'id' },
@@ -8046,7 +8118,7 @@ function navigate(page) {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
   currentPage = page;
-  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Cronograma',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',contratos:'Contratos Marco',saldos:'Saldos a Favor',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',proveedores:'Proveedores',costos:'Centro de Costos',pdfstudio:'PDF Studio',ayuda:'Ayuda',fe_inicio:'Ferreindustrial',fe_productos:'Lista de precios',fe_catalogo:'Catálogo',fe_inventario:'Inventario Ferreindustrial',fe_clientes:'Ferreterías',fe_pedidos:'Pedidos',fe_remisiones:'Remisiones Ferreindustrial'};
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Proyectos y Plataformas',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',contratos:'Contratos Marco',saldos:'Saldos a Favor',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',proveedores:'Proveedores',costos:'Centro de Costos',pdfstudio:'PDF Studio',ayuda:'Ayuda',fe_inicio:'Ferreindustrial',fe_productos:'Lista de precios',fe_catalogo:'Catálogo',fe_inventario:'Inventario Ferreindustrial',fe_clientes:'Ferreterías',fe_pedidos:'Pedidos',fe_remisiones:'Remisiones Ferreindustrial'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
   if(page==='remisiones') remiInit();
@@ -8072,7 +8144,7 @@ function navigate(page) {
   try { _pollAlNavegar(); } catch(_) {}
 }
 function getNavLabel(page) {
-  const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'cronograma',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',cotizaciones:'cotizaciones',ordenes:'procesos',op:'órdenes de pedido',fotoinv:'fotoinv',visitas:'visitas',mensajeria:'mensajeria',configuracion:'configuraci',pdfstudio:'pdf studio',contratos:'contratos marco',fe_inicio:'inicio',fe_productos:'lista de precios',fe_catalogo:'catálogo',fe_inventario:'inventario',fe_clientes:'ferreterías',fe_pedidos:'pedidos',fe_remisiones:'remisiones fe'};
+  const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'proyectos y plataformas ofertas',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',cotizaciones:'cotizaciones',ordenes:'procesos',op:'órdenes de pedido',fotoinv:'fotoinv',visitas:'visitas',mensajeria:'mensajeria',configuracion:'configuraci',pdfstudio:'pdf studio',contratos:'contratos marco',fe_inicio:'inicio',fe_productos:'lista de precios',fe_catalogo:'catálogo',fe_inventario:'inventario',fe_clientes:'ferreterías',fe_pedidos:'pedidos',fe_remisiones:'remisiones fe'};
   return map[page]||page;
 }
 
@@ -8115,6 +8187,10 @@ function buildAlerts() {
 
   const tomorrow = new Date(today.getTime()+86400000);
   const fmtDate = s => s ? s.split('-').reverse().join('/') : '';
+
+  // --- 📨 Ofertas de plataformas por presentar (22-oct-2026): 3 días antes, el día y vencidas.
+  // Las ve el responsable, Andrea y gerencia.
+  try { _ofpAlertas(today, fmtDate).forEach(a => alerts.push(a)); } catch (_) {}
 
   // --- O.C. con etapas vencidas ---
   getPOC().filter(o=>o.estado==='activo').forEach(o=>{
@@ -8819,16 +8895,26 @@ function projectsOpenTrash() {
 }
 
 function renderGantt() {
-  const projects = getProjects();
+  // 22-oct-2026 — las ofertas de plataformas también se dibujan (barra hasta la fecha
+  // de presentación). La tabla de la pestaña se refresca aquí mismo.
+  try { ofpRender(); } catch (_) {}
+  let projects = getProjects();
+  try { projects = projects.concat(_ofpComoProyectos()); } catch (_) {}
   const el = document.getElementById('gantt-container');
   if (!projects.length) { el.innerHTML = '<div class="gantt-empty">📋 No hay proyectos. Crea uno con "+ Nuevo Proyecto".</div>'; return; }
 
-  const STATUS_COLORS = { 'En curso':'#2EAA4A', 'Atrasado':'#E53E3E', 'Completado':'#6B7280', 'Planificado':'#3B82F6' };
+  const STATUS_COLORS = { 'En curso':'#2EAA4A', 'Atrasado':'#E53E3E', 'Completado':'#6B7280', 'Planificado':'#3B82F6',
+    'En preparación':'#9333ea', 'Presentada':'#3B82F6', 'Adjudicada':'#2EAA4A', 'No adjudicada':'#6B7280', 'Cancelada':'#E53E3E' };
   const STATUS_STYLE  = {
     'En curso':   'background:rgba(46,170,74,0.18);color:#2EAA4A;',
     'Atrasado':   'background:rgba(229,62,62,0.18);color:#E53E3E;',
     'Completado': 'background:rgba(107,114,128,0.18);color:#9CA3AF;',
-    'Planificado':'background:rgba(59,130,246,0.18);color:#3B82F6;'
+    'Planificado':'background:rgba(59,130,246,0.18);color:#3B82F6;',
+    'En preparación':'background:rgba(147,51,234,0.18);color:#c4b5fd;',
+    'Presentada':    'background:rgba(59,130,246,0.18);color:#60a5fa;',
+    'Adjudicada':    'background:rgba(46,170,74,0.18);color:#2EAA4A;',
+    'No adjudicada': 'background:rgba(107,114,128,0.18);color:#9CA3AF;',
+    'Cancelada':     'background:rgba(229,62,62,0.18);color:#E53E3E;'
   };
   const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
@@ -8871,7 +8957,7 @@ function renderGantt() {
     const left  = toPct(startDate);
     const right = toPct(endDate);
     const width = Math.max(right - left, 0.8);
-    const color = STATUS_COLORS[p.estado] || p.color || '#3B82F6';
+    const color = p._ofpVencida ? '#E53E3E' : (STATUS_COLORS[p.estado] || p.color || '#3B82F6');
     const badge = STATUS_STYLE[p.estado] || 'background:rgba(255,255,255,0.1);color:#fff;';
     const sf = startDate.toLocaleDateString('es-CO', {day:'2-digit', month:'short'});
     const ef = endDate.toLocaleDateString('es-CO',   {day:'2-digit', month:'short', year:'2-digit'});
@@ -8892,8 +8978,8 @@ function renderGantt() {
           <div class="gantt-bar-progress" style="width:${p.progreso}%;"></div>
           <div class="gantt-bar-text">${p.progreso}% &nbsp;·&nbsp; ${sf} → ${ef}</div>
         </div>
-        <button class="gantt-edit-btn" onclick="editProject(${p.id})" style="right:90px;">✏️ Editar</button>
-        <button class="gantt-edit-btn" onclick="deleteProject(${p.id})" style="background:rgba(229,62,62,0.2);border-color:rgba(229,62,62,0.4);color:#fca5a5;" title="Eliminar (queda en papelera 30 días)">🗑️ Borrar</button>
+        <button class="gantt-edit-btn" onclick="${p._ofp ? 'ofpEditar(' + p._ofp + ')' : 'editProject(' + p.id + ')'}" style="right:90px;">✏️ Editar</button>
+        <button class="gantt-edit-btn" onclick="${p._ofp ? 'ofpBorrar(' + p._ofp + ')' : 'deleteProject(' + p.id + ')'}" style="background:rgba(229,62,62,0.2);border-color:rgba(229,62,62,0.4);color:#fca5a5;" title="Eliminar${p._ofp ? '' : ' (queda en papelera 30 días)'}">🗑️ Borrar</button>
       </div>
     </div>`;
   }).join('');
@@ -8906,6 +8992,208 @@ function renderGantt() {
       </div>
       ${rows}
     </div>`;
+}
+
+// ═══ 📨 OFERTAS DE PLATAFORMAS (22-oct-2026) ═══════════════════════════════════
+// Ofertas que se presentan por los portales de los clientes (Ariba, SECOP, portal
+// propio…). Viven en data/ofertas_plataformas.json con el mismo mecanismo que los
+// proyectos (localStorage + respaldo en GitHub + sondeo), se listan en su pestaña y
+// se dibujan en el Gantt como barra hasta la fecha de presentación.
+const OFP_ESTADOS = ['En preparación', 'Presentada', 'Adjudicada', 'No adjudicada', 'Cancelada'];
+const OFP_DOCS_BASE = ['RUT', 'Cámara de Comercio', 'Certificación bancaria', 'Estados financieros',
+                       'Certificados de experiencia', 'Pólizas', 'Oferta técnica', 'Oferta económica'];
+let _ofpDocs = [];            // lista de chequeo del modal abierto
+let _ofpVerTodas = false;
+function ofpTodas() { return getData('ofertas_plat', []) || []; }
+function ofpActivas() { return ofpTodas().filter(o => !o.deleted); }
+function _ofpEsc(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function _ofpHoy() { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+function _ofpDias(f) { if (!f) return null; const d = new Date(f + 'T00:00:00'); if (isNaN(d)) return null; return Math.round((d - _ofpHoy()) / 86400000); }
+function _ofpDocsPct(o) { const d = o.documentos || []; return d.length ? Math.round(d.filter(x => x.ok).length * 100 / d.length) : 0; }
+function _ofpAbierta(o) { return o.estado === 'En preparación'; }
+function _ofpVencida(o) { const n = _ofpDias(o.fecha_presentacion); return _ofpAbierta(o) && n != null && n < 0; }
+
+function cronTab(cual) {
+  const esOfp = cual === 'ofp';
+  const vis = (id, on) => { const e = document.getElementById(id); if (e) e.style.display = on ? (id.startsWith('cron-acciones') ? 'flex' : '') : 'none'; };
+  vis('cron-tab-proy', !esOfp); vis('cron-tab-ofp', esOfp);
+  vis('cron-acciones-proy', !esOfp); vis('cron-acciones-ofp', esOfp);
+  const bp = document.getElementById('cron-btn-proy'), bo = document.getElementById('cron-btn-ofp');
+  if (bp) bp.classList.toggle('active', !esOfp);
+  if (bo) bo.classList.toggle('active', esOfp);
+  if (esOfp) ofpRender();
+}
+
+function ofpRender() {
+  const el = document.getElementById('ofp-tabla'); if (!el) return;
+  const activas = ofpActivas();
+  const badge = document.getElementById('ofp-badge');
+  if (badge) { const n = activas.filter(_ofpAbierta).length; badge.textContent = n ? String(n) : ''; badge.style.display = n ? '' : 'none'; }
+  const btnT = document.getElementById('ofp-btn-todas'); if (btnT) btnT.textContent = _ofpVerTodas ? '👁️ Solo abiertas' : '👁️ Ver todas';
+  const qn = ((document.getElementById('ofp-buscar') || {}).value || '').trim().toLowerCase();
+  let lista = activas.filter(o => _ofpVerTodas || _ofpAbierta(o) || o.estado === 'Presentada');
+  if (qn) lista = lista.filter(o => [o.cliente, o.objeto, o.plataforma, o.area, o.responsable, o.estado].join(' ').toLowerCase().includes(qn));
+  lista.sort((a, b) => String(a.fecha_presentacion || '9999').localeCompare(String(b.fecha_presentacion || '9999')));
+  if (!lista.length) { el.innerHTML = '<div class="gantt-empty">📨 No hay ofertas' + (_ofpVerTodas ? '' : ' abiertas') + '. Crea una con «+ Nueva oferta».</div>'; return; }
+  const EST = { 'En preparación': 'background:rgba(147,51,234,.18);color:#c4b5fd;', 'Presentada': 'background:rgba(59,130,246,.18);color:#60a5fa;',
+                'Adjudicada': 'background:rgba(46,170,74,.18);color:#2EAA4A;', 'No adjudicada': 'background:rgba(107,114,128,.18);color:#9CA3AF;',
+                'Cancelada': 'background:rgba(229,62,62,.18);color:#E53E3E;' };
+  const fmt = s => s ? s.split('-').reverse().join('/') : '—';
+  const filas = lista.map(o => {
+    const n = _ofpDias(o.fecha_presentacion);
+    let cuando = '';
+    if (_ofpAbierta(o) && n != null) {
+      cuando = n < 0 ? `<div class="ofp-venc">VENCIDA hace ${-n} día${-n === 1 ? '' : 's'}</div>`
+             : n === 0 ? '<div class="ofp-hoy">HOY</div>'
+             : n <= 3 ? `<div class="ofp-hoy">en ${n} día${n === 1 ? '' : 's'}</div>`
+             : `<div class="ofp-dias">en ${n} días</div>`;
+    }
+    const docs = o.documentos || [], ok = docs.filter(d => d.ok).length;
+    const docsHtml = docs.length
+      ? `<div class="ofp-docs" title="${_ofpEsc(docs.map(d => (d.ok ? '✔ ' : '○ ') + d.n).join('\n'))}">${ok}/${docs.length}<div class="ofp-docs-bar"><div style="width:${_ofpDocsPct(o)}%"></div></div></div>`
+      : '<span style="color:var(--text-muted)">—</span>';
+    return `<tr class="${_ofpVencida(o) ? 'ofp-fila-venc' : ''}">
+      <td><strong>${_ofpEsc(o.cliente)}</strong><div class="ofp-sub">${_ofpEsc(o.objeto)}</div></td>
+      <td>${_ofpEsc(o.plataforma || '—')}</td>
+      <td>${_ofpEsc(o.area || '—')}</td>
+      <td>${fmt(o.fecha_presentacion)}${cuando}</td>
+      <td>${_ofpEsc(o.responsable || '—')}</td>
+      <td>${docsHtml}</td>
+      <td><span class="gantt-status-badge" style="${EST[o.estado] || ''}">${_ofpEsc(o.estado)}</span></td>
+      <td style="white-space:nowrap"><button class="btn btn-ghost" style="width:auto;padding:4px 9px" onclick="ofpEditar(${o.id})" title="Editar">✏️</button> <button class="btn btn-ghost" style="width:auto;padding:4px 9px;color:#fca5a5" onclick="ofpBorrar(${o.id})" title="Eliminar">🗑️</button></td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `<div class="abs-table-wrap"><table class="abs-table"><thead><tr><th>Cliente / Oferta</th><th>Plataforma</th><th>Área</th><th>Presentación</th><th>Responsable</th><th>Documentos</th><th>Estado</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`;
+}
+
+// Las ofertas como barras del Gantt: desde que se registró (o 14 días antes) hasta la
+// fecha de presentación. Progreso = documentos listos. Cerradas (adjudicada / no
+// adjudicada / cancelada) no se dibujan para no llenar el tablero.
+function _ofpComoProyectos() {
+  return ofpActivas().filter(o => o.fecha_presentacion && (_ofpAbierta(o) || o.estado === 'Presentada')).map(o => {
+    const fin = o.fecha_presentacion;
+    let ini = (o.createdAt || '').slice(0, 10);
+    if (!ini || ini > fin) { const d = new Date(fin + 'T00:00:00'); d.setDate(d.getDate() - 14); ini = d.toISOString().slice(0, 10); }
+    return { id: 'ofp' + o.id, _ofp: o.id, _ofpVencida: _ofpVencida(o), color: '#9333ea',
+             nombre: '📨 ' + (o.cliente || '—') + (o.objeto ? ' · ' + o.objeto : ''),
+             responsable: o.responsable || '—', inicio: ini, fin: fin, progreso: _ofpDocsPct(o), estado: o.estado };
+  });
+}
+
+function _ofpAlertas(today, fmtDate) {
+  const out = [];
+  const yo = currentUser ? String(currentUser.name || '').toLowerCase() : '';
+  const email = currentUser ? String(currentUser.email || '').toLowerCase() : '';
+  const veTodo = email === 'alberto' || email === 'andrea';
+  const ir = "navigate('cronograma');setTimeout(function(){cronTab('ofp');},60)";
+  ofpActivas().filter(_ofpAbierta).forEach(o => {
+    const n = _ofpDias(o.fecha_presentacion); if (n == null || n > 3) return;
+    const mia = yo && String(o.responsable || '').toLowerCase() === yo;
+    if (!veTodo && !mia) return;
+    const quien = 'Cliente: ' + (o.cliente || '—') + ' · ' + (o.plataforma || 'plataforma') + ' · Responsable: ' + (o.responsable || '—') + ' · Documentos ' + _ofpDocsPct(o) + '%';
+    if (n < 0) out.push({ type: 'red', icon: '📨', title: 'Oferta VENCIDA sin presentar: ' + (o.objeto || o.cliente),
+                          detail: quien + ' · Era el ' + fmtDate(o.fecha_presentacion), badge: { cls: 'red', txt: 'VENCIDA' }, action: ir });
+    else if (n === 0) out.push({ type: 'red', icon: '📨', title: 'Oferta se presenta HOY: ' + (o.objeto || o.cliente),
+                          detail: quien, badge: { cls: 'red', txt: 'HOY' }, action: ir });
+    else out.push({ type: 'orange', icon: '📨', title: 'Oferta se presenta en ' + n + ' día' + (n === 1 ? '' : 's') + ': ' + (o.objeto || o.cliente),
+                    detail: quien + ' · ' + fmtDate(o.fecha_presentacion), badge: { cls: 'orange', txt: n + 'D' }, action: ir });
+  });
+  return out;
+}
+
+// ── Modal ──
+function _ofpLlenarListas() {
+  const todas = ofpTodas();
+  const uniq = arr => [...new Set(arr.map(x => String(x || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const opt = arr => arr.map(v => `<option value="${_ofpEsc(v)}">`).join('');
+  const clientes = uniq((getData('bd_clientes', []) || []).map(c => c.empresa).concat(todas.map(o => o.cliente)));
+  const dl = id => document.getElementById(id);
+  if (dl('ofp-dl-cliente')) dl('ofp-dl-cliente').innerHTML = opt(clientes);
+  if (dl('ofp-dl-plataforma')) dl('ofp-dl-plataforma').innerHTML = opt(uniq(todas.map(o => o.plataforma)));
+  if (dl('ofp-dl-area')) dl('ofp-dl-area').innerHTML = opt(uniq(todas.map(o => o.area)));
+  const r = document.getElementById('ofp-responsable'), pr = document.getElementById('p-responsable');
+  if (r && pr) r.innerHTML = pr.innerHTML;
+  const e = document.getElementById('ofp-estado');
+  if (e) e.innerHTML = OFP_ESTADOS.map(x => `<option value="${x}">${x}</option>`).join('');
+}
+function _ofpDocsRender() {
+  const el = document.getElementById('ofp-docs-lista'); if (!el) return;
+  if (!_ofpDocs.length) { el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:4px 2px;">Sin documentos. Agrega uno abajo o usa «Habituales».</div>'; return; }
+  el.innerHTML = _ofpDocs.map((d, i) => `<label class="ofp-doc ${d.ok ? 'ok' : ''}"><input type="checkbox" ${d.ok ? 'checked' : ''} onchange="_ofpDocs[${i}].ok=this.checked;_ofpDocsRender()"> ${_ofpEsc(d.n)}<span class="x" title="Quitar" onclick="event.preventDefault();_ofpDocs.splice(${i},1);_ofpDocsRender()">✕</span></label>`).join('');
+}
+function ofpDocAgregar() {
+  const inp = document.getElementById('ofp-doc-nuevo'); const n = (inp.value || '').trim(); if (!n) return;
+  if (!_ofpDocs.some(d => d.n.toLowerCase() === n.toLowerCase())) _ofpDocs.push({ n: n, ok: false });
+  inp.value = ''; _ofpDocsRender(); inp.focus();
+}
+function ofpDocsBase() {
+  OFP_DOCS_BASE.forEach(n => { if (!_ofpDocs.some(d => d.n.toLowerCase() === n.toLowerCase())) _ofpDocs.push({ n: n, ok: false }); });
+  _ofpDocsRender();
+}
+function ofpNueva() {
+  _ofpLlenarListas();
+  ['ofp-cliente', 'ofp-plataforma', 'ofp-objeto', 'ofp-area', 'ofp-fecha', 'ofp-obs', 'ofp-doc-nuevo'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+  const r = document.getElementById('ofp-responsable');
+  if (r && currentUser && currentUser.name) { const o = [...r.options].find(x => x.value === currentUser.name); if (o) r.value = o.value; }
+  document.getElementById('ofp-estado').value = 'En preparación';
+  document.getElementById('ofp-editid').value = '';
+  document.getElementById('ofp-modal-titulo').textContent = '📨 Nueva oferta de plataforma';
+  _ofpDocs = []; _ofpDocsRender();
+  openModal('modal-ofp');
+}
+function ofpEditar(id) {
+  const o = ofpTodas().find(x => x.id === id); if (!o) return;
+  _ofpLlenarListas();
+  document.getElementById('ofp-cliente').value = o.cliente || '';
+  document.getElementById('ofp-plataforma').value = o.plataforma || '';
+  document.getElementById('ofp-objeto').value = o.objeto || '';
+  document.getElementById('ofp-area').value = o.area || '';
+  document.getElementById('ofp-fecha').value = o.fecha_presentacion || '';
+  document.getElementById('ofp-obs').value = o.obs || '';
+  const r = document.getElementById('ofp-responsable');
+  if (o.responsable && ![...r.options].some(x => x.value === o.responsable)) r.insertAdjacentHTML('beforeend', `<option value="${_ofpEsc(o.responsable)}">${_ofpEsc(o.responsable)}</option>`);
+  r.value = o.responsable || '';
+  document.getElementById('ofp-estado').value = OFP_ESTADOS.includes(o.estado) ? o.estado : 'En preparación';
+  document.getElementById('ofp-editid').value = String(id);
+  document.getElementById('ofp-modal-titulo').textContent = '✏️ Editar oferta de plataforma';
+  _ofpDocs = (o.documentos || []).map(d => ({ n: d.n, ok: !!d.ok })); _ofpDocsRender();
+  openModal('modal-ofp');
+}
+function ofpGuardar() {
+  const v = id => (document.getElementById(id).value || '').trim();
+  const cliente = v('ofp-cliente'), fecha = v('ofp-fecha');
+  if (!cliente) { showToast('Escribe el cliente', 'error'); return; }
+  if (!fecha) { showToast('Falta la fecha de presentación', 'error'); return; }
+  const pendiente = v('ofp-doc-nuevo'); if (pendiente) ofpDocAgregar();
+  const lista = ofpTodas();
+  const editId = parseInt(v('ofp-editid')) || 0;
+  const cuerpo = { cliente: cliente, plataforma: v('ofp-plataforma'), objeto: v('ofp-objeto'), area: v('ofp-area'),
+                   fecha_presentacion: fecha, responsable: v('ofp-responsable'), estado: v('ofp-estado') || 'En preparación',
+                   documentos: _ofpDocs.map(d => ({ n: d.n, ok: !!d.ok })), obs: v('ofp-obs') };
+  if (editId) {
+    const i = lista.findIndex(x => x.id === editId); if (i < 0) { showToast('La oferta ya no existe', 'error'); return; }
+    const prev = lista[i];
+    if (cuerpo.estado === 'Presentada' && prev.estado !== 'Presentada') cuerpo.presentada_at = new Date().toISOString();
+    lista[i] = _audit(Object.assign({}, prev, cuerpo), false);
+    showToast('Oferta actualizada', 'success');
+  } else {
+    cuerpo.id = Math.max(0, ...lista.map(x => +x.id || 0)) + 1;
+    lista.push(_audit(cuerpo, true));
+    showToast('Oferta registrada', 'success');
+  }
+  setData('ofertas_plat', lista);
+  closeModal('modal-ofp');
+  renderGantt();
+  try { if (typeof renderAlerts === 'function') renderAlerts(); } catch (_) {}
+}
+function ofpBorrar(id) {
+  const lista = ofpTodas(); const o = lista.find(x => x.id === id); if (!o) return;
+  if (!confirm('¿Eliminar la oferta de ' + (o.cliente || '—') + (o.objeto ? ' («' + o.objeto + '»)' : '') + '?')) return;
+  o.deleted = true; o.deletedAt = new Date().toISOString(); o.deletedBy = currentUser ? (currentUser.email || currentUser.name) : 'system';
+  _audit(o, false);
+  setData('ofertas_plat', lista);
+  renderGantt();
+  showToast('Oferta eliminada', 'success');
 }
 
 // ===== TEMPLATES =====
