@@ -1637,7 +1637,7 @@ body.fe-mode .fe-tag.blue { background:#dbeafe; color:#1e3a8a; }
       <div class="nav-item active" onclick="navigate('dashboard')"><span class="icon">🏠</span>Dashboard</div>
       <div class="nav-item" onclick="navigate('reuniones')"><span class="icon">📅</span>Reuniones</div>
       <div class="nav-item" onclick="navigate('tareas')"><span class="icon">✅</span>Tareas</div>
-      <div class="nav-item" onclick="navigate('cronograma')"><span class="icon">📊</span>Proyectos y Plataformas</div>
+      <div class="nav-item" onclick="navigate('cronograma')"><span class="icon">📨</span>Ofertas en Plataformas y Proyectos</div>
       <div class="nav-section">Comunicación</div>
       <div class="nav-item" onclick="navigate('comunicaciones')"><span class="icon">💬</span>Comunicaciones</div>
       <div class="nav-item" onclick="navigate('minutas')"><span class="icon">📋</span>Minutas</div>
@@ -1801,30 +1801,30 @@ body.fe-mode .fe-tag.blue { background:#dbeafe; color:#1e3a8a; }
            pestaña «Ofertas de plataformas» (ofertas por portales de clientes). -->
       <div class="page" id="page-cronograma">
         <div class="section-header" style="margin-bottom:14px;">
-          <span class="section-title">📊 Proyectos y Plataformas</span>
-          <div id="cron-acciones-proy" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <span class="section-title">📨 Ofertas en Plataformas y Proyectos</span>
+          <div id="cron-acciones-proy" style="display:none;gap:8px;flex-wrap:wrap;">
             <button id="btn-nuevo-proyecto" class="btn btn-primary" onclick="openModal('modal-proyecto')" style="width:auto;">+ Nuevo Proyecto</button>
             <button class="btn" style="background:#475569;color:#fff;border:none;width:auto;" onclick="projectsOpenTrash()" title="Proyectos eliminados (30 días para restaurar)">🗑️ Papelera</button>
             <button class="btn" style="background:#8b1a1a;color:#fff;border:none;width:auto;" onclick="projectsClearAll()" title="Mover TODOS los proyectos activos a la papelera">🧹 Vaciar Cronograma</button>
           </div>
-          <div id="cron-acciones-ofp" style="display:none;gap:8px;flex-wrap:wrap;align-items:center;">
+          <div id="cron-acciones-ofp" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
             <input type="text" id="ofp-buscar" placeholder="Buscar cliente, plataforma, área…" oninput="ofpRender()" style="width:230px;">
             <button class="btn btn-ghost" id="ofp-btn-todas" onclick="_ofpVerTodas=!_ofpVerTodas;ofpRender()" style="width:auto;">👁️ Ver todas</button>
             <button class="btn btn-primary" onclick="ofpNueva()" style="width:auto;">+ Nueva oferta</button>
           </div>
         </div>
         <div class="tabs" style="margin-bottom:16px;">
-          <button class="tab-btn active" id="cron-btn-proy" onclick="cronTab('proy')">📊 Proyectos</button>
-          <button class="tab-btn" id="cron-btn-ofp" onclick="cronTab('ofp')">📨 Ofertas de plataformas <span id="ofp-badge" class="ofp-badge" style="display:none"></span></button>
+          <button class="tab-btn active" id="cron-btn-ofp" onclick="cronTab('ofp')">📨 Ofertas de plataformas <span id="ofp-badge" class="ofp-badge" style="display:none"></span></button>
+          <button class="tab-btn" id="cron-btn-proy" onclick="cronTab('proy')">📊 Proyectos</button>
         </div>
-        <div id="cron-tab-proy">
-          <div class="card">
-            <div id="gantt-container"></div>
-          </div>
-        </div>
-        <div id="cron-tab-ofp" style="display:none">
+        <div id="cron-tab-ofp">
           <div class="card">
             <div id="ofp-tabla"></div>
+          </div>
+        </div>
+        <div id="cron-tab-proy" style="display:none">
+          <div class="card">
+            <div id="gantt-container"></div>
           </div>
         </div>
       </div>
@@ -5012,7 +5012,7 @@ const ALL_MODULES = [
   { id:'dashboard',     label:'🏠 Dashboard' },
   { id:'reuniones',     label:'📅 Reuniones' },
   { id:'tareas',        label:'✅ Tareas' },
-  { id:'cronograma',    label:'📊 Proyectos y Plataformas' },
+  { id:'cronograma',    label:'📨 Ofertas en Plataformas y Proyectos' },
   { id:'comunicaciones',label:'💬 Comunicaciones' },
   { id:'minutas',       label:'📋 Minutas' },
   { id:'equipo',        label:'👥 Equipo' },
@@ -8121,7 +8121,7 @@ function navigate(page) {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
   currentPage = page;
-  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Proyectos y Plataformas',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',contratos:'Contratos Marco',saldos:'Saldos a Favor',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',proveedores:'Proveedores',costos:'Centro de Costos',pdfstudio:'PDF Studio',ayuda:'Ayuda',fe_inicio:'Ferreindustrial',fe_productos:'Lista de precios',fe_catalogo:'Catálogo',fe_inventario:'Inventario Ferreindustrial',fe_clientes:'Ferreterías',fe_pedidos:'Pedidos',fe_remisiones:'Remisiones Ferreindustrial'};
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Ofertas en Plataformas y Proyectos',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',contratos:'Contratos Marco',saldos:'Saldos a Favor',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',proveedores:'Proveedores',costos:'Centro de Costos',pdfstudio:'PDF Studio',ayuda:'Ayuda',fe_inicio:'Ferreindustrial',fe_productos:'Lista de precios',fe_catalogo:'Catálogo',fe_inventario:'Inventario Ferreindustrial',fe_clientes:'Ferreterías',fe_pedidos:'Pedidos',fe_remisiones:'Remisiones Ferreindustrial'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
   if(page==='remisiones') remiInit();
