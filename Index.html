@@ -5078,6 +5078,9 @@ function userCanSeeModule(mod) {
   // Programación Equipo: TODO el equipo la VE (para saber quién está presencial);
   // editar está restringido adentro a dirección (peIsManager: gerencia, Andrea, Mario)
   if (mod === 'programacion') return true;
+  // Proyectos y Plataformas: TODOS lo ven (22-oct-2026, pedido del usuario); editar es de todos
+  // menos Nelsy y Vivian (cronPuedeEditar). Vivian además solo entra a Ferreindustrial.
+  if (mod === 'cronograma') return email !== 'vivian';
   // Abastecimiento: andrea, alberto, yesid
   if (mod === 'abastecimiento') return email === 'andrea' || email === 'alberto' || email === 'yesid';
   // Remisiones: todo el equipo MENOS Nelsy y Mario (Mario: 14-sep-2026, pedido de gerencia)
@@ -8788,6 +8791,7 @@ function _projectsAutoPurge(daysKeep) {
 document.addEventListener('DOMContentLoaded', () => setTimeout(_projectsAutoPurge, 5000));
 
 function deleteProject(id) {
+  if (typeof cronPuedeEditar === 'function' && !cronPuedeEditar()) return _cronSoloConsulta();   // 22-oct-2026
   const list = getProjectsAll();
   const idx = list.findIndex(p => p.id === id);
   if (idx < 0) return;
@@ -8834,6 +8838,7 @@ function projectsEmptyTrash() {
   showToast('Papelera vaciada ('+trash.length+' eliminados)','info');
 }
 function projectsClearAll() {
+  if (typeof cronPuedeEditar === 'function' && !cronPuedeEditar()) return _cronSoloConsulta();   // 22-oct-2026
   const active = getProjects();
   if (!active.length) { showToast('El cronograma ya está vacío','info'); return; }
   if (!confirm('¿Vaciar el cronograma completo?\n\nSe enviarán a la papelera los ' + active.length + ' proyecto(s) activos.\nQuedan 30 días para restaurar.')) return;
@@ -8898,6 +8903,7 @@ function renderGantt() {
   // 22-oct-2026 — las ofertas de plataformas también se dibujan (barra hasta la fecha
   // de presentación). La tabla de la pestaña se refresca aquí mismo.
   try { ofpRender(); } catch (_) {}
+  try { if (!cronPuedeEditar()) { const a = document.getElementById('cron-acciones-proy'); if (a) a.style.display = 'none'; } } catch (_) {}
   let projects = getProjects();
   try { projects = projects.concat(_ofpComoProyectos()); } catch (_) {}
   const el = document.getElementById('gantt-container');
@@ -8978,8 +8984,8 @@ function renderGantt() {
           <div class="gantt-bar-progress" style="width:${p.progreso}%;"></div>
           <div class="gantt-bar-text">${p.progreso}% &nbsp;·&nbsp; ${sf} → ${ef}</div>
         </div>
-        <button class="gantt-edit-btn" onclick="${p._ofp ? 'ofpEditar(' + p._ofp + ')' : 'editProject(' + p.id + ')'}" style="right:90px;">✏️ Editar</button>
-        <button class="gantt-edit-btn" onclick="${p._ofp ? 'ofpBorrar(' + p._ofp + ')' : 'deleteProject(' + p.id + ')'}" style="background:rgba(229,62,62,0.2);border-color:rgba(229,62,62,0.4);color:#fca5a5;" title="Eliminar${p._ofp ? '' : ' (queda en papelera 30 días)'}">🗑️ Borrar</button>
+        ${cronPuedeEditar() ? `<button class="gantt-edit-btn" onclick="${p._ofp ? 'ofpEditar(' + p._ofp + ')' : 'editProject(' + p.id + ')'}" style="right:90px;">✏️ Editar</button>
+        <button class="gantt-edit-btn" onclick="${p._ofp ? 'ofpBorrar(' + p._ofp + ')' : 'deleteProject(' + p.id + ')'}" style="background:rgba(229,62,62,0.2);border-color:rgba(229,62,62,0.4);color:#fca5a5;" title="Eliminar${p._ofp ? '' : ' (queda en papelera 30 días)'}">🗑️ Borrar</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -9013,11 +9019,19 @@ function _ofpDocsPct(o) { const d = o.documentos || []; return d.length ? Math.r
 function _ofpAbierta(o) { return o.estado === 'En preparación'; }
 function _ofpVencida(o) { const n = _ofpDias(o.fecha_presentacion); return _ofpAbierta(o) && n != null && n < 0; }
 
+// Quién edita Proyectos y Plataformas: todo el equipo menos Nelsy y Vivian (22-oct-2026).
+function cronPuedeEditar() {
+  const e = currentUser ? String(currentUser.email || '').toLowerCase() : '';
+  return e !== 'nelsy' && e !== 'vivian';
+}
+function _cronSoloConsulta() { showToast('Proyectos y Plataformas es solo consulta para tu usuario', 'error'); return true; }
 function cronTab(cual) {
   const esOfp = cual === 'ofp';
   const vis = (id, on) => { const e = document.getElementById(id); if (e) e.style.display = on ? (id.startsWith('cron-acciones') ? 'flex' : '') : 'none'; };
   vis('cron-tab-proy', !esOfp); vis('cron-tab-ofp', esOfp);
-  vis('cron-acciones-proy', !esOfp); vis('cron-acciones-ofp', esOfp);
+  const puede = cronPuedeEditar();
+  vis('cron-acciones-proy', !esOfp && puede); vis('cron-acciones-ofp', esOfp);
+  const bn = document.querySelector('#cron-acciones-ofp .btn-primary'); if (bn) bn.style.display = puede ? '' : 'none';
   const bp = document.getElementById('cron-btn-proy'), bo = document.getElementById('cron-btn-ofp');
   if (bp) bp.classList.toggle('active', !esOfp);
   if (bo) bo.classList.toggle('active', esOfp);
@@ -9060,7 +9074,7 @@ function ofpRender() {
       <td>${_ofpEsc(o.responsable || '—')}</td>
       <td>${docsHtml}</td>
       <td><span class="gantt-status-badge" style="${EST[o.estado] || ''}">${_ofpEsc(o.estado)}</span></td>
-      <td style="white-space:nowrap"><button class="btn btn-ghost" style="width:auto;padding:4px 9px" onclick="ofpEditar(${o.id})" title="Editar">✏️</button> <button class="btn btn-ghost" style="width:auto;padding:4px 9px;color:#fca5a5" onclick="ofpBorrar(${o.id})" title="Eliminar">🗑️</button></td>
+      <td style="white-space:nowrap">${cronPuedeEditar() ? `<button class="btn btn-ghost" style="width:auto;padding:4px 9px" onclick="ofpEditar(${o.id})" title="Editar">✏️</button> <button class="btn btn-ghost" style="width:auto;padding:4px 9px;color:#fca5a5" onclick="ofpBorrar(${o.id})" title="Eliminar">🗑️</button>` : ''}</td>
     </tr>`;
   }).join('');
   el.innerHTML = `<div class="abs-table-wrap"><table class="abs-table"><thead><tr><th>Cliente / Oferta</th><th>Plataforma</th><th>Área</th><th>Presentación</th><th>Responsable</th><th>Documentos</th><th>Estado</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>`;
@@ -9131,6 +9145,7 @@ function ofpDocsBase() {
   _ofpDocsRender();
 }
 function ofpNueva() {
+  if (typeof cronPuedeEditar === 'function' && !cronPuedeEditar()) return _cronSoloConsulta();   // 22-oct-2026
   _ofpLlenarListas();
   ['ofp-cliente', 'ofp-plataforma', 'ofp-objeto', 'ofp-area', 'ofp-fecha', 'ofp-obs', 'ofp-doc-nuevo'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
   const r = document.getElementById('ofp-responsable');
@@ -9160,6 +9175,7 @@ function ofpEditar(id) {
   openModal('modal-ofp');
 }
 function ofpGuardar() {
+  if (typeof cronPuedeEditar === 'function' && !cronPuedeEditar()) return _cronSoloConsulta();   // 22-oct-2026
   const v = id => (document.getElementById(id).value || '').trim();
   const cliente = v('ofp-cliente'), fecha = v('ofp-fecha');
   if (!cliente) { showToast('Escribe el cliente', 'error'); return; }
@@ -9187,6 +9203,7 @@ function ofpGuardar() {
   try { if (typeof renderAlerts === 'function') renderAlerts(); } catch (_) {}
 }
 function ofpBorrar(id) {
+  if (typeof cronPuedeEditar === 'function' && !cronPuedeEditar()) return _cronSoloConsulta();   // 22-oct-2026
   const lista = ofpTodas(); const o = lista.find(x => x.id === id); if (!o) return;
   if (!confirm('¿Eliminar la oferta de ' + (o.cliente || '—') + (o.objeto ? ' («' + o.objeto + '»)' : '') + '?')) return;
   o.deleted = true; o.deletedAt = new Date().toISOString(); o.deletedBy = currentUser ? (currentUser.email || currentUser.name) : 'system';
@@ -9672,6 +9689,7 @@ function saveTarea() {
 }
 
 function editProject(id) {
+  if (typeof cronPuedeEditar === 'function' && !cronPuedeEditar()) return _cronSoloConsulta();   // 22-oct-2026
   const projects = getData('projects', PROJECTS_DEFAULT);
   const project = projects.find(p => p.id === id);
   if (!project) return;
@@ -9692,6 +9710,7 @@ function editProject(id) {
 }
 
 function saveProyecto() {
+  if (typeof cronPuedeEditar === 'function' && !cronPuedeEditar()) return _cronSoloConsulta();   // 22-oct-2026
   const nombre = document.getElementById('p-nombre').value.trim();
   if(!nombre) { showToast('Ingresa el nombre del proyecto','error'); return; }
 
