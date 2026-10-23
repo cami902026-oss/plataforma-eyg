@@ -29869,8 +29869,12 @@ async function opLigarAbrir() {
     opCotizIds(o).forEach(cid => partes.push('cotizacion_id.eq.' + cid));
     if (o.cliente) partes.push('cliente.ilike.*' + String(o.cliente).trim() + '*');
     if (!partes.length) { showToast('Esta OP no tiene cliente ni cotización para buscar', 'error'); return; }
-    filas = (await absFetch('remisiones?op_numero=is.null&or=(' + encodeURIComponent(partes.join(',')) + ')'
-      + '&select=remision,fecha,cliente,cotizacion_id,item,item_cot,descripcion,cantidad,colada'
+    // 23-oct-2026 (OP-0159 SAR ENERGY): una OP repartida en VARIAS remisiones hechas aparte ya
+    // llevaba el número de la OP en cada una, y aquí solo salían las sueltas (op_numero vacío):
+    // «No hay remisiones sueltas» y no había forma de ligarlas. Ahora salen también las que
+    // ya dicen ser de ESTA OP; las de otras OP siguen fuera.
+    filas = (await absFetch('remisiones?and=(' + encodeURIComponent('or(op_numero.is.null,op_numero.eq.' + String(o.numero || '') + '),or(' + partes.join(',') + ')') + ')'
+      + '&select=remision,fecha,cliente,cotizacion_id,item,item_cot,descripcion,cantidad,colada,op_numero'
       + '&order=remision.desc&limit=500')) || [];
   } catch (e) { showToast('No se pudieron leer las remisiones: ' + (e && e.message || e), 'error'); return; }
 
@@ -29893,7 +29897,10 @@ async function opLigarAbrir() {
     return '<label class="op-ligar-op' + (misma ? ' op-ligar-fuerte' : '') + '">'
       + '<input type="radio" name="op-ligar-r" value="' + opEsc(n) + '">'
       + '<div><div class="op-ligar-n">Remisión ' + opEsc(n)
-      + (misma ? ' <span class="op-ligar-tag">misma cotización</span>' : '') + '</div>'
+      + (misma ? ' <span class="op-ligar-tag">misma cotización</span>' : '')
+      + (g.some(x => String(x.op_numero || '') === String(o.numero || '')) ? ' <span class="op-ligar-tag">marcada como de esta OP</span>' : '')
+      + ((op_currentItems || []).some(i => String(i.remision || '').trim() === String(n).trim()) ? ' <span class="op-ligar-tag" style="opacity:.7">ya ligada</span>' : '')
+      + '</div>'
       + '<div class="op-ligar-d">' + opEsc(g[0].fecha || '') + ' · ' + opEsc(g[0].cliente || '')
       + ' · cotización ' + opEsc(g[0].cotizacion_id || '—') + ' · ' + g.length + ' línea(s)</div>'
       + '<div class="op-ligar-i">'
@@ -30403,7 +30410,16 @@ async function opLigarConfirmar() {
     try {
       const _prev = (await _opEntregasDe(op_current.numero)) || [];
       const _otras = _prev.filter(e => String(e.remision) !== String(num));
-      if (_otras.length) {
+      // 23-oct-2026: si las remisiones de la OP llevan más de una O.C. distinta, cada una es su
+      // propia orden (OP-0159): no se le pone remision_base/entrega_n, o el papel saldría
+      // «ENTREGA n · PARCIAL» con los renglones de las otras O.C. como pendientes.
+      let _partida = false;
+      try {
+        const _ocN = t => String(t || '').toUpperCase().replace(/[^A-Z0-9]+/g, '');
+        const _ocsRows = (await absFetch('remisiones?select=remision,oc&or=(' + encodeURIComponent('op_numero.eq.' + op_current.numero + ',remision.eq.' + num) + ')&limit=2000')) || [];
+        _partida = new Set(_ocsRows.map(r => _ocN(r.oc)).filter(Boolean)).size > 1;
+      } catch (_) { }
+      if (_otras.length && !_partida) {
         _cuerpoLigar.remision_base = _remiBaseDe(_otras[0].remision);
         _cuerpoLigar.entrega_n = _otras.length + 1;
       }
