@@ -1648,6 +1648,7 @@ body.fe-mode .fe-tag.blue { background:#dbeafe; color:#1e3a8a; }
       <div class="nav-item" onclick="navigate('cartera')"><span class="icon">💰</span>Cartera</div>
       <div class="nav-item" onclick="navigate('contratos')"><span class="icon">📜</span>Contratos Marco</div>
       <div class="nav-item" onclick="navigate('saldos')"><span class="icon">💳</span>Saldos a Favor</div>
+      <div class="nav-item" onclick="navigate('vinculacion')"><span class="icon">🔗</span>Vinculación</div>
       <!-- 23-ago-2026: "Procesos O.C." sale del MENÚ, reemplazado por Órdenes de Pedido.
            La página, los datos (ordenes.json, 164 órdenes), el robot de Gmail que las
            crea y el informe diario SIGUEN funcionando igual. Las alertas de O.C. vencida
@@ -4236,6 +4237,50 @@ body.fe-mode .fe-tag.blue { background:#dbeafe; color:#1e3a8a; }
           Consumos: Alexandra, Andrea y gerencia · Saldos, abonos y correcciones: Andrea y gerencia · Nelsy consulta.
         </div>
       </div>
+      <!-- ═══ 🔗 VINCULACIÓN DE CLIENTES Y PROVEEDORES (22-oct-2026, SW v337) ═══
+           Invitar a un cliente/proveedor al portal público (portal.html), ver lo que
+           sube y aprobarlo o pedir corrección. Datos en Supabase (portal_cuentas /
+           portal_documentos); archivos en el bucket privado `vinculacion`. -->
+      <div class="page" id="page-vinculacion">
+        <div class="abs-toolbar">
+          <input type="text" id="vin-search" placeholder="Buscar por razón social, NIT o correo..." oninput="vinRender()" style="flex:1;min-width:220px;">
+          <select id="vin-filtro" onchange="vinRender()" title="Qué cuentas mostrar">
+            <option value="">Todas</option>
+            <option value="revisar" selected>Con documentos por revisar</option>
+            <option value="incompleto">Incompletas / vencidas</option>
+            <option value="aprobado">Aprobadas</option>
+            <option value="invitado">Invitadas sin entrar</option>
+          </select>
+          <select id="vin-tipo" onchange="vinRender()" title="Clientes o proveedores">
+            <option value="">Clientes y proveedores</option>
+            <option value="cliente">Solo clientes</option>
+            <option value="proveedor">Solo proveedores</option>
+          </select>
+          <button class="btn btn-primary" onclick="vinInvitarModal(null)" style="width:auto;padding:8px 14px;font-size:12px;">➕ Invitar al portal</button>
+          <button class="btn btn-ghost" onclick="vinCopiarLink()" style="padding:8px 14px;font-size:12px;" title="Copia el link público del portal">🔗 Link del portal</button>
+          <button class="btn btn-ghost" onclick="vinCargar(true)" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
+        </div>
+        <div class="stat-grid" id="vin-stats"></div>
+        <div id="vin-count" class="abs-count"></div>
+        <div class="abs-table-wrap">
+          <table class="abs-table">
+            <thead><tr>
+              <th>Razón social</th><th style="width:105px">NIT</th><th style="width:85px">Tipo</th>
+              <th style="width:120px" title="RUT · Cámara · Cédula · Bancaria">Documentos</th>
+              <th style="width:120px">Estado</th><th style="width:100px">Último ingreso</th>
+              <th style="width:150px"></th>
+            </tr></thead>
+            <tbody id="vin-tbody"><tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+        <div id="vin-detalle" style="display:none;margin-top:18px"></div>
+        <div class="abs-count" style="margin-top:14px">
+          <b>Cómo funciona:</b> con «➕ Invitar al portal» le llega un correo al cliente o proveedor con el link y un código. Él crea su clave
+          y desde entonces entra con <b>NIT + clave</b> a subir RUT, cámara de comercio (máx. 30 días), cédula del representante legal y
+          certificación bancaria. Aquí se revisa cada documento: ✅ aprobar o ✏️ pedir corrección (le llega por correo). Con los cuatro
+          aprobados la cuenta queda <b>Aprobada</b>. Los archivos nunca se borran: al subir uno nuevo, el anterior queda como historial.
+        </div>
+      </div>
       <!-- ═══ 🔧 FERREINDUSTRIAL (20-oct-2026): páginas del módulo. Solo se ven con la empresa Ferreindustrial activa. ═══ -->
       <div class="page" id="page-fe_inicio">
         <div class="stat-grid" id="fe-inicio-stats"></div>
@@ -5021,6 +5066,7 @@ const ALL_MODULES = [
   { id:'cartera',       label:'💰 Cartera' },
   { id:'contratos',     label:'📜 Contratos Marco' },
   { id:'saldos',        label:'💳 Saldos a Favor' },
+  { id:'vinculacion',   label:'🔗 Vinculación' },
   { id:'procesos',      label:'🚛 Procesos O.C.' },
   { id:'op',            label:'📑 Órdenes de Pedido' },
   { id:'visitas',       label:'🤝 Visitas Comerciales' },
@@ -5091,6 +5137,8 @@ function userCanSeeModule(mod) {
   // completo para saber por dónde va cada pedido; editarlo es otra cosa
   // (opPuedeEditar). Mario tampoco lo ve (14-sep-2026, pedido de gerencia).
   if (mod === 'op') return email !== 'nelsy' && email !== 'mario';
+  // Vinculación (portal de clientes/proveedores): TODOS los usuarios invitan y aprueban (pedido del usuario, 22-oct-2026).
+  if (mod === 'vinculacion') return true;
   // Admin/Jefe ve todo el resto siempre
   if (isAdmin) return true;
   const cfg = getUserModules();
@@ -8121,7 +8169,7 @@ function navigate(page) {
   const navItems = document.querySelectorAll('.nav-item');
   navItems.forEach(n=>{ if(n.textContent.toLowerCase().includes(getNavLabel(page))) n.classList.add('active'); });
   currentPage = page;
-  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Ofertas en Plataformas y Proyectos',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',contratos:'Contratos Marco',saldos:'Saldos a Favor',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',proveedores:'Proveedores',costos:'Centro de Costos',pdfstudio:'PDF Studio',ayuda:'Ayuda',fe_inicio:'Ferreindustrial',fe_productos:'Lista de precios',fe_catalogo:'Catálogo',fe_inventario:'Inventario Ferreindustrial',fe_clientes:'Ferreterías',fe_pedidos:'Pedidos',fe_remisiones:'Remisiones Ferreindustrial'};
+  const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Ofertas en Plataformas y Proyectos',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',contratos:'Contratos Marco',saldos:'Saldos a Favor',vinculacion:'Vinculación de clientes y proveedores',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',proveedores:'Proveedores',costos:'Centro de Costos',pdfstudio:'PDF Studio',ayuda:'Ayuda',fe_inicio:'Ferreindustrial',fe_productos:'Lista de precios',fe_catalogo:'Catálogo',fe_inventario:'Inventario Ferreindustrial',fe_clientes:'Ferreterías',fe_pedidos:'Pedidos',fe_remisiones:'Remisiones Ferreindustrial'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
   if(page==='remisiones') remiInit();
@@ -8135,6 +8183,7 @@ function navigate(page) {
   if(page==='cartera') { setTimeout(()=>{ try { cnuCargar(false); } catch(_){} }, 100); setTimeout(loadCarteraUrlUI, 400); }
   if(page==='contratos') { try{ cmkInit(); }catch(e){ console.error('[cmk]',e); } }
   if(page==='saldos') { try{ spvInit(); }catch(e){ console.error('[spv]',e); } }
+  if(page==='vinculacion') { try{ vinInit(); }catch(e){ console.error('[vin]',e); } }   // 🔗 Portal de vinculación (22-oct-2026)
   if(String(page).startsWith('fe_')) { try{ feNav(page); }catch(e){ console.error('[fe]',e); } }   // 🔧 Ferreindustrial (20-oct-2026)
   if(page==='pdfstudio') { const _f=document.getElementById('pdfstudio-frame'); if(_f && !_f.src) _f.src='pdf-studio.html'; }   // v155: carga perezosa (las librerías PDF solo se bajan al entrar)
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadSbProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
@@ -8147,7 +8196,7 @@ function navigate(page) {
   try { _pollAlNavegar(); } catch(_) {}
 }
 function getNavLabel(page) {
-  const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'proyectos y plataformas ofertas',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',cotizaciones:'cotizaciones',ordenes:'procesos',op:'órdenes de pedido',fotoinv:'fotoinv',visitas:'visitas',mensajeria:'mensajeria',configuracion:'configuraci',pdfstudio:'pdf studio',contratos:'contratos marco',fe_inicio:'inicio',fe_productos:'lista de precios',fe_catalogo:'catálogo',fe_inventario:'inventario',fe_clientes:'ferreterías',fe_pedidos:'pedidos',fe_remisiones:'remisiones fe'};
+  const map={dashboard:'dashboard',reuniones:'reuniones',tareas:'tareas',cronograma:'proyectos y plataformas ofertas',comunicaciones:'comunicaciones',minutas:'minutas',equipo:'equipo',inventario:'inventario',cotizaciones:'cotizaciones',ordenes:'procesos',op:'órdenes de pedido',fotoinv:'fotoinv',visitas:'visitas',mensajeria:'mensajeria',configuracion:'configuraci',pdfstudio:'pdf studio',contratos:'contratos marco',vinculacion:'vinculación',fe_inicio:'inicio',fe_productos:'lista de precios',fe_catalogo:'catálogo',fe_inventario:'inventario',fe_clientes:'ferreterías',fe_pedidos:'pedidos',fe_remisiones:'remisiones fe'};
   return map[page]||page;
 }
 
@@ -10492,6 +10541,270 @@ function cmkExcel() {
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(contratos), 'CONTRATOS');
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(consumos), 'CONSUMOS');
   XLSX.writeFile(wb, 'Control_Contratos_Marco_EYG_' + _cmkHoy() + '.xlsx');
+}
+
+// ═══ 🔗 VINCULACIÓN DE CLIENTES Y PROVEEDORES (22-oct-2026, SW v337) ═══════
+// El cliente/proveedor recibe un correo con el link del portal público
+// (portal.html) y un código; crea su clave y entra con NIT + clave a subir RUT,
+// cámara de comercio (30 días), cédula del rep. legal y certificación bancaria.
+// Aquí: invitar, ver lo que subió, aprobar o pedir corrección. Lo ven y lo usan
+// TODOS los usuarios (pedido del usuario, 22-oct-2026).
+// Lecturas: tablas portal_cuentas / portal_documentos (key pública, como todo).
+// Escrituras de revisión: PATCH por el proxy (absFetch → _sbWriteRaw).
+// Invitar y ver archivos: acción `portal` del proxy (genera el código / firma la
+// URL del bucket privado `vinculacion`). Correos: workflow portal-aviso.yml.
+var vin_cta = [], vin_doc = [], vin_sel = null, _vinCargado = false;
+const VIN_DOCS = {
+  rut:      { nombre: 'RUT', largo: 'RUT (Registro Único Tributario)', ico: '🧾' },
+  camara:   { nombre: 'Cámara', largo: 'Cámara de Comercio (máx. 30 días)', ico: '🏛️' },
+  cedula:   { nombre: 'Cédula', largo: 'Cédula del representante legal', ico: '🪪' },
+  bancaria: { nombre: 'Bancaria', largo: 'Certificación bancaria', ico: '🏦' }
+};
+const VIN_PORTAL_URL = 'https://cami902026-oss.github.io/plataforma-eyg/portal.html';
+function _vinHoy() { return _cmkHoy(); }
+// Acción del portal por el proxy (carril rápido y luego el unificado), con el secreto de siempre.
+async function _vinPortal(accion, datos) {
+  const carriles = [_sbProxyURL(), _ghWriteProxyURL()].filter(Boolean).filter((u, i, a) => a.indexOf(u) === i);
+  let ultimo = 'sin proxy configurado';
+  for (const u of carriles) {
+    try {
+      const r = await _fetchT(u, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ secret: _proxySecret(), portal: Object.assign({ accion }, datos || {}) }), redirect: 'follow' }, 40000);
+      const t = await r.text(); let j; try { j = JSON.parse(t); } catch (_) { ultimo = 'respuesta no válida del proxy'; continue; }
+      if (j && j.error && !('ok' in j)) return { ok: false, error: j.error };
+      return j;
+    } catch (e) { ultimo = e.name === 'AbortError' ? 'el proxy no respondió a tiempo' : e.message; }
+  }
+  return { ok: false, error: 'No se pudo hablar con el proxy: ' + ultimo };
+}
+// Dispara el correo (workflow portal-aviso.yml por el proxy unificado, que tiene el GH_TOKEN).
+function _vinCorreo(inputs) {
+  try {
+    const proxy = _ghWriteProxyURL(); if (!proxy) return;
+    fetch(proxy, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ secret: _proxySecret(), wf: { file: 'portal-aviso.yml', inputs: inputs } }) }).catch(function () { });
+  } catch (_) { }
+}
+async function vinInit() { if (!_vinCargado) await vinCargar(false); else vinRender(); }
+async function vinCargar(force) {
+  if (_vinCargado && !force) { vinRender(); return; }
+  try {
+    vin_cta = (await _cplTodo('portal_cuentas?order=razon_social.asc')) || [];
+    vin_doc = (await _cplTodo('portal_documentos?order=subido_at.desc,id.desc')) || [];
+    _vinCargado = true;
+    if (force) showToast('Vinculación actualizada ✓', 'success');
+  } catch (e) {
+    const tb = document.getElementById('vin-tbody');
+    const falta = /404|relation|does not exist/i.test(String(e && e.message));
+    if (tb) tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--red)">'
+      + (falta ? 'Las tablas del portal todavía no existen en Supabase: hay que correr <code>scripts/migracion_portal_vinculacion_2026-10-22.sql</code> en el SQL Editor.'
+               : 'No se pudo cargar: ' + _cmkEsc(e.message)) + '</td></tr>';
+    return;
+  }
+  vinRender();
+  if (vin_sel) vinAbrir(vin_sel, true);
+}
+// Documento vigente por tipo (el último que no esté reemplazado) y resumen de la cuenta.
+function vinCalc(c) {
+  const out = { docs: {}, aprobados: 0, pendientes: 0, faltan: 0, rechazados: 0, vencidos: 0 };
+  Object.keys(VIN_DOCS).forEach(t => {
+    const d = vin_doc.find(x => x.nit === c.nit && x.tipo_doc === t && x.estado !== 'reemplazado') || null;
+    let k = 'falta';
+    if (d) {
+      if (d.vence && d.vence < _vinHoy()) k = 'vencido';
+      else k = d.estado;   // pendiente / aprobado / rechazado
+    }
+    out.docs[t] = { d, k };
+    if (k === 'aprobado') out.aprobados++; else if (k === 'pendiente') out.pendientes++; else if (k === 'rechazado') out.rechazados++; else if (k === 'vencido') out.vencidos++; else out.faltan++;
+  });
+  out.completo = out.aprobados === Object.keys(VIN_DOCS).length;
+  return out;
+}
+const _vinChipCss = { falta: 'background:rgba(136,153,187,.18);color:#c6d0e6', pendiente: 'background:rgba(214,158,46,.2);color:#ffd27a', aprobado: 'background:rgba(46,170,74,.2);color:#9fe8b0', rechazado: 'background:rgba(229,62,62,.2);color:#ffb4b4', vencido: 'background:rgba(229,62,62,.2);color:#ffb4b4' };
+const _vinChipTxt = { falta: 'Falta', pendiente: 'Por revisar', aprobado: 'Aprobado', rechazado: 'Corrección pedida', vencido: 'Vencido' };
+function _vinChip(k, txt) { return '<span style="display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;' + (_vinChipCss[k] || _vinChipCss.falta) + '">' + _cmkEsc(txt || _vinChipTxt[k] || k) + '</span>'; }
+function _vinEstadoCta(c, k) {
+  if (c.estado === 'bloqueado') return _vinChip('rechazado', '⛔ Bloqueada');
+  if (c.estado === 'aprobado' || k.completo) return _vinChip('aprobado', '✅ Aprobada');
+  if (k.pendientes) return _vinChip('pendiente', '👀 ' + k.pendientes + ' por revisar');
+  if (c.estado === 'invitado') return _vinChip('falta', '✉️ Invitada');
+  if (k.rechazados || k.vencidos) return _vinChip('rechazado', '✏️ Esperando corrección');
+  return _vinChip('falta', 'Incompleta');
+}
+function vinRender() {
+  const tb = document.getElementById('vin-tbody'); if (!tb) return;
+  const ql = ((document.getElementById('vin-search') || {}).value || '').toLowerCase();
+  const fil = (document.getElementById('vin-filtro') || {}).value || '';
+  const tipo = (document.getElementById('vin-tipo') || {}).value || '';
+  const calc = {}; vin_cta.forEach(c => { calc[c.nit] = vinCalc(c); });
+  const nRev = vin_cta.filter(c => calc[c.nit].pendientes > 0).length;
+  const nApr = vin_cta.filter(c => c.estado === 'aprobado' || calc[c.nit].completo).length;
+  const nInv = vin_cta.filter(c => c.estado === 'invitado').length;
+  const st = document.getElementById('vin-stats');
+  if (st) st.innerHTML =
+    '<div class="stat-card blue"><div class="stat-icon">🏢</div><div class="stat-num">' + vin_cta.length + '</div><div class="stat-label">Cuentas en el portal</div></div>'
+    + '<div class="stat-card gold"><div class="stat-icon">👀</div><div class="stat-num">' + nRev + '</div><div class="stat-label">Con documentos por revisar</div></div>'
+    + '<div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-num">' + nApr + '</div><div class="stat-label">Vinculaciones aprobadas</div></div>'
+    + '<div class="stat-card red"><div class="stat-icon">✉️</div><div class="stat-num">' + nInv + '</div><div class="stat-label">Invitadas sin entrar</div></div>';
+  const lista = vin_cta.filter(c => {
+    const k = calc[c.nit];
+    if (tipo && c.tipo !== tipo) return false;
+    if (fil === 'revisar' && !k.pendientes) return false;
+    if (fil === 'incompleto' && (k.completo || c.estado === 'aprobado' || (!k.faltan && !k.rechazados && !k.vencidos))) return false;
+    if (fil === 'aprobado' && !(c.estado === 'aprobado' || k.completo)) return false;
+    if (fil === 'invitado' && c.estado !== 'invitado') return false;
+    if (ql && !((c.razon_social || '') + ' ' + (c.nit || '') + ' ' + (c.correo || '') + ' ' + (c.contacto || '')).toLowerCase().includes(ql)) return false;
+    return true;
+  });
+  const cnt = document.getElementById('vin-count'); if (cnt) cnt.textContent = lista.length + ' cuenta(s)';
+  if (!lista.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:28px">' + (vin_cta.length ? 'Nada con ese filtro' : 'Todavía no hay nadie invitado: empieza con ➕ Invitar al portal') + '</td></tr>'; return; }
+  tb.innerHTML = lista.map(c => {
+    const k = calc[c.nit], sel = vin_sel === c.nit;
+    const chips = Object.keys(VIN_DOCS).map(t => '<span title="' + _cmkEsc(VIN_DOCS[t].largo + ': ' + (_vinChipTxt[k.docs[t].k] || '')) + '" style="display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;border-radius:6px;font-size:11px;margin-right:2px;' + _vinChipCss[k.docs[t].k] + '">' + VIN_DOCS[t].ico + '</span>').join('');
+    return '<tr style="cursor:pointer' + (sel ? ';background:rgba(232,160,32,.08)' : '') + '" onclick="vinAbrir(\'' + c.nit + '\')">'
+      + '<td><strong style="color:var(--gold)">' + _cmkEsc(c.razon_social) + '</strong><div class="abs-count" style="margin:2px 0 0;font-size:10.5px">' + _cmkEsc(c.correo) + (c.contacto ? ' · ' + _cmkEsc(c.contacto) : '') + '</div></td>'
+      + '<td style="font-size:12px">' + _cmkEsc(c.nit) + '</td>'
+      + '<td style="font-size:12px">' + (c.tipo === 'proveedor' ? '🏭 Proveedor' : '🤝 Cliente') + '</td>'
+      + '<td>' + chips + '</td>'
+      + '<td>' + _vinEstadoCta(c, k) + '</td>'
+      + '<td style="font-size:12px">' + (c.ultimo_ingreso ? _cmkFecha(c.ultimo_ingreso) : '<span style="color:var(--text-muted)">nunca</span>') + '</td>'
+      + '<td style="white-space:nowrap" onclick="event.stopPropagation()">'
+      + '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" onclick="vinAbrir(\'' + c.nit + '\')">📂 Documentos</button> '
+      + '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" title="Editar datos / reenviar invitación" onclick="vinInvitarModal(\'' + c.nit + '\')">✏️</button>'
+      + '</td></tr>';
+  }).join('');
+}
+// ── Detalle de una cuenta: documentos vigentes + historial ───────────────────
+function vinAbrir(nit, silencioso) {
+  vin_sel = nit; vinRender();
+  const c = vin_cta.find(x => x.nit === nit); const box = document.getElementById('vin-detalle');
+  if (!c || !box) return;
+  const k = vinCalc(c);
+  const hist = vin_doc.filter(d => d.nit === nit && d.estado === 'reemplazado');
+  const filas = Object.keys(VIN_DOCS).map(t => {
+    const { d, k: kk } = k.docs[t];
+    return '<tr><td><b>' + VIN_DOCS[t].ico + ' ' + _cmkEsc(VIN_DOCS[t].largo) + '</b>'
+      + (d ? '<div class="abs-count" style="margin:2px 0 0;font-size:10.5px">📎 ' + _cmkEsc(d.nombre_archivo) + ' · ' + Math.round((+d.tamano || 0) / 1024) + ' KB · subido ' + _cmkFecha(d.subido_at)
+            + (d.fecha_expedicion ? ' · expedido ' + _cmkFecha(d.fecha_expedicion) : '') + (d.vence ? ' · vence ' + _cmkFecha(d.vence) : '') + '</div>' : '')
+      + (d && d.estado === 'rechazado' && d.observacion ? '<div style="font-size:11.5px;color:#ffb4b4;margin-top:3px">✏️ ' + _cmkEsc(d.observacion) + ' <span class="abs-count" style="font-size:10px">(' + _cmkEsc(d.revisado_por || '') + ')</span></div>' : '')
+      + (d && d.estado === 'aprobado' ? '<div class="abs-count" style="font-size:10.5px;margin-top:2px">✅ ' + _cmkEsc(d.revisado_por || '') + ' · ' + _cmkFecha(d.revisado_at) + '</div>' : '')
+      + '</td><td>' + _vinChip(kk) + '</td>'
+      + '<td style="white-space:nowrap">'
+      + (d ? '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" onclick="vinVer(\'' + _cmkEsc(d.ruta) + '\')">👁 Ver</button> ' : '')
+      + (d && kk === 'pendiente' ? '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px;color:var(--green)" onclick="vinRevisar(' + d.id + ',\'aprobado\')">✅ Aprobar</button> '
+                                 + '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px;color:var(--red)" onclick="vinRevisar(' + d.id + ',\'rechazado\')">✏️ Pedir corrección</button>' : '')
+      + (d && kk === 'aprobado' ? '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" title="Quitar la aprobación y pedirle uno nuevo" onclick="vinRevisar(' + d.id + ',\'rechazado\')">↩️ Pedir de nuevo</button>' : '')
+      + '</td></tr>';
+  }).join('');
+  box.style.display = 'block';
+  box.innerHTML = '<div class="stat-card blue" style="padding:18px 20px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">'
+    + '<div><div style="font-family:Montserrat,sans-serif;font-weight:700;font-size:16px;color:#fff">' + _cmkEsc(c.razon_social) + ' ' + _vinEstadoCta(c, k) + '</div>'
+    + '<div class="abs-count" style="margin:4px 0 0">NIT ' + _cmkEsc(c.nit) + ' · ' + (c.tipo === 'proveedor' ? 'Proveedor' : 'Cliente') + ' · ' + _cmkEsc(c.correo) + (c.contacto ? ' · ' + _cmkEsc(c.contacto) : '') + (c.telefono ? ' · ' + _cmkEsc(c.telefono) : '')
+    + '<br>Invitado por ' + _cmkEsc(c.invitado_por || '—') + ' el ' + _cmkFecha(c.invitado_at) + (c.invitacion_enviada_at ? ' · correo enviado ' + _cmkFecha(c.invitacion_enviada_at) : ' · <span style="color:var(--yellow)">correo sin confirmar</span>')
+    + (c.activado_at ? ' · creó su clave el ' + _cmkFecha(c.activado_at) : '') + (c.notas ? '<br>📝 ' + _cmkEsc(c.notas) : '') + '</div></div>'
+    + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+    + '<button class="btn btn-ghost" style="padding:6px 10px;font-size:11px" onclick="vinInvitarModal(\'' + c.nit + '\')">✉️ Reenviar invitación / editar</button>'
+    + '<button class="btn btn-ghost" style="padding:6px 10px;font-size:11px" onclick="vinBloquear(\'' + c.nit + '\')">' + (c.estado === 'bloqueado' ? '🔓 Desbloquear' : '⛔ Bloquear') + '</button>'
+    + '<button class="btn btn-ghost" style="padding:6px 10px;font-size:11px" onclick="vin_sel=null;document.getElementById(\'vin-detalle\').style.display=\'none\';vinRender()">✕</button>'
+    + '</div></div>'
+    + '<div class="abs-table-wrap" style="margin-top:14px"><table class="abs-table"><thead><tr><th>Documento</th><th style="width:130px">Estado</th><th style="width:260px"></th></tr></thead><tbody>' + filas + '</tbody></table></div>'
+    + (hist.length ? '<details style="margin-top:10px"><summary class="abs-count" style="cursor:pointer">Historial: ' + hist.length + ' archivo(s) reemplazado(s)</summary><div class="abs-count" style="margin-top:6px">'
+        + hist.map(d => '· ' + VIN_DOCS[d.tipo_doc].ico + ' ' + _cmkEsc(d.nombre_archivo) + ' · ' + _cmkFecha(d.subido_at) + ' <button class="btn btn-ghost" style="padding:1px 7px;font-size:10px" onclick="vinVer(\'' + _cmkEsc(d.ruta) + '\')">👁</button>').join('<br>') + '</div></details>' : '')
+    + '</div>';
+  if (!silencioso) box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+// Ver un archivo: el proxy firma una URL de 10 minutos del bucket privado. La
+// ventana se abre ANTES de esperar al proxy, o el bloqueador de pop-ups la mata.
+async function vinVer(ruta) {
+  const w = window.open('', '_blank');
+  const r = await _vinPortal('ver_url', { ruta });
+  if (!r.ok) { if (w) w.close(); showToast('No se pudo abrir: ' + (r.error || ''), 'error'); return; }
+  if (w) w.location.href = r.url; else window.open(r.url, '_blank');
+}
+async function vinRevisar(id, estado) {
+  const d = vin_doc.find(x => x.id === id); if (!d) return;
+  let obs = null;
+  if (estado === 'rechazado') {
+    obs = prompt('¿Qué debe corregir? Esto le llega por correo al ' + (vin_cta.find(c => c.nit === d.nit) || {}).tipo + ':', d.observacion || '');
+    if (obs == null) return; obs = obs.trim(); if (!obs) { showToast('Escribe qué debe corregir', 'error'); return; }
+  }
+  const cuerpo = { estado, observacion: obs, revisado_por: _cmkYo(), revisado_at: new Date().toISOString() };
+  try {
+    await absFetch('portal_documentos?id=eq.' + id + '&nit=eq.' + encodeURIComponent(d.nit), { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: cuerpo });
+  } catch (e) { showToast('No se pudo guardar la revisión: ' + e.message, 'error'); return; }
+  Object.assign(d, cuerpo);
+  // Con los cuatro aprobados la cuenta queda aprobada; si se pide corrección, vuelve a activa.
+  const c = vin_cta.find(x => x.nit === d.nit);
+  if (c) {
+    const k = vinCalc(c);
+    const nuevo = k.completo ? 'aprobado' : (c.estado === 'aprobado' ? 'activo' : c.estado);
+    if (nuevo !== c.estado && c.estado !== 'bloqueado') {
+      try {
+        await absFetch('portal_cuentas?nit=eq.' + encodeURIComponent(c.nit) + '&id=eq.' + c.id, { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: { estado: nuevo, updated_at: new Date().toISOString() } });
+        c.estado = nuevo;
+      } catch (e) { console.warn('[vin] estado de cuenta', e); }
+    }
+  }
+  _vinCorreo({ tipo: 'revision', nit: String(d.nit), doc_id: String(id) });
+  showToast(estado === 'aprobado' ? 'Documento aprobado ✓ (se le avisa por correo)' : 'Corrección pedida ✓ (se le avisa por correo)', 'success');
+  vinRender(); vinAbrir(d.nit, true);
+}
+async function vinBloquear(nit) {
+  const c = vin_cta.find(x => x.nit === nit); if (!c) return;
+  const nuevo = c.estado === 'bloqueado' ? (vinCalc(c).completo ? 'aprobado' : 'activo') : 'bloqueado';
+  if (nuevo === 'bloqueado' && !confirm('¿Bloquear el acceso de ' + c.razon_social + ' al portal? No podrá entrar hasta desbloquearlo.')) return;
+  try {
+    await absFetch('portal_cuentas?nit=eq.' + encodeURIComponent(nit) + '&id=eq.' + c.id, { method: 'PATCH', headers: { 'Prefer': 'return=minimal' }, body: { estado: nuevo, updated_at: new Date().toISOString() } });
+  } catch (e) { showToast('No se pudo: ' + e.message, 'error'); return; }
+  c.estado = nuevo; showToast(nuevo === 'bloqueado' ? 'Cuenta bloqueada' : 'Cuenta desbloqueada', 'success'); vinRender(); vinAbrir(nit, true);
+}
+function vinCopiarLink() {
+  const t = VIN_PORTAL_URL;
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => showToast('Link del portal copiado: ' + t, 'success'), () => prompt('Link del portal:', t));
+}
+// ── Invitar / editar / reenviar ────────────────────────────────────────────
+function vinInvitarModal(nit) {
+  const c = nit ? vin_cta.find(x => x.nit === nit) : null;
+  const v = k => _cmkEsc(c ? (c[k] == null ? '' : c[k]) : '');
+  const prev = document.getElementById('vin-modal'); if (prev) prev.remove();
+  const inp = 'style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:#fff;font-size:13px"';
+  const ov = document.createElement('div'); ov.id = 'vin-modal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(3,8,18,.82);z-index:100004;display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML = '<div class="modal" style="width:560px">'
+    + '<div class="modal-header"><h3 style="margin:0;color:#fff;font-size:16px">🔗 ' + (c ? 'Editar / reenviar invitación · ' + _cmkEsc(c.razon_social) : 'Invitar al portal de vinculación') + '</h3>'
+    + '<button onclick="_vinCerrarModal()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer">×</button></div>'
+    + '<div style="padding:18px 22px;display:grid;gap:11px;grid-template-columns:1fr 1fr">'
+    + '<div><label class="abs-count" style="display:block;margin:0 0 3px">NIT * <span style="font-weight:400">(sin dígito de verificación)</span></label><input id="vin-f-nit" ' + inp + ' value="' + v('nit') + '" placeholder="900123456" inputmode="numeric"' + (c ? ' readonly' : '') + '></div>'
+    + '<div><label class="abs-count" style="display:block;margin:0 0 3px">Tipo *</label><select id="vin-f-tipo" ' + inp + '><option value="cliente"' + (c && c.tipo === 'proveedor' ? '' : ' selected') + '>Cliente</option><option value="proveedor"' + (c && c.tipo === 'proveedor' ? ' selected' : '') + '>Proveedor</option></select></div>'
+    + '<div style="grid-column:1/3"><label class="abs-count" style="display:block;margin:0 0 3px">Razón social *</label><input id="vin-f-razon" ' + inp + ' value="' + v('razon_social') + '" placeholder="EMPRESA S.A.S."></div>'
+    + '<div style="grid-column:1/3"><label class="abs-count" style="display:block;margin:0 0 3px">Correo * <span style="font-weight:400">(ahí llega el link y el código)</span></label><input id="vin-f-correo" type="email" ' + inp + ' value="' + v('correo') + '" placeholder="contacto@empresa.com"></div>'
+    + '<div><label class="abs-count" style="display:block;margin:0 0 3px">Persona de contacto</label><input id="vin-f-contacto" ' + inp + ' value="' + v('contacto') + '"></div>'
+    + '<div><label class="abs-count" style="display:block;margin:0 0 3px">Teléfono</label><input id="vin-f-tel" ' + inp + ' value="' + v('telefono') + '"></div>'
+    + '<div style="grid-column:1/3"><label class="abs-count" style="display:block;margin:0 0 3px">Notas internas</label><input id="vin-f-notas" ' + inp + ' value="' + v('notas') + '"></div>'
+    + '<div id="vin-f-aviso" style="grid-column:1/3" class="abs-count">' + (c ? 'Al guardar se genera un código nuevo y se reenvía el correo. Si ya tenía clave, le sigue sirviendo.' : 'Al guardar le llega un correo con el link del portal y un código de 6 letras para crear su clave.') + '</div>'
+    + '</div><div style="display:flex;gap:10px;justify-content:flex-end;padding:0 22px 18px">'
+    + '<button class="btn btn-ghost" onclick="_vinCerrarModal()" style="padding:8px 16px;font-size:12px">Cancelar</button>'
+    + '<button class="btn btn-primary" id="vin-f-ok" onclick="vinGuardarInvitacion()" style="width:auto;padding:8px 18px;font-size:13px">' + (c ? '✉️ Guardar y reenviar' : '✉️ Invitar') + '</button></div></div>';
+  document.body.appendChild(ov);
+  setTimeout(() => { const e = document.getElementById(c ? 'vin-f-correo' : 'vin-f-nit'); if (e) e.focus(); }, 50);
+}
+function _vinCerrarModal() { const m = document.getElementById('vin-modal'); if (m) m.remove(); }
+async function vinGuardarInvitacion() {
+  const g = k => (document.getElementById('vin-f-' + k) || {}).value || '';
+  const av = document.getElementById('vin-f-aviso');
+  const err = m => { if (av) av.innerHTML = '<div style="color:var(--red);font-size:12.5px">' + _cmkEsc(m) + '</div>'; };
+  const nit = g('nit').split('-')[0].replace(/\D/g, '');
+  if (nit.length < 6) return err('NIT inválido (solo números, sin el dígito de verificación).');
+  if (!g('razon').trim()) return err('Falta la razón social.');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(g('correo').trim())) return err('Correo inválido.');
+  const ok = document.getElementById('vin-f-ok'); if (ok) { ok.disabled = true; ok.textContent = 'Guardando…'; }
+  const r = await _vinPortal('invitar', { nit, razon_social: g('razon'), tipo: g('tipo'), correo: g('correo'), contacto: g('contacto').trim() || null, telefono: g('tel').trim() || null, notas: g('notas').trim() || null, por: _cmkYo() });
+  if (!r.ok) { if (ok) { ok.disabled = false; ok.textContent = '✉️ Invitar'; } return err(r.error || 'No se pudo guardar.'); }
+  _vinCorreo({ tipo: 'invitacion', nit: String(nit) });
+  _vinCerrarModal();
+  showToast('Invitación ' + (r.nueva ? 'creada' : 'renovada') + ' ✓ · código ' + r.codigo + ' (le llega por correo en ~1 min)', 'success', { durationMs: 12000 });
+  await vinCargar(true); vin_sel = nit; vinAbrir(nit, true);
 }
 
 // ═══ 💳 SALDOS A FAVOR DE PROVEEDORES (13-oct-2026, SW v320) ═══════════════

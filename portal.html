@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Portal de Vinculación · E&amp;G Energy Group</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══ PORTAL DE VINCULACIÓN (22-oct-2026) ═══
+   Página PÚBLICA para clientes y proveedores: entran con NIT + clave y suben sus
+   documentos. No lee Supabase directo: todo pasa por el proxy (acción `portal`).
+   Misma piel de la plataforma (Index.html) para que se sienta de la casa. */
+:root { --navy:#0F2B5B; --blue:#1A3A8F; --green:#2EAA4A; --dark:#071525; --gold:#E8A020; --light:#F0F4FF; --red:#e53e3e; --yellow:#d69e2e; --text-muted:#8899bb; --card-bg:#0d1f3c; --border:#1e3a6e; }
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { background:var(--dark); }
+body { font-family:'Open Sans',sans-serif; color:var(--light); min-height:100vh; background:linear-gradient(135deg,#071525 0%,#0F2B5B 60%,#071525 100%); background-attachment:fixed; }
+.wrap { max-width:760px; margin:0 auto; padding:28px 16px 60px; }
+.logo { text-align:center; margin-bottom:22px; }
+.logo img { width:110px; display:block; margin:0 auto 8px; filter:brightness(1.1); }
+.logo h1 { font-family:'Montserrat',sans-serif; font-weight:900; font-size:20px; letter-spacing:1px; color:#fff; }
+.logo .company { color:var(--gold); font-family:'Montserrat',sans-serif; font-weight:700; font-size:12px; letter-spacing:3px; text-transform:uppercase; margin-top:4px; }
+.logo p { color:var(--text-muted); font-size:13px; margin-top:6px; }
+.box { background:rgba(13,31,60,.95); border:1px solid var(--border); border-radius:18px; padding:28px 24px; box-shadow:0 24px 80px rgba(0,0,0,.5); }
+.scr { display:none; } .scr.on { display:block; }
+label { display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.5px; }
+input[type=text], input[type=password], input[type=date] { width:100%; background:rgba(15,43,91,.5); border:1px solid var(--border); border-radius:10px; padding:12px 14px; color:#fff; font-size:15px; font-family:inherit; outline:none; }
+input:focus { border-color:var(--gold); }
+.fg { margin-bottom:16px; }
+.btn { border:none; border-radius:10px; padding:13px 20px; font-family:inherit; font-weight:600; font-size:15px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px; transition:all .2s; }
+.btn-primary { background:var(--green); color:#fff; width:100%; }
+.btn-primary:hover { background:#238f3a; }
+.btn-primary:disabled { opacity:.6; cursor:wait; }
+.btn-ghost { background:transparent; border:1px solid var(--border); color:var(--light); font-size:13px; padding:9px 14px; }
+.btn-ghost:hover { background:rgba(255,255,255,.06); }
+.link { color:var(--gold); cursor:pointer; text-decoration:underline; font-size:13px; background:none; border:none; font-family:inherit; }
+.err { background:rgba(229,62,62,.12); border:1px solid rgba(229,62,62,.4); color:#ffb4b4; border-radius:10px; padding:10px 14px; font-size:13.5px; margin-bottom:14px; display:none; }
+.ok { background:rgba(46,170,74,.12); border:1px solid rgba(46,170,74,.4); color:#b9f0c6; border-radius:10px; padding:10px 14px; font-size:13.5px; margin-bottom:14px; display:none; }
+.muted { color:var(--text-muted); font-size:12.5px; line-height:1.5; }
+.head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+.head h2 { font-family:'Montserrat',sans-serif; font-size:18px; color:#fff; }
+.chip { display:inline-block; font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; letter-spacing:.3px; }
+.chip.falta { background:rgba(136,153,187,.18); color:#c6d0e6; }
+.chip.pendiente { background:rgba(214,158,46,.18); color:#ffd27a; }
+.chip.aprobado { background:rgba(46,170,74,.18); color:#9fe8b0; }
+.chip.rechazado { background:rgba(229,62,62,.18); color:#ffb4b4; }
+.chip.vencido { background:rgba(229,62,62,.18); color:#ffb4b4; }
+.doc { border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:12px; background:rgba(15,43,91,.25); }
+.doc.aprobado { border-color:rgba(46,170,74,.5); }
+.doc.rechazado, .doc.vencido { border-color:rgba(229,62,62,.5); }
+.doc .t { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+.doc .t b { font-size:15px; color:#fff; }
+.doc .obs { margin-top:8px; font-size:13px; color:#ffb4b4; background:rgba(229,62,62,.08); border-radius:8px; padding:8px 10px; }
+.doc .act { margin-top:12px; display:grid; gap:10px; grid-template-columns:1fr; }
+@media (min-width:560px) { .doc .act.con-fecha { grid-template-columns:1fr 180px; } }
+.file { position:relative; }
+.file input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; }
+.file .fake { border:1px dashed var(--border); border-radius:10px; padding:12px 14px; font-size:13.5px; color:var(--text-muted); background:rgba(15,43,91,.3); display:flex; align-items:center; gap:8px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.bar { height:6px; border-radius:3px; background:rgba(255,255,255,.08); overflow:hidden; margin-top:10px; display:none; }
+.bar > i { display:block; height:100%; width:0; background:var(--green); transition:width .2s; }
+.foot { margin-top:22px; display:flex; gap:10px; flex-wrap:wrap; justify-content:space-between; align-items:center; }
+.resumen { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-bottom:18px; }
+.resumen div { background:rgba(15,43,91,.35); border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center; }
+.resumen b { display:block; font-size:22px; font-family:'Montserrat',sans-serif; color:#fff; }
+.resumen span { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; }
+.modal { position:fixed; inset:0; background:rgba(3,8,18,.8); display:none; align-items:center; justify-content:center; padding:20px; z-index:50; }
+.modal.on { display:flex; }
+.modal .box { width:420px; max-width:100%; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">
+    <img src="libs/logo-eyg.png" alt="E&G Energy Group">
+    <h1>E&amp;G Energy Group SAS</h1>
+    <div class="company">Portal de Vinculación</div>
+    <p id="sub">Clientes y proveedores · envío de documentos</p>
+  </div>
+
+  <!-- ═══ Entrar ═══ -->
+  <div class="box scr on" id="scr-entrar">
+    <div class="err" id="e-err"></div>
+    <div class="fg"><label>NIT (sin dígito de verificación)</label><input type="text" id="e-nit" inputmode="numeric" placeholder="900123456" autocomplete="username"></div>
+    <div class="fg"><label>Clave</label><input type="password" id="e-clave" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')entrar()"></div>
+    <button class="btn btn-primary" id="e-btn" onclick="entrar()">Entrar</button>
+    <p class="muted" style="margin-top:16px;text-align:center">¿Primera vez? <button class="link" onclick="ir('activar')">Crea tu clave con el código que te envió E&amp;G</button></p>
+    <p class="muted" style="margin-top:10px;text-align:center">¿Olvidaste la clave? Escríbenos a <a href="mailto:info@eygenergygroup.com" style="color:var(--gold)">info@eygenergygroup.com</a> y te reenviamos un código.</p>
+  </div>
+
+  <!-- ═══ Primera vez: crear clave ═══ -->
+  <div class="box scr" id="scr-activar">
+    <p class="muted" style="margin-bottom:16px">Escribe el NIT y el <b style="color:#fff">código de invitación</b> que recibiste por correo, y crea la clave con la que entrarás de ahora en adelante.</p>
+    <div class="err" id="a-err"></div>
+    <div class="fg"><label>NIT (sin dígito de verificación)</label><input type="text" id="a-nit" inputmode="numeric" placeholder="900123456"></div>
+    <div class="fg"><label>Código de invitación</label><input type="text" id="a-cod" placeholder="ABC123" style="text-transform:uppercase;letter-spacing:3px" autocapitalize="characters"></div>
+    <div class="fg"><label>Clave nueva (mínimo 6 caracteres)</label><input type="password" id="a-c1" autocomplete="new-password"></div>
+    <div class="fg"><label>Repite la clave</label><input type="password" id="a-c2" autocomplete="new-password" onkeydown="if(event.key==='Enter')activar()"></div>
+    <button class="btn btn-primary" id="a-btn" onclick="activar()">Crear clave y entrar</button>
+    <p class="muted" style="margin-top:16px;text-align:center"><button class="link" onclick="ir('entrar')">Ya tengo clave, quiero entrar</button></p>
+  </div>
+
+  <!-- ═══ Documentos ═══ -->
+  <div class="box scr" id="scr-docs">
+    <div class="head">
+      <div><h2 id="d-razon">—</h2><div class="muted" id="d-sub">—</div></div>
+      <div id="d-estado"></div>
+    </div>
+    <div class="ok" id="d-ok"></div>
+    <div class="err" id="d-err"></div>
+    <div class="resumen" id="d-resumen"></div>
+    <div id="d-lista"></div>
+    <p class="muted" style="margin-top:6px">Formatos aceptados: PDF, JPG o PNG, hasta 15 MB por archivo. Cuando subes un documento nuevo, reemplaza al anterior y E&amp;G lo revisa. Te avisamos por correo si algo necesita corrección.</p>
+    <div class="foot">
+      <button class="btn btn-ghost" onclick="abrirClave()">🔑 Cambiar clave</button>
+      <button class="btn btn-ghost" onclick="salir()">Cerrar sesión</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cambiar clave -->
+<div class="modal" id="m-clave">
+  <div class="box">
+    <h2 style="font-family:Montserrat,sans-serif;font-size:16px;margin-bottom:14px">Cambiar clave</h2>
+    <div class="err" id="k-err"></div>
+    <div class="fg"><label>Clave actual</label><input type="password" id="k-0"></div>
+    <div class="fg"><label>Clave nueva</label><input type="password" id="k-1"></div>
+    <div class="fg"><label>Repite la clave nueva</label><input type="password" id="k-2"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="cerrarClave()">Cancelar</button>
+      <button class="btn btn-primary" style="width:auto" onclick="cambiarClave()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Conexión: mismos proxies de la plataforma (data/config.json). El carril rápido
+// primero; si no contesta, el unificado. El secreto es el mismo de Index.html
+// (ya es público en el repositorio): lo que protege los datos es NIT + clave,
+// que valida el proxy, y las URL firmadas de Storage.
+const SECRET = 'eyg_prx_c70613f89a19d97c73d8800612029462';
+const SB_PUB = 'sb_publishable_zZrmpmvqbz4AJCGHRHQ8Xw_8tnf5ObM';
+const FALLBACK = ['https://script.google.com/macros/s/AKfycbyooQiDQ5LRuXwy8tuPTpo9SKJ2xiQ3Ht_YMMUTkOaf6XgOy2z_0m9Aw-UNS5hNNJcZ/exec',
+                  'https://script.google.com/macros/s/AKfycbxrq2VO3GkTapQwXOgyn8EOX6VRnQcoduZ5XRQbsrqXAkI-_OXgSTRuQ4NxNF1O0GE/exec'];
+let PROXIES = null, SES = { token: sessionStorage.getItem('pt_token') || '', estado: null };
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const fecha = d => d ? String(d).slice(0, 10).split('-').reverse().join('/') : '—';
+const hoy = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+
+async function proxies() {
+  if (PROXIES) return PROXIES;
+  let c = null;
+  try { c = await (await fetch('data/config.json?t=' + Date.now(), { cache: 'no-store' })).json(); } catch (_) { }
+  PROXIES = [c && c.sbProxyUrl, c && c.proxyUrl, c && c.ghProxyUrl].concat(FALLBACK).filter(Boolean).filter((u, i, a) => a.indexOf(u) === i);
+  return PROXIES;
+}
+function fetchT(url, opts, ms) {
+  const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), ms);
+  return fetch(url, Object.assign({}, opts, { signal: ctl.signal })).finally(() => clearTimeout(t));
+}
+// Una acción del portal. Devuelve siempre un objeto {ok, ...}.
+async function pt(accion, datos) {
+  const ps = await proxies();
+  const body = JSON.stringify({ secret: SECRET, portal: Object.assign({ accion: accion, token: SES.token }, datos || {}) });
+  let ultimo = 'sin respuesta';
+  for (const u of ps) {
+    for (let i = 0; i < 2; i++) {
+      try {
+        const r = await fetchT(u, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: body, redirect: 'follow' }, 40000);
+        const t = await r.text();
+        let j; try { j = JSON.parse(t); } catch (_) { ultimo = 'respuesta no válida'; continue; }
+        if (j && j.error && !('ok' in j)) return { ok: false, error: j.error };
+        return j;
+      } catch (e) { ultimo = e.name === 'AbortError' ? 'el servidor tardó demasiado' : e.message; }
+    }
+  }
+  return { ok: false, error: 'No se pudo conectar con E&G (' + ultimo + '). Revisa tu internet e intenta de nuevo.' };
+}
+
+function ir(s) {
+  document.querySelectorAll('.scr').forEach(x => x.classList.remove('on'));
+  $('scr-' + s).classList.add('on');
+  $('sub').textContent = s === 'docs' ? 'Documentos de vinculación' : 'Clientes y proveedores · envío de documentos';
+  window.scrollTo(0, 0);
+}
+function err(id, m) { const e = $(id); if (!e) return; e.style.display = m ? 'block' : 'none'; e.textContent = m || ''; }
+function ocupado(id, si, txt) { const b = $(id); if (!b) return; b.disabled = !!si; if (txt) b.textContent = txt; }
+
+async function entrar() {
+  err('e-err', ''); ocupado('e-btn', true, 'Entrando…');
+  const r = await pt('entrar', { nit: $('e-nit').value, clave: $('e-clave').value, token: '' });
+  ocupado('e-btn', false, 'Entrar');
+  if (!r.ok) { err('e-err', r.error || 'No se pudo entrar.'); if (r.primeraVez) { $('a-nit').value = $('e-nit').value; } return; }
+  sesion(r);
+}
+async function activar() {
+  err('a-err', '');
+  const c1 = $('a-c1').value, c2 = $('a-c2').value;
+  if (c1.length < 6) return err('a-err', 'La clave debe tener al menos 6 caracteres.');
+  if (c1 !== c2) return err('a-err', 'Las dos claves no coinciden.');
+  ocupado('a-btn', true, 'Creando…');
+  const r = await pt('activar', { nit: $('a-nit').value, codigo: $('a-cod').value, clave: c1, token: '' });
+  ocupado('a-btn', false, 'Crear clave y entrar');
+  if (!r.ok) return err('a-err', r.error || 'No se pudo crear la clave.');
+  sesion(r);
+}
+function sesion(r) {
+  SES.token = r.token || SES.token; SES.estado = r;
+  try { sessionStorage.setItem('pt_token', SES.token); } catch (_) { }
+  $('e-clave').value = ''; $('a-c1').value = ''; $('a-c2').value = '';
+  render(); ir('docs');
+}
+function salir() { SES = { token: '', estado: null }; try { sessionStorage.removeItem('pt_token'); } catch (_) { } ir('entrar'); }
+
+// ─── Documentos ──────────────────────────────────────────────────────────
+function vigente(d) { return !(d && d.vence && d.vence < hoy()); }
+function render() {
+  const e = SES.estado; if (!e || !e.cuenta) return;
+  const c = e.cuenta, docs = e.documentos || [], req = e.requeridos || {};
+  $('d-razon').textContent = c.razon_social;
+  $('d-sub').textContent = 'NIT ' + c.nit + ' · ' + (c.tipo === 'proveedor' ? 'Proveedor' : 'Cliente') + (c.contacto ? ' · ' + c.contacto : '');
+  const estC = { invitado: ['pendiente', 'Sin documentos'], activo: ['pendiente', 'En proceso'], aprobado: ['aprobado', 'Vinculación aprobada'], bloqueado: ['rechazado', 'Bloqueada'] }[c.estado] || ['falta', c.estado];
+  $('d-estado').innerHTML = '<span class="chip ' + estC[0] + '">' + esc(estC[1]) + '</span>';
+  const tipos = Object.keys(req);
+  const actual = {}; tipos.forEach(t => { actual[t] = docs.find(d => d.tipo_doc === t && d.estado !== 'reemplazado') || null; });
+  let nA = 0, nP = 0, nF = 0;
+  tipos.forEach(t => { const d = actual[t]; if (!d || d.estado === 'rechazado' || !vigente(d)) nF++; else if (d.estado === 'aprobado') nA++; else nP++; });
+  $('d-resumen').innerHTML = '<div><b>' + nA + '</b><span>Aprobados</span></div><div><b>' + nP + '</b><span>En revisión</span></div><div><b>' + nF + '</b><span>Por subir</span></div>';
+  $('d-lista').innerHTML = tipos.map(t => {
+    const d = actual[t], info = req[t], conFecha = info.vigenciaDias > 0;
+    let cls = 'falta', txt = 'Falta';
+    if (d) {
+      if (!vigente(d)) { cls = 'vencido'; txt = 'Vencido el ' + fecha(d.vence); }
+      else if (d.estado === 'aprobado') { cls = 'aprobado'; txt = 'Aprobado'; }
+      else if (d.estado === 'rechazado') { cls = 'rechazado'; txt = 'Necesita corrección'; }
+      else { cls = 'pendiente'; txt = 'En revisión'; }
+    }
+    return '<div class="doc ' + cls + '" id="doc-' + t + '">'
+      + '<div class="t"><b>' + esc(info.nombre) + '</b><span class="chip ' + cls + '">' + esc(txt) + '</span></div>'
+      + (d ? '<div class="muted" style="margin-top:6px">📎 ' + esc(d.nombre_archivo) + ' · subido el ' + fecha(d.subido_at) + (d.fecha_expedicion ? ' · expedido el ' + fecha(d.fecha_expedicion) : '') + (d.vence ? ' · vence el ' + fecha(d.vence) : '') + '</div>' : '')
+      + (d && d.estado === 'rechazado' && d.observacion ? '<div class="obs">✏️ ' + esc(d.observacion) + '</div>' : '')
+      + (conFecha ? '<div class="muted" style="margin-top:6px">Debe tener máximo ' + info.vigenciaDias + ' días de expedido.</div>' : '')
+      + '<div class="act' + (conFecha ? ' con-fecha' : '') + '">'
+      + '<div class="file"><div class="fake" id="fk-' + t + '">📁 ' + (d && d.estado === 'aprobado' ? 'Reemplazar archivo…' : 'Elegir archivo (PDF, JPG o PNG)…') + '</div><input type="file" accept="application/pdf,image/jpeg,image/png" onchange="elegido(\'' + t + '\',this)"></div>'
+      + (conFecha ? '<div><input type="date" id="fx-' + t + '" max="' + hoy() + '" title="Fecha de expedición"></div>' : '')
+      + '</div>'
+      + '<div class="bar" id="bar-' + t + '"><i></i></div>'
+      + '<div style="margin-top:10px;display:none" id="go-' + t + '"><button class="btn btn-primary" onclick="subir(\'' + t + '\')">⬆️ Subir ' + esc(info.nombre) + '</button></div>'
+      + '</div>';
+  }).join('');
+}
+const _sel = {};
+function elegido(t, inp) {
+  const f = inp.files && inp.files[0]; _sel[t] = f || null;
+  $('fk-' + t).textContent = f ? '📎 ' + f.name + ' (' + Math.round(f.size / 1024) + ' KB)' : '📁 Elegir archivo…';
+  $('go-' + t).style.display = f ? 'block' : 'none';
+}
+function mime(f) {
+  if (f.type) return f.type;
+  const n = f.name.toLowerCase();
+  return n.endsWith('.pdf') ? 'application/pdf' : (n.endsWith('.jpg') || n.endsWith('.jpeg')) ? 'image/jpeg' : n.endsWith('.png') ? 'image/png' : '';
+}
+async function subir(t) {
+  err('d-err', ''); err('d-ok', '');
+  const f = _sel[t]; if (!f) return;
+  const m = mime(f);
+  if (['application/pdf', 'image/jpeg', 'image/png'].indexOf(m) < 0) return err('d-err', 'Solo se aceptan PDF, JPG o PNG.');
+  if (f.size > 15 * 1024 * 1024) return err('d-err', 'El archivo pesa más de 15 MB.');
+  const fx = $('fx-' + t), fexp = fx ? fx.value : '';
+  if (fx && !fexp) return err('d-err', 'Indica la fecha de expedición del certificado.');
+  const go = $('go-' + t).querySelector('button'); go.disabled = true; go.textContent = 'Preparando…';
+  const bar = $('bar-' + t); bar.style.display = 'block'; bar.firstChild.style.width = '3%';
+  try {
+    const u = await pt('subir_url', { tipo: t, nombre: f.name, mime: m, tamano: f.size });
+    if (!u.ok) throw new Error(u.error || 'No se pudo preparar la subida.');
+    if (u.sesion === false) { salir(); return; }
+    go.textContent = 'Subiendo…';
+    await new Promise((res, rej) => {
+      const x = new XMLHttpRequest();
+      x.open('PUT', u.subirUrl, true);
+      x.setRequestHeader('apikey', SB_PUB);
+      x.setRequestHeader('Authorization', 'Bearer ' + SB_PUB);
+      x.setRequestHeader('Content-Type', m);
+      x.setRequestHeader('x-upsert', 'false');
+      x.upload.onprogress = ev => { if (ev.lengthComputable) bar.firstChild.style.width = Math.max(3, Math.round(ev.loaded / ev.total * 90)) + '%'; };
+      x.onload = () => (x.status >= 200 && x.status < 300) ? res() : rej(new Error('El servidor de archivos respondió ' + x.status + ': ' + String(x.responseText || '').slice(0, 160)));
+      x.onerror = () => rej(new Error('Falló la conexión con el servidor de archivos.'));
+      x.send(f);
+    });
+    go.textContent = 'Registrando…'; bar.firstChild.style.width = '95%';
+    const c = await pt('confirmar', { tipo: t, ruta: u.ruta, nombre: f.name, mime: m, tamano: f.size, fecha_expedicion: fexp || null });
+    if (!c.ok) throw new Error(c.error || 'No se pudo registrar el documento.');
+    SES.estado = c; _sel[t] = null; render();
+    err('d-ok', '✅ ' + ((c.requeridos || {})[t] || {}).nombre + ' recibido. E&G lo revisará y te avisará por correo.');
+    window.scrollTo(0, 0);
+  } catch (e) {
+    err('d-err', e.message || String(e));
+    go.disabled = false; go.textContent = 'Reintentar'; bar.style.display = 'none';
+  }
+}
+
+// ─── Cambiar clave ───────────────────────────────────────────────────────
+function abrirClave() { err('k-err', ''); ['k-0', 'k-1', 'k-2'].forEach(i => $(i).value = ''); $('m-clave').classList.add('on'); }
+function cerrarClave() { $('m-clave').classList.remove('on'); }
+async function cambiarClave() {
+  err('k-err', '');
+  if ($('k-1').value.length < 6) return err('k-err', 'La clave nueva debe tener al menos 6 caracteres.');
+  if ($('k-1').value !== $('k-2').value) return err('k-err', 'Las dos claves nuevas no coinciden.');
+  const r = await pt('cambiar_clave', { actual: $('k-0').value, nueva: $('k-1').value });
+  if (!r.ok) return err('k-err', r.error || 'No se pudo cambiar.');
+  cerrarClave(); err('d-ok', '✅ Clave cambiada.');
+}
+
+// ─── Arranque: ?nit=...&c=CODIGO viene del correo de invitación ──────────
+(async function () {
+  const q = new URLSearchParams(location.search);
+  if (q.get('nit')) { $('a-nit').value = q.get('nit'); $('e-nit').value = q.get('nit'); }
+  if (q.get('c')) { $('a-cod').value = q.get('c'); ir('activar'); }
+  if (SES.token) {
+    const r = await pt('estado', {});
+    if (r.ok) { SES.estado = r; render(); ir('docs'); }
+    else { SES.token = ''; try { sessionStorage.removeItem('pt_token'); } catch (_) { } }
+  }
+})();
+</script>
+</body>
+</html>

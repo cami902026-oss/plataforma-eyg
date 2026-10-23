@@ -1,0 +1,57 @@
+name: 🔗 Portal de vinculación · correos
+
+# Correos del portal donde clientes y proveedores suben sus documentos:
+#   · invitación (link + código) y resultado de la revisión → se disparan al
+#     instante desde la plataforma (el proxy llama workflow_dispatch con inputs);
+#   · barrido cada 15 min (6 AM–10 PM Colombia) → avisa a E&G de documentos
+#     nuevos por revisar. Anti-duplicado en la tabla `avisos_enviados`
+#     (tipo portal_nuevos), igual que el aviso de cotizaciones en revisión.
+on:
+  workflow_dispatch:
+    inputs:
+      tipo:
+        description: 'invitacion | revision | barrido'
+        required: false
+        default: 'barrido'
+      nit:
+        description: 'NIT de la cuenta (invitacion / revision)'
+        required: false
+        default: ''
+      doc_id:
+        description: 'id del documento (revision)'
+        required: false
+        default: ''
+  schedule:
+    - cron: '*/15 11-23 * * *'
+    - cron: '*/15 0-3 * * *'
+
+permissions:
+  contents: read
+
+# Los disparos instantáneos NO deben esperarse entre sí (cada uno es un correo
+# distinto), así que no hay `concurrency` aquí; el barrido se protege solo con
+# la tabla avisos_enviados.
+
+jobs:
+  correo:
+    runs-on: ubuntu-latest
+    name: 📧 Enviar
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 📧 Portal de vinculación
+        env:
+          MS_TENANT_ID:     ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID:     ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          SUPABASE_URL:     ${{ secrets.SUPABASE_URL }}
+          # Escritura (marcar avisos) y lectura de portal_credenciales (sin
+          # política pública): hace falta la key secreta.
+          SUPABASE_KEY:     ${{ secrets.SUPABASE_SECRET || secrets.SUPABASE_KEY }}
+          REMITENTE_OP:     'info@eygenergygroup.com'
+          TIPO:             ${{ inputs.tipo || 'barrido' }}
+          NIT:              ${{ inputs.nit || '' }}
+          DOC_ID:           ${{ inputs.doc_id || '' }}
+        run: python scripts/portal_aviso.py
