@@ -7319,6 +7319,18 @@ async function _cotizReintentarSB() {
   for (const id of pend.slice(0, 10)) {
     const rec = bd.find(x => x && x.id === id);
     if (!rec) { _cotizSbPendQuitar(id); continue; }
+    // 23-oct-2026 (LM2383): el reintento mandaba la cabecera ENTERA de este equipo aunque
+    // el servidor ya tuviera una versión más nueva de otra persona, y la pisaba (se
+    // perdieron 4 ítems y $7,2 M). Si el servidor va adelante, este pendiente se
+    // descarta y la copia local se refresca con la del servidor en el próximo sondeo.
+    try {
+      const srv = await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id) + '&select=extra->>updatedAt&limit=1');
+      const srvAt = (Array.isArray(srv) && srv[0] && srv[0].updatedAt) || '';
+      if (srvAt && String(rec.updatedAt || '') < String(srvAt)) {
+        console.warn('[cotiz→Supabase] reintento descartado: el servidor tiene ' + id + ' más nuevo (' + srvAt + ' > ' + (rec.updatedAt || '—') + ')');
+        _cotizSbPendQuitar(id); continue;
+      }
+    } catch (_) { }
     window._cotizSbSilencio = true;
     try { if (await _cotizSyncSupabase(rec)) ok++; } catch (_) { }
     finally { window._cotizSbSilencio = false; }
@@ -18350,7 +18362,12 @@ function _cotizItemRow(record, it, n) {
   };
   // v151: la columna alt_de solo se envía cuando el ítem ES alternativa, para que las
   // cotizaciones normales sigan sincronizando aunque la columna aún no exista en la BD.
-  if (it.altDe) row.alt_de = it.altDe;
+  // 23-oct-2026 (LM2383 / LM2055): PostgREST exige las MISMAS claves en todas las filas
+  // de un POST masivo (PGRST102 «All object keys must match»). Con alt_de solo en las
+  // alternativas, toda cotización que mezclara ítems normales y alternativas perdía
+  // TODOS sus ítems: la cabecera entraba y la tabla quedaba vacía («error de proxy»).
+  // La columna existe desde v151: va siempre, null cuando el ítem no es alternativa.
+  row.alt_de = it.altDe || null;
   return row;
 }
 // 14-sep-2026 (incidente LM2137): borrar filas de ítems por uid. Antes el filtro iba
@@ -34825,6 +34842,22 @@ async function pcomGuardar(silencioso){
       } else if(viejos.length){
         await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc)+'&id=in.('+viejos.join(',')+')',{method:'DELETE',headers:{'Prefer':'return=minimal'}});
       }
+      // 23-oct-2026 (CC-OP-2026-0170 ×2, CC-OP-2026-0156 ×3): si se guarda dos veces
+      // desde una pantalla con la lista de «viejas» desactualizada, el 2.º guardado no
+      // borra el lote del 1.º y cada material queda repetido. Tras guardar se releen
+      // las líneas del CC y se quitan las copias (misma descripción, cantidad y
+      // proveedor) de lo recién subido que no sean de este guardado ni tengan recepción.
+      try{
+        const srvD = (await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc)+'&select=id,descripcion,cantidad,proveedor,recibida&limit=1000'))||[];
+        const nzD = t => String(t||'').trim().toUpperCase().replace(/\s+/g,' ');
+        const firmaD = r => nzD(r.descripcion)+'|'+(+r.cantidad||0)+'|'+nzD(r.proveedor);
+        const mias = new Set(srvD.filter(r => idsPC.indexOf(r.id) >= 0).map(firmaD));
+        const sobran = srvD.filter(r => idsPC.indexOf(r.id) < 0 && r.recibida == null && mias.has(firmaD(r))).map(r => r.id);
+        if(sobran.length){
+          await absFetch('plan_compras?cc=eq.'+encodeURIComponent(c.cc)+'&id=in.('+sobran.join(',')+')',{method:'DELETE',headers:{'Prefer':'return=minimal'}});
+          console.warn('[plan] '+c.cc+': '+sobran.length+' copia(s) de un guardado anterior quitadas', sobran);
+        }
+      }catch(_){ }
       c._idsBase = idsPC.slice();
       c._avisoConflicto = false;
     }
