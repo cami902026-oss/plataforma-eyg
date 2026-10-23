@@ -3800,7 +3800,7 @@ body.fe-mode .fe-tag.blue { background:#dbeafe; color:#1e3a8a; }
             <input type="number" id="remi-num-desde" oninput="remiRenderLista()" placeholder="N° desde" title="Ver solo remisiones con número IGUAL O MAYOR a este" style="width:96px;padding:8px 10px;font-size:12px;">
             <input type="number" id="remi-num-hasta" oninput="remiRenderLista()" placeholder="N° hasta" title="Ver solo remisiones con número IGUAL O MENOR a este" style="width:96px;padding:8px 10px;font-size:12px;">
             <button class="btn btn-ghost" onclick="remiCargar()" style="padding:8px 14px;font-size:12px;">🔄 Recargar</button>
-            <button class="btn btn-secondary" onclick="remiExportExcel()" style="padding:8px 14px;font-size:12px;background:#1e7e34;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ Exportar Excel</button>
+            <button class="btn btn-secondary" id="remi-btn-excel" onclick="remiExportExcel()" style="padding:8px 14px;font-size:12px;background:#1e7e34;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ Exportar Excel</button>
             <button class="btn btn-secondary" id="remi-btn-bdcompleta" onclick="remiExportBDCompleta()" title="Descargar TODA la base de datos de remisiones (todo el histórico, sin filtros)" style="display:none;padding:8px 14px;font-size:12px;background:#1A3A8F;color:#fff;border:none;border-radius:8px;cursor:pointer;">⬇️ BD completa (todo)</button>
             <button class="btn btn-ghost" id="remi-btn-import" onclick="document.getElementById('remi-file-excel').click()" style="padding:8px 14px;font-size:12px;display:none;">📥 Importar Excel</button>
             <input type="file" id="remi-file-excel" accept=".xlsx,.xlsm,.xls" style="display:none" onchange="remiImportarExcel(this)">
@@ -5129,10 +5129,11 @@ function userCanSeeModule(mod) {
   if (mod === 'cronograma') return email !== 'vivian';
   // Abastecimiento: andrea, alberto, yesid
   if (mod === 'abastecimiento') return email === 'andrea' || email === 'alberto' || email === 'yesid';
-  // Remisiones: todo el equipo MENOS Nelsy y Mario (Mario: 14-sep-2026, pedido de gerencia)
-  if (mod === 'remisiones') return email !== 'nelsy' && email !== 'mario';
-  // Plan de Compras: todo el equipo MENOS Nelsy
-  if (mod === 'compras') return email !== 'nelsy';
+  // Remisiones: todo el equipo MENOS Nelsy. Mario volvió a verlo el 23-oct-2026 SOLO en
+  // consulta y SOLO las remisiones de sus cotizaciones (remiSoloLectura / cotizSoloMias).
+  if (mod === 'remisiones') return email !== 'nelsy';
+  // Plan de Compras: todo el equipo MENOS Nelsy. Mario tampoco (23-oct-2026, pedido del usuario: lleva costos de proveedor).
+  if (mod === 'compras') return email !== 'nelsy' && email !== 'mario';
   // Órdenes de Pedido: todo el equipo MENOS Nelsy (25-ago-2026). El resto lo ve
   // completo para saber por dónde va cada pedido; editarlo es otra cosa
   // (opPuedeEditar). Mario tampoco lo ve (14-sep-2026, pedido de gerencia).
@@ -5373,8 +5374,71 @@ let currentPage = 'dashboard';
 let chatOpen = false;
 let currentView = 'calendar';
 
+// ── 23-oct-2026 — COTIZACIONES SOLO PROPIAS (Mario) ──────────────────────────
+// Pedido del usuario: Mario (director comercial) ve ÚNICAMENTE las cotizaciones
+// donde él es el vendedor o quien la realizó. Las de Sheila, las históricas sin
+// vendedor y lo que se deriva de ellas (precios ya cotizados, búsquedas, actividad
+// de Inicio, buscador global, remisiones) no le aparecen. Sheila, Sandra, Alexandra,
+// Andrea y Alberto siguen viendo todo. La lista de usuarios con esta regla es
+// _COTIZ_SOLO_MIAS. El filtro corre en el navegador (getData devuelve la copia
+// local ya filtrada); la copia cruda queda en localStorage solo para consecutivos
+// y choques de número (_bdCotizTodasRaw), y NUNCA se sube a GitHub desde estos
+// usuarios porque está incompleta.
+var _COTIZ_SOLO_MIAS = ['mario'];
+var _cotizMiasIds = null;          // ids traídos del servidor (vendedor/realizada_por = yo)
+function cotizSoloMias() {
+  return !!(currentUser && (_COTIZ_SOLO_MIAS || ['mario']).includes(String(currentUser.email || '').toLowerCase()));
+}
+function _cotizNombreMio() { return String((currentUser && currentUser.name) || '').trim().toLowerCase(); }
+function _cotizEsNombreMio(v) {
+  const t = String(v || '').trim().toLowerCase(); if (!t) return false;
+  const yo = _cotizNombreMio(), mi = String((currentUser && currentUser.email) || '').trim().toLowerCase();
+  if (t === yo || t === mi) return true;
+  const p1 = yo.split(/\s+/)[0];                 // 'Mario' ≡ 'Mario Rodríguez'
+  return !!p1 && t.split(/\s+/)[0] === p1;
+}
+// ¿Esta cotización (shape local o fila de Supabase) la puede ver quien está conectado?
+function cotizEsMia(c) {
+  if (!cotizSoloMias()) return true;
+  if (!c) return false;
+  if (_cotizEsNombreMio(c.vendedor) || _cotizEsNombreMio(c.realizadaPor) || _cotizEsNombreMio(c.realizada_por)) return true;
+  const id = String(c.id || c.cotizacion_id || '').trim().toUpperCase();
+  return !!(_cotizMiasIds && id && _cotizMiasIds.has(id));
+}
+function cotizIdEsMio(id) {
+  if (!cotizSoloMias()) return true;
+  const k = String(id || '').trim().toUpperCase(); if (!k) return false;
+  if (_cotizMiasIds && _cotizMiasIds.has(k)) return true;
+  try { return (_bdCotizTodasRaw() || []).some(c => c && String(c.id).trim().toUpperCase() === k && cotizEsMia(c)); } catch (_) { return false; }
+}
+// Copia local SIN filtrar: solo para consecutivos y choques de número.
+function _bdCotizTodasRaw() {
+  try { const d = localStorage.getItem('max_bd_cotizaciones'); return d ? JSON.parse(d) : []; } catch (_) { return []; }
+}
+// Trae del servidor los ids que son míos (al entrar). Pagina de a 1.000 (corte de PostgREST).
+async function _cotizMiasCargar() {
+  if (!cotizSoloMias() || typeof absFetch !== 'function') return;
+  try {
+    const n = encodeURIComponent(_cotizNombreMio().split(/\s+/)[0] + '*');
+    const base = 'cotizaciones?select=id&or=(vendedor.ilike.' + n + ',realizada_por.ilike.' + n + ')&order=id.asc';
+    let todo = [], desde = 0;
+    for (let v = 0; v < 20; v++) {
+      const b = (await absFetch(base + '&limit=1000&offset=' + desde)) || [];
+      todo = todo.concat(b);
+      if (b.length < 1000) break;
+      desde += 1000;
+    }
+    _cotizMiasIds = new Set(todo.map(r => String(r.id || '').trim().toUpperCase()).filter(Boolean));
+    try { if (typeof bdRender === 'function') bdRender(); } catch (_) { }
+  } catch (_) { }
+}
 function getData(key, def) {
-  try { const d = localStorage.getItem('max_'+key); return d ? JSON.parse(d) : def; } catch(e) { return def; }
+  try {
+    const d = localStorage.getItem('max_'+key); const v = d ? JSON.parse(d) : def;
+    // 23-oct-2026: cotizaciones solo propias (Mario). Ver cotizSoloMias.
+    if (key === 'bd_cotizaciones' && Array.isArray(v) && cotizSoloMias()) return v.filter(cotizEsMia);
+    return v;
+  } catch(e) { return def; }
 }
 // ===== AUDIT LOG =====
 // Estampa cada item con quién/cuándo lo creó y quién/cuándo lo modificó por última vez.
@@ -6490,7 +6554,7 @@ function _scheduleBackupGH(key, val) {
   if (!cfg) return;
   // 30-sep-2026 — las cotizaciones ya no viajan por GitHub en cada guardado: van
   // a Supabase (instantáneo) y el JSON se regenera una vez al día. Ver _cotizEspejoGH.
-  if (key === 'bd_cotizaciones' && !_cotizEspejoGH()) return;
+  if (key === 'bd_cotizaciones' && (!_cotizEspejoGH() || cotizSoloMias())) return;   // 23-oct: la copia de Mario está filtrada
   clearTimeout(_ghBackupTimers[key]);
   _ghBackupPend[key] = { cfg: cfg, val: val };     // anotado por si se cierra la pestaña
   _ghBackupTimers[key] = setTimeout(() => {
@@ -8073,6 +8137,7 @@ function initApp() {
   }
   // Aplicar privilegios por rol
   applyPermissions();
+  try { _cotizMiasCargar(); } catch (_) { }   // 23-oct: ids de cotizaciones propias (Mario)
   // 🔧 FERREINDUSTRIAL (20-oct-2026): piel, menú y selector según la empresa activa (sin navegar aún).
   try { feAplicarEmpresa(false); } catch(e) { console.error('[fe]', e); }
 
@@ -8517,7 +8582,7 @@ function _actividadReciente(){
     const ts = x.updatedAt || x.createdAt || x.fechaGuardado; if(!ts) return;
     const txt = fn(x); if(txt) out.push({icon, text:esc(txt), ts});
   }catch(_){} }); };
-  try{ add(JSON.parse(localStorage.getItem('max_bd_cotizaciones')||'[]').filter(c=>c&&!c.deleted), '📄',
+  try{ add(JSON.parse(localStorage.getItem('max_bd_cotizaciones')||'[]').filter(c=>c&&!c.deleted&&cotizEsMia(c)), '📄',
     c=>{ const obs=(c.items||[]).map(it=>String(it&&it.obsProveedor||'').trim()).filter(Boolean).join(' · ');
          return 'Cotización '+c.id+(c.cliente?' ('+c.cliente+')':'')+' — '+(c.estado||'')+(c.updatedBy&&c.updatedBy!=='auto'?' · '+String(c.updatedBy).split('@')[0]:'')+(obs?' · prov: '+obs:''); }); }catch(_){}
   try{ add(_taskVisibles(getData('tasks', [])), '✅', t=>'Tarea "'+(t.titulo||'')+'" — '+(t.estado||'')+(t.responsable?' · '+t.responsable:'')); }catch(_){}
@@ -15043,7 +15108,7 @@ function _cotizPropagarFacturaOC(record) {
 }
 
 function cotizGetNextNum() {
-  const bd = getData('bd_cotizaciones', []);
+  const bd = cotizSoloMias() ? _bdCotizTodasRaw() : getData('bd_cotizaciones', []);   // 23-oct: el consecutivo se calcula con TODAS
   if (!bd.length) return 'LM1001';
   const nums = bd.map(c => { const m = (c.id||'').match(/(\d+)$/); return m ? parseInt(m[1]) : 0; }).filter(n => !isNaN(n));
   const max = nums.length ? Math.max(0, ...nums) : 1000;
@@ -16353,6 +16418,15 @@ function cotizPopulateSelects(vendedor, realiza, aprueba) {
   // vendedor can be empty
   const vEl = document.getElementById('cotiz-vendedor');
   if (vEl) vEl.innerHTML = '<option value="">— sin asignar —</option>' + cotizGetTeamOptions(vendedor);
+  // 23-oct-2026: quien solo ve lo suyo cotiza a su nombre, sin poder cambiarlo.
+  if (vEl && cotizSoloMias()) {
+    const yo = (currentUser && currentUser.name) || '';
+    if (yo) {
+      if (!Array.from(vEl.options).some(o => o.value === yo)) vEl.insertAdjacentHTML('beforeend', '<option value="' + yo + '">' + yo + '</option>');
+      vEl.value = yo;
+    }
+    vEl.disabled = true; vEl.title = 'Tus cotizaciones quedan a tu nombre';
+  }
 }
 
 // ¿Hay una cotización con contenido en el formulario (cliente o ítems con descripción)?
@@ -16520,10 +16594,10 @@ async function _cotizGuardarBDCore() {
   // en seco. El consecutivo automático ('LM — pendiente') no pasa por aquí, y los
   // números adoptados del LIBRO tampoco: solo frena si ese id YA está ocupado.
   if (!_cotizNumEsPendiente(id) && id !== cotizEditId) {
-    const _bdChk = getData('bd_cotizaciones', []) || [];
+    const _bdChk = (cotizSoloMias() ? _bdCotizTodasRaw() : getData('bd_cotizaciones', [])) || [];   // 23-oct: choque contra TODAS
     const _ocup = _bdChk.find(c => c && c.id === id && !c.deleted);
     if (_ocup) {
-      showToast('⛔ El número ' + id + ' ya es de la cotización de ' + (_ocup.cliente || 'otro cliente') +
+      showToast('⛔ El número ' + id + ' ya es de la cotización de ' + ((cotizEsMia(_ocup) && _ocup.cliente) || 'otro cliente') +
         '. NO se guardó, para no crear una copia. Déjalo en "' + COTIZ_NUM_PENDIENTE +
         '" y la plataforma le pone el suyo, o escribe ' + _cotizNumSiguienteLibre(id, _bdChk) + '.',
         'error', { durationMs: 16000 });
@@ -16583,7 +16657,7 @@ async function _cotizGuardarBDCore() {
     sitioEntrega: document.getElementById('cotiz-sitio').value,
     validez: document.getElementById('cotiz-validez').value,
     observaciones: document.getElementById('cotiz-observaciones').value,
-    vendedor: (document.getElementById('cotiz-vendedor')||{}).value || '',
+    vendedor: cotizSoloMias() ? ((currentUser && currentUser.name) || '') : ((document.getElementById('cotiz-vendedor')||{}).value || ''),   // 23-oct
     realizadaPor: (document.getElementById('cotiz-realiza')||{}).value || '',
     aprobadaPor: (document.getElementById('cotiz-aprueba')||{}).value || '',
     solicitudId: (document.getElementById('cotiz-sol-vincular')||{}).value || '',
@@ -16837,7 +16911,7 @@ async function cotizGenerarPDF() {
   const formaPago = document.getElementById('cotiz-pago').value;
   const sitio = document.getElementById('cotiz-sitio').value;
   const validez = document.getElementById('cotiz-validez').value;
-  const vendedor = (document.getElementById('cotiz-vendedor')||{}).value || '';
+  const vendedor = cotizSoloMias() ? ((currentUser && currentUser.name) || '') : ((document.getElementById('cotiz-vendedor')||{}).value || '');   // 23-oct
   const realizadaPor = (document.getElementById('cotiz-realiza')||{}).value || '';
   const aprobadaPor = (document.getElementById('cotiz-aprueba')||{}).value || '';
   const team = getData('team', TEAM_DEFAULT) || [];
@@ -17141,7 +17215,7 @@ async function _hpClientesEnsure(){
   const set = {};
   try { (getData('bd_cotizaciones', []) || []).forEach(function(c){ const n = ((c&&c.cliente)||'').trim(); if (n) set[n] = 1; }); } catch(_) {}
   try {
-    const rows = await absFetch('cotizaciones?select=cliente&limit=2000');
+    const rows = cotizSoloMias() ? [] : await absFetch('cotizaciones?select=cliente&limit=2000');   // 23-oct: solo clientes propios
     (rows||[]).forEach(function(r){ const n = ((r&&r.cliente)||'').trim(); if (n) set[n] = 1; });
   } catch(_) {}
   _hpClientes = Object.keys(set).sort();
@@ -17157,7 +17231,7 @@ async function _hpConsultar(words){
   const key = words.join(' ');
   if (_hpCache[key]) return _hpCache[key];
   const filtro = 'and=(' + words.map(function(w){ return 'or(descripcion.ilike.*' + encodeURIComponent(w) + '*,marca.ilike.*' + encodeURIComponent(w) + '*)'; }).join(',') + ')';
-  const base = 'cotizacion_items?select=cotizacion_id,descripcion,marca,qty,udm,v_unit,precio_proveedor,proveedor,tiempo_entrega,alt_de,cotizaciones!inner(cliente,fecha,estado)'
+  const base = 'cotizacion_items?select=cotizacion_id,descripcion,marca,qty,udm,v_unit,precio_proveedor,proveedor,tiempo_entrega,alt_de,cotizaciones!inner(cliente,fecha,estado,vendedor,realizada_por)'
     + '&' + filtro + '&v_unit=gt.0&order=cotizaciones(fecha).desc&limit=500';
   let rows;
   try { rows = await absFetch(base + '&cotizaciones.deleted=not.is.true'); }
@@ -17165,6 +17239,7 @@ async function _hpConsultar(words){
   const out = [], vistos = {};
   (rows||[]).forEach(function(r){
     const c = r.cotizaciones || {};
+    if (cotizSoloMias() && !cotizEsMia({ id: r.cotizacion_id, vendedor: c.vendedor, realizada_por: c.realizada_por })) return;   // 23-oct: solo propias
     const fila = {
       id: r.cotizacion_id || '', desc: r.descripcion || '', marca: r.marca || '',
       qty: +r.qty || 0, udm: r.udm || '', precio: +r.v_unit || 0,
@@ -18142,6 +18217,7 @@ async function bdLoadHistorico(force) {
   } catch (e) {
     _bdHistCache = _bdHistCache || [];
   } finally {
+    if (cotizSoloMias() && Array.isArray(_bdHistCache)) _bdHistCache = _bdHistCache.filter(cotizEsMia);   // 23-oct: solo propias
     _bdHistLoading = false;
   }
   return _bdHistCache;
@@ -18154,7 +18230,7 @@ async function bdVerHistorico(id) {
     showToast('Cargando cotización ' + id + '…', 'info');
     const cab = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id) + '&limit=1')) || [];
     const c = cab[0];
-    if (!c) { showToast('No se encontró ' + id, 'error'); return; }
+    if (!c || !cotizEsMia(c)) { showToast('No se encontró ' + id, 'error'); return; }   // 23-oct: ajena = no existe para mí
     const its = (await absFetch('cotizacion_items?cotizacion_id=eq.' + encodeURIComponent(id) + '&order=item.asc&limit=2000')) || [];
     const money = n => '$' + (+n || 0).toLocaleString('es-CO', { minimumFractionDigits: 0 });
     const filas = its.map(it => `<tr style="border-bottom:1px solid var(--border,#234);">
@@ -18242,7 +18318,7 @@ async function _cotizReclamarYSubir(record, esNueva) {
       } catch(_) { r = null; }                 // red caída: seguir flujo local normal
       // 201 = reclamado (nuestro). 409 = ya lo tomó otra persona → avisar, NO cambiar.
       if (r && r.status === 409) {
-        const sug = _cotizNumSiguienteLibre(id, getData('bd_cotizaciones', []));
+        const sug = _cotizNumSiguienteLibre(id, cotizSoloMias() ? _bdCotizTodasRaw() : getData('bd_cotizaciones', []));
         showToast('⚠️ El número ' + id + ' ya lo tomó otra persona. Cámbialo antes de generar el PDF (libre: ' + sug + ').', 'error', { durationMs: 15000 });
       }
     }
@@ -18749,6 +18825,7 @@ function bdRender(filtro) {
 // Carga un objeto cotización (shape local) en el editor. Reutilizado por bdCargar
 // (locales) y bdEditarHistorico (del LIBRO/Supabase, que al guardar se "adoptan").
 function _bdLoadIntoEditor(c, msg, adopted) {
+  if (!cotizEsMia(c)) { showToast('No tienes acceso a esa cotización', 'error'); return; }   // 23-oct: solo propias
   // Limpiar la imagen de extracción para que no se arrastre de una cotización a otra.
   try { cotizQuitarImagen(); } catch(_){}
   // Bandera de adopción: si viene del LIBRO, al guardar NO se notifica como "nueva"
@@ -18890,7 +18967,8 @@ function _rtOnCotiz(payload) {
       if (borrada) { if (idx >= 0) _bdHistCache.splice(idx, 1); }
       else {
         const mapped = { id: rw.id, fecha: rw.fecha || '', cliente: rw.cliente || '', contacto: rw.contacto || '', total: +rw.total || 0, fechaVenc: rw.fecha_venc || '', estado: rw.estado || '', vendedor: rw.vendedor || '', realizadaPor: rw.realizada_por || '', _hist: true };
-        if (idx >= 0) _bdHistCache[idx] = mapped; else _bdHistCache.push(mapped);
+        if (!cotizEsMia(mapped)) { if (idx >= 0) _bdHistCache.splice(idx, 1); }   // 23-oct: ajena → no entra
+        else if (idx >= 0) _bdHistCache[idx] = mapped; else _bdHistCache.push(mapped);
       }
     }
     // Aviso si es la cotización que tengo ABIERTA (cambio de cabecera de otra persona)
@@ -19128,7 +19206,7 @@ async function bdEditarHistorico(id) {
     showToast('Cargando ' + id + ' del LIBRO…', 'info');
     const cab = (await absFetch('cotizaciones?id=eq.' + encodeURIComponent(id) + '&limit=1')) || [];
     const h = cab[0];
-    if (!h) { showToast('No se encontró ' + id, 'error'); return; }
+    if (!h || !cotizEsMia(h)) { showToast('No se encontró ' + id, 'error'); return; }   // 23-oct: ajena = no existe para mí
     // 14-sep-2026 (incidente LM2137): si la fila trae el registro COMPLETO de la
     // plataforma (extra con firma), NO es del LIBRO — solo que este equipo aún no la
     // tiene en su BD local. Se abre por bdCargar (ítems con su uid, observaciones y
@@ -20875,7 +20953,7 @@ function _buildChatContext() {
   const tasks = _taskVisibles(getData('tasks', TASKS_DEFAULT)).filter(t => t.estado !== 'Completado').slice(0, 30);
   const meetings = getData('meetings', MEETINGS_DEFAULT).filter(m => m.fecha >= todayStr).slice(0, 15);
   const ops = getPOC().filter(o => o.estado === 'activo').slice(0, 30);
-  const cotz = (function(){ try { return JSON.parse(localStorage.getItem('max_bd_cotizaciones')||'[]'); } catch(_) { return []; }})().slice(-15);
+  const cotz = (function(){ try { return JSON.parse(localStorage.getItem('max_bd_cotizaciones')||'[]'); } catch(_) { return []; }})().filter(c=>cotizEsMia(c)).slice(-15);
   const team = getData('team', TEAM_DEFAULT);
 
   const today = new Date(); today.setHours(0,0,0,0);
@@ -23309,6 +23387,7 @@ function _gsearchRender(q) {
     if (typeof userCanSeeModule === 'function' && !userCanSeeModule(src.page)) continue;
     let arr = [];
     try { arr = JSON.parse(localStorage.getItem(src.storage) || '[]'); } catch(_) { arr = []; }
+    if (src.storage === 'max_bd_cotizaciones' && cotizSoloMias()) arr = (Array.isArray(arr) ? arr : []).filter(cotizEsMia);   // 23-oct: solo propias
     if (!Array.isArray(arr) || !arr.length) continue;
     const matches = [];
     for (const item of arr) {
@@ -24534,13 +24613,31 @@ function absAlistKardex(id){
 // ─── ROTACIÓN ────────────────────────────────────────────────────
 // ═══ MÓDULO REMISIONES (Supabase) ═══════════════════════════════
 let remi_rows = [], remi_current = null;
-function remiCanUse(){ return currentUser && (currentUser.email||'').toLowerCase() !== 'nelsy'; }
+function remiCanUse(){ return currentUser && (currentUser.email||'').toLowerCase() !== 'nelsy' && !remiSoloLectura(); }
+// 23-oct-2026 — Mario entra a Remisiones SOLO en consulta (ver, PDF, Excel de la remisión)
+// y SOLO ve las remisiones de sus cotizaciones (cotizSoloMias). Nada de crear, editar,
+// ligar, marcar parcial/definitiva, rótulos ni planillas.
+function remiSoloLectura(){ return typeof cotizSoloMias==='function' && cotizSoloMias(); }
+function _remiVisible(h){ return !remiSoloLectura() || cotizIdEsMio(h && h.cotizacion_id); }
+function _remiAplicarSoloLectura(){
+  if(!remiSoloLectura()) return;
+  const ed=document.getElementById('remi-view-editor'); if(!ed) return;
+  ed.querySelectorAll('input,select,textarea').forEach(el=>{
+    el.readOnly=true;
+    if(el.tagName==='SELECT'||el.type==='checkbox'||el.type==='radio'||el.type==='date'||el.type==='number'||el.type==='file') el.disabled=true;
+  });
+  ed.querySelectorAll('button').forEach(b=>{
+    const oc=String(b.getAttribute('onclick')||'');
+    if(/^remi(Guardar|CotizAbrir|AddItem|DelItem|EditNum|ParcialAbrir|Definitiva|Rotulo|ViajeAbrir)\(/.test(oc)) b.style.display='none';
+  });
+}
 function _remiEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 async function remiInit(){
   const nb=document.getElementById('remi-btn-nueva'); if(nb) nb.style.display=remiCanUse()?'':'none';
   const ib=document.getElementById('remi-btn-import'); if(ib) ib.style.display=remiCanImport()?'':'none';
   const bc=document.getElementById('remi-btn-bdcompleta'); if(bc) bc.style.display=(typeof abs_canAjuste==='function'&&abs_canAjuste())?'':'none';
+  if(remiSoloLectura()) ['remi-btn-import','remi-btn-bdcompleta','remi-btn-recuperar','remi-btn-excel'].forEach(i=>{ const e=document.getElementById(i); if(e) e.style.display='none'; });   // 23-oct
   remiVolver();
   if(!remi_rows.length) await remiCargar(); else remiRenderLista();
 }
@@ -24599,6 +24696,7 @@ function remiRenderLista(){
   const desde=document.getElementById('remi-desde')?.value||'';
   const hasta=document.getElementById('remi-hasta')?.value||'';
   const grupos=remiGrupos();
+  if(remiSoloLectura()) Object.keys(grupos).forEach(k=>{ if(!_remiVisible(grupos[k][0])) delete grupos[k]; });   // 23-oct: solo las de mis cotizaciones
   let lista=Object.keys(grupos).map(n=>{
     const its=grupos[n]; const h=its[0];
     // Consulta rápida: si la búsqueda coincide con descripciones, mostrar esos ítems debajo
@@ -24645,7 +24743,7 @@ function remiRenderLista(){
       <button onclick="remiAbrir('${_remiEsc(r.remision)}')" style="background:rgba(26,58,143,.4);border:1px solid rgba(26,58,143,.6);color:#90cdf4;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">👁 Ver</button>
       <button onclick="remiAbrir('${_remiEsc(r.remision)}',true)" title="Descargar PDF" style="background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.4);color:var(--gold);padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">📄</button>
       <button onclick="remiVerSalidas('${_remiEsc(r.remision)}')" title="Salidas de bodega asociadas a esta remisión (kardex)" style="background:rgba(46,170,74,.15);border:1px solid rgba(46,170,74,.4);color:#86efac;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">📦</button>
-      <button onclick="remiViajeAbrir('${_remiEsc(r.remision)}')" title="Planilla de transporte de mercancía (viaje)" style="background:rgba(126,179,255,.15);border:1px solid rgba(126,179,255,.4);color:#7eb3ff;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">🚚</button>
+      ${remiSoloLectura()?'':`<button onclick="remiViajeAbrir('${_remiEsc(r.remision)}')" title="Planilla de transporte de mercancía (viaje)" style="background:rgba(126,179,255,.15);border:1px solid rgba(126,179,255,.4);color:#7eb3ff;padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer">🚚</button>`}
     </td>
   </tr>${(r._match&&r._match.length)?`<tr><td></td><td colspan="5" style="padding:2px 8px 10px;font-size:11.5px;color:var(--text-muted);border-top:none">${r._match.map(it=>`↳ ${it.cantidad!=null?('<b style="color:var(--gold)">'+_remiEsc(it.cantidad)+'</b> × '):''}${_remiEsc(it.descripcion)}${it.marca?(' · <i>'+_remiEsc(it.marca)+'</i>'):''}`).join('<br>')}</td></tr>`:''}`).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Sin remisiones</td></tr>';
 }
@@ -24699,6 +24797,7 @@ async function remiVerSalidas(numero){
   document.body.appendChild(ov);
 }
 async function remiExportExcel(){
+  if(remiSoloLectura()) return showToast('No disponible para tu usuario','info');   // 23-oct
   if (!remi_rows.length) await remiCargar();
   if (!remi_rows.length) { showToast('No hay remisiones para exportar','info'); return; }
   const q=(document.getElementById('remi-search')?.value||'').toLowerCase();
@@ -24847,6 +24946,7 @@ async function remiAbrir(remision, pdf){
   }catch(_){ }
   const its=remiGrupos()[String(remision)]; if(!its||!its.length) return showToast('Remisión no encontrada','error');
   const h=its[0];
+  if(!_remiVisible(h)) return showToast('Remisión no encontrada','error');   // 23-oct: ajena = no existe para mí
   remi_current={ nueva:false, remision:String(remision), remisionOrig:String(remision), fecha:h.fecha||'', cliente:h.cliente||'', lugar:h.lugar||'',
     _idsBase: _idsBase,
     oc:h.oc||'', contiene:h.contiene||'', observaciones:h.observaciones||'', cotizacionId:h.cotizacion_id||'',
@@ -24879,6 +24979,7 @@ function remiAbrirEditor(titulo){
   remiRenderItems();
   remiMostrarCotizLink();
   _remiCargarFamilia();
+  _remiAplicarSoloLectura();   // 23-oct: Mario solo consulta
 }
 
 // 7-sep-2026 — las OTRAS entregas de esta misma orden. Se leen una vez al abrir
@@ -25048,8 +25149,8 @@ async function remiDefinitiva(){
   showToast('🏁 Marcada como entrega DEFINITIVA. Guarda para que quede.','success',{durationMs:9000});
 }
 
-function remiAddItem(){ if(!remi_current)return; remi_current.items.push({itemCot:'',cantidad:'',descripcion:'',marca:'',colada:'',desviacion:''}); remiRenderItems(); }
-function remiDelItem(i){ if(!remi_current)return; remi_current.items.splice(i,1); remiRenderItems(); }
+function remiAddItem(){ if(!remi_current||remiSoloLectura())return; remi_current.items.push({itemCot:'',cantidad:'',descripcion:'',marca:'',colada:'',desviacion:''}); remiRenderItems(); }
+function remiDelItem(i){ if(!remi_current||remiSoloLectura())return; remi_current.items.splice(i,1); remiRenderItems(); }
 
 async function remiGuardar(){
   if(!remiCanUse()) return showToast('No tienes permiso','error');
