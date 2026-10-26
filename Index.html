@@ -15183,7 +15183,8 @@ async function _cotizAsignarNumeroServidor(datos) {
   // y el reclamo encontraba "huecos" viejos libres (así nacieron LM1003 y LM1004). Se
   // toma como piso el mayor consecutivo creado en el servidor (las 300 más recientes).
   try {
-    const recientes = (await absFetch('cotizaciones?select=id&order=created_at.desc.nullslast&limit=300')) || [];
+    // 26-oct-2026: sin las borradas — las lápidas LM8390/8391/8392 (renumeradas a LM2391-2393) no deben servir de piso.
+    const recientes = (await absFetch('cotizaciones?select=id&deleted=not.is.true&order=created_at.desc.nullslast&limit=300')) || [];
     let maxSrv = 0;
     recientes.forEach(r => { const m = /^LM(\d+)$/.exec(String(r.id || '')); if (m && +m[1] > maxSrv) maxSrv = +m[1]; });
     const mc = /^LM(\d+)$/.exec(String(cand));
