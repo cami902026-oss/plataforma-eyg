@@ -15187,7 +15187,13 @@ async function _cotizAsignarNumeroServidor(datos) {
     let maxSrv = 0;
     recientes.forEach(r => { const m = /^LM(\d+)$/.exec(String(r.id || '')); if (m && +m[1] > maxSrv) maxSrv = +m[1]; });
     const mc = /^LM(\d+)$/.exec(String(cand));
-    if (maxSrv && mc && +mc[1] <= maxSrv) cand = 'LM' + (maxSrv + 1);
+    // 26-oct-2026 — CON SERVIDOR, MANDA EL SERVIDOR. Antes el piso solo SUBÍA el candidato:
+    // si la copia local traía un número más alto (un LM8389 mal digitado que nunca subió),
+    // el servidor lo aceptaba y el consecutivo saltó de LM2390 a LM8390 (y arrastró 8391 y
+    // 8392). Ahora, si el servidor respondió, el candidato es SIEMPRE su máximo + 1; el
+    // número local solo sirve sin conexión. Si ese número ya lo tomó otro, el 409 de abajo
+    // prueba el siguiente, como siempre.
+    if (maxSrv && mc) cand = 'LM' + (maxSrv + 1);
   } catch(_) {}
   for (let i = 0; i < 15; i++) {
     let r = null;
