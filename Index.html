@@ -29927,7 +29927,7 @@ async function opLigarAbrir() {
     // 29-oct-2026 (OP-0180 New Granada «(NGEC-SC)»): un cliente con paréntesis, coma o punto
     // rompía el filtro («failed to parse logic tree») y no se podía ligar nada. PostgREST
     // acepta el valor entre comillas dobles; dentro solo hay que quitar comillas y barras.
-    if (o.cliente) partes.push('cliente.ilike."*' + String(o.cliente).trim().replace(/["\]/g, '') + '*"');
+    if (o.cliente) partes.push('cliente.ilike."*' + String(o.cliente).trim().replace(/["\\]/g, '') + '*"');
     if (!partes.length) { showToast('Esta OP no tiene cliente ni cotización para buscar', 'error'); return; }
     // 23-oct-2026 (OP-0159 SAR ENERGY): una OP repartida en VARIAS remisiones hechas aparte ya
     // llevaba el número de la OP en cada una, y aquí solo salían las sueltas (op_numero vacío):
