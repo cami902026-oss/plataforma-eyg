@@ -25801,6 +25801,27 @@ async function remiPDF(marca){
     .foot{margin-top:26px;border-top:1px solid #e6ebf2;padding-top:9px;text-align:center;font-size:8.5px;color:#9aa6b4;letter-spacing:.3px}
     .sello{text-align:center;margin-top:22px;page-break-inside:avoid;break-inside:avoid}
     .sello img{width:240px;height:auto;transform:rotate(-1.5deg);opacity:.92}
+    /* 28-oct-2026 · el sello de devoluciones va como ESTAMPA junto a las firmas, en la zona
+       donde firma el cliente. Antes era un bloque aparte de 240px debajo de las firmas y en
+       una remisión larga caía solo en otra hoja (26402). Firmas y sello viajan juntos. */
+    .cierre{position:relative;margin-top:52px;page-break-inside:avoid;break-inside:avoid}
+    .cierre.con-sello{padding-top:62px}
+    .cierre .firma{margin-top:0}
+    .cierre .sello{position:absolute;right:0;top:0;margin:0;text-align:right;page-break-inside:auto}
+    .cierre .sello img{width:150px;transform:rotate(-7deg);opacity:.9}
+    /* Observaciones + firmas + sello + pie van en UN bloque que no se parte: las firmas
+       nunca quedan solas en una hoja en blanco; si no caben, bajan con las observaciones.
+       Y con más de 14 renglones la tabla se compacta un poco para que quepa más por hoja. */
+    .final{page-break-inside:avoid;break-inside:avoid;break-before:avoid;page-break-before:avoid}
+    table.it tbody tr:nth-last-child(-n+2){break-after:avoid;page-break-after:avoid}
+    table.it.compacta td{padding:5px 8px;font-size:10.5px}
+    table.it.compacta th{padding:7px 8px}
+    body.compacta-doc .page{padding:18px 38px}
+    body.compacta-doc .info{margin:10px 0 4px}
+    body.compacta-doc .sec{margin:12px 0 5px}
+    body.compacta-doc .cierre{margin-top:34px}
+    body.compacta-doc .cierre.con-sello{padding-top:56px}
+    body.compacta-doc .foot{margin-top:14px}
     @media print{.noprint{display:none}}
     /* 28-oct-2026 · el número de remisión sale en TODAS las hojas: el papel va dentro de
        una tabla cuya cabecera (thead) el navegador repite en cada página al imprimir,
@@ -25810,7 +25831,7 @@ async function remiPDF(marca){
     table.hojas>thead>tr>td,table.hojas>tbody>tr>td{padding:0;border:0;vertical-align:top}
     table.hojas>thead{display:table-header-group}
     .runhd{text-align:right;font-family:'Montserrat',sans-serif;font-size:8.5px;font-weight:700;color:#9aa6b4;letter-spacing:1.5px;text-transform:uppercase;padding:10px 38px 0}
-  </style></head><body><table class="hojas"><thead><tr><td><div class="runhd">Remisión N° ${_remiEsc(c.remision)} &middot; ${_remiEsc(c.cliente||'')}${c.fecha?' &middot; '+_remiEsc(c.fecha.split('-').reverse().join('/')):''}</div></td></tr></thead><tbody><tr><td><div class="page">
+  </style></head><body class="${items.length>14?'compacta-doc':''}"><table class="hojas"><thead><tr><td><div class="runhd">Remisión N° ${_remiEsc(c.remision)} &middot; ${_remiEsc(c.cliente||'')}${c.fecha?' &middot; '+_remiEsc(c.fecha.split('-').reverse().join('/')):''}</div></td></tr></thead><tbody><tr><td><div class="page">
     <div class="hd">
       <div class="brand"><img src="${M.logo}" alt="logo"><div>
         <div class="nm">${M.nombre}</div>
@@ -25828,18 +25849,22 @@ async function remiPDF(marca){
       <div class="fld"><div class="l">Contiene</div><div class="v">${_remiEsc(c.contiene)||'—'}</div></div>
     </div>
     <div class="sec">Elementos entregados</div>
-    <table class="it"><thead><tr><th style="width:36px;text-align:center">Ítem</th>${hayItemCot?`<th style="width:52px;text-align:center">Ítem cot.${c.cotizacionId?('<br><span style="font-size:7.5px;font-weight:400;text-transform:none;letter-spacing:0">'+_remiEsc(c.cotizacionId)+'</span>'):''}</th>`:''}<th style="width:48px;text-align:center">Cant.</th><th>Descripción</th><th style="width:90px">Marca</th><th style="width:76px;text-align:center"># Colada</th><th style="width:92px">Desviación</th></tr></thead><tbody>${filas}</tbody></table>
+    <table class="it${items.length>14?' compacta':''}"><thead><tr><th style="width:36px;text-align:center">Ítem</th>${hayItemCot?`<th style="width:52px;text-align:center">Ítem cot.${c.cotizacionId?('<br><span style="font-size:7.5px;font-weight:400;text-transform:none;letter-spacing:0">'+_remiEsc(c.cotizacionId)+'</span>'):''}</th>`:''}<th style="width:48px;text-align:center">Cant.</th><th>Descripción</th><th style="width:90px">Marca</th><th style="width:76px;text-align:center"># Colada</th><th style="width:92px">Desviación</th></tr></thead><tbody>${filas}</tbody></table>
     ${_nOcultos?`<div style="font-size:9.5px;color:#6b7785;margin-top:5px">Las otras ${_nOcultos} línea(s) de la orden se entregaron en remisiones anteriores: ver el resumen de la orden.</div>`:''}
     ${_entResumenParc||_entPend}
     ${_entCierre}
+    <div class="final">
     <div class="sec">Observaciones</div>
     <div class="obs">${_remiEsc(c.observaciones)||'—'}</div>
+    <div class="cierre${M.sello?' con-sello':''}">
+    ${M.sello?`<div class="sello"><img src="${M.sello}" alt="No se aceptan devoluciones después de 3 días de recibido"></div>`:''}
     <div class="firma">
       <div>Entregado por<span>${M.firmaTxt} &mdash; Nombre, firma y fecha</span></div>
       <div>Recibido por<span>${c.esDefinitiva?'Recibido a satisfacción &mdash; ':''}Nombre / C.C. / Firma y sello</span></div>
     </div>
-    ${M.sello?`<div class="sello"><img src="${M.sello}" alt="No se aceptan devoluciones después de 3 días de recibido"></div>`:''}
+    </div>
     <div class="foot">${M.pie}</div>
+    </div>
     <button class="noprint" onclick="window.print()" style="margin-top:20px;padding:9px 18px;background:#0F2B5B;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px">🖨️ Imprimir / Guardar PDF</button>
   </div></td></tr></tbody></table>
   <script>window.onload=function(){setTimeout(function(){window.print();},700);}<\/script></body></html>`;
