@@ -25802,7 +25802,15 @@ async function remiPDF(marca){
     .sello{text-align:center;margin-top:22px;page-break-inside:avoid;break-inside:avoid}
     .sello img{width:240px;height:auto;transform:rotate(-1.5deg);opacity:.92}
     @media print{.noprint{display:none}}
-  </style></head><body><div class="page">
+    /* 28-oct-2026 · el número de remisión sale en TODAS las hojas: el papel va dentro de
+       una tabla cuya cabecera (thead) el navegador repite en cada página al imprimir,
+       igual que la cabecera de la tabla de ítems. En una remisión de una hoja solo
+       agrega la línea gris de arriba. */
+    table.hojas{width:100%;border-collapse:collapse}
+    table.hojas>thead>tr>td,table.hojas>tbody>tr>td{padding:0;border:0;vertical-align:top}
+    table.hojas>thead{display:table-header-group}
+    .runhd{text-align:right;font-family:'Montserrat',sans-serif;font-size:8.5px;font-weight:700;color:#9aa6b4;letter-spacing:1.5px;text-transform:uppercase;padding:10px 38px 0}
+  </style></head><body><table class="hojas"><thead><tr><td><div class="runhd">Remisión N° ${_remiEsc(c.remision)} &middot; ${_remiEsc(c.cliente||'')}${c.fecha?' &middot; '+_remiEsc(c.fecha.split('-').reverse().join('/')):''}</div></td></tr></thead><tbody><tr><td><div class="page">
     <div class="hd">
       <div class="brand"><img src="${M.logo}" alt="logo"><div>
         <div class="nm">${M.nombre}</div>
@@ -25833,7 +25841,7 @@ async function remiPDF(marca){
     ${M.sello?`<div class="sello"><img src="${M.sello}" alt="No se aceptan devoluciones después de 3 días de recibido"></div>`:''}
     <div class="foot">${M.pie}</div>
     <button class="noprint" onclick="window.print()" style="margin-top:20px;padding:9px 18px;background:#0F2B5B;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px">🖨️ Imprimir / Guardar PDF</button>
-  </div>
+  </div></td></tr></tbody></table>
   <script>window.onload=function(){setTimeout(function(){window.print();},700);}<\/script></body></html>`;
   const w=window.open('','_blank'); if(!w){showToast('Permite ventanas emergentes para el PDF','error');return;}
   w.document.write(html); w.document.close();
