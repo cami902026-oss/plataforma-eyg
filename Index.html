@@ -1804,6 +1804,11 @@ html.tema-claro body:not(.fe-mode) :is([style*="color:#a9bcd8" i], [style*="colo
 html.tema-claro body:not(.fe-mode) :is([style*="color:#c4b5fd" i], [style*="color:#d8b4fe" i], [style*="color:#cbd5ff" i]) { color:var(--tc-lila) !important; }
 html.tema-claro body:not(.fe-mode) :is([style*="color:#E8A020" i], [style*="color:#D4AF37" i], [style*="color:#fbd38d" i]):not([style*="background" i]) { color:var(--gold) !important; }
 
+/* 3-nov-2026 (v348, Sandra): selects/inputs pintados por JS con fondo var(--card-bg) + letra blanca quedaban
+   blanco sobre blanco en el tema claro (Vendedor / Realizada por / Aprobada por de la cotización). */
+html.tema-claro body:not(.fe-mode) :is([style*="background:var(--card-bg" i], [style*="background: var(--card-bg" i], [style*="background:var(--dark" i], [style*="background:var(--light" i]):is([style*="color:#fff" i], [style*="color: #fff" i], [style*="color:white" i]) { color:var(--tc-ink) !important; }
+html.tema-claro body:not(.fe-mode) :is(select, input, textarea):is([style*="color:#fff" i], [style*="color: #fff" i], [style*="color:white" i]) { color:var(--tc-ink) !important; }
+html.tema-claro body:not(.fe-mode) select option { color:var(--tc-ink); background:#fff; }
 /* ── Botón del interruptor ── */
 html.tema-claro body:not(.fe-mode) #tema-btn { color:var(--tc-ink2); }
 html:not(.tema-claro) #tema-btn { color:#fbd38d; }
