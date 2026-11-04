@@ -603,6 +603,7 @@ body { font-family:'Open Sans',sans-serif; background:var(--dark); color:var(--l
 .cotiz-foto-ctrl{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;}
 .cotiz-foto-ctrl button.foto-btn{background:rgba(26,58,143,.4);border:1px solid var(--border);color:#cbd5e1;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;width:auto;min-width:0;}
 .cotiz-foto-thumb{width:34px;height:34px;object-fit:cover;border-radius:4px;border:1px solid var(--border);cursor:zoom-in;}
+.cotiz-foto-wrap{display:inline-flex;align-items:center;gap:2px;}   /* 📷 varias fotos por ítem (4-nov-2026) */
 .cotiz-foto-ctrl label{font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:3px;cursor:pointer;}
 .cotiz-foto-ctrl .foto-del{background:none;border:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;width:auto;min-width:0;}
 /* v151: fila ALTERNATIVA (ítem 3.1 = otra opción del ítem 3) — no suma al total */
@@ -16946,12 +16947,9 @@ function cotizRender() {
       <td><input type="number" value="${it.qty}" min="0" oninput="cotizItems[${i}].qty=parseFloat(this.value)||0;cotizUpdateTotals()" style="width:50px"></td>
       <td class="desc-cell"><textarea rows="1" oninput="cotizItems[${i}].desc=this.value;_cotizAutoGrow(this)" style="min-width:170px" placeholder="Descripción del producto">${(it.desc||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
         <div class="cotiz-foto-ctrl">
-          <button type="button" class="foto-btn" onclick="_cotizPickFoto(${i})">📷 Foto</button>
+          <button type="button" class="foto-btn" onclick="_cotizPickFoto(${i})" ${_cotizFotosDe(it).length>=COTIZ_MAX_FOTOS?'disabled title="Ya tiene el máximo de '+COTIZ_MAX_FOTOS+' fotos"':''}>📷 Foto${_cotizFotosDe(it).length?' '+_cotizFotosDe(it).length+'/'+COTIZ_MAX_FOTOS:''}</button>
           <button type="button" class="foto-btn" onclick="hpAbrir(${i})" title="Ver a cómo se ha cotizado antes este producto (por cliente y fecha)">🕘 Precios</button>
-          ${it.fotoId ? `<img class="cotiz-foto-thumb" style="width:${it.fotoGrande?'72px':'34px'};height:${it.fotoGrande?'72px':'34px'};" src="${(_cotizFotos[it.fotoId]||'')}" onclick="_cotizVerFoto(${i})" title="Ver foto (clic para ampliar)">
-            <label title="Incluir esta foto en el PDF que va al cliente"><input type="checkbox" ${it.fotoEnPDF!==false?'checked':''} onchange="cotizItems[${i}].fotoEnPDF=this.checked"> PDF</label>
-            <label title="Mostrar la foto en GRANDE (en pantalla y en el PDF al cliente)"><input type="checkbox" ${it.fotoGrande?'checked':''} onchange="cotizItems[${i}].fotoGrande=this.checked;try{cotizRender()}catch(_){}"> 🔍 Grande</label>
-            <button type="button" class="foto-del" onclick="_cotizQuitarFoto(${i})" title="Quitar foto">🗑</button>` : ''}
+          ${_cotizFotoCtrlHTML(i, it)}
         </div></td>
       <td><input value="${it.tiempoEntrega||''}" oninput="cotizItems[${i}].tiempoEntrega=this.value" style="width:80px"></td>
       <td><textarea rows="1" oninput="cotizItems[${i}].desvTec=this.value;_cotizAutoGrow(this)" style="min-width:150px" placeholder="Desviación técnica">${(it.desvTec||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea></td>
@@ -17045,37 +17043,81 @@ function _compressImage(file, maxDim, quality) {
   });
 }
 
+// ═══ 📷 VARIAS FOTOS POR ÍTEM (4-nov-2026) ═══
+// Antes cada ítem tenía UNA foto (it.fotoId). Ahora puede tener hasta COTIZ_MAX_FOTOS en
+// it.fotos = [fid, fid, ...]. it.fotoId se mantiene SIEMPRE igual a la primera, para que todo
+// lo que ya leía fotoId (cotizaciones viejas, generador Python de PDF, consultas) siga igual.
+// PDF y 🔍 Grande son por ítem y aplican a todas sus fotos. El archivo data/cotiz_fotos.json
+// no cambia de forma: sigue siendo fid -> base64.
+const COTIZ_MAX_FOTOS = 3;
+function _cotizFotosDe(it) {
+  if (!it) return [];
+  if (Array.isArray(it.fotos) && it.fotos.length) return it.fotos.filter(Boolean);
+  return it.fotoId ? [it.fotoId] : [];
+}
+function _cotizFotosSet(it, arr) {
+  arr = (arr || []).filter(Boolean).slice(0, COTIZ_MAX_FOTOS);
+  it.fotos = arr.length ? arr : null;
+  it.fotoId = arr[0] || null;
+}
+function _cotizFotoCtrlHTML(i, it) {
+  const fs = _cotizFotosDe(it); if (!fs.length) return '';
+  const sz = it.fotoGrande ? '72px' : '34px';
+  const thumbs = fs.map(fid => `<span class="cotiz-foto-wrap"><img class="cotiz-foto-thumb" style="width:${sz};height:${sz};" src="${(_cotizFotos[fid]||'')}" onclick="_cotizVerFoto(${i},'${fid}')" title="Ver foto (clic para ampliar)"><button type="button" class="foto-del" onclick="_cotizQuitarFoto(${i},'${fid}')" title="Quitar esta foto">🗑</button></span>`).join('');
+  const pl = fs.length > 1;
+  return thumbs
+    + `<label title="Incluir ${pl?'estas fotos':'esta foto'} en el PDF que va al cliente"><input type="checkbox" ${it.fotoEnPDF!==false?'checked':''} onchange="cotizItems[${i}].fotoEnPDF=this.checked"> PDF</label>
+            <label title="Mostrar ${pl?'las fotos':'la foto'} en GRANDE (en pantalla y en el PDF al cliente)"><input type="checkbox" ${it.fotoGrande?'checked':''} onchange="cotizItems[${i}].fotoGrande=this.checked;try{cotizRender()}catch(_){}"> 🔍 Grande</label>`;
+}
+// Celda de imagen del PDF. Con UNA foto es EXACTAMENTE el <img> de siempre (PDF idéntico);
+// con varias van apiladas y un poco más chicas para que el renglón no se dispare.
+function _cotizFotosPdfHTML(it) {
+  if (!it || it.fotoEnPDF === false) return '';
+  const fs = _cotizFotosDe(it).filter(f => _cotizFotos[f]);
+  if (!fs.length) return '';
+  if (fs.length === 1) return `<img src="${_cotizFotos[fs[0]]}" style="max-height:${it.fotoGrande?'230px':'90px'};max-width:${it.fotoGrande?'300px':'130px'};">`;
+  const mh = it.fotoGrande ? '150px' : '70px', mw = it.fotoGrande ? '300px' : '130px';
+  return fs.map(f => `<img src="${_cotizFotos[f]}" style="max-height:${mh};max-width:${mw};">`).join('');
+}
 function _cotizPickFoto(i) {
+  const it = cotizItems[i]; if (!it) return;
+  if (_cotizFotosDe(it).length >= COTIZ_MAX_FOTOS) { showToast('Máximo ' + COTIZ_MAX_FOTOS + ' fotos por ítem', 'error'); return; }
   const inp = document.createElement('input');
-  inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment';
+  inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment'; inp.multiple = true;
   inp.onchange = async () => {
-    const f = inp.files && inp.files[0];
-    if (!f) return;
-    showToast('Procesando foto…', 'info');
+    let files = Array.from(inp.files || []);
+    if (!files.length) return;
+    const antes = _cotizFotosDe(it);
+    const cupo = COTIZ_MAX_FOTOS - antes.length;
+    if (files.length > cupo) { files = files.slice(0, cupo); showToast('Solo caben ' + cupo + ' más: tope ' + COTIZ_MAX_FOTOS + ' fotos por ítem', 'info'); }
+    showToast(files.length > 1 ? 'Procesando ' + files.length + ' fotos…' : 'Procesando foto…', 'info');
     try {
-      const b64 = await _compressImage(f, 1000, 0.55);
       await _cotizFotosEnsure();
-      const fid = 'F' + Date.now() + Math.floor(Math.random() * 1000);
-      _cotizFotos[fid] = b64;
+      const nuevas = [];
+      for (const f of files) {
+        const b64 = await _compressImage(f, 1000, 0.55);
+        const fid = 'F' + Date.now() + Math.floor(Math.random() * 1000);
+        _cotizFotos[fid] = b64; nuevas.push(fid);
+      }
       _cotizFotosPersistLocal();
-      cotizItems[i].fotoId = fid;
-      cotizItems[i].fotoEnPDF = true;
+      _cotizFotosSet(it, antes.concat(nuevas));
+      if (!antes.length) it.fotoEnPDF = true;   // primera foto del ítem: va al PDF, como siempre
       // Guardar el archivo de fotos APARTE (no pesa el sync de cotizaciones)
       _saveDataGH('data/cotiz_fotos.json', _cotizFotos, '📷 Fotos cotización').catch(() => {});
       cotizRender();
-      showToast('Foto agregada', 'success');
+      showToast(nuevas.length > 1 ? nuevas.length + ' fotos agregadas' : 'Foto agregada', 'success');
     } catch (e) { showToast('No se pudo procesar la foto', 'error'); }
   };
   inp.click();
 }
-function _cotizQuitarFoto(i) {
-  if (!cotizItems[i]) return;
-  cotizItems[i].fotoId = null;
+function _cotizQuitarFoto(i, fid) {
+  const it = cotizItems[i]; if (!it) return;
+  _cotizFotosSet(it, fid ? _cotizFotosDe(it).filter(f => f !== fid) : []);
   cotizRender();
 }
-function _cotizVerFoto(i) {
-  const fid = cotizItems[i] && cotizItems[i].fotoId; if (!fid) return;
-  const src = _cotizFotos[fid]; if (!src) return;
+function _cotizVerFoto(i, fid) {
+  const fs = _cotizFotosDe(cotizItems[i]); if (!fs.length) return;
+  const src = _cotizFotos[fid || fs[0]]; if (!src) return;
   const o = document.createElement('div');
   o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:3000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
   o.onclick = () => o.remove();
@@ -18019,8 +18061,8 @@ async function cotizGenerarPDF() {
   // v134: el número nace al guardar. 16-sep-2026: además se guarda lo que haya cambiado.
   if (!(await _cotizGuardarAntesDelDoc())) return;
   // Asegurar que las fotos marcadas para PDF estén cargadas (se guardan en archivo aparte)
-  if (cotizItems.some(it => it && it.fotoId && it.fotoEnPDF !== false)) {
-    if (cotizItems.some(it => it && it.fotoId && it.fotoEnPDF !== false && !_cotizFotos[it.fotoId])) _cotizFotosLoaded = false;
+  if (cotizItems.some(it => it && it.fotoEnPDF !== false && _cotizFotosDe(it).length)) {
+    if (cotizItems.some(it => it && it.fotoEnPDF !== false && _cotizFotosDe(it).some(f => !_cotizFotos[f]))) _cotizFotosLoaded = false;
     try { await _cotizFotosEnsure(); } catch(_) { /* si una foto no carga, seguimos igual con el PDF */ }
   }
   const cliente = document.getElementById('cotiz-cliente').value || '';
@@ -18049,7 +18091,7 @@ async function cotizGenerarPDF() {
   // v143: si algún ítem lleva foto al PDF, aparece una columna IMAGEN propia con la
   // foto centrada (antes iba incrustada bajo la descripción y quedaba mal ubicada).
   // Cotizaciones sin fotos: cero columna, PDF idéntico al de antes.
-  const hayFotos = cotizItems.some(it => it && it.fotoId && it.fotoEnPDF !== false && _cotizFotos[it.fotoId]);
+  const hayFotos = cotizItems.some(it => it && it.fotoEnPDF !== false && _cotizFotosDe(it).some(f => _cotizFotos[f]));
   const _numsPdf = _cotizNums(cotizItems);
   const itemsRows = cotizItems.map((it,i) => `
     <tr${_cotizEsAlt(it)?' class="alt"':''}>
@@ -18057,7 +18099,7 @@ async function cotizGenerarPDF() {
       <td class="c">${it.udm||'EA'}</td>
       <td class="c">${it.qty||0}</td>
       <td class="l">${_cotizEsAlt(it)?'<b>ALTERNATIVA:</b> ':''}${(it.desc||'').replace(/</g,'&lt;')}</td>
-      ${hayFotos ? `<td class="imgc">${(it.fotoId && it.fotoEnPDF !== false && _cotizFotos[it.fotoId]) ? `<img src="${_cotizFotos[it.fotoId]}" style="max-height:${it.fotoGrande?'230px':'90px'};max-width:${it.fotoGrande?'300px':'130px'};">` : ''}</td>` : ''}
+      ${hayFotos ? `<td class="imgc">${_cotizFotosPdfHTML(it)}</td>` : ''}
       <td class="c">${it.tiempoEntrega||''}</td>
       <td class="c">${it.desvTec||''}</td>
       <td class="c">${it.marca||''}</td>
@@ -19974,7 +20016,7 @@ function _bdLoadIntoEditor(c, msg, adopted) {
   } catch(_) {}
   // Si esta cotización referencia fotos que no tenemos en memoria (agregadas en otro
   // equipo), volver a descargar el archivo de fotos para mostrarlas.
-  if (cotizItems.some(it => it && it.fotoId && !_cotizFotos[it.fotoId])) {
+  if (cotizItems.some(it => it && _cotizFotosDe(it).some(f => !_cotizFotos[f]))) {
     _cotizFotosLoaded = false;
     _cotizFotosEnsure().then(() => { try { cotizRender(); } catch(_){} });
   }
