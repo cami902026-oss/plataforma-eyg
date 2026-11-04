@@ -1,0 +1,683 @@
+{
+ "version": 1,
+ "updatedAt": "2026-11-04T13:48:14.811509+00:00",
+ "updatedBy": "claude",
+ "campos": [
+  {
+   "g": "Empresa",
+   "k": "razon_social",
+   "e": "Razón social",
+   "v": "E&G ENERGY GROUP SAS",
+   "s": "nombre de la empresa, nombre o razón social, proveedor, contratista"
+  },
+  {
+   "g": "Empresa",
+   "k": "tipo_documento",
+   "e": "Tipo de documento de la empresa",
+   "v": "NIT",
+   "s": ""
+  },
+  {
+   "g": "Empresa",
+   "k": "nit",
+   "e": "NIT (sin dígito de verificación)",
+   "v": "900745984",
+   "s": ""
+  },
+  {
+   "g": "Empresa",
+   "k": "dv",
+   "e": "Dígito de verificación",
+   "v": "4",
+   "s": ""
+  },
+  {
+   "g": "Empresa",
+   "k": "nit_completo",
+   "e": "NIT con dígito de verificación",
+   "v": "900.745.984-4",
+   "s": "NIT completo, número de identificación tributaria"
+  },
+  {
+   "g": "Empresa",
+   "k": "tipo_sociedad",
+   "e": "Tipo de sociedad",
+   "v": "SAS - Sociedad por Acciones Simplificada",
+   "s": "naturaleza jurídica"
+  },
+  {
+   "g": "Empresa",
+   "k": "tipo_persona",
+   "e": "Tipo de persona",
+   "v": "Persona jurídica",
+   "s": ""
+  },
+  {
+   "g": "Empresa",
+   "k": "direccion",
+   "e": "Dirección",
+   "v": "Carrera 7 # 12-61",
+   "s": "dirección principal, domicilio, dirección de correspondencia y de notificación"
+  },
+  {
+   "g": "Empresa",
+   "k": "ciudad",
+   "e": "Ciudad / Municipio",
+   "v": "Chía",
+   "s": ""
+  },
+  {
+   "g": "Empresa",
+   "k": "departamento",
+   "e": "Departamento",
+   "v": "Cundinamarca",
+   "s": ""
+  },
+  {
+   "g": "Empresa",
+   "k": "pais",
+   "e": "País",
+   "v": "Colombia",
+   "s": ""
+  },
+  {
+   "g": "Empresa",
+   "k": "codigo_postal",
+   "e": "Código postal",
+   "v": "250001",
+   "s": ""
+  },
+  {
+   "g": "Empresa",
+   "k": "telefono",
+   "e": "Teléfono principal",
+   "v": "3107574110",
+   "s": "teléfono fijo o celular de la empresa"
+  },
+  {
+   "g": "Empresa",
+   "k": "telefonos_otros",
+   "e": "Otros teléfonos",
+   "v": "+57 314 485 8382 / +57 311 313 4451 / +57 320 494 7227",
+   "s": ""
+  },
+  {
+   "g": "Empresa",
+   "k": "correo",
+   "e": "Correo electrónico general",
+   "v": "info@eygenergygroup.com",
+   "s": "email de la empresa, correo de notificaciones"
+  },
+  {
+   "g": "Empresa",
+   "k": "correo_facturacion",
+   "e": "Correo para facturación electrónica / órdenes de compra",
+   "v": "andrea.bernal@eygenergygroup.com",
+   "s": "email facturación electrónica, correo para envío de órdenes y certificados"
+  },
+  {
+   "g": "Empresa",
+   "k": "web",
+   "e": "Página web",
+   "v": "www.eygenergygroup.com",
+   "s": ""
+  },
+  {
+   "g": "Empresa",
+   "k": "ciiu",
+   "e": "Código CIIU actividad principal",
+   "v": "7112",
+   "s": "actividad económica código"
+  },
+  {
+   "g": "Empresa",
+   "k": "actividad",
+   "e": "Actividad económica (descripción)",
+   "v": "Actividades afines a ingeniería: suministro industrial de material mecánico, eléctrico, instrumentación, sellado de fluidos y seguridad industrial",
+   "s": "objeto social, descripción del servicio, actividad de la empresa"
+  },
+  {
+   "g": "Empresa",
+   "k": "lineas",
+   "e": "Líneas de negocio / productos y servicios",
+   "v": "Suministro Mecánico | Suministro Eléctrico | Instrumentación | Sellado de Fluidos | Seguridad Industrial",
+   "s": ""
+  },
+  {
+   "g": "Empresa",
+   "k": "sector",
+   "e": "Sector económico",
+   "v": "Comercio al por mayor de suministros industriales para los sectores Oil & Gas, energía e industria",
+   "s": ""
+  },
+  {
+   "g": "Empresa",
+   "k": "clase_vinculacion",
+   "e": "Relación con el cliente que pide el formato",
+   "v": "Proveedor / Contratista",
+   "s": "cliente o proveedor: E&G es PROVEEDOR del que pide el formato"
+  },
+  {
+   "g": "Empresa",
+   "k": "tipo_solicitud",
+   "e": "Tipo de solicitud",
+   "v": "Vinculación (creación nueva)",
+   "s": "vinculación o actualización: por defecto creación; si el formato es de actualización preguntar"
+  },
+  {
+   "g": "Tributario",
+   "k": "declarante_renta",
+   "e": "Declarante de renta",
+   "v": "Sí",
+   "s": ""
+  },
+  {
+   "g": "Tributario",
+   "k": "gran_contribuyente",
+   "e": "Gran contribuyente",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Tributario",
+   "k": "autorretenedor",
+   "e": "Autorretenedor",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Tributario",
+   "k": "tipo_proveedor",
+   "e": "Tipo de proveedor",
+   "v": "Persona jurídica nacional",
+   "s": "nacional / extranjero"
+  },
+  {
+   "g": "Tributario",
+   "k": "regimen",
+   "e": "Régimen tributario",
+   "v": "",
+   "s": "ordinario / simple / responsable de IVA: preguntar si está vacío"
+  },
+  {
+   "g": "Tributario",
+   "k": "responsable_iva",
+   "e": "Responsable de IVA",
+   "v": "",
+   "s": "Sí/No: preguntar si está vacío"
+  },
+  {
+   "g": "Tributario",
+   "k": "tamano_empresa",
+   "e": "Tamaño de empresa",
+   "v": "",
+   "s": "micro / pequeña / mediana / grande: preguntar si está vacío"
+  },
+  {
+   "g": "Tributario",
+   "k": "numero_empleados",
+   "e": "Número de empleados",
+   "v": "",
+   "s": "preguntar si está vacío"
+  },
+  {
+   "g": "Representante legal",
+   "k": "rl_nombre",
+   "e": "Nombre del representante legal",
+   "v": "Camila Andrea Camacho Bernal",
+   "s": "nombre completo del representante legal; firma como rep. legal"
+  },
+  {
+   "g": "Representante legal",
+   "k": "rl_tipo_doc",
+   "e": "Tipo de documento del representante legal",
+   "v": "CC - Cédula de ciudadanía",
+   "s": ""
+  },
+  {
+   "g": "Representante legal",
+   "k": "rl_cedula",
+   "e": "Número de documento del representante legal",
+   "v": "1.010.190.330",
+   "s": "cédula 1010190330"
+  },
+  {
+   "g": "Representante legal",
+   "k": "rl_expedicion",
+   "e": "Lugar y fecha de expedición de la cédula del RL",
+   "v": "Chía, 09/05/2008",
+   "s": ""
+  },
+  {
+   "g": "Representante legal",
+   "k": "rl_fecha_nacimiento",
+   "e": "Fecha de nacimiento del RL",
+   "v": "06/05/1990",
+   "s": ""
+  },
+  {
+   "g": "Representante legal",
+   "k": "rl_lugar_nacimiento",
+   "e": "Lugar de nacimiento del RL",
+   "v": "Bogotá D.C.",
+   "s": ""
+  },
+  {
+   "g": "Representante legal",
+   "k": "rl_nacionalidad",
+   "e": "Nacionalidad del RL",
+   "v": "Colombiana",
+   "s": ""
+  },
+  {
+   "g": "Representante legal",
+   "k": "rl_cargo",
+   "e": "Cargo del representante legal",
+   "v": "Representante Legal",
+   "s": ""
+  },
+  {
+   "g": "Representante legal",
+   "k": "rl_celular",
+   "e": "Celular del representante legal",
+   "v": "3107574110",
+   "s": ""
+  },
+  {
+   "g": "Representante legal",
+   "k": "rl_correo",
+   "e": "Correo del representante legal",
+   "v": "andrea.bernal@eygenergygroup.com",
+   "s": ""
+  },
+  {
+   "g": "Representante legal",
+   "k": "rl_direccion",
+   "e": "Dirección del representante legal",
+   "v": "Carrera 7 # 12-61, Chía, Cundinamarca",
+   "s": ""
+  },
+  {
+   "g": "Contactos",
+   "k": "contacto_comercial",
+   "e": "Contacto comercial / facturación",
+   "v": "Andrea Bernal",
+   "s": "persona de contacto del proveedor"
+  },
+  {
+   "g": "Contactos",
+   "k": "contacto_comercial_tel",
+   "e": "Teléfono del contacto comercial",
+   "v": "3107574110",
+   "s": ""
+  },
+  {
+   "g": "Contactos",
+   "k": "contacto_comercial_correo",
+   "e": "Correo del contacto comercial",
+   "v": "andrea.bernal@eygenergygroup.com",
+   "s": ""
+  },
+  {
+   "g": "Contactos",
+   "k": "contacto_cargo",
+   "e": "Cargo del contacto",
+   "v": "Coordinadora Administrativa y Logística",
+   "s": ""
+  },
+  {
+   "g": "Contactos",
+   "k": "oficial_cumplimiento",
+   "e": "Oficial de cumplimiento",
+   "v": "Andrea Bernal",
+   "s": ""
+  },
+  {
+   "g": "Contactos",
+   "k": "oficial_cumplimiento_tel",
+   "e": "Teléfono del oficial de cumplimiento",
+   "v": "3107574110",
+   "s": ""
+  },
+  {
+   "g": "Contactos",
+   "k": "contacto_cartera",
+   "e": "Contacto de cartera / cobros",
+   "v": "Andrea Bernal - 3107574110 - andrea.bernal@eygenergygroup.com",
+   "s": ""
+  },
+  {
+   "g": "Bancaria",
+   "k": "banco",
+   "e": "Entidad bancaria",
+   "v": "Banco de Bogotá",
+   "s": ""
+  },
+  {
+   "g": "Bancaria",
+   "k": "tipo_cuenta",
+   "e": "Tipo de cuenta",
+   "v": "Corriente",
+   "s": ""
+  },
+  {
+   "g": "Bancaria",
+   "k": "numero_cuenta",
+   "e": "Número de cuenta",
+   "v": "239125578",
+   "s": ""
+  },
+  {
+   "g": "Bancaria",
+   "k": "titular_cuenta",
+   "e": "Titular de la cuenta",
+   "v": "E&G ENERGY GROUP SAS - NIT 900.745.984-4",
+   "s": ""
+  },
+  {
+   "g": "Bancaria",
+   "k": "moneda_cuenta",
+   "e": "Moneda de la cuenta",
+   "v": "Pesos colombianos (COP)",
+   "s": ""
+  },
+  {
+   "g": "Bancaria",
+   "k": "cuentas_exterior",
+   "e": "Tiene cuentas en el exterior",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Accionistas",
+   "k": "accionista_nombre",
+   "e": "Nombre del accionista / socio",
+   "v": "Rosa Ana Bernal Suárez",
+   "s": "única accionista"
+  },
+  {
+   "g": "Accionistas",
+   "k": "accionista_doc",
+   "e": "Documento del accionista",
+   "v": "CC 51.654.212",
+   "s": ""
+  },
+  {
+   "g": "Accionistas",
+   "k": "accionista_acciones",
+   "e": "Número de acciones",
+   "v": "50",
+   "s": ""
+  },
+  {
+   "g": "Accionistas",
+   "k": "accionista_participacion",
+   "e": "Participación en el capital",
+   "v": "100 %",
+   "s": ""
+  },
+  {
+   "g": "Accionistas",
+   "k": "accionista_nacionalidad",
+   "e": "Nacionalidad del accionista",
+   "v": "Colombiana",
+   "s": ""
+  },
+  {
+   "g": "Accionistas",
+   "k": "beneficiario_final",
+   "e": "Beneficiario final / controlante",
+   "v": "Rosa Ana Bernal Suárez - CC 51.654.212",
+   "s": "beneficiario final: NO es el representante legal"
+  },
+  {
+   "g": "Referencias comerciales",
+   "k": "ref1",
+   "e": "Referencia comercial 1",
+   "v": "Parex Resources Colombia - Cliente - Tel. 601 629 1716",
+   "s": ""
+  },
+  {
+   "g": "Referencias comerciales",
+   "k": "ref2",
+   "e": "Referencia comercial 2",
+   "v": "SAR Energy - Cliente - Tel. 601 326 9555",
+   "s": ""
+  },
+  {
+   "g": "Referencias comerciales",
+   "k": "ref3",
+   "e": "Referencia comercial 3",
+   "v": "",
+   "s": "preguntar si el formato pide 3"
+  },
+  {
+   "g": "Referencias comerciales",
+   "k": "ref_bancaria",
+   "e": "Referencia bancaria",
+   "v": "Banco de Bogotá - cuenta corriente 239125578",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "pep",
+   "e": "La empresa, su RL o accionistas son PEP (persona expuesta políticamente)",
+   "v": "No",
+   "s": "aplica a cualquier pregunta sobre PEP: siempre No"
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "recursos_publicos",
+   "e": "Maneja recursos públicos",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "poder_publico",
+   "e": "Ejerce algún grado de poder público",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "reconocimiento_publico",
+   "e": "Goza de reconocimiento público general",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "vinculo_pep",
+   "e": "Tiene vínculo con una persona PEP",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "cargo_eleccion",
+   "e": "Ocupa o es candidato a cargo de elección popular / cargo público",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "cumple_laft",
+   "e": "Cumple las normas de prevención LA/FT/FPADM",
+   "v": "Sí",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "politicas_sagrilaft",
+   "e": "Tiene políticas, manuales y procedimientos SAGRILAFT",
+   "v": "Sí",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "investigada_laft",
+   "e": "Ha estado involucrada en investigaciones por LA/FT",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "sancionada_laft",
+   "e": "Ha sido sancionada por LA/FT",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "conflicto_interes",
+   "e": "Tiene conflicto de interés con el cliente",
+   "v": "No",
+   "s": "interés o participación en el cliente, empleados o familiares en el cliente: No"
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "participacion_cliente",
+   "e": "Tiene participación o interés en la empresa que pide el formato",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "empleados_interes",
+   "e": "Empleados con interés en beneficiarse de las actividades con el cliente",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "familiares_cliente",
+   "e": "Familiares o vínculos con empleados del cliente",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "soborno",
+   "e": "Ha ofrecido dádivas o pagos para influir decisiones",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "operaciones_moneda_extranjera",
+   "e": "Realiza operaciones en moneda extranjera",
+   "v": "No",
+   "s": "importaciones ocasionales pagadas por banco; si el formato lo detalla, preguntar"
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "origen_fondos",
+   "e": "Origen de los fondos / recursos",
+   "v": "Recursos propios provenientes de la actividad comercial (suministro industrial)",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "autoriza_datos",
+   "e": "Autoriza tratamiento de datos personales",
+   "v": "Sí",
+   "s": ""
+  },
+  {
+   "g": "Cumplimiento (PEP / SARLAFT)",
+   "k": "autoriza_consulta",
+   "e": "Autoriza consulta en centrales de riesgo y listas restrictivas",
+   "v": "Sí",
+   "s": ""
+  },
+  {
+   "g": "Documentos que se adjuntan",
+   "k": "adj_rut",
+   "e": "Adjunta RUT",
+   "v": "Sí",
+   "s": ""
+  },
+  {
+   "g": "Documentos que se adjuntan",
+   "k": "adj_camara",
+   "e": "Adjunta cámara de comercio (máx. 30 días)",
+   "v": "Sí",
+   "s": ""
+  },
+  {
+   "g": "Documentos que se adjuntan",
+   "k": "adj_cedula",
+   "e": "Adjunta cédula del representante legal",
+   "v": "Sí",
+   "s": ""
+  },
+  {
+   "g": "Documentos que se adjuntan",
+   "k": "adj_bancaria",
+   "e": "Adjunta certificación bancaria",
+   "v": "Sí",
+   "s": ""
+  },
+  {
+   "g": "Documentos que se adjuntan",
+   "k": "adj_eeff",
+   "e": "Adjunta estados financieros",
+   "v": "Sí",
+   "s": ""
+  },
+  {
+   "g": "Documentos que se adjuntan",
+   "k": "adj_renta",
+   "e": "Adjunta declaración de renta",
+   "v": "Sí",
+   "s": ""
+  },
+  {
+   "g": "Documentos que se adjuntan",
+   "k": "adj_gran_contribuyente",
+   "e": "Adjunta resolución de gran contribuyente / autorretenedor",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Documentos que se adjuntan",
+   "k": "adj_exterior",
+   "e": "Adjunta certificaciones de cuentas en el exterior",
+   "v": "No",
+   "s": ""
+  },
+  {
+   "g": "Firma",
+   "k": "firmante_nombre",
+   "e": "Nombre de quien firma",
+   "v": "Camila Andrea Camacho Bernal",
+   "s": ""
+  },
+  {
+   "g": "Firma",
+   "k": "firmante_cargo",
+   "e": "Cargo de quien firma",
+   "v": "Representante Legal",
+   "s": ""
+  },
+  {
+   "g": "Firma",
+   "k": "firmante_cedula",
+   "e": "Cédula de quien firma",
+   "v": "1.010.190.330",
+   "s": ""
+  },
+  {
+   "g": "Firma",
+   "k": "ciudad_firma",
+   "e": "Ciudad donde se firma",
+   "v": "Chía",
+   "s": ""
+  }
+ ],
+ "firma": null,
+ "sello": null,
+ "anexos": {},
+ "historial": []
+}

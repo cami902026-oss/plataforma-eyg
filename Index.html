@@ -1809,6 +1809,11 @@ html.tema-claro body:not(.fe-mode) :is([style*="color:#E8A020" i], [style*="colo
 html.tema-claro body:not(.fe-mode) :is([style*="background:var(--card-bg" i], [style*="background: var(--card-bg" i], [style*="background:var(--dark" i], [style*="background:var(--light" i]):is([style*="color:#fff" i], [style*="color: #fff" i], [style*="color:white" i]) { color:var(--tc-ink) !important; }
 html.tema-claro body:not(.fe-mode) :is(select, input, textarea):is([style*="color:#fff" i], [style*="color: #fff" i], [style*="color:white" i]) { color:var(--tc-ink) !important; }
 html.tema-claro body:not(.fe-mode) select option { color:var(--tc-ink); background:#fff; }
+/* ── v349 (4-nov-2026): chips de Vinculación / Llenar formato (texto claro sobre tinte) legibles en claro ── */
+html.tema-claro body:not(.fe-mode) span[style*="color:#9fe8b0" i] { color:#1b7f3a !important; }
+html.tema-claro body:not(.fe-mode) span[style*="color:#ffd27a" i] { color:#8a5a00 !important; }
+html.tema-claro body:not(.fe-mode) span[style*="color:#c6d0e6" i] { color:#4a5568 !important; background:rgba(74,85,104,.12) !important; }
+html.tema-claro body:not(.fe-mode) span[style*="color:#ffb4b4" i] { color:#b42318 !important; }
 /* ── Botón del interruptor ── */
 html.tema-claro body:not(.fe-mode) #tema-btn { color:var(--tc-ink2); }
 html:not(.tema-claro) #tema-btn { color:#fbd38d; }
@@ -4537,6 +4542,67 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
            sube y aprobarlo o pedir corrección. Datos en Supabase (portal_cuentas /
            portal_documentos); archivos en el bucket privado `vinculacion`. -->
       <div class="page" id="page-vinculacion">
+        <!-- 📝 LLENAR FORMATOS DE VINCULACIÓN CON IA (4-nov-2026). Pestañas del módulo: «Portal» muestra todo lo que ya
+             existía abajo (no se tocó nada de eso); «Llenar formato» es el bloque #vin-sec-formato. La barra solo aparece
+             para Andrea, Alberto y Alexandra (vfPuede). Código: funciones vf* antes del bloque Saldos a Favor. -->
+        <div class="abs-tabbar" id="vin-tabbar" style="display:none;margin-bottom:14px">
+          <div class="abs-tab active" id="vin-tab-portal" onclick="vfTab('portal')">🔗 Portal de clientes y proveedores</div>
+          <div class="abs-tab" id="vin-tab-formato" onclick="vfTab('formato')">📝 Llenar formato con IA</div>
+        </div>
+        <div id="vin-sec-formato" style="display:none">
+          <div class="abs-tabbar" style="margin-bottom:14px">
+            <div class="abs-tab active" id="vf-sub-llenar" onclick="vfSub('llenar')">📂 Llenar un formato</div>
+            <div class="abs-tab" id="vf-sub-ficha" onclick="vfSub('ficha')">🗂️ Ficha de datos E&amp;G</div>
+            <div class="abs-tab" id="vf-sub-anexos" onclick="vfSub('anexos')">📎 Anexos</div>
+            <div class="abs-tab" id="vf-sub-historial" onclick="vfSub('historial')">🕘 Historial</div>
+          </div>
+          <!-- Llenar -->
+          <div id="vf-panel-llenar">
+            <div class="abs-toolbar">
+              <input type="text" id="vf-cliente" placeholder="Para qué cliente es el formato (ej. PAREX RESOURCES)" style="flex:1;min-width:220px;">
+              <input type="file" id="vf-file" accept=".pdf,.xlsx,.xlsm,application/pdf" style="display:none" onchange="vfArchivo(this)">
+              <button class="btn btn-primary" style="width:auto;padding:8px 14px;font-size:12px;" onclick="document.getElementById('vf-file').click()">📂 Subir formato (PDF con campos o Excel)</button>
+              <button class="btn btn-ghost" id="vf-btn-ia" style="padding:8px 14px;font-size:12px;display:none" onclick="vfIA()">🤖 Leer y llenar con la IA</button>
+            </div>
+            <div id="vf-doc-info" class="abs-count" style="margin-bottom:12px"></div>
+            <div id="vf-revision"></div>
+            <div class="abs-count" style="margin-top:16px">
+              <b>Cómo funciona:</b> subes el formato que te mandó el cliente (PDF editable con campos o Excel), la IA lo lee y lo llena
+              con la <b>ficha de datos de E&amp;G</b>. Lo que no sepa te lo pregunta en una sola lista: respondes, y esas respuestas
+              quedan guardadas en la ficha para el próximo formato. Nunca pisa datos que el formato ya traía (se muestran aparte y
+              apagados). Al generar puedes estampar firma y sello y unir los anexos (RUT, cámara, cédula, bancaria) al final del PDF.
+              Un PDF plano o escaneado no se puede llenar aquí: pídele al cliente la versión editable.
+            </div>
+          </div>
+          <!-- Ficha -->
+          <div id="vf-panel-ficha" style="display:none">
+            <div class="abs-toolbar">
+              <input type="text" id="vf-ficha-q" placeholder="Buscar un dato de la ficha…" oninput="vfRenderFicha()" style="flex:1;min-width:220px;">
+              <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px;" onclick="vfFichaAdd('')">➕ Agregar dato</button>
+              <button class="btn btn-ghost" style="padding:8px 14px;font-size:12px;" onclick="vfCargarFicha(true).then(vfRenderFicha)">🔄 Recargar</button>
+              <button class="btn btn-primary" id="vf-ficha-guardar" style="width:auto;padding:8px 14px;font-size:12px;" onclick="vfFichaGuardarClick()">💾 Guardar ficha</button>
+            </div>
+            <div id="vf-ficha-aviso" class="abs-count" style="margin-bottom:10px"></div>
+            <div id="vf-ficha-firmas" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px"></div>
+            <div id="vf-ficha-lista"></div>
+          </div>
+          <!-- Anexos -->
+          <div id="vf-panel-anexos" style="display:none">
+            <div class="abs-count" style="margin-bottom:10px">Documentos de E&amp;G que acompañan los formatos. Se guardan en el repositorio de la plataforma (uno por tipo; al subir otro se reemplaza). Pon la fecha de expedición para que avise cuando venza.</div>
+            <div class="abs-table-wrap"><table class="abs-table">
+              <thead><tr><th>Documento</th><th>Archivo</th><th style="width:150px">Fecha de expedición</th><th style="width:130px">Vigencia</th><th style="width:210px"></th></tr></thead>
+              <tbody id="vf-anexos-tbody"></tbody>
+            </table></div>
+            <input type="file" id="vf-anexo-file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/*" style="display:none">
+          </div>
+          <!-- Historial -->
+          <div id="vf-panel-historial" style="display:none">
+            <div class="abs-table-wrap"><table class="abs-table">
+              <thead><tr><th style="width:120px">Fecha</th><th style="width:90px">Usuario</th><th>Cliente</th><th>Formato</th><th style="width:90px;text-align:right">Llenados</th><th style="width:90px;text-align:right">Preguntas</th></tr></thead>
+              <tbody id="vf-historial-tbody"></tbody>
+            </table></div>
+          </div>
+        </div>
         <div class="abs-toolbar">
           <input type="text" id="vin-search" placeholder="Buscar por razón social, NIT o correo..." oninput="vinRender()" style="flex:1;min-width:220px;">
           <select id="vin-filtro" onchange="vinRender()" title="Qué cuentas mostrar">
@@ -8555,7 +8621,8 @@ function navigate(page) {
   if(page==='cartera') { setTimeout(()=>{ try { cnuCargar(false); } catch(_){} }, 100); setTimeout(loadCarteraUrlUI, 400); }
   if(page==='contratos') { try{ cmkInit(); }catch(e){ console.error('[cmk]',e); } }
   if(page==='saldos') { try{ spvInit(); }catch(e){ console.error('[spv]',e); } }
-  if(page==='vinculacion') { try{ vinInit(); }catch(e){ console.error('[vin]',e); } }   // 🔗 Portal de vinculación (22-oct-2026)
+  if(page==='vinculacion') { try{ vinInit(); }catch(e){ console.error('[vin]',e); } }
+  if(page==='vinculacion') { try{ vfMostrarTabbar(); }catch(e){ console.error('[vf]',e); } }   // 📝 Llenar formatos con IA (4-nov-2026)   // 🔗 Portal de vinculación (22-oct-2026)
   if(String(page).startsWith('fe_')) { try{ feNav(page); }catch(e){ console.error('[fe]',e); } }   // 🔧 Ferreindustrial (20-oct-2026)
   if(page==='pdfstudio') { const _f=document.getElementById('pdfstudio-frame'); if(_f && !_f.src) _f.src='pdf-studio.html'; }   // v155: carga perezosa (las librerías PDF solo se bajan al entrar)
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadSbProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
@@ -11177,6 +11244,748 @@ async function vinGuardarInvitacion() {
   _vinCerrarModal();
   showToast('Invitación ' + (r.nueva ? 'creada' : 'renovada') + ' ✓ · código ' + r.codigo + ' (le llega por correo en ~1 min)', 'success', { durationMs: 12000 });
   await vinCargar(true); vin_sel = nit; vinAbrir(nit, true);
+}
+
+// ═══ 📝 LLENAR FORMATOS DE VINCULACIÓN CON IA (4-nov-2026) ══════════════════════════
+// Los clientes le mandan a E&G su formato de inscripción / registro de proveedor (PDF
+// con campos o Excel). Aquí se llena con la FICHA MAESTRA de E&G, que vive en
+// data/ficha_eyg.json (GitHub, el mismo camino de las fichas técnicas: _loadDataGHRaw /
+// _saveDataGH, sin tocar Supabase ni los proxies). La IA (proxy de Cotizaciones IA)
+// empareja cada campo del formato con la ficha; lo que no sabe lo PREGUNTA en una sola
+// pantalla y las respuestas se guardan en la ficha para el próximo formato. Nunca pisa
+// datos que el formato ya traía (van aparte, apagados). Al generar: firma y sello
+// opcionales, y anexos (RUT, cámara, cédula, bancaria…) guardados como
+// data/ficha_eyg_anexo_<tipo>.json que se unen al final del PDF.
+// Decisiones del usuario (4-nov-2026): solo formatos de E&G · PDF AcroForm + Excel
+// (plano/escaneado se rechaza con aviso) · preguntas en una pantalla · firma/sello
+// opcional al generar. Lo ven Andrea, Alberto y Alexandra (vfPuede).
+var vf_ficha = null, _vfCargada = false, vf_doc = null, vf_prop = null, vf_sub = 'llenar', _vfOcupado = false;
+const VF_FICHA_FILE = 'data/ficha_eyg.json';
+const VF_ANEXOS = {
+  rut:      { nombre: 'RUT', ico: '🧾', dias: 365 },
+  camara:   { nombre: 'Cámara de Comercio', ico: '🏛️', dias: 30 },
+  cedula:   { nombre: 'Cédula del representante legal', ico: '🪪', dias: 0 },
+  bancaria: { nombre: 'Certificación bancaria', ico: '🏦', dias: 90 },
+  eeff:     { nombre: 'Estados financieros', ico: '📊', dias: 365 },
+  renta:    { nombre: 'Declaración de renta', ico: '🧮', dias: 365 },
+  otros:    { nombre: 'Otro documento', ico: '📄', dias: 0 }
+};
+const _VF_INP = 'style="width:100%;background:rgba(15,43,91,.5);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:#fff;font-size:12.5px"';
+const VF_SYS = 'Eres el asistente administrativo de E&G ENERGY GROUP SAS (Chía, Cundinamarca, Colombia), empresa de suministro industrial. '
+  + 'Un CLIENTE le manda a E&G su formato de vinculación / registro de proveedor y tú lo llenas con los datos de la FICHA de E&G. Reglas: '
+  + '1) Usa SOLO la ficha: no inventes datos. 2) Si el FORMATO pide un dato que la ficha no tiene (o lo tiene vacío), NO lo llenes: ponlo en "preguntas" '
+  + 'con una pregunta clara en español (UN solo dato por pregunta; agrupa en una misma pregunta solo los campos que piden exactamente ese dato). '
+  + 'No preguntes por datos vacíos de la ficha que el formato no pide. "sug" solo si tienes un valor candidato real; si no, déjalo vacío. '
+  + '3) Deja vacíos los campos que no son de E&G: espacios "para uso exclusivo" del cliente, firma, huella, fecha de radicación, códigos internos, aprobaciones. '
+  + 'Los campos "Especifique / detalle / en caso afirmativo" que solo aplican cuando la respuesta es SÍ se dejan vacíos cuando la respuesta es NO, y no se preguntan. '
+  + '4) La fecha de diligenciamiento es la fecha de HOY que te doy (día, mes y año separados si el formato los separa). '
+  + '5) Casillas Sí/No, PEP y SARLAFT: responde con la ficha (E&G no es PEP, no maneja recursos públicos, cumple las normas LA/FT, sin conflictos de interés, SÍ adjunta RUT, cámara, cédula y bancaria). '
+  + 'Cada opción de radio y cada casilla trae "l" = la palabra impresa junto a ella (SI, NO…): usa "l" para escoger el valor de exportación "x"; nunca adivines por el orden. Si una opción no trae "l", mira su rectángulo r frente al texto del PDF. '
+  + '6) E&G es PROVEEDOR / CONTRATISTA del cliente que manda el formato, persona jurídica nacional. 7) Responde ÚNICAMENTE con JSON válido, sin texto antes ni después y sin ```.';
+
+function vfPuede() {
+  if (!currentUser) return false;
+  const e = (currentUser.email || '').toLowerCase();
+  return e === 'andrea' || e === 'alberto' || e === 'alexandra' || currentUser.role === 'ADMIN' || currentUser.role === 'JEFE';
+}
+function _vfEsc(s) { return _cmkEsc(s == null ? '' : s); }
+function _vfSlug(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 48) || 'dato'; }
+function _vfSi(v) { if (v === true) return true; if (v === false || v == null) return false; return /^(x|si|sí|yes|true|1)$/i.test(String(v).trim()); }
+// Texto apto para las fuentes estándar del PDF (WinAnsi): comillas tipográficas, guiones largos y emojis no entran.
+function _vfTxt(v) {
+  if (v === true) return 'X'; if (v === false || v == null) return '';
+  return String(v).replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, '-').replace(/…/g, '...').replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g, '');
+}
+function vfMostrarTabbar() {
+  const tb = document.getElementById('vin-tabbar'); if (!tb) return;
+  tb.style.display = vfPuede() ? '' : 'none';
+  if (!vfPuede() && document.getElementById('vin-sec-formato') && document.getElementById('vin-sec-formato').style.display !== 'none') vfTab('portal');
+}
+// Pestaña Portal (todo lo de antes) ↔ Llenar formato. No se toca el HTML del portal: solo se
+// esconde y se restaura su display original.
+function vfTab(t) {
+  const page = document.getElementById('page-vinculacion'); if (!page) return;
+  Array.from(page.children).forEach(ch => {
+    if (ch.id === 'vin-tabbar') return;
+    if (ch.id === 'vin-sec-formato') { ch.style.display = (t === 'formato') ? '' : 'none'; return; }
+    if (t === 'formato') { if (ch.dataset.vfPrev == null) ch.dataset.vfPrev = ch.style.display || ''; ch.style.display = 'none'; }
+    else if (ch.dataset.vfPrev != null) { ch.style.display = ch.dataset.vfPrev; delete ch.dataset.vfPrev; }
+  });
+  const a = document.getElementById('vin-tab-portal'), b = document.getElementById('vin-tab-formato');
+  if (a) a.classList.toggle('active', t !== 'formato');
+  if (b) b.classList.toggle('active', t === 'formato');
+  if (t === 'formato') vfInit();
+}
+async function vfInit() {
+  if (!vfPuede()) { showToast('Llenar formatos es solo para Andrea, Alberto y Alexandra', 'error'); return; }
+  await vfCargarFicha(false);
+  vfSub(vf_sub);
+}
+function vfSub(s) {
+  vf_sub = s;
+  ['llenar', 'ficha', 'anexos', 'historial'].forEach(k => {
+    const p = document.getElementById('vf-panel-' + k); if (p) p.style.display = (k === s) ? '' : 'none';
+    const t = document.getElementById('vf-sub-' + k); if (t) t.classList.toggle('active', k === s);
+  });
+  if (s === 'ficha') vfRenderFicha(); else if (s === 'anexos') vfRenderAnexos(); else if (s === 'historial') vfRenderHistorial(); else vfRenderRevision();
+}
+// ── Ficha maestra (GitHub) ─────────────────────────────────────────────────────
+async function _vfLoadJson(path) {
+  try {
+    const r = await _fetchT('https://raw.githubusercontent.com/' + GH_OWNER + '/' + GH_REPO + '/main/' + path + '?t=' + Date.now(), { cache: 'no-store' }, 60000);
+    if (r.ok) return await r.json();
+    if (r.status === 404) return null;
+  } catch (_) { }
+  try { return await _loadDataGH(path); } catch (_) { return null; }
+}
+async function vfCargarFicha(force) {
+  if (_vfCargada && !force) return vf_ficha;
+  let f = await _vfLoadJson(VF_FICHA_FILE);
+  if (!f || !Array.isArray(f.campos)) {
+    f = { version: 1, campos: [], firma: null, sello: null, anexos: {}, historial: [] };
+    showToast('La ficha de E&G (data/ficha_eyg.json) no se pudo leer de GitHub: arrancas con una ficha vacía', 'error');
+  }
+  f.anexos = f.anexos || {}; f.historial = f.historial || [];
+  vf_ficha = f; _vfCargada = true;
+  if (force) showToast('Ficha de E&G actualizada ✓', 'success');
+  return f;
+}
+async function vfGuardarFicha(label) {
+  if (!vf_ficha) return;
+  vf_ficha.updatedAt = new Date().toISOString(); vf_ficha.updatedBy = currentUser ? currentUser.email : '';
+  await _saveDataGH(VF_FICHA_FILE, vf_ficha, label || '📝 Ficha E&G (llenar formatos)');
+}
+async function vfFichaGuardarClick() {
+  const b = document.getElementById('vf-ficha-guardar'); if (b) { b.disabled = true; b.textContent = '💾 Guardando…'; }
+  try { await vfGuardarFicha('📝 Ficha E&G editada por ' + (currentUser ? currentUser.email : '')); showToast('Ficha guardada en GitHub ✓', 'success'); }
+  catch (e) { showToast('No se pudo guardar la ficha: ' + (e.message || e), 'error'); }
+  if (b) { b.disabled = false; b.textContent = '💾 Guardar ficha'; }
+}
+function vfRenderFicha() {
+  const box = document.getElementById('vf-ficha-lista'); if (!box || !vf_ficha) return;
+  const q = ((document.getElementById('vf-ficha-q') || {}).value || '').toLowerCase().trim();
+  const grupos = []; const por = {};
+  vf_ficha.campos.forEach((c, i) => {
+    if (q && !((c.e || '') + ' ' + (c.v || '') + ' ' + (c.k || '') + ' ' + (c.s || '')).toLowerCase().includes(q)) return;
+    const g = c.g || 'Otros'; if (!por[g]) { por[g] = []; grupos.push(g); } por[g].push(i);
+  });
+  const av = document.getElementById('vf-ficha-aviso');
+  if (av) av.innerHTML = vf_ficha.campos.length + ' datos en la ficha · ' + vf_ficha.campos.filter(c => !String(c.v || '').trim()).length + ' vacíos (la IA los preguntará cuando un formato los pida)'
+    + (vf_ficha.updatedAt ? ' · última edición ' + _cmkFecha(vf_ficha.updatedAt) + (vf_ficha.updatedBy ? ' por ' + _vfEsc(vf_ficha.updatedBy) : '') : '')
+    + '. <b>Las pistas</b> ayudan a la IA a reconocer el dato con otros nombres. Cambia lo que quieras y pulsa 💾 Guardar.';
+  if (!grupos.length) { box.innerHTML = '<div class="abs-count" style="padding:20px;text-align:center">' + (q ? 'Nada con esa búsqueda' : 'La ficha está vacía: agrega datos con ➕') + '</div>'; }
+  else box.innerHTML = grupos.map(g => '<div class="abs-count" style="margin:14px 0 6px;font-weight:700;color:var(--gold)">' + _vfEsc(g) + ' <span style="font-weight:400">(' + por[g].length + ')</span> '
+    + '<button class="btn btn-ghost" style="padding:2px 8px;font-size:11px;margin-left:8px" onclick="vfFichaAdd(\'' + _vfEsc(g).replace(/'/g, '&#39;') + '\')">➕</button></div>'
+    + '<div class="abs-table-wrap"><table class="abs-table"><thead><tr><th style="width:30%">Dato</th><th style="width:38%">Valor</th><th>Pistas para la IA</th><th style="width:36px"></th></tr></thead><tbody>'
+    + por[g].map(i => { const c = vf_ficha.campos[i]; return '<tr>'
+      + '<td><input ' + _VF_INP + ' value="' + _vfEsc(c.e).replace(/"/g, '&quot;') + '" oninput="vfFichaSet(' + i + ',\'e\',this.value)" title="' + _vfEsc(c.k) + '"></td>'
+      + '<td><textarea ' + _VF_INP.replace('style="', 'style="min-height:34px;resize:vertical;font-family:inherit;') + ' rows="1" oninput="vfFichaSet(' + i + ',\'v\',this.value)"' + (String(c.v || '').trim() ? '' : ' placeholder="vacío: la IA lo preguntará"') + '>' + _vfEsc(c.v) + '</textarea></td>'
+      + '<td><input ' + _VF_INP + ' value="' + _vfEsc(c.s).replace(/"/g, '&quot;') + '" oninput="vfFichaSet(' + i + ',\'s\',this.value)" placeholder="otros nombres con que lo piden"></td>'
+      + '<td><button class="btn btn-ghost" style="padding:3px 7px;font-size:11px" title="Quitar este dato" onclick="vfFichaDel(' + i + ')">🗑️</button></td></tr>'; }).join('')
+    + '</tbody></table></div>').join('');
+  vfRenderFirmas();
+}
+function vfFichaSet(i, k, v) { const c = vf_ficha && vf_ficha.campos[i]; if (!c) return; c[k] = v; if (k === 'e' && !c.k) c.k = _vfSlug(v); }
+function vfFichaAdd(g) {
+  if (!vf_ficha) return;
+  const grupo = g || prompt('¿En qué grupo va el dato? (Empresa, Tributario, Representante legal, Contactos, Bancaria, Accionistas, Referencias comerciales, Cumplimiento, Firma, Otros)', 'Otros');
+  if (!grupo) return;
+  const e = prompt('¿Cómo se llama el dato? (ej. Número de empleados)'); if (!e) return;
+  const v = prompt('Valor para «' + e + '» (puede quedar vacío):') || '';
+  vf_ficha.campos.push({ g: grupo, k: _vfSlug(e), e: e, v: v, s: '' });
+  vfRenderFicha();
+}
+function vfFichaDel(i) {
+  const c = vf_ficha && vf_ficha.campos[i]; if (!c) return;
+  if (!confirm('¿Quitar «' + (c.e || c.k) + '» de la ficha?')) return;
+  vf_ficha.campos.splice(i, 1); vfRenderFicha();
+}
+// Firma y sello: imágenes PNG/JPG reducidas a 700 px y guardadas dentro de la ficha.
+function vfRenderFirmas() {
+  const box = document.getElementById('vf-ficha-firmas'); if (!box || !vf_ficha) return;
+  box.innerHTML = ['firma', 'sello'].map(t => {
+    const img = vf_ficha[t];
+    return '<div class="card" style="padding:14px"><div class="abs-count" style="margin:0 0 8px;font-weight:700">' + (t === 'firma' ? '✍️ Firma del representante legal' : '🔏 Sello de la empresa') + '</div>'
+      + (img && img.png ? '<div style="background:#fff;border-radius:8px;padding:8px;text-align:center"><img src="' + img.png + '" style="max-height:90px;max-width:100%"></div><div class="abs-count" style="margin:6px 0 0">' + _vfEsc(img.nombre || '') + ' · subida ' + (img.subido ? _cmkFecha(img.subido) : '') + '</div>'
+                         : '<div class="abs-count" style="padding:14px;text-align:center">Sin ' + t + '. Súbela una vez (PNG o JPG, fondo blanco o transparente) y queda disponible para estampar.</div>')
+      + '<div style="display:flex;gap:8px;margin-top:8px"><input type="file" id="vf-img-' + t + '" accept="image/png,image/jpeg" style="display:none" onchange="vfImgSubir(\'' + t + '\',this)">'
+      + '<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="document.getElementById(\'vf-img-' + t + '\').click()">📂 ' + (img && img.png ? 'Cambiar' : 'Subir') + '</button>'
+      + (img && img.png ? '<button class="btn btn-ghost" style="padding:5px 10px;font-size:11px" onclick="vfImgQuitar(\'' + t + '\')">🗑️ Quitar</button>' : '') + '</div></div>';
+  }).join('');
+}
+function vfImgSubir(t, input) {
+  const f = input.files && input.files[0]; input.value = ''; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    const im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 700 / im.width); const cv = document.createElement('canvas'); cv.width = Math.round(im.width * k); cv.height = Math.round(im.height * k);
+      cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
+      vf_ficha[t] = { png: cv.toDataURL('image/png'), nombre: f.name, subido: new Date().toISOString() };
+      vfRenderFirmas(); showToast(t + ' cargada: recuerda 💾 Guardar ficha', 'info');
+    };
+    im.src = rd.result;
+  };
+  rd.readAsDataURL(f);
+}
+function vfImgQuitar(t) { if (!confirm('¿Quitar la ' + t + ' de la ficha?')) return; vf_ficha[t] = null; vfRenderFirmas(); }
+// ── Anexos (data/ficha_eyg_anexo_<tipo>.json; índice en la ficha) ──────────────
+function _vfVence(tipo, fechaExp) {
+  const d = VF_ANEXOS[tipo] ? VF_ANEXOS[tipo].dias : 0; if (!d || !fechaExp) return '';
+  const x = new Date(fechaExp + 'T12:00:00'); if (isNaN(x)) return ''; x.setDate(x.getDate() + d);
+  return x.toISOString().slice(0, 10);
+}
+function _vfChipVig(a, tipo) {
+  if (!a) return _vinChip('falta', 'Sin archivo');
+  if (!VF_ANEXOS[tipo].dias) return _vinChip('aprobado', 'Sin vencimiento');
+  if (!a.fecha_expedicion) return _vinChip('pendiente', 'Falta fecha');
+  const v = _vfVence(tipo, a.fecha_expedicion), hoy = _cmkHoy();
+  if (v < hoy) return _vinChip('rechazado', '⛔ Vencido ' + _cmkFecha(v));
+  const dias = Math.round((new Date(v) - new Date(hoy)) / 86400000);
+  return _vinChip(dias <= 7 ? 'pendiente' : 'aprobado', 'Vence ' + _cmkFecha(v));
+}
+function vfRenderAnexos() {
+  const tb = document.getElementById('vf-anexos-tbody'); if (!tb || !vf_ficha) return;
+  tb.innerHTML = Object.keys(VF_ANEXOS).map(t => {
+    const a = vf_ficha.anexos[t];
+    return '<tr><td><b>' + VF_ANEXOS[t].ico + ' ' + _vfEsc(VF_ANEXOS[t].nombre) + '</b>' + (VF_ANEXOS[t].dias ? '<div class="abs-count" style="margin:2px 0 0;font-size:10.5px">vigencia ' + VF_ANEXOS[t].dias + ' días</div>' : '') + '</td>'
+      + '<td style="font-size:12px">' + (a ? '📎 ' + _vfEsc(a.nombre) + ' · ' + Math.round((+a.tamano || 0) / 1024) + ' KB<div class="abs-count" style="margin:2px 0 0;font-size:10.5px">subido ' + _cmkFecha(a.subido) + (a.por ? ' por ' + _vfEsc(a.por) : '') + '</div>' : '<span style="color:var(--text-muted)">—</span>') + '</td>'
+      + '<td>' + (a && VF_ANEXOS[t].dias ? '<input type="date" ' + _VF_INP + ' value="' + _vfEsc(a.fecha_expedicion || '') + '" onchange="vfAnexoFecha(\'' + t + '\',this.value)">' : '') + '</td>'
+      + '<td>' + _vfChipVig(a, t) + '</td>'
+      + '<td style="white-space:nowrap"><button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" onclick="vfAnexoElegir(\'' + t + '\')">📂 ' + (a ? 'Reemplazar' : 'Subir') + '</button> '
+      + (a ? '<button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" onclick="vfAnexoVer(\'' + t + '\')">👁️ Ver</button> <button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" onclick="vfAnexoQuitar(\'' + t + '\')">🗑️</button>' : '') + '</td></tr>';
+  }).join('');
+}
+function vfAnexoElegir(tipo) {
+  const inp = document.getElementById('vf-anexo-file'); if (!inp) return;
+  inp.onchange = () => { const f = inp.files && inp.files[0]; inp.value = ''; if (f) vfAnexoSubir(tipo, f); };
+  inp.click();
+}
+async function vfAnexoSubir(tipo, f) {
+  if (f.size > 8 * 1024 * 1024) { showToast('El archivo pesa más de 8 MB: comprímelo antes de subirlo', 'error'); return; }
+  const mime = /pdf$/i.test(f.name) || f.type === 'application/pdf' ? 'application/pdf' : (f.type || 'image/jpeg');
+  showToast('Subiendo ' + VF_ANEXOS[tipo].nombre + '…', 'info');
+  try {
+    const b64 = await new Promise((ok, err) => { const rd = new FileReader(); rd.onload = () => ok(String(rd.result).split(',')[1] || ''); rd.onerror = () => err(new Error('no se pudo leer el archivo')); rd.readAsDataURL(f); });
+    const path = 'data/ficha_eyg_anexo_' + tipo + '.json';
+    await _saveDataGH(path, { tipo, nombre: f.name, mime, tamano: f.size, b64, subido: new Date().toISOString(), por: currentUser ? currentUser.email : '' }, '📎 Anexo E&G: ' + VF_ANEXOS[tipo].nombre);
+    const prev = vf_ficha.anexos[tipo] || {};
+    vf_ficha.anexos[tipo] = { nombre: f.name, mime, tamano: f.size, subido: new Date().toISOString(), por: currentUser ? currentUser.email : '', archivo: path, fecha_expedicion: prev.fecha_expedicion || '' };
+    await vfGuardarFicha('📎 Ficha E&G: anexo ' + tipo);
+    showToast(VF_ANEXOS[tipo].nombre + ' guardado ✓' + (VF_ANEXOS[tipo].dias ? ' — ponle la fecha de expedición' : ''), 'success');
+  } catch (e) { showToast('No se pudo subir: ' + (e.message || e), 'error'); }
+  vfRenderAnexos();
+}
+async function vfAnexoFecha(tipo, v) {
+  const a = vf_ficha.anexos[tipo]; if (!a) return; a.fecha_expedicion = v || ''; a.vence = _vfVence(tipo, a.fecha_expedicion);
+  vfRenderAnexos();
+  try { await vfGuardarFicha('📎 Ficha E&G: fecha ' + tipo); } catch (e) { showToast('No se guardó la fecha: ' + (e.message || e), 'error'); }
+}
+async function _vfAnexoCargar(tipo) {
+  const a = vf_ficha && vf_ficha.anexos[tipo]; if (!a) return null;
+  const j = await _vfLoadJson(a.archivo || ('data/ficha_eyg_anexo_' + tipo + '.json'));
+  return (j && j.b64) ? j : null;
+}
+async function vfAnexoVer(tipo) {
+  const w = window.open('', '_blank');   // antes del await: si no, el navegador bloquea la ventana
+  try {
+    const j = await _vfAnexoCargar(tipo); if (!j) throw new Error('no está el archivo en GitHub');
+    const url = URL.createObjectURL(new Blob([_otB64ToBytes(j.b64)], { type: j.mime || 'application/pdf' }));
+    if (w) w.location.href = url; else window.open(url, '_blank');
+  } catch (e) { if (w) w.close(); showToast('No se pudo abrir: ' + (e.message || e), 'error'); }
+}
+async function vfAnexoQuitar(tipo) {
+  if (!confirm('¿Quitar ' + VF_ANEXOS[tipo].nombre + ' de los anexos? (el archivo queda en el historial de GitHub)')) return;
+  delete vf_ficha.anexos[tipo]; vfRenderAnexos();
+  try { await vfGuardarFicha('📎 Ficha E&G: quitar anexo ' + tipo); } catch (e) { showToast('No se guardó: ' + (e.message || e), 'error'); }
+}
+// ── Leer el formato ────────────────────────────────────────────────────────────
+async function vfArchivo(input) {
+  const f = input.files && input.files[0]; input.value = ''; if (!f) return;
+  const info = document.getElementById('vf-doc-info'), bIA = document.getElementById('vf-btn-ia');
+  vf_doc = null; vf_prop = null; vfRenderRevision(); if (bIA) bIA.style.display = 'none';
+  if (info) info.innerHTML = '⏳ Leyendo <b>' + _vfEsc(f.name) + '</b>…';
+  const ext = (f.name.split('.').pop() || '').toLowerCase();
+  try {
+    const bytes = new Uint8Array(await f.arrayBuffer());
+    if (ext === 'pdf') vf_doc = await _vfLeerPdf(bytes, f.name);
+    else if (ext === 'xlsx' || ext === 'xlsm') vf_doc = await _vfLeerXlsx(bytes, f.name, ext);
+    else throw new Error('Solo se aceptan PDF con campos de formulario o Excel (.xlsx / .xlsm)');
+  } catch (e) {
+    if (info) info.innerHTML = '<span style="color:var(--red)">❌ ' + _vfEsc(e.message || e) + '</span>';
+    return;
+  }
+  const conDatos = vf_doc.tipo === 'pdf' ? vf_doc.campos.filter(c => String(c.v || '').trim()).length : vf_doc.hojas.reduce((s, h) => s + h.celdas.filter(c => c.derV || c.abaV).length, 0);
+  if (info) info.innerHTML = '✅ <b>' + _vfEsc(f.name) + '</b> · ' + (vf_doc.tipo === 'pdf'
+    ? vf_doc.paginas + ' página(s) · ' + vf_doc.campos.length + ' campos de formulario' + (conDatos ? ' · <b style="color:var(--gold)">' + conDatos + ' ya traen datos</b> (no se pisan)' : '')
+    : vf_doc.hojas.length + ' hoja(s) · ' + vf_doc.hojas.reduce((s, h) => s + h.celdas.length, 0) + ' etiquetas' + (conDatos ? ' · <b style="color:var(--gold)">' + conDatos + ' con datos al lado</b> (no se pisan)' : '') + (ext === 'xlsm' ? ' · ⚠️ es .xlsm: saldrá como .xlsx sin macros' : ''))
+    + '. Pulsa <b>🤖 Leer y llenar con la IA</b>.';
+  if (bIA) bIA.style.display = '';
+}
+async function _vfLeerPdf(bytes, nombre) {
+  const PL = await _otPdfLib();
+  const doc = await PL.PDFDocument.load(bytes, { ignoreEncryption: true });
+  const pages = doc.getPages(); let form = null, fields = [];
+  try { form = doc.getForm(); fields = form.getFields() || []; } catch (_) { fields = []; }
+  if (!fields.length) throw new Error('Este PDF no trae campos de formulario (es plano o escaneado). En esta versión solo se llenan PDF editables: pídele al cliente la versión con campos o llénalo a mano en PDF Studio.');
+  const refDe = new Map(); try { doc.context.enumerateIndirectObjects().forEach(par => refDe.set(par[1], par[0])); } catch (_) { }
+  const pagDe = {}; pages.forEach((pg, i) => { try { const an = pg.node.Annots(); if (an) an.asArray().forEach(r => { pagDe[String(r)] = i; }); } catch (_) { } });
+  const tam = pages.map(pg => pg.getSize());
+  const campos = [];
+  fields.forEach(fl => {
+    let t = 'otro';
+    if (fl instanceof PL.PDFTextField) t = 'text'; else if (fl instanceof PL.PDFCheckBox) t = 'check'; else if (fl instanceof PL.PDFRadioGroup) t = 'radio';
+    else if (fl instanceof PL.PDFDropdown || fl instanceof PL.PDFOptionList) t = 'list'; else if (fl instanceof PL.PDFSignature) t = 'firma';
+    if (t === 'otro') return;
+    let ws = []; try { ws = fl.acroField.getWidgets() || []; } catch (_) { }
+    const wid = ws.map(w => {
+      let r = null, p = -1, on = '', pt = null;
+      try {
+        const ref = refDe.get(w.dict); if (ref != null && pagDe[String(ref)] != null) p = pagDe[String(ref)];
+        if (p < 0) { try { const pr = w.P(); if (pr) p = pages.findIndex(pg => pg.ref === pr); } catch (_) { p = -1; } }
+        const rc = w.getRectangle(); const s = tam[p >= 0 ? p : 0]; pt = [rc.x, rc.y, rc.width, rc.height];
+        r = [Math.round(rc.x / s.width * 1000) / 10, Math.round((s.height - rc.y - rc.height) / s.height * 1000) / 10, Math.round(rc.width / s.width * 1000) / 10, Math.round(rc.height / s.height * 1000) / 10];
+      } catch (_) { }
+      try { const ov = w.getOnValue(); on = ov ? ov.decodeText() : ''; } catch (_) { }
+      return { r, p: p >= 0 ? p + 1 : null, on, pt };
+    });
+    const c = { n: fl.getName(), t, p: wid[0] ? wid[0].p : null, r: wid[0] ? wid[0].r : null, pt: wid[0] ? wid[0].pt : null };
+    let v = '';
+    try {
+      if (t === 'text') v = fl.getText() || '';
+      else if (t === 'check') v = fl.isChecked() ? 'X' : '';
+      else if (t === 'radio') v = fl.getSelected() || '';
+      else if (t === 'list') v = (fl.getSelected() || [])[0] || '';
+    } catch (_) { }
+    c.v = String(v);
+    if (t === 'check') c.x = wid[0] ? wid[0].on : '';
+    if (t === 'radio') c.o = wid.map(w => ({ x: w.on, p: w.p, r: w.r, pt: w.pt }));
+    if (t === 'list') { try { c.o = fl.getOptions() || []; } catch (_) { c.o = []; } }
+    if (t === 'text') { try { const ml = fl.getMaxLength(); if (ml) c.max = ml; } catch (_) { } }
+    campos.push(c);
+  });
+  // Etiqueta impresa junto a cada casilla (SI / NO…): la IA no acierta la orientación de los
+  // radios solo con coordenadas, así que se lee el texto del PDF con pdf.js y se le da la palabra.
+  try { await _vfEtiquetasCasillas(bytes, campos); } catch (e) { console.warn('[vf] etiquetas de casillas', e && e.message); }
+  campos.forEach(c => { delete c.pt; (c.o || []).forEach(o => { if (o && typeof o === 'object') delete o.pt; }); });
+  return { tipo: 'pdf', nombre, bytes, paginas: pages.length, campos };
+}
+var _vfPdfjsP = null;
+function _vfPdfjs() {
+  if (window.pdfjsLib && window.pdfjsLib.getDocument) return Promise.resolve(window.pdfjsLib);
+  if (_vfPdfjsP) return _vfPdfjsP;
+  _vfPdfjsP = new Promise((ok, err) => {
+    const s = document.createElement('script'); s.src = 'libs/pdfjs/pdf.min.js';
+    s.onload = () => { try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'libs/pdfjs/pdf.worker.min.js'; ok(window.pdfjsLib); } catch (e) { _vfPdfjsP = null; err(e); } };
+    s.onerror = () => { _vfPdfjsP = null; err(new Error('No se pudo cargar libs/pdfjs/pdf.min.js')); };
+    document.head.appendChild(s);
+  });
+  return _vfPdfjsP;
+}
+// Palabras con posición (puntos PDF, origen abajo-izquierda) por página.
+async function _vfPalabrasPdf(bytes) {
+  const lib = await _vfPdfjs();
+  const pdf = await lib.getDocument({ data: bytes.slice() }).promise; const out = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const pg = await pdf.getPage(i); const tc = await pg.getTextContent(); const words = [];
+    (tc.items || []).forEach(it => {
+      const s = it.str || ''; if (!s.trim() || !it.transform) return;
+      const x0 = it.transform[4], y0 = it.transform[5], w = it.width || 0, h = it.height || Math.abs(it.transform[3]) || 8, n = s.length; let pos = 0;
+      s.split(/(\s+)/).forEach(tok => { if (!tok) return; if (/^\s+$/.test(tok)) { pos += tok.length; return; } const x = x0 + w * pos / n; words.push({ t: tok, x0: x, x1: x + w * tok.length / n, cy: y0 + h / 2, h }); pos += tok.length; });
+    });
+    out.push(words);
+  }
+  try { pdf.destroy(); } catch (_) { }
+  return out;
+}
+function _vfEtiquetaDe(words, pt) {
+  if (!words || !pt) return '';
+  const x = pt[0], y = pt[1], w = pt[2], h = pt[3], cy = y + h / 2, tol = Math.max(h, 7);
+  const linea = words.filter(q => Math.abs(q.cy - cy) < tol);
+  const izq = linea.filter(q => q.x1 <= x + 2 && x - q.x1 < 45).sort((a, b) => (x - a.x1) - (x - b.x1))[0];
+  const der = linea.filter(q => q.x0 >= x + w - 2 && q.x0 - (x + w) < 45).sort((a, b) => (a.x0 - (x + w)) - (b.x0 - (x + w)))[0];
+  const limpio = q => q ? q.t.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9]/g, '') : '';
+  const esOpc = q => /^(s[ií]|no|yes|x)$/i.test(limpio(q));
+  if (izq && esOpc(izq)) return limpio(izq);
+  if (der && esOpc(der)) return limpio(der);
+  // Encabezado de columna (tablas SI | NO con las palabras arriba de las casillas): la palabra
+  // SI/NO más cercana por encima cuyo centro cae en el ancho de la casilla.
+  const col = words.filter(q => esOpc(q) && q.cy > y + h && q.cy - (y + h) < 420 && (q.x0 + q.x1) / 2 >= x - 4 && (q.x0 + q.x1) / 2 <= x + w + 4).sort((a, b) => a.cy - b.cy)[0];
+  if (col) return limpio(col);
+  const cand = [izq, der].filter(Boolean).sort((a, b) => Math.min(Math.abs(x - a.x1), Math.abs(a.x0 - (x + w))) - Math.min(Math.abs(x - b.x1), Math.abs(b.x0 - (x + w))))[0];
+  return cand ? limpio(cand).slice(0, 24) : '';
+}
+// Texto impreso en la misma línea, a la izquierda del campo (la pregunta o la etiqueta del renglón).
+function _vfPreguntaDe(words, pt) {
+  if (!words || !pt) return '';
+  const x = pt[0], cy = pt[1] + pt[3] / 2, tol = Math.max(pt[3], 7);
+  const linea = words.filter(q => Math.abs(q.cy - cy) < tol && q.x1 <= x + 2 && x - q.x1 < 700).sort((a, b) => (Math.round(b.cy / 4) - Math.round(a.cy / 4)) || (a.x0 - b.x0));
+  const txt = linea.map(q => q.t).join(' ').replace(/\s+/g, ' ').trim();
+  return txt.length > 170 ? '…' + txt.slice(-170) : txt;
+}
+async function _vfEtiquetasCasillas(bytes, campos) {
+  const pags = await _vfPalabrasPdf(bytes);
+  const generico = n => /^(text|group|check|campo|field|undefined|fill|box|casilla|opci[oó]n|button|radio)[\s_\-]*\d*$/i.test(String(n).trim()) || String(n).trim().length <= 3;
+  campos.forEach(c => {
+    if (!c.p) return;
+    if (c.t === 'check') { const l = _vfEtiquetaDe(pags[c.p - 1], c.pt); if (l) c.l = l; }
+    if (c.t === 'radio') (c.o || []).forEach(o => { if (o.p) { const l = _vfEtiquetaDe(pags[o.p - 1], o.pt); if (l) o.l = l; } });
+    if (c.t === 'radio' || c.t === 'check' || generico(c.n)) { const q = _vfPreguntaDe(pags[c.p - 1], c.t === 'radio' && c.o && c.o[0] && c.o[0].pt ? c.o[0].pt : c.pt); if (q) c.q = q; }
+  });
+}
+function _vfCeldaTxt(cell) {
+  const v = cell && cell.value; if (v == null) return '';
+  if (typeof v === 'object') {
+    if (v instanceof Date) return v.toISOString().slice(0, 10);
+    if (Array.isArray(v.richText)) return v.richText.map(x => x.text).join('');
+    if (v.result != null) return String(v.result);
+    if (v.text != null) return String(v.text);
+    if (v.formula) return '';
+    return '';
+  }
+  return String(v);
+}
+async function _vfLeerXlsx(bytes, nombre, ext) {
+  await _vdCargarExcelJS();
+  const wb = new ExcelJS.Workbook(); await wb.xlsx.load(bytes.buffer);
+  const hojas = []; let total = 0;
+  wb.eachSheet(ws => {
+    if (ws.state && ws.state !== 'visible') return;
+    const merges = ((ws.model && ws.model.merges) || []).map(m => { const ab = String(m).split(':'); const A = ws.getCell(ab[0]), B = ws.getCell(ab[1] || ab[0]); return { r1: +A.row, c1: +A.col, r2: +B.row, c2: +B.col }; });
+    const enMerge = (r, c) => merges.find(m => r >= m.r1 && r <= m.r2 && c >= m.c1 && c <= m.c2);
+    const addr = (r, c) => ws.getCell(r, c).address;
+    const destino = (r, c) => { const mm = enMerge(r, c); return mm ? addr(mm.r1, mm.c1) : addr(r, c); };
+    const celdas = [];
+    ws.eachRow({ includeEmpty: false }, (row, r) => {
+      row.eachCell({ includeEmpty: false }, (cell, c) => {
+        const t = _vfCeldaTxt(cell).trim(); if (!t) return;
+        const m = enMerge(r, c); if (m && (m.r1 !== r || m.c1 !== c)) return;
+        const r2 = m ? m.r2 : r, c2 = m ? m.c2 : c;
+        const der = destino(r, c2 + 1), aba = destino(r2 + 1, c);
+        const o = { c: cell.address, t: t.slice(0, 140), der, aba };
+        const dv = _vfCeldaTxt(ws.getCell(der)).trim(), av = _vfCeldaTxt(ws.getCell(aba)).trim();
+        if (dv) o.derV = dv.slice(0, 60); if (av) o.abaV = av.slice(0, 60);
+        celdas.push(o);
+      });
+    });
+    // Candidatos que no sirven: la celda vecina es otra etiqueta, o queda fuera del área usada de la hoja
+    // (etiqueta combinada hasta el borde: la respuesta va en la MISMA celda). Se quitan para que la IA no los use.
+    const etiquetas = new Set(celdas.map(c => c.c));
+    const colDe = a => { const m = /^([A-Z]+)(\d+)$/.exec(a); if (!m) return 0; let n = 0; for (const ch of m[1]) n = n * 26 + (ch.charCodeAt(0) - 64); return n; };
+    const filaDe = a => { const m = /^([A-Z]+)(\d+)$/.exec(a); return m ? +m[2] : 0; };
+    // Área real del formato = hasta donde llegan las etiquetas y sus celdas combinadas (columnCount de ExcelJS cuenta anchos definidos y se pasa).
+    let maxCol = 0, maxRow = 0;
+    celdas.forEach(c => { const m = enMerge(filaDe(c.c), colDe(c.c)); maxCol = Math.max(maxCol, m ? m.c2 : colDe(c.c)); maxRow = Math.max(maxRow, (m ? m.r2 : filaDe(c.c)) + 3); });
+    celdas.forEach(c => {
+      if (etiquetas.has(c.der) || colDe(c.der) > maxCol) { delete c.der; delete c.derV; }
+      if (etiquetas.has(c.aba) || filaDe(c.aba) > maxRow) { delete c.aba; delete c.abaV; }
+    });
+    total += celdas.length;
+    if (celdas.length) hojas.push({ h: ws.name, celdas });
+  });
+  if (!total) throw new Error('El Excel está vacío o no tiene etiquetas que leer');
+  return { tipo: 'xlsx', nombre, ext, bytes, hojas, campos: [] };
+}
+// ── IA ─────────────────────────────────────────────────────────────────────────
+function _vfFichaTexto() {
+  const porG = {}; const orden = [];
+  (vf_ficha.campos || []).forEach(c => { const g = c.g || 'Otros'; if (!porG[g]) { porG[g] = []; orden.push(g); } porG[g].push(c); });
+  return orden.map(g => '## ' + g + '\n' + porG[g].map(c => '- ' + c.k + ' = ' + c.e + ': ' + (String(c.v || '').trim() ? String(c.v).replace(/\s+/g, ' ') : '(VACÍO: preguntar)') + (c.s ? ' [pistas: ' + c.s + ']' : '')).join('\n')).join('\n');
+}
+function _vfJson(txt) {
+  let s = String(txt || '').trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+  const a = s.indexOf('{'), b = s.lastIndexOf('}'); if (a < 0 || b < 0) throw new Error('la IA no devolvió JSON');
+  return JSON.parse(s.slice(a, b + 1));
+}
+async function _vfPedirIA(bloques, maxTokens) {
+  const url = getClaudeProxyURL(); if (!url) throw new Error('Configura la URL del proxy de IA en Configuración → ENERGY IA');
+  const modelos = ['claude-opus-5-5', 'claude-sonnet-4-6']; let ultimo = null;
+  for (const m of modelos) {
+    try {
+      const resp = await _fetchT(url, { method: 'POST', headers: { 'Content-Type': (/script\.google\.com/i.test(url) ? 'text/plain;charset=utf-8' : 'application/json') },
+        body: JSON.stringify({ model: m, max_tokens: maxTokens || 12000, system: VF_SYS, messages: [{ role: 'user', content: bloques }], secret: _proxySecret() }), redirect: 'follow' }, 300000);
+      const data = await resp.json();
+      const tb = (data && Array.isArray(data.content)) ? data.content.find(b => b && b.type === 'text' && b.text) : null;
+      if (!tb) throw new Error((data && data.error && (data.error.message || data.error)) || 'la IA no devolvió texto');
+      return tb.text;
+    } catch (e) { ultimo = e; console.warn('[vf] IA', m, e && e.message); }
+  }
+  throw ultimo || new Error('sin respuesta de la IA');
+}
+async function vfIA() {
+  if (!vf_doc || _vfOcupado) return;
+  if (!vf_ficha || !vf_ficha.campos.length) { showToast('La ficha de E&G está vacía: llénala primero en 🗂️ Ficha', 'error'); return; }
+  _vfOcupado = true; const b = document.getElementById('vf-btn-ia'); if (b) { b.disabled = true; b.textContent = '🤖 Leyendo el formato… (30–90 s)'; }
+  const hoy = new Date(); const hoyTxt = hoy.getDate() + '/' + (hoy.getMonth() + 1) + '/' + hoy.getFullYear() + ' (día ' + hoy.getDate() + ', mes ' + (hoy.getMonth() + 1) + ', año ' + hoy.getFullYear() + ')';
+  const cliente = ((document.getElementById('vf-cliente') || {}).value || '').trim();
+  try {
+    let bloques, txt;
+    if (vf_doc.tipo === 'pdf') {
+      const b64 = await new Promise((ok, err) => { const rd = new FileReader(); rd.onload = () => ok(String(rd.result).split(',')[1] || ''); rd.onerror = () => err(new Error('no se pudo codificar el PDF')); rd.readAsDataURL(new Blob([vf_doc.bytes], { type: 'application/pdf' })); });
+      const lista = vf_doc.campos.map(c => { const o = { n: c.n, t: c.t, p: c.p, r: c.r }; if (c.q) o.q = c.q; if (c.v) o.v = c.v; if (c.x) o.x = c.x; if (c.l) o.l = c.l; if (c.o) o.o = c.o; if (c.max) o.max = c.max; return o; });
+      bloques = [{ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } }, { type: 'text', text:
+        'FORMATO: "' + vf_doc.nombre + '"' + (cliente ? ' que manda el cliente ' + cliente : '') + '.\nHOY: ' + hoyTxt + '.\n\nFICHA DE E&G (clave = etiqueta: valor [pistas]):\n' + _vfFichaTexto()
+        + '\n\nCAMPOS DEL FORMULARIO PDF (n=nombre interno, t=text|check|radio|list|firma, p=página, r=[x%, y% desde arriba, ancho%, alto%], q=texto impreso en el mismo renglón a la izquierda del campo (la pregunta: úsala para saber qué responde cada radio), v=valor que ya trae, x=valor de exportación de la casilla, l=palabra impresa junto a la casilla, o=opciones (radio: lista de {x,l,p,r}; list: textos), max=largo máximo):\n'
+        + JSON.stringify(lista)
+        + '\n\nDevuelve SOLO este JSON: {"campos":[{"n":"nombre interno","v":"valor (text) | true/false (check) | x de la opción (radio) | una opción (list)","k":"clave de la ficha, o fecha, o calculado"}],'
+        + '"preguntas":[{"n":["nombre interno del campo PDF al que va la respuesta"],"e":"pregunta clara (un solo dato)","t":"texto|opcion","o":[{"x":"valor que se escribe o exporta","l":"etiqueta visible"}],"sug":"valor candidato o vacío","k":"clave_nueva_para_guardar_en_la_ficha"}],'
+        + '"firma":"n del campo (firma, text o check) donde va la FIRMA del representante legal, o null","sello":"n del campo donde va el SELLO, o null","notas":"observaciones breves para quien revisa"}. '
+        + 'No incluyas en "campos" los que quedan vacíos. Para campos de fecha usa HOY. Para radio devuelve exactamente el x de la opción cuya l corresponde a la respuesta. En "preguntas", n debe ser nombres internos de la lista de campos.' }];
+    } else {
+      bloques = [{ type: 'text', text:
+        'FORMATO EXCEL: "' + vf_doc.nombre + '"' + (cliente ? ' que manda el cliente ' + cliente : '') + '.\nHOY: ' + hoyTxt + '.\n\nFICHA DE E&G (clave = etiqueta: valor [pistas]):\n' + _vfFichaTexto()
+        + '\n\nETIQUETAS DEL EXCEL por hoja (c=celda de la etiqueta, t=texto, der=celda libre a la derecha, aba=celda libre abajo, derV/abaV=lo que ya tienen esas celdas):\n' + JSON.stringify(vf_doc.hojas)
+        + '\n\nDecide en qué celda va cada dato: normalmente der o aba de la etiqueta. Si la etiqueta NO trae der ni aba, la respuesta va en la MISMA celda de la etiqueta (celda combinada tipo «NIT: ____»): usa c y devuelve en v SOLO el valor; el sistema lo escribe a continuación del texto. Nunca uses celdas que no estén en la lista como c, der o aba. '
+        + 'Si la etiqueta contiene casillas ☐ con opciones (ej. «Pública ☐ Privada ☐»), devuelve en v el texto COMPLETO de la celda con ☒ en la opción que aplica. En casillas que son celdas aparte (Cliente / Proveedor, SI / NO) escribe "X" en la celda de la casilla que corresponde. '
+        + 'Devuelve SOLO este JSON: {"campos":[{"n":"Hoja!CELDA","v":"valor","k":"clave de la ficha, o fecha, o calculado"}],'
+        + '"preguntas":[{"n":["Hoja!CELDA destino de la respuesta"],"e":"pregunta clara (un solo dato)","t":"texto|opcion","o":[{"x":"valor","l":"etiqueta"}],"sug":"valor candidato o vacío","k":"clave_nueva_para_la_ficha"}],'
+        + '"firma":"Hoja!CELDA donde va la firma del representante legal, o null","sello":"Hoja!CELDA del sello, o null","notas":"observaciones breves"}. No incluyas celdas que quedan vacías.' }];
+    }
+    txt = await _vfPedirIA(bloques, 12000);
+    const j = _vfJson(txt);
+    _vfArmarPropuesta(j);
+    showToast('Formato leído: revisa la propuesta' + (vf_prop.preguntas.length ? ' y responde las ' + vf_prop.preguntas.length + ' pregunta(s)' : ''), 'success');
+  } catch (e) {
+    showToast('La IA no pudo leer el formato: ' + (e.message || e), 'error', { durationMs: 7000 });
+  }
+  _vfOcupado = false; if (b) { b.disabled = false; b.textContent = '🤖 Leer y llenar con la IA'; }
+  vfRenderRevision();
+}
+// Texto de la etiqueta cuando la celda destino ES la celda de la etiqueta (formatos donde se escribe
+// a continuación del texto: «NIT: ______» en una sola celda combinada).
+function _vfXlsxEtiqueta(n) {
+  if (!vf_doc || vf_doc.tipo !== 'xlsx') return '';
+  const hc = String(n).split('!'); const h = vf_doc.hojas.find(x => x.h === hc[0]); if (!h) return '';
+  const c = h.celdas.find(x => x.c === hc[1]); return c ? c.t : '';
+}
+function _vfActual(n) {
+  if (!vf_doc) return '';
+  if (vf_doc.tipo === 'pdf') { const c = vf_doc.campos.find(x => x.n === n); return c ? String(c.v || '') : ''; }
+  if (_vfXlsxEtiqueta(n)) return '';   // la etiqueta no es un dato que ya traía
+  const hc = String(n).split('!'); const h = vf_doc.hojas.find(x => x.h === hc[0]); if (!h) return '';
+  for (const c of h.celdas) { if (c.der === hc[1] && c.derV) return c.derV; if (c.aba === hc[1] && c.abaV) return c.abaV; }
+  return '';
+}
+// Valor final que se escribe en una celda de Excel: si la celda es la de la etiqueta, el valor va después del texto.
+function _vfXlsxValor(n, v) {
+  const lab = _vfXlsxEtiqueta(n); const s = v === true ? 'X' : v === false || v == null ? '' : String(v).trim();
+  if (!lab) return s === '' ? null : s;
+  if (s === '') return lab;
+  if (s.toLowerCase().startsWith(lab.toLowerCase().slice(0, Math.min(12, lab.length)))) return s;   // la IA devolvió la celda completa
+  if (/[☒☑]/.test(s)) {
+    // La IA devolvió solo la opción marcada («No ☒»): se marca esa casilla dentro de la etiqueta completa.
+    if (/☐/.test(lab) && s.length < lab.length * 0.8) {
+      let out = lab, hecho = false;
+      (s.match(/[^☐☒☑]+(?=\s*[☒☑])/g) || []).forEach(op => {
+        const t = op.trim(); if (!t) return;
+        const re = new RegExp('(' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*)☐');
+        if (re.test(out)) { out = out.replace(re, '$1☒'); hecho = true; }
+      });
+      return hecho ? out : s;
+    }
+    return s;
+  }
+  return lab.replace(/\s+$/, '') + ' ' + s;
+}
+function _vfEtiqueta(n) {
+  if (!vf_doc) return n;
+  if (vf_doc.tipo === 'pdf') return n;
+  const hc = String(n).split('!'); const h = vf_doc.hojas.find(x => x.h === hc[0]); if (!h) return n;
+  const e = h.celdas.find(c => c.der === hc[1]) || h.celdas.find(c => c.aba === hc[1]);
+  return e ? e.t + ' → ' + hc[1] : n;
+}
+function _vfArmarPropuesta(j) {
+  const campos = [];
+  (Array.isArray(j.campos) ? j.campos : []).forEach(c => {
+    if (!c || !c.n) return;
+    if (vf_doc.tipo === 'pdf' && !vf_doc.campos.some(x => x.n === c.n)) return;   // nombre inventado: fuera
+    const actual = _vfActual(c.n); const trae = !!String(actual).trim() && String(actual).trim() !== String(c.v === true ? 'X' : c.v === false ? '' : c.v).trim();
+    campos.push({ n: c.n, v: c.v, k: c.k || '', actual, trae, aplicar: !trae });
+  });
+  const preguntas = (Array.isArray(j.preguntas) ? j.preguntas : []).filter(p => p && p.e).map(p => ({
+    n: Array.isArray(p.n) ? p.n : (p.n ? [p.n] : []), e: String(p.e), t: p.t === 'opcion' && Array.isArray(p.o) && p.o.length ? 'opcion' : 'texto',
+    o: (Array.isArray(p.o) ? p.o : []).map(o => typeof o === 'object' && o ? { x: String(o.x == null ? o.l : o.x), l: String(o.l == null ? o.x : o.l) } : { x: String(o), l: String(o) }),
+    sug: p.sug ? String(p.sug) : '', k: p.k ? _vfSlug(p.k) : _vfSlug(p.e), guardar: true
+  }));
+  vf_prop = { campos, preguntas, firma: j.firma || null, sello: j.sello || null, notas: j.notas ? String(j.notas) : '' };
+}
+// ── Pantalla de revisión: preguntas + propuesta + opciones + generar ────────────
+function vfRenderRevision() {
+  const box = document.getElementById('vf-revision'); if (!box) return;
+  if (!vf_doc || !vf_prop) { box.innerHTML = ''; return; }
+  const P = vf_prop; const esPdf = vf_doc.tipo === 'pdf';
+  const nLl = P.campos.filter(c => !c.trae).length, nTr = P.campos.filter(c => c.trae).length;
+  const stats = '<div class="stat-grid" style="margin-bottom:14px">'
+    + '<div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-num">' + nLl + '</div><div class="stat-label">Campos que llena la IA</div></div>'
+    + '<div class="stat-card gold"><div class="stat-icon">❓</div><div class="stat-num">' + P.preguntas.length + '</div><div class="stat-label">Preguntas para ti</div></div>'
+    + '<div class="stat-card blue"><div class="stat-icon">📄</div><div class="stat-num">' + (esPdf ? vf_doc.campos.length : vf_doc.hojas.reduce((s, h) => s + h.celdas.length, 0)) + '</div><div class="stat-label">' + (esPdf ? 'Campos del formato' : 'Etiquetas del Excel') + '</div></div>'
+    + '<div class="stat-card red"><div class="stat-icon">⚠️</div><div class="stat-num">' + nTr + '</div><div class="stat-label">Ya traían datos (no se pisan)</div></div></div>';
+  let preg = '';
+  if (P.preguntas.length) {
+    preg = '<div class="card" style="padding:16px;margin-bottom:14px;border-color:var(--gold)"><div class="abs-count" style="margin:0 0 10px;font-weight:700;color:var(--gold)">❓ La IA no encontró estos datos en la ficha. Respóndelos aquí (lo que respondas se guarda en la ficha para el próximo formato):</div>'
+      + P.preguntas.map((p, i) => '<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">'
+        + '<div><b style="font-size:13px">' + _vfEsc(p.e) + '</b><div class="abs-count" style="margin:2px 0 0;font-size:10.5px">' + _vfEsc(p.n.map(_vfEtiqueta).join(' · ')) + '</div></div>'
+        + '<div>' + (p.t === 'opcion'
+          ? '<select id="vf-preg-' + i + '" ' + _VF_INP + '><option value="">— elige —</option>' + p.o.map(o => '<option value="' + _vfEsc(o.x).replace(/"/g, '&quot;') + '">' + _vfEsc(o.l) + '</option>').join('') + '</select>'
+          : '<input id="vf-preg-' + i + '" ' + _VF_INP + ' placeholder="' + _vfEsc(p.sug ? 'sugerencia: ' + p.sug : 'escribe la respuesta').replace(/"/g, '&quot;') + '">') + '</div>'
+        + '<label class="abs-count" style="white-space:nowrap;cursor:pointer"><input type="checkbox" id="vf-preg-g-' + i + '" ' + (p.guardar ? 'checked' : '') + '> guardar en la ficha</label></div>').join('')
+      + '<div style="margin-top:10px;text-align:right"><button class="btn btn-primary" style="width:auto;padding:8px 16px;font-size:12px" onclick="vfAplicarRespuestas()">✅ Aplicar respuestas</button></div></div>';
+  }
+  const fila = (c, i) => { const meta = esPdf ? (vf_doc.campos.find(x => x.n === c.n) || {}) : {}; const esBool = meta.t === 'check';
+    return '<tr' + (c.aplicar ? '' : ' style="opacity:.55"') + '><td><b style="font-size:12px">' + _vfEsc(esPdf ? c.n : _vfEtiqueta(c.n)) + '</b>' + (esPdf && meta.p ? '<div class="abs-count" style="margin:1px 0 0;font-size:10px">pág. ' + meta.p + ' · ' + meta.t + '</div>' : '') + '</td>'
+      + (c.trae ? '<td style="font-size:12px;color:var(--gold)">' + _vfEsc(c.actual) + '</td>' : '')
+      + '<td>' + (esBool ? '<label class="abs-count" style="cursor:pointer"><input type="checkbox" ' + (_vfSi(c.v) ? 'checked' : '') + ' onchange="vfPropSet(' + i + ',this.checked)"> marcar</label>'
+                : (meta.t === 'radio' || meta.t === 'list') && meta.o ? '<select ' + _VF_INP + ' onchange="vfPropSet(' + i + ',this.value)">' + (meta.o || []).map(o => { const x = typeof o === 'object' ? o.x : o; return '<option value="' + _vfEsc(x).replace(/"/g, '&quot;') + '"' + (String(c.v) === String(x) ? ' selected' : '') + '>' + _vfEsc(typeof o === 'object' && o.l ? o.l + ' (' + x + ')' : x) + '</option>'; }).join('') + '</select>'
+                : '<input ' + _VF_INP + ' value="' + _vfEsc(c.v === true ? 'X' : c.v === false ? '' : c.v).replace(/"/g, '&quot;') + '" oninput="vfPropSet(' + i + ',this.value)"' + (meta.max ? ' maxlength="' + meta.max + '"' : '') + '>') + '</td>'
+      + '<td class="abs-count" style="font-size:11px">' + _vfEsc(c.k) + '</td>'
+      + '<td style="text-align:center"><input type="checkbox" ' + (c.aplicar ? 'checked' : '') + ' onchange="vfPropAplicar(' + i + ',this.checked)" title="' + (c.trae ? 'Reemplazar lo que ya traía' : 'Llenar este campo') + '"></td></tr>'; };
+  const llenar = P.campos.map((c, i) => ({ c, i })).filter(x => !x.c.trae), traen = P.campos.map((c, i) => ({ c, i })).filter(x => x.c.trae);
+  const tabla = (lista, conActual) => '<div class="abs-table-wrap"><table class="abs-table"><thead><tr><th>Campo</th>' + (conActual ? '<th>Ya traía</th>' : '') + '<th style="width:36%">' + (conActual ? 'Propuesto' : 'Valor') + '</th><th style="width:150px">Fuente (ficha)</th><th style="width:60px;text-align:center">' + (conActual ? 'Pisar' : 'Llenar') + '</th></tr></thead><tbody>'
+    + (lista.length ? lista.map(x => fila(x.c, x.i)).join('') : '<tr><td colspan="5" class="abs-count" style="text-align:center;padding:16px">Nada</td></tr>') + '</tbody></table></div>';
+  const anexos = Object.keys(VF_ANEXOS).filter(t => vf_ficha.anexos[t]);
+  const firmaOk = !!(vf_ficha.firma && vf_ficha.firma.png), selloOk = !!(vf_ficha.sello && vf_ficha.sello.png);
+  const opciones = '<div class="card" style="padding:14px;margin:14px 0"><div class="abs-count" style="margin:0 0 8px;font-weight:700">Al generar</div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">'
+    + '<label class="abs-count" style="cursor:pointer"><input type="checkbox" id="vf-op-firmar" ' + ((firmaOk || selloOk) && (P.firma || P.sello) ? 'checked' : 'disabled') + '> ✍️ Estampar firma y sello'
+    + ' <span style="font-weight:400">(' + (!firmaOk && !selloOk ? 'sube la firma en 🗂️ Ficha' : !P.firma && !P.sello ? 'la IA no encontró dónde va la firma' : 'firma en «' + _vfEsc(P.firma || '—') + '»' + (P.sello ? ', sello en «' + _vfEsc(P.sello) + '»' : '')) + ')</span></label>'
+    + (esPdf ? '<label class="abs-count" style="cursor:pointer"><input type="checkbox" id="vf-op-aplanar"> 🔒 Aplanar (que no se pueda editar)</label>' : '')
+    + '</div><div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:10px"><span class="abs-count" style="font-weight:700">📎 Anexos:</span>'
+    + (anexos.length ? anexos.map(t => '<label class="abs-count" style="cursor:pointer"><input type="checkbox" class="vf-op-anexo" value="' + t + '" ' + (/vencido/i.test(_vfChipVig(vf_ficha.anexos[t], t)) ? '' : 'checked') + '> ' + VF_ANEXOS[t].ico + ' ' + _vfEsc(VF_ANEXOS[t].nombre) + ' ' + _vfChipVig(vf_ficha.anexos[t], t) + '</label>').join('')
+                     : '<span class="abs-count">ninguno cargado (📎 Anexos)</span>')
+    + '</div>' + (esPdf ? '<div class="abs-count" style="margin-top:8px">Los anexos marcados se unen al final del PDF.</div>' : '<div class="abs-count" style="margin-top:8px">El Excel se descarga llenado y los anexos marcados en un PDF aparte.</div>')
+    + '<div style="margin-top:12px;display:flex;gap:10px;align-items:center;justify-content:flex-end"><span id="vf-gen-estado" class="abs-count"></span><button class="btn btn-primary" id="vf-btn-gen" style="width:auto;padding:9px 18px;font-size:13px" onclick="vfGenerar()">⬇️ Generar y descargar</button></div></div>';
+  box.innerHTML = stats + preg
+    + '<div class="abs-count" style="margin:0 0 6px;font-weight:700">✅ Lo que va a llenar (' + llenar.length + ') — corrige lo que quieras</div>' + tabla(llenar, false)
+    + (traen.length ? '<div class="abs-count" style="margin:14px 0 6px;font-weight:700;color:var(--gold)">⚠️ Ya traían datos (' + traen.length + '): apagados, márcalos solo si quieres pisarlos</div>' + tabla(traen, true) : '')
+    + opciones + (P.notas ? '<div class="abs-count">🤖 Notas de la IA: ' + _vfEsc(P.notas) + '</div>' : '');
+}
+function vfPropSet(i, v) { if (vf_prop && vf_prop.campos[i]) vf_prop.campos[i].v = v; }
+function vfPropAplicar(i, v) { if (vf_prop && vf_prop.campos[i]) vf_prop.campos[i].aplicar = !!v; }
+async function vfAplicarRespuestas() {
+  if (!vf_prop) return; let nuevos = 0, aprendidos = 0; const quedan = [];
+  vf_prop.preguntas.forEach((p, i) => {
+    const el = document.getElementById('vf-preg-' + i); const ans = el ? String(el.value || '').trim() : '';
+    const guardar = !!(document.getElementById('vf-preg-g-' + i) || {}).checked;
+    if (!ans) { quedan.push(p); return; }
+    p.n.forEach(n => {
+      if (vf_doc.tipo === 'pdf' && !vf_doc.campos.some(c => c.n === n)) return;   // la IA puso una clave, no un campo: solo aprende la ficha
+      const ex = vf_prop.campos.find(c => c.n === n);
+      if (ex) { ex.v = ans; ex.aplicar = true; } else { const actual = _vfActual(n); vf_prop.campos.push({ n, v: ans, k: 'respuesta', actual, trae: !!actual.trim(), aplicar: !actual.trim() }); }
+      nuevos++;
+    });
+    if (guardar) {
+      const label = p.t === 'opcion' ? ((p.o.find(o => o.x === ans) || {}).l || ans) : ans;
+      const ex = vf_ficha.campos.find(c => c.k === p.k) || vf_ficha.campos.find(c => (c.e || '').toLowerCase() === p.e.toLowerCase());
+      if (ex) { if (!String(ex.v || '').trim()) { ex.v = label; aprendidos++; } }
+      else { vf_ficha.campos.push({ g: 'Aprendido en formatos', k: p.k, e: p.e, v: label, s: '' }); aprendidos++; }
+    }
+  });
+  vf_prop.preguntas = quedan;
+  vfRenderRevision();
+  if (aprendidos) { try { await vfGuardarFicha('📝 Ficha E&G: ' + aprendidos + ' dato(s) aprendidos de un formato'); showToast(nuevos + ' campo(s) llenados · ' + aprendidos + ' dato(s) guardados en la ficha ✓', 'success'); } catch (e) { showToast('Respuestas aplicadas, pero la ficha no se guardó en GitHub: ' + (e.message || e), 'error'); } }
+  else showToast(nuevos ? nuevos + ' campo(s) llenados ✓' : 'No respondiste ninguna pregunta', nuevos ? 'success' : 'info');
+}
+// ── Generar ────────────────────────────────────────────────────────────────────
+function _vfDescargar(blob, nombre) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000); }
+function _vfNombreSalida(ext) {
+  const cliente = ((document.getElementById('vf-cliente') || {}).value || '').trim();
+  const base = cliente ? 'Formato_' + _vfSlug(cliente).toUpperCase() : vf_doc.nombre.replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9_\-]+/g, '_').slice(0, 50);
+  return base + '_EYG_' + _cmkHoy() + '.' + ext;
+}
+async function _vfAnexosPdf(PL, doc, tipos, errores) {
+  for (const t of tipos) {
+    try {
+      const a = await _vfAnexoCargar(t); if (!a) { errores.push('anexo ' + t + ': no está en GitHub'); continue; }
+      const bytes = _otB64ToBytes(a.b64);
+      if (/pdf/i.test(a.mime)) { const src = await PL.PDFDocument.load(bytes, { ignoreEncryption: true }); const ps = await doc.copyPages(src, src.getPageIndices()); ps.forEach(p => doc.addPage(p)); }
+      else { const im = /png/i.test(a.mime) ? await doc.embedPng(bytes) : await doc.embedJpg(bytes); const pg = doc.addPage([612, 792]); const k = Math.min(532 / im.width, 712 / im.height); pg.drawImage(im, { x: (612 - im.width * k) / 2, y: (792 - im.height * k) / 2, width: im.width * k, height: im.height * k }); }
+    } catch (e) { errores.push('anexo ' + t + ': ' + (e.message || e)); }
+  }
+}
+async function _vfEstampar(PL, doc, tipo, nCampo, errores) {
+  const img = vf_ficha[tipo]; if (!img || !img.png || !nCampo) return false;
+  const meta = vf_doc.campos.find(x => x.n === nCampo); if (!meta || !meta.r || !meta.p) { errores.push(tipo + ': el campo «' + nCampo + '» no tiene posición'); return false; }
+  try {
+    const pg = doc.getPage(meta.p - 1); const s = pg.getSize(); const b64 = img.png.split(',')[1];
+    const im = /^data:image\/jpe?g/i.test(img.png) ? await doc.embedJpg(_otB64ToBytes(b64)) : await doc.embedPng(_otB64ToBytes(b64));
+    const rx = meta.r[0] / 100 * s.width, rw = meta.r[2] / 100 * s.width, rh0 = meta.r[3] / 100 * s.height, rh = Math.max(rh0, tipo === 'sello' ? 60 : 34);
+    const ry = s.height - (meta.r[1] + meta.r[3]) / 100 * s.height - (rh - rh0) / 2;
+    const k = Math.min(rw / im.width, rh / im.height); const w = im.width * k, h = im.height * k;
+    pg.drawImage(im, { x: rx + (rw - w) / 2, y: ry + (rh - h) / 2, width: w, height: h });
+    return true;
+  } catch (e) { errores.push(tipo + ': ' + (e.message || e)); return false; }
+}
+async function vfGenerar() {
+  if (!vf_doc || !vf_prop || _vfOcupado) return;
+  const sel = vf_prop.campos.filter(c => c.aplicar);
+  if (!sel.length && !confirm('No hay ningún campo marcado para llenar. ¿Generar el archivo igual?')) return;
+  _vfOcupado = true; const b = document.getElementById('vf-btn-gen'), st = document.getElementById('vf-gen-estado'); if (b) b.disabled = true; if (st) st.textContent = 'Generando…';
+  const firmar = !!(document.getElementById('vf-op-firmar') || {}).checked, aplanar = !!(document.getElementById('vf-op-aplanar') || {}).checked;
+  const anexos = Array.from(document.querySelectorAll('.vf-op-anexo:checked')).map(x => x.value);
+  const errores = []; let salida = '';
+  try {
+    const PL = await _otPdfLib();
+    if (vf_doc.tipo === 'pdf') {
+      const doc = await PL.PDFDocument.load(vf_doc.bytes, { ignoreEncryption: true }); const form = doc.getForm();
+      sel.forEach(c => {
+        const meta = vf_doc.campos.find(x => x.n === c.n) || {};
+        try {
+          const f = form.getField(c.n);
+          if (meta.t === 'text') { let s = _vfTxt(c.v); if (meta.max && s.length > meta.max) s = s.slice(0, meta.max); f.setText(s); }
+          else if (meta.t === 'check') { if (_vfSi(c.v)) f.check(); else f.uncheck(); }
+          else if (meta.t === 'radio') {
+            // Por valor de exportación (on-state) y no por nombre visible: muchos formatos repiten el
+            // mismo nombre («Opción1») en todas las opciones y select() escogería siempre la primera.
+            const ops = (meta.o || []).map(o => o.x); let v = String(c.v === true ? (ops[0] || '') : c.v);
+            let idx = ops.indexOf(v); if (idx < 0) idx = ops.findIndex(o => String(o).toLowerCase() === v.toLowerCase());
+            if (idx < 0) { const porEt = (meta.o || []).findIndex(o => o.l && String(o.l).toLowerCase() === v.toLowerCase()); idx = porEt; }
+            if (idx < 0) throw new Error('la opción «' + v + '» no existe (' + ops.join(' / ') + ')');
+            const onVals = f.acroField.getOnValues(); if (!onVals[idx]) throw new Error('sin on-value para la opción ' + idx);
+            f.acroField.setValue(onVals[idx]); try { f.markAsDirty(); } catch (_) { }
+          }
+          else if (meta.t === 'list') {
+            const ops = meta.o || []; let v = String(c.v);
+            if (!ops.includes(v)) { const alt = ops.find(o => String(o).toLowerCase() === v.toLowerCase()); if (alt != null) v = alt; }
+            f.select(v);
+          }
+        } catch (e) { errores.push(c.n + ': ' + (e.message || e)); }
+      });
+      if (firmar) { await _vfEstampar(PL, doc, 'firma', vf_prop.firma, errores); await _vfEstampar(PL, doc, 'sello', vf_prop.sello, errores); }
+      try { if (aplanar) form.flatten(); else form.updateFieldAppearances(await doc.embedFont(PL.StandardFonts.Helvetica)); } catch (e) { errores.push('apariencia de los campos: ' + (e.message || e)); }
+      await _vfAnexosPdf(PL, doc, anexos, errores);
+      salida = _vfNombreSalida('pdf'); _vfDescargar(new Blob([await doc.save()], { type: 'application/pdf' }), salida);
+    } else {
+      await _vdCargarExcelJS();
+      const wb = new ExcelJS.Workbook(); await wb.xlsx.load(vf_doc.bytes.buffer);
+      const celda = n => { const hc = String(n).split('!'); const ws = wb.getWorksheet(hc[0]); if (!ws) throw new Error('no existe la hoja ' + hc[0]); const c = ws.getCell(hc[1]); return { ws, c: c.master || c }; };
+      sel.forEach(c => { try { const x = celda(c.n); x.c.value = _vfXlsxValor(c.n, c.v); } catch (e) { errores.push(c.n + ': ' + (e.message || e)); } });
+      if (firmar) {
+        for (const t of ['firma', 'sello']) {
+          const img = vf_ficha[t], n = vf_prop[t]; if (!img || !img.png || !n) continue;
+          try { const x = celda(n); const id = wb.addImage({ base64: img.png.split(',')[1], extension: 'png' }); x.ws.addImage(id, { tl: { col: x.c.col - 1, row: x.c.row - 1 }, ext: t === 'sello' ? { width: 110, height: 110 } : { width: 170, height: 60 } }); }
+          catch (e) { errores.push(t + ': ' + (e.message || e)); }
+        }
+      }
+      salida = _vfNombreSalida('xlsx'); _vfDescargar(new Blob([await wb.xlsx.writeBuffer()], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), salida);
+      if (anexos.length) { const doc = await PL.PDFDocument.create(); await _vfAnexosPdf(PL, doc, anexos, errores); if (doc.getPageCount()) _vfDescargar(new Blob([await doc.save()], { type: 'application/pdf' }), _vfNombreSalida('pdf').replace('Formato_', 'Anexos_')); }
+    }
+    try {
+      vf_ficha.historial.unshift({ fecha: new Date().toISOString(), usuario: currentUser ? currentUser.email : '', cliente: ((document.getElementById('vf-cliente') || {}).value || '').trim(), archivo: vf_doc.nombre, salida, tipo: vf_doc.tipo, llenados: sel.length, preguntas: vf_prop.preguntas.length, anexos: anexos.length });
+      vf_ficha.historial = vf_ficha.historial.slice(0, 200);
+      await vfGuardarFicha('📝 Formato llenado: ' + salida);
+    } catch (e) { console.warn('[vf] historial', e); }
+    showToast('Listo: ' + salida + (errores.length ? ' · ' + errores.length + ' detalle(s) abajo' : ''), 'success');
+  } catch (e) { errores.push(e.message || String(e)); showToast('No se pudo generar: ' + (e.message || e), 'error'); }
+  _vfOcupado = false; if (b) b.disabled = false;
+  if (st) st.innerHTML = errores.length ? '<span style="color:var(--gold)">⚠️ ' + _vfEsc(errores.slice(0, 6).join(' · ')) + (errores.length > 6 ? ' …' : '') + '</span>' : (salida ? '✅ ' + _vfEsc(salida) : '');
+}
+function vfRenderHistorial() {
+  const tb = document.getElementById('vf-historial-tbody'); if (!tb || !vf_ficha) return;
+  const h = vf_ficha.historial || [];
+  tb.innerHTML = h.length ? h.map(x => '<tr><td style="font-size:12px">' + _cmkFecha(x.fecha) + '</td><td style="font-size:12px">' + _vfEsc(x.usuario) + '</td><td><b>' + _vfEsc(x.cliente || '—') + '</b></td>'
+    + '<td style="font-size:12px">' + _vfEsc(x.archivo) + '<div class="abs-count" style="margin:1px 0 0;font-size:10.5px">→ ' + _vfEsc(x.salida || '') + (x.anexos ? ' · ' + x.anexos + ' anexo(s)' : '') + '</div></td>'
+    + '<td style="text-align:right">' + (x.llenados || 0) + '</td><td style="text-align:right">' + (x.preguntas || 0) + '</td></tr>').join('')
+    : '<tr><td colspan="6" class="abs-count" style="text-align:center;padding:24px">Todavía no se ha llenado ningún formato</td></tr>';
 }
 
 // ═══ 💳 SALDOS A FAVOR DE PROVEEDORES (13-oct-2026, SW v320) ═══════════════
