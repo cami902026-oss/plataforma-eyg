@@ -2,13 +2,18 @@
   "usuario": "andrea",
   "nombre": "Andrea",
   "rol": "ADMIN",
-  "ts": 1793799982412,
-  "tsLegible": "4/11/2026, 8:46:22 a. m.",
+  "ts": 1793800665440,
+  "tsLegible": "4/11/2026, 8:57:45 a. m.",
   "online": true,
   "tienePAT": false,
   "patEstado": "sin_pat",
   "proxyConfigurado": true,
-  "pendientes": 0,
-  "pendientesArch": [],
-  "navegador": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36 Edg/156."
+  "pendientes": 4,
+  "pendientesArch": [
+    "data/team.json",
+    "data/tasks.json",
+    "data/projects.json",
+    "data/minutas.json"
+  ],
+  "navegador": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
 }
