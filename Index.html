@@ -8865,7 +8865,8 @@ function renderProcesoSection() {
 function updateNotifBadge() {
   const badge = document.getElementById('notif-badge');
   if(!badge) return;
-  const count = buildAlerts().length;
+  // 🔔 5-nov-2026 (pedido del usuario): solo cuenta las alertas que aún no se han visto en la campanita.
+  const count = buildAlerts().filter(a => !_notifVista(a)).length;
   if(count === 0){ badge.style.display='none'; }
   else { badge.style.display='flex'; badge.textContent = count > 99 ? '99+' : count; }
 }
@@ -8891,7 +8892,21 @@ function toggleNotifPanel(ev) {
   if(!panel) return;
   const willOpen = !panel.classList.contains('open');
   panel.classList.toggle('open');
-  if(willOpen) renderNotifPanel();
+  if(willOpen) { renderNotifPanel(); _notifMarcarVistas(); updateNotifBadge(); }   // 🔔 al verlas, el número se borra
+}
+// 🔔 Campanita que se limpia al verla (5-nov-2026): al abrir el panel se anotan las alertas vistas
+// (por usuario, en este equipo) y el número de la esquina solo cuenta las nuevas. El panel sigue
+// mostrando todas. Si una alerta cambia (p. ej. la oferta pasa de «1D» a «HOY») vuelve a contar.
+function _notifClave(a) { return String(a.title || '') + '|' + String((a.badge && a.badge.txt) || ''); }
+function _notifVistasLeer() { try { return JSON.parse(localStorage.getItem('notif_vistas_' + ((currentUser && currentUser.email) || '')) || '{}'); } catch (_) { return {}; } }
+function _notifVista(a) { return !!_notifVistasLeer()[_notifClave(a)]; }
+function _notifMarcarVistas() {
+  try {
+    const v = _notifVistasLeer(); const ahora = Date.now();
+    buildAlerts().forEach(a => { v[_notifClave(a)] = ahora; });
+    const ks = Object.keys(v); if (ks.length > 400) ks.sort((x, y) => v[x] - v[y]).slice(0, ks.length - 400).forEach(k => { delete v[k]; });
+    localStorage.setItem('notif_vistas_' + ((currentUser && currentUser.email) || ''), JSON.stringify(v));
+  } catch (_) { }
 }
 
 document.addEventListener('click', function(e){
