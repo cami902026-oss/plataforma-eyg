@@ -2322,37 +2322,31 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
             </div>
           </div>
 
-          <!-- 🤝 COMISIONES EXTERNAS (5-nov-2026): comisionistas externos por cliente. Solo Andrea y Alberto (cexPuede).
-               Lee Cartera (solo lectura) y guarda en data/comisiones_externas.json (GitHub). Funciones cex* junto a cnuCargar. -->
+          <!-- 🤝 COMISIONES EXTERNAS (5-nov-2026): calculadora VISUAL de comisiones a terceros por cliente. No guarda nada.
+               Solo Andrea y Alberto (cexPuede). Lee Cartera (solo lectura). Funciones cex* junto a cnuCargar. -->
           <div id="cnu-tab-cext" style="display:none;">
-            <div id="cex-resumen" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;"></div>
             <div class="card" style="padding:18px;margin-bottom:14px;">
               <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
-                <div class="config-title" style="margin:0;">🤝 Liquidar comisión externa</div>
+                <div class="config-title" style="margin:0;">🤝 Comisiones externas por cliente</div>
                 <span style="flex:1;"></span>
-                <span class="abs-count" style="margin:0">Neto = valor sin IVA − retefuente de la factura · Comisión = neto × %</span>
+                <span class="abs-count" style="margin:0">Neto = valor sin IVA − retefuente · Comisión = neto × %. Solo visualiza, no guarda.</span>
               </div>
-              <div style="display:grid;grid-template-columns:2fr 2fr 90px auto;gap:10px;align-items:end;">
-                <div><label class="abs-count" style="display:block;margin:0 0 3px">Cliente</label><select id="cex-cliente" onchange="cexClienteCambio()" style="width:100%;padding:8px 12px;"></select></div>
-                <div><label class="abs-count" style="display:block;margin:0 0 3px">Comisionista externo (a quién se le paga)</label><input type="text" id="cex-benef" placeholder="Nombre de la persona o empresa" style="width:100%;padding:8px 12px;" oninput="cexRecalcular()"></div>
-                <div><label class="abs-count" style="display:block;margin:0 0 3px">% comisión</label><input type="number" id="cex-pct" value="5" min="0" max="100" step="0.1" style="width:100%;padding:8px 12px;" oninput="cexRecalcular()"></div>
-                <div><button class="btn btn-secondary" onclick="cexGuardarCliente()" style="width:auto;font-size:12px;padding:9px 14px;" title="Deja el comisionista y el % fijos para este cliente">💾 Fijar para el cliente</button></div>
+              <div style="display:grid;grid-template-columns:2fr 110px 150px auto;gap:12px;align-items:end;">
+                <div><label class="abs-count" style="display:block;margin:0 0 3px">Cliente</label><select id="cex-cliente" onchange="cexRender()" style="width:100%;padding:9px 12px;font-size:14px;"></select></div>
+                <div><label class="abs-count" style="display:block;margin:0 0 3px">% comisión</label><input type="number" id="cex-pct" value="5" min="0" max="100" step="0.1" style="width:100%;padding:9px 12px;font-size:15px;font-weight:700;" oninput="cexRender()"></div>
+                <div><label class="abs-count" style="display:block;margin:0 0 3px">Facturas</label><select id="cex-cuales" onchange="cexRender()" style="width:100%;padding:9px 12px;"><option value="pagadas" selected>Pagadas por el cliente</option><option value="todas">Todas (incluye pendientes)</option></select></div>
+                <div><label class="abs-count" style="display:block;margin:0 0 3px">Desde</label><input type="date" id="cex-desde" onchange="cexRender()" style="padding:8px 10px;"></div>
               </div>
-              <div id="cex-facturas" style="margin-top:14px;"></div>
+              <div id="cex-resumen" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0 0;"></div>
             </div>
             <div class="card" style="padding:18px;">
-              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
-                <div class="config-title" style="margin:0;">📒 Comisiones registradas</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+                <div class="config-title" style="margin:0;">🧾 Factura por factura</div>
                 <span style="flex:1;"></span>
-                <select id="cex-f-estado" onchange="cexRenderLista()" style="width:auto;padding:8px 12px;">
-                  <option value="pendiente" selected>Pendientes de pago</option>
-                  <option value="pagada">Pagadas</option>
-                  <option value="">Todas</option>
-                </select>
-                <input type="text" id="cex-buscar" oninput="cexRenderLista()" placeholder="🔍 Comisionista, cliente o factura…" style="width:220px;padding:8px 12px;">
+                <span class="abs-count" style="margin:0">Si Cartera no tiene la retefuente registrada se propone la tarifa habitual del cliente (marcada <i>supuesta</i>). Puedes cambiar el % de cada renglón.</span>
                 <button class="btn btn-secondary" onclick="cexExportar()" style="width:auto;font-size:12px;padding:8px 14px;">⬇️ Excel</button>
               </div>
-              <div id="cex-lista"></div>
+              <div id="cex-facturas"></div>
             </div>
           </div>
           <div id="cnu-tab-comisiones" style="display:none;">
@@ -8658,7 +8652,7 @@ function navigate(page) {
   if(page==='saldos') { try{ spvInit(); }catch(e){ console.error('[spv]',e); } }
   if(page==='vinculacion') { try{ vinInit(); }catch(e){ console.error('[vin]',e); } }
   if(page==='vinculacion') { try{ vfMostrarTabbar(); }catch(e){ console.error('[vf]',e); } }   // 📝 Llenar formatos con IA (4-nov-2026)
-  if(page==='cartera') { try{ cexMostrarBoton(); }catch(e){ console.error('[cex]',e); } }   // 🤝 Comisiones externas (5-nov-2026)   // 🔗 Portal de vinculación (22-oct-2026)
+  if(page==='cartera') { try{ cexMostrarBoton(); }catch(e){ console.error('[cex]',e); } }   // 🤝 Comisiones externas (5-nov-2026)
   if(String(page).startsWith('fe_')) { try{ feNav(page); }catch(e){ console.error('[fe]',e); } }   // 🔧 Ferreindustrial (20-oct-2026)
   if(page==='pdfstudio') { const _f=document.getElementById('pdfstudio-frame'); if(_f && !_f.src) _f.src='pdf-studio.html'; }   // v155: carga perezosa (las librerías PDF solo se bajan al entrar)
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadSbProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
@@ -12390,14 +12384,13 @@ function spvExcel() {
 
 // ═══ 🤝 COMISIONES EXTERNAS (5-nov-2026) ═══════════════════════════════════════
 // El jefe paga comisiones a terceros (comisionistas externos) por las ventas de ciertos
-// clientes. Pestaña en Cartera, SOLO Andrea y Alberto (cexPuede). Cartera se LEE y no se
-// toca: las comisiones se guardan en data/comisiones_externas.json (GitHub, mismo camino
-// de las fichas) = { clientes: { "<cliente_id>": { benef, pct } }, comisiones: [ {...} ] }.
-// Cálculo (decisión del usuario 5-nov): neto = valor sin IVA − retefuente de la factura;
-// comisión = neto × % (5 % por defecto). Solo facturas que el cliente YA pagó; cada
-// comisión se marca pagada con fecha y quedan las pendientes.
-var cex_datos = null, _cexCargado = false, _cexOcupado = false;
-const CEX_FILE = 'data/comisiones_externas.json';
+// clientes. Pestaña en Cartera, SOLO Andrea y Alberto (cexPuede). Es una calculadora
+// VISUAL: no guarda nada (pedido del usuario 5-nov: «solo visualizar»). Cartera se LEE y
+// no se toca. Cálculo: neto = valor sin IVA − retefuente; comisión = neto × % (5 % por
+// defecto). Si Cartera trae la factura sin retefuente (p. ej. la 530 de SKID, que sí la
+// tuvo), se propone la tarifa habitual del cliente (la más frecuente en sus otras
+// facturas) y se marca «supuesta»; cada renglón se puede corregir a mano.
+var _cexRf = {};   // override de % retefuente por factura (solo en pantalla)
 function cexPuede() { return !!(currentUser && (currentUser.email === 'andrea' || currentUser.email === 'alberto')); }
 function cexMostrarBoton() { const b = document.getElementById('cnu-tab-btn-cext'); if (b) b.style.display = cexPuede() ? '' : 'none'; }
 // cnuTab no conoce esta pestaña: se envuelve para mostrarla/ocultarla sin tocar la original.
@@ -12417,163 +12410,78 @@ cnuTab = function (t) {
     if (b) { b.classList.remove('btn-primary'); b.classList.add('btn-secondary'); }
   }
 };
-async function cexCargar(force) {
-  if (_cexCargado && !force) return cex_datos;
-  let d = null; try { d = await _vfLoadJson(CEX_FILE); } catch (_) { }
-  if (!d || typeof d !== 'object') d = { clientes: {}, comisiones: [] };
-  d.clientes = d.clientes || {}; d.comisiones = Array.isArray(d.comisiones) ? d.comisiones : [];
-  cex_datos = d; _cexCargado = true; return d;
-}
-// Guarda uniendo con lo que haya en GitHub (dos personas registrando a la vez no se pisan).
-async function cexGuardar(label) {
-  let rem = null; try { rem = await _vfLoadJson(CEX_FILE); } catch (_) { }
-  if (rem && Array.isArray(rem.comisiones)) {
-    const ids = new Set(cex_datos.comisiones.map(c => c.id));
-    rem.comisiones.forEach(c => { if (c && c.id && !ids.has(c.id) && !(cex_datos.borradas || []).includes(c.id)) cex_datos.comisiones.push(c); });
-    cex_datos.clientes = Object.assign({}, rem.clientes || {}, cex_datos.clientes);
-  }
-  cex_datos.updatedAt = new Date().toISOString(); cex_datos.updatedBy = currentUser ? currentUser.email : '';
-  await _saveDataGH(CEX_FILE, cex_datos, label || '🤝 Comisiones externas');
-}
 async function cexInit() {
   if (!_cnuFacturas) { try { await cnuCargar(false); } catch (_) { } }
-  await cexCargar(false);
-  cexLlenarClientes(); cexClienteCambio(); cexRenderResumen(); cexRenderLista();
+  cexLlenarClientes(); cexRender();
 }
-function _cexPagadas() { return (_cnuFacturas || []).filter(f => f.fecha_pago && f.estado !== 'ANULADA' && parseFloat(f.monto_antes_iva || 0) > 0); }
+function _cexNum(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function _cexValidas() { return (_cnuFacturas || []).filter(f => f.estado !== 'ANULADA' && _cexNum(f.monto_antes_iva) > 0); }
 function cexLlenarClientes() {
   const sel = document.getElementById('cex-cliente'); if (!sel) return;
   const prev = sel.value; const por = {};
-  _cexPagadas().forEach(f => { const k = String(f.cliente_id || f.cliente_nombre); if (!por[k]) por[k] = { id: f.cliente_id, nombre: f.cliente_nombre || '', n: 0 }; por[k].n++; });
+  _cexValidas().forEach(f => { const k = String(f.cliente_id || f.cliente_nombre); if (!por[k]) por[k] = { k, nombre: f.cliente_nombre || '', n: 0 }; por[k].n++; });
   const lista = Object.values(por).sort((a, b) => a.nombre.localeCompare(b.nombre));
-  sel.innerHTML = '<option value="">— elige el cliente —</option>' + lista.map(c => { const cfg = cex_datos.clientes[String(c.id)]; return '<option value="' + _cmkEsc(c.id) + '"' + (String(c.id) === prev ? ' selected' : '') + '>' + _cmkEsc(c.nombre) + (cfg && cfg.benef ? ' · 🤝 ' + _cmkEsc(cfg.benef) + ' ' + cfg.pct + ' %' : '') + '</option>'; }).join('');
+  sel.innerHTML = '<option value="">— elige el cliente —</option>' + lista.map(c => '<option value="' + _cmkEsc(c.k) + '"' + (c.k === prev ? ' selected' : '') + '>' + _cmkEsc(c.nombre) + ' (' + c.n + ')</option>').join('');
 }
-function cexClienteCambio() {
-  const id = (document.getElementById('cex-cliente') || {}).value || '';
-  const cfg = cex_datos.clientes[id] || null;
-  const b = document.getElementById('cex-benef'), p = document.getElementById('cex-pct');
-  if (b) b.value = cfg ? (cfg.benef || '') : ''; if (p) p.value = cfg && cfg.pct != null ? cfg.pct : 5;
-  cexRenderFacturas();
+// Tarifa de retefuente habitual del cliente: la más frecuente (redondeada a 0,05 %) entre sus facturas que sí la traen.
+function _cexTarifaCliente(k) {
+  const cnt = {};
+  _cexValidas().forEach(f => { if (String(f.cliente_id || f.cliente_nombre) !== k) return; const rf = _cexNum(f.retefuente), b = _cexNum(f.monto_antes_iva); if (rf > 0 && b > 0) { const p = Math.round(rf / b * 2000) / 20; cnt[p] = (cnt[p] || 0) + 1; } });
+  const top = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
+  return top ? +top[0] : 0;
 }
-async function cexGuardarCliente() {
-  const id = (document.getElementById('cex-cliente') || {}).value || ''; if (!id) { showToast('Elige el cliente', 'error'); return; }
-  const benef = ((document.getElementById('cex-benef') || {}).value || '').trim(); const pct = parseFloat((document.getElementById('cex-pct') || {}).value) || 0;
-  const f = _cexPagadas().find(x => String(x.cliente_id) === id);
-  cex_datos.clientes[id] = { benef, pct, nombre: f ? f.cliente_nombre : '', updated: new Date().toISOString() };
-  try { await cexGuardar('🤝 Comisionista de ' + (f ? f.cliente_nombre : id)); showToast('Comisionista fijado para el cliente ✓', 'success'); } catch (e) { showToast('No se guardó: ' + (e.message || e), 'error'); }
-  cexLlenarClientes();
+function _cexFilas() {
+  const k = (document.getElementById('cex-cliente') || {}).value || ''; if (!k) return [];
+  const cuales = (document.getElementById('cex-cuales') || {}).value || 'pagadas'; const desde = (document.getElementById('cex-desde') || {}).value || '';
+  const pct = _cexNum((document.getElementById('cex-pct') || {}).value); const tarifa = _cexTarifaCliente(k);
+  return _cexValidas().filter(f => String(f.cliente_id || f.cliente_nombre) === k && (cuales === 'todas' || f.fecha_pago) && (!desde || (f.fecha_pago || f.fecha_facturacion || '') >= desde))
+    .sort((a, b) => (b.fecha_pago || b.fecha_facturacion || '').localeCompare(a.fecha_pago || a.fecha_facturacion || ''))
+    .map(f => {
+      const base = _cexNum(f.monto_antes_iva); const rfReg = _cexNum(f.retefuente);
+      let rfPct, origen;
+      if (_cexRf[f.id] != null) { rfPct = _cexRf[f.id]; origen = 'manual'; }
+      else if (rfReg > 0) { rfPct = Math.round(rfReg / base * 10000) / 100; origen = 'cartera'; }
+      else { rfPct = tarifa; origen = tarifa ? 'supuesta' : 'ninguna'; }
+      const rf = origen === 'cartera' ? rfReg : Math.round(base * rfPct / 100);
+      const neto = Math.max(0, base - rf);
+      return { f, base, rfPct, rf, origen, neto, valor: Math.round(neto * pct / 100), pagada: !!f.fecha_pago };
+    });
 }
-function _cexNum(v) { const n = parseFloat(v); return isNaN(n) ? 0 : n; }
-function _cexCalc(f, pct) {
-  const base = _cexNum(f.monto_antes_iva), rf = _cexNum(f.retefuente); const neto = Math.max(0, base - rf);
-  return { base, rf, neto, valor: Math.round(neto * (pct || 0) / 100) };
-}
-function cexRenderFacturas() {
-  const box = document.getElementById('cex-facturas'); if (!box) return;
-  const id = (document.getElementById('cex-cliente') || {}).value || '';
-  if (!id) { box.innerHTML = '<div class="abs-count" style="padding:14px;text-align:center">Elige un cliente: aparecen sus facturas pagadas que aún no tienen comisión registrada.</div>'; return; }
-  const pct = parseFloat((document.getElementById('cex-pct') || {}).value) || 0;
-  const ya = new Set(cex_datos.comisiones.map(c => String(c.factura_id)));
-  const fs = _cexPagadas().filter(f => String(f.cliente_id) === id && !ya.has(String(f.id))).sort((a, b) => (b.fecha_pago || '').localeCompare(a.fecha_pago || ''));
-  if (!fs.length) { box.innerHTML = '<div class="abs-count" style="padding:14px;text-align:center">Este cliente no tiene facturas pagadas sin comisión registrada.</div>'; return; }
-  const td = 'padding:7px 10px;border-bottom:1px solid var(--border);font-size:12.5px;', th = 'text-align:left;padding:6px 10px;color:var(--text-muted);font-size:10.5px;text-transform:uppercase;';
-  let tot = 0;
+function cexRfSet(id, v) { _cexRf[id] = _cexNum(v); cexRender(); }
+function cexRfReset(id) { delete _cexRf[id]; cexRender(); }
+function cexRender() {
+  const box = document.getElementById('cex-facturas'), res = document.getElementById('cex-resumen'); if (!box || !res) return;
+  const k = (document.getElementById('cex-cliente') || {}).value || ''; const pct = _cexNum((document.getElementById('cex-pct') || {}).value);
+  if (!k) { res.innerHTML = ''; box.innerHTML = '<div class="abs-count" style="padding:18px;text-align:center">Elige un cliente para ver sus facturas y la comisión.</div>'; return; }
+  const filas = _cexFilas();
+  const sum = (key) => filas.reduce((s, r) => s + r[key], 0);
+  const card = (ico, num, label, color) => '<div class="stat-card ' + color + '"><div class="stat-icon">' + ico + '</div><div class="stat-num" style="font-size:19px;white-space:nowrap">' + num + '</div><div class="stat-label">' + label + '</div></div>';
+  res.innerHTML = card('🧾', filas.length, 'Facturas', 'blue') + card('💰', _cnuFmt(sum('base')), 'Valor sin IVA', 'blue') + card('➖', _cnuFmt(sum('rf')), 'Retefuente', 'gold')
+    + card('🟰', _cnuFmt(sum('neto')), 'Neto', 'blue') + card('🤝', _cnuFmt(sum('valor')), 'Comisión ' + pct + ' %', 'green');
+  if (!filas.length) { box.innerHTML = '<div class="abs-count" style="padding:18px;text-align:center">Sin facturas con ese filtro.</div>'; return; }
+  const td = 'padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px;', th = 'text-align:left;padding:7px 10px;color:var(--text-muted);font-size:10.5px;text-transform:uppercase;white-space:nowrap;';
+  const chip = { cartera: '', supuesta: '<span class="abs-count" style="margin:0;font-size:10px;color:var(--gold)"><i>supuesta</i></span>', manual: '<span class="abs-count" style="margin:0;font-size:10px"><i>editada</i></span>', ninguna: '<span class="abs-count" style="margin:0;font-size:10px">sin retención</span>' };
   box.innerHTML = '<div class="abs-table-wrap"><table style="width:100%;border-collapse:collapse;"><thead><tr>'
-    + '<th style="' + th + 'width:34px"><input type="checkbox" onchange="document.querySelectorAll(\'.cex-chk\').forEach(x=>{x.checked=this.checked});cexRecalcular()"></th>'
-    + '<th style="' + th + '">Factura</th><th style="' + th + '">Fecha pago</th><th style="' + th + 'text-align:right">Valor sin IVA</th><th style="' + th + 'text-align:right">Retefuente</th><th style="' + th + 'text-align:right">Neto</th><th style="' + th + 'text-align:right">Comisión ' + pct + ' %</th></tr></thead><tbody>'
-    + fs.map(f => { const k = _cexCalc(f, pct); tot += k.valor; return '<tr><td style="' + td + '"><input type="checkbox" class="cex-chk" value="' + f.id + '" onchange="cexRecalcular()"></td>'
-      + '<td style="' + td + '"><b>#' + _cmkEsc(f.numero || '—') + '</b>' + (f.oc ? ' <span class="abs-count" style="margin:0;font-size:10.5px">OC ' + _cmkEsc(f.oc) + '</span>' : '') + '</td>'
-      + '<td style="' + td + '">' + _cmkFecha(f.fecha_pago) + '</td><td style="' + td + 'text-align:right">' + _cnuFmt(k.base) + '</td>'
-      + '<td style="' + td + 'text-align:right">' + (k.rf ? '− ' + _cnuFmt(k.rf) : '<span style="color:var(--text-muted)">no aplica</span>') + '</td>'
-      + '<td style="' + td + 'text-align:right">' + _cnuFmt(k.neto) + '</td><td style="' + td + 'text-align:right;font-weight:700;color:var(--gold)">' + _cnuFmt(k.valor) + '</td></tr>'; }).join('')
-    + '</tbody></table></div>'
-    + '<div style="display:flex;gap:12px;align-items:center;justify-content:flex-end;margin-top:12px;flex-wrap:wrap"><span id="cex-sel-total" class="abs-count" style="margin:0">Marca las facturas a liquidar</span>'
-    + '<button class="btn btn-primary" id="cex-btn-reg" onclick="cexRegistrar()" style="width:auto;font-size:13px;padding:9px 16px;" disabled>➕ Registrar comisión</button></div>';
-}
-function cexRecalcular() {
-  const pct = parseFloat((document.getElementById('cex-pct') || {}).value) || 0;
-  const marcadas = Array.from(document.querySelectorAll('.cex-chk:checked')).map(x => x.value);
-  // el % pudo cambiar: se vuelve a pintar la tabla conservando lo marcado
-  const antes = new Set(marcadas); cexRenderFacturas(); document.querySelectorAll('.cex-chk').forEach(x => { x.checked = antes.has(x.value); });
-  let tot = 0; marcadas.forEach(id => { const f = (_cnuFacturas || []).find(x => String(x.id) === String(id)); if (f) tot += _cexCalc(f, pct).valor; });
-  const s = document.getElementById('cex-sel-total'), b = document.getElementById('cex-btn-reg');
-  if (s) s.innerHTML = marcadas.length ? '<b>' + marcadas.length + '</b> factura(s) · comisión total <b style="color:var(--gold)">' + _cnuFmt(tot) + '</b>' : 'Marca las facturas a liquidar';
-  if (b) b.disabled = !marcadas.length;
-}
-async function cexRegistrar() {
-  if (_cexOcupado) return;
-  const id = (document.getElementById('cex-cliente') || {}).value || ''; const benef = ((document.getElementById('cex-benef') || {}).value || '').trim();
-  const pct = parseFloat((document.getElementById('cex-pct') || {}).value) || 0;
-  const marcadas = Array.from(document.querySelectorAll('.cex-chk:checked')).map(x => x.value);
-  if (!marcadas.length) return;
-  if (!benef) { showToast('Escribe a quién se le paga la comisión', 'error'); return; }
-  if (!(pct > 0)) { showToast('El % debe ser mayor que cero', 'error'); return; }
-  _cexOcupado = true; const b = document.getElementById('cex-btn-reg'); if (b) { b.disabled = true; b.textContent = '⏳ Guardando…'; }
-  const ahora = new Date().toISOString(); let n = 0;
-  marcadas.forEach(fid => {
-    const f = (_cnuFacturas || []).find(x => String(x.id) === String(fid)); if (!f) return;
-    const k = _cexCalc(f, pct);
-    cex_datos.comisiones.push({ id: 'cex-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7), factura_id: f.id, numero: f.numero || '', oc: f.oc || '',
-      cliente_id: f.cliente_id, cliente_nombre: f.cliente_nombre || '', fecha_factura: f.fecha_facturacion || '', fecha_pago_cliente: f.fecha_pago || '',
-      base: k.base, retefuente: k.rf, neto: k.neto, pct, valor: k.valor, benef, pagada: false, fecha_pagada: '', registrado_por: currentUser ? currentUser.email : '', registrado: ahora });
-    n++;
-  });
-  if (!cex_datos.clientes[id] || !cex_datos.clientes[id].benef) { const f = (_cnuFacturas || []).find(x => String(x.cliente_id) === id); cex_datos.clientes[id] = { benef, pct, nombre: f ? f.cliente_nombre : '', updated: ahora }; }
-  try { await cexGuardar('🤝 ' + n + ' comisión(es) externa(s) · ' + benef); showToast(n + ' comisión(es) registradas para ' + benef + ' ✓', 'success'); }
-  catch (e) { showToast('Registradas en pantalla, pero no se guardó en GitHub: ' + (e.message || e), 'error'); }
-  _cexOcupado = false;
-  cexLlenarClientes(); cexRenderFacturas(); cexRenderResumen(); cexRenderLista();
-}
-async function cexPagar(id, pagada) {
-  const c = cex_datos.comisiones.find(x => x.id === id); if (!c) return;
-  if (pagada) { const f = prompt('Fecha en que se pagó la comisión (AAAA-MM-DD):', _cmkHoy()); if (f == null) return; c.pagada = true; c.fecha_pagada = f || _cmkHoy(); c.pagada_por = currentUser ? currentUser.email : ''; }
-  else { c.pagada = false; c.fecha_pagada = ''; }
-  cexRenderResumen(); cexRenderLista();
-  try { await cexGuardar('🤝 Comisión ' + (pagada ? 'pagada' : 'pendiente') + ' · ' + c.benef + ' · #' + c.numero); } catch (e) { showToast('No se guardó: ' + (e.message || e), 'error'); }
-}
-async function cexQuitar(id) {
-  const c = cex_datos.comisiones.find(x => x.id === id); if (!c) return;
-  if (!confirm('¿Quitar la comisión de la factura #' + c.numero + ' (' + _cnuFmt(c.valor) + ' para ' + c.benef + ')?')) return;
-  cex_datos.comisiones = cex_datos.comisiones.filter(x => x.id !== id); cex_datos.borradas = (cex_datos.borradas || []).concat([id]).slice(-500);
-  cexRenderFacturas(); cexRenderResumen(); cexRenderLista();
-  try { await cexGuardar('🤝 Comisión quitada · #' + c.numero); } catch (e) { showToast('No se guardó: ' + (e.message || e), 'error'); }
-}
-function cexRenderResumen() {
-  const box = document.getElementById('cex-resumen'); if (!box || !cex_datos) return;
-  const cs = cex_datos.comisiones; const anio = String(new Date().getFullYear());
-  const pend = cs.filter(c => !c.pagada), pag = cs.filter(c => c.pagada && (c.fecha_pagada || '').startsWith(anio));
-  const sum = l => l.reduce((s, c) => s + (+c.valor || 0), 0);
-  const card = (ico, num, label, color) => '<div class="stat-card ' + color + '"><div class="stat-icon">' + ico + '</div><div class="stat-num" style="font-size:20px">' + num + '</div><div class="stat-label">' + label + '</div></div>';
-  box.innerHTML = card('⏳', _cnuFmt(sum(pend)), pend.length + ' comisión(es) pendientes de pago', 'gold') + card('✅', _cnuFmt(sum(pag)), pag.length + ' pagadas en ' + anio, 'green')
-    + card('🤝', new Set(cs.map(c => c.benef)).size, 'Comisionistas', 'blue') + card('🏢', Object.keys(cex_datos.clientes).filter(k => cex_datos.clientes[k].benef).length, 'Clientes con comisionista fijo', 'blue');
-}
-function cexRenderLista() {
-  const box = document.getElementById('cex-lista'); if (!box || !cex_datos) return;
-  const est = (document.getElementById('cex-f-estado') || {}).value; const q = ((document.getElementById('cex-buscar') || {}).value || '').toLowerCase().trim();
-  const lista = cex_datos.comisiones.filter(c => (est === 'pendiente' ? !c.pagada : est === 'pagada' ? c.pagada : true) && (!q || (c.benef + ' ' + c.cliente_nombre + ' ' + c.numero).toLowerCase().includes(q)))
-    .sort((a, b) => (b.registrado || '').localeCompare(a.registrado || ''));
-  if (!lista.length) { box.innerHTML = '<div class="abs-count" style="padding:16px;text-align:center">Nada con ese filtro.</div>'; return; }
-  const por = {}; lista.forEach(c => { if (!por[c.benef]) por[c.benef] = []; por[c.benef].push(c); });
-  const td = 'padding:7px 10px;border-bottom:1px solid var(--border);font-size:12.5px;', th = 'text-align:left;padding:6px 10px;color:var(--text-muted);font-size:10.5px;text-transform:uppercase;';
-  box.innerHTML = Object.keys(por).sort().map((b, i) => { const l = por[b]; const tot = l.reduce((s, c) => s + (+c.valor || 0), 0);
-    return '<div style="border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;">'
-      + '<div style="display:flex;gap:10px;align-items:center;padding:10px 14px;background:rgba(15,43,91,.25);"><b style="flex:1">🤝 ' + _cmkEsc(b) + '</b><span class="abs-count" style="margin:0">' + l.length + ' factura(s)</span><b style="color:var(--gold)">' + _cnuFmt(tot) + '</b></div>'
-      + '<div class="abs-table-wrap"><table style="width:100%;border-collapse:collapse;"><thead><tr><th style="' + th + '">Cliente</th><th style="' + th + '">Factura</th><th style="' + th + '">Pagó el cliente</th><th style="' + th + 'text-align:right">Sin IVA</th><th style="' + th + 'text-align:right">Retefuente</th><th style="' + th + 'text-align:right">Neto</th><th style="' + th + 'text-align:right">%</th><th style="' + th + 'text-align:right">Comisión</th><th style="' + th + '">Estado</th><th style="' + th + '"></th></tr></thead><tbody>'
-      + l.map(c => '<tr><td style="' + td + '">' + _cmkEsc(c.cliente_nombre) + '</td><td style="' + td + '"><b>#' + _cmkEsc(c.numero) + '</b></td><td style="' + td + '">' + _cmkFecha(c.fecha_pago_cliente) + '</td>'
-        + '<td style="' + td + 'text-align:right">' + _cnuFmt(c.base) + '</td><td style="' + td + 'text-align:right">' + (c.retefuente ? '− ' + _cnuFmt(c.retefuente) : '—') + '</td><td style="' + td + 'text-align:right">' + _cnuFmt(c.neto) + '</td>'
-        + '<td style="' + td + 'text-align:right;white-space:nowrap">' + c.pct + ' %</td><td style="' + td + 'text-align:right;font-weight:700;color:var(--gold)">' + _cnuFmt(c.valor) + '</td>'
-        + '<td style="' + td + 'white-space:nowrap">' + (c.pagada ? _vinChip('aprobado', '✅ Pagada ' + _cmkFecha(c.fecha_pagada)) : _vinChip('pendiente', '⏳ Pendiente')) + '</td>'
-        + '<td style="' + td + 'white-space:nowrap">' + (c.pagada ? '<button class="btn btn-ghost" style="padding:3px 8px;font-size:11px" onclick="cexPagar(\'' + c.id + '\',false)">↩️ Pendiente</button>' : '<button class="btn btn-ghost" style="padding:3px 8px;font-size:11px" onclick="cexPagar(\'' + c.id + '\',true)">✅ Marcar pagada</button>')
-        + ' <button class="btn btn-ghost" style="padding:3px 8px;font-size:11px" title="Quitar" onclick="cexQuitar(\'' + c.id + '\')">🗑️</button></td></tr>').join('')
-      + '</tbody></table></div></div>'; }).join('');
+    + '<th style="' + th + '">Factura</th><th style="' + th + '">Fecha</th><th style="' + th + '">Estado</th><th style="' + th + 'text-align:right">Valor sin IVA</th><th style="' + th + 'text-align:right;width:150px">Retefuente</th><th style="' + th + 'text-align:right">Neto</th><th style="' + th + 'text-align:right">Comisión ' + pct + ' %</th></tr></thead><tbody>'
+    + filas.map(r => { const f = r.f; return '<tr>'
+      + '<td style="' + td + '"><b>#' + _cmkEsc(f.numero || '—') + '</b>' + (f.oc ? '<div class="abs-count" style="margin:1px 0 0;font-size:10.5px">OC ' + _cmkEsc(f.oc) + '</div>' : '') + '</td>'
+      + '<td style="' + td + 'white-space:nowrap">' + (r.pagada ? 'pagó ' + _cmkFecha(f.fecha_pago) : 'fact. ' + _cmkFecha(f.fecha_facturacion)) + '</td>'
+      + '<td style="' + td + '">' + (r.pagada ? _vinChip('aprobado', '✅ Pagada') : _vinChip('pendiente', '⏳ Pendiente')) + '</td>'
+      + '<td style="' + td + 'text-align:right;white-space:nowrap">' + _cnuFmt(r.base) + '</td>'
+      + '<td style="' + td + 'text-align:right;white-space:nowrap"><div style="display:flex;gap:4px;align-items:center;justify-content:flex-end"><input type="number" value="' + r.rfPct + '" min="0" max="20" step="0.05" style="width:62px;padding:4px 6px;font-size:12px;text-align:right" title="% de retefuente sobre el valor sin IVA" onchange="cexRfSet(' + f.id + ',this.value)">%'
+      + (r.origen === 'manual' ? '<button class="btn btn-ghost" style="padding:2px 6px;font-size:11px" title="Volver al valor de Cartera" onclick="cexRfReset(' + f.id + ')">↩️</button>' : '') + '</div>'
+      + '<div style="font-size:11.5px;margin-top:2px">' + (r.rf ? '− ' + _cnuFmt(r.rf) + ' ' : '') + chip[r.origen] + '</div></td>'
+      + '<td style="' + td + 'text-align:right;white-space:nowrap">' + _cnuFmt(r.neto) + '</td>'
+      + '<td style="' + td + 'text-align:right;white-space:nowrap;font-weight:800;font-size:15px;color:var(--gold)">' + _cnuFmt(r.valor) + '</td></tr>'; }).join('')
+    + '</tbody><tfoot><tr style="font-weight:800"><td style="' + td + '" colspan="3">TOTAL · ' + filas.length + ' factura(s)</td><td style="' + td + 'text-align:right">' + _cnuFmt(sum('base')) + '</td><td style="' + td + 'text-align:right">− ' + _cnuFmt(sum('rf')) + '</td><td style="' + td + 'text-align:right">' + _cnuFmt(sum('neto')) + '</td><td style="' + td + 'text-align:right;color:var(--gold);font-size:16px">' + _cnuFmt(sum('valor')) + '</td></tr></tfoot></table></div>';
 }
 function cexExportar() {
-  if (!cex_datos || !cex_datos.comisiones.length) { showToast('No hay comisiones registradas', 'info'); return; }
-  const filas = cex_datos.comisiones.slice().sort((a, b) => (a.benef || '').localeCompare(b.benef || '') || (a.fecha_pago_cliente || '').localeCompare(b.fecha_pago_cliente || '')).map(c => ({
-    'Comisionista': c.benef, 'Cliente': c.cliente_nombre, 'Factura': c.numero, 'OC': c.oc || '', 'Fecha factura': c.fecha_factura || '', 'Pagó el cliente': c.fecha_pago_cliente || '',
-    'Valor sin IVA': c.base, 'Retefuente': c.retefuente, 'Neto': c.neto, '%': c.pct, 'Comisión': c.valor, 'Estado': c.pagada ? 'PAGADA' : 'PENDIENTE', 'Fecha pago comisión': c.fecha_pagada || '', 'Registró': c.registrado_por || '' }));
-  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(filas), 'COMISIONES EXTERNAS');
-  XLSX.writeFile(wb, 'Comisiones_Externas_EYG_' + _cmkHoy() + '.xlsx');
+  const filas = _cexFilas(); if (!filas.length) { showToast('Elige un cliente con facturas', 'info'); return; }
+  const pct = _cexNum((document.getElementById('cex-pct') || {}).value); const sel = document.getElementById('cex-cliente'); const cli = sel.options[sel.selectedIndex].textContent.replace(/ \(\d+\)$/, '');
+  const rows = filas.map(r => ({ 'Cliente': cli, 'Factura': r.f.numero || '', 'OC': r.f.oc || '', 'Fecha factura': r.f.fecha_facturacion || '', 'Pagó el cliente': r.f.fecha_pago || '', 'Estado': r.pagada ? 'PAGADA' : 'PENDIENTE',
+    'Valor sin IVA': r.base, '% retefuente': r.rfPct, 'Retefuente': r.rf, 'Origen retefuente': r.origen, 'Neto': r.neto, '% comisión': pct, 'Comisión': r.valor }));
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'COMISION EXTERNA');
+  XLSX.writeFile(wb, 'Comision_Externa_' + cli.replace(/[^A-Za-z0-9]+/g, '_').slice(0, 30) + '_' + _cmkHoy() + '.xlsx');
 }
 
 async function cnuCargar(force) {
