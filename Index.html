@@ -9643,24 +9643,26 @@ async function ofpAvisoInicio(forzar) {
   if (!currentUser || _ofpAvisoAbierto) return;
   if (typeof feEsFE === 'function' && feEsFE()) return;   // Ferreindustrial no maneja ofertas
   const hoy = _hoyLocal ? _hoyLocal() : new Date().toISOString().slice(0, 10);
-  if (!forzar && localStorage.getItem('ofp_aviso_dia') === hoy) return;
+  // Modo prueba (5-nov-2026): solo Andrea, abriendo la plataforma con ?prueba_ofertas=1, ve la ventana con las ofertas de hasta 10 días.
+  const prueba = /[?&]prueba_ofertas=1/.test(location.search) && String(currentUser.email || '').toLowerCase() === 'andrea';
+  if (!forzar && !prueba && localStorage.getItem('ofp_aviso_dia') === hoy) return;
   let lista = null;
   try { const d = await _loadDataGHRaw('data/ofertas_plataformas.json'); if (Array.isArray(d)) lista = d; } catch (_) { }
   if (!lista) lista = ofpTodas();
-  const prox = lista.filter(o => o && !o.deleted && _ofpAbierta(o)).map(o => ({ o, n: _ofpDias(o.fecha_presentacion) })).filter(x => x.n === 0 || x.n === 1).sort((a, b) => a.n - b.n);
-  try { localStorage.setItem('ofp_aviso_dia', hoy); } catch (_) { }
+  const prox = lista.filter(o => o && !o.deleted && _ofpAbierta(o)).map(o => ({ o, n: _ofpDias(o.fecha_presentacion) })).filter(x => x.n === 0 || x.n === 1 || (prueba && x.n != null && x.n >= 0 && x.n <= 10)).sort((a, b) => a.n - b.n);
+  if (!prueba) { try { localStorage.setItem('ofp_aviso_dia', hoy); } catch (_) { } }
   if (!prox.length) return;
   const prev = document.getElementById('ofp-aviso'); if (prev) prev.remove();
   const ov = document.createElement('div'); ov.id = 'ofp-aviso';
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(3,8,18,.82);z-index:100006;display:flex;align-items:center;justify-content:center;padding:20px;';
   const fila = x => { const o = x.o; const pct = _ofpDocsPct(o);
     return '<div style="border:1px solid ' + (x.n === 0 ? 'rgba(229,62,62,.6)' : 'rgba(214,158,46,.6)') + ';border-radius:12px;padding:12px 14px;margin-bottom:10px;background:' + (x.n === 0 ? 'rgba(229,62,62,.10)' : 'rgba(214,158,46,.10)') + '">'
-      + '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;background:' + (x.n === 0 ? '#e53e3e' : '#d69e2e') + ';color:#fff">' + (x.n === 0 ? 'SE PRESENTA HOY' : 'SE PRESENTA MAÑANA') + '</span>'
+      + '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;background:' + (x.n === 0 ? '#e53e3e' : '#d69e2e') + ';color:#fff">' + (x.n === 0 ? 'SE PRESENTA HOY' : x.n === 1 ? 'SE PRESENTA MAÑANA' : 'PRUEBA · EN ' + x.n + ' DÍAS') + '</span>'
       + '<b style="font-size:15px">' + _ofpEsc(o.cliente || '—') + '</b><span class="abs-count" style="margin:0">' + _ofpEsc(o.plataforma || '') + '</span></div>'
       + '<div style="margin-top:6px;font-size:13.5px">' + _ofpEsc(o.objeto || '') + '</div>'
       + '<div class="abs-count" style="margin:6px 0 0;font-size:12px">📅 ' + _ofpEsc(String(o.fecha_presentacion || '').split('-').reverse().join('/')) + (o.obs ? ' · ⏰ ' + _ofpEsc(o.obs) : '') + ' · 👤 ' + _ofpEsc(o.responsable || '—') + ' · 📄 documentos ' + pct + ' %' + (pct < 100 ? ' <b style="color:var(--gold)">(faltan ' + (o.documentos || []).filter(d => !d.ok).length + ')</b>' : ' ✅') + '</div></div>'; };
   ov.innerHTML = '<div class="modal" style="width:620px;max-width:100%">'
-    + '<div class="modal-header"><h3 style="margin:0;color:#fff;font-size:17px">📨 Ofertas por presentar</h3><button onclick="document.getElementById(\'ofp-aviso\').remove();_ofpAvisoAbierto=false" style="background:none;border:none;color:inherit;font-size:22px;cursor:pointer">×</button></div>'
+    + '<div class="modal-header"><h3 style="margin:0;color:#fff;font-size:17px">📨 Ofertas por presentar' + (prueba ? ' <small style="font-weight:400">(modo prueba)</small>' : '') + '</h3><button onclick="document.getElementById(\'ofp-aviso\').remove();_ofpAvisoAbierto=false" style="background:none;border:none;color:inherit;font-size:22px;cursor:pointer">×</button></div>'
     + '<div style="padding:16px 20px 6px">' + prox.map(fila).join('') + '</div>'
     + '<div style="display:flex;gap:10px;justify-content:flex-end;padding:0 20px 18px">'
     + '<button class="btn btn-ghost" style="padding:8px 16px;font-size:12px" onclick="document.getElementById(\'ofp-aviso\').remove();_ofpAvisoAbierto=false">Entendido</button>'
