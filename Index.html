@@ -13260,7 +13260,7 @@ async function cnuFactGuardar() {
   btn.disabled = false;
 }
 // ── ✏️ Editar / 🚫 anular / 🗑️ borrar facturas históricas (solo andrea, 2026-07-22) ──
-function _cnuEsAdminCartera() { return !!(currentUser && currentUser.email === 'andrea'); }
+function _cnuEsAdminCartera() { return !!(currentUser && (currentUser.email === 'andrea' || currentUser.email === 'alberto')); }   // 5-nov-2026: Alberto también edita/anula facturas (lápiz ✏️), pedido del usuario
 // v154: escritura en Cartera = SOLO Andrea y Alberto. Nelsy queda de consulta: ve todas
 // las pestañas, descarga los Excel y LEE las notas, pero sin botones que modifiquen.
 function _cnuPuedeEscribir() { return !!(currentUser && (currentUser.email === 'andrea' || currentUser.email === 'alberto')); }
