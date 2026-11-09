@@ -80,7 +80,7 @@ def corto(t, n=70):
 # Cada hallazgo: (clave estable, título de la regla, texto, qué hacer)
 
 def revisar():
-    ops = todo('ops?select=id,numero,cotizacion_id,cliente,estado,valor_venta,created_at&order=id')
+    ops = todo('ops?select=id,numero,cotizacion_id,cliente,estado,valor_venta,created_at,factura&order=id')
     vivas = {o['id']: o for o in ops if (o.get('estado') or '') not in OP_CERRADAS}
     items = todo('op_items?select=id,op_id,item,descripcion,cantidad,v_unit,v_total,origen,'
                  'producto_codigo,estado,despachada,costo_unit&order=id')
@@ -187,6 +187,123 @@ def revisar():
                       % (r.get('cc'), corto(r.get('descripcion'), 45), r.get('cantidad'),
                          money(c) if c is not None else 'vacío', prov or 'vacío'),
                       'El margen del centro de costos no es real hasta corregirlo.'))
+
+    try:
+        H.extend(revisar_facturas(ops))     # si algo falla aquí, las reglas de arriba siguen saliendo
+    except Exception as e:
+        print('facturas: error inesperado', e)
+    return H
+
+
+# ─── Facturas (pedido 9-nov-2026) ────────────────────────────────────────────
+# Por qué: la 729 (HIDROCASANARE) y la 731 (SKF) se facturaron el 5 y 6-nov y
+# nadie las registró en Cartera ni las anotó en la cotización/OP; se notó días
+# después, por casualidad. Estas reglas lo preguntan al día siguiente.
+# Solo LEE cartera_facturas (nunca escribe en Cartera).
+FACT_DESDE = 655          # primer número de la resolución DIAN vigente (26-sep-2026)
+FACT_VENTANA = 60         # cuántos números hacia atrás desde el último se revisan huecos
+
+
+def _nums_factura(texto):
+    """'723' → ['723'] · '725, 726' → ['725','726'] · 'FV-2-729' → ['729'] · '' → []."""
+    import re
+    out = []
+    for parte in re.split(r'[,;/]+', str(texto or '')):
+        m = re.findall(r'\d{3,}', parte)
+        if m:
+            out.append(m[-1].lstrip('0') or '0')
+    return out
+
+
+def revisar_facturas(ops):
+    H = []
+    try:
+        cartera = todo('cartera_facturas?select=id,numero,cliente_nombre,fecha_facturacion,monto_antes_iva,cotizacion_id,estado&order=id')
+        cots = todo('cotizaciones?select=id,cliente,estado,factura,valor_adjudicado&factura=not.is.null&deleted=eq.false&order=id')
+    except Exception as e:                      # Cartera no legible → no se inventa nada
+        print('facturas: no se pudo leer', e)
+        return H
+    if not cartera:                             # Cartera vacía (p. ej. RLS cerrada) → no marcar todo como «sin Cartera»
+        print('facturas: Cartera llegó vacía, no se revisa')
+        return H
+    por_num = {}
+    for f in cartera:
+        for n in _nums_factura(f.get('numero')):
+            por_num.setdefault(n, []).append(f)
+
+    # 9) Un mismo número de factura dos veces en Cartera
+    for n, fs in sorted(por_num.items(), key=lambda x: int(x[0])):
+        if len(fs) > 1 and int(n) >= FACT_DESDE:
+            H.append(('factdup|%s|%d' % (n, len(fs)), 'Factura repetida en Cartera',
+                      'Factura %s está %d veces: %s' % (n, len(fs), ' · '.join(
+                          '%s %s (%s)' % (corto(f.get('cliente_nombre'), 28), money(f.get('monto_antes_iva')), str(f.get('fecha_facturacion') or '')[:10]) for f in fs)),
+                      '¿Es la misma factura dos veces o son dos facturas con el número cambiado? Dejar una sola o corregir el número.'))
+
+    # 10) Huecos en el consecutivo: números que no están en Cartera
+    #     El «último» es el mayor número que tiene vecinos (3 de los 5 anteriores existen):
+    #     así un número mal digitado (p. ej. 2364) no corre la ventana ni inventa 1.600 huecos.
+    numeros = sorted({int(n) for n in por_num if int(n) >= FACT_DESDE})
+    tiene = set(numeros)
+    ultimo = next((n for n in reversed(numeros) if sum(1 for k in range(1, 6) if n - k in tiene) >= 3), None)
+    if ultimo:
+        desde = max(FACT_DESDE, ultimo - FACT_VENTANA)
+        for n in [n for n in range(desde, ultimo) if n not in tiene]:
+            H.append(('facthueco|%d' % n, 'Factura que falta en Cartera (hueco en el consecutivo)',
+                      'La factura %d no está en Cartera (hay hasta la %d)' % (n, ultimo),
+                      '¿Qué pasó con esa factura? Si se anuló, anotarlo; si se hizo, registrarla en Cartera y anotarla en la cotización / OP.'))
+        # 10b) Número fuera del consecutivo (casi seguro mal digitado)
+        for n in numeros:
+            if n > ultimo + FACT_VENTANA:
+                for f in por_num[str(n)]:
+                    H.append(('factfuera|%d|%s' % (n, f.get('id')), 'Número de factura fuera del consecutivo',
+                              'Factura «%s» de %s (%s, %s): la última real es la %d' % (f.get('numero'), corto(f.get('cliente_nombre'), 28), str(f.get('fecha_facturacion') or '')[:10], money(f.get('monto_antes_iva')), ultimo),
+                              'Revisar el número en Cartera: seguramente está mal escrito.'))
+
+    # 11) Factura anotada en la cotización o en la OP pero que no está en Cartera
+    vistos = set()
+    for c in cots:
+        for n in _nums_factura(c.get('factura')):
+            if int(n) >= FACT_DESDE and n not in por_num and ('cot', n) not in vistos:
+                vistos.add(('cot', n))
+                H.append(('factsincartera|%s|%s' % (n, c['id']), 'Factura anotada en la cotización pero sin Cartera',
+                          '%s (%s): dice factura %s y en Cartera no existe' % (c['id'], corto(c.get('cliente'), 28), n),
+                          'Registrarla en Cartera (o corregir el número en la cotización).'))
+    for o in ops:
+        for n in _nums_factura(o.get('factura')):
+            if int(n) >= FACT_DESDE and n not in por_num and ('op', n) not in vistos:
+                vistos.add(('op', n))
+                H.append(('factsincartera|%s|%s' % (n, o['numero']), 'Factura anotada en la OP pero sin Cartera',
+                          '%s (%s): dice factura %s y en Cartera no existe' % (o['numero'], corto(o.get('cliente'), 28), n),
+                          'Registrarla en Cartera (o corregir el número en la OP).'))
+
+    # 12) Factura en Cartera cuya cotización no quedó «Facturada» (o quedó con otro número)
+    cot_por_id = {c['id']: c for c in cots}
+    try:
+        ids = sorted({str(f.get('cotizacion_id') or '').strip() for f in cartera
+                      if str(f.get('cotizacion_id') or '').strip() and str(f.get('cotizacion_id') or '').strip() not in cot_por_id})
+        for i in range(0, len(ids), 80):
+            for c in sb('cotizaciones?select=id,cliente,estado,factura&id=in.(%s)' % ','.join(urllib.parse.quote(x, safe='') for x in ids[i:i + 80])):
+                cot_por_id[c['id']] = c
+    except Exception as e:
+        print('facturas: cotizaciones de Cartera no leídas', e)
+    for f in cartera:
+        cid = str(f.get('cotizacion_id') or '').strip()
+        nums = _nums_factura(f.get('numero'))
+        if not cid or not nums or int(nums[0]) < FACT_DESDE:
+            continue
+        c = cot_por_id.get(cid)
+        if not c:
+            continue
+        # Si la factura vive en una OP de esa cotización, está bien así (caso SAR: una cotización,
+        # cinco OP con factura propia; anotarla en la cotización haría ver facturado lo que no lo está).
+        if any(nums[0] in _nums_factura(o.get('factura')) for o in ops if o.get('cotizacion_id') == cid):
+            continue
+        fac_cot = _nums_factura(c.get('factura'))
+        if c.get('estado') != 'Facturada' or (fac_cot and nums[0] not in fac_cot):
+            H.append(('carterasincot|%s|%s' % (nums[0], cid), 'Factura en Cartera sin reflejar en la cotización',
+                      'Factura %s (%s) → %s está «%s»%s' % (nums[0], corto(f.get('cliente_nombre'), 28), cid, c.get('estado'),
+                                                            (' con factura %s' % c.get('factura')) if c.get('factura') else ' sin número de factura'),
+                      'Marcar la cotización Facturada con ese número (y cerrar la OP si ya tiene certificados).'))
     return H
 
 
