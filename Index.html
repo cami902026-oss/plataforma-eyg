@@ -18694,7 +18694,7 @@ async function _hpConsultar(words){
   const key = words.join(' ');
   if (_hpCache[key]) return _hpCache[key];
   const filtro = 'and=(' + words.map(function(w){ return 'or(descripcion.ilike.*' + encodeURIComponent(w) + '*,marca.ilike.*' + encodeURIComponent(w) + '*)'; }).join(',') + ')';
-  const base = 'cotizacion_items?select=cotizacion_id,descripcion,marca,qty,udm,v_unit,precio_proveedor,proveedor,tiempo_entrega,alt_de,cotizaciones!inner(cliente,fecha,estado,vendedor,realizada_por)'
+  const base = 'cotizacion_items?select=cotizacion_id,descripcion,marca,qty,udm,v_unit,precio_proveedor,proveedor,tiempo_entrega,alt_de,desviacion_tecnica,obs_proveedor,cotizaciones!inner(cliente,fecha,estado,vendedor,realizada_por)'   // v359: + desviación técnica y obs. proveedor
     + '&' + filtro + '&v_unit=gt.0&order=cotizaciones(fecha).desc&limit=500';
   let rows;
   try { rows = await absFetch(base + '&cotizaciones.deleted=not.is.true'); }
@@ -18708,6 +18708,7 @@ async function _hpConsultar(words){
       qty: +r.qty || 0, udm: r.udm || '', precio: +r.v_unit || 0,
       costo: (r.precio_proveedor != null ? +r.precio_proveedor : null),
       prov: r.proveedor || '', entrega: r.tiempo_entrega || '', alt: !!r.alt_de,
+      desv: String(r.desviacion_tecnica || '').trim(), obs: String(r.obs_proveedor || '').trim(),   // v359
       cliente: c.cliente || '', fecha: c.fecha || '', estado: c.estado || ''
     };
     // la misma línea repetida dentro de la misma cotización se muestra una vez
@@ -18869,7 +18870,7 @@ function _hpFilaHTML(r, k){
   const fact  = /factur/i.test(r.estado || '');
   const btns = (_hpFila != null)
     ? '<button onclick="hpUsar(' + k + ',0)" title="Escribe este precio de venta en la fila" style="background:var(--gold);border:none;border-radius:7px;color:#0a1a30;font-weight:700;cursor:pointer;padding:5px 12px;font-size:11.5px;margin-left:6px;">Usar</button>'
-      + '<button onclick="hpUsar(' + k + ',1)" title="Trae además marca, proveedor, costo y tiempo de entrega" style="background:rgba(26,58,143,.55);border:1px solid var(--border);border-radius:7px;color:#dbeafe;cursor:pointer;padding:5px 12px;font-size:11.5px;margin-left:6px;">Traer línea</button>'
+      + '<button onclick="hpUsar(' + k + ',1)" title="Trae además la descripción, la desviación técnica, marca, proveedor, costo, obs. proveedor y tiempo de entrega (reemplaza la descripción de la fila)" style="background:rgba(26,58,143,.55);border:1px solid var(--border);border-radius:7px;color:#dbeafe;cursor:pointer;padding:5px 12px;font-size:11.5px;margin-left:6px;">Traer línea</button>'
     : '<button onclick="hpAgregar(' + k + ')" style="background:var(--gold);border:none;border-radius:7px;color:#0a1a30;font-weight:700;cursor:pointer;padding:5px 12px;font-size:11.5px;margin-left:6px;">➕ Agregar como ítem</button>';
   return '<div style="background:var(--card-bg);border:1px solid ' + (viejo ? 'rgba(232,160,32,.45)' : 'var(--border)') + ';border-radius:9px;padding:9px 12px;margin-bottom:6px;">'
     + '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline;font-size:11px;">'
@@ -18880,6 +18881,9 @@ function _hpFilaHTML(r, k){
     +     (r.alt ? ' <span style="color:#fcd34d;">· alternativa</span>' : '') + '</div>'
     + '</div>'
     + '<div style="font-size:12.5px;color:#fff;font-weight:600;margin:3px 0;">' + _hpEsc((r.desc||'').replace(/\s+/g,' ').trim().slice(0,120)) + '</div>'
+    // v359: desviación técnica y obs. proveedor tal como se cotizaron (se copian con «Traer línea» / «Agregar»)
+    + (r.desv ? '<div style="font-size:11.5px;color:#fcd34d;margin:0 0 3px;white-space:pre-wrap;"><b>Desv. técnica:</b> ' + _hpEsc(r.desv) + '</div>' : '')
+    + (r.obs ? '<div style="font-size:11px;color:var(--text-muted);margin:0 0 3px;white-space:pre-wrap;"><b>Obs. proveedor:</b> ' + _hpEsc(r.obs) + '</div>' : '')
     + '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">'
     +   '<div style="font-size:11px;color:var(--text-muted);"><b style="color:#68d391;font-size:13.5px;">' + _hpPlata(r.precio) + '</b> venta'
     +     (r.costo ? ' · costo ' + _hpPlata(r.costo) : '')
@@ -18890,7 +18894,9 @@ function _hpFilaHTML(r, k){
 }
 
 // [Usar] escribe el precio de venta. [Traer línea] trae además marca,
-// proveedor, costo y tiempo de entrega — nunca pisa la descripción ni la cantidad.
+// proveedor, costo y tiempo de entrega. v359 (12-nov-2026, decisión del usuario):
+// también REEMPLAZA la descripción y trae la desviación técnica y la obs. del
+// proveedor tal como se cotizaron. La cantidad nunca se toca.
 function hpUsar(k, completo){
   const r = _hpFilas[k]; if (!r) return;
   const it = (_hpFila != null ? cotizItems[_hpFila] : null);
@@ -18901,17 +18907,21 @@ function hpUsar(k, completo){
     if (r.marca)   it.marca = r.marca;
     if (r.prov)    it.proveedor = r.prov;
     if (r.entrega) it.tiempoEntrega = r.entrega;
+    const _d = (r.desc||'').replace(/\s+/g,' ').trim();   // v359
+    if (_d) it.desc = _d;
+    it.desvTec = r.desv || '';          // la fila queda como se cotizó: también cuando la histórica no trae desviación
+    it.obsProveedor = r.obs || '';
   }
   try { cotizRender(); } catch(_) {}
   const m = document.getElementById('_hpModal'); if (m) m.remove();
-  showToast('Precio de ' + r.id + ' (' + _hpFechaCorta(r.fecha) + '): ' + _hpPlata(r.precio), 'success');
+  showToast((completo ? 'Línea completa de ' : 'Precio de ') + r.id + ' (' + _hpFechaCorta(r.fecha) + '): ' + _hpPlata(r.precio) + (completo && r.desv ? ' · con desviación técnica' : ''), 'success');
 }
 function hpAgregar(k){
   const r = _hpFilas[k]; if (!r) return;
   cotizItems.push({
     id: cotizItems.length + 1, desc: (r.desc||'').replace(/\s+/g,' ').trim(), udm: r.udm || 'EA', qty: 1,
-    precio: r.precio || 0, tiempoEntrega: r.entrega || '1-2 DIAS', desvTec: '',
-    marca: r.marca || '', proveedor: r.prov || '', precioProveedor: (r.costo != null ? r.costo : 0), obsProveedor: ''
+    precio: r.precio || 0, tiempoEntrega: r.entrega || '1-2 DIAS', desvTec: (r.desv || ''),   // v359
+    marca: r.marca || '', proveedor: r.prov || '', precioProveedor: (r.costo != null ? r.costo : 0), obsProveedor: (r.obs || '')
   });
   try { cotizRender(); } catch(_) {}
   const m = document.getElementById('_hpModal'); if (m) m.remove();
