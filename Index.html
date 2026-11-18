@@ -1945,6 +1945,7 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
       <div class="nav-item" onclick="navigate('inventario')"><span class="icon">📦</span>Inventario</div>
       <div class="nav-item" onclick="navigate('cotizaciones')"><span class="icon">📋</span>Cotizaciones IA</div>
       <div class="nav-item" onclick="navigate('cartera')"><span class="icon">💰</span>Cartera</div>
+      <div class="nav-item" onclick="navigate('radicadas')"><span class="icon">📄</span>Facturas radicadas</div>
       <div class="nav-item" onclick="navigate('contratos')"><span class="icon">📜</span>Contratos Marco</div>
       <div class="nav-item" onclick="navigate('saldos')"><span class="icon">💳</span>Saldos a Favor</div>
       <div class="nav-item" onclick="navigate('vinculacion')"><span class="icon">🔗</span>Vinculación</div>
@@ -2285,6 +2286,25 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
         <iframe id="pdfstudio-frame" title="PDF Studio E&G" style="width:100%;height:calc(100vh - 110px);border:none;border-radius:14px;background:#0a1a2f;"></iframe>
       </div>
 
+      <!-- 📄 FACTURAS RADICADAS — módulo de los comerciales (v363). Solo lectura; cada comercial ve SUS facturas pendientes. -->
+      <div class="page" id="page-radicadas">
+        <div style="max-width:980px;margin:0 auto;padding:8px 0 40px;">
+          <div class="card" style="padding:18px;">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+              <div class="config-title" style="margin:0;">📄 Mis facturas radicadas por cliente</div>
+              <span style="flex:1;"></span>
+              <select id="radp-vend" style="display:none;"></select>
+              <input type="text" id="radp-buscar" oninput="radRender()" placeholder="Buscar cliente, factura u O.C." style="width:220px;padding:8px 12px;">
+              <button class="btn btn-secondary" onclick="radPaginaInit(true)" style="width:auto;font-size:12px;padding:8px 14px;" title="Vuelve a leer los datos">🔄 Actualizar</button>
+              <button class="btn btn-secondary" onclick="radExcel()" style="width:auto;font-size:12px;padding:8px 14px;">⬇️ Excel</button>
+            </div>
+            <div id="radp-estado" style="font-size:11px;color:var(--text-muted);margin-bottom:8px;"></div>
+            <div id="radp-resumen" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;"></div>
+            <div id="radp-lista"></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:10px;">Fecha de radicado = fecha de la factura. Solo se muestran sus facturas pendientes de pago.</div>
+          </div>
+        </div>
+      </div>
       <!-- CARTERA EN LA NUBE (solo Andrea, Alberto y Nelsy) — F2 2026-07-21: lee Supabase, sin túnel -->
       <div class="page" id="page-cartera">
         <div style="max-width:980px;margin:0 auto;padding:8px 0 40px;">
@@ -2351,7 +2371,7 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
             </div>
           </div>
           <!-- 📄 FACTURAS RADICADAS (v361, 18-nov-2026) — facturas pendientes por cliente con fecha de radicado
-               (= fecha de la factura) y de vencimiento. Solo lectura de Cartera. Fase 1: solo andrea (radPuede). -->
+               (= fecha de la factura) y de vencimiento. Solo lectura de Cartera. Pestaña: andrea y alberto (radTabPuede). -->
           <div id="cnu-tab-radic" style="display:none;">
             <div class="card" style="padding:18px;">
               <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
@@ -5525,6 +5545,9 @@ function userCanSeeModule(mod) {
   if ((mod === 'visitas' || mod === 'mensajeria') && _sinVisMsg()) return false;
   // Cartera: Andrea, Alberto y Nelsy (no se puede destrabar por config)
   if (mod === 'cartera') return email === 'andrea' || email === 'alberto' || email === 'nelsy';
+  // Facturas radicadas (v363): módulo propio SOLO para los comerciales; cada uno ve sus clientes.
+  // Andrea y Alberto lo ven como pestaña dentro de Cartera. No se puede destrabar por config.
+  if (mod === 'radicadas') return email === 'mario' || email === 'sheila';
   // Contratos marco: SOLO Andrea y Alberto (pedido del usuario, 9-oct-2026).
   // 22-oct-2026: Alexandra también lo ve (pedido del usuario); registrar consumos sigue siendo de Andrea y Alberto (cmkPuedeEscribir).
   if (mod === 'contratos') return email === 'andrea' || email === 'alberto' || email === 'alexandra';
@@ -8675,6 +8698,7 @@ function navigate(page) {
   if(page==='vinculacion') { try{ vfMostrarTabbar(); }catch(e){ console.error('[vf]',e); } }   // 📝 Llenar formatos con IA (4-nov-2026)
   if(page==='cartera') { try{ cexMostrarBoton(); }catch(e){ console.error('[cex]',e); } }   // 🤝 Comisiones externas (5-nov-2026)
   if(page==='cartera') { try{ radMostrarBoton(); }catch(e){ console.error('[rad]',e); } }   // 📄 Facturas radicadas (v361)
+  if(page==='radicadas') { try{ radPaginaInit(false); }catch(e){ console.error('[rad]',e); } }   // 📄 módulo de los comerciales (v363)
   if(String(page).startsWith('fe_')) { try{ feNav(page); }catch(e){ console.error('[fe]',e); } }   // 🔧 Ferreindustrial (20-oct-2026)
   if(page==='pdfstudio') { const _f=document.getElementById('pdfstudio-frame'); if(_f && !_f.src) _f.src='pdf-studio.html'; }   // v155: carga perezosa (las librerías PDF solo se bajan al entrar)
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadSbProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
@@ -12599,15 +12623,52 @@ cnuTab = function (t) {
 // ===== 📄 FACTURAS RADICADAS + comisiones compartidas (v361, 18-nov-2026) =====
 // Pedido del jefe: que los comerciales, Andrea y Alberto vean la factura radicada por cliente con
 // fecha de radicado y de vencimiento. Decisiones del usuario: radicado = fecha de la factura;
-// cada comercial ve solo SUS clientes y solo lo pendiente de pago; FASE 1: solo andrea lo ve.
+// cada comercial ve solo SUS facturas y solo lo pendiente de pago. v361 = fase 1 (solo andrea);
+// v363 = fase 2 (pestaña para andrea y alberto + módulo propio para mario y sheila).
 // Cartera se LEE, no se escribe nada.
-const RAD_FASE1 = ['andrea'];            // fase 2: abrir a alberto y a los comerciales
-function radPuede() { return !!(currentUser && RAD_FASE1.indexOf(currentUser.email) >= 0); }
-function radMostrarBoton() { const b = document.getElementById('cnu-tab-btn-radic'); if (b) b.style.display = radPuede() ? '' : 'none'; }
+// v363 (fase 2): pestaña dentro de Cartera para andrea y alberto; módulo propio «Facturas radicadas»
+// para los comerciales, que NO entran a Cartera y solo reciben del servidor SUS facturas pendientes.
+const RAD_TAB = ['andrea', 'alberto'];
+const RAD_COMERCIALES = ['mario', 'sheila'];
+const RAD_VEND = { mario: 'MARIO', sheila: 'SHEILA' };   // usuario -> nombre con que figura como vendedor en Cartera
+let _radPropiasDe = '';                   // de qué usuario son las facturas de _radPropias
+let _radPfx = 'rad';                      // 'rad' = pestaña de Cartera · 'radp' = módulo de los comerciales
+let _radPropias = null;                   // facturas del comercial (módulo propio)
+function radTabPuede() { return !!(currentUser && RAD_TAB.indexOf(currentUser.email) >= 0); }
+function radEsComercial() { return !!(currentUser && RAD_COMERCIALES.indexOf(currentUser.email) >= 0); }
+function radPuede() { return radTabPuede() || radEsComercial(); }
+function radMostrarBoton() {
+  const b = document.getElementById('cnu-tab-btn-radic'); if (b) b.style.display = radTabPuede() ? '' : 'none';
+  if (!radTabPuede()) { const d = document.getElementById('cnu-tab-radic'); if (d) d.style.display = 'none'; }
+}
+function _radEl(n) { return document.getElementById(_radPfx + '-' + n); }
+// Módulo de los comerciales: se piden al servidor solo las facturas de ESE vendedor y solo las columnas
+// que se muestran (sin comisiones ni retenciones). Lectura; no escribe nada.
+async function radPaginaInit(forzar) {
+  _radPfx = 'radp';
+  const pt = document.getElementById('page-title'); if (pt) pt.textContent = 'Facturas radicadas';
+  const st = document.getElementById('radp-estado');
+  if (!radEsComercial()) { _radPropias = null; _radPropiasDe = ''; radRender(); return; }
+  const mio = _radMiVendedor();
+  if (!_radPropias || forzar || _radPropiasDe !== currentUser.email) {
+    _radPropias = null; _radPropiasDe = currentUser.email;   // nunca dejar a la vista las del usuario anterior
+    radRender();
+    if (st) st.textContent = '⏳ Leyendo…';
+    try {
+      const r = await fetch(UTIL_SB_URL + '/cartera_facturas?select=id,cliente_nombre,nit,numero,oc,fecha_facturacion,fecha_vencimiento,monto_total,saldo,estado,estado_financiero,vendedor'
+        + '&vendedor=ilike.*' + encodeURIComponent(mio) + '*&estado=neq.ANULADA&saldo=gt.0&order=fecha_vencimiento.asc&limit=5000',
+        { headers: { apikey: UTIL_SB_KEY, Authorization: 'Bearer ' + UTIL_SB_KEY }, cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      _radPropias = await r.json();
+      if (st) st.textContent = '';
+    } catch (e) { if (st) st.textContent = '❌ Sin conexión (' + (e && e.message || e) + ')'; _radPropias = _radPropias || []; }
+  }
+  radRender();
+}
 // «MARIO/SHEILA», «SHEILA / MARIO» → ['MARIO','SHEILA']
 function _cnuVendedores(v) { const out = []; String(v || '').split('/').forEach(s => { s = s.trim().toUpperCase(); if (s && out.indexOf(s) < 0) out.push(s); }); return out; }
 // Comisión compartida: partes iguales entre los vendedores de la factura (3 % = 1,5 % y 1,5 %).
-// Mientras dure la fase 1 solo se reparte en la pantalla de andrea; los demás ven lo de siempre.
+// v363: el reparto se ve igual para todos los que entran a Comisiones (andrea, alberto, nelsy).
 // v362: un mismo comercial escrito de dos formas en Cartera se muestra con UN solo nombre (para todos los
 // usuarios). Pedido del usuario 18-nov-2026: «SHEILA» y «SHEILA BARON» son la misma persona. No se
 // cambia nada en la base: solo cómo se agrupa en Comisiones, su Excel y la cuenta de cobro.
@@ -12616,7 +12677,7 @@ function _cnuVendNombre(v) { const t = String(v || '').trim(); return _CNU_VEND_
 function _cnuComPartes(f) {
   const v = (f.vendedor || '').trim() || 'SIN VENDEDOR', c = parseFloat(f.comision) || 0;
   const ns = []; _cnuVendedores(v).forEach(n => { n = _cnuVendNombre(n); if (ns.indexOf(n) < 0) ns.push(n); });
-  if (!radPuede() || ns.length < 2) { const n1 = _cnuVendNombre(v); return [{ vendedor: n1, comision: c, f: (n1 === v ? f : Object.assign({}, f, { _vend: n1 })) }]; }
+  if (ns.length < 2) { const n1 = _cnuVendNombre(v); return [{ vendedor: n1, comision: c, f: (n1 === v ? f : Object.assign({}, f, { _vend: n1 })) }]; }
   const parte = Math.round(c / ns.length * 100) / 100;
   return ns.map((n, i) => {
     const mia = (i === ns.length - 1) ? Math.round((c - parte * (ns.length - 1)) * 100) / 100 : parte;
@@ -12625,23 +12686,24 @@ function _cnuComPartes(f) {
 }
 // Vendedor que le corresponde al usuario: null = ve todo (andrea, alberto); si no, su primer nombre.
 function _radMiVendedor() {
-  if (!currentUser) return '';
+  if (!currentUser) return '\u0000';
   if (currentUser.email === 'andrea' || currentUser.email === 'alberto') return null;
-  return String(currentUser.name || currentUser.email || '').trim().split(/\s+/)[0].toUpperCase();
+  return RAD_VEND[currentUser.email] || '\u0000';   // sin vendedor asignado: no casa con ninguna factura
 }
 function _radEsDe(f, vend) { return !vend || _cnuVendedores(f.vendedor).some(n => n.split(/\s+/)[0] === vend); }
 function _radFecha(s) { return s ? String(s).slice(0, 10).split('-').reverse().join('/') : '—'; }
 function _radFacturas() {
   const hoy = new Date(); hoy.setHours(12, 0, 0, 0);
   const mio = _radMiVendedor();
-  const sel = mio === null ? ((document.getElementById('rad-vend') || {}).value || '') : mio;
-  const q = ((document.getElementById('rad-buscar') || {}).value || '').toLowerCase().trim();
-  return (_cnuFacturas || []).filter(f => _cnuEsPendiente(f) && _radEsDe(f, sel))
+  const sel = mio === null ? ((_radEl('vend') || {}).value || '') : mio;
+  const q = ((_radEl('buscar') || {}).value || '').toLowerCase().trim();
+  const origen = (_radPfx === 'radp') ? ((radEsComercial() && _radPropiasDe === currentUser.email) ? (_radPropias || []) : []) : (radTabPuede() ? (_cnuFacturas || []) : []);
+  return origen.filter(f => _cnuEsPendiente(f) && _radEsDe(f, sel))
     .filter(f => !q || String(f.cliente_nombre || '').toLowerCase().includes(q) || String(f.numero || '').toLowerCase().includes(q) || String(f.oc || '').toLowerCase().includes(q))
     .map(f => { const m = _cnuMora(f, hoy); const cat = _cnuCatDe(m); return Object.assign({}, f, { mora: m, cat: cat ? cat[0] : null, desc: cat ? cat[1] : 'Sin fecha de vencimiento' }); });
 }
 function radLlenarVendedores() {
-  const sel = document.getElementById('rad-vend'); if (!sel) return;
+  const sel = _radEl('vend'); if (!sel) return;
   const mio = _radMiVendedor();
   if (mio !== null) { sel.style.display = 'none'; return; }
   const ns = {};
@@ -12651,7 +12713,7 @@ function radLlenarVendedores() {
   sel.innerHTML = '<option value="">Todos los comerciales</option>' + Object.keys(ns).sort().map(n => '<option' + (n === act ? ' selected' : '') + '>' + _remiEsc(n) + '</option>').join('');
 }
 function radRender() {
-  const cont = document.getElementById('rad-lista'), res = document.getElementById('rad-resumen'); if (!cont) return;
+  const cont = _radEl('lista'), res = _radEl('resumen'); if (!cont) return;
   if (!radPuede()) { cont.innerHTML = ''; if (res) res.innerHTML = ''; return; }
   const fs = _radFacturas();
   const sum = a => a.reduce((s, f) => s + (parseFloat(f.saldo) || 0), 0);
@@ -12693,13 +12755,14 @@ function radExcel() {
   XLSX.writeFile(wb, 'Facturas_Radicadas_' + _cnuHoy() + '.xlsx');
 }
 async function radInit() {
+  _radPfx = 'rad';
   if (!_cnuFacturas) { try { await cnuCargar(false); } catch (_) { } }
   radLlenarVendedores(); radRender();
 }
 // cnuTab no conoce esta pestaña: se envuelve otra vez (igual que Comisiones externas), sin tocar la original.
 const _cnuTabSinRad = cnuTab;
 cnuTab = function (t) {
-  if (t === 'radic' && !radPuede()) { showToast('Facturas radicadas todavía no está habilitado para tu usuario', 'error'); return; }
+  if (t === 'radic' && !radTabPuede()) { showToast('Facturas radicadas no está habilitado para tu usuario en Cartera', 'error'); return; }
   _cnuTabSinRad(t);
   const d = document.getElementById('cnu-tab-radic'), b = document.getElementById('cnu-tab-btn-radic');
   if (d) d.style.display = (t === 'radic') ? '' : 'none';
@@ -13048,7 +13111,7 @@ function cnuRenderComisiones() {
     if (!_cnuEsComision(f)) return;
     if (mes && f.mes_pago !== mes) return;
     if (quin && _cnuQuin(f) !== quin) return;
-    // v361: comisión compartida («MARIO/SHEILA») → mitad para cada uno (fase 1: solo en la pantalla de andrea)
+    // v361/v363: comisión compartida («MARIO/SHEILA») → mitad para cada uno
     _cnuComPartes(f).forEach(p => {
       const v = p.vendedor;
       if (!vend[v]) vend[v] = { filas: [], total: 0 };
