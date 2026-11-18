@@ -2302,6 +2302,7 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
             <button class="btn btn-secondary" id="cnu-tab-btn-meses" onclick="cnuTab('meses')" style="width:auto;font-size:13px;padding:9px 16px;">📅 Meses</button>
             <button class="btn btn-secondary" id="cnu-tab-btn-clientes" onclick="cnuTab('clientes')" style="width:auto;font-size:13px;padding:9px 16px;">👥 Clientes</button>
             <button class="btn btn-secondary" id="cnu-tab-btn-legalizar" onclick="cnuTab('legalizar')" style="width:auto;font-size:13px;padding:9px 16px;">📌 Por legalizar</button>
+            <button class="btn btn-secondary" id="cnu-tab-btn-radic" onclick="cnuTab('radic')" style="width:auto;font-size:13px;padding:9px 16px;display:none;" title="Facturas radicadas por cliente: fecha de radicado y de vencimiento">📄 Facturas radicadas</button>
             <button class="btn btn-secondary" id="cnu-tab-btn-cext" onclick="cnuTab('cext')" style="width:auto;font-size:13px;padding:9px 16px;display:none;" title="Comisiones a terceros por cliente (solo Andrea y Alberto)">🤝 Comisiones externas</button>
             <span style="flex:1;"></span>
             <button class="btn btn-primary" id="cnu-btn-nuevafact" onclick="cnuNuevaFactura()" style="width:auto;font-size:13px;padding:9px 16px;">➕ Nueva factura</button>
@@ -2347,6 +2348,22 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
                 <button class="btn btn-secondary" onclick="cexExportar()" style="width:auto;font-size:12px;padding:8px 14px;">⬇️ Excel</button>
               </div>
               <div id="cex-facturas"></div>
+            </div>
+          </div>
+          <!-- 📄 FACTURAS RADICADAS (v361, 18-nov-2026) — facturas pendientes por cliente con fecha de radicado
+               (= fecha de la factura) y de vencimiento. Solo lectura de Cartera. Fase 1: solo andrea (radPuede). -->
+          <div id="cnu-tab-radic" style="display:none;">
+            <div class="card" style="padding:18px;">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+                <div class="config-title" style="margin:0;">📄 Facturas radicadas por cliente</div>
+                <span style="flex:1;"></span>
+                <select id="rad-vend" onchange="radRender()" style="width:auto;padding:8px 12px;"></select>
+                <input type="text" id="rad-buscar" oninput="radRender()" placeholder="Buscar cliente, factura u O.C." style="width:220px;padding:8px 12px;">
+                <button class="btn btn-secondary" onclick="radExcel()" style="width:auto;font-size:12px;padding:8px 14px;">⬇️ Excel</button>
+              </div>
+              <div id="rad-resumen" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;"></div>
+              <div id="rad-lista"></div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:10px;">Fecha de radicado = fecha de la factura en Cartera. Solo se muestran las facturas pendientes de pago.</div>
             </div>
           </div>
           <div id="cnu-tab-comisiones" style="display:none;">
@@ -8657,6 +8674,7 @@ function navigate(page) {
   if(page==='vinculacion') { try{ vinInit(); }catch(e){ console.error('[vin]',e); } }
   if(page==='vinculacion') { try{ vfMostrarTabbar(); }catch(e){ console.error('[vf]',e); } }   // 📝 Llenar formatos con IA (4-nov-2026)
   if(page==='cartera') { try{ cexMostrarBoton(); }catch(e){ console.error('[cex]',e); } }   // 🤝 Comisiones externas (5-nov-2026)
+  if(page==='cartera') { try{ radMostrarBoton(); }catch(e){ console.error('[rad]',e); } }   // 📄 Facturas radicadas (v361)
   if(String(page).startsWith('fe_')) { try{ feNav(page); }catch(e){ console.error('[fe]',e); } }   // 🔧 Ferreindustrial (20-oct-2026)
   if(page==='pdfstudio') { const _f=document.getElementById('pdfstudio-frame'); if(_f && !_f.src) _f.src='pdf-studio.html'; }   // v155: carga perezosa (las librerías PDF solo se bajan al entrar)
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadSbProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
@@ -12578,6 +12596,111 @@ cnuTab = function (t) {
     if (b) { b.classList.remove('btn-primary'); b.classList.add('btn-secondary'); }
   }
 };
+// ===== 📄 FACTURAS RADICADAS + comisiones compartidas (v361, 18-nov-2026) =====
+// Pedido del jefe: que los comerciales, Andrea y Alberto vean la factura radicada por cliente con
+// fecha de radicado y de vencimiento. Decisiones del usuario: radicado = fecha de la factura;
+// cada comercial ve solo SUS clientes y solo lo pendiente de pago; FASE 1: solo andrea lo ve.
+// Cartera se LEE, no se escribe nada.
+const RAD_FASE1 = ['andrea'];            // fase 2: abrir a alberto y a los comerciales
+function radPuede() { return !!(currentUser && RAD_FASE1.indexOf(currentUser.email) >= 0); }
+function radMostrarBoton() { const b = document.getElementById('cnu-tab-btn-radic'); if (b) b.style.display = radPuede() ? '' : 'none'; }
+// «MARIO/SHEILA», «SHEILA / MARIO» → ['MARIO','SHEILA']
+function _cnuVendedores(v) { const out = []; String(v || '').split('/').forEach(s => { s = s.trim().toUpperCase(); if (s && out.indexOf(s) < 0) out.push(s); }); return out; }
+// Comisión compartida: partes iguales entre los vendedores de la factura (3 % = 1,5 % y 1,5 %).
+// Mientras dure la fase 1 solo se reparte en la pantalla de andrea; los demás ven lo de siempre.
+function _cnuComPartes(f) {
+  const v = (f.vendedor || '').trim() || 'SIN VENDEDOR', c = parseFloat(f.comision) || 0;
+  const ns = _cnuVendedores(v);
+  if (!radPuede() || ns.length < 2) return [{ vendedor: v, comision: c, f: f }];
+  const parte = Math.round(c / ns.length * 100) / 100;
+  return ns.map((n, i) => {
+    const mia = (i === ns.length - 1) ? Math.round((c - parte * (ns.length - 1)) * 100) / 100 : parte;
+    return { vendedor: n, comision: mia, f: Object.assign({}, f, { comision: mia, _vend: n, _compartida: ns.join(' / ') }) };
+  });
+}
+// Vendedor que le corresponde al usuario: null = ve todo (andrea, alberto); si no, su primer nombre.
+function _radMiVendedor() {
+  if (!currentUser) return '';
+  if (currentUser.email === 'andrea' || currentUser.email === 'alberto') return null;
+  return String(currentUser.name || currentUser.email || '').trim().split(/\s+/)[0].toUpperCase();
+}
+function _radEsDe(f, vend) { return !vend || _cnuVendedores(f.vendedor).some(n => n.split(/\s+/)[0] === vend); }
+function _radFecha(s) { return s ? String(s).slice(0, 10).split('-').reverse().join('/') : '—'; }
+function _radFacturas() {
+  const hoy = new Date(); hoy.setHours(12, 0, 0, 0);
+  const mio = _radMiVendedor();
+  const sel = mio === null ? ((document.getElementById('rad-vend') || {}).value || '') : mio;
+  const q = ((document.getElementById('rad-buscar') || {}).value || '').toLowerCase().trim();
+  return (_cnuFacturas || []).filter(f => _cnuEsPendiente(f) && _radEsDe(f, sel))
+    .filter(f => !q || String(f.cliente_nombre || '').toLowerCase().includes(q) || String(f.numero || '').toLowerCase().includes(q) || String(f.oc || '').toLowerCase().includes(q))
+    .map(f => { const m = _cnuMora(f, hoy); const cat = _cnuCatDe(m); return Object.assign({}, f, { mora: m, cat: cat ? cat[0] : null, desc: cat ? cat[1] : 'Sin fecha de vencimiento' }); });
+}
+function radLlenarVendedores() {
+  const sel = document.getElementById('rad-vend'); if (!sel) return;
+  const mio = _radMiVendedor();
+  if (mio !== null) { sel.style.display = 'none'; return; }
+  const ns = {};
+  (_cnuFacturas || []).forEach(f => { if (_cnuEsPendiente(f)) _cnuVendedores(f.vendedor).forEach(n => { ns[n.split(/\s+/)[0]] = 1; }); });
+  const act = sel.value;
+  sel.style.display = '';
+  sel.innerHTML = '<option value="">Todos los comerciales</option>' + Object.keys(ns).sort().map(n => '<option' + (n === act ? ' selected' : '') + '>' + _remiEsc(n) + '</option>').join('');
+}
+function radRender() {
+  const cont = document.getElementById('rad-lista'), res = document.getElementById('rad-resumen'); if (!cont) return;
+  if (!radPuede()) { cont.innerHTML = ''; if (res) res.innerHTML = ''; return; }
+  const fs = _radFacturas();
+  const sum = a => a.reduce((s, f) => s + (parseFloat(f.saldo) || 0), 0);
+  const venc = fs.filter(f => f.mora !== null && f.mora > 0), porV = fs.filter(f => !(f.mora !== null && f.mora > 0));
+  const card = (num, lab, color) => '<div class="card" style="padding:12px;text-align:center;"><div style="font-size:18px;font-weight:800;white-space:nowrap;' + (color ? 'color:' + color + ';' : '') + '">' + num + '</div><div style="font-size:10px;color:var(--text-muted);letter-spacing:.5px;">' + lab + '</div></div>';
+  if (res) res.innerHTML = card(_cnuFmt(sum(fs)), 'SALDO PENDIENTE', 'var(--gold)') + card(fs.length, 'FACTURAS RADICADAS') + card(porV.length + ' · ' + _cnuFmt(sum(porV)), 'POR VENCER', _CNU_CAT.vigente.color) + card(venc.length + ' · ' + _cnuFmt(sum(venc)), 'VENCIDAS', _CNU_CAT.critica.color);
+  if (!fs.length) { cont.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">Sin facturas pendientes para ese filtro.</div>'; return; }
+  const cli = {};
+  fs.forEach(f => { const k = f.cliente_nombre || '—'; if (!cli[k]) cli[k] = { nombre: k, nit: f.nit || '', fs: [], saldo: 0 }; cli[k].fs.push(f); cli[k].saldo += parseFloat(f.saldo) || 0; });
+  const td = 'padding:6px 10px;border-bottom:1px solid rgba(128,128,128,.18);';
+  const th = 'text-align:left;padding:6px 10px;color:var(--text-muted);font-size:10px;';
+  cont.innerHTML = Object.values(cli).sort((a, b) => b.saldo - a.saldo).map(c => {
+    const filas = c.fs.slice().sort((a, b) => String(a.fecha_vencimiento || '9999').localeCompare(String(b.fecha_vencimiento || '9999'))).map(f => {
+      const k = f.cat && _CNU_CAT[f.cat] ? _CNU_CAT[f.cat] : null;
+      return '<tr><td style="' + td + 'font-weight:600;">#' + _remiEsc(f.numero || '—') + '</td>' +
+        '<td style="' + td + 'font-size:11px;">' + _remiEsc(f.oc || '—') + '</td>' +
+        '<td style="' + td + '">' + _radFecha(f.fecha_facturacion) + '</td>' +
+        '<td style="' + td + '">' + _radFecha(f.fecha_vencimiento) + '</td>' +
+        '<td style="' + td + '"><span style="font-size:10px;font-weight:700;' + (k ? 'color:' + k.color + ';background:' + k.bg + ';' : 'color:var(--text-muted);') + 'border-radius:10px;padding:2px 8px;white-space:nowrap;">' + _remiEsc(f.desc) + '</span></td>' +
+        '<td style="' + td + 'text-align:right;font-size:11px;">' + _cnuFmt(f.monto_total) + '</td>' +
+        '<td style="' + td + 'text-align:right;font-weight:600;">' + _cnuFmt(f.saldo) + '</td>' +
+        '<td style="' + td + 'font-size:11px;color:var(--text-muted);">' + _remiEsc(f.vendedor || '—') + '</td></tr>';
+    }).join('');
+    return '<div style="border:1px solid rgba(128,128,128,.25);border-radius:10px;margin-bottom:10px;overflow:hidden;">' +
+      '<div style="display:flex;gap:10px;align-items:center;padding:10px 14px;flex-wrap:wrap;"><div style="flex:1;min-width:180px;"><b>' + _remiEsc(c.nombre) + '</b><div style="font-size:11px;color:var(--text-muted);">NIT ' + _remiEsc(c.nit || '—') + ' · ' + c.fs.length + ' factura' + (c.fs.length !== 1 ? 's' : '') + '</div></div><b>' + _cnuFmt(c.saldo) + '</b></div>' +
+      '<div style="overflow-x:auto;padding:0 6px 8px;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:680px;">' +
+      '<thead><tr><th style="' + th + '">FACTURA</th><th style="' + th + '">O.C.</th><th style="' + th + '">FECHA RADICADO</th><th style="' + th + '">FECHA VENCIMIENTO</th><th style="' + th + '">ESTADO</th><th style="' + th + 'text-align:right;">TOTAL (IVA)</th><th style="' + th + 'text-align:right;">SALDO</th><th style="' + th + '">COMERCIAL</th></tr></thead><tbody>' + filas + '</tbody></table></div></div>';
+  }).join('');
+}
+function radExcel() {
+  if (!radPuede()) return;
+  const fs = _radFacturas();
+  if (!fs.length) { showToast('Sin facturas para exportar con ese filtro.', 'error'); return; }
+  const rows = fs.slice().sort((a, b) => String(a.cliente_nombre || '').localeCompare(String(b.cliente_nombre || '')) || String(a.fecha_vencimiento || '').localeCompare(String(b.fecha_vencimiento || '')))
+    .map(f => ({ 'CLIENTE': f.cliente_nombre || '', 'NIT': f.nit || '', 'FACTURA': f.numero || '', 'O.C.': f.oc || '', 'FECHA RADICADO': f.fecha_facturacion || '', 'FECHA VENCIMIENTO': f.fecha_vencimiento || '',
+      'DÍAS (− por vencer / + vencida)': f.mora, 'ESTADO': f.desc, 'TOTAL (IVA)': parseFloat(f.monto_total || 0), 'SALDO': parseFloat(f.saldo || 0), 'COMERCIAL': f.vendedor || '' }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Facturas radicadas');
+  XLSX.writeFile(wb, 'Facturas_Radicadas_' + _cnuHoy() + '.xlsx');
+}
+async function radInit() {
+  if (!_cnuFacturas) { try { await cnuCargar(false); } catch (_) { } }
+  radLlenarVendedores(); radRender();
+}
+// cnuTab no conoce esta pestaña: se envuelve otra vez (igual que Comisiones externas), sin tocar la original.
+const _cnuTabSinRad = cnuTab;
+cnuTab = function (t) {
+  if (t === 'radic' && !radPuede()) { showToast('Facturas radicadas todavía no está habilitado para tu usuario', 'error'); return; }
+  _cnuTabSinRad(t);
+  const d = document.getElementById('cnu-tab-radic'), b = document.getElementById('cnu-tab-btn-radic');
+  if (d) d.style.display = (t === 'radic') ? '' : 'none';
+  if (b) { b.classList.toggle('btn-primary', t === 'radic'); b.classList.toggle('btn-secondary', t !== 'radic'); }
+  if (t === 'radic') radInit();
+};
 async function cexInit() {
   if (!_cnuFacturas) { try { await cnuCargar(false); } catch (_) { } }
   cexLlenarClientes(); cexRender();
@@ -12920,10 +13043,13 @@ function cnuRenderComisiones() {
     if (!_cnuEsComision(f)) return;
     if (mes && f.mes_pago !== mes) return;
     if (quin && _cnuQuin(f) !== quin) return;
-    const v = (f.vendedor || '').trim() || 'SIN VENDEDOR';
-    if (!vend[v]) vend[v] = { filas: [], total: 0 };
-    vend[v].filas.push(f);
-    vend[v].total += parseFloat(f.comision);
+    // v361: comisión compartida («MARIO/SHEILA») → mitad para cada uno (fase 1: solo en la pantalla de andrea)
+    _cnuComPartes(f).forEach(p => {
+      const v = p.vendedor;
+      if (!vend[v]) vend[v] = { filas: [], total: 0 };
+      vend[v].filas.push(p.f);
+      vend[v].total += p.comision;
+    });
   });
   const lista = Object.entries(vend).sort((a, b) => b[1].total - a[1].total);
   if (!lista.length) { cont.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">Sin comisiones para ese filtro.</div>'; return; }
@@ -12938,7 +13064,7 @@ function cnuRenderComisiones() {
       '<b style="flex:1;">🧑‍💼 ' + nombre + '</b>' + (_cnuPuedeEscribir() ? '<button class="btn-sm" onclick="event.stopPropagation();cnuCCDesdeCom(' + i + ')" title="Generar cuenta de cobro en PDF con consecutivo compartido" style="background:rgba(46,170,74,.18);border:1px solid rgba(46,170,74,.5);color:#86efac;">📄 Cta cobro</button>' : '') + '<span style="font-size:11px;color:var(--text-muted);">' + v.filas.length + ' factura' + (v.filas.length !== 1 ? 's' : '') + '</span><b style="color:#86efac;">' + _cnuFmt(v.total) + '</b></div>' +
       '<div id="cnu-com-' + i + '" style="display:none;overflow-x:auto;padding:0 6px 8px;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:560px;">' +
       '<thead><tr><th style="' + th + '">EMPRESA</th><th style="' + th + '">FACTURA</th><th style="' + th + '">MES</th><th style="' + th + '">QUINCENA</th><th style="' + th + '">RETEICA</th><th style="' + th + 'text-align:right;">COMISIÓN</th></tr></thead><tbody>' +
-      v.filas.map(f => '<tr><td style="' + td + '">' + f.cliente_nombre + '</td><td style="' + td + '">#' + (f.numero || '—') + '</td><td style="' + td + 'font-size:11px;">' + (f.mes_pago || '—') + '</td><td style="' + td + 'font-size:11px;">' + (_cnuQuin(f) === 'antes' ? 'Primeros 15' : 'Después del 15') + '</td><td style="' + td + 'font-size:11px;">' + (f.reteica || 'NO') + '</td><td style="' + td + 'text-align:right;font-weight:600;">' + _cnuFmt(f.comision) + '</td></tr>').join('') +
+      v.filas.map(f => '<tr><td style="' + td + '">' + f.cliente_nombre + '</td><td style="' + td + '">#' + (f.numero || '—') + (f._compartida ? ' <span title="Comisión compartida en partes iguales" style="font-size:10px;color:var(--gold);white-space:nowrap;">compartida ' + _remiEsc(f._compartida) + '</span>' : '') + '</td><td style="' + td + 'font-size:11px;">' + (f.mes_pago || '—') + '</td><td style="' + td + 'font-size:11px;">' + (_cnuQuin(f) === 'antes' ? 'Primeros 15' : 'Después del 15') + '</td><td style="' + td + 'font-size:11px;">' + (f.reteica || 'NO') + '</td><td style="' + td + 'text-align:right;font-weight:600;">' + _cnuFmt(f.comision) + '</td></tr>').join('') +
       '</tbody></table></div></div>';
   }).join('') +
   '<div style="text-align:right;font-weight:800;padding:10px 14px;background:rgba(15,43,91,.35);border-radius:10px;">TOTAL GENERAL: <span style="color:#86efac;">' + _cnuFmt(totalG) + '</span></div>';
@@ -12961,7 +13087,8 @@ function cnuExportComisiones() {
   const mes = (document.getElementById('cnu-com-mes') || {}).value || '';
   const quin = (document.getElementById('cnu-com-quin') || {}).value || '';
   const rows = _cnuFacturas.filter(f => _cnuEsComision(f) && (!mes || f.mes_pago === mes) && (!quin || _cnuQuin(f) === quin))
-    .map(f => ({ 'VENDEDOR': (f.vendedor || '').trim() || 'SIN VENDEDOR', 'EMPRESA': f.cliente_nombre, 'FACTURA': f.numero, 'MES': f.mes_pago || '', 'QUINCENA': _cnuQuin(f) === 'antes' ? 'Primeros 15' : 'Después del 15', 'RETEICA': f.reteica || 'NO', 'COMISIÓN': parseFloat(f.comision) }));
+    .flatMap(f0 => _cnuComPartes(f0).map(p => p.f))   // v361: las compartidas salen una fila por vendedor, con su mitad
+    .map(f => ({ 'VENDEDOR': f._vend || ((f.vendedor || '').trim() || 'SIN VENDEDOR'), 'EMPRESA': f.cliente_nombre, 'FACTURA': f.numero, 'MES': f.mes_pago || '', 'QUINCENA': _cnuQuin(f) === 'antes' ? 'Primeros 15' : 'Después del 15', 'RETEICA': f.reteica || 'NO', 'COMISIÓN': parseFloat(f.comision) }));
   if (!rows.length) { showToast('Sin comisiones para exportar con ese filtro.', 'error'); return; }
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Comisiones');
