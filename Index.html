@@ -4930,6 +4930,7 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
             <div class="form-group" style="margin-bottom:10px;"><label>Fecha de entrega</label><input type="text" id="pcom-oc-entrega" placeholder="Ej: 10 DE JUNIO DE 2026"></div>
             <div class="form-group" style="margin-bottom:10px;"><label>Lugar de entrega</label><input type="text" id="pcom-oc-lugar" placeholder="Ej: BODEGA E&G CHÍA" value="CHIA - BODEGA E&G"></div>
             <div class="form-group" style="margin-bottom:10px;"><label>Observaciones</label><textarea id="pcom-oc-observaciones" rows="2" placeholder="Notas u observaciones para el proveedor (opcional)" style="width:100%;resize:vertical;"></textarea></div>
+            <div class="form-group" style="margin-bottom:10px;"><label>Descuento del proveedor (%)</label><input type="number" id="pcom-oc-descuento" min="0" max="99" step="0.01" placeholder="Ej: 8 (dejar vacío si no hay descuento)" oninput="pcomOCDescPreview()"><div id="pcom-oc-desc-info" style="font-size:11.5px;color:var(--text-muted);margin-top:5px;line-height:1.5;"></div></div>
             <div style="border-top:1px solid rgba(255,255,255,.1);margin:8px 0 10px;padding-top:10px;font-size:12px;font-weight:700;color:var(--gold);">DATOS DEL PROVEEDOR</div>
             <div style="display:flex;gap:8px;"><div class="form-group" style="flex:1;margin-bottom:10px;"><label>NIT</label><input type="text" id="pcom-oc-nit" placeholder="Ej: 900.123.456-7"></div><div class="form-group" style="flex:1;margin-bottom:10px;"><label>Ciudad</label><input type="text" id="pcom-oc-ciudad" placeholder="Ej: Bogotá"></div></div>
             <div class="form-group" style="margin-bottom:10px;"><label>Dirección</label><input type="text" id="pcom-oc-direccion" placeholder="Dirección del proveedor"></div>
@@ -36401,7 +36402,37 @@ function pcomOCModal(prov){
   setv('pcom-oc-nit', pv.nit); setv('pcom-oc-ciudad', pv.ciudad); setv('pcom-oc-direccion', pv.direccion);
   setv('pcom-oc-telefono', pv.telefono); setv('pcom-oc-contacto', pv.contacto);
   setv('pcom-oc-observaciones', '');   // observaciones: siempre en blanco para cada OC nueva
+  setv('pcom-oc-descuento', ''); pcomOCDescPreview();   // v360: descuento siempre en blanco para cada OC nueva
   const m = document.getElementById('pcom-oc-modal'); if(m) m.style.display='flex';
+}
+// v360 — descuento del proveedor: UN porcentaje para toda la OC. El plan queda con el costo ya descontado.
+function _pcomOCLineas(){
+  if(!pcom_current||!pcom_oc_prov) return [];
+  const p = String(pcom_oc_prov).trim().toUpperCase();
+  return pcom_current.items.filter(it=>String(it.proveedor||'').trim().toUpperCase()===p && String(it.descripcion||'').trim());
+}
+function _pcomOCDescPct(){
+  const e = document.getElementById('pcom-oc-descuento');
+  const v = e ? parseFloat(String(e.value).replace(',','.')) : 0;
+  return (isFinite(v) && v>0) ? v : 0;
+}
+function _pcomOCUnitDesc(costo, pct){ return Math.round((parseFloat(costo)||0) * (100-pct)) / 100; }   // costo con descuento, 2 decimales
+function pcomOCDescPreview(){
+  const el = document.getElementById('pcom-oc-desc-info'); if(!el) return;
+  const d = _pcomOCDescPct(); const ls = _pcomOCLineas();
+  let h = '';
+  if(d>=100){ h = '<span style="color:#e06c6c">El descuento debe ser menor a 100 %.</span>'; }
+  else if(d>0){
+    const bruto = ls.reduce((s,it)=>s+(parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0),0);
+    const neto = ls.reduce((s,it)=>s+(parseFloat(it.cantidad)||0)*_pcomOCUnitDesc(it.costo_unit,d),0);
+    h = 'Subtotal '+_pcomMoney(bruto)+' · Descuento '+String(d).replace('.',',')+' %: <b>−'+_pcomMoney(Math.round(bruto)-Math.round(neto))+'</b> · Queda en <b>'+_pcomMoney(neto)+'</b> antes de IVA.<br>El plan de compras queda con el costo ya descontado.';
+  }
+  try{
+    const p = String(pcom_oc_prov||'').trim().toUpperCase();
+    const prev = (pcom_ocs||[]).find(o=>pcom_current && String(o.cc)===String(pcom_current.cc) && String(o.proveedor||'').trim().toUpperCase()===p && parseFloat((o.condiciones||{}).descuento_pct)>0);
+    if(prev) h += (h?'<br>':'')+'<span style="color:#e8a020">⚠️ La OC #'+_remiEsc(prev.oc)+' de este proveedor ya aplicó '+String(prev.condiciones.descuento_pct).replace('.',',')+' % en este plan: esos costos ya están descontados.</span>';
+  }catch(_){}
+  el.innerHTML = h;
 }
 function pcomOCCerrar(){ pcom_oc_prov=null; const m=document.getElementById('pcom-oc-modal'); if(m) m.style.display='none'; }
 // Guarda/actualiza los datos del proveedor en la base, para que la próxima OC se llene sola.
@@ -36432,10 +36463,25 @@ async function pcomOCConfirmar(){
   const p = String(pcom_oc_prov).trim().toUpperCase();
   const lineas = pcom_current.items.filter(it=>String(it.proveedor||'').trim().toUpperCase()===p && String(it.descripcion||'').trim());
   if(!lineas.length) return showToast('Este proveedor no tiene líneas','error');
+  const dPct = _pcomOCDescPct();          // v360: descuento del proveedor (% para toda la OC)
+  if(dPct>=100) return showToast('El descuento debe ser menor a 100 %','error');
+  if(dPct>0){   // v360: freno al doble descuento (rehacer una OC que ya descontó)
+    const _prevD = (pcom_ocs||[]).find(o=>String(o.cc)===String(pcom_current.cc) && String(o.proveedor||'').trim().toUpperCase()===p && parseFloat((o.condiciones||{}).descuento_pct)>0);
+    if(_prevD && !confirm('La OC #'+_prevD.oc+' ya aplicó '+String(_prevD.condiciones.descuento_pct).replace('.',',')+' % a este proveedor en este plan: los costos ya están descontados.\n\n¿Aplicar OTRO '+String(dPct).replace('.',',')+' % encima?\n\n(Cancelar = no se genera la orden; deje la casilla de descuento vacía si solo va a rehacerla.)')) return;
+  }
   _pcomGuardarDatosProv(pcom_oc_prov);   // guarda NIT/dirección/etc. para la próxima vez
   const btn = document.getElementById('pcom-oc-btn'); if(btn){ btn.disabled=true; btn.textContent='Generando...'; }
+  let _costosAntes = null;                // v360: para devolver los costos si la OC no alcanza a guardarse
   try{
     if(pcom_current.nueva) await pcomGuardar(true);
+    // v360: la OC imprime el precio de lista; el descuento se aplica al costo de las líneas del plan
+    const itemsOC = lineas.map(it=>({ descripcion:it.descripcion, udm:it.udm||'EA', cantidad:parseFloat(it.cantidad)||0, nota:String(it.nota||'').trim(),
+        costo_unit:parseFloat(it.costo_unit)||0, subtotal:(parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0) }));
+    const brutoOC = itemsOC.reduce((s,i)=>s+i.subtotal,0);
+    if(dPct>0){
+      _costosAntes = lineas.map(it=>it.costo_unit);
+      lineas.forEach(it=>{ if(parseFloat(it.costo_unit)) it.costo_unit = _pcomOCUnitDesc(it.costo_unit, dPct); });
+    }
     const calc = pcomCalcRows(pcom_current.items);
     const x = calc.provs[p] || {subtotal:0,iva:0,rete:0,total:0,aplicaRete:false};
     const oc = {
@@ -36447,12 +36493,13 @@ async function pcomOCConfirmar(){
         lugar: document.getElementById('pcom-oc-lugar').value.trim(),
         observaciones: document.getElementById('pcom-oc-observaciones').value.trim()
       },
-      items: lineas.map(it=>({ descripcion:it.descripcion, udm:it.udm||'EA', cantidad:parseFloat(it.cantidad)||0, nota:String(it.nota||'').trim(),
-        costo_unit:parseFloat(it.costo_unit)||0, subtotal:(parseFloat(it.cantidad)||0)*(parseFloat(it.costo_unit)||0) })),
+      items: itemsOC,
       subtotal:x.subtotal, iva:x.iva, retencion:x.rete, total:x.total,
       created_by: currentUser?.name||'—'
     };
+    if(dPct>0){ oc.condiciones.descuento_pct = dPct; oc.condiciones.subtotal_bruto = brutoOC; oc.condiciones.descuento_valor = Math.round((brutoOC - x.subtotal)*100)/100; }
     const saved = await absFetch('oc_compras',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify([oc])});
+    _costosAntes = null;                  // la OC quedó guardada: el descuento ya es firme
     const ocRow = (saved&&saved[0])||oc;
     pcom_ocs.unshift(ocRow);
     // v186: lo que se le acaba de pedir al proveedor queda marcado como COMPRADO
@@ -36462,7 +36509,10 @@ async function pcomOCConfirmar(){
     if(!pcom_current.nueva) await pcomGuardarCola();
     showToast('OC #'+ocRow.oc+' generada ✓','ok');
     pcomOCPrint(ocRow);
-  }catch(e){ showToast('Error: '+e.message,'error'); }
+  }catch(e){
+    if(_costosAntes){ lineas.forEach((it,i)=>{ it.costo_unit = _costosAntes[i]; }); try{ pcomRenderItems(); }catch(_){} }   // v360: la OC no se guardó → costos como estaban
+    showToast('Error: '+e.message,'error');
+  }
   if(btn){ btn.disabled=false; btn.textContent='🧾 Generar e imprimir OC'; }
 }
 function pcomOCReimprimir(id){
@@ -36473,6 +36523,7 @@ function pcomOCReimprimir(id){
 function pcomOCPrint(o){
   const pv = pcomProvInfo(o.proveedor) || {};
   const cond = o.condiciones||{};
+  const _dPct = parseFloat(cond.descuento_pct)||0;   // v360: descuento del proveedor (solo las OC que lo traen)
   const logo = 'https://cami902026-oss.github.io/plataforma-eyg/libs/logo-eyg.png';
   const fechaFmt = o.fecha?String(o.fecha).split('-').reverse().join('/'):'';
   const filas = (o.items||[]).map((it,i)=>`<tr>
@@ -36534,7 +36585,9 @@ function pcomOCPrint(o){
       <tr><td style="font-size:9.5px">Autorización Facturación DIAN</td><td></td></tr></table>
     </td>
     <td style="vertical-align:top;width:30%">
-      <table class="tot"><tr><td class="lbl">SUBTOTAL</td><td style="text-align:right">${_pcomMoney(o.subtotal)}</td></tr>
+      <table class="tot">${_dPct>0 ? `<tr><td class="lbl">SUBTOTAL</td><td style="text-align:right">${_pcomMoney(cond.subtotal_bruto)}</td></tr>
+      <tr><td class="lbl">DESCUENTO ${String(_dPct).replace('.',',')}%</td><td style="text-align:right">-${_pcomMoney(Math.round(parseFloat(cond.subtotal_bruto)||0) - Math.round(parseFloat(o.subtotal)||0))}</td></tr>
+      <tr><td class="lbl">SUBTOTAL CON DCTO</td><td style="text-align:right">${_pcomMoney(o.subtotal)}</td></tr>` : `<tr><td class="lbl">SUBTOTAL</td><td style="text-align:right">${_pcomMoney(o.subtotal)}</td></tr>`}
       <tr><td class="lbl">IVA 19%</td><td style="text-align:right">${_pcomMoney(o.iva)}</td></tr>
       <tr><td class="lbl">RETE 2,5%</td><td style="text-align:right">${o.retencion?('-'+_pcomMoney(o.retencion)):'$ 0'}</td></tr>
       <tr style="background:#d9d9d9"><td class="lbl">TOTAL</td><td style="text-align:right;font-weight:700">${_pcomMoney(o.total)}</td></tr></table>
