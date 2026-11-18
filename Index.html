@@ -12608,10 +12608,15 @@ function radMostrarBoton() { const b = document.getElementById('cnu-tab-btn-radi
 function _cnuVendedores(v) { const out = []; String(v || '').split('/').forEach(s => { s = s.trim().toUpperCase(); if (s && out.indexOf(s) < 0) out.push(s); }); return out; }
 // Comisión compartida: partes iguales entre los vendedores de la factura (3 % = 1,5 % y 1,5 %).
 // Mientras dure la fase 1 solo se reparte en la pantalla de andrea; los demás ven lo de siempre.
+// v362: un mismo comercial escrito de dos formas en Cartera se muestra con UN solo nombre (para todos los
+// usuarios). Pedido del usuario 18-nov-2026: «SHEILA» y «SHEILA BARON» son la misma persona. No se
+// cambia nada en la base: solo cómo se agrupa en Comisiones, su Excel y la cuenta de cobro.
+const _CNU_VEND_ALIAS = { 'SHEILA': 'SHEILA BARON' };
+function _cnuVendNombre(v) { const t = String(v || '').trim(); return _CNU_VEND_ALIAS[t.toUpperCase()] || t; }
 function _cnuComPartes(f) {
   const v = (f.vendedor || '').trim() || 'SIN VENDEDOR', c = parseFloat(f.comision) || 0;
-  const ns = _cnuVendedores(v);
-  if (!radPuede() || ns.length < 2) return [{ vendedor: v, comision: c, f: f }];
+  const ns = []; _cnuVendedores(v).forEach(n => { n = _cnuVendNombre(n); if (ns.indexOf(n) < 0) ns.push(n); });
+  if (!radPuede() || ns.length < 2) { const n1 = _cnuVendNombre(v); return [{ vendedor: n1, comision: c, f: (n1 === v ? f : Object.assign({}, f, { _vend: n1 })) }]; }
   const parte = Math.round(c / ns.length * 100) / 100;
   return ns.map((n, i) => {
     const mia = (i === ns.length - 1) ? Math.round((c - parte * (ns.length - 1)) * 100) / 100 : parte;
