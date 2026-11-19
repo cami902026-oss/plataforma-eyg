@@ -2841,6 +2841,7 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
               <button class="btn btn-secondary" onclick="cotizAddRow()" style="width:auto;font-size:13px;">+ Fila manual</button>
               <button class="btn btn-secondary" onclick="cotizBuscarInventarioModal()" style="width:auto;font-size:13px;background:rgba(26,58,143,.4);">🔍 Buscar en inventario</button>
               <button class="btn btn-secondary" onclick="hpAbrir(null)" title="Buscar a cómo hemos cotizado un producto antes" style="width:auto;font-size:13px;background:rgba(232,160,32,.18);color:#fcd34d;">🕘 Precios cotizados</button>
+              <button class="btn btn-secondary" id="lpq-btn-top" onclick="lpqAbrir(null)" title="Agregar un ítem desde la lista de precios del inventario importado" style="width:auto;font-size:13px;display:none;">🏷️ Lista de precios</button>
               <button class="btn btn-secondary" onclick="cotizClear()" style="width:auto;font-size:13px;">🗑 Limpiar ítems</button>
               <button class="btn btn-secondary" id="cotiz-btn-quitar-img" onclick="cotizQuitarImagen()" style="width:auto;font-size:13px;display:none;background:rgba(248,113,113,.18);color:#fca5a5;">✕ Quitar imagen</button>
               <button class="btn btn-secondary" id="cotiz-btn-undo" onclick="cotizUndoItems()" title="Restaura la tabla de ítems como estaba antes de la última extracción con IA" style="width:auto;font-size:13px;display:none;background:rgba(232,160,32,.18);color:#fcd34d;">↩️ Recuperar ítems anteriores</button>
@@ -5578,8 +5579,8 @@ function userCanSeeModule(mod) {
   // Facturas radicadas (v363): módulo propio SOLO para los comerciales; cada uno ve sus clientes.
   // Andrea y Alberto lo ven como pestaña dentro de Cartera. No se puede destrabar por config.
   if (mod === 'radicadas') return email === 'mario' || email === 'sheila';
-  // Lista de precios de inventario (v364): FASE 1 solo andrea. Muestra costos; no se puede destrabar por config.
-  if (mod === 'precios') return email === 'andrea';
+  // Lista de precios de inventario (v364; v365 también alberto). Muestra costos; no se puede destrabar por config.
+  if (mod === 'precios') return email === 'andrea' || email === 'alberto';
   // Contratos marco: SOLO Andrea y Alberto (pedido del usuario, 9-oct-2026).
   // 22-oct-2026: Alexandra también lo ve (pedido del usuario); registrar consumos sigue siendo de Andrea y Alberto (cmkPuedeEscribir).
   if (mod === 'contratos') return email === 'andrea' || email === 'alberto' || email === 'alexandra';
@@ -8715,6 +8716,7 @@ function navigate(page) {
   const titles = {dashboard:'Dashboard',reuniones:'Reuniones',tareas:'Tareas',cronograma:'Ofertas en Plataformas y Proyectos',comunicaciones:'Comunicaciones',minutas:'Minutas',equipo:'Equipo',inventario:'Inventario',cotizaciones:'Cotizaciones IA',cartera:'Cartera',contratos:'Contratos Marco',saldos:'Saldos a Favor',vinculacion:'Vinculación de clientes y proveedores',procesos:'Procesos O.C.',op:'Órdenes de Pedido',fotoinv:'Fotos Inventario',visitas:'Visitas Comerciales',programacion:'Programación Equipo',mensajeria:'Mensajeria',configuracion:'Configuración',abastecimiento:'Abastecimiento',remisiones:'Remisiones',compras:'Plan de Compras',proveedores:'Proveedores',costos:'Centro de Costos',pdfstudio:'PDF Studio',ayuda:'Ayuda',fe_inicio:'Ferreindustrial',fe_productos:'Lista de precios',fe_catalogo:'Catálogo',fe_inventario:'Inventario Ferreindustrial',fe_clientes:'Ferreterías',fe_pedidos:'Pedidos',fe_remisiones:'Remisiones Ferreindustrial'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='cotizaciones') initCotizaciones();
+  if(page==='cotizaciones') { try{ lpqMostrarBoton(); }catch(e){ console.error('[lpq]',e); } }   // 🏷️ Lista de precios en la cotización (v365)
   if(page==='remisiones') remiInit();
   if(page==='visitas') { try{ visPlanInit(); }catch(_){} }
   if(page==='programacion') { try{ peInit(); }catch(_){} try{ sabPlanInit(); }catch(_){} }
@@ -12659,12 +12661,12 @@ cnuTab = function (t) {
 // Gerencia puede FIJAR el precio de contado de un ítem; los otros plazos suben en la misma proporción.
 // Lee `productos` (solo lectura). Los índices y los precios fijos viven en data/lista_precios.json.
 // No toca inventario, costos, kardex ni cotizaciones.
-const LPR_VEN = ['andrea'];                      // fase 1 (pedido del usuario: «móntalo a andrea y vamos revisando»)
+const LPR_VEN = ['andrea', 'alberto'];           // v365: «alberto quiere verlo» (18-nov-2026). Fase 1 fue solo andrea.
 const LPR_EDITAN = ['andrea', 'alberto'];        // quién cambia índices y precios fijos
 const LPR_FILE = 'data/lista_precios.json';
 const LPR_PLAZOS = [['c', 'CONTADO', '#F8696B'], ['d15', '1-15 DÍAS', '#FBAA77'], ['d30', '16-30 DÍAS', '#FFEB84'], ['d60', '31 DÍAS < 60 DÍAS', '#63BE7B']];
 const LPR_IDX0 = { c: 0.18, d15: 0.21, d30: 0.24, d60: 0.27 };
-let lpr_prod = null, lpr_cfg = null, _lprCargando = false;
+let lpr_prod = null, lpr_cfg = null, _lprCargando = false, _lprLeidoAt = 0;
 function _lprYo() { return String((currentUser && currentUser.email) || '').toLowerCase(); }
 function lprPuede() { return !!(currentUser && LPR_VEN.indexOf(_lprYo()) >= 0); }
 function lprEdita() { return lprPuede() && LPR_EDITAN.indexOf(_lprYo()) >= 0; }
@@ -12673,10 +12675,19 @@ function lprEdita() { return lprPuede() && LPR_EDITAN.indexOf(_lprYo()) >= 0; }
 const LPR_LS = 'energy_lpr_cfg_ultimo';
 function _lprCfgOk(c) { return !!(c && typeof c === 'object' && !Array.isArray(c)); }
 function _lprCfgLocal() { try { const c = JSON.parse(localStorage.getItem(LPR_LS) || 'null'); return _lprCfgOk(c) ? c : null; } catch (_) { return null; } }
+async function _lprCfgApi() {   // API pública de GitHub (sin token): caché de ~60 s frente a ~5 min del raw. Si la limita o falla, devuelve null.
+  try {
+    const r = await _fetchT('https://api.github.com/repos/' + GH_OWNER + '/' + GH_REPO + '/contents/' + LPR_FILE + '?ref=main&t=' + Date.now(),
+      { headers: { 'Accept': 'application/vnd.github.raw+json' }, cache: 'no-store' }, 10000);
+    if (r.ok) return await r.json();
+  } catch (_) { }
+  return null;
+}
 async function _lprCfgFresca() {
   let rem = null; try { rem = await _loadDataGHRaw(LPR_FILE); } catch (_) { }
+  const api = await _lprCfgApi();
   let mejor = null;
-  [rem, lpr_cfg, _lprCfgLocal()].forEach(c => { if (_lprCfgOk(c) && (!mejor || String(c.updatedAt || '') > String(mejor.updatedAt || ''))) mejor = c; });
+  [rem, api, lpr_cfg, _lprCfgLocal()].forEach(c => { if (_lprCfgOk(c) && (!mejor || String(c.updatedAt || '') > String(mejor.updatedAt || ''))) mejor = c; });
   const cfg = mejor ? JSON.parse(JSON.stringify(mejor)) : { idx: Object.assign({}, LPR_IDX0), fijos: {} };
   if (!_lprCfgOk(cfg.fijos)) cfg.fijos = {};
   if (!_lprCfgOk(cfg.idx)) cfg.idx = Object.assign({}, LPR_IDX0);
@@ -12717,7 +12728,8 @@ async function lprCargar(aviso) {
   try {
     const ps = (await _cplTodo('productos?select=codigo,descripcion,marca,proveedor,stock_actual,costo_compra,ubicacion,activo&proveedor=ilike.IMP&stock_actual=gt.0&order=descripcion.asc')) || [];
     lpr_prod = ps.filter(p => p.activo !== false && (parseFloat(p.stock_actual) || 0) > 0);
-    lpr_cfg = await _lprCfgFresca();
+    lpr_prod.forEach(p => { p.__btok = _absNorm((p.codigo || '') + ' ' + String(p.descripcion || '').split('·')[0] + ' ' + (p.marca || '')).split(' '); });
+    lpr_cfg = await _lprCfgFresca(); _lprLeidoAt = Date.now();
     if (st) st.textContent = '';
     if (aviso) showToast('Lista de precios actualizada ✓', 'success');
   } catch (e) {
@@ -12873,6 +12885,175 @@ function lprExcel() {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Lista de precios');
   XLSX.writeFile(wb, 'Lista_precios_' + (com ? 'COMERCIALES' : 'GERENCIA') + '_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+}
+
+// ─── 🏷️ Lista de precios → COTIZACIÓN (v365, 18-nov-2026). Solo quienes ven la lista (andrea y alberto). ───
+// Busca el producto en el inventario importado aunque el cliente lo escriba distinto (flange WN 3" 150# = brida
+// cuello 3" 150L) y copia al ítem el precio del plazo elegido. No guarda nada por sí solo: llena la fila como si
+// se hubiera digitado; la cotización se guarda con el botón de siempre.
+let _lpqFila = null, _lpqRes = [];
+const _LPQ_TIPOS = { FLANCHE: 1, CODO: 1, SEMICODO: 1, TEE: 1, CAP: 1, COPA: 1, TAPON: 1, THREADOLET: 1, TUBERIA: 1, UNION: 1, CONECTOR: 1 };
+const _LPQ_NPS = { '1/8': 1, '1/4': 1, '3/8': 1, '1/2': 1, '3/4': 1, '1': 1, '1-1/4': 1, '1-1/2': 1, '2': 1, '2-1/2': 1, '3': 1, '3-1/2': 1, '4': 1, '5': 1, '6': 1, '8': 1, '10': 1, '12': 1, '14': 1, '16': 1, '18': 1, '20': 1, '24': 1 };
+function lpqMostrarBoton() { const b = document.getElementById('lpq-btn-top'); if (b) b.style.display = lprPuede() ? '' : 'none'; }
+// Plazo que se propone según la «Forma de pago» de la cotización: contado / 1-15 / 16-30 / 31-60 días.
+function _lpqPlazo() {
+  const t = String((document.getElementById('cotiz-pago') || {}).value || '').toUpperCase();
+  if (/CONTADO|ANTICIP|CONTRA ?ENTREGA/.test(t)) return 'c';
+  const m = t.replace(/\d+\s*%/g, ' ').match(/(\d{1,3})/); if (!m) return '';
+  const n = parseInt(m[1], 10);
+  return n <= 0 ? 'c' : n <= 15 ? 'd15' : n <= 30 ? 'd30' : n <= 60 ? 'd60' : '';
+}
+// Búsqueda ESTRICTA (v365): el texto del cliente y el nombre del producto se leen con la misma función y solo
+// se propone un producto cuando coinciden tipo, subtipo, medida, clase, cédula y conexión. FALLA CERRADO: si en
+// el texto queda una cifra o una señal (cédula, clase, subtipo, rosca…) que no se pudo leer, no se propone nada.
+// Es preferible no encontrar que proponer otro producto. Todo el inventario importado es acero al carbono.
+const _LPQ_CLASES = { '150': 1, '300': 1, '600': 1, '800': 1, '900': 1, '1500': 1, '2500': 1, '2000': 1, '3000': 1, '6000': 1, '9000': 1 };
+const _LPQ_OTROS = ['VALVULA', 'ESPARRAGO', 'EMPAQUE', 'CABLE', 'TORNILLO', 'TUERCA', 'NIPLE', 'SOCKOLET', 'WELDOLET', 'BUSHING', 'MANOMETRO', 'TUBING', 'FILTRO', 'ARANDELA', 'PERNO', 'ABRAZADERA',
+  'LAMINA', 'ANGULO', 'VIGA', 'PLATINA', 'SWAGE', 'FIGURA', 'KIT', 'ACOPLE', 'UNIVERSAL', 'MANGUERA', 'ELECTRODO', 'SOLDADURA', 'DISCO', 'TERMOMETRO', 'REGULADOR', 'BOMBA', 'MOTOR', 'BREAKER', 'TERMINAL', 'SWITCH',
+  'BOLT', 'PERFIL', 'CUADRADA', 'CUADRADO', 'NIVEL', 'RANURADORA', 'CORAZA', 'LIQUID', 'MC4', 'GOLPE', 'ORING', 'JUNTA', 'PANELES', 'ISOLATION', 'AISLAMIENTO', 'SOPORTE', 'PINTURA', 'CINTA'];
+const _LPQ_EXCL = /\bINOX\b|\b30[49]L?\b|\b316L?\b|\bGALV|\bPVC\b|\bCPVC\b|\bBRONCE\b|\bLATON\b|\bBRASS\b|\bA-?\s?182\b|\bA-?\s?403\b|\bA-?\s?536\b|\bTP\s?\d|\bALUMIN|\bCOBRE\b|\bHIERRO\b|\bDUPLEX\b|\bSS\b|\bS\.S\b|\bHDPE\b|\bPEAD\b|\bCF8M?\b|\bF3(04|16)|\bWP\s?\d|\bF\s?(5|9|11|22|91)\b|\bNEGR[AO]\b|\bCONDUIT\b|\bEMT\b|\bIMC\b|\bALLOY\b|\bALEAD|\bSANITARI|\bRANURAD|\bGROOVED\b|\bG10\b|\bSR\b|\bSHORT\s+RADIUS\b|\bRADIO\s+CORTO\b|\b180\b|\bEXCENTRIC|\bECCENTRIC|\bEXC\b|\bECC\b|\bLOCA\b|\bLAP\b/;
+// esConsulta = texto del cliente (se le aplica la regla de «cifras sin leer»); los nombres de inventario no.
+function _lpqAnaliza(texto, esConsulta) {
+  let s = String(texto || '').toUpperCase().replace(/[”“″]/g, '"').replace(/''|´´/g, '"').replace(/×/g, 'X').replace(/[°º]/g, ' ').replace(/\bS\.\s?S\.?(?![A-Z])/g, ' SS ').replace(/(\d)[\.,;:]+(?=\s|$|")/g, '$1 ').replace(/([A-ZÁÉÍÓÚ])[\.,;:]+(?=[A-Z0-9])/g, '$1 ')
+    .replace(/(^|[\sX])([36])M\b/g, '$1 $2000# ');
+  s = s.replace(/"(?=[A-Z0-9])/g, '" ').replace(/#(?=[A-Z])/g, '# ');                                           // 3/4"SCH · 300#RF · 2"WELD
+  s = s.replace(/\b(45|90)\s*X\s*(?=\d)/g, '$1 ').replace(/\bX\s*(45|90)\s*"?(?=\s|$)/g, ' $1 ');                 // 45 X 3" · 4" X 45"
+  s = s.replace(/\bAPI\s*5L\b|\b5L\b|\bMSS\b|\bSP\s*-?\s*\d+\b/g, ' ').replace(/\b(?:ASTM\s+)?A\s*-?\s*(\d{2,3})\b/g, 'A$1').replace(/\bB\s*(\d{1,2}\.\d+)/g, 'B$1')
+    .replace(/\bX?\s*\d+(?:[\.,]\d+)?\s*(?:MTS|MTR|MT|METROS?|ML|MM|CM|M)\b/g, ' ');                              // largos: X 6 MTS, 100 MM
+  s = s.replace(/\bSHC\b/g, 'SCH').replace(/\bSCHEDULE\b|\bCEDULA\b|\bCED\b\.?/g, 'SCH').replace(/\bSCH\s*[-:\.]*\s*/g, 'SCH ').replace(/\bSCH\s+(\d{3,4})\s*#/g, ' $1# ')
+    .replace(/\bSCH\s+(\d+)\s*S\b/g, 'SCH $1').replace(/\bSCH\s+(\d+|STD|XS)\s*\/\s*(STD|XS|\d+S?)\b/g, 'SCH $1').replace(/\bS-(XS|STD)\b/g, 'SCH $1')
+    .replace(/\bSCH\s+XXS\b|\bXXS\b/g, ' SXXS ').replace(/\bS-(\d{2,3})\b/g, 'SCH $1').replace(/(^|[^A-Z])(STD|XS)(?![A-Z])/g, (m, a, b) => /SCH\s$/.test(a) ? m : a + ' SCH ' + b + ' ')
+    .replace(/\bSCH\s+SCH\b/g, 'SCH').replace(/\b(SCH\s+(?:\d+|STD|XS))\s*X\s*(?=\d)/g, '$1 ')
+    .replace(/#\s*(\d{3,4})\b/g, ' $1# ').replace(/\b(?:CLASS|CLASE|CL|ANSI|RATING)\s*[\.:]?\s*#?\s*(\d{3,4})\b/g, ' $1# ').replace(/\b(\d{3,4})\s*(?:PSI|WOG|LIBRAS)\b/g, ' $1# ')
+    .replace(/(\d"?)\s*-\s*(150|300|600|900|1500|2500|3000|6000)\b/g, '$1 $2# ').replace(/\b900\s*\/\s*1500\b/g, '900# 1500#')
+    .replace(/\bNPS\s*/g, ' ').replace(/(^|\s)(\d{1,2})\s+(\d\/\d)/g, '$1$2-$3').replace(/\b(\d+(?:-\d\/\d+|\/\d+)?)\s*(?:IN|INCH|PULG|PULGADAS?)\b/g, '$1"');
+  s = ' ' + _absNorm(s) + ' ';
+  const _macho = /\bMACHO\b|\bMALE\b|\bMTH\b|\bMNPT\b|\bHEX\s*HEAD\b/.test(s);
+  s = s.replace(/\bWELD\s*NECK\b|\bWELDNECK\b|\bWN\s*RF\b|\bWNRF\b/g, 'CUELLO').replace(/\bBL\s*RF\b|\bBLRF\b|\bBL\b/g, 'CIEGO').replace(/\bSOCKET\s*WELL?(ING|ED)?\b|\bSOCKETWELL?\b|\bSW\b/g, 'SOCKET')
+    .replace(/\bTHREADED\b|\bROSCA\w*\b|\bF?NPT\b|\bMNPT\b|\bFNPT\b|\bNFPT\b|\bSCREWED\b/g, 'ROSCADO')
+    .replace(/\bSO\b/g, 'SLIPON').replace(/\bCIEGA\b/g, 'CIEGO').replace(/\bREDUCCION(ES)?\b|\bCOPAS\b/g, 'COPA').replace(/\bCODOS\b/g, 'CODO').replace(/\bSEMICODOS\b/g, 'SEMICODO').replace(/\bTEES\b|\bTE\b/g, 'TEE')
+    .replace(/\bCAPS\b/g, 'CAP').replace(/\bPLUGS?\b|\bTAPONES\b/g, 'TAPON').replace(/\bNIPPLES?\b|\bNIPLES\b/g, 'NIPLE').replace(/\bVALVULAS\b/g, 'VALVULA').replace(/\bESPARRAGOS\b/g, 'ESPARRAGO')
+    .replace(/\bEMPAQUES\b|\bESPIRO(ME)?TALICOS?\b/g, 'EMPAQUE').replace(/\bUNIVERSALES\b/g, 'UNIVERSAL').replace(/\bTHREDOLETS?\b|\bTHREADOLETS\b|\bTREDOLETS?\b/g, 'THREADOLET')
+    .replace(/\bSSTD\b/g, 'S40').replace(/\bSXS\b/g, 'S80').replace(/\bFIGURE\b|\bOCHO\b/g, 'FIGURA').replace(/\bCONECTORES\b/g, 'CONECTOR').replace(/\bUNIONES\b/g, 'UNION').replace(/\bTUBERIAS\b/g, 'TUBERIA');
+  const a = { excl: _LPQ_EXCL.test(s), tipo: '', sub: '', rtj: /\bRTJ\b|\bRING JOINT\b/.test(s), redu: /\bREDU/.test(s), macho: _macho, hembra: /\bHEMBRA\b|\bFEMALE\b/.test(s),
+    rosc: /\bROSCADO\b/.test(s), sock: /\bSOCKET\b/.test(s), od: /\bOD\b/.test(s), med: [], cls: [], ced: [] };
+  const toks = s.trim().split(' ').filter(Boolean);
+  for (let i = 0; i < toks.length && !a.tipo; i++) if (_LPQ_TIPOS[toks[i]]) a.tipo = toks[i];
+  if (toks.some(t => _LPQ_OTROS.indexOf(t) >= 0)) a.tipo = '?';                                                   // otro producto, esté donde esté la palabra
+  const con45 = toks.some(t => t.replace(/"/g, '') === '45');
+  if (a.tipo === 'COPA' && toks.indexOf('TEE') >= 0) { a.tipo = 'TEE'; a.redu = true; }
+  else if (a.tipo && a.tipo !== '?' && toks.some(t => _LPQ_TIPOS[t] && t !== a.tipo && !(t === 'COPA' && a.tipo === 'TEE'))) a.tipo = '?';
+  if (a.tipo === 'CODO' && con45) a.tipo = 'SEMICODO';
+  if (a.tipo === 'FLANCHE') a.sub = ['CIEGO', 'CUELLO', 'SLIPON', 'SOCKET', 'ROSCADO'].filter(x => toks.indexOf(x) >= 0).join('+');
+  toks.forEach(t => {
+    const tc = t.replace(/["\.]+$/, '');
+    if (/^S(\d+|XXS)$/.test(tc)) { if (a.ced.indexOf(tc) < 0) a.ced.push(tc); return; }
+    if (!/\d/.test(t)) { if (esConsulta && /^(SCH|CLASS|CLASE|CL|RATING|PSI|WN|LB|LBS)$/.test(t)) a.excl = true; return; }   // señal de cédula/clase que quedó sin su número
+    const b = t.replace(/"+/g, '');
+    if (/[A-Z]/.test(b.replace(/X/g, '').replace(/#/g, ''))) return;                                              // códigos con letras (A105, B16.9, WPB…) no son medidas
+    b.split('X').forEach(x => {
+      if (/#$/.test(x) || _LPQ_CLASES[x]) { x = x.replace('#', ''); if (/^\d{3,4}$/.test(x)) { if (a.cls.indexOf(x) < 0) a.cls.push(x); } else if (esConsulta) a.excl = true; }
+      else if (_LPQ_NPS[x]) { if (a.med.indexOf(x) < 0) a.med.push(x); }
+      else if (esConsulta && !(x === '90' || (x === '45' && a.tipo === 'SEMICODO') || x === '' || /^\d+\.\d+/.test(x))) a.excl = true;   // cifra que no se pudo leer
+    });
+  });
+  return a;
+}
+function _lpqCoincide(q, p) {
+  if (p.tipo !== q.tipo) return false;
+  if (!q.med.length) return false;                                                                                // sin medida no se propone nada
+  if (q.tipo === 'FLANCHE' && (!q.sub || p.sub !== q.sub)) return false;                                         // la brida debe decir cuál: cuello, ciega, slip-on…
+  if (q.rtj !== p.rtj || q.od !== p.od) return false;
+  if (q.tipo === 'TEE' && (q.redu || q.med.length >= 2) !== p.redu) return false;
+  if ((q.macho && !p.macho) || (q.hembra && !p.hembra)) return false;
+  if (q.tipo !== 'FLANCHE' && ((q.rosc && !p.rosc) || (q.sock && !p.sock))) return false;
+  const todos = (a, b) => a.every(x => b.indexOf(x) >= 0);
+  if (!todos(q.med, p.med)) return false;
+  if (['FLANCHE', 'CODO', 'SEMICODO', 'TEE', 'CAP', 'COPA', 'TUBERIA'].indexOf(q.tipo) >= 0 && q.med.length !== p.med.length) return false;
+  if (!todos(q.cls, p.cls)) return false;                       // pidió una clase: el producto debe tenerla (un codo para soldar no tiene clase)
+  if (q.ced.length && p.ced.length && !todos(q.ced, p.ced)) return false;
+  return true;
+}
+function _lpqBuscar(texto) {
+  const qRaw = String(texto || '').trim().toLowerCase(); if (!qRaw) return [];
+  const porCod = (lpr_prod || []).filter(p => qRaw.length >= 4 && String(p.codigo || '').toLowerCase() === qRaw);
+  if (porCod.length) return porCod;
+  const q = _lpqAnaliza(texto, true);
+  if (q.excl || !q.tipo || q.tipo === '?') return [];
+  return (lpr_prod || []).filter(p => {
+    if (!p.__lpq) { p.__lpq = _lpqAnaliza(String(p.descripcion || '').split('·')[0], false); if (p.__lpq.tipo === 'TAPON' || p.__lpq.tipo === 'THREADOLET') p.__lpq.rosc = true; }
+    return _lpqCoincide(q, p.__lpq);
+  }).sort((a, b) => _lprNombre(a.descripcion).localeCompare(_lprNombre(b.descripcion), 'es', { numeric: true })).slice(0, 40);
+}
+async function lpqAbrir(i) {
+  if (!lprPuede()) return;
+  _lpqFila = (typeof i === 'number' ? i : null);
+  const it = (_lpqFila != null ? cotizItems[_lpqFila] : null);
+  const prev = document.getElementById('_lpqModal'); if (prev) prev.remove();
+  const ov = document.createElement('div'); ov.id = '_lpqModal';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2600;padding:20px;overflow-y:auto;';
+  ov.onclick = function (e) { if (e.target === ov) ov.remove(); };
+  ov.innerHTML = '<div class="card" style="max-width:980px;margin:24px auto;padding:20px;">'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div class="config-title" style="margin:0;">🏷️ Lista de precios · inventario importado</div>'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(&quot;_lpqModal&quot;).remove()" style="width:auto;font-size:16px;padding:2px 10px;">✕</button></div>'
+    + '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">'
+    + '<input type="text" id="_lpq-q" value="' + _cmkEsc(it ? String(it.desc || '').replace(/\s+/g, ' ').trim() : '') + '" placeholder="Tipo + medida + clase o cédula. Ej: brida cuello 3 150  ·  flange WN 3&quot; 150#  ·  codo 4 sch 40" onkeydown="if(event.key===&quot;Enter&quot;){event.preventDefault();lpqPintar();}" style="flex:1;min-width:240px;padding:9px 12px;">'
+    + '<button class="btn btn-primary" onclick="lpqPintar()" style="width:auto;font-size:13px;padding:9px 16px;">Buscar</button></div>'
+    + (it ? '<label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:8px;"><input type="checkbox" id="_lpq-desc" style="width:auto;"> Reemplazar también la descripción del ítem por la del inventario</label>' : '')
+    + '<div id="_lpq-info" style="font-size:11px;color:var(--text-muted);margin-bottom:8px;"></div>'
+    + '<div id="_lpq-res" style="max-height:56vh;overflow-y:auto;"><div style="padding:18px;color:var(--text-muted);font-size:13px;">⏳ Leyendo la lista…</div></div></div>';
+  document.body.appendChild(ov);
+  if (!lpr_prod || !lpr_cfg || (Date.now() - _lprLeidoAt) > 180000) { try { await lprCargar(false); } catch (_) { } }
+  if (!document.getElementById('_lpqModal')) return;
+  lpqPintar();
+  setTimeout(function () { const q = document.getElementById('_lpq-q'); if (q && !q.value) q.focus(); }, 90);
+}
+function lpqPintar() {
+  const cont = document.getElementById('_lpq-res'), info = document.getElementById('_lpq-info'); if (!cont) return;
+  if (!lprPuede() || !lpr_prod) { cont.innerHTML = '<div style="padding:18px;color:var(--text-muted);font-size:13px;">No se pudo leer la lista de precios.</div>'; return; }
+  const q = ((document.getElementById('_lpq-q') || {}).value || '').trim(), pz = _lpqPlazo();
+  _lpqRes = q ? _lpqBuscar(q) : [];
+  const nomPz = pz ? (LPR_PLAZOS.find(p => p[0] === pz) || [])[1] : '';
+  if (info) info.innerHTML = (nomPz ? 'Forma de pago de la cotización: <b>' + _cmkEsc(String((document.getElementById('cotiz-pago') || {}).value || '')) + '</b> → se resalta el precio de <b>' + nomPz + '</b>. ' : 'La cotización no tiene un plazo de pago reconocible: elige el precio a mano. ')
+    + 'Clic en un precio para copiarlo al ítem. Precios sin IVA.';
+  if (!q) { cont.innerHTML = '<div style="padding:18px;color:var(--text-muted);font-size:13px;">Escribe el producto y dale Buscar.</div>'; return; }
+  if (!_lpqRes.length) { cont.innerHTML = '<div style="padding:18px;color:var(--text-muted);font-size:13px;">No hay ese producto en el inventario importado con existencia. Escribe tipo, medida y clase o cédula (ej. «brida cuello 3 150», «codo 4 sch 40»). Lo importado es acero al carbono: inoxidable, galvanizado, válvulas y espárragos no están en esta lista.</div>'; return; }
+  const td = 'padding:6px 9px;border-bottom:1px solid rgba(128,128,128,.18);', th = 'text-align:left;padding:6px 9px;color:var(--text-muted);font-size:10px;white-space:nowrap;';
+  cont.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:760px;"><thead><tr><th style="' + th + '">CÓDIGO</th><th style="' + th + '">DESCRIPCIÓN</th><th style="' + th + '">MARCA</th><th style="' + th + 'text-align:right;">EXISTENCIA</th>'
+    + LPR_PLAZOS.map(pl => '<th style="' + th + 'text-align:center;background:' + pl[2] + ';color:#111;">' + pl[1] + '</th>').join('') + '</tr></thead><tbody>'
+    + _lpqRes.map((p, n) => {
+      const k = _lprPrecios(p);
+      return '<tr><td style="' + td + 'font-size:11px;white-space:nowrap;">' + _cmkEsc(p.codigo) + '</td><td style="' + td + '">' + _cmkEsc(_lprNombre(p.descripcion)) + (k.fijo ? ' <span style="font-size:10px;color:var(--gold);font-weight:700;">🔒 FIJO</span>' : '') + '</td>'
+        + '<td style="' + td + 'font-size:11px;">' + _cmkEsc(p.marca || 'SIN MARCA') + '</td><td style="' + td + 'text-align:right;">' + (parseFloat(p.stock_actual) || 0).toLocaleString('es-CO') + '</td>'
+        + LPR_PLAZOS.map(pl => '<td style="' + td + 'text-align:center;background:' + pl[2] + ';">' + (k.pr[pl[0]]
+          ? '<button onclick="lpqUsar(' + n + ',\'' + pl[0] + '\')" title="Copiar este precio al ítem" style="cursor:pointer;border-radius:7px;padding:4px 8px;font-weight:800;font-size:12px;white-space:nowrap;color:#111;background:rgba(255,255,255,' + (pl[0] === pz ? '.85' : '.25') + ');border:' + (pl[0] === pz ? '2px solid #111' : '1px solid rgba(0,0,0,.25)') + ';">' + _cmkFmt(k.pr[pl[0]]) + '</button>'
+          : '<span style="color:#111;font-size:11px;">Consultar</span>') + '</td>').join('') + '</tr>';
+    }).join('') + '</tbody></table>';
+}
+function lpqUsar(n, plazo) {
+  if (!lprPuede()) return;
+  const p = _lpqRes[n]; if (!p) return;
+  const k = _lprPrecios(p), precio = k.pr[plazo]; if (!precio) return;
+  const nom = _lprNombre(p.descripcion), nomPz = (LPR_PLAZOS.find(x => x[0] === plazo) || [])[1] || '';
+  const marca = { lprCodigo: String(p.codigo), lprPlazo: plazo, lprContado: k.pr.c }, porMetro = /EN METROS/i.test(String(p.descripcion || ''));
+  if (_lpqFila != null) {
+    const it = cotizItems[_lpqFila]; if (!it) { showToast('Esa fila ya no existe', 'error'); return; }
+    const exist = parseFloat(p.stock_actual) || 0;
+    if ((parseFloat(it.qty) || 0) > exist && !confirm('El ítem pide ' + it.qty + ' y en bodega hay ' + exist.toLocaleString('es-CO') + '. ¿Copiar el precio de todos modos?')) return;
+    if (porMetro && !/^(M|MT|MTS|MTR|ML|METROS?)$/i.test(String(it.udm || '').trim())) {
+      if (!confirm('Este precio es POR METRO (un tubo = 6 m) y el ítem está en «' + (it.udm || 'EA') + '» con cantidad ' + (it.qty || 0) + '.\n\nAceptar: se copia el precio y la unidad pasa a MTR. Revisa después la cantidad en metros.\nCancelar: no se copia nada.')) return;
+      it.udm = 'MTR';
+    }
+    it.precio = precio; it.marca = p.marca || it.marca || ''; it.proveedor = 'BODEGA'; if (k.costo > 0) it.precioProveedor = k.costo;
+    if ((document.getElementById('_lpq-desc') || {}).checked) it.desc = nom;
+    Object.assign(it, marca);
+  } else {
+    cotizItems.push(Object.assign({ id: cotizItems.length + 1, desc: nom, udm: porMetro ? 'MTR' : 'EA', qty: 1, precio: precio, tiempoEntrega: '1-2 DÍAS HÁBILES', desvTec: '',
+      marca: p.marca || '', proveedor: 'BODEGA', precioProveedor: k.costo > 0 ? k.costo : 0, obsProveedor: '' }, marca));
+  }
+  try { cotizRender(); } catch (_) { }
+  const m = document.getElementById('_lpqModal'); if (m) m.remove();
+  showToast('Precio de lista (' + nomPz + '): ' + _cmkFmt(precio) + (porMetro ? ' POR METRO' : '') + ' · ' + nom, 'success');
 }
 
 // ===== 📄 FACTURAS RADICADAS + comisiones compartidas (v361, 18-nov-2026) =====
@@ -17698,6 +17879,7 @@ function cotizRender() {
         <div class="cotiz-foto-ctrl">
           <button type="button" class="foto-btn" onclick="_cotizPickFoto(${i})" ${_cotizFotosDe(it).length>=COTIZ_MAX_FOTOS?'disabled title="Ya tiene el máximo de '+COTIZ_MAX_FOTOS+' fotos"':''}>📷 Foto${_cotizFotosDe(it).length?' '+_cotizFotosDe(it).length+'/'+COTIZ_MAX_FOTOS:''}</button>
           <button type="button" class="foto-btn" onclick="hpAbrir(${i})" title="Ver a cómo se ha cotizado antes este producto (por cliente y fecha)">🕘 Precios</button>
+          ${(typeof lprPuede==='function' && lprPuede()) ? `<button type="button" class="foto-btn" onclick="lpqAbrir(${i})" title="Buscar este producto en la lista de precios del inventario importado y copiar el precio según el plazo">🏷️ Lista</button>` : ''}
           ${_cotizFotoCtrlHTML(i, it)}
         </div></td>
       <td><input value="${it.tiempoEntrega||''}" oninput="cotizItems[${i}].tiempoEntrega=this.value" style="width:80px"></td>
