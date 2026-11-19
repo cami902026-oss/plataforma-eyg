@@ -13059,7 +13059,7 @@ async function lpqAbrir(i) {
     + '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">'
     + '<input type="text" id="_lpq-q" value="' + _cmkEsc(it ? String(it.desc || '').replace(/\s+/g, ' ').trim() : '') + '" placeholder="Tipo + medida + clase o cédula. Ej: brida cuello 3 150  ·  flange WN 3&quot; 150#  ·  codo 4 sch 40" onkeydown="if(event.key===&quot;Enter&quot;){event.preventDefault();lpqPintar();}" style="flex:1;min-width:240px;padding:9px 12px;">'
     + '<button class="btn btn-primary" onclick="lpqPintar()" style="width:auto;font-size:13px;padding:9px 16px;">Buscar</button></div>'
-    + (it ? '<label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:8px;"><input type="checkbox" id="_lpq-desc" style="width:auto;"> Reemplazar también la descripción del ítem por la del inventario</label>' : '')
+    + (it ? '<label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:8px;"><input type="checkbox" id="_lpq-desc" checked style="width:auto;"> Dejar el ítem con el nombre de bodega (estandarizado). Desmárcalo solo si necesitas conservar el texto del cliente.</label>' : '')
     + '<div id="_lpq-info" style="font-size:11px;color:var(--text-muted);margin-bottom:8px;"></div>'
     + '<div id="_lpq-res" style="max-height:56vh;overflow-y:auto;"><div style="padding:18px;color:var(--text-muted);font-size:13px;">⏳ Leyendo la lista…</div></div></div>';
   document.body.appendChild(ov);
@@ -13094,7 +13094,7 @@ function lpqUsar(n, plazo) {
   if (!lprPuede()) return;
   const p = _lpqRes[n]; if (!p) return;
   const k = _lprPrecios(p), precio = k.pr[plazo]; if (!precio) return;
-  const nom = _lprNombre(p.descripcion), nomPz = (LPR_PLAZOS.find(x => x[0] === plazo) || [])[1] || '';
+  const nom = _lprNombre(p.descripcion).split('·')[0].trim(), nomPz = (LPR_PLAZOS.find(x => x[0] === plazo) || [])[1] || '';   // v368: sin la nota «· EN METROS (tubo = 6 m)»
   const marca = { lprCodigo: String(p.codigo), lprPlazo: plazo, lprContado: k.pr.c }, porMetro = /EN METROS/i.test(String(p.descripcion || ''));
   if (_lpqFila != null) {
     const it = cotizItems[_lpqFila]; if (!it) { showToast('Esa fila ya no existe', 'error'); return; }
