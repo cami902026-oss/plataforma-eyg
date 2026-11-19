@@ -1946,6 +1946,7 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
       <div class="nav-item" onclick="navigate('cotizaciones')"><span class="icon">📋</span>Cotizaciones IA</div>
       <div class="nav-item" onclick="navigate('cartera')"><span class="icon">💰</span>Cartera</div>
       <div class="nav-item" onclick="navigate('radicadas')"><span class="icon">📄</span>Facturas radicadas</div>
+      <div class="nav-item" onclick="navigate('precios')"><span class="icon">🏷️</span>Lista de precios</div>
       <div class="nav-item" onclick="navigate('contratos')"><span class="icon">📜</span>Contratos Marco</div>
       <div class="nav-item" onclick="navigate('saldos')"><span class="icon">💳</span>Saldos a Favor</div>
       <div class="nav-item" onclick="navigate('vinculacion')"><span class="icon">🔗</span>Vinculación</div>
@@ -2286,6 +2287,35 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
         <iframe id="pdfstudio-frame" title="PDF Studio E&G" style="width:100%;height:calc(100vh - 110px);border:none;border-radius:14px;background:#0a1a2f;"></iframe>
       </div>
 
+      <!-- 🏷️ LISTA DE PRECIOS DE INVENTARIO (v364) — fase 1: solo andrea. Importado con existencia, 4 precios por plazo. -->
+      <div class="page" id="page-precios">
+        <div style="max-width:1180px;margin:0 auto;padding:8px 0 40px;">
+          <div class="card" style="padding:18px;">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+              <div class="config-title" style="margin:0;">🏷️ Lista de precios · inventario importado</div>
+              <span style="flex:1;"></span>
+              <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;" title="Muestra la lista como la verán los comerciales: sin costo, sin índices y sin utilidad"><input type="checkbox" id="lpr-vista" onchange="lprCambioVista()" style="width:auto;"> Ver como comercial</label>
+              <button class="btn btn-secondary" onclick="lprCargar(true)" style="width:auto;font-size:12px;padding:8px 14px;" title="Vuelve a leer inventario y precios">🔄 Actualizar</button>
+              <button class="btn btn-secondary" onclick="lprExcel()" style="width:auto;font-size:12px;padding:8px 14px;">⬇️ Excel</button>
+            </div>
+            <div id="lpr-indices" style="margin-bottom:12px;"></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+              <input type="text" id="lpr-buscar" oninput="lprRender()" placeholder="Buscar producto, código o marca" style="flex:1;min-width:200px;padding:8px 12px;">
+              <select id="lpr-familia" onchange="lprRender()" style="width:auto;padding:8px 12px;"><option value="">Todas las familias</option></select>
+              <select id="lpr-solo" onchange="lprRender()" style="width:auto;padding:8px 12px;">
+                <option value="">Todos</option>
+                <option value="fijo">Con precio fijo</option>
+                <option value="sin">Sin precio (sin costo)</option>
+                <option value="bajo">Fijo por debajo del costo</option>
+              </select>
+            </div>
+            <div id="lpr-estado" style="font-size:11px;color:var(--text-muted);margin-bottom:8px;"></div>
+            <div id="lpr-resumen" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;"></div>
+            <div id="lpr-lista"></div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:10px;">Precios unitarios sin IVA. Solo productos importados (proveedor IMP) con existencia. El precio depende del plazo de pago del cliente; el de contado es el más bajo.</div>
+          </div>
+        </div>
+      </div>
       <!-- 📄 FACTURAS RADICADAS — módulo de los comerciales (v363). Solo lectura; cada comercial ve SUS facturas pendientes. -->
       <div class="page" id="page-radicadas">
         <div style="max-width:980px;margin:0 auto;padding:8px 0 40px;">
@@ -5548,6 +5578,8 @@ function userCanSeeModule(mod) {
   // Facturas radicadas (v363): módulo propio SOLO para los comerciales; cada uno ve sus clientes.
   // Andrea y Alberto lo ven como pestaña dentro de Cartera. No se puede destrabar por config.
   if (mod === 'radicadas') return email === 'mario' || email === 'sheila';
+  // Lista de precios de inventario (v364): FASE 1 solo andrea. Muestra costos; no se puede destrabar por config.
+  if (mod === 'precios') return email === 'andrea';
   // Contratos marco: SOLO Andrea y Alberto (pedido del usuario, 9-oct-2026).
   // 22-oct-2026: Alexandra también lo ve (pedido del usuario); registrar consumos sigue siendo de Andrea y Alberto (cmkPuedeEscribir).
   if (mod === 'contratos') return email === 'andrea' || email === 'alberto' || email === 'alexandra';
@@ -8699,6 +8731,7 @@ function navigate(page) {
   if(page==='cartera') { try{ cexMostrarBoton(); }catch(e){ console.error('[cex]',e); } }   // 🤝 Comisiones externas (5-nov-2026)
   if(page==='cartera') { try{ radMostrarBoton(); }catch(e){ console.error('[rad]',e); } }   // 📄 Facturas radicadas (v361)
   if(page==='radicadas') { try{ radPaginaInit(false); }catch(e){ console.error('[rad]',e); } }   // 📄 módulo de los comerciales (v363)
+  if(page==='precios') { try{ lprInit(); }catch(e){ console.error('[lpr]',e); } }   // 🏷️ Lista de precios de inventario (v364)
   if(String(page).startsWith('fe_')) { try{ feNav(page); }catch(e){ console.error('[fe]',e); } }   // 🔧 Ferreindustrial (20-oct-2026)
   if(page==='pdfstudio') { const _f=document.getElementById('pdfstudio-frame'); if(_f && !_f.src) _f.src='pdf-studio.html'; }   // v155: carga perezosa (las librerías PDF solo se bajan al entrar)
   if(page==='configuracion') { setTimeout(loadOneDriveConfigUI, 100); setTimeout(loadBackendUrlUI, 100); setTimeout(loadProxyUrlUI, 100); setTimeout(loadGhProxyUrlUI, 100); setTimeout(loadSbProxyUrlUI, 100); setTimeout(loadEvalUrlUI, 100); }
@@ -12620,6 +12653,228 @@ cnuTab = function (t) {
     if (b) { b.classList.remove('btn-primary'); b.classList.add('btn-secondary'); }
   }
 };
+// ═══ 🏷️ LISTA DE PRECIOS DE INVENTARIO (v364, 18-nov-2026) — FASE 1: SOLO andrea ═══
+// Inventario importado (proveedor IMP) con existencia. Cuatro precios por plazo de pago, calculados
+// sobre el costo de bodega con un índice de utilidad sobre la venta: precio = costo / (1 − índice).
+// Gerencia puede FIJAR el precio de contado de un ítem; los otros plazos suben en la misma proporción.
+// Lee `productos` (solo lectura). Los índices y los precios fijos viven en data/lista_precios.json.
+// No toca inventario, costos, kardex ni cotizaciones.
+const LPR_VEN = ['andrea'];                      // fase 1 (pedido del usuario: «móntalo a andrea y vamos revisando»)
+const LPR_EDITAN = ['andrea', 'alberto'];        // quién cambia índices y precios fijos
+const LPR_FILE = 'data/lista_precios.json';
+const LPR_PLAZOS = [['c', 'CONTADO', '#F8696B'], ['d15', '1-15 DÍAS', '#FBAA77'], ['d30', '16-30 DÍAS', '#FFEB84'], ['d60', '31 DÍAS < 60 DÍAS', '#63BE7B']];
+const LPR_IDX0 = { c: 0.18, d15: 0.21, d30: 0.24, d60: 0.27 };
+let lpr_prod = null, lpr_cfg = null, _lprCargando = false;
+function _lprYo() { return String((currentUser && currentUser.email) || '').toLowerCase(); }
+function lprPuede() { return !!(currentUser && LPR_VEN.indexOf(_lprYo()) >= 0); }
+function lprEdita() { return lprPuede() && LPR_EDITAN.indexOf(_lprYo()) >= 0; }
+// raw.githubusercontent.com guarda caché ~5 min: lo recién guardado puede volver viejo. Por eso la base de
+// trabajo es SIEMPRE la versión más nueva (por updatedAt) entre el servidor, la memoria y la copia de este equipo.
+const LPR_LS = 'energy_lpr_cfg_ultimo';
+function _lprCfgOk(c) { return !!(c && typeof c === 'object' && !Array.isArray(c)); }
+function _lprCfgLocal() { try { const c = JSON.parse(localStorage.getItem(LPR_LS) || 'null'); return _lprCfgOk(c) ? c : null; } catch (_) { return null; } }
+async function _lprCfgFresca() {
+  let rem = null; try { rem = await _loadDataGHRaw(LPR_FILE); } catch (_) { }
+  let mejor = null;
+  [rem, lpr_cfg, _lprCfgLocal()].forEach(c => { if (_lprCfgOk(c) && (!mejor || String(c.updatedAt || '') > String(mejor.updatedAt || ''))) mejor = c; });
+  const cfg = mejor ? JSON.parse(JSON.stringify(mejor)) : { idx: Object.assign({}, LPR_IDX0), fijos: {} };
+  if (!_lprCfgOk(cfg.fijos)) cfg.fijos = {};
+  if (!_lprCfgOk(cfg.idx)) cfg.idx = Object.assign({}, LPR_IDX0);
+  return cfg;
+}
+function _lprIdx() { const o = {}, g = (lpr_cfg && lpr_cfg.idx) || {}; LPR_PLAZOS.forEach(p => { const v = parseFloat(g[p[0]]); o[p[0]] = (isFinite(v) && v >= 0 && v < 0.9) ? v : LPR_IDX0[p[0]]; }); return o; }
+function _lprArriba(v) { return Math.ceil(Math.round(v * 100) / 100 / 10) * 10; }          // hacia arriba a $10
+function _lprNombre(d) { return String(d || '').replace(/\s+/g, ' ').trim().replace(/FLANCHE/g, 'BRIDA').replace(/BRIDA CIEGO/g, 'BRIDA CIEGA'); }
+function _lprFamilia(d) {
+  const t = String(d || '').toUpperCase();
+  const F = [['TUBERÍA', /TUBERIA|TUBERÍA|\bTUBO\b|\bPIPE\b/], ['CODOS', /CODO|ELBOW/], ['TEES', /\bTEE\b/], ['BRIDAS', /FLANCHE|BRIDA|FLANGE/], ['REDUCCIONES', /REDUCC|COPA|REDUCER/],
+    ['CAPS / TAPONES', /\bCAP\b|TAPON|TAPÓN/], ['VÁLVULAS', /VALV|VÁLV/], ['NIPLES', /NIPLE|NIPPLE/], ['OLETS', /OLET/], ['UNIONES', /UNION|UNIÓN|UNIVERSAL/], ['EMPAQUES', /EMPAQUE|ESPIRO|GASKET/], ['ESPÁRRAGOS', /ESPARRAGO|ESPÁRRAGO|STUD/]];
+  for (let i = 0; i < F.length; i++) if (F[i][1].test(t)) return F[i][0];
+  return 'OTROS';
+}
+// Precios de un producto. fijo = precio de CONTADO puesto a mano; los demás plazos guardan la proporción de los índices.
+function _lprPrecios(p) {
+  const ix = _lprIdx(), costo = parseFloat(p.costo_compra) || 0;
+  const fj = lpr_cfg && lpr_cfg.fijos && lpr_cfg.fijos[p.codigo]; const fijo = fj ? (parseFloat(fj.precio) || 0) : 0;
+  const out = { costo: costo, fijo: fijo > 0 ? fj : null, pr: {} };
+  LPR_PLAZOS.forEach(pl => {
+    const k = pl[0];
+    if (fijo > 0) out.pr[k] = (k === 'c') ? Math.round(fijo) : _lprArriba(fijo * (1 - ix.c) / (1 - ix[k]));
+    else out.pr[k] = costo > 0 ? _lprArriba(costo / (1 - ix[k])) : null;
+  });
+  out.util = (costo > 0 && out.pr.c) ? (out.pr.c - costo) / out.pr.c : null;       // utilidad real vendiendo de contado
+  return out;
+}
+async function lprInit() {
+  const pt = document.getElementById('page-title'); if (pt) pt.textContent = 'Lista de precios';
+  if (!lprPuede()) { lpr_prod = null; lprRender(); return; }
+  if (!lpr_prod || !lpr_cfg) await lprCargar(false); else lprRender();
+}
+async function lprCargar(aviso) {
+  if (!lprPuede() || _lprCargando) return;
+  _lprCargando = true;
+  const st = document.getElementById('lpr-estado'); if (st) st.textContent = '⏳ Leyendo inventario…';
+  try {
+    const ps = (await _cplTodo('productos?select=codigo,descripcion,marca,proveedor,stock_actual,costo_compra,ubicacion,activo&proveedor=ilike.IMP&stock_actual=gt.0&order=descripcion.asc')) || [];
+    lpr_prod = ps.filter(p => p.activo !== false && (parseFloat(p.stock_actual) || 0) > 0);
+    lpr_cfg = await _lprCfgFresca();
+    if (st) st.textContent = '';
+    if (aviso) showToast('Lista de precios actualizada ✓', 'success');
+  } catch (e) {
+    if (st) st.textContent = '❌ No se pudo leer (' + (e && e.message || e) + ')';
+  } finally { _lprCargando = false; }
+  lprLlenarFiltros(); lprPintarIndices(); lprRender();
+}
+function lprLlenarFiltros() {
+  const sel = document.getElementById('lpr-familia'); if (!sel || !lpr_prod) return;
+  const act = sel.value, fs = {}; lpr_prod.forEach(p => { fs[_lprFamilia(p.descripcion)] = 1; });
+  sel.innerHTML = '<option value="">Todas las familias</option>' + Object.keys(fs).sort().map(f => '<option' + (f === act ? ' selected' : '') + '>' + _cmkEsc(f) + '</option>').join('');
+}
+function lprPintarIndices() {
+  const box = document.getElementById('lpr-indices'); if (!box) return;
+  if (!lprPuede() || lprVistaComercial()) { box.innerHTML = ''; return; }
+  const ix = _lprIdx(), ed = lprEdita();
+  box.innerHTML = '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">' + LPR_PLAZOS.map(p =>
+    '<div style="text-align:center;"><div style="font-size:10px;font-weight:700;background:' + p[2] + ';color:#111;border-radius:6px 6px 0 0;padding:3px 8px;white-space:nowrap;">' + p[1] + '</div>' +
+    '<input type="number" id="lpr-ix-' + p[0] + '" value="' + (Math.round(ix[p[0]] * 1000) / 10) + '" min="0" max="89" step="0.5"' + (ed ? '' : ' disabled') + ' style="width:92px;padding:7px 8px;text-align:center;border-radius:0 0 6px 6px;" title="Índice de utilidad sobre la venta, en %"></div>').join('') +
+    (ed ? '<button class="btn btn-primary" onclick="lprGuardarIndices()" style="width:auto;font-size:12px;padding:9px 14px;">💾 Guardar índices</button>' : '') +
+    '<div style="font-size:11px;color:var(--text-muted);flex:1;min-width:200px;">Índice = utilidad sobre el precio de venta (%). Precio = costo ÷ (1 − índice), hacia arriba a $10. ' +
+    (lpr_cfg && lpr_cfg.idxPor ? 'Último cambio: ' + _cmkEsc(lpr_cfg.idxPor) + ' · ' + _cmkEsc(String(lpr_cfg.idxAt || '').slice(0, 10)) : 'Valores iniciales.') + '</div></div>';
+}
+function lprVistaComercial() { const c = document.getElementById('lpr-vista'); return !!(c && c.checked); }
+function _lprFiltrados() {
+  if (!lprPuede() || !lpr_prod) return [];
+  const q = ((document.getElementById('lpr-buscar') || {}).value || '').toLowerCase().trim();
+  const fam = (document.getElementById('lpr-familia') || {}).value || '';
+  const solo = (document.getElementById('lpr-solo') || {}).value || '';
+  return lpr_prod.map(p => Object.assign({ fam: _lprFamilia(p.descripcion), nom: _lprNombre(p.descripcion), k: _lprPrecios(p) }, p))
+    .filter(p => (!fam || p.fam === fam) && (!q || (p.nom + ' ' + p.codigo + ' ' + (p.marca || '')).toLowerCase().includes(q)))
+    .filter(p => !solo || (solo === 'fijo' && p.k.fijo) || (solo === 'sin' && !p.k.pr.c) || (solo === 'bajo' && p.k.fijo && p.k.costo > 0 && p.k.pr.c < p.k.costo))
+    .sort((a, b) => a.fam.localeCompare(b.fam) || a.nom.localeCompare(b.nom, 'es', { numeric: true }));
+}
+function lprRender() {
+  const cont = document.getElementById('lpr-lista'), res = document.getElementById('lpr-resumen'); if (!cont) return;
+  if (!lprPuede()) { cont.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">La lista de precios todavía no está habilitada para tu usuario.</div>'; if (res) res.innerHTML = ''; return; }
+  if (!lpr_prod) { cont.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">Cargando…</div>'; return; }
+  const com = lprVistaComercial(), ed = lprEdita() && !com, fs = _lprFiltrados();
+  const card = (num, lab, color) => '<div class="card" style="padding:12px;text-align:center;"><div style="font-size:18px;font-weight:800;white-space:nowrap;' + (color ? 'color:' + color + ';' : '') + '">' + num + '</div><div style="font-size:10px;color:var(--text-muted);letter-spacing:.5px;">' + lab + '</div></div>';
+  if (res) {
+    const st = p => parseFloat(p.stock_actual) || 0;
+    const alCosto = fs.reduce((s, p) => s + st(p) * p.k.costo, 0), alC = fs.reduce((s, p) => s + st(p) * (p.k.pr.c || 0), 0), al60 = fs.reduce((s, p) => s + st(p) * (p.k.pr.d60 || 0), 0);
+    res.innerHTML = card(fs.length, 'PRODUCTOS') + (com ? '' : card(_cmkFmt(alCosto), 'INVENTARIO AL COSTO')) + card(_cmkFmt(alC), 'VENDIDO DE CONTADO', '#F8696B') + card(_cmkFmt(al60), 'VENDIDO A 31-60 DÍAS', '#63BE7B')
+      + card(fs.filter(p => p.k.fijo).length, 'CON PRECIO FIJO', 'var(--gold)') + card(fs.filter(p => !p.k.pr.c).length, 'SIN PRECIO');
+  }
+  if (!fs.length) { cont.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">Sin productos para ese filtro.</div>'; return; }
+  const td = 'padding:6px 9px;border-bottom:1px solid rgba(128,128,128,.18);', th = 'text-align:left;padding:7px 9px;color:var(--text-muted);font-size:10px;white-space:nowrap;';
+  let fam = '', html = '';
+  fs.forEach(p => {
+    if (p.fam !== fam) { fam = p.fam; html += '<tr><td colspan="' + (com ? 8 : 11) + '" style="padding:10px 9px 5px;font-weight:800;font-size:12px;color:var(--gold);">' + _cmkEsc(fam) + '</td></tr>'; }
+    const k = p.k, cod = _cmkEsc(p.codigo);
+    const precios = LPR_PLAZOS.map(pl => '<td style="' + td + 'text-align:right;font-weight:700;background:' + pl[2] + ';color:#111;white-space:nowrap;">' + (k.pr[pl[0]] ? _cmkFmt(k.pr[pl[0]]) : 'Consultar') + '</td>').join('');
+    let util = '', fijo = '';
+    if (!com) {
+      const bajo = k.costo > 0 && k.pr.c && k.pr.c < k.costo;
+      util = '<td style="' + td + 'text-align:right;font-size:11px;white-space:nowrap;' + (bajo ? 'color:#F8696B;font-weight:800;' : '') + '">' + (k.util === null ? '—' : (Math.round(k.util * 1000) / 10).toLocaleString('es-CO') + ' %' + (bajo ? ' ⚠️' : '')) + '</td>';
+      fijo = '<td style="' + td + 'font-size:11px;white-space:nowrap;">' + (k.fijo ? '<span style="font-weight:700;color:var(--gold);" title="' + _cmkEsc((k.fijo.nota || 'Sin nota') + ' — ' + (k.fijo.por || '') + ' ' + String(k.fijo.at || '').slice(0, 10)) + '">🔒 FIJO</span> ' : '')
+        + (ed ? '<button class="btn btn-ghost" onclick="lprEditarFijo(\'' + encodeURIComponent(p.codigo).replace(/'/g, '%27') + '\')" style="width:auto;font-size:11px;padding:3px 8px;" title="Fijar a mano el precio de contado de este ítem">✏️</button>' : '') + '</td>';
+    }
+    html += '<tr><td style="' + td + 'font-size:11px;white-space:nowrap;">' + cod + '</td><td style="' + td + '">' + _cmkEsc(p.nom) + '</td><td style="' + td + 'font-size:11px;">' + _cmkEsc(p.marca || 'SIN MARCA') + '</td>'
+      + '<td style="' + td + 'text-align:right;">' + (parseFloat(p.stock_actual) || 0).toLocaleString('es-CO') + '</td>'
+      + (com ? '' : '<td style="' + td + 'text-align:right;font-size:11px;white-space:nowrap;">' + (k.costo > 0 ? _cmkFmt(k.costo) : '<span style="color:#F8696B;">sin costo</span>') + '</td>')
+      + precios + util + fijo + '</tr>';
+  });
+  cont.innerHTML = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:' + (com ? 760 : 980) + 'px;"><thead><tr>'
+    + '<th style="' + th + '">CÓDIGO</th><th style="' + th + '">DESCRIPCIÓN</th><th style="' + th + '">MARCA</th><th style="' + th + 'text-align:right;">EXISTENCIA</th>'
+    + (com ? '' : '<th style="' + th + 'text-align:right;">COSTO</th>')
+    + LPR_PLAZOS.map(pl => '<th style="' + th + 'text-align:right;background:' + pl[2] + ';color:#111;">' + pl[1] + '</th>').join('')
+    + (com ? '' : '<th style="' + th + 'text-align:right;" title="Utilidad real vendiendo al precio de contado">UTIL. CONTADO</th><th style="' + th + '">PRECIO FIJO</th>')
+    + '</tr></thead><tbody>' + html + '</tbody></table></div>';
+}
+// Guardar: se vuelve a leer el archivo del servidor, se aplica SOLO el cambio y se sube (no pisa lo de la otra persona).
+async function _lprGuardar(cambio, etiqueta) {
+  if (!lprEdita()) { showToast('Tu usuario no puede cambiar la lista de precios', 'error'); return false; }
+  try {
+    const cfg = await _lprCfgFresca();
+    cambio(cfg);
+    if (!Array.isArray(cfg.historial)) cfg.historial = [];
+    cfg.historial.push({ at: new Date().toISOString(), por: _lprYo(), que: etiqueta }); if (cfg.historial.length > 300) cfg.historial = cfg.historial.slice(-300);
+    cfg.updatedAt = new Date().toISOString();
+    await _saveDataGH(LPR_FILE, cfg, '🏷️ Lista de precios');
+    lpr_cfg = cfg; try { localStorage.setItem(LPR_LS, JSON.stringify(cfg)); } catch (_) { }
+    return true;
+  } catch (e) { showToast('No se pudo guardar: ' + (e && e.message || e), 'error'); return false; }
+}
+async function lprGuardarIndices() {
+  const n = {};
+  for (let i = 0; i < LPR_PLAZOS.length; i++) {
+    const k = LPR_PLAZOS[i][0], v = parseFloat((document.getElementById('lpr-ix-' + k) || {}).value);
+    if (!isFinite(v) || v < 0 || v >= 90) { showToast('Índice de ' + LPR_PLAZOS[i][1] + ' no válido (0 a 89 %)', 'error'); return; }
+    n[k] = Math.round(v * 10) / 1000;
+  }
+  if (!(n.c <= n.d15 && n.d15 <= n.d30 && n.d30 <= n.d60) && !confirm('Los índices no van de menor a mayor (contado debería ser el más bajo). ¿Guardar así de todos modos?')) return;
+  const ok = await _lprGuardar(cfg => { cfg.idx = n; cfg.idxPor = _lprYo(); cfg.idxAt = new Date().toISOString(); },
+    'índices ' + LPR_PLAZOS.map(p => (Math.round(n[p[0]] * 1000) / 10) + '%').join(' / '));
+  if (ok) { showToast('Índices guardados ✓', 'success'); lprPintarIndices(); lprRender(); }
+}
+function lprEditarFijo(codEnc) {
+  if (!lprEdita() || !lpr_prod) return;
+  const cod = decodeURIComponent(codEnc), p = lpr_prod.find(x => String(x.codigo) === cod); if (!p) return;
+  const fj = (lpr_cfg.fijos || {})[cod], costo = parseFloat(p.costo_compra) || 0, ix = _lprIdx();
+  const calc = costo > 0 ? _lprArriba(costo / (1 - ix.c)) : 0;
+  lprCerrarFijo();
+  const d = document.createElement('div'); d.id = 'lpr-modal';
+  d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  d.innerHTML = '<div class="card" style="max-width:440px;width:100%;padding:20px;">'
+    + '<div class="config-title" style="margin:0 0 4px;">🔒 Precio fijo de contado</div>'
+    + '<div style="font-size:12px;margin-bottom:10px;"><b>' + _cmkEsc(_lprNombre(p.descripcion)) + '</b><br><span style="color:var(--text-muted);">' + _cmkEsc(cod) + ' · costo ' + (costo > 0 ? _cmkFmt(costo) : 'sin costo') + ' · contado por índice ' + (calc ? _cmkFmt(calc) : '—') + '</span></div>'
+    + '<div class="form-group"><label>Precio de contado (sin IVA)</label><input type="number" id="lpr-fj-precio" min="0" step="10" value="' + (fj ? (parseFloat(fj.precio) || '') : '') + '" placeholder="' + (calc || '') + '" oninput="lprFijoVista(' + costo + ')"></div>'
+    + '<div id="lpr-fj-vista" style="font-size:11px;color:var(--text-muted);margin:-4px 0 10px;"></div>'
+    + '<div class="form-group"><label>Nota (por qué se fija)</label><input type="text" id="lpr-fj-nota" maxlength="160" value="' + _cmkEsc(fj ? (fj.nota || '') : '') + '"></div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">'
+    + (fj ? '<button class="btn btn-ghost" onclick="lprQuitarFijo(\'' + codEnc + '\')" style="width:auto;font-size:12px;padding:8px 12px;margin-right:auto;">Quitar precio fijo</button>' : '')
+    + '<button class="btn btn-ghost" onclick="lprCerrarFijo()" style="width:auto;font-size:12px;padding:8px 12px;">Cancelar</button>'
+    + '<button class="btn btn-primary" onclick="lprGuardarFijo(\'' + codEnc + '\')" style="width:auto;font-size:12px;padding:8px 14px;">💾 Guardar</button></div></div>';
+  document.body.appendChild(d); lprFijoVista(costo);
+}
+function lprFijoVista(costo) {
+  const v = parseFloat((document.getElementById('lpr-fj-precio') || {}).value), o = document.getElementById('lpr-fj-vista'); if (!o) return;
+  if (!isFinite(v) || v <= 0) { o.textContent = 'Los otros plazos suben en la misma proporción de los índices.'; return; }
+  const ix = _lprIdx();
+  o.innerHTML = LPR_PLAZOS.slice(1).map(p => p[1] + ' ' + _cmkFmt(_lprArriba(v * (1 - ix.c) / (1 - ix[p[0]])))).join(' · ')
+    + (costo > 0 ? '<br>Utilidad de contado: <b' + (v < costo ? ' style="color:#F8696B;"' : '') + '>' + (Math.round((v - costo) / v * 1000) / 10).toLocaleString('es-CO') + ' %' + (v < costo ? ' — por debajo del costo' : '') + '</b>' : '');
+}
+function lprCerrarFijo() { const m = document.getElementById('lpr-modal'); if (m) m.remove(); }
+async function lprGuardarFijo(codEnc) {
+  const cod = decodeURIComponent(codEnc), v = parseFloat((document.getElementById('lpr-fj-precio') || {}).value), nota = ((document.getElementById('lpr-fj-nota') || {}).value || '').trim();
+  if (!isFinite(v) || v <= 0) { showToast('Escribe el precio de contado', 'error'); return; }
+  const p = (lpr_prod || []).find(x => String(x.codigo) === cod), costo = p ? (parseFloat(p.costo_compra) || 0) : 0;
+  if (costo > 0 && v < costo && !confirm('Ese precio queda por debajo del costo (' + _cmkFmt(costo) + '). ¿Fijarlo de todos modos?')) return;
+  const ok = await _lprGuardar(cfg => { cfg.fijos[cod] = { precio: Math.round(v), nota: nota, por: _lprYo(), at: new Date().toISOString() }; }, 'precio fijo ' + cod + ' = ' + Math.round(v));
+  if (ok) { lprCerrarFijo(); showToast('Precio fijo guardado ✓', 'success'); lprRender(); }
+}
+async function lprQuitarFijo(codEnc) {
+  const cod = decodeURIComponent(codEnc);
+  if (!confirm('¿Quitar el precio fijo de ' + cod + '? Volverá a calcularse con el índice.')) return;
+  const ok = await _lprGuardar(cfg => { delete cfg.fijos[cod]; }, 'quita precio fijo ' + cod);
+  if (ok) { lprCerrarFijo(); showToast('Precio fijo quitado ✓', 'success'); lprRender(); }
+}
+function lprCambioVista() { lprPintarIndices(); lprRender(); }
+function lprExcel() {
+  if (!lprPuede()) return;
+  const fs = _lprFiltrados(), com = lprVistaComercial();
+  if (!fs.length) { showToast('Sin productos para exportar con ese filtro.', 'error'); return; }
+  const rows = fs.map(p => {
+    const r = { 'FAMILIA': p.fam, 'CÓDIGO': p.codigo, 'DESCRIPCIÓN': p.nom, 'MARCA': p.marca || 'SIN MARCA', 'EXISTENCIA': parseFloat(p.stock_actual) || 0 };
+    if (!com) r['COSTO'] = p.k.costo || '';
+    LPR_PLAZOS.forEach(pl => { r[pl[1]] = p.k.pr[pl[0]] || 'Consultar'; });
+    if (!com) { r['UTILIDAD CONTADO'] = p.k.util === null ? '' : Math.round(p.k.util * 1000) / 1000; r['PRECIO FIJO'] = p.k.fijo ? 'SÍ' : ''; r['NOTA'] = p.k.fijo ? (p.k.fijo.nota || '') : ''; r['UBICACIÓN'] = p.ubicacion || ''; }
+    return r;
+  });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Lista de precios');
+  XLSX.writeFile(wb, 'Lista_precios_' + (com ? 'COMERCIALES' : 'GERENCIA') + '_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+}
+
 // ===== 📄 FACTURAS RADICADAS + comisiones compartidas (v361, 18-nov-2026) =====
 // Pedido del jefe: que los comerciales, Andrea y Alberto vean la factura radicada por cliente con
 // fecha de radicado y de vencimiento. Decisiones del usuario: radicado = fecha de la factura;
