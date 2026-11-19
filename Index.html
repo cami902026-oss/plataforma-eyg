@@ -12984,7 +12984,7 @@ function _lpqAnaliza(texto, esConsulta) {
     .replace(/\bSCH\s+XXS\b|\bXXS\b/g, ' SXXS ').replace(/\bS-(\d{2,3})\b/g, 'SCH $1').replace(/(^|[^A-Z])(STD|XS)(?![A-Z])/g, (m, a, b) => /SCH\s$/.test(a) ? m : a + ' SCH ' + b + ' ')
     .replace(/\bSCH\s+SCH\b/g, 'SCH').replace(/\b(SCH\s+(?:\d+|STD|XS))\s*X\s*(?=\d)/g, '$1 ')
     .replace(/#\s*(\d{3,4})\b/g, ' $1# ').replace(/\b(?:CLASS|CLASE|CL|ANSI|RATING)\s*[\.:]?\s*#?\s*(\d{3,4})\b/g, ' $1# ').replace(/\b(\d{3,4})\s*(?:PSI|WOG|LIBRAS)\b/g, ' $1# ')
-    .replace(/(\d"?)\s*-\s*(150|300|600|900|1500|2500|3000|6000)\b/g, '$1 $2# ').replace(/\b900\s*\/\s*1500\b/g, '900# 1500#')
+    .replace(/(\d"?)\s*-\s*(150|300|600|900|1500|2500|3000|6000)\b/g, '$1 $2# ').replace(/\b900\s*\/\s*1500\s*L?\b/g, '900# 1500# ')
     .replace(/\bNPS\s*/g, ' ').replace(/(^|\s)(\d{1,2})\s+(\d\/\d)/g, '$1$2-$3').replace(/\b(\d+(?:-\d\/\d+|\/\d+)?)\s*(?:IN|INCH|PULG|PULGADAS?)\b/g, '$1"');
   s = ' ' + _absNorm(s) + ' ';
   const _macho = /\bMACHO\b|\bMALE\b|\bMTH\b|\bMNPT\b|\bHEX\s*HEAD\b/.test(s);
@@ -25871,6 +25871,7 @@ const _ABS_SINONIMOS = [
   [/\bSLIP[\s\-]?ON\b/g, 'SLIPON'],
   [/\bWELDING\s*NECK\b|\bW\.?N\.?\b/g, 'CUELLO'],
   [/\bBLIND\b|\bCIEGAS?\b/g, 'CIEGO'],
+  [/\bROSCAD[AO]S?\b/g, 'ROSCADO'],          // v369: «BRIDA ROSCADA» se encuentra buscando roscado/roscada
   [/\bTUBOS?\b|\bPIPE\b/g, 'TUBERIA'],
   [/\bVALVE\b|\bVALV\.?\b/g, 'VALVULA'],
   [/\bELBOW\b/g, 'CODO'],
