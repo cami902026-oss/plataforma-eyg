@@ -12968,11 +12968,12 @@ function _lpqPlazo() {
 const _LPQ_CLASES = { '150': 1, '300': 1, '600': 1, '800': 1, '900': 1, '1500': 1, '2500': 1, '2000': 1, '3000': 1, '6000': 1, '9000': 1 };
 const _LPQ_OTROS = ['VALVULA', 'ESPARRAGO', 'EMPAQUE', 'CABLE', 'TORNILLO', 'TUERCA', 'NIPLE', 'SOCKOLET', 'WELDOLET', 'BUSHING', 'MANOMETRO', 'TUBING', 'FILTRO', 'ARANDELA', 'PERNO', 'ABRAZADERA',
   'LAMINA', 'ANGULO', 'VIGA', 'PLATINA', 'SWAGE', 'FIGURA', 'KIT', 'ACOPLE', 'UNIVERSAL', 'MANGUERA', 'ELECTRODO', 'SOLDADURA', 'DISCO', 'TERMOMETRO', 'REGULADOR', 'BOMBA', 'MOTOR', 'BREAKER', 'TERMINAL', 'SWITCH',
-  'BOLT', 'PERFIL', 'CUADRADA', 'CUADRADO', 'NIVEL', 'RANURADORA', 'CORAZA', 'LIQUID', 'MC4', 'GOLPE', 'ORING', 'JUNTA', 'PANELES', 'ISOLATION', 'AISLAMIENTO', 'SOPORTE', 'PINTURA', 'CINTA'];
+  'BOLT', 'PERFIL', 'CUADRADA', 'CUADRADO', 'NIVEL', 'RANURADORA', 'CORAZA', 'LIQUID', 'MC4', 'GOLPE', 'ORING', 'JUNTA', 'PANELES', 'ISOLATION', 'AISLAMIENTO', 'SOPORTE', 'PINTURA', 'CINTA', 'BANDEJA', 'ZORRA', 'CARRETILLA'];
 const _LPQ_EXCL = /\bINOX\b|\b30[49]L?\b|\b316L?\b|\bGALV|\bPVC\b|\bCPVC\b|\bBRONCE\b|\bLATON\b|\bBRASS\b|\bA-?\s?182\b|\bA-?\s?403\b|\bA-?\s?536\b|\bTP\s?\d|\bALUMIN|\bCOBRE\b|\bHIERRO\b|\bDUPLEX\b|\bSS\b|\bS\.S\b|\bHDPE\b|\bPEAD\b|\bCF8M?\b|\bF3(04|16)|\bWP\s?\d|\bF\s?(5|9|11|22|91)\b|\bNEGR[AO]\b|\bCONDUIT\b|\bEMT\b|\bIMC\b|\bALLOY\b|\bALEAD|\bSANITARI|\bRANURAD|\bGROOVED\b|\bG10\b|\bSR\b|\bSHORT\s+RADIUS\b|\bRADIO\s+CORTO\b|\b180\b|\bEXCENTRIC|\bECCENTRIC|\bEXC\b|\bECC\b|\bLOCA\b|\bLAP\b|\bERW\b|\bEFW\b|\bCON\s+COSTURA\b/;
 // esConsulta = texto del cliente (se le aplica la regla de «cifras sin leer»); los nombres de inventario no.
+function _lpqFracc(t) { return String(t || '').replace(/½/g, ' 1/2').replace(/¼/g, ' 1/4').replace(/¾/g, ' 3/4').replace(/⅛/g, ' 1/8').replace(/⅜/g, ' 3/8').replace(/⅝/g, ' 5/8').replace(/⅞/g, ' 7/8'); }
 function _lpqAnaliza(texto, esConsulta) {
-  let s = String(texto || '').toUpperCase().replace(/[”“″]/g, '"').replace(/''|´´/g, '"').replace(/×/g, 'X').replace(/[°º]/g, ' ').replace(/\bS\.\s?S\.?(?![A-Z])/g, ' SS ').replace(/(\d)[\.,;:]+(?=\s|$|")/g, '$1 ').replace(/([A-ZÁÉÍÓÚ])[\.,;:]+(?=[A-Z0-9])/g, '$1 ')
+  let s = _lpqFracc(texto).toUpperCase().replace(/[”“″]/g, '"').replace(/''|´´/g, '"').replace(/×/g, 'X').replace(/[°º]/g, ' ').replace(/\bS\.\s?S\.?(?![A-Z])/g, ' SS ').replace(/(\d)[\.,;:]+(?=\s|$|")/g, '$1 ').replace(/([A-ZÁÉÍÓÚ])[\.,;:]+(?=[A-Z0-9])/g, '$1 ')
     .replace(/(^|[\sX])([36])M\b/g, '$1 $2000# ');
   s = s.replace(/"(?=[A-Z0-9])/g, '" ').replace(/#(?=[A-Z])/g, '# ');                                           // 3/4"SCH · 300#RF · 2"WELD
   s = s.replace(/\b(45|90)\s*X\s*(?=\d)/g, '$1 ').replace(/\bX\s*(45|90)\s*"?(?=\s|$)/g, ' $1 ');                 // 45 X 3" · 4" X 45"
@@ -13019,15 +13020,15 @@ function _lpqAnaliza(texto, esConsulta) {
 }
 function _lpqCoincide(q, p) {
   if (p.tipo !== q.tipo) return false;
-  if (!q.med.length) return false;                                                                                // sin medida no se propone nada
-  if (q.tipo === 'FLANCHE' && (!q.sub || p.sub !== q.sub)) return false;                                         // la brida debe decir cuál: cuello, ciega, slip-on…
-  if (q.rtj !== p.rtj || q.od !== p.od) return false;
+  if (!q.med.length && !q.hojear) return false;                                                                   // sin medida no se propone nada (salvo al hojear: texto sin ninguna cifra)
+  if (q.tipo === 'FLANCHE' && ((!q.sub && !q.hojear) || (q.sub && p.sub !== q.sub))) return false;               // la brida debe decir cuál: cuello, ciega, slip-on…
+  if ((q.rtj !== p.rtj && !(q.hojear && !q.rtj)) || q.od !== p.od) return false;   // al hojear «brida» salen también las RTJ
   if (q.tipo === 'TEE' && (q.redu || q.med.length >= 2) !== p.redu) return false;
   if ((q.macho && !p.macho) || (q.hembra && !p.hembra)) return false;
   if (q.tipo !== 'FLANCHE' && ((q.rosc && !p.rosc) || (q.sock && !p.sock))) return false;
   const todos = (a, b) => a.every(x => b.indexOf(x) >= 0);
   if (!todos(q.med, p.med)) return false;
-  if (['FLANCHE', 'CODO', 'SEMICODO', 'TEE', 'CAP', 'COPA', 'TUBERIA'].indexOf(q.tipo) >= 0 && q.med.length !== p.med.length) return false;
+  if (['FLANCHE', 'CODO', 'SEMICODO', 'TEE', 'CAP', 'COPA', 'TUBERIA'].indexOf(q.tipo) >= 0 && q.med.length && q.med.length !== p.med.length) return false;
   if (!todos(q.cls, p.cls)) return false;                       // pidió una clase: el producto debe tenerla (un codo para soldar no tiene clase)
   if (q.ced.length && p.ced.length && !todos(q.ced, p.ced)) return false;
   return true;
@@ -13038,10 +13039,11 @@ function _lpqBuscar(texto) {
   if (porCod.length) return porCod;
   const q = _lpqAnaliza(texto, true);
   if (q.excl || !q.tipo || q.tipo === '?') return [];
+  q.hojear = !/\d/.test(_lpqFracc(texto));          // v367: sin cifras («brida cuello», «codo») se listan todos los de ese tipo
   return (lpr_prod || []).filter(p => {
     if (!p.__lpq) { p.__lpq = _lpqAnaliza(String(p.descripcion || '').split('·')[0], false); if (p.__lpq.tipo === 'TAPON' || p.__lpq.tipo === 'THREADOLET') p.__lpq.rosc = true; }
     return _lpqCoincide(q, p.__lpq);
-  }).sort((a, b) => _lprNombre(a.descripcion).localeCompare(_lprNombre(b.descripcion), 'es', { numeric: true })).slice(0, 40);
+  }).sort((a, b) => _lprNombre(a.descripcion).localeCompare(_lprNombre(b.descripcion), 'es', { numeric: true })).slice(0, 80);
 }
 async function lpqAbrir(i) {
   if (!lprPuede()) return;
@@ -13075,7 +13077,7 @@ function lpqPintar() {
   if (info) info.innerHTML = (nomPz ? 'Forma de pago de la cotización: <b>' + _cmkEsc(String((document.getElementById('cotiz-pago') || {}).value || '')) + '</b> → se resalta el precio de <b>' + nomPz + '</b>. ' : 'La cotización no tiene un plazo de pago reconocible: elige el precio a mano. ')
     + 'Clic en un precio para copiarlo al ítem. Precios sin IVA.';
   if (!q) { cont.innerHTML = '<div style="padding:18px;color:var(--text-muted);font-size:13px;">Escribe el producto y dale Buscar.</div>'; return; }
-  if (!_lpqRes.length) { cont.innerHTML = '<div style="padding:18px;color:var(--text-muted);font-size:13px;">No hay ese producto en el inventario importado con existencia. Escribe tipo, medida y clase o cédula (ej. «brida cuello 3 150», «codo 4 sch 40»). Lo importado es acero al carbono: inoxidable, galvanizado, válvulas y espárragos no están en esta lista.</div>'; return; }
+  if (!_lpqRes.length) { cont.innerHTML = '<div style="padding:18px;color:var(--text-muted);font-size:13px;">No hay ese producto en el inventario importado con existencia. Escribe solo el tipo para ver todos («brida cuello», «codo», «tee reducida») o tipo + medida + clase o cédula («brida cuello 3 150», «codo 4 sch 40»). Si pones medidas, en las bridas di cuál es: cuello, ciega, slip-on, socket o roscada. Lo importado es acero al carbono: inoxidable, galvanizado, válvulas y espárragos no están en esta lista.</div>'; return; }
   const td = 'padding:6px 9px;border-bottom:1px solid rgba(128,128,128,.18);', th = 'text-align:left;padding:6px 9px;color:var(--text-muted);font-size:10px;white-space:nowrap;';
   cont.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:760px;"><thead><tr><th style="' + th + '">CÓDIGO</th><th style="' + th + '">DESCRIPCIÓN</th><th style="' + th + '">MARCA</th><th style="' + th + 'text-align:right;">EXISTENCIA</th>'
     + LPR_PLAZOS.map(pl => '<th style="' + th + 'text-align:center;background:' + pl[2] + ';color:#111;">' + pl[1] + '</th>').join('') + '</tr></thead><tbody>'
