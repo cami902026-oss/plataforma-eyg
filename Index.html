@@ -2295,9 +2295,11 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
               <div class="config-title" style="margin:0;">🏷️ Lista de precios · inventario importado</div>
               <span style="flex:1;"></span>
               <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;" title="Muestra la lista como la verán los comerciales: sin costo, sin índices y sin utilidad"><input type="checkbox" id="lpr-vista" onchange="lprCambioVista()" style="width:auto;"> Ver como comercial</label>
+              <button class="btn btn-secondary" onclick="lprColsPanel()" style="width:auto;font-size:12px;padding:8px 14px;" title="Escoger qué columnas se ven (para mostrar la lista al equipo)">🧩 Columnas</button>
               <button class="btn btn-secondary" onclick="lprCargar(true)" style="width:auto;font-size:12px;padding:8px 14px;" title="Vuelve a leer inventario y precios">🔄 Actualizar</button>
               <button class="btn btn-secondary" onclick="lprExcel()" style="width:auto;font-size:12px;padding:8px 14px;">⬇️ Excel</button>
             </div>
+            <div id="lpr-cols" style="display:none;margin-bottom:12px;"></div>
             <div id="lpr-indices" style="margin-bottom:12px;"></div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
               <input type="text" id="lpr-buscar" oninput="lprRender()" placeholder="Buscar producto, código o marca" style="flex:1;min-width:200px;padding:8px 12px;">
@@ -5855,7 +5857,22 @@ function cotizSoloMias() {
   return !!(currentUser && (_COTIZ_SOLO_MIAS || ['mario']).includes(String(currentUser.email || '').toLowerCase()));
 }
 function _cotizNombreMio() { return String((currentUser && currentUser.name) || '').trim().toLowerCase(); }
+// v366 (18-nov-2026): VENDEDOR COMPARTIDO. Pedido del usuario: «coloca la opción de compartido sheila/mario para
+// que ambas puedan ver esta cotización». El vendedor se guarda como «Sheila Baron / Mario» y cuenta como de los dos.
+const COTIZ_COMPARTIDOS = [['sheila', 'mario']];
+function _cotizCompartidosOpc() {
+  return COTIZ_COMPARTIDOS.map(par => par.map(e => ((USERS || []).find(u => u.email === e) || {}).name).filter(Boolean))
+    .filter(ns => ns.length > 1).map(ns => ns.join(' / '));
+}
+function _cotizEsCompartidoMio(v) { return String(v || '').indexOf('/') >= 0 && _cotizCompartidosOpc().indexOf(String(v).trim()) >= 0 && _cotizEsNombreMio(v); }
+// Vendedor que se guarda desde el formulario: quien solo ve lo suyo queda a su nombre, o en un compartido donde esté.
+function _cotizVendedorForm() {
+  const sel = ((document.getElementById('cotiz-vendedor') || {}).value || '');
+  if (!cotizSoloMias()) return sel;
+  return _cotizEsCompartidoMio(sel) ? sel : ((currentUser && currentUser.name) || '');
+}
 function _cotizEsNombreMio(v) {
+  if (String(v || '').indexOf('/') >= 0) return String(v).split('/').some(x => x.trim() && _cotizEsNombreMio(x.trim()));
   const t = String(v || '').trim().toLowerCase(); if (!t) return false;
   const yo = _cotizNombreMio(), mi = String((currentUser && currentUser.email) || '').trim().toLowerCase();
   if (t === yo || t === mi) return true;
@@ -5885,7 +5902,8 @@ async function _cotizMiasCargar() {
   if (!cotizSoloMias() || typeof absFetch !== 'function') return;
   try {
     const n = encodeURIComponent(_cotizNombreMio().split(/\s+/)[0] + '*');
-    const base = 'cotizaciones?select=id&or=(vendedor.ilike.' + n + ',realizada_por.ilike.' + n + ')&order=id.asc';
+    const nc = encodeURIComponent('*/ ' + _cotizNombreMio().split(/\s+/)[0] + '*');   // v366: «Sheila Baron / Mario»
+    const base = 'cotizaciones?select=id&or=(vendedor.ilike.' + n + ',realizada_por.ilike.' + n + ',vendedor.ilike.' + nc + ')&order=id.asc';
     let todo = [], desde = 0;
     for (let v = 0; v < 20; v++) {
       const b = (await absFetch(base + '&limit=1000&offset=' + desde)) || [];
@@ -12744,7 +12762,7 @@ function lprLlenarFiltros() {
 }
 function lprPintarIndices() {
   const box = document.getElementById('lpr-indices'); if (!box) return;
-  if (!lprPuede() || lprVistaComercial()) { box.innerHTML = ''; return; }
+  if (!lprPuede() || !_lprVe('idx')) { box.innerHTML = ''; return; }
   const ix = _lprIdx(), ed = lprEdita();
   box.innerHTML = '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">' + LPR_PLAZOS.map(p =>
     '<div style="text-align:center;"><div style="font-size:10px;font-weight:700;background:' + p[2] + ';color:#111;border-radius:6px 6px 0 0;padding:3px 8px;white-space:nowrap;">' + p[1] + '</div>' +
@@ -12764,42 +12782,75 @@ function _lprFiltrados() {
     .filter(p => !solo || (solo === 'fijo' && p.k.fijo) || (solo === 'sin' && !p.k.pr.c) || (solo === 'bajo' && p.k.fijo && p.k.costo > 0 && p.k.pr.c < p.k.costo))
     .sort((a, b) => a.fam.localeCompare(b.fam) || a.nom.localeCompare(b.nom, 'es', { numeric: true }));
 }
+// v366: COLUMNAS A LA VISTA. Pedido: que Alberto pueda ocultar lo que no interesa (costo, utilidad, índices…) cuando
+// le muestra la lista al equipo. Es solo de pantalla y de este equipo (se recuerda por usuario en el navegador).
+const LPR_COLS = [['codigo', 'Código'], ['marca', 'Marca'], ['exist', 'Existencia'], ['costo', 'Costo'], ['c', 'Contado'], ['d15', '1-15 días'], ['d30', '16-30 días'], ['d60', '31 a 60 días'],
+  ['util', 'Utilidad'], ['fijo', 'Precio fijo'], ['idx', 'Índices (arriba)'], ['resumen', 'Resumen de valores']];
+const _LPR_SENSIBLES = { costo: 1, util: 1, fijo: 1, idx: 1 };
+function _lprColsClave() { return 'energy_lpr_cols_' + _lprYo(); }
+function _lprOcultas() { try { const o = JSON.parse(localStorage.getItem(_lprColsClave()) || '{}'); return (o && typeof o === 'object' && !Array.isArray(o)) ? o : {}; } catch (_) { return {}; } }
+// ¿Se ve esa columna? «Ver como comercial» oculta siempre lo sensible, esté como esté la elección.
+function _lprVe(k) { return !_lprOcultas()[k] && !(_LPR_SENSIBLES[k] && lprVistaComercial()); }
+function lprColsPanel() {
+  const box = document.getElementById('lpr-cols'); if (!box) return;
+  if (box.style.display !== 'none') { box.style.display = 'none'; return; }
+  lprColsPintar(); box.style.display = '';
+}
+function lprColsPintar() {
+  const box = document.getElementById('lpr-cols'); if (!box || !lprPuede()) return;
+  const oc = _lprOcultas();
+  box.innerHTML = '<div style="border:1px solid rgba(128,128,128,.3);border-radius:10px;padding:10px 12px;display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;">'
+    + '<b style="font-size:12px;">Columnas a la vista:</b>'
+    + LPR_COLS.map(c => '<label style="font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap;"><input type="checkbox" style="width:auto;"' + (oc[c[0]] ? '' : ' checked') + ' onchange="lprColsCambiar(\'' + c[0] + '\', this.checked)"> ' + c[1] + '</label>').join('')
+    + '<button class="btn btn-ghost" onclick="lprColsTodas()" style="width:auto;font-size:11px;padding:4px 10px;">Mostrar todas</button>'
+    + '<span style="font-size:11px;color:var(--text-muted);flex-basis:100%;">Solo cambia lo que se ve en esta pantalla y en el Excel que bajes desde aquí. Se recuerda en este equipo.</span></div>';
+}
+function lprColsCambiar(k, ver) {
+  if (!LPR_COLS.some(c => c[0] === k)) return;
+  const oc = _lprOcultas(); if (ver) delete oc[k]; else oc[k] = 1;
+  try { localStorage.setItem(_lprColsClave(), JSON.stringify(oc)); } catch (_) { }
+  lprPintarIndices(); lprRender();
+}
+function lprColsTodas() { try { localStorage.removeItem(_lprColsClave()); } catch (_) { } lprColsPintar(); lprPintarIndices(); lprRender(); }
 function lprRender() {
   const cont = document.getElementById('lpr-lista'), res = document.getElementById('lpr-resumen'); if (!cont) return;
   if (!lprPuede()) { cont.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">La lista de precios todavía no está habilitada para tu usuario.</div>'; if (res) res.innerHTML = ''; return; }
   if (!lpr_prod) { cont.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">Cargando…</div>'; return; }
-  const com = lprVistaComercial(), ed = lprEdita() && !com, fs = _lprFiltrados();
+  const V = {}; LPR_COLS.forEach(c => { V[c[0]] = _lprVe(c[0]); });
+  const ed = lprEdita() && !lprVistaComercial(), fs = _lprFiltrados(), plazos = LPR_PLAZOS.filter(pl => V[pl[0]]);
   const card = (num, lab, color) => '<div class="card" style="padding:12px;text-align:center;"><div style="font-size:18px;font-weight:800;white-space:nowrap;' + (color ? 'color:' + color + ';' : '') + '">' + num + '</div><div style="font-size:10px;color:var(--text-muted);letter-spacing:.5px;">' + lab + '</div></div>';
   if (res) {
-    const st = p => parseFloat(p.stock_actual) || 0;
-    const alCosto = fs.reduce((s, p) => s + st(p) * p.k.costo, 0), alC = fs.reduce((s, p) => s + st(p) * (p.k.pr.c || 0), 0), al60 = fs.reduce((s, p) => s + st(p) * (p.k.pr.d60 || 0), 0);
-    res.innerHTML = card(fs.length, 'PRODUCTOS') + (com ? '' : card(_cmkFmt(alCosto), 'INVENTARIO AL COSTO')) + card(_cmkFmt(alC), 'VENDIDO DE CONTADO', '#F8696B') + card(_cmkFmt(al60), 'VENDIDO A 31-60 DÍAS', '#63BE7B')
-      + card(fs.filter(p => p.k.fijo).length, 'CON PRECIO FIJO', 'var(--gold)') + card(fs.filter(p => !p.k.pr.c).length, 'SIN PRECIO');
+    if (!V.resumen) res.innerHTML = '';
+    else {
+      const st = p => parseFloat(p.stock_actual) || 0;
+      const alCosto = fs.reduce((s, p) => s + st(p) * p.k.costo, 0), alC = fs.reduce((s, p) => s + st(p) * (p.k.pr.c || 0), 0), al60 = fs.reduce((s, p) => s + st(p) * (p.k.pr.d60 || 0), 0);
+      res.innerHTML = card(fs.length, 'PRODUCTOS') + (V.costo ? card(_cmkFmt(alCosto), 'INVENTARIO AL COSTO') : '') + (V.c ? card(_cmkFmt(alC), 'VENDIDO DE CONTADO', '#F8696B') : '') + (V.d60 ? card(_cmkFmt(al60), 'VENDIDO A 31-60 DÍAS', '#63BE7B') : '')
+        + (V.fijo ? card(fs.filter(p => p.k.fijo).length, 'CON PRECIO FIJO', 'var(--gold)') : '') + card(fs.filter(p => !p.k.pr.c).length, 'SIN PRECIO');
+    }
   }
   if (!fs.length) { cont.innerHTML = '<div style="padding:20px;color:var(--text-muted);font-size:13px;">Sin productos para ese filtro.</div>'; return; }
   const td = 'padding:6px 9px;border-bottom:1px solid rgba(128,128,128,.18);', th = 'text-align:left;padding:7px 9px;color:var(--text-muted);font-size:10px;white-space:nowrap;';
+  const ncol = 1 + (V.codigo ? 1 : 0) + (V.marca ? 1 : 0) + (V.exist ? 1 : 0) + (V.costo ? 1 : 0) + plazos.length + (V.util ? 1 : 0) + (V.fijo ? 1 : 0);
   let fam = '', html = '';
   fs.forEach(p => {
-    if (p.fam !== fam) { fam = p.fam; html += '<tr><td colspan="' + (com ? 8 : 11) + '" style="padding:10px 9px 5px;font-weight:800;font-size:12px;color:var(--gold);">' + _cmkEsc(fam) + '</td></tr>'; }
-    const k = p.k, cod = _cmkEsc(p.codigo);
-    const precios = LPR_PLAZOS.map(pl => '<td style="' + td + 'text-align:right;font-weight:700;background:' + pl[2] + ';color:#111;white-space:nowrap;">' + (k.pr[pl[0]] ? _cmkFmt(k.pr[pl[0]]) : 'Consultar') + '</td>').join('');
-    let util = '', fijo = '';
-    if (!com) {
-      const bajo = k.costo > 0 && k.pr.c && k.pr.c < k.costo;
-      util = '<td style="' + td + 'text-align:right;font-size:11px;white-space:nowrap;' + (bajo ? 'color:#F8696B;font-weight:800;' : '') + '">' + (k.util === null ? '—' : (Math.round(k.util * 1000) / 10).toLocaleString('es-CO') + ' %' + (bajo ? ' ⚠️' : '')) + '</td>';
-      fijo = '<td style="' + td + 'font-size:11px;white-space:nowrap;">' + (k.fijo ? '<span style="font-weight:700;color:var(--gold);" title="' + _cmkEsc((k.fijo.nota || 'Sin nota') + ' — ' + (k.fijo.por || '') + ' ' + String(k.fijo.at || '').slice(0, 10)) + '">🔒 FIJO</span> ' : '')
-        + (ed ? '<button class="btn btn-ghost" onclick="lprEditarFijo(\'' + encodeURIComponent(p.codigo).replace(/'/g, '%27') + '\')" style="width:auto;font-size:11px;padding:3px 8px;" title="Fijar a mano el precio de contado de este ítem">✏️</button>' : '') + '</td>';
-    }
-    html += '<tr><td style="' + td + 'font-size:11px;white-space:nowrap;">' + cod + '</td><td style="' + td + '">' + _cmkEsc(p.nom) + '</td><td style="' + td + 'font-size:11px;">' + _cmkEsc(p.marca || 'SIN MARCA') + '</td>'
-      + '<td style="' + td + 'text-align:right;">' + (parseFloat(p.stock_actual) || 0).toLocaleString('es-CO') + '</td>'
-      + (com ? '' : '<td style="' + td + 'text-align:right;font-size:11px;white-space:nowrap;">' + (k.costo > 0 ? _cmkFmt(k.costo) : '<span style="color:#F8696B;">sin costo</span>') + '</td>')
-      + precios + util + fijo + '</tr>';
+    if (p.fam !== fam) { fam = p.fam; html += '<tr><td colspan="' + ncol + '" style="padding:10px 9px 5px;font-weight:800;font-size:12px;color:var(--gold);">' + _cmkEsc(fam) + '</td></tr>'; }
+    const k = p.k, bajo = k.costo > 0 && k.pr.c && k.pr.c < k.costo;
+    html += '<tr>' + (V.codigo ? '<td style="' + td + 'font-size:11px;white-space:nowrap;">' + _cmkEsc(p.codigo) + '</td>' : '')
+      + '<td style="' + td + '">' + _cmkEsc(p.nom) + '</td>'
+      + (V.marca ? '<td style="' + td + 'font-size:11px;">' + _cmkEsc(p.marca || 'SIN MARCA') + '</td>' : '')
+      + (V.exist ? '<td style="' + td + 'text-align:right;">' + (parseFloat(p.stock_actual) || 0).toLocaleString('es-CO') + '</td>' : '')
+      + (V.costo ? '<td style="' + td + 'text-align:right;font-size:11px;white-space:nowrap;">' + (k.costo > 0 ? _cmkFmt(k.costo) : '<span style="color:#F8696B;">sin costo</span>') + '</td>' : '')
+      + plazos.map(pl => '<td style="' + td + 'text-align:right;font-weight:700;background:' + pl[2] + ';color:#111;white-space:nowrap;">' + (k.pr[pl[0]] ? _cmkFmt(k.pr[pl[0]]) : 'Consultar') + '</td>').join('')
+      + (V.util ? '<td style="' + td + 'text-align:right;font-size:11px;white-space:nowrap;' + (bajo ? 'color:#F8696B;font-weight:800;' : '') + '">' + (k.util === null ? '—' : (Math.round(k.util * 1000) / 10).toLocaleString('es-CO') + ' %' + (bajo ? ' ⚠️' : '')) + '</td>' : '')
+      + (V.fijo ? '<td style="' + td + 'font-size:11px;white-space:nowrap;">' + (k.fijo ? '<span style="font-weight:700;color:var(--gold);" title="' + _cmkEsc((k.fijo.nota || 'Sin nota') + ' — ' + (k.fijo.por || '') + ' ' + String(k.fijo.at || '').slice(0, 10)) + '">🔒 FIJO</span> ' : '')
+        + (ed ? '<button class="btn btn-ghost" onclick="lprEditarFijo(\'' + encodeURIComponent(p.codigo).replace(/'/g, '%27') + '\')" style="width:auto;font-size:11px;padding:3px 8px;" title="Fijar a mano el precio de contado de este ítem">✏️</button>' : '') + '</td>' : '')
+      + '</tr>';
   });
-  cont.innerHTML = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:' + (com ? 760 : 980) + 'px;"><thead><tr>'
-    + '<th style="' + th + '">CÓDIGO</th><th style="' + th + '">DESCRIPCIÓN</th><th style="' + th + '">MARCA</th><th style="' + th + 'text-align:right;">EXISTENCIA</th>'
-    + (com ? '' : '<th style="' + th + 'text-align:right;">COSTO</th>')
-    + LPR_PLAZOS.map(pl => '<th style="' + th + 'text-align:right;background:' + pl[2] + ';color:#111;">' + pl[1] + '</th>').join('')
-    + (com ? '' : '<th style="' + th + 'text-align:right;" title="Utilidad real vendiendo al precio de contado">UTIL. CONTADO</th><th style="' + th + '">PRECIO FIJO</th>')
+  cont.innerHTML = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:' + Math.max(420, 260 + (ncol - 1) * 90) + 'px;"><thead><tr>'
+    + (V.codigo ? '<th style="' + th + '">CÓDIGO</th>' : '') + '<th style="' + th + '">DESCRIPCIÓN</th>' + (V.marca ? '<th style="' + th + '">MARCA</th>' : '') + (V.exist ? '<th style="' + th + 'text-align:right;">EXISTENCIA</th>' : '')
+    + (V.costo ? '<th style="' + th + 'text-align:right;">COSTO</th>' : '')
+    + plazos.map(pl => '<th style="' + th + 'text-align:right;background:' + pl[2] + ';color:#111;">' + pl[1] + '</th>').join('')
+    + (V.util ? '<th style="' + th + 'text-align:right;" title="Utilidad real vendiendo al precio de contado">UTIL. CONTADO</th>' : '') + (V.fijo ? '<th style="' + th + '">PRECIO FIJO</th>' : '')
     + '</tr></thead><tbody>' + html + '</tbody></table></div>';
 }
 // Guardar: se vuelve a leer el archivo del servidor, se aplica SOLO el cambio y se sube (no pisa lo de la otra persona).
@@ -12871,20 +12922,27 @@ async function lprQuitarFijo(codEnc) {
   if (ok) { lprCerrarFijo(); showToast('Precio fijo quitado ✓', 'success'); lprRender(); }
 }
 function lprCambioVista() { lprPintarIndices(); lprRender(); }
+function _lprExcelFila(p) {   // v366: el Excel sale con las mismas columnas que están a la vista
+  const r = { 'FAMILIA': p.fam };
+  if (_lprVe('codigo')) r['CÓDIGO'] = p.codigo;
+  r['DESCRIPCIÓN'] = p.nom;
+  if (_lprVe('marca')) r['MARCA'] = p.marca || 'SIN MARCA';
+  if (_lprVe('exist')) r['EXISTENCIA'] = parseFloat(p.stock_actual) || 0;
+  if (_lprVe('costo')) r['COSTO'] = p.k.costo || '';
+  LPR_PLAZOS.forEach(pl => { if (_lprVe(pl[0])) r[pl[1]] = p.k.pr[pl[0]] || 'Consultar'; });
+  if (_lprVe('util')) r['UTILIDAD CONTADO'] = p.k.util === null ? '' : Math.round(p.k.util * 1000) / 1000;
+  if (_lprVe('fijo')) { r['PRECIO FIJO'] = p.k.fijo ? 'SÍ' : ''; r['NOTA'] = p.k.fijo ? (p.k.fijo.nota || '') : ''; }
+  if (_lprVe('costo')) r['UBICACIÓN'] = p.ubicacion || '';
+  return r;
+}
 function lprExcel() {
   if (!lprPuede()) return;
   const fs = _lprFiltrados(), com = lprVistaComercial();
   if (!fs.length) { showToast('Sin productos para exportar con ese filtro.', 'error'); return; }
-  const rows = fs.map(p => {
-    const r = { 'FAMILIA': p.fam, 'CÓDIGO': p.codigo, 'DESCRIPCIÓN': p.nom, 'MARCA': p.marca || 'SIN MARCA', 'EXISTENCIA': parseFloat(p.stock_actual) || 0 };
-    if (!com) r['COSTO'] = p.k.costo || '';
-    LPR_PLAZOS.forEach(pl => { r[pl[1]] = p.k.pr[pl[0]] || 'Consultar'; });
-    if (!com) { r['UTILIDAD CONTADO'] = p.k.util === null ? '' : Math.round(p.k.util * 1000) / 1000; r['PRECIO FIJO'] = p.k.fijo ? 'SÍ' : ''; r['NOTA'] = p.k.fijo ? (p.k.fijo.nota || '') : ''; r['UBICACIÓN'] = p.ubicacion || ''; }
-    return r;
-  });
+  const rows = fs.map(_lprExcelFila);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Lista de precios');
-  XLSX.writeFile(wb, 'Lista_precios_' + (com ? 'COMERCIALES' : 'GERENCIA') + '_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+  XLSX.writeFile(wb, 'Lista_precios_' + ((com || !_lprVe('costo')) ? 'COMERCIALES' : 'GERENCIA') + '_' + new Date().toISOString().slice(0, 10) + '.xlsx');
 }
 
 // ─── 🏷️ Lista de precios → COTIZACIÓN (v365, 18-nov-2026). Solo quienes ven la lista (andrea y alberto). ───
@@ -12911,7 +12969,7 @@ const _LPQ_CLASES = { '150': 1, '300': 1, '600': 1, '800': 1, '900': 1, '1500': 
 const _LPQ_OTROS = ['VALVULA', 'ESPARRAGO', 'EMPAQUE', 'CABLE', 'TORNILLO', 'TUERCA', 'NIPLE', 'SOCKOLET', 'WELDOLET', 'BUSHING', 'MANOMETRO', 'TUBING', 'FILTRO', 'ARANDELA', 'PERNO', 'ABRAZADERA',
   'LAMINA', 'ANGULO', 'VIGA', 'PLATINA', 'SWAGE', 'FIGURA', 'KIT', 'ACOPLE', 'UNIVERSAL', 'MANGUERA', 'ELECTRODO', 'SOLDADURA', 'DISCO', 'TERMOMETRO', 'REGULADOR', 'BOMBA', 'MOTOR', 'BREAKER', 'TERMINAL', 'SWITCH',
   'BOLT', 'PERFIL', 'CUADRADA', 'CUADRADO', 'NIVEL', 'RANURADORA', 'CORAZA', 'LIQUID', 'MC4', 'GOLPE', 'ORING', 'JUNTA', 'PANELES', 'ISOLATION', 'AISLAMIENTO', 'SOPORTE', 'PINTURA', 'CINTA'];
-const _LPQ_EXCL = /\bINOX\b|\b30[49]L?\b|\b316L?\b|\bGALV|\bPVC\b|\bCPVC\b|\bBRONCE\b|\bLATON\b|\bBRASS\b|\bA-?\s?182\b|\bA-?\s?403\b|\bA-?\s?536\b|\bTP\s?\d|\bALUMIN|\bCOBRE\b|\bHIERRO\b|\bDUPLEX\b|\bSS\b|\bS\.S\b|\bHDPE\b|\bPEAD\b|\bCF8M?\b|\bF3(04|16)|\bWP\s?\d|\bF\s?(5|9|11|22|91)\b|\bNEGR[AO]\b|\bCONDUIT\b|\bEMT\b|\bIMC\b|\bALLOY\b|\bALEAD|\bSANITARI|\bRANURAD|\bGROOVED\b|\bG10\b|\bSR\b|\bSHORT\s+RADIUS\b|\bRADIO\s+CORTO\b|\b180\b|\bEXCENTRIC|\bECCENTRIC|\bEXC\b|\bECC\b|\bLOCA\b|\bLAP\b/;
+const _LPQ_EXCL = /\bINOX\b|\b30[49]L?\b|\b316L?\b|\bGALV|\bPVC\b|\bCPVC\b|\bBRONCE\b|\bLATON\b|\bBRASS\b|\bA-?\s?182\b|\bA-?\s?403\b|\bA-?\s?536\b|\bTP\s?\d|\bALUMIN|\bCOBRE\b|\bHIERRO\b|\bDUPLEX\b|\bSS\b|\bS\.S\b|\bHDPE\b|\bPEAD\b|\bCF8M?\b|\bF3(04|16)|\bWP\s?\d|\bF\s?(5|9|11|22|91)\b|\bNEGR[AO]\b|\bCONDUIT\b|\bEMT\b|\bIMC\b|\bALLOY\b|\bALEAD|\bSANITARI|\bRANURAD|\bGROOVED\b|\bG10\b|\bSR\b|\bSHORT\s+RADIUS\b|\bRADIO\s+CORTO\b|\b180\b|\bEXCENTRIC|\bECCENTRIC|\bEXC\b|\bECC\b|\bLOCA\b|\bLAP\b|\bERW\b|\bEFW\b|\bCON\s+COSTURA\b/;
 // esConsulta = texto del cliente (se le aplica la regla de «cifras sin leer»); los nombres de inventario no.
 function _lpqAnaliza(texto, esConsulta) {
   let s = String(texto || '').toUpperCase().replace(/[”“″]/g, '"').replace(/''|´´/g, '"').replace(/×/g, 'X').replace(/[°º]/g, ' ').replace(/\bS\.\s?S\.?(?![A-Z])/g, ' SS ').replace(/(\d)[\.,;:]+(?=\s|$|")/g, '$1 ').replace(/([A-ZÁÉÍÓÚ])[\.,;:]+(?=[A-Z0-9])/g, '$1 ')
@@ -18513,15 +18571,25 @@ function cotizPopulateSelects(vendedor, realiza, aprueba) {
   });
   // vendedor can be empty
   const vEl = document.getElementById('cotiz-vendedor');
-  if (vEl) vEl.innerHTML = '<option value="">— sin asignar —</option>' + cotizGetTeamOptions(vendedor);
+  const _comp = (typeof _cotizCompartidosOpc === 'function') ? _cotizCompartidosOpc() : [];   // v366
+  const _compOpc = n => '<option value="' + n + '"' + (n === vendedor ? ' selected' : '') + '>🤝 Compartido: ' + n + '</option>';
+  if (vEl) vEl.innerHTML = '<option value="">— sin asignar —</option>' + cotizGetTeamOptions(vendedor) + _comp.map(_compOpc).join('');
   // 23-oct-2026: quien solo ve lo suyo cotiza a su nombre, sin poder cambiarlo.
+  // v366: también puede dejarla COMPARTIDA con su par (y una compartida no se le cambia a solo su nombre al abrirla).
   if (vEl && cotizSoloMias()) {
     const yo = (currentUser && currentUser.name) || '';
+    const mias = _comp.filter(n => _cotizEsNombreMio(n));
     if (yo) {
-      if (!Array.from(vEl.options).some(o => o.value === yo)) vEl.insertAdjacentHTML('beforeend', '<option value="' + yo + '">' + yo + '</option>');
-      vEl.value = yo;
-    }
-    vEl.disabled = true; vEl.title = 'Tus cotizaciones quedan a tu nombre';
+      if (mias.length) {
+        vEl.innerHTML = '<option value="' + yo + '">' + yo + '</option>' + mias.map(_compOpc).join('');
+        vEl.value = (mias.indexOf(vendedor) >= 0) ? vendedor : yo;
+        vEl.disabled = false; vEl.title = 'Tus cotizaciones quedan a tu nombre, o compartidas';
+      } else {
+        if (!Array.from(vEl.options).some(o => o.value === yo)) vEl.insertAdjacentHTML('beforeend', '<option value="' + yo + '">' + yo + '</option>');
+        vEl.value = yo;
+        vEl.disabled = true; vEl.title = 'Tus cotizaciones quedan a tu nombre';
+      }
+    } else { vEl.disabled = true; vEl.title = 'Tus cotizaciones quedan a tu nombre'; }
   }
 }
 
@@ -18753,7 +18821,7 @@ async function _cotizGuardarBDCore() {
     sitioEntrega: document.getElementById('cotiz-sitio').value,
     validez: document.getElementById('cotiz-validez').value,
     observaciones: document.getElementById('cotiz-observaciones').value,
-    vendedor: cotizSoloMias() ? ((currentUser && currentUser.name) || '') : ((document.getElementById('cotiz-vendedor')||{}).value || ''),   // 23-oct
+    vendedor: _cotizVendedorForm(),   // 23-oct · v366: respeta el compartido
     realizadaPor: (document.getElementById('cotiz-realiza')||{}).value || '',
     aprobadaPor: (document.getElementById('cotiz-aprueba')||{}).value || '',
     solicitudId: (document.getElementById('cotiz-sol-vincular')||{}).value || '',
@@ -19007,7 +19075,7 @@ async function cotizGenerarPDF() {
   const formaPago = document.getElementById('cotiz-pago').value;
   const sitio = document.getElementById('cotiz-sitio').value;
   const validez = document.getElementById('cotiz-validez').value;
-  const vendedor = cotizSoloMias() ? ((currentUser && currentUser.name) || '') : ((document.getElementById('cotiz-vendedor')||{}).value || '');   // 23-oct
+  const vendedor = _cotizVendedorForm();   // 23-oct · v366: respeta el compartido
   const realizadaPor = (document.getElementById('cotiz-realiza')||{}).value || '';
   const aprobadaPor = (document.getElementById('cotiz-aprueba')||{}).value || '';
   const team = getData('team', TEAM_DEFAULT) || [];
@@ -29232,6 +29300,7 @@ function opPuedeCrear(cot) {
   const yo = (currentUser.name || '').trim().toLowerCase();
   const v = (cot.vendedor || '').trim().toLowerCase();
   const r = (cot.realizadaPor || '').trim().toLowerCase();
+  if (!!yo && v.indexOf('/') >= 0 && v.split('/').some(x => x.trim() === yo)) return true;   // v366: vendedor compartido
   return !!yo && (yo === v || yo === r);
 }
 // Compras: cotiza a los proveedores y elige. Cotiza una persona y compra otra.
@@ -29265,6 +29334,7 @@ function opEsDuenoDeLaOP(op) {
   const mi = (currentUser.email || '').trim().toLowerCase();
   const iguala = v => {
     const t = String(v || '').trim().toLowerCase();
+    if (t.indexOf('/') >= 0) return t.split('/').some(x => { x = x.trim(); return !!x && (x === yo || x === mi); });   // v366: vendedor compartido
     return !!t && (t === yo || t === mi);
   };
   if (iguala(op.created_by)) return true;
