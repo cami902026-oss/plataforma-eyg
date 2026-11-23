@@ -4336,5 +4336,46 @@
   "total": 43669996.5,
   "created_by": "Compras E&G",
   "created_at": "2026-11-19T16:15:09.792631+00:00"
+ },
+ {
+  "id": 117,
+  "oc": 26122,
+  "cc": "CC-OP-2026-0218",
+  "cotizacion": "LM2522",
+  "proveedor": "DISTRIBUCIONES PEÑA",
+  "fecha": "2026-11-23",
+  "condiciones": {
+   "lugar": "BOGOTÁ",
+   "plazo": "CREDITO 15 DÍAS",
+   "entrega": "Inmediata",
+   "descuento_pct": 2,
+   "observaciones": "Tubo de 3 metros. Material de la OP-2026-0218.",
+   "subtotal_bruto": 412000,
+   "descuento_valor": 8240.0
+  },
+  "items": [
+   {
+    "udm": "EA",
+    "nota": "OP-2026-0218 · SE OFERTA X 3 METROS",
+    "cantidad": 4,
+    "subtotal": 240000,
+    "costo_unit": 60000,
+    "descripcion": "tuberia IMC de 1\" (tubo de 3 m) - solicitados 12 ml"
+   },
+   {
+    "udm": "EA",
+    "nota": "OP-2026-0218 · SE OFERTA X 3 METROS",
+    "cantidad": 4,
+    "subtotal": 172000,
+    "costo_unit": 43000,
+    "descripcion": "tuberia IMC de 3/4\" (tubo de 3 m) - solicitados 12 ml"
+   }
+  ],
+  "subtotal": 403760.0,
+  "iva": 76714.4,
+  "retencion": 0,
+  "total": 480474.4,
+  "created_by": "Compras E&G",
+  "created_at": "2026-11-23T15:07:21.492767+00:00"
  }
 ]
