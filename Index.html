@@ -2413,6 +2413,9 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
                 <input type="text" id="rad-buscar" oninput="radRender()" placeholder="Buscar cliente, factura u O.C." style="width:220px;padding:8px 12px;">
                 <button class="btn btn-secondary" onclick="radExcel()" style="width:auto;font-size:12px;padding:8px 14px;">⬇️ Excel</button>
               </div>
+              <!-- v372 (26-nov-2026): historial de facturas por comercial (pagadas y pendientes). Fase 1: solo andrea (radHistPuede). Solo lectura. -->
+              <div id="rad-hist-barra" style="display:none;margin-bottom:12px;"></div>
+              <div id="rad-hist" style="display:none;border:1px solid rgba(128,128,128,.3);border-radius:10px;padding:14px;margin-bottom:16px;"></div>
               <div id="rad-resumen" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;"></div>
               <div id="rad-lista"></div>
               <div style="font-size:11px;color:var(--text-muted);margin-top:10px;">Fecha de radicado = fecha de la factura en Cartera. Solo se muestran las facturas pendientes de pago.</div>
@@ -13305,6 +13308,134 @@ async function radInit() {
   _radPfx = 'rad';
   if (!_cnuFacturas) { try { await cnuCargar(false); } catch (_) { } }
   radLlenarVendedores(); radRender();
+  radHistBarra();   // v372
+}
+// ── v372 (26-nov-2026): HISTORIAL POR COMERCIAL dentro de «Facturas radicadas» ──
+// Pedido del usuario: «que tenga la opción de ver el historial de cada comercial, le den click y vean los datos de
+// la factura: fecha facturada, fecha pagado, valor sin IVA y demás». Decisiones: por ahora SOLO andrea (después cada
+// comercial verá solo lo propio o lo compartido); todas las facturas (pagadas y pendientes) con filtro por año, mes
+// y estado; además comisión (en las compartidas, su mitad), días que tardó en pagar y cotización (LM).
+// Cartera se LEE: no escribe nada. Las anuladas no entran.
+const RAD_HIST = ['andrea'];
+let _radHistDe = '';
+function radHistPuede() { return !!(currentUser && RAD_HIST.indexOf(currentUser.email) >= 0 && radTabPuede()); }
+function _radHistNombres(f) { const ns = []; _cnuVendedores(f.vendedor).forEach(n => { n = _cnuVendNombre(n); if (ns.indexOf(n) < 0) ns.push(n); }); return ns; }
+function _radHistValidas() { return radHistPuede() ? (_cnuFacturas || []).filter(f => f.estado !== 'ANULADA' && f.estado_financiero !== 'ANULADA') : []; }
+function _radHistDia(s) { const d = s ? new Date(String(s).slice(0, 10) + 'T12:00:00') : null; return d && !isNaN(d.getTime()) ? d : null; }
+function _radHistTodas(vend) {
+  const hoy = new Date(); hoy.setHours(12, 0, 0, 0);
+  return _radHistValidas().filter(f => _radHistNombres(f).indexOf(vend) >= 0).map(f => {
+    const ns = _radHistNombres(f);
+    const p = _cnuComPartes(f).find(x => x.vendedor === vend);
+    const pend = _cnuEsPendiente(f);
+    const m = pend ? _cnuMora(f, hoy) : null;
+    const est = pend ? ((m !== null && m > 0) ? 'VENCIDA' : 'POR VENCER') : (f.estado === 'PAGADA' ? 'PAGADA' : 'SIN SALDO');
+    let dias = null, tarde = null;
+    const a = _radHistDia(f.fecha_facturacion), b = _radHistDia(f.fecha_pago);
+    if (est === 'PAGADA' && a && b) {
+      dias = Math.round((b - a) / 86400000);
+      if (f.fecha_vencimiento) tarde = String(f.fecha_pago).slice(0, 10) > String(f.fecha_vencimiento).slice(0, 10);
+    }
+    return Object.assign({}, f, { _est: est, _mora: m, _dias: dias, _tarde: tarde,
+      _comMia: p ? p.comision : (ns.length === 1 ? (parseFloat(f.comision) || 0) : 0), _comp: ns.length > 1 ? ns.join(' / ') : '' });
+  });
+}
+function radHistBarra() {
+  const b = document.getElementById('rad-hist-barra'), p = document.getElementById('rad-hist'); if (!b) return;
+  if (!radHistPuede()) { b.style.display = 'none'; b.innerHTML = ''; if (p) { p.style.display = 'none'; p.innerHTML = ''; } _radHistDe = ''; return; }
+  const cnt = {};
+  _radHistValidas().forEach(f => _radHistNombres(f).forEach(n => { cnt[n] = (cnt[n] || 0) + 1; }));
+  const ns = Object.keys(cnt).sort((x, y) => cnt[y] - cnt[x] || x.localeCompare(y));
+  const esc = t => _remiEsc(t).replace(/"/g, '&quot;');
+  b.style.display = '';
+  b.innerHTML = '<div style="font-size:12px;font-weight:700;margin-bottom:6px;">🗂️ Historial por comercial <span style="font-weight:400;color:var(--text-muted);">— haz clic en un comercial para ver todas sus facturas (pagadas y pendientes)</span></div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;">' + (ns.length ? ns.map(n => '<button class="btn ' + (n === _radHistDe ? 'btn-primary' : 'btn-secondary') + '" data-v="' + esc(n) + '" onclick="radHistAbrir(this.dataset.v)" style="width:auto;font-size:12px;padding:7px 12px;">👤 ' + esc(n) + ' · ' + cnt[n] + '</button>').join('') : '<span style="font-size:12px;color:var(--text-muted);">Sin facturas con comercial.</span>') + '</div>';
+}
+function radHistAbrir(v) {
+  if (!radHistPuede()) return;
+  const p = document.getElementById('rad-hist'); if (!p) return;
+  _radHistDe = v || '';
+  radHistBarra();
+  if (!_radHistDe) { p.style.display = 'none'; p.innerHTML = ''; return; }
+  const anios = {};
+  _radHistTodas(_radHistDe).forEach(f => { const a = String(f.fecha_facturacion || '').slice(0, 4); if (a) anios[a] = 1; });
+  const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  const st = 'width:auto;padding:7px 10px;font-size:12px;';
+  p.style.display = '';
+  p.innerHTML = '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">' +
+    '<div style="font-weight:800;font-size:14px;">🗂️ Historial de ' + _remiEsc(_radHistDe) + '</div><span style="flex:1;"></span>' +
+    '<select id="rad-hist-anio" onchange="radHistRender()" style="' + st + '"><option value="">Todos los años</option>' + Object.keys(anios).sort().reverse().map(a => '<option>' + a + '</option>').join('') + '</select>' +
+    '<select id="rad-hist-mes" onchange="radHistRender()" style="' + st + '"><option value="">Todos los meses</option>' + meses.map((m, i) => '<option value="' + String(i + 1).padStart(2, '0') + '">' + m + '</option>').join('') + '</select>' +
+    '<select id="rad-hist-est" onchange="radHistRender()" style="' + st + '"><option value="">Todos los estados</option><option value="PAGADA">Pagadas</option><option value="PEND">Pendientes (todas)</option><option value="POR VENCER">Por vencer</option><option value="VENCIDA">Vencidas</option></select>' +
+    '<input type="text" id="rad-hist-q" oninput="radHistRender()" placeholder="Buscar cliente, factura, O.C. o LM" style="width:210px;padding:7px 10px;font-size:12px;">' +
+    '<button class="btn btn-secondary" onclick="radHistExcel()" style="width:auto;font-size:12px;padding:7px 12px;">⬇️ Excel</button>' +
+    '<button class="btn btn-secondary" onclick="radHistAbrir(\'\')" style="width:auto;font-size:12px;padding:7px 12px;">✖ Cerrar</button></div>' +
+    '<div id="rad-hist-cuerpo"></div>';
+  radHistRender();
+  try { p.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) { }
+}
+function _radHistFiltradas() {
+  if (!radHistPuede() || !_radHistDe) return [];
+  const g = id => ((document.getElementById(id) || {}).value || '');
+  const an = g('rad-hist-anio'), me = g('rad-hist-mes'), es = g('rad-hist-est'), q = g('rad-hist-q').toLowerCase().trim();
+  return _radHistTodas(_radHistDe).filter(f => {
+    const ff = String(f.fecha_facturacion || '');
+    if (an && ff.slice(0, 4) !== an) return false;
+    if (me && ff.slice(5, 7) !== me) return false;
+    if (es === 'PEND' ? (f._est !== 'POR VENCER' && f._est !== 'VENCIDA') : (es && f._est !== es)) return false;
+    return !q || [f.cliente_nombre, f.numero, f.oc, f.cotizacion_id].some(x => String(x || '').toLowerCase().includes(q));
+  }).sort((x, y) => String(y.fecha_facturacion || '').localeCompare(String(x.fecha_facturacion || '')) || String(y.numero || '').localeCompare(String(x.numero || '')));
+}
+function radHistRender() {
+  const c = document.getElementById('rad-hist-cuerpo'); if (!c) return;
+  if (!radHistPuede() || !_radHistDe) { c.innerHTML = ''; return; }
+  const fs = _radHistFiltradas();
+  const n = k => fs.reduce((t, f) => t + (parseFloat(f[k]) || 0), 0);
+  const pag = fs.filter(f => f._dias !== null);
+  const prom = pag.length ? Math.round(pag.reduce((t, f) => t + f._dias, 0) / pag.length) : null;
+  const card = (num, lab, color) => '<div class="card" style="padding:10px;text-align:center;"><div style="font-size:16px;font-weight:800;white-space:nowrap;' + (color ? 'color:' + color + ';' : '') + '">' + num + '</div><div style="font-size:10px;color:var(--text-muted);letter-spacing:.5px;">' + lab + '</div></div>';
+  let h = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px;">' +
+    card(fs.length, 'FACTURAS') + card(_cnuFmt(n('monto_antes_iva')), 'VALOR SIN IVA') + card(_cnuFmt(n('monto_total')), 'TOTAL CON IVA') +
+    card(_cnuFmt(n('saldo')), 'SALDO PENDIENTE', 'var(--gold)') + card(_cnuFmt(n('_comMia')), 'COMISIÓN (SU PARTE)') +
+    card(prom === null ? '—' : prom + ' días', 'PROMEDIO EN PAGAR') + '</div>';
+  if (!fs.length) { c.innerHTML = h + '<div style="padding:14px;color:var(--text-muted);font-size:13px;">Sin facturas para ese filtro.</div>'; return; }
+  const td = 'padding:6px 9px;border-bottom:1px solid rgba(128,128,128,.18);white-space:nowrap;';
+  const th = 'text-align:left;padding:6px 9px;color:var(--text-muted);font-size:10px;white-space:nowrap;';
+  const col = { 'PAGADA': _CNU_CAT.vigente, 'POR VENCER': _CNU_CAT.hoy, 'VENCIDA': _CNU_CAT.critica };
+  const filas = fs.map(f => {
+    const k = col[f._est];
+    const dias = f._dias === null ? '—' : (f._dias + ' días' + (f._tarde === true ? ' <span style="color:' + _CNU_CAT.alta.color + ';font-size:10px;">(tarde)</span>' : (f._tarde === false ? ' <span style="color:var(--text-muted);font-size:10px;">(a tiempo)</span>' : '')));
+    const est = f._est === 'VENCIDA' ? 'VENCIDA · ' + f._mora + ' d' : f._est;
+    return '<tr><td style="' + td + 'font-weight:600;">#' + _remiEsc(f.numero || '—') + '</td>' +
+      '<td style="' + td + 'white-space:normal;min-width:160px;">' + _remiEsc(f.cliente_nombre || '—') + (f._comp ? '<div style="font-size:10px;color:var(--text-muted);">Compartida: ' + _remiEsc(f._comp) + '</div>' : '') + '</td>' +
+      '<td style="' + td + 'font-size:11px;">' + _remiEsc(f.oc || '—') + '</td>' +
+      '<td style="' + td + 'font-size:11px;">' + _remiEsc(f.cotizacion_id || '—') + '</td>' +
+      '<td style="' + td + '">' + _radFecha(f.fecha_facturacion) + '</td>' +
+      '<td style="' + td + '">' + _radFecha(f.fecha_vencimiento) + '</td>' +
+      '<td style="' + td + '">' + (f._est === 'PAGADA' ? _radFecha(f.fecha_pago) : '—') + '</td>' +
+      '<td style="' + td + '">' + dias + '</td>' +
+      '<td style="' + td + 'text-align:right;">' + _cnuFmt(f.monto_antes_iva) + '</td>' +
+      '<td style="' + td + 'text-align:right;font-size:11px;">' + _cnuFmt(f.monto_total) + '</td>' +
+      '<td style="' + td + 'text-align:right;font-weight:600;">' + _cnuFmt(f.saldo) + '</td>' +
+      '<td style="' + td + 'text-align:right;">' + _cnuFmt(f._comMia) + '</td>' +
+      '<td style="' + td + '"><span style="font-size:10px;font-weight:700;' + (k ? 'color:' + k.color + ';background:' + k.bg + ';' : 'color:var(--text-muted);') + 'border-radius:10px;padding:2px 8px;">' + _remiEsc(est) + '</span></td></tr>';
+  }).join('');
+  c.innerHTML = h + '<div style="overflow:auto;max-height:60vh;"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:1100px;">' +
+    '<thead><tr><th style="' + th + '">FACTURA</th><th style="' + th + '">CLIENTE</th><th style="' + th + '">O.C.</th><th style="' + th + '">COTIZACIÓN</th><th style="' + th + '">FECHA FACTURADA</th><th style="' + th + '">VENCE</th><th style="' + th + '">FECHA PAGADO</th><th style="' + th + '">TARDÓ EN PAGAR</th><th style="' + th + 'text-align:right;">VALOR SIN IVA</th><th style="' + th + 'text-align:right;">TOTAL (IVA)</th><th style="' + th + 'text-align:right;">SALDO</th><th style="' + th + 'text-align:right;">COMISIÓN</th><th style="' + th + '">ESTADO</th></tr></thead><tbody>' + filas + '</tbody></table></div>' +
+    '<div style="font-size:11px;color:var(--text-muted);margin-top:8px;">En las facturas compartidas el valor es el de la factura completa y la comisión es la mitad que le corresponde. Las anuladas no se muestran.</div>';
+}
+function radHistExcel() {
+  if (!radHistPuede() || !_radHistDe) return;
+  const fs = _radHistFiltradas();
+  if (!fs.length) { showToast('Sin facturas para exportar con ese filtro.', 'error'); return; }
+  const rows = fs.map(f => ({ 'COMERCIAL': _radHistDe, 'FACTURA': f.numero || '', 'CLIENTE': f.cliente_nombre || '', 'NIT': f.nit || '', 'O.C.': f.oc || '', 'COTIZACIÓN': f.cotizacion_id || '',
+    'FECHA FACTURADA': f.fecha_facturacion || '', 'FECHA VENCIMIENTO': f.fecha_vencimiento || '', 'FECHA PAGADO': f._est === 'PAGADA' ? (f.fecha_pago || '') : '',
+    'DÍAS QUE TARDÓ EN PAGAR': f._dias === null ? '' : f._dias, 'PAGÓ': f._tarde === true ? 'Tarde' : (f._tarde === false ? 'A tiempo' : ''),
+    'VALOR SIN IVA': parseFloat(f.monto_antes_iva || 0), 'TOTAL (IVA)': parseFloat(f.monto_total || 0), 'SALDO': parseFloat(f.saldo || 0),
+    'COMISIÓN (SU PARTE)': f._comMia, 'COMPARTIDA CON': f._comp, 'ESTADO': f._est }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Historial');
+  XLSX.writeFile(wb, 'Historial_Facturas_' + _radHistDe.replace(/[^A-Za-z0-9]+/g, '_') + '_' + _cnuHoy() + '.xlsx');
 }
 // cnuTab no conoce esta pestaña: se envuelve otra vez (igual que Comisiones externas), sin tocar la original.
 const _cnuTabSinRad = cnuTab;
