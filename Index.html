@@ -5256,7 +5256,7 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
         <div class="form-group"><label>NETO a cobrar <span style="color:var(--text-muted);font-weight:400;font-size:11px;">(lo que entra)</span></label><input type="number" id="cnuf-neto" readonly style="font-weight:700;color:#86efac;background:rgba(46,170,74,.08)" title="Total − retefuente. Es el saldo que queda en cartera: al recibir este valor, la factura se cierra sola."></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Vendedor</label><input type="text" id="cnuf-vendedor" placeholder="SHEILA"></div>
+        <div class="form-group"><label>Vendedor</label><select id="cnuf-vendedor" onchange="cnuVendOtro(this)"><option value="">— Elegir vendedor —</option></select></div>
         <div class="form-group"><label>RETEICA</label>
           <select id="cnuf-reteica"><option>NO</option><option>SI</option></select>
         </div>
@@ -5318,7 +5318,7 @@ html:not(.tema-claro) #tema-btn { color:#fbd38d; }
         <div class="form-group"><label>Teléfono</label><input type="text" id="cnuc-telefono"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Vendedor</label><input type="text" id="cnuc-vendedor" placeholder="SHEILA"></div>
+        <div class="form-group"><label>Vendedor</label><select id="cnuc-vendedor" onchange="cnuVendOtro(this)"><option value="">— Elegir vendedor —</option></select></div>
         <div class="form-group"><label>% Comisión</label><input type="number" id="cnuc-pct" step="0.1" placeholder="3"></div>
       </div>
       <button class="btn btn-primary" onclick="cnuClienteGuardar()">💾 Guardar cliente</button>
@@ -13186,6 +13186,41 @@ function _cnuVendedores(v) { const out = []; String(v || '').split('/').forEach(
 // cambia nada en la base: solo cómo se agrupa en Comisiones, su Excel y la cuenta de cobro.
 const _CNU_VEND_ALIAS = { 'SHEILA': 'SHEILA BARON' };
 function _cnuVendNombre(v) { const t = String(v || '').trim(); return _CNU_VEND_ALIAS[t.toUpperCase()] || t; }
+// v371 (26-nov-2026): pedido del usuario: «unificar el nombre de vendedor: Sheila sea SHEILA BARON en todas las
+// facturas y clientes, y corregir para crear al futuro» + «una lista desplegable; si llegan nuevos vendedores,
+// ¿cómo los agrego?». La casilla Vendedor de la factura y del cliente es una lista: nombres fijos + los que ya
+// existen en Cartera + «➕ Otro vendedor…» (se escribe una vez y queda en la lista al guardarlo). Al guardar, el
+// nombre siempre se escribe en su forma única (SHEILA → SHEILA BARON; compartido → «SHEILA BARON / MARIO»).
+const _CNU_VEND_BASE = ['SHEILA BARON', 'MARIO', 'SHEILA BARON / MARIO', 'SANDRA', 'EXTERNO', 'ENERGY'];
+function _cnuVendCanon(v) {
+  if (v === '__otro__') return '';
+  const ns = []; _cnuVendedores(v).forEach(n => { n = _cnuVendNombre(n.replace(/\s+/g, ' ')); if (ns.indexOf(n) < 0) ns.push(n); });
+  if (ns.length === 2 && ns.indexOf('SHEILA BARON') >= 0 && ns.indexOf('MARIO') >= 0) return 'SHEILA BARON / MARIO';
+  return ns.join(' / ');
+}
+function _cnuVendOpciones(extra) {
+  const ops = _CNU_VEND_BASE.slice();
+  const add = v => { v = _cnuVendCanon(v); if (v && ops.indexOf(v) < 0) ops.push(v); };
+  (_cnuClientes || []).forEach(c => add(c.vendedor));
+  (_cnuFacturas || []).forEach(f => add(f.vendedor));
+  add(extra);
+  return ops;
+}
+function _cnuVendSet(id, val) {
+  const el = document.getElementById(id); if (!el) return;
+  const v = _cnuVendCanon(val);
+  if (el.tagName !== 'SELECT') { el.value = v; return; }
+  const esc = t => _remiEsc(t).replace(/"/g, '&quot;');
+  el.innerHTML = '<option value="">— Elegir vendedor —</option>' +
+    _cnuVendOpciones(v).map(o => '<option value="' + esc(o) + '">' + esc(o) + '</option>').join('') +
+    '<option value="__otro__">➕ Otro vendedor…</option>';
+  el.value = v; el.dataset.prev = v;
+}
+function cnuVendOtro(el) {
+  if (el.value !== '__otro__') { el.dataset.prev = el.value; return; }
+  const n = _cnuVendCanon(prompt('Nombre del nuevo vendedor (nombre y apellido):') || '');
+  _cnuVendSet(el.id, n || el.dataset.prev || '');
+}
 function _cnuComPartes(f) {
   const v = (f.vendedor || '').trim() || 'SIN VENDEDOR', c = parseFloat(f.comision) || 0;
   const ns = []; _cnuVendedores(v).forEach(n => { n = _cnuVendNombre(n); if (ns.indexOf(n) < 0) ns.push(n); });
@@ -13747,6 +13782,7 @@ async function cnuNuevaFactura(prefill) {
   const sel = document.getElementById('cnuf-cliente');
   sel.innerHTML = '<option value="">— Elige el cliente —</option>' + _cnuClientes.map(c => '<option value="' + c.id + '">' + c.nombre + '</option>').join('');
   ['cnuf-numero','cnuf-total','cnuf-antes','cnuf-ivaval','cnuf-rf-pct','cnuf-rf-val','cnuf-neto','cnuf-comision','cnuf-oc','cnuf-cotiz','cnuf-vendedor','cnuf-dias','cnuf-venc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  _cnuVendSet('cnuf-vendedor', '');   // v371: lista de vendedores
   cnuFactResetFlags();
   document.getElementById('cnuf-fecha').value = _cnuHoy();
   document.getElementById('cnuf-iva').value = '19';
@@ -13778,7 +13814,7 @@ async function cnuNuevaFactura(prefill) {
   if (prefill.numero) document.getElementById('cnuf-numero').value = prefill.numero;
   if (prefill.cotiz) document.getElementById('cnuf-cotiz').value = prefill.cotiz;
   if (prefill.oc) document.getElementById('cnuf-oc').value = prefill.oc;
-  if (prefill.vendedor) document.getElementById('cnuf-vendedor').value = prefill.vendedor;
+  if (prefill.vendedor) _cnuVendSet('cnuf-vendedor', prefill.vendedor);
   if (prefill.total) { document.getElementById('cnuf-total').value = prefill.total; cnuFactCalc(); }
   // El hint de la cotización y el aviso del cliente conviven: son dos cosas
   // distintas y antes el segundo se perdía.
@@ -13803,7 +13839,7 @@ function cnuFactClienteChange() {
   const c = (_cnuClientes || []).find(x => String(x.id) === document.getElementById('cnuf-cliente').value);
   if (!c) return;
   document.getElementById('cnuf-dias').value = c.dias_pago || 30;
-  if (c.vendedor) document.getElementById('cnuf-vendedor').value = c.vendedor;
+  if (c.vendedor) _cnuVendSet('cnuf-vendedor', c.vendedor);
   // v161: % de retefuente que suele aplicar ese cliente (si está guardado)
   const rfp = document.getElementById('cnuf-rf-pct');
   if (rfp && !rfp.value && c.pct_retefuente != null && c.pct_retefuente !== '') { rfp.value = c.pct_retefuente; _cnuRfManual = false; }
@@ -13917,7 +13953,7 @@ async function cnuFactGuardar() {
       mes_facturacion: _CNU_MES_NOM[parseInt(fecha.slice(5, 7)) - 1] || '',
       comision: parseFloat(document.getElementById('cnuf-comision').value) || 0,
       reteica: document.getElementById('cnuf-reteica').value,
-      vendedor: document.getElementById('cnuf-vendedor').value.trim().toUpperCase()
+      vendedor: _cnuVendCanon(document.getElementById('cnuf-vendedor').value)
     };
     // La columna `retefuente` es nueva: solo se envía cuando aplica, para que las
     // facturas sin retención se sigan guardando aunque el SQL aún no se haya corrido.
@@ -14018,7 +14054,7 @@ async function cnuFactEditar(id) {
     if (_rfGuardada) _cnuRfManual = true;
     cnuFactRete(false);
     document.getElementById('cnuf-comision').value = parseFloat(f.comision || 0) || '';
-    document.getElementById('cnuf-vendedor').value = f.vendedor || '';
+    _cnuVendSet('cnuf-vendedor', f.vendedor || '');
     document.getElementById('cnuf-reteica').value = (f.reteica === 'SI') ? 'SI' : 'NO';
     document.getElementById('cnuf-cotiz').value = f.cotizacion_id || '';
     document.getElementById('cnuf-oc').value = f.oc || f.oc_num || '';
@@ -14125,7 +14161,7 @@ async function cnuClienteEditar(id) {
   document.getElementById('cnuc-correos').value = g('correos');
   document.getElementById('cnuc-contacto').value = g('contacto');
   document.getElementById('cnuc-telefono').value = g('telefono');
-  document.getElementById('cnuc-vendedor').value = g('vendedor');
+  _cnuVendSet('cnuc-vendedor', g('vendedor'));
   document.getElementById('cnuc-pct').value = g('pct_comision') !== '' ? g('pct_comision') : 3;
   openModal('modal-cnu-cliente');
 }
@@ -14139,7 +14175,7 @@ async function cnuClienteGuardar() {
     correos: document.getElementById('cnuc-correos').value.trim(),
     contacto: document.getElementById('cnuc-contacto').value.trim(),
     telefono: document.getElementById('cnuc-telefono').value.trim(),
-    vendedor: document.getElementById('cnuc-vendedor').value.trim().toUpperCase(),
+    vendedor: _cnuVendCanon(document.getElementById('cnuc-vendedor').value),
     pct_comision: parseFloat(document.getElementById('cnuc-pct').value) || 3,
     actualizado_en: new Date().toISOString()
   };
